@@ -2382,6 +2382,10 @@ void read_sequence_header(SequenceHeader *seq_params,
     seq_params->force_integer_mv = 2;
   }
 #endif
+
+#if CONFIG_EXPLICIT_ORDER_HINT
+  seq_params->order_hint_bits = aom_rb_read_literal(rb, 3);
+#endif
 }
 
 static void read_compound_tools(AV1_COMMON *cm,
@@ -2519,6 +2523,7 @@ static INLINE unsigned int lcg_rand16(unsigned int *state) {
   return *state / 65536 % 32768;
 }
 
+#if !CONFIG_EXPLICIT_ORDER_HINT
 // Wrap around to make sure current_video_frame won't surpass a limit
 // Such that distance computation could remain correct
 static void wrap_around_current_video_frame(AV1Decoder *pbi) {
@@ -2536,6 +2541,7 @@ static void wrap_around_current_video_frame(AV1Decoder *pbi) {
     cm->cur_frame->cur_frame_offset = cm->frame_offset;
   }
 }
+#endif
 
 #if CONFIG_FWD_KF
 static void show_existing_frame_reset(AV1Decoder *const pbi,
@@ -2546,9 +2552,13 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   assert(cm->show_existing_frame);
 
+#if !CONFIG_EXPLICIT_ORDER_HINT
   wrap_around_current_video_frame(pbi);
+#endif
   cm->frame_type = KEY_FRAME;
+#if !CONFIG_EXPLICIT_ORDER_HINT
   cm->frame_offset = cm->current_video_frame;
+#endif
 
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
@@ -2772,15 +2782,22 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->primary_ref_frame = PRIMARY_REF_NONE;
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  cm->frame_offset = aom_rb_read_literal(rb, cm->seq_params.order_hint_bits);
+  cm->current_video_frame = cm->frame_offset;
+#else
   if (cm->show_frame == 0) {
     cm->frame_offset =
         cm->current_video_frame + aom_rb_read_literal(rb, FRAME_OFFSET_BITS);
   } else {
     cm->frame_offset = cm->current_video_frame;
   }
+#endif
 
   if (cm->frame_type == KEY_FRAME) {
+#if !CONFIG_EXPLICIT_ORDER_HINT
     wrap_around_current_video_frame(pbi);
+#endif  // !CONFIG_EXPLICIT_ORDER_HINT
 #if CONFIG_FWD_KF
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);

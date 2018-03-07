@@ -13,6 +13,9 @@
 #define AV1_COMMON_PRED_COMMON_H_
 
 #include "av1/common/blockd.h"
+#if CONFIG_EXPLICIT_ORDER_HINT
+#include "av1/common/mvref_common.h"
+#endif
 #include "av1/common/onyxc_int.h"
 #include "aom_dsp/aom_dsp_common.h"
 
@@ -86,8 +89,13 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 
   if (fwd_idx >= 0)
     fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+  int fwd = abs(get_relative_dist(cm, fwd_frame_index, cur_frame_index));
+  int bck = abs(get_relative_dist(cm, cur_frame_index, bck_frame_index));
+#else
   int fwd = abs(fwd_frame_index - cur_frame_index);
   int bck = abs(cur_frame_index - bck_frame_index);
+#endif
 
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;

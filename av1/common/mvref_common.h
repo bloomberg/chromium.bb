@@ -113,6 +113,27 @@ static const int idx_n_column_to_subblock[4][2] = {
 // clamp_mv_ref
 #define MV_BORDER (16 << 3)  // Allow 16 pels in 1/8th pel units
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+static INLINE int get_relative_dist_b(int bits, int a, int b) {
+  // IMDAD: CAN bits EVER ACTUALLY BE 0?
+  // IMDAD: we find that if bits == 1, then sometimes b > (1 << bits) = 2.
+  assert(a >= 0 && a < (1 << bits));
+  assert(b >= 0 && b < (1 << bits));
+  if (bits == 0) {
+    return 0;
+  } else {
+    int diff = a - b;
+    int m = 1 << (bits - 1);
+    diff = (diff & (m - 1)) - (diff & m);
+    return diff;
+  }
+}
+
+static INLINE int get_relative_dist(const AV1_COMMON *cm, int a, int b) {
+  return get_relative_dist_b(cm->seq_params.order_hint_bits, a, b);
+}
+#endif
+
 // Get the number of frames between the current frame and a reference frame
 static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,
                                      MV_REFERENCE_FRAME ref) {
@@ -123,7 +144,11 @@ static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,
   if (ref_buf_idx == INVALID_IDX) return INT_MAX;
   const int ref_frame_offset =
       cm->buffer_pool->frame_bufs[ref_buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+  return get_relative_dist(cm, cur_frame_offset, ref_frame_offset);
+#else
   return cur_frame_offset - ref_frame_offset;
+#endif
 }
 
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
@@ -417,7 +442,11 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
 
     const int ref_offset =
         cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    if (get_relative_dist(cm, ref_offset, (int)cm->frame_offset) > 0) {
+#else
     if (ref_offset > (int)cm->frame_offset) {
+#endif
       one_sided_refs = 0;  // bwd reference
       break;
     }

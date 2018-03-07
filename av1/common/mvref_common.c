@@ -427,7 +427,11 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
     int cur_frame_index = cm->cur_frame->cur_frame_offset;
     int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
     int frame0_index = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    int cur_offset_0 = get_relative_dist(cm, cur_frame_index, frame0_index);
+#else
     int cur_offset_0 = cur_frame_index - frame0_index;
+#endif
     CANDIDATE_MV *ref_mv_stack = ref_mv_stacks[rf[0]];
 
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
@@ -481,10 +485,18 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
     int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
     int frame0_index = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+    int cur_offset_0 = get_relative_dist(cm, cur_frame_index, frame0_index);
+#else
     int cur_offset_0 = cur_frame_index - frame0_index;
+#endif
     int buf_idx_1 = cm->frame_refs[FWD_RF_OFFSET(rf[1])].idx;
     int frame1_index = cm->buffer_pool->frame_bufs[buf_idx_1].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    int cur_offset_1 = get_relative_dist(cm, cur_frame_index, frame1_index);
+#else
     int cur_offset_1 = cur_frame_index - frame1_index;
+#endif
     CANDIDATE_MV *ref_mv_stack = ref_mv_stacks[ref_frame];
 
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
@@ -1308,7 +1320,13 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
       const int ref_frame_offset =
           cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
       cm->ref_frame_sign_bias[ref_frame] =
+#if CONFIG_EXPLICIT_ORDER_HINT
+          (get_relative_dist(cm, ref_frame_offset, (int)cm->frame_offset) <= 0)
+              ? 0
+              : 1;
+#else
           (ref_frame_offset <= (int)cm->frame_offset) ? 0 : 1;
+#endif
     } else {
       cm->ref_frame_sign_bias[ref_frame] = 0;
     }
@@ -1370,7 +1388,11 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
   int ref_frame_index =
       cm->buffer_pool->frame_bufs[ref_frame_idx].cur_frame_offset;
   int cur_frame_index = cm->cur_frame->cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+  int ref_to_cur = get_relative_dist(cm, ref_frame_index, cur_frame_index);
+#else
   int ref_to_cur = ref_frame_index - cur_frame_index;
+#endif
 
   ref_rf_idx[LAST_FRAME] =
       cm->buffer_pool->frame_bufs[ref_frame_idx].lst_frame_offset;
@@ -1391,8 +1413,13 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
     int buf_idx = cm->frame_refs[FWD_RF_OFFSET(rf)].idx;
     if (buf_idx >= 0)
       cur_rf_index[rf] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    cur_offset[rf] = get_relative_dist(cm, cur_frame_index, cur_rf_index[rf]);
+    ref_offset[rf] = get_relative_dist(cm, ref_frame_index, ref_rf_idx[rf]);
+#else
     cur_offset[rf] = cur_frame_index - cur_rf_index[rf];
     ref_offset[rf] = ref_frame_index - ref_rf_idx[rf];
+#endif
   }
 
   if (dir == 1) {
@@ -1840,6 +1867,23 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
     if (buf_idx == INVALID_IDX) continue;
 
     const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    if (get_relative_dist(cm, ref_offset, cur_frame_offset) < 0) {
+      // Forward reference
+      if (ref_frame_offset[0] == -1 ||
+          get_relative_dist(cm, ref_offset, ref_frame_offset[0]) > 0) {
+        ref_frame_offset[0] = ref_offset;
+        ref_idx[0] = i;
+      }
+    } else if (get_relative_dist(cm, ref_offset, cur_frame_offset) > 0) {
+      // Backward reference
+      if (ref_frame_offset[1] == INT_MAX ||
+          get_relative_dist(cm, ref_offset, ref_frame_offset[1]) < 0) {
+        ref_frame_offset[1] = ref_offset;
+        ref_idx[1] = i;
+      }
+    }
+#else
     if (ref_offset < cur_frame_offset) {
       // Forward reference
       if (ref_offset > ref_frame_offset[0]) {
@@ -1853,6 +1897,7 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
         ref_idx[1] = i;
       }
     }
+#endif
   }
 
   if (ref_idx[0] != INVALID_IDX && ref_idx[1] != INVALID_IDX) {
@@ -1869,8 +1914,15 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
       if (buf_idx == INVALID_IDX) continue;
 
       const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+      if ((ref_frame_offset[0] >= 0 &&
+           get_relative_dist(cm, ref_offset, ref_frame_offset[0]) < 0) &&
+          (ref_frame_offset[1] < 0 ||
+           get_relative_dist(cm, ref_offset, ref_frame_offset[1]) > 0)) {
+#else
       if (ref_offset < ref_frame_offset[0] &&
           ref_offset > ref_frame_offset[1]) {
+#endif
         // Second closest forward reference
         ref_frame_offset[1] = ref_offset;
         ref_idx[1] = i;
@@ -1889,12 +1941,39 @@ typedef struct {
   int map_idx;  // frame map index
   int buf_idx;  // frame buffer index
   int offset;   // frame offset
+#if CONFIG_EXPLICIT_ORDER_HINT
+  int bits;  // number of bits used to store the offset
+#endif
 } REF_FRAME_INFO;
 
 static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
   const REF_FRAME_INFO *info_a = (REF_FRAME_INFO *)arg_a;
   const REF_FRAME_INFO *info_b = (REF_FRAME_INFO *)arg_b;
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  assert(info_a->bits == info_b->bits);
+  const int bits = info_a->bits;
+
+  assert(info_a->offset < INT_MAX);
+  assert(info_b->offset < INT_MAX);
+
+  // -1 is 'less than' all other values
+  if (info_a->offset == -1 && info_b->offset != -1) return -1;
+  if (info_a->offset != -1 && info_b->offset == -1) return 1;
+  if (info_a->offset == -1 && info_b->offset == -1)
+    return (info_a->map_idx < info_b->map_idx)
+               ? -1
+               : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
+
+  if (get_relative_dist_b(bits, info_a->offset, info_b->offset) < 0)
+    return -1;
+  else if (get_relative_dist_b(bits, info_a->offset, info_b->offset) > 0)
+    return 1;
+
+  return (info_a->map_idx < info_b->map_idx)
+             ? -1
+             : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
+#else
   if (info_a->offset < info_b->offset)
     return -1;
   else if (info_a->offset > info_b->offset)
@@ -1903,6 +1982,7 @@ static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
   return (info_a->map_idx < info_b->map_idx)
              ? -1
              : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
+#endif
 }
 
 static void set_ref_frame_info(AV1_COMMON *const cm, int frame_idx,
@@ -1934,6 +2014,9 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
 
     ref_frame_info[i].map_idx = map_idx;
     ref_frame_info[i].offset = -1;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    ref_frame_info[i].bits = cm->seq_params.order_hint_bits;
+#endif
 
     const int buf_idx = cm->ref_frame_map[map_idx];
     ref_frame_info[i].buf_idx = buf_idx;
@@ -1949,13 +2032,23 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     if (map_idx == gld_map_idx) gld_frame_offset = offset;
   }
 
-  // Confirm both LAST_FRAME and GOLDEN_FRAME are valid forward reference
-  // frames.
+    // Confirm both LAST_FRAME and GOLDEN_FRAME are valid forward reference
+    // frames.
+#if CONFIG_EXPLICIT_ORDER_HINT
+  if (lst_frame_offset < 0 ||
+      get_relative_dist(cm, lst_frame_offset, cur_frame_offset) >= 0) {
+#else
   if (lst_frame_offset < 0 || lst_frame_offset >= cur_frame_offset) {
+#endif
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Inter frame requests a look-ahead frame as LAST");
   }
+#if CONFIG_EXPLICIT_ORDER_HINT
+  if (gld_frame_offset < 0 ||
+      get_relative_dist(cm, gld_frame_offset, cur_frame_offset) >= 0) {
+#else
   if (gld_frame_offset < 0 || gld_frame_offset >= cur_frame_offset) {
+#endif
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Inter frame requests a look-ahead frame as GOLDEN");
   }
@@ -1975,7 +2068,14 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
       continue;
     }
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+    // IMDAD: we're assuming here that cur_frame_offset >= 0 always. Is this the
+    // case?
+    if (get_relative_dist(cm, ref_frame_info[i].offset, cur_frame_offset) >=
+        0) {
+#else
     if (ref_frame_info[i].offset >= cur_frame_offset) {
+#endif
       fwd_end_idx = i - 1;
       break;
     }

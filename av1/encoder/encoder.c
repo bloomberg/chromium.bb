@@ -68,6 +68,10 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+#define DEFAULT_EXPLICIT_ORDER_HINT_BITS 7
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
+
 #if CONFIG_ENTROPY_STATS
 FRAME_COUNTS aggregate_fc;
 // Aggregate frame counts per frame context type
@@ -2568,6 +2572,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #endif
   cm->disable_intra_edge_filter = 0;
   cm->allow_filter_intra = 1;
+
+#if CONFIG_EXPLICIT_ORDER_HINT
+  cm->seq_params.order_hint_bits = DEFAULT_EXPLICIT_ORDER_HINT_BITS;
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
