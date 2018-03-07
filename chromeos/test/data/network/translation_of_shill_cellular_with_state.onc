@@ -53,7 +53,8 @@
     "SIMLockStatus": {
       "LockType": "sim-pin",
       "LockEnabled": true
-    }
+    },
+    "Scanning": false
   },
   "Source":"Device"
 }

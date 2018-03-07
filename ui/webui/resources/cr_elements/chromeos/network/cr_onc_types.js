@@ -30,6 +30,7 @@
  *   networkListItemConnecting: string,
  *   networkListItemConnectingTo: string,
  *   networkListItemInitializing: string,
+ *   networkListItemScanning: string,
  *   networkListItemNotConnected: string,
  *   networkListItemNoNetwork: string,
  *   vpnNameTemplate: string,

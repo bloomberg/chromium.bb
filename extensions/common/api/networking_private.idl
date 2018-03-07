@@ -580,6 +580,7 @@ namespace networkingPrivate {
     ActivationStateType? ActivationState;
     DOMString? NetworkTechnology;
     DOMString? RoamingState;
+    boolean? Scanning;
     boolean? SIMPresent;
     long? SignalStrength;
   };

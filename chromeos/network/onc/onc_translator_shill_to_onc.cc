@@ -436,6 +436,7 @@ void ShillToONCTranslator::TranslateCellularWithState() {
 
   const base::DictionaryValue* device_dictionary = NULL;
   bool requires_roaming = false;
+  bool scanning = false;
   shill_dictionary_->GetDictionaryWithoutPathExpansion(shill::kDeviceProperty,
                                                        &device_dictionary);
   if (device_dictionary) {
@@ -448,9 +449,11 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         nested_translator.CreateTranslatedONCObject();
     onc_object_->MergeDictionary(nested_object.get());
 
-    /// Get the requires_roaming from the Device dictionary.
+    /// Get requires_roaming and scanning from the Device dictionary.
     device_dictionary->GetBooleanWithoutPathExpansion(
         shill::kProviderRequiresRoamingProperty, &requires_roaming);
+    device_dictionary->GetBooleanWithoutPathExpansion(shill::kScanningProperty,
+                                                      &scanning);
   }
   if (requires_roaming) {
     onc_object_->SetKey(::onc::cellular::kRoamingState,
@@ -459,6 +462,7 @@ void ShillToONCTranslator::TranslateCellularWithState() {
     TranslateWithTableAndSet(shill::kRoamingStateProperty, kRoamingStateTable,
                              ::onc::cellular::kRoamingState);
   }
+  onc_object_->SetKey(::onc::cellular::kScanning, base::Value(scanning));
 }
 
 void ShillToONCTranslator::TranslateCellularDevice() {

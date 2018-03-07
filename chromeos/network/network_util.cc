@@ -165,18 +165,19 @@ std::unique_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
 
   // Get any Device properties required to translate state.
   if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
-    // We need to set Device[Cellular.ProviderRequiresRoaming] so that
-    // Cellular[RoamingState] can be set correctly for badging network icons.
     const DeviceState* device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceState(
             network->device_path());
     if (device) {
-      std::unique_ptr<base::DictionaryValue> device_dict(
-          new base::DictionaryValue);
-      device_dict->SetKey(shill::kProviderRequiresRoamingProperty,
-                          base::Value(device->provider_requires_roaming()));
-      shill_dictionary->SetWithoutPathExpansion(shill::kDeviceProperty,
-                                                std::move(device_dict));
+      base::DictionaryValue device_dict;
+      // We need to set Device.Cellular.ProviderRequiresRoaming so that
+      // Cellular.RoamingState can be set correctly for badging network icons.
+      device_dict.SetKey(shill::kProviderRequiresRoamingProperty,
+                         base::Value(device->provider_requires_roaming()));
+      // Scanning is also used in the UI when displaying a list of networks.
+      device_dict.SetKey(shill::kScanningProperty,
+                         base::Value(device->scanning()));
+      shill_dictionary->SetKey(shill::kDeviceProperty, std::move(device_dict));
     }
   }
 

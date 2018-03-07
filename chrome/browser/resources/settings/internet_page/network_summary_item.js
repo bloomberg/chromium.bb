@@ -68,10 +68,9 @@ Polymer({
    * @private
    */
   getNetworkStateText_: function(activeNetworkState, deviceState) {
-    const state = activeNetworkState.ConnectionState;
-    const name = CrOnc.getNetworkName(activeNetworkState);
-    if (state)
-      return this.getConnectionStateText_(state, name);
+    const stateText = this.getConnectionStateText_(activeNetworkState);
+    if (stateText)
+      return stateText;
     // No network state, use device state.
     if (deviceState) {
       // Type specific scanning or initialization states.
@@ -98,12 +97,15 @@ Polymer({
   },
 
   /**
-   * @param {CrOnc.ConnectionState} state
-   * @param {string} name
+   * @param {!CrOnc.NetworkStateProperties} networkState
    * @return {string}
    * @private
    */
-  getConnectionStateText_: function(state, name) {
+  getConnectionStateText_: function(networkState) {
+    const state = networkState.ConnectionState;
+    if (!state)
+      return '';
+    const name = CrOnc.getNetworkName(networkState);
     switch (state) {
       case CrOnc.ConnectionState.CONNECTED:
         return name;
@@ -112,6 +114,10 @@ Polymer({
           return CrOncStrings.networkListItemConnectingTo.replace('$1', name);
         return CrOncStrings.networkListItemConnecting;
       case CrOnc.ConnectionState.NOT_CONNECTED:
+        if (networkState.Type == CrOnc.Type.CELLULAR && networkState.Cellular &&
+            networkState.Cellular.Scanning) {
+          return this.i18n('internetMobileSearching');
+        }
         return CrOncStrings.networkListItemNotConnected;
     }
     assertNotReached();

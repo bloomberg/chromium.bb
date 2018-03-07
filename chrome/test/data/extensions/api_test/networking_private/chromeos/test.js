@@ -592,7 +592,8 @@ var availableTests = [
             ModelID:"test_model_id",
             NetworkTechnology: 'GSM',
             RoamingState: 'Home',
-            SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3}
+            SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3},
+            Scanning: false,
           },
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: kCellularGuid,
@@ -624,6 +625,7 @@ var availableTests = [
             MIN: "test_min",
             ModelID:"test_model_id",
             SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3},
+            Scanning: false,
             SignalStrength: 0,
           },
           Connectable: false,

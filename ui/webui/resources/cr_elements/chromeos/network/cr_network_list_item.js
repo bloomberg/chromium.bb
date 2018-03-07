@@ -103,9 +103,7 @@ Polymer({
    * @private
    */
   isStateTextVisible_: function() {
-    return !!this.networkState &&
-        (this.networkState.ConnectionState !=
-         CrOnc.ConnectionState.NOT_CONNECTED);
+    return !!this.networkState && !!this.getNetworkStateText_();
   },
 
   /**
@@ -114,16 +112,20 @@ Polymer({
    * @private
    */
   getNetworkStateText_: function() {
-    if (!this.isStateTextVisible_())
+    if (!this.networkState)
       return '';
-    var state = this.networkState.ConnectionState;
-    // For Cellular, an empty ConnectionState indicates that the device is
-    // still initializing.
-    if (!state && this.networkState.Type == CrOnc.Type.CELLULAR)
-      return CrOncStrings.networkListItemInitializing;
-    if (state == CrOnc.ConnectionState.CONNECTED)
+    var connectionState = this.networkState.ConnectionState;
+    if (this.networkState.Type == CrOnc.Type.CELLULAR) {
+      // For Cellular, an empty ConnectionState indicates that the device is
+      // still initializing.
+      if (!connectionState)
+        return CrOncStrings.networkListItemInitializing;
+      if (this.networkState.Cellular && this.networkState.Cellular.Scanning)
+        return CrOncStrings.networkListItemScanning;
+    }
+    if (connectionState == CrOnc.ConnectionState.CONNECTED)
       return CrOncStrings.networkListItemConnected;
-    if (state == CrOnc.ConnectionState.CONNECTING)
+    if (connectionState == CrOnc.ConnectionState.CONNECTING)
       return CrOncStrings.networkListItemConnecting;
     return '';
   },

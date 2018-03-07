@@ -748,6 +748,7 @@ chrome.networkingPrivate.ManagedCellularProperties;
  *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
  *   NetworkTechnology: (string|undefined),
  *   RoamingState: (string|undefined),
+ *   Scanning: (boolean|undefined),
  *   SIMPresent: (boolean|undefined),
  *   SignalStrength: (number|undefined)
  * }}
