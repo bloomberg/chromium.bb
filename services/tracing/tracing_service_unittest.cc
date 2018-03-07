@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/test_util.h"
 
 namespace tracing {
 
@@ -35,18 +36,17 @@ class TracingServiceTest : public service_manager::test::ServiceTest {
 };
 
 TEST_F(TracingServiceTest, TracingServiceInstantiate) {
+  base::RunLoop run_loop;
   mojom::AgentRegistryPtr agent_registry;
   connector()->BindInterface(mojom::kServiceName,
                              mojo::MakeRequest(&agent_registry));
 
-  tracing::mojom::AgentPtr agent;
-  agent_registry->RegisterAgent(std::move(agent), "FOO",
+  MockAgent agent1;
+  agent_registry->RegisterAgent(agent1.CreateAgentPtr(), "FOO",
                                 mojom::TraceDataType::STRING,
                                 false /*supports_explicit_clock_sync*/);
 
-  base::RunLoop loop;
-  SetRunLoopToQuit(&loop);
-  loop.Run();
+  run_loop.RunUntilIdle();
 }
 
 }  // namespace tracing
