@@ -4,14 +4,13 @@
 
 Polymer({
   is: 'cr-drawer',
-  extends: 'dialog',
 
   properties: {
     heading: String,
 
-    /** Enables notifications for |Dialog.open|. */
     open: {
       type: Boolean,
+      // Enables 'open-changed' events.
       notify: true,
     },
 
@@ -24,14 +23,12 @@ Polymer({
   },
 
   listeners: {
-    'cancel': 'onDialogCancel_',
-    'tap': 'onDialogTap_',
     'transitionend': 'onDialogTransitionEnd_',
   },
 
   /** Toggles the drawer open and close. */
   toggle: function() {
-    if (this.open)
+    if (this.$.dialog.open)
       this.closeDrawer();
     else
       this.openDrawer();
@@ -39,15 +36,16 @@ Polymer({
 
   /** Shows drawer and slides it into view. */
   openDrawer: function() {
-    if (!this.open) {
-      this.showModal();
+    if (!this.$.dialog.open) {
+      this.$.dialog.showModal();
+      this.open = true;
       this.classList.add('opening');
     }
   },
 
   /** Slides the drawer away, then closes it after the transition has ended. */
   closeDrawer: function() {
-    if (this.open) {
+    if (this.$.dialog.open) {
       this.classList.remove('opening');
       this.classList.add('closing');
     }
@@ -88,7 +86,8 @@ Polymer({
   onDialogTransitionEnd_: function() {
     if (this.classList.contains('closing')) {
       this.classList.remove('closing');
-      this.close();
+      this.$.dialog.close();
+      this.open = false;
     }
   },
 });
