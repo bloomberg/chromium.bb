@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -21,7 +22,6 @@
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -229,6 +229,7 @@ DownloadFileImpl::DownloadFileImpl(
       bytes_seen_without_parallel_streams_(0),
       is_paused_(false),
       download_id_(download_id),
+      main_task_runner_(base::MessageLoop::current()->task_runner()),
       observer_(observer),
       weak_factory_(this) {
   TRACE_EVENT_INSTANT0("download", "DownloadFileCreated",
@@ -278,8 +279,8 @@ void DownloadFileImpl::Initialize(
       save_info_->hash_of_partial_file, std::move(save_info_->hash_state),
       IsSparseFile(), &bytes_wasted);
   if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    main_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(initialize_callback), reason, bytes_wasted));
     return;
   }
@@ -290,8 +291,8 @@ void DownloadFileImpl::Initialize(
   // Primarily to make reset to zero in restart visible to owner.
   SendUpdate();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  main_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(initialize_callback),
                      download::DOWNLOAD_INTERRUPT_REASON_NONE, bytes_wasted));
 
@@ -507,8 +508,8 @@ void DownloadFileImpl::RenameWithRetryInternal(
     new_path.clear();
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  main_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(parameters->completion_callback, reason, new_path));
 }
 
@@ -714,8 +715,8 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
       weak_factory_.InvalidateWeakPtrs();
       std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
       update_timer_.reset();
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      main_task_runner_->PostTask(
+          FROM_HERE,
           base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
                          observer_, TotalBytesReceived(),
                          std::move(hash_state)));
@@ -746,8 +747,8 @@ int64_t DownloadFileImpl::TotalBytesReceived() const {
 void DownloadFileImpl::SendUpdate() {
   // TODO(qinmin): For each active stream, add the slice it has written so
   // far along with received_slices_.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  main_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&DownloadDestinationObserver::DestinationUpdate, observer_,
                      TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
                      received_slices_));
@@ -850,8 +851,8 @@ void DownloadFileImpl::HandleStreamError(
     // Our observer will clean us up.
     weak_factory_.InvalidateWeakPtrs();
     std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    main_task_runner_->PostTask(
+        FROM_HERE,
         base::BindOnce(&DownloadDestinationObserver::DestinationError,
                        observer_, reason, TotalBytesReceived(),
                        std::move(hash_state)));
@@ -878,8 +879,8 @@ DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
 
 void DownloadFileImpl::CancelRequest(int64_t offset) {
   if (!cancel_request_callback_.is_null()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(cancel_request_callback_, offset));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(cancel_request_callback_, offset));
   }
 }
 

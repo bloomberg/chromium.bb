@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/download/public/common/base_file.h"
@@ -359,6 +360,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   bool is_paused_;
 
   uint32_t download_id_;
+
+  // TaskRunner to post updates to the |observer_|.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
