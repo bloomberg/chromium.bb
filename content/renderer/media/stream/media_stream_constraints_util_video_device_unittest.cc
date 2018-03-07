@@ -73,7 +73,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     blink::mojom::VideoInputDeviceCapabilitiesPtr device =
         blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID1;
-    device->facing_mode = blink::mojom::FacingMode::NONE;
+    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -88,7 +88,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A low-resolution device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID2;
-    device->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
+    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(40, 30), 20.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -108,7 +108,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A high-resolution device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID3;
-    device->facing_mode = blink::mojom::FacingMode::USER;
+    device->facing_mode = media::MEDIA_VIDEO_FACING_USER;
     device->formats = {
         media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
                                   media::PIXEL_FORMAT_I420),
@@ -139,7 +139,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // A depth capture device.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID4;
-    device->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
+    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
     device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
                                                  media::PIXEL_FORMAT_Y16)};
     capabilities_.device_capabilities.push_back(std::move(device));
@@ -148,7 +148,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     // be supported if no constraints are placed on the frame rate.
     device = blink::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kDeviceID5;
-    device->facing_mode = blink::mojom::FacingMode::NONE;
+    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
     device->formats = {
         media::VideoCaptureFormat(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
@@ -385,7 +385,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   blink::mojom::VideoInputDeviceCapabilitiesPtr device =
       blink::mojom::VideoInputDeviceCapabilities::New();
   device->device_id = kDeviceID1;
-  device->facing_mode = blink::mojom::FacingMode::NONE;
+  device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
   device->formats = {
       media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                 media::PIXEL_FORMAT_I420),
@@ -445,7 +445,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   // Only the low-res device supports environment facing mode. Should select
   // default settings for everything else.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
-  EXPECT_EQ(blink::mojom::FacingMode::ENVIRONMENT,
+  EXPECT_EQ(media::MEDIA_VIDEO_FACING_ENVIRONMENT,
             low_res_device_->facing_mode);
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
@@ -459,7 +459,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   // Only the high-res device supports user facing mode. Should select default
   // settings for everything else.
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
-  EXPECT_EQ(blink::mojom::FacingMode::USER, high_res_device_->facing_mode);
+  EXPECT_EQ(media::MEDIA_VIDEO_FACING_USER, high_res_device_->facing_mode);
   EXPECT_EQ(*high_res_closest_format_, result.Format());
   EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
             result.PowerLineFrequency());

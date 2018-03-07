@@ -44,20 +44,6 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const int kFallbackVideoFrameRates[] = {30, 60};
 
-blink::mojom::FacingMode ToFacingMode(media::VideoFacingMode facing_mode) {
-  switch (facing_mode) {
-    case media::MEDIA_VIDEO_FACING_NONE:
-      return blink::mojom::FacingMode::NONE;
-    case media::MEDIA_VIDEO_FACING_USER:
-      return blink::mojom::FacingMode::USER;
-    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return blink::mojom::FacingMode::ENVIRONMENT;
-    default:
-      NOTREACHED();
-      return blink::mojom::FacingMode::NONE;
-  }
-}
-
 std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
 ToVectorAudioInputDeviceCapabilitiesPtr(
     const std::vector<blink::mojom::AudioInputDeviceCapabilities>&
@@ -248,16 +234,16 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     capabilities->device_id = std::move(hmac_device_id);
     capabilities->formats =
         GetVideoInputFormats(descriptor.device_id, true /* try_in_use_first */);
-    capabilities->facing_mode = ToFacingMode(descriptor.facing);
+    capabilities->facing_mode = descriptor.facing;
 #if defined(OS_ANDROID)
     // On Android, the facing mode is not available in the |facing| field,
     // but is available as part of the label.
     // TODO(guidou): Remove this code once the |facing| field is supported
     // on Android. See http://crbug.com/672856.
     if (descriptor.GetNameAndModel().find("front") != std::string::npos)
-      capabilities->facing_mode = blink::mojom::FacingMode::USER;
+      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_USER;
     else if (descriptor.GetNameAndModel().find("back") != std::string::npos)
-      capabilities->facing_mode = blink::mojom::FacingMode::ENVIRONMENT;
+      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
 #endif
     if (descriptor.device_id == default_device_id) {
       video_input_capabilities.insert(video_input_capabilities.begin(),
