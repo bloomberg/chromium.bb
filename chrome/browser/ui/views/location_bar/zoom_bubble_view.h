@@ -30,8 +30,7 @@ class ImageButton;
 class ZoomBubbleView : public LocationBarBubbleDelegateView,
                        public views::ButtonListener,
                        public ImmersiveModeController::Observer,
-                       public extensions::IconImage::Observer,
-                       public content::WebContentsObserver {
+                       public extensions::IconImage::Observer {
  public:
   // Shows the bubble and automatically closes it after a short time period if
   // |reason| is AUTOMATIC.
@@ -101,10 +100,6 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
   // extensions::IconImage::Observer:
   void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
-
-  // content::WebContentsObserver:
-  void OnVisibilityChanged(content::Visibility visibility) override;
-  void WebContentsDestroyed() override;
 
   // Sets information about the extension that initiated the zoom change.
   // Calling this method asserts that the extension |extension| did initiate

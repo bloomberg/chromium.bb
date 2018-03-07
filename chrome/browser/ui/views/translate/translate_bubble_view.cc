@@ -426,10 +426,6 @@ void TranslateBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   translate::ReportUiAction(translate::ADVANCED_LINK_CLICKED);
 }
 
-void TranslateBubbleView::WebContentsDestroyed() {
-  GetWidget()->CloseNow();
-}
-
 void TranslateBubbleView::OnWidgetClosing(views::Widget* widget) {
   if (GetBubbleFrameView()->close_button_clicked()) {
     model_->DeclineTranslation();
@@ -448,7 +444,6 @@ TranslateBubbleView::TranslateBubbleView(
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
-      WebContentsObserver(web_contents),
       before_translate_view_(NULL),
       translating_view_(NULL),
       after_translate_view_(NULL),
