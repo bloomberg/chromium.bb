@@ -39,6 +39,8 @@ source_set("tab_grid_ui") {
     "grid_cell.h",
     "grid_cell.mm",
     "grid_commands.h",
+    "grid_constants.h",
+    "grid_constants.mm",
     "grid_consumer.h",
     "grid_image_data_source.h",
     "grid_item.h",

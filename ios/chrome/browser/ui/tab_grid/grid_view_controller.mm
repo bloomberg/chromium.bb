@@ -8,6 +8,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
+#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
@@ -100,6 +101,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>([collectionView
       dequeueReusableCellWithReuseIdentifier:kCellIdentifier
                                 forIndexPath:indexPath]);
+  cell.accessibilityIdentifier =
+      [NSString stringWithFormat:@"%@%ld", kGridCellIdentifierPrefix,
+                                 base::checked_cast<long>(indexPath.item)];
   cell.delegate = self;
   cell.theme = self.theme;
   GridItem* item = self.items[indexPath.item];
