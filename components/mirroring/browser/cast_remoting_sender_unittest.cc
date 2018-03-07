@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/cast_remoting_sender.h"
+#include "components/mirroring/browser/cast_remoting_sender.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cast {
+namespace mirroring {
 
 namespace {
 
@@ -58,7 +58,8 @@ class FakeTransport : public media::cast::CastTransport {
   }
 
   void CancelSendingFrames(
-      uint32_t ssrc, const std::vector<media::cast::FrameId>& frame_ids) final {
+      uint32_t ssrc,
+      const std::vector<media::cast::FrameId>& frame_ids) final {
     for (media::cast::FrameId frame_id : frame_ids)
       canceled_frame_ids_.push_back(frame_id);
   }
@@ -72,7 +73,8 @@ class FakeTransport : public media::cast::CastTransport {
 
   // The rest of the interface is not used for these tests.
   void SendSenderReport(
-      uint32_t ssrc, base::TimeTicks current_time,
+      uint32_t ssrc,
+      base::TimeTicks current_time,
       media::cast::RtpTimeTicks current_time_as_rtp_timestamp) final {}
   void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
                            uint32_t rtp_receiver_ssrc) final {}
@@ -92,7 +94,7 @@ class FakeTransport : public media::cast::CastTransport {
   std::vector<media::cast::EncodedFrame> sent_frames_;
   std::vector<media::cast::FrameId> canceled_frame_ids_;
 
-  base::Closure kickstarted_callback_;
+  base::RepeatingClosure kickstarted_callback_;
   media::cast::FrameId kickstarted_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTransport);
@@ -116,15 +118,15 @@ class CastRemotingSenderTest : public ::testing::Test {
     transport_config_.aes_iv_mask = video_config.aes_iv_mask;
     remoting_sender_.reset(new CastRemotingSender(
         &transport_, transport_config_, base::TimeDelta::FromMilliseconds(1),
-        base::Bind(&CastRemotingSenderTest::ReceivedLoggingEvents,
-                   base::Unretained(this))));
+        base::BindRepeating(&CastRemotingSenderTest::ReceivedLoggingEvents,
+                            base::Unretained(this))));
     // Give CastRemotingSender a small RTT measurement to prevent kickstart
     // testing from taking too long.
     remoting_sender_->OnReceivedRtt(base::TimeDelta::FromMilliseconds(1));
 
     const MojoCreateDataPipeOptions data_pipe_options{
         sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, kDataPipeCapacity };
+        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE, 1, kDataPipeCapacity};
     mojo::ScopedDataPipeConsumerHandle consumer_end;
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::CreateDataPipe(&data_pipe_options, &producer_end_,
@@ -133,7 +135,8 @@ class CastRemotingSenderTest : public ::testing::Test {
     CastRemotingSender::FindAndBind(
         transport_config_.rtp_stream_id, std::move(consumer_end),
         MakeRequest(&sender_),
-        base::Bind(&CastRemotingSenderTest::OnError, base::Unretained(this)));
+        base::BindOnce(&CastRemotingSenderTest::OnError,
+                       base::Unretained(this)));
 
     RunPendingTasks();
   }
@@ -147,9 +150,7 @@ class CastRemotingSenderTest : public ::testing::Test {
   }
 
   // Allow pending tasks, such as Mojo method calls, to execute.
-  static void RunPendingTasks() {
-    base::RunLoop().RunUntilIdle();
-  }
+  static void RunPendingTasks() { base::RunLoop().RunUntilIdle(); }
 
  protected:
   media::cast::FrameId latest_acked_frame_id() const {
@@ -257,9 +258,7 @@ class CastRemotingSenderTest : public ::testing::Test {
   int num_times_logging_callback_called_ = 0;
 
  private:
-  void OnError() {
-    CHECK(expecting_error_callback_run_);
-  }
+  void OnError() { CHECK(expecting_error_callback_run_); }
 
   content::TestBrowserThreadBundle thread_bundle_;
   media::cast::CastTransportRtpConfig transport_config_;
@@ -629,4 +628,4 @@ TEST_F(CastRemotingSenderTest, StopsConsumingWhileTooManyFramesAreInFlight) {
   }
 }
 
-}  // namespace cast
+}  // namespace mirroring

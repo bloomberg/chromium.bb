@@ -1,0 +1,8 @@
+include_rules = [
+  "+media",
+  "+mojo/common",
+  "+mojo/public",
+
+  # For testing
+  "+content/public/test",
+]

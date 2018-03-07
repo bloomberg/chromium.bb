@@ -225,7 +225,7 @@ void CastTransportHostFilter::OnInitializeStream(
         config.rtp_payload_type == media::cast::RtpPayloadType::REMOTE_VIDEO) {
       // Create CastRemotingSender for this RTP stream.
       remoting_sender_map_.AddWithID(
-          std::make_unique<CastRemotingSender>(
+          std::make_unique<mirroring::CastRemotingSender>(
               transport, config, kSendEventsInterval,
               base::BindRepeating(
                   &CastTransportHostFilter::OnCastRemotingSenderEvents,

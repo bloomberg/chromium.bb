@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_
-#define CHROME_BROWSER_MEDIA_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_
+#ifndef COMPONENTS_MIRRORING_BROWSER_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_
+#define COMPONENTS_MIRRORING_BROWSER_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_
 
 #include <memory>
 #include <string>
@@ -15,11 +15,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/video/video_frame_receiver.h"
 
-namespace media {
+using media::VideoCaptureParams;
+using media::VideoCaptureDevice;
+
+namespace mirroring {
 
 // Implements a subset of mojom::VideoCaptureHost to proxy between a
 // content::LaunchedVideoCaptureDevice and a single client. On Start(), uses the
@@ -29,8 +31,9 @@ namespace media {
 // mojom::VideoCaptureObserver interface.
 // Instances of this class must be operated from the same thread that is reqired
 // by the DeviceLauncherCreateCallback.
-class SingleClientVideoCaptureHost final : public mojom::VideoCaptureHost,
-                                           public VideoFrameReceiver {
+class SingleClientVideoCaptureHost final
+    : public media::mojom::VideoCaptureHost,
+      public media::VideoFrameReceiver {
  public:
   using DeviceLauncherCreateCallback = base::RepeatingCallback<
       std::unique_ptr<content::VideoCaptureDeviceLauncher>()>;
@@ -40,19 +43,19 @@ class SingleClientVideoCaptureHost final : public mojom::VideoCaptureHost,
                                DeviceLauncherCreateCallback callback);
   ~SingleClientVideoCaptureHost() override;
 
-  // mojom::VideoCaptureHost implementations
+  // media::mojom::VideoCaptureHost implementations
   // |device_id| and |session_id| are ignored since there will be only one
   // device and one client. |params| is also ignored since it is already set
   // through the constructor.
   void Start(int32_t device_id,
              int32_t session_id,
-             const media::VideoCaptureParams& params,
-             mojom::VideoCaptureObserverPtr observer) override;
+             const VideoCaptureParams& params,
+             media::mojom::VideoCaptureObserverPtr observer) override;
   void Stop(int32_t device_id) override;
   void Pause(int32_t device_id) override;
   void Resume(int32_t device_id,
               int32_t session_id,
-              const media::VideoCaptureParams& params) override;
+              const VideoCaptureParams& params) override;
   void RequestRefreshFrame(int32_t device_id) override;
   void ReleaseBuffer(int32_t device_id,
                      int32_t buffer_id,
@@ -69,13 +72,13 @@ class SingleClientVideoCaptureHost final : public mojom::VideoCaptureHost,
   using Buffer = VideoCaptureDevice::Client::Buffer;
   void OnNewBufferHandle(
       int buffer_id,
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
+      std::unique_ptr<VideoCaptureDevice::Client::Buffer::HandleProvider>
           handle_provider) override;
   void OnFrameReadyInBuffer(
       int buffer_id,
       int frame_feedback_id,
       std::unique_ptr<
-          media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+          VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
           buffer_read_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
@@ -99,7 +102,7 @@ class SingleClientVideoCaptureHost final : public mojom::VideoCaptureHost,
   const VideoCaptureParams params_;
   const DeviceLauncherCreateCallback device_launcher_callback_;
 
-  mojom::VideoCaptureObserverPtr observer_;
+  media::mojom::VideoCaptureObserverPtr observer_;
   std::unique_ptr<content::LaunchedVideoCaptureDevice> launched_device_;
 
   // Unique ID assigned for the next buffer provided by OnNewBufferHandle().
@@ -130,6 +133,6 @@ class SingleClientVideoCaptureHost final : public mojom::VideoCaptureHost,
   DISALLOW_COPY_AND_ASSIGN(SingleClientVideoCaptureHost);
 };
 
-}  // namespace media
+}  // namespace mirroring
 
-#endif  // CHROME_BROWSER_MEDIA_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_
+#endif  // COMPONENTS_MIRRORING_BROWSER_SINGLE_CLIENT_VIDEO_CAPTURE_HOST_H_

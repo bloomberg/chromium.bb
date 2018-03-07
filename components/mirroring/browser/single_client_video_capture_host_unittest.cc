@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/single_client_video_capture_host.h"
+#include "components/mirroring/browser/single_client_video_capture_host.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -13,8 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::InvokeWithoutArgs;
+using media::VideoFrameReceiver;
 
-namespace media {
+namespace mirroring {
 
 namespace {
 
@@ -26,7 +27,7 @@ class MockVideoCaptureDevice final
   void GetPhotoState(
       VideoCaptureDevice::GetPhotoStateCallback callback) const override {}
   void SetPhotoOptions(
-      mojom::PhotoSettingsPtr settings,
+      media::mojom::PhotoSettingsPtr settings,
       VideoCaptureDevice::SetPhotoOptionsCallback callback) override {}
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback) {}
   void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
@@ -101,7 +102,7 @@ class StubBufferHandleProvider final
     return base::SharedMemoryHandle();
   }
 
-  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
+  std::unique_ptr<media::VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override {
     NOTREACHED();
     return nullptr;
@@ -121,9 +122,10 @@ class StubReadWritePermission final
   DISALLOW_COPY_AND_ASSIGN(StubReadWritePermission);
 };
 
-class MockVideoCaptureObserver final : public mojom::VideoCaptureObserver {
+class MockVideoCaptureObserver final
+    : public media::mojom::VideoCaptureObserver {
  public:
-  explicit MockVideoCaptureObserver(mojom::VideoCaptureHostPtr host)
+  explicit MockVideoCaptureObserver(media::mojom::VideoCaptureHostPtr host)
       : host_(std::move(host)), binding_(this) {}
   MOCK_METHOD1(OnBufferCreatedCall, void(int buffer_id));
   void OnBufferCreated(int32_t buffer_id,
@@ -136,7 +138,7 @@ class MockVideoCaptureObserver final : public mojom::VideoCaptureObserver {
 
   MOCK_METHOD1(OnBufferReadyCall, void(int buffer_id));
   void OnBufferReady(int32_t buffer_id,
-                     mojom::VideoFrameInfoPtr info) override {
+                     media::mojom::VideoFrameInfoPtr info) override {
     EXPECT_TRUE(buffers_.find(buffer_id) != buffers_.end());
     EXPECT_EQ(frame_infos_.find(buffer_id), frame_infos_.end());
     frame_infos_[buffer_id] = std::move(info);
@@ -154,10 +156,10 @@ class MockVideoCaptureObserver final : public mojom::VideoCaptureObserver {
     OnBufferDestroyedCall(buffer_id);
   }
 
-  MOCK_METHOD1(OnStateChanged, void(mojom::VideoCaptureState state));
+  MOCK_METHOD1(OnStateChanged, void(media::mojom::VideoCaptureState state));
 
   void Start() {
-    mojom::VideoCaptureObserverPtr observer;
+    media::mojom::VideoCaptureObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
     host_->Start(0, 0, VideoCaptureParams(), std::move(observer));
   }
@@ -173,19 +175,19 @@ class MockVideoCaptureObserver final : public mojom::VideoCaptureObserver {
   void Stop() { host_->Stop(0); }
 
  private:
-  mojom::VideoCaptureHostPtr host_;
-  mojo::Binding<mojom::VideoCaptureObserver> binding_;
+  media::mojom::VideoCaptureHostPtr host_;
+  mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
   base::flat_map<int, mojo::ScopedSharedBufferHandle> buffers_;
-  base::flat_map<int, mojom::VideoFrameInfoPtr> frame_infos_;
+  base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureObserver);
 };
 
-mojom::VideoFrameInfoPtr GetVideoFrameInfo() {
-  return mojom::VideoFrameInfo::New(base::TimeDelta(),
-                                    std::make_unique<base::DictionaryValue>(),
-                                    PIXEL_FORMAT_I420, VideoPixelStorage::CPU,
-                                    gfx::Size(320, 180), gfx::Rect(320, 180));
+media::mojom::VideoFrameInfoPtr GetVideoFrameInfo() {
+  return media::mojom::VideoFrameInfo::New(
+      base::TimeDelta(), std::make_unique<base::DictionaryValue>(),
+      media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU,
+      gfx::Size(320, 180), gfx::Rect(320, 180));
 }
 
 }  // namespace
@@ -199,7 +201,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
         base::BindRepeating(
             &SingleClientVideoCaptureHostTest::CreateDeviceLauncher,
             base::Unretained(this)));
-    mojom::VideoCaptureHostPtr host;
+    media::mojom::VideoCaptureHostPtr host;
     mojo::MakeStrongBinding(std::move(host_impl), mojo::MakeRequest(&host));
     consumer_ = std::make_unique<MockVideoCaptureObserver>(std::move(host));
     base::RunLoop run_loop;
@@ -215,7 +217,8 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
 
   ~SingleClientVideoCaptureHostTest() override {
     base::RunLoop run_loop;
-    EXPECT_CALL(*consumer_, OnStateChanged(mojom::VideoCaptureState::ENDED))
+    EXPECT_CALL(*consumer_,
+                OnStateChanged(media::mojom::VideoCaptureState::ENDED))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     consumer_->Stop();
     run_loop.Run();
@@ -320,4 +323,4 @@ TEST_F(SingleClientVideoCaptureHostTest, ReuseBufferId) {
   RetireBuffer(0, 1);
 }
 
-}  // namespace media
+}  // namespace mirroring
