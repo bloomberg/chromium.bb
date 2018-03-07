@@ -141,25 +141,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #endif
 
 #if defined(OS_WIN)
-#if defined(__clang__)
-  html_source->AddString(version_ui::kCompiler, "clang");
-#elif defined(_MSC_VER) && _MSC_VER == 1900
-#if BUILDFLAG(PGO_BUILD)
-  html_source->AddString(version_ui::kCompiler, "MSVC 2015 (PGO)");
-#else
-  html_source->AddString(version_ui::kCompiler, "MSVC 2015");
-#endif
-#elif defined(_MSC_VER) && _MSC_VER >= 1910 && _MSC_VER < 2000
-#if BUILDFLAG(PGO_BUILD)
-  html_source->AddString(version_ui::kCompiler, "MSVC 2017 (PGO)");
-#else
-  html_source->AddString(version_ui::kCompiler, "MSVC 2017");
-#endif
-#elif defined(_MSC_VER)
-#error "Unsupported version of MSVC."
-#else
-  html_source->AddString(version_ui::kCompiler, "Unknown");
-#endif
+  html_source->AddString("linker", CHROMIUM_LINKER_NAME);
 
   base::string16 update_cohort_name =
       install_static::InstallDetails::Get().update_cohort_name();
