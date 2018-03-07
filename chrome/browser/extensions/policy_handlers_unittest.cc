@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -16,6 +17,10 @@
 #include "components/prefs/pref_value_map.h"
 #include "extensions/browser/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 
 namespace extensions {
 
@@ -345,6 +350,11 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
 }
 
 TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
+// Mark as enterprise managed.
+#if defined(OS_WIN)
+  base::win::SetDomainStateForTesting(true);
+#endif
+
   std::string error;
   std::unique_ptr<base::Value> policy_value =
       base::JSONReader::ReadAndReturnError(
@@ -369,5 +379,35 @@ TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(prefs.GetValue(pref_names::kExtensionManagement, &value));
   EXPECT_EQ(*policy_value, *value);
 }
+
+// Only enterprise managed machines can auto install extensions from a location
+// other than the webstore https://crbug.com/809004.
+#if defined(OS_WIN)
+TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
+  // Mark as not enterprise managed.
+  base::win::SetDomainStateForTesting(false);
+
+  std::string error;
+  std::unique_ptr<base::Value> policy_value =
+      base::JSONReader::ReadAndReturnError(
+          kTestManagementPolicy2,
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+  ASSERT_TRUE(policy_value.get()) << error;
+
+  policy::Schema chrome_schema =
+      policy::Schema::Wrap(policy::GetChromeSchemaData());
+  policy::PolicyMap policy_map;
+  policy::PolicyErrorMap errors;
+  PrefValueMap prefs;
+  ExtensionSettingsPolicyHandler handler(chrome_schema);
+
+  policy_map.Set(policy::key::kExtensionSettings,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD, policy_value->CreateDeepCopy(),
+                 nullptr);
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+}
+#endif
 
 }  // namespace extensions

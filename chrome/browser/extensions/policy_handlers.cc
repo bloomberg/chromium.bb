@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "components/crx_file/id_util.h"
@@ -19,7 +20,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 
 namespace extensions {
 
@@ -263,8 +269,23 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
                            IDS_POLICY_NOT_SPECIFIED_ERROR);
           return false;
         }
-        // Verifies that update URL is valid.
-        if (!GURL(update_url).is_valid()) {
+        if (GURL(update_url).is_valid()) {
+// Unless enterprise managed only extensions from the Chrome Webstore
+// can be force installed.
+#if defined(OS_WIN)
+          // We can't use IsWebstoreUpdateUrl() here since the ExtensionClient
+          // isn't set this early during startup.
+          if (!base::win::IsEnterpriseManaged() &&
+              !base::LowerCaseEqualsASCII(
+                  update_url, extension_urls::kChromeWebstoreUpdateURL)) {
+            errors->AddError(policy_name(), it.key(),
+                             IDS_POLICY_OFF_CWS_URL_ERROR,
+                             extension_urls::kChromeWebstoreUpdateURL);
+            return false;
+          }
+#endif
+        } else {
+          // Warns about an invalid update URL.
           errors->AddError(
               policy_name(), IDS_POLICY_INVALID_UPDATE_URL_ERROR, it.key());
           return false;

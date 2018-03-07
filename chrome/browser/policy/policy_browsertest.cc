@@ -243,6 +243,10 @@
 #include "ui/base/window_open_disposition.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
 using testing::Mock;
@@ -1956,6 +1960,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
   // Verifies that extensions that are recommended-installed by policies are
   // installed, can be disabled but not uninstalled.
+
+// Mark as enterprise managed.
+#if defined(OS_WIN)
+  base::win::SetDomainStateForTesting(true);
+#endif
+
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
@@ -2227,6 +2237,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 // Verifies that a force-installed extension which does not meet a subsequently
 // set minimum version requirement is handled well.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
+// Mark as enterprise managed.
+#if defined(OS_WIN)
+  base::win::SetDomainStateForTesting(true);
+#endif
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
   extensions::ExtensionPrefs* extension_prefs =

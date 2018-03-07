@@ -167,6 +167,9 @@
   <message name="IDS_POLICY_INVALID_UPDATE_URL_ERROR" desc="The text displayed in the status column when the update URL for given extension is invalid.">
     Invalid update URL for extension with ID "<ph name="EXTENSION_ID">$1<ex>abcdefghijklmnopabcdefghijklmnop</ex></ph>".
   </message>
+  <message name="IDS_POLICY_OFF_CWS_URL_ERROR" desc="The text displayed in the status column when the update URL points to a location other than the Chrome Webstore and the machine is not enterprise managed.">
+  This computer is not detected as enterprise managed so policy can only automatically install extensions hosted on the Chrome Webstore. The Chrome Webstore update URL is "<ph name="CWS_UPDATE_URL">$1<ex>https://clients2.google.com/service/update2/crx</ex></ph>".
+  </message>
   <message name="IDS_POLICY_PROXY_MODE_DISABLED_ERROR" desc="The text displayed in the status column when use of a proxy is disabled but a proxy configuration is given.">
     Use of a proxy is disabled but an explicit proxy configuration is specified.
   </message>
