@@ -211,20 +211,10 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-// On Linux, return the high water mark of vsize.
-size_t ProcessMetrics::GetPeakPagefileUsage() const {
-  return ReadProcStatusAndGetFieldAsSizeT(process_, "VmPeak") * 1024;
-}
-
 // On Linux, return RSS.
 size_t ProcessMetrics::GetWorkingSetSize() const {
   return internal::ReadProcStatsAndGetFieldAsSizeT(process_, internal::VM_RSS) *
       getpagesize();
-}
-
-// On Linux, return the high water mark of RSS.
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  return ReadProcStatusAndGetFieldAsSizeT(process_, "VmHWM") * 1024;
 }
 
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,

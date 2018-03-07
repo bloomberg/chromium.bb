@@ -39,10 +39,6 @@ class ChromeTestProcessMetrics {
 
   size_t GetWorkingSetSize();
 
-  size_t GetPeakPagefileUsage();
-
-  size_t GetPeakWorkingSetSize();
-
   bool GetIOCounters(base::IoCounters* io_counters);
 
   base::ProcessHandle process_handle_;
