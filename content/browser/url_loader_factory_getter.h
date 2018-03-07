@@ -41,8 +41,8 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT scoped_refptr<SharedURLLoaderFactory> GetNetworkFactory();
 
   // Called on the IO thread. Will clone the internal factory to the network
-  // service which doesn't support auto-reconnect after crash.
-  // TODO(chongz): Remove this method and use |GetNetworkFactory()| instead.
+  // service which doesn't support auto-reconnect after crash. Useful for
+  // one-off requests (e.g. A single navigation) to avoid additional mojo hop.
   CONTENT_EXPORT void CloneNetworkFactory(
       network::mojom::URLLoaderFactoryRequest network_factory_request);
 
