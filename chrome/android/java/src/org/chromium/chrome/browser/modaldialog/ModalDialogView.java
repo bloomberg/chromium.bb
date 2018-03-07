@@ -192,4 +192,11 @@ public class ModalDialogView implements View.OnClickListener {
     public Controller getController() {
         return mController;
     }
+
+    /**
+     * @return The content description of the dialog view.
+     */
+    public String getContentDescription() {
+        return mParams.title;
+    }
 }

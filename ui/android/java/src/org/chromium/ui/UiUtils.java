@@ -15,7 +15,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -27,6 +26,7 @@ import android.widget.AbsListView;
 import android.widget.ListAdapter;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 
 import java.io.File;
 import java.io.IOException;
