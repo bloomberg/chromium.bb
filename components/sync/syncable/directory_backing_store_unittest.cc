@@ -102,12 +102,11 @@ class MigrationTest : public testing::TestWithParam<int> {
 
   void SetUpCurrentDatabaseAndCheckVersion(sql::Connection* connection) {
     SetUpVersion92Database(connection);  // Prepopulates data.
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), connection));
-    ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
+    TestDirectoryBackingStore dbs(GetUsername(), connection);
+    ASSERT_EQ(kCurrentDBVersion, dbs.GetVersion());
 
-    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+    ASSERT_FALSE(dbs.needs_column_refresh());
   }
 
  private:
@@ -3279,13 +3278,12 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   ASSERT_TRUE(connection.DoesColumnExist("metas", "unsanitized_name"));
   ASSERT_TRUE(connection.DoesColumnExist("metas", "server_name"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion67To68());
-  ASSERT_EQ(68, dbs->GetVersion());
-  ASSERT_TRUE(dbs->needs_column_refresh());
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion67To68());
+  EXPECT_EQ(68, dbs.GetVersion());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
@@ -3294,35 +3292,34 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
   SetUpVersion68Database(&connection);
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion68To69());
-    ASSERT_EQ(69, dbs->GetVersion());
-    ASSERT_TRUE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion68To69());
+    EXPECT_EQ(69, dbs.GetVersion());
+    EXPECT_TRUE(dbs.needs_column_refresh());
   }
 
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "specifics"));
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "server_specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "server_specifics"));
   sql::Statement s(connection.GetUniqueStatement("SELECT non_unique_name,"
       "is_del, is_dir, id, specifics, server_specifics FROM metas "
       "WHERE metahandle = 2"));
   ASSERT_TRUE(s.Step());
-  ASSERT_EQ("Deleted Item", s.ColumnString(0));
-  ASSERT_TRUE(s.ColumnBool(1));
-  ASSERT_FALSE(s.ColumnBool(2));
-  ASSERT_EQ("s_ID_2", s.ColumnString(3));
+  EXPECT_EQ("Deleted Item", s.ColumnString(0));
+  EXPECT_TRUE(s.ColumnBool(1));
+  EXPECT_FALSE(s.ColumnBool(2));
+  EXPECT_EQ("s_ID_2", s.ColumnString(3));
   sync_pb::EntitySpecifics specifics;
   specifics.ParseFromArray(s.ColumnBlob(4), s.ColumnByteLength(4));
   ASSERT_TRUE(specifics.has_bookmark());
-  ASSERT_EQ("http://www.google.com/", specifics.bookmark().url());
-  ASSERT_EQ("AASGASGA", specifics.bookmark().favicon());
+  EXPECT_EQ("http://www.google.com/", specifics.bookmark().url());
+  EXPECT_EQ("AASGASGA", specifics.bookmark().favicon());
   specifics.ParseFromArray(s.ColumnBlob(5), s.ColumnByteLength(5));
   ASSERT_TRUE(specifics.has_bookmark());
-  ASSERT_EQ("http://www.google.com/2", specifics.bookmark().url());
-  ASSERT_EQ("ASADGADGADG", specifics.bookmark().favicon());
-  ASSERT_FALSE(s.Step());
+  EXPECT_EQ("http://www.google.com/2", specifics.bookmark().url());
+  EXPECT_EQ("ASADGADGADG", specifics.bookmark().favicon());
+  EXPECT_FALSE(s.Step());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
@@ -3335,13 +3332,12 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
   ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_client_tag"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion69To70());
-    ASSERT_EQ(70, dbs->GetVersion());
-    ASSERT_TRUE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion69To70());
+    EXPECT_EQ(70, dbs.GetVersion());
+    EXPECT_TRUE(dbs.needs_column_refresh());
   }
 
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_server_tag"));
@@ -3362,21 +3358,20 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
   ASSERT_FALSE(connection.DoesTableExist("models"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion70To71());
-    ASSERT_EQ(71, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion70To71());
+    EXPECT_EQ(71, dbs.GetVersion());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "last_sync_timestamp"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "initial_sync_ended"));
-  ASSERT_TRUE(connection.DoesTableExist("models"));
-  ASSERT_TRUE(connection.DoesColumnExist("models", "initial_sync_ended"));
-  ASSERT_TRUE(connection.DoesColumnExist("models", "last_download_timestamp"));
-  ASSERT_TRUE(connection.DoesColumnExist("models", "model_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "last_sync_timestamp"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "initial_sync_ended"));
+  EXPECT_TRUE(connection.DoesTableExist("models"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "initial_sync_ended"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "last_download_timestamp"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "model_id"));
 
   sql::Statement s(connection.GetUniqueStatement("SELECT model_id, "
       "initial_sync_ended, last_download_timestamp FROM models"));
@@ -3386,7 +3381,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
       << "Model ID is expected to be the empty BookmarkSpecifics proto.";
   EXPECT_TRUE(s.ColumnBool(1));
   EXPECT_EQ(694, s.ColumnInt64(2));
-  ASSERT_FALSE(s.Step());
+  EXPECT_FALSE(s.Step());
 }
 
 
@@ -3398,16 +3393,15 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion71To72) {
   ASSERT_TRUE(connection.DoesTableExist("extended_attributes"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion71To72());
-    ASSERT_EQ(72, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion71To72());
+    EXPECT_EQ(72, dbs.GetVersion());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_FALSE(connection.DoesTableExist("extended_attributes"));
+  EXPECT_FALSE(connection.DoesTableExist("extended_attributes"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
@@ -3418,16 +3412,15 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
   ASSERT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion72To73());
-    ASSERT_EQ(73, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion72To73());
+    EXPECT_EQ(73, dbs.GetVersion());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
+  EXPECT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
@@ -3451,29 +3444,25 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
           "autofill_profiles_added_during_migration"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion73To74());
-    ASSERT_EQ(74, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion73To74());
+    EXPECT_EQ(74, dbs.GetVersion());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_TRUE(
+  EXPECT_TRUE(
       connection.DoesColumnExist("share_info", "autofill_migration_state"));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("share_info",
-          "bookmarks_added_during_autofill_migration"));
-  ASSERT_TRUE(
+  EXPECT_TRUE(connection.DoesColumnExist(
+      "share_info", "bookmarks_added_during_autofill_migration"));
+  EXPECT_TRUE(
       connection.DoesColumnExist("share_info", "autofill_migration_time"));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("share_info",
-          "autofill_entries_added_during_migration"));
+  EXPECT_TRUE(connection.DoesColumnExist(
+      "share_info", "autofill_entries_added_during_migration"));
 
-  ASSERT_TRUE(
-      connection.DoesColumnExist("share_info",
-          "autofill_profiles_added_during_migration"));
+  EXPECT_TRUE(connection.DoesColumnExist(
+      "share_info", "autofill_profiles_added_during_migration"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
@@ -3485,17 +3474,16 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
   ASSERT_TRUE(connection.DoesColumnExist("models", "last_download_timestamp"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion74To75());
-    ASSERT_EQ(75, dbs->GetVersion());
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion74To75());
+    EXPECT_EQ(75, dbs.GetVersion());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
-  ASSERT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
+  EXPECT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
@@ -3514,12 +3502,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
   ASSERT_TRUE(connection.DoesColumnExist("share_info",
       "autofill_profiles_added_during_migration"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion75To76());
-  ASSERT_EQ(76, dbs->GetVersion());
-  ASSERT_TRUE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion75To76());
+  EXPECT_EQ(76, dbs.GetVersion());
+  EXPECT_TRUE(dbs.needs_column_refresh());
   // Cannot actual refresh columns due to version 76 not containing all
   // necessary columns.
 }
@@ -3529,23 +3516,22 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion76Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
 
-  EXPECT_EQ(GetExpectedLegacyMetaProtoTimes(INCLUDE_DELETED_ITEMS),
+  ASSERT_EQ(GetExpectedLegacyMetaProtoTimes(INCLUDE_DELETED_ITEMS),
             GetMetaProtoTimes(&connection));
   // Since the proto times are expected to be in a legacy format, they may not
   // be compatible with ProtoTimeToTime, so we don't call ExpectTimes().
 
-  ASSERT_TRUE(dbs->MigrateVersion76To77());
-  ASSERT_EQ(77, dbs->GetVersion());
+  EXPECT_TRUE(dbs.MigrateVersion76To77());
+  EXPECT_EQ(77, dbs.GetVersion());
 
   EXPECT_EQ(GetExpectedMetaProtoTimes(INCLUDE_DELETED_ITEMS),
             GetMetaProtoTimes(&connection));
   // Cannot actually load entries due to version 77 not having all required
   // columns.
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
@@ -3556,16 +3542,15 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
   ASSERT_FALSE(connection.DoesColumnExist("metas", "BASE_SERVER_SPECIFICS"));
 
   {
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_TRUE(dbs->MigrateVersion77To78());
-    ASSERT_EQ(78, dbs->GetVersion());
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
+    ASSERT_FALSE(dbs.needs_column_refresh());
+    EXPECT_TRUE(dbs.MigrateVersion77To78());
+    EXPECT_EQ(78, dbs.GetVersion());
 
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
 
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
@@ -3573,12 +3558,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion78Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion78To79());
-  ASSERT_EQ(79, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion78To79());
+  EXPECT_EQ(79, dbs.GetVersion());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
@@ -3586,12 +3570,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion79Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion79To80());
-  ASSERT_EQ(80, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion79To80());
+  EXPECT_EQ(80, dbs.GetVersion());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 
   // Ensure the bag_of_chips has been set.
   Directory::MetahandlesMap handles_map;
@@ -3599,8 +3582,8 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo load_info;
 
-  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                        &load_info));
+  ASSERT_TRUE(dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                       &load_info));
   // Check that the initial value is the serialization of an empty ChipBag.
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
@@ -3619,22 +3602,21 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
   ASSERT_TRUE(s.Step());
   ASSERT_EQ(sql::COLUMN_TYPE_INTEGER, s.ColumnType(1));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion80To81());
-  ASSERT_EQ(81, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion80To81());
+  EXPECT_EQ(81, dbs.GetVersion());
 
   // Test that ordinal values are preserved correctly.
   sql::Statement new_s(connection.GetUniqueStatement(
       "SELECT metahandle, server_ordinal_in_parent "
       "FROM metas WHERE unique_server_tag = 'google_chrome'"));
   ASSERT_TRUE(new_s.Step());
-  ASSERT_EQ(sql::COLUMN_TYPE_BLOB, new_s.ColumnType(1));
+  EXPECT_EQ(sql::COLUMN_TYPE_BLOB, new_s.ColumnType(1));
 
   std::string expected_ordinal = Int64ToNodeOrdinal(1048576).ToInternalValue();
   std::string actual_ordinal;
   new_s.ColumnBlobAsString(1, &actual_ordinal);
-  ASSERT_EQ(expected_ordinal, actual_ordinal);
+  EXPECT_EQ(expected_ordinal, actual_ordinal);
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
@@ -3643,14 +3625,13 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
   SetUpVersion81Database(&connection);
   ASSERT_FALSE(connection.DoesColumnExist("models", "transaction_version"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion81To82());
-  ASSERT_EQ(82, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion81To82());
+  EXPECT_EQ(82, dbs.GetVersion());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 
-  ASSERT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion82To83) {
@@ -3659,12 +3640,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion82To83) {
   SetUpVersion82Database(&connection);
   ASSERT_FALSE(connection.DoesColumnExist("metas", "transaction_version"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion82To83());
-  ASSERT_EQ(83, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion82To83());
+  EXPECT_EQ(83, dbs.GetVersion());
 
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "transaction_version"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "transaction_version"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion83To84) {
@@ -3673,12 +3653,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion83To84) {
   SetUpVersion83Database(&connection);
   ASSERT_FALSE(connection.DoesTableExist("deleted_metas"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion83To84());
-  ASSERT_EQ(84, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion83To84());
+  EXPECT_EQ(84, dbs.GetVersion());
 
-  ASSERT_TRUE(connection.DoesTableExist("deleted_metas"));
+  EXPECT_TRUE(connection.DoesTableExist("deleted_metas"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion84To85) {
@@ -3687,46 +3666,43 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion84To85) {
   SetUpVersion84Database(&connection);
   ASSERT_TRUE(connection.DoesColumnExist("models", "initial_sync_ended"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion84To85());
-  ASSERT_EQ(85, dbs->GetVersion());
-  ASSERT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion84To85());
+  EXPECT_EQ(85, dbs.GetVersion());
+  EXPECT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion85Database(&connection);
-  EXPECT_TRUE(connection.DoesColumnExist("metas", "next_id"));
-  EXPECT_TRUE(connection.DoesColumnExist("metas", "prev_id"));
-  EXPECT_TRUE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "unique_position"));
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_unique_position"));
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "next_id"));
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "prev_id"));
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_position"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "server_unique_position"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion85To86());
-  EXPECT_EQ(86, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion85To86());
+  EXPECT_EQ(86, dbs.GetVersion());
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "server_unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
-  ASSERT_TRUE(dbs->needs_column_refresh());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
   sql::Connection connection;
-  EXPECT_TRUE(connection.OpenInMemory());
+  ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion86Database(&connection);
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  EXPECT_TRUE(dbs->MigrateVersion86To87());
-  EXPECT_EQ(87, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion86To87());
+  EXPECT_EQ(87, dbs.GetVersion());
   EXPECT_TRUE(connection.DoesColumnExist("metas", "attachment_metadata"));
-  EXPECT_TRUE(dbs->needs_column_refresh());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion87To88) {
@@ -3734,11 +3710,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion87To88) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion87Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion87To88());
-  ASSERT_EQ(88, dbs->GetVersion());
-  ASSERT_TRUE(connection.DoesColumnExist("models", "context"));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion87To88());
+  EXPECT_EQ(88, dbs.GetVersion());
+  EXPECT_TRUE(connection.DoesColumnExist("models", "context"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion88To89) {
@@ -3748,13 +3723,12 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion88To89) {
   ASSERT_FALSE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion88To89());
-  ASSERT_EQ(89, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion88To89());
+  EXPECT_EQ(89, dbs.GetVersion());
   EXPECT_TRUE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
-  EXPECT_TRUE(dbs->needs_column_refresh());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion89To90) {
@@ -3766,19 +3740,18 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion89To90) {
   ASSERT_TRUE(connection.DoesColumnExist("share_info", "next_id"));
   ASSERT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion89To90());
-  ASSERT_EQ(90, dbs->GetVersion());
-  EXPECT_TRUE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion89To90());
+  EXPECT_EQ(90, dbs.GetVersion());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 
-  ASSERT_TRUE(dbs->RefreshColumns());
-  EXPECT_FALSE(dbs->needs_column_refresh());
+  EXPECT_TRUE(dbs.RefreshColumns());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "db_create_version"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "db_create_time"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "next_id"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "db_create_version"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "db_create_time"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "next_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
 }
 
 // 91 is a cleanup with no schema change, similar to 79, so we just check that
@@ -3788,12 +3761,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion90To91) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion90Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_FALSE(dbs->needs_column_refresh());
-  ASSERT_TRUE(dbs->MigrateVersion90To91());
-  ASSERT_EQ(91, dbs->GetVersion());
-  ASSERT_FALSE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_FALSE(dbs.needs_column_refresh());
+  EXPECT_TRUE(dbs.MigrateVersion90To91());
+  EXPECT_EQ(91, dbs.GetVersion());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion91To92) {
@@ -3804,17 +3776,16 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion91To92) {
   ASSERT_TRUE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_TRUE(dbs->MigrateVersion91To92());
-  ASSERT_EQ(92, dbs->GetVersion());
-  EXPECT_TRUE(dbs->needs_column_refresh());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  EXPECT_TRUE(dbs.MigrateVersion91To92());
+  EXPECT_EQ(92, dbs.GetVersion());
+  EXPECT_TRUE(dbs.needs_column_refresh());
 
-  ASSERT_TRUE(dbs->RefreshColumns());
-  EXPECT_FALSE(dbs->needs_column_refresh());
+  EXPECT_TRUE(dbs.RefreshColumns());
+  EXPECT_FALSE(dbs.needs_column_refresh());
 
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
-  ASSERT_FALSE(
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
+  EXPECT_FALSE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
 }
 
@@ -3841,12 +3812,11 @@ TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
     SetUpVersion91Database(&connection);  // Update this.
 
-    std::unique_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_TRUE(dbs->MigrateVersion91To92());  // Update this.
-    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    EXPECT_EQ(92, dbs->GetVersion());  // Update this.
-    ASSERT_FALSE(dbs->needs_column_refresh());
+    TestDirectoryBackingStore dbs(GetUsername(), &connection);
+    EXPECT_TRUE(dbs.MigrateVersion91To92());  // Update this.
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+    EXPECT_EQ(92, dbs.GetVersion());  // Update this.
+    EXPECT_FALSE(dbs.needs_column_refresh());
   }
   // Set breakpoint here.
 }
@@ -3856,9 +3826,8 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpVersion86Database(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
-  ASSERT_EQ(86, dbs->GetVersion());
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
+  ASSERT_EQ(86, dbs.GetVersion());
 
   // Insert row with bad position.
   sql::Statement s(connection.GetUniqueStatement(
@@ -3873,9 +3842,9 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
-  ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                      &kernel_load_info));
+  EXPECT_EQ(FAILED_DATABASE_CORRUPT,
+            dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                     &kernel_load_info));
 }
 
 TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
@@ -3883,16 +3852,15 @@ TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
   ASSERT_TRUE(connection.OpenInMemory());
   SetUpCorruptedRootDatabase(&connection);
 
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
-  ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                      &kernel_load_info));
+  EXPECT_EQ(FAILED_DATABASE_CORRUPT,
+            dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                     &kernel_load_info));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -3995,119 +3963,108 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   MetahandleSet metahandles_to_purge;
 
   {
-    std::unique_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
-    ASSERT_EQ(OPENED, dbs->Load(&handles_map, &delete_journals,
-                                &metahandles_to_purge, &dir_info));
+    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    ASSERT_EQ(OPENED, dbs.Load(&handles_map, &delete_journals,
+                               &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
-      dbs->DeleteEntries(DirectoryBackingStore::METAS_TABLE,
-                         metahandles_to_purge);
-    ASSERT_FALSE(dbs->needs_column_refresh());
-    ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
+      dbs.DeleteEntries(DirectoryBackingStore::METAS_TABLE,
+                        metahandles_to_purge);
+    EXPECT_FALSE(dbs.needs_column_refresh());
+    EXPECT_EQ(kCurrentDBVersion, dbs.GetVersion());
     int pageSize = 0;
-    ASSERT_TRUE(dbs->GetDatabasePageSize(&pageSize));
-    ASSERT_EQ(kCurrentPageSizeKB, pageSize);
+    EXPECT_TRUE(dbs.GetDatabasePageSize(&pageSize));
+    EXPECT_EQ(kCurrentPageSizeKB, pageSize);
   }
 
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   // Columns deleted in Version 67.
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "name"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "unsanitized_name"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "server_name"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "name"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "unsanitized_name"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_name"));
 
   // Columns added in Version 68.
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "specifics"));
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "server_specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "server_specifics"));
 
   // Columns deleted in Version 68.
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "is_bookmark_object"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas",
-                                          "server_is_bookmark_object"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "bookmark_favicon"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "bookmark_url"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "server_bookmark_url"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "is_bookmark_object"));
+  EXPECT_FALSE(
+      connection.DoesColumnExist("metas", "server_is_bookmark_object"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "bookmark_favicon"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "bookmark_url"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_bookmark_url"));
 
   // Renamed a column in Version 70
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "singleton_tag"));
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "unique_server_tag"));
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "unique_client_tag"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "singleton_tag"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_server_tag"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_client_tag"));
 
   // Removed extended attributes in Version 72.
-  ASSERT_FALSE(connection.DoesTableExist("extended_attributes"));
+  EXPECT_FALSE(connection.DoesTableExist("extended_attributes"));
 
   // Column replaced in version 75.
-  ASSERT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
-  ASSERT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
+  EXPECT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
 
   // Columns removed in version 76.
-  ASSERT_FALSE(
+  EXPECT_FALSE(
       connection.DoesColumnExist("share_info", "autofill_migration_state"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info",
-      "bookmarks_added_during_autofill_migration"));
-  ASSERT_FALSE(
-    connection.DoesColumnExist("share_info", "autofill_migration_time"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info",
-        "autofill_entries_added_during_migration"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info",
-        "autofill_profiles_added_during_migration"));
+  EXPECT_FALSE(connection.DoesColumnExist(
+      "share_info", "bookmarks_added_during_autofill_migration"));
+  EXPECT_FALSE(
+      connection.DoesColumnExist("share_info", "autofill_migration_time"));
+  EXPECT_FALSE(connection.DoesColumnExist(
+      "share_info", "autofill_entries_added_during_migration"));
+  EXPECT_FALSE(connection.DoesColumnExist(
+      "share_info", "autofill_profiles_added_during_migration"));
 
   // Column added in version 78.
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
 
   // Column added in version 82.
-  ASSERT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
 
   // Column added in version 83.
-  ASSERT_TRUE(connection.DoesColumnExist("metas", "transaction_version"));
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "transaction_version"));
 
   // Table added in version 84.
-  ASSERT_TRUE(connection.DoesTableExist("deleted_metas"));
+  EXPECT_TRUE(connection.DoesTableExist("deleted_metas"));
 
   // Column removed in version 85.
-  ASSERT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
+  EXPECT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
 
   // Columns removed in version 86.
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "next_id"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "next_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
 
   // Column added in version 88.
-  ASSERT_TRUE(connection.DoesColumnExist("models", "context"));
+  EXPECT_TRUE(connection.DoesColumnExist("models", "context"));
 
   // Columns removed in version 90.
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "db_create_version"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "db_create_time"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "next_id"));
-  ASSERT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "db_create_version"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "db_create_time"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "next_id"));
+  EXPECT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
 
   // Columns removed in version 92.
-  ASSERT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
-  ASSERT_FALSE(
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
+  EXPECT_FALSE(
       connection.DoesColumnExist("metas", "server_attachment_metadata"));
 
   // Check download_progress state (v75 migration)
-  ASSERT_EQ(694,
-      dir_info.kernel_info.download_progress[BOOKMARKS]
-      .timestamp_token_for_migration());
-  ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[BOOKMARKS]
-      .has_token());
-  ASSERT_EQ(32904,
-      dir_info.kernel_info.download_progress[BOOKMARKS]
-      .data_type_id());
-  ASSERT_FALSE(
-      dir_info.kernel_info.download_progress[THEMES]
-      .has_timestamp_token_for_migration());
-  ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[THEMES]
-      .has_token());
-  ASSERT_TRUE(
-      dir_info.kernel_info.download_progress[THEMES]
-      .token().empty());
-  ASSERT_EQ(41210,
-      dir_info.kernel_info.download_progress[THEMES]
-      .data_type_id());
+  EXPECT_EQ(694, dir_info.kernel_info.download_progress[BOOKMARKS]
+                     .timestamp_token_for_migration());
+  EXPECT_FALSE(dir_info.kernel_info.download_progress[BOOKMARKS].has_token());
+  EXPECT_EQ(32904,
+            dir_info.kernel_info.download_progress[BOOKMARKS].data_type_id());
+  EXPECT_FALSE(dir_info.kernel_info.download_progress[THEMES]
+                   .has_timestamp_token_for_migration());
+  EXPECT_TRUE(dir_info.kernel_info.download_progress[THEMES].has_token());
+  EXPECT_TRUE(dir_info.kernel_info.download_progress[THEMES].token().empty());
+  EXPECT_EQ(41210,
+            dir_info.kernel_info.download_progress[THEMES].data_type_id());
 
   // Check metas
   EXPECT_EQ(GetExpectedMetaProtoTimes(DONT_INCLUDE_DELETED_ITEMS),
@@ -4116,7 +4073,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   Directory::MetahandlesMap::iterator it = handles_map.find(1);
   ASSERT_TRUE(it != handles_map.end());
-  ASSERT_EQ(1, it->second->ref(META_HANDLE));
+  EXPECT_EQ(1, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(ID).IsRoot());
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
@@ -4124,14 +4081,15 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Items 2, 4, and 5 were deleted.
   it = handles_map.find(2);
-  ASSERT_TRUE(it == handles_map.end());
+  EXPECT_TRUE(it == handles_map.end());
   it = handles_map.find(4);
-  ASSERT_TRUE(it == handles_map.end());
+  EXPECT_TRUE(it == handles_map.end());
   it = handles_map.find(5);
-  ASSERT_TRUE(it == handles_map.end());
+  EXPECT_TRUE(it == handles_map.end());
 
   it = handles_map.find(6);
-  ASSERT_EQ(6, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(6, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(IS_DIR));
   EXPECT_TRUE(it->second->ref(SERVER_IS_DIR));
   EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_url());
@@ -4144,7 +4102,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(7);
-  ASSERT_EQ(7, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(7, it->second->ref(META_HANDLE));
   EXPECT_EQ("google_chrome", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_FALSE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
@@ -4154,18 +4113,20 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(8);
-  ASSERT_EQ(8, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(8, it->second->ref(META_HANDLE));
   EXPECT_EQ("google_chrome_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
-  ASSERT_EQ(it->second->ref(ID).value(), "s_ID_8");
+  EXPECT_EQ(it->second->ref(ID).value(), "s_ID_8");
   // Make sure we didn't mistake the bookmark root node for a real bookmark.
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(9);
-  ASSERT_EQ(9, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(9, it->second->ref(META_HANDLE));
   EXPECT_EQ("bookmark_bar", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
@@ -4175,7 +4136,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(10);
-  ASSERT_EQ(10, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(10, it->second->ref(META_HANDLE));
   EXPECT_FALSE(it->second->ref(IS_DEL));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
   EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
@@ -4186,14 +4148,15 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_EQ("other_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
   EXPECT_EQ("Other Bookmarks", it->second->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Other Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
-  ASSERT_EQ(it->second->ref(ID).value(), "s_ID_10");
+  EXPECT_EQ(it->second->ref(ID).value(), "s_ID_10");
   // Make sure we didn't assign positions to server-created folders, either.
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
 
   it = handles_map.find(11);
-  ASSERT_EQ(11, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(11, it->second->ref(META_HANDLE));
   EXPECT_FALSE(it->second->ref(IS_DEL));
   EXPECT_FALSE(it->second->ref(IS_DIR));
   EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
@@ -4214,7 +4177,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(12);
-  ASSERT_EQ(12, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(12, it->second->ref(META_HANDLE));
   EXPECT_FALSE(it->second->ref(IS_DEL));
   EXPECT_TRUE(it->second->ref(IS_DIR));
   EXPECT_EQ("Extra Bookmarks", it->second->ref(NON_UNIQUE_NAME));
@@ -4231,20 +4195,22 @@ TEST_P(MigrationTest, ToCurrentVersion) {
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(13);
-  ASSERT_EQ(13, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(13, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
   it = handles_map.find(14);
-  ASSERT_EQ(14, it->second->ref(META_HANDLE));
+  ASSERT_TRUE(it != handles_map.end());
+  EXPECT_EQ(14, it->second->ref(META_HANDLE));
   EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
 
-  ASSERT_EQ(static_cast<size_t>(10), handles_map.size());
+  EXPECT_EQ(static_cast<size_t>(10), handles_map.size());
 
   // Make sure that the syncable::Directory and the migration code agree on
   // which items should or should not have unique position values.  This test
@@ -4322,9 +4288,8 @@ bool OnDiskDirectoryBackingStoreForTest::DidFailFirstOpenAttempt() {
 // due to read-only file system), is not tested here.
 TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   {
-    std::unique_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
-    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
 
   // Corrupt the root node.
@@ -4336,20 +4301,17 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   }
 
   {
-    std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
-                                               GetDatabasePath()));
+    OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
 
-    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    EXPECT_TRUE(dbs->DidFailFirstOpenAttempt());
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+    EXPECT_TRUE(dbs.DidFailFirstOpenAttempt());
   }
 }
 
 TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
   {
-    std::unique_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
-    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
 
   // Make the node look outdated with an invalid version.
@@ -4362,16 +4324,14 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
   }
 
   {
-    std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
-                                               GetDatabasePath()));
-    dbs->SetCatastrophicErrorHandler(base::DoNothing());
+    OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
+    dbs.SetCatastrophicErrorHandler(base::DoNothing());
 
-    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    EXPECT_TRUE(dbs->DidFailFirstOpenAttempt());
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+    EXPECT_TRUE(dbs.DidFailFirstOpenAttempt());
 
     int page_size = 0;
-    ASSERT_TRUE(dbs->GetDatabasePageSize(&page_size));
+    EXPECT_TRUE(dbs.GetDatabasePageSize(&page_size));
     EXPECT_EQ(kCurrentPageSizeKB, page_size);
   }
 }
@@ -4381,25 +4341,24 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   ASSERT_TRUE(connection.OpenInMemory());
 
   SetUpCurrentDatabaseAndCheckVersion(&connection);
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
 
-  dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
-            &kernel_load_info);
+  dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
+           &kernel_load_info);
   size_t initial_size = handles_map.size();
   ASSERT_LT(0U, initial_size) << "Test requires handles_map to delete.";
   int64_t first_to_die = handles_map.begin()->second->ref(META_HANDLE);
   MetahandleSet to_delete;
   to_delete.insert(first_to_die);
-  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+  EXPECT_TRUE(dbs.DeleteEntries(to_delete));
 
   handles_map.clear();
   metahandles_to_purge.clear();
-  dbs->LoadEntries(&handles_map, &metahandles_to_purge);
+  dbs.LoadEntries(&handles_map, &metahandles_to_purge);
 
   EXPECT_EQ(initial_size - 1, handles_map.size());
   bool delete_failed = false;
@@ -4418,11 +4377,11 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
     to_delete.insert(it->first);
   }
 
-  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+  EXPECT_TRUE(dbs.DeleteEntries(to_delete));
 
   handles_map.clear();
   metahandles_to_purge.clear();
-  dbs->LoadEntries(&handles_map, &metahandles_to_purge);
+  dbs.LoadEntries(&handles_map, &metahandles_to_purge);
   EXPECT_EQ(0U, handles_map.size());
 }
 
@@ -4441,45 +4400,43 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   SetUpCurrentDatabaseAndCheckVersion(&connection);
-  std::unique_ptr<TestDirectoryBackingStore> dbs(
-      new TestDirectoryBackingStore(GetUsername(), &connection));
+  TestDirectoryBackingStore dbs(GetUsername(), &connection);
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
 
-  DirOpenResult open_result = dbs->Load(
+  DirOpenResult open_result = dbs.Load(
       &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
   EXPECT_EQ(open_result, OPENED);
 
   // Set up database's page size to 4096
-  EXPECT_TRUE(dbs->db_->Execute("PRAGMA page_size=4096;"));
-  EXPECT_TRUE(dbs->Vacuum());
+  EXPECT_TRUE(dbs.db_->Execute("PRAGMA page_size=4096;"));
+  EXPECT_TRUE(dbs.Vacuum());
 
   // Check if update is successful.
   int pageSize = 0;
-  EXPECT_TRUE(dbs->GetDatabasePageSize(&pageSize));
+  EXPECT_TRUE(dbs.GetDatabasePageSize(&pageSize));
   EXPECT_NE(kCurrentPageSizeKB, pageSize);
-  EXPECT_TRUE(dbs->UpdatePageSizeIfNecessary());
+  EXPECT_TRUE(dbs.UpdatePageSizeIfNecessary());
   pageSize = 0;
-  EXPECT_TRUE(dbs->GetDatabasePageSize(&pageSize));
+  EXPECT_TRUE(dbs.GetDatabasePageSize(&pageSize));
   EXPECT_EQ(kCurrentPageSizeKB, pageSize);
 }
 
 // See that a catastrophic error handler remains set across instances of the
 // underlying sql:Connection.
 TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
-  std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-      new OnDiskDirectoryBackingStoreForTest(GetUsername(), GetDatabasePath()));
+  OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
   // See that by default there is no catastrophic error handler.
-  ASSERT_FALSE(dbs->db_->has_error_callback());
+  ASSERT_FALSE(dbs.db_->has_error_callback());
   // Set one and see that it was set.
-  dbs->SetCatastrophicErrorHandler(
+  dbs.SetCatastrophicErrorHandler(
       base::Bind(&CatastrophicErrorHandler, nullptr));
-  ASSERT_TRUE(dbs->db_->has_error_callback());
+  EXPECT_TRUE(dbs.db_->has_error_callback());
   // Recreate the Connection and see that the handler remains set.
-  dbs->ResetAndCreateConnection();
-  ASSERT_TRUE(dbs->db_->has_error_callback());
+  dbs.ResetAndCreateConnection();
+  EXPECT_TRUE(dbs.db_->has_error_callback());
 }
 
 // Verify that database corruption encountered during Load will trigger the
@@ -4490,44 +4447,40 @@ TEST_F(DirectoryBackingStoreTest,
   const base::Closure handler =
       base::Bind(&CatastrophicErrorHandler, &was_called);
   {
-    std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
-                                               GetDatabasePath()));
-    dbs->SetCatastrophicErrorHandler(handler);
-    ASSERT_TRUE(dbs->db_->has_error_callback());
+    OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
+    dbs.SetCatastrophicErrorHandler(handler);
+    EXPECT_TRUE(dbs.db_->has_error_callback());
     // Load the DB, and save one entry.
-    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
+    ASSERT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+    EXPECT_FALSE(dbs.DidFailFirstOpenAttempt());
     Directory::SaveChangesSnapshot snapshot;
     snapshot.dirty_metas.insert(CreateEntry(2, ""));
-    ASSERT_TRUE(dbs->SaveChanges(snapshot));
+    ASSERT_TRUE(dbs.SaveChanges(snapshot));
   }
 
   base::RunLoop().RunUntilIdle();
   // No catastrophic errors have happened. See that it hasn't be called yet.
-  ASSERT_FALSE(was_called);
+  EXPECT_FALSE(was_called);
 
   // Corrupt the DB. Some forms of corruption (like this one) will be detected
   // upon loading the Sync DB.
   ASSERT_TRUE(sql::test::CorruptSizeInHeader(GetDatabasePath()));
 
   {
-    std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
-                                               GetDatabasePath()));
-    dbs->SetCatastrophicErrorHandler(handler);
-    ASSERT_TRUE(dbs->db_->has_error_callback());
-    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
+    dbs.SetCatastrophicErrorHandler(handler);
+    EXPECT_TRUE(dbs.db_->has_error_callback());
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
 
     // See that the first open failed as expected.
-    ASSERT_TRUE(dbs->DidFailFirstOpenAttempt());
+    EXPECT_TRUE(dbs.DidFailFirstOpenAttempt());
   }
 
   // At this point the handler has been posted but not executed.
-  ASSERT_FALSE(was_called);
+  EXPECT_FALSE(was_called);
   // Pump the message loop and see that it is executed.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(was_called);
+  EXPECT_TRUE(was_called);
 }
 
 // Verify that database corruption encountered during SaveChanges will trigger
@@ -4538,28 +4491,27 @@ TEST_F(DirectoryBackingStoreTest,
   const base::Closure handler =
       base::Bind(&CatastrophicErrorHandler, &was_called);
   // Create a DB with many entries.
-  std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
-      new OnDiskDirectoryBackingStoreForTest(GetUsername(), GetDatabasePath()));
-  dbs->SetCatastrophicErrorHandler(handler);
-  ASSERT_TRUE(dbs->db_->has_error_callback());
-  ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-  ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
+  OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
+  dbs.SetCatastrophicErrorHandler(handler);
+  EXPECT_TRUE(dbs.db_->has_error_callback());
+  EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
+  EXPECT_FALSE(dbs.DidFailFirstOpenAttempt());
   Directory::SaveChangesSnapshot snapshot;
   const std::string suffix(400, 'o');
   for (size_t i = 0; i < 100; ++i) {
     snapshot.dirty_metas.insert(CreateEntry(i, suffix));
   }
-  ASSERT_TRUE(dbs->SaveChanges(snapshot));
+  ASSERT_TRUE(dbs.SaveChanges(snapshot));
   // Corrupt the database on disk.
   ASSERT_TRUE(sql::test::CorruptSizeInHeaderWithLock(GetDatabasePath()));
   // Attempt to save all those entries again. See that it fails (because of the
   // corruption).
-  ASSERT_FALSE(dbs->SaveChanges(snapshot));
+  EXPECT_FALSE(dbs.SaveChanges(snapshot));
   // At this point the handler has been posted but not executed.
-  ASSERT_FALSE(was_called);
+  EXPECT_FALSE(was_called);
   // Pump the message loop and see that it is executed.
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(was_called);
+  EXPECT_TRUE(was_called);
 }
 
 }  // namespace syncable
