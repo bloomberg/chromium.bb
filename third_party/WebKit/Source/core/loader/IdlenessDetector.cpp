@@ -15,8 +15,8 @@
 
 namespace blink {
 
-const TimeDelta IdlenessDetector::kNetworkQuietWindow;
-const TimeDelta IdlenessDetector::kNetworkQuietWatchdog;
+constexpr TimeDelta IdlenessDetector::kNetworkQuietWindow;
+constexpr TimeDelta IdlenessDetector::kNetworkQuietWatchdog;
 
 void IdlenessDetector::Shutdown() {
   Stop();
