@@ -75,6 +75,17 @@ public abstract class Observable<T> {
     }
 
     /**
+     * Returns an Observable that is activated when `this` and `other` are activated in order.
+     *
+     * This is similar to `and()`, but does not activate if `other` is activated before `this`.
+     *
+     * @param <U> The activation data type of the other Observable.
+     */
+    public final <U> Observable<Both<T, U>> andThen(Observable<U> other) {
+        return new SequenceStateObserver<>(this, other).asObservable();
+    }
+
+    /**
      * Returns an Observable that is activated only when the given Observable is not activated.
      */
     public static Observable<Unit> not(Observable<?> observable) {
@@ -116,42 +127,55 @@ public abstract class Observable<T> {
 
     // Owns a Controller that is activated only when both Observables are activated.
     private static class BothStateObserver<A, B> {
-        private final Controller<Both<A, B>> mController;
-        private A mA;
-        private B mB;
-        private Both<A, B> mBoth;
+        private final Controller<Both<A, B>> mController = new Controller<>();
+        private A mA = null;
+        private B mB = null;
 
         private BothStateObserver(Observable<A> stateA, Observable<B> stateB) {
-            mController = new Controller<>();
-            mA = null;
-            mB = null;
-            mBoth = null;
             stateA.watch((A a) -> {
-                if (mB != null) setBoth(a, mB);
+                if (mB != null) mController.set(Both.both(a, mB));
                 mA = a;
                 return () -> {
                     mA = null;
-                    resetBoth();
+                    mController.reset();
                 };
             });
             stateB.watch((B b) -> {
-                if (mA != null) setBoth(mA, b);
+                if (mA != null) mController.set(Both.both(mA, b));
                 mB = b;
                 return () -> {
                     mB = null;
-                    resetBoth();
+                    mController.reset();
                 };
             });
         }
 
-        private void setBoth(A a, B b) {
-            mBoth = Both.both(a, b);
-            mController.set(mBoth);
+        private Observable<Both<A, B>> asObservable() {
+            return mController;
         }
+    }
 
-        private void resetBoth() {
-            mController.reset();
-            mBoth = null;
+    // Owns a Controller that is activated only when the Observables are activated in order.
+    private static class SequenceStateObserver<A, B> {
+        private final Controller<Both<A, B>> mController = new Controller<>();
+        private A mA = null;
+
+        private SequenceStateObserver(Observable<A> stateA, Observable<B> stateB) {
+            stateA.watch((A a) -> {
+                mA = a;
+                return () -> {
+                    mA = null;
+                    mController.reset();
+                };
+            });
+            stateB.watch((B b) -> {
+                if (mA != null) {
+                    mController.set(Both.both(mA, b));
+                }
+                return () -> {
+                    mController.reset();
+                };
+            });
         }
 
         private Observable<Both<A, B>> asObservable() {

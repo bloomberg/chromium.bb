@@ -373,33 +373,6 @@ public class ObservableAndControllerTest {
                 result, contains("enter: Base", "enter: Derived", "exit: Base", "enter: Derived"));
     }
 
-    // Any AutoCloseable's constructor whose parameters match the scope can be used as a method
-    // reference.
-    private static class TransitionLogger implements AutoCloseable {
-        public static final List<String> sResult = new ArrayList<>();
-        private final String mData;
-
-        public TransitionLogger(String data) {
-            mData = data;
-            sResult.add("enter: " + mData);
-        }
-
-        @Override
-        public void close() {
-            sResult.add("exit: " + mData);
-        }
-    }
-
-    @Test
-    public void testScopeFactoryWithAutoCloseableConstructor() {
-        Controller<String> controller = new Controller<>();
-        // You can use a constructor method reference in a watch() call.
-        controller.watch(TransitionLogger::new);
-        controller.set("a");
-        controller.reset();
-        assertThat(TransitionLogger.sResult, contains("enter: a", "exit: a"));
-    }
-
     @Test
     public void testNotIsActivatedAtTheStart() {
         Controller<String> invertThis = new Controller<>();
@@ -446,5 +419,128 @@ public class ObservableAndControllerTest {
         invertThis.set("first");
         invertThis.reset();
         assertThat(result, contains("enter inverted", "exit inverted", "enter inverted"));
+    }
+
+    @Test
+    public void testAndThenNotActivatedInitially() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onEnter(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        assertThat(result, emptyIterable());
+    }
+
+    @Test
+    public void testAndThenNotActivatedIfSecondBeforeFirst() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onEnter(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        bState.set("b");
+        aState.set("a");
+        assertThat(result, emptyIterable());
+    }
+
+    @Test
+    public void testAndThenActivatedIfFirstThenSecond() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onEnter(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.set("a");
+        bState.set("b");
+        assertThat(result, contains("a=a, b=b"));
+    }
+
+    @Test
+    public void testAndThenActivated_plusBplusAminusBplusB() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onEnter(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        bState.set("b");
+        aState.set("a");
+        bState.reset();
+        bState.set("B");
+        assertThat(result, contains("a=a, b=B"));
+    }
+
+    @Test
+    public void testAndThenDeactivated_plusAplusBminusA() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onExit(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.set("A");
+        bState.set("B");
+        aState.reset();
+        assertThat(result, contains("a=A, b=B"));
+    }
+
+    @Test
+    public void testAndThenDeactivated_plusAplusBminusB() {
+        Controller<String> aState = new Controller<>();
+        Controller<String> bState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.andThen(bState).watch(ScopeFactories.onExit(
+                (String a, String b) -> { result.add("a=" + a + ", b=" + b); }));
+        aState.set("A");
+        bState.set("B");
+        bState.reset();
+        assertThat(result, contains("a=A, b=B"));
+    }
+
+    @Test
+    public void testComposeAndThen() {
+        Controller<Unit> aState = new Controller<>();
+        Controller<Unit> bState = new Controller<>();
+        Controller<Unit> cState = new Controller<>();
+        Controller<Unit> dState = new Controller<>();
+        List<String> result = new ArrayList<>();
+        aState.watch(ScopeFactories.onEnter(() -> result.add("A")))
+                .andThen(bState)
+                .watch(ScopeFactories.onEnter(() -> result.add("B")))
+                .andThen(cState)
+                .watch(ScopeFactories.onEnter(() -> result.add("C")))
+                .andThen(dState)
+                .watch(ScopeFactories.onEnter(() -> result.add("D")));
+        aState.set(Unit.unit());
+        bState.set(Unit.unit());
+        cState.set(Unit.unit());
+        dState.set(Unit.unit());
+        aState.reset();
+        assertThat(result, contains("A", "B", "C", "D"));
+    }
+
+    // Any AutoCloseable's constructor whose parameters match the scope can be used as a method
+    // reference.
+    private static class TransitionLogger implements AutoCloseable {
+        public static final List<String> sResult = new ArrayList<>();
+        private final String mData;
+
+        public TransitionLogger(String data) {
+            mData = data;
+            sResult.add("enter: " + mData);
+        }
+
+        @Override
+        public void close() {
+            sResult.add("exit: " + mData);
+        }
+    }
+
+    @Test
+    public void testScopeFactoryWithAutoCloseableConstructor() {
+        Controller<String> controller = new Controller<>();
+        // You can use a constructor method reference in a watch() call.
+        controller.watch(TransitionLogger::new);
+        controller.set("a");
+        controller.reset();
+        assertThat(TransitionLogger.sResult, contains("enter: a", "exit: a"));
     }
 }
