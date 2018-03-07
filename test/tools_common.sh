@@ -82,56 +82,38 @@ cleanup() {
   fi
 }
 
-# Echoes the git hash portion of the VERSION_STRING variable defined in
-# $LIBAOM_CONFIG_PATH/config.mk to stdout, or the version number string when
-# no git hash is contained in VERSION_STRING.
-config_hash() {
-  aom_config_mk="${LIBAOM_CONFIG_PATH}/config.mk"
-  if [ ! -f "${aom_config_mk}" ]; then
-    aom_config_c="${LIBAOM_CONFIG_PATH}/aom_config.c"
-    # Clean up the aom_git_hash pointer line from aom_config.c.
-    # 1. Run grep on aom_config.c for aom_git_hash and limit results to 1.
-    # 2. Split the line using ' = "' as separator.
-    # 3. Abuse sed to consume the trailing "; from the assignment to the
-    #    aom_git_hash pointer.
-    awk -F ' = "' '/aom_git_hash/ { print $NF; exit }' "${aom_config_c}" \
-      | sed s/\"\;//
-    return
-  fi
+# Echoes the version string assigned to the VERSION_STRING_NOSP variable defined
+# in $LIBAOM_CONFIG_PATH/aom_version.h to stdout.
+cmake_version() {
+  aom_version_h="${LIBAOM_CONFIG_PATH}/aom_version.h"
 
-  # Find VERSION_STRING line, split it with "-g" and print the last field to
-  # output the git hash to stdout.
-  aom_version=$(awk -F -g '/VERSION_STRING/ {print $NF}' "${aom_config_mk}")
-  # Handle two situations here:
-  # 1. The default case: $aom_version is a git hash, so echo it unchanged.
-  # 2. When being run a non-dev tree, the -g portion is not present in the
-  #    version string: It's only the version number.
-  #    In this case $aom_version is something like 'VERSION_STRING=v1.3.0', so
-  #    we echo only what is after the '='.
-  echo "${aom_version##*=}"
+  # Find VERSION_STRING_NOSP line, split it with '"' and print the next to last
+  # field to output the version string to stdout.
+  aom_version=$(awk -F \" '/VERSION_STRING_NOSP/ {print $(NF-1)}' \
+    "${aom_version_h}")
+  echo "v${aom_version}"
 }
 
-# Echoes the short form of the current git hash.
-current_hash() {
+# Echoes current git version as reported by running 'git describe', or the
+# version used by the cmake build when git is unavailable.
+source_version() {
   if git --version > /dev/null 2>&1; then
     (cd "$(dirname "${0}")"
-    git rev-parse HEAD)
+    git describe)
   else
-    # Return the config hash if git is unavailable: Fail silently, git hashes
-    # are used only for warnings.
-    config_hash
+    cmake_version
   fi
 }
 
-# Echoes warnings to stdout when git hash in aom_config.h does not match the
-# current git hash.
-check_git_hashes() {
-  hash_at_configure_time=$(config_hash)
-  hash_now=$(current_hash)
+# Echoes warnings to stdout when source version and CMake build generated
+# version are out of sync.
+check_version_strings() {
+  cmake_version=$(cmake_version)
+  source_version=$(source_version)
 
-  if [ "${hash_at_configure_time}" != "${hash_now}" ]; then
-    echo "Warning: git hash has changed since last configure."
-    vlog "  config hash: ${hash_at_configure_time} hash now: ${hash_now}"
+  if [ "${cmake_version}" != "${source_version}" ]; then
+    echo "Warning: version has changed since last cmake run."
+    vlog "  cmake version: ${cmake_version} version now: ${source_version}"
   fi
 }
 
@@ -301,7 +283,7 @@ run_tests() {
   # Combine environment and actual tests.
   local tests_to_run="${env_tests} ${tests_to_filter}"
 
-  check_git_hashes
+  check_version_strings
 
   # Run tests.
   for test in ${tests_to_run}; do
@@ -312,7 +294,7 @@ run_tests() {
     test_end "${test}"
   done
 
-  local tested_config="$(test_configuration_target) @ $(current_hash)"
+  local tested_config="$(test_configuration_target) @ $(source_version)"
   echo "${test_name}: Done, all tests pass for ${tested_config}."
 }
 
