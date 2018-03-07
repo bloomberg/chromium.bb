@@ -1,5 +1,6 @@
 {
   "name": "kiosk enabled platform app",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

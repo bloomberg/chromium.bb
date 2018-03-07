@@ -1,5 +1,6 @@
 {
   "name": "kiosk hosted app",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "urls": [

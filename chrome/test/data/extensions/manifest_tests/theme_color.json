@@ -1,5 +1,6 @@
 {
   "name": "Theme Color",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "launch": {
