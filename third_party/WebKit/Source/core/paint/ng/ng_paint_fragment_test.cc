@@ -211,7 +211,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
       GetLayoutObjectByElementId("container")->SlowFirstChild();
   EXPECT_TRUE(layout_outer_text && layout_outer_text->IsText());
   auto fragments = NGPaintFragment::InlineFragmentsFor(layout_outer_text);
-  EXPECT_FALSE(fragments.IsEmpty());
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
   EXPECT_EQ(&outer_text, *fragments.begin());
 
   // Test the inline block "box1".
@@ -225,7 +226,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   LayoutObject* layout_box1 = GetLayoutObjectByElementId("box1");
   EXPECT_TRUE(layout_box1 && layout_box1->IsLayoutBlockFlow());
   fragments = NGPaintFragment::InlineFragmentsFor(layout_box1);
-  EXPECT_FALSE(fragments.IsEmpty());
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
   EXPECT_EQ(&box1, *fragments.begin());
 
   // Test an inline block has its own NGPaintFragment.
@@ -241,7 +243,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   LayoutObject* layout_inner_text = layout_box1->SlowFirstChild();
   EXPECT_TRUE(layout_inner_text && layout_inner_text->IsText());
   fragments = NGPaintFragment::InlineFragmentsFor(layout_inner_text);
-  EXPECT_FALSE(fragments.IsEmpty());
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
   EXPECT_EQ(&inner_text, *fragments.begin());
 
   // Test the inline block "box2".

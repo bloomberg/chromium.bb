@@ -136,8 +136,9 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     // Reaching here means that there are no fragments for the LayoutObject.
     // Culled inline box is one, but can be space-only LayoutText that were
     // collapsed out.
+    return FragmentRange(nullptr);
   }
-  return FragmentRange(nullptr);
+  return FragmentRange(nullptr, false);
 }
 
 void NGPaintFragment::UpdateVisualRectForNonLayoutObjectChildren() {

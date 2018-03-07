@@ -2253,6 +2253,18 @@ void LayoutText::InvalidateDisplayItemClients(
   DCHECK(invalidation_reason != PaintInvalidationReason::kSelection ||
          !EnclosingNGBlockFlow());
   ObjectPaintInvalidator paint_invalidator(*this);
+
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (NGPaintFragment* fragment : fragments) {
+        paint_invalidator.InvalidateDisplayItemClient(*fragment,
+                                                      invalidation_reason);
+      }
+      return;
+    }
+  }
+
   paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
 
   for (InlineTextBox* box : InlineTextBoxesOf(*this)) {

@@ -174,6 +174,21 @@ Vector<NGPaintFragment*> LayoutNGMixin<Base>::GetPaintFragments(
 }
 
 template <typename Base>
+void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
+    PaintInvalidationReason invalidation_reason) const {
+  if (NGPaintFragment* fragment = PaintFragment()) {
+    // TODO(koji): Should be in the PaintInvalidator, possibly with more logic
+    // ported from BlockFlowPaintInvalidator.
+    ObjectPaintInvalidator object_paint_invalidator(*this);
+    object_paint_invalidator.InvalidateDisplayItemClient(*fragment,
+                                                         invalidation_reason);
+    return;
+  }
+
+  LayoutBlockFlow::InvalidateDisplayItemClients(invalidation_reason);
+}
+
+template <typename Base>
 void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) const {
   if (PaintFragment())

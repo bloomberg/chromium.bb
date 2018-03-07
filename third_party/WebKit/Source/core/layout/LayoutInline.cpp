@@ -40,6 +40,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/ng/ng_paint_fragment.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"
@@ -1624,6 +1625,18 @@ void LayoutInline::InvalidateDisplayItemClients(
   DCHECK(invalidation_reason != PaintInvalidationReason::kSelection ||
          !EnclosingNGBlockFlow());
   ObjectPaintInvalidator paint_invalidator(*this);
+
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (NGPaintFragment* fragment : fragments) {
+        paint_invalidator.InvalidateDisplayItemClient(*fragment,
+                                                      invalidation_reason);
+      }
+      return;
+    }
+  }
+
   paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
 
   for (InlineFlowBox* box = FirstLineBox(); box; box = box->NextLineBox())

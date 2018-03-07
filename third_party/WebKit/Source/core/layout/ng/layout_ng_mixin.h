@@ -40,6 +40,8 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
+  void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
+
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
 
   bool NodeAtPoint(HitTestResult&,

@@ -447,7 +447,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
     // An inline LayoutObject can produce multiple NGPaintFragment. Compute
     // VisualRect for each fragment from |new_visual_rect|.
     auto fragments = NGPaintFragment::InlineFragmentsFor(&object);
-    if (fragments.IsEmpty())
+    if (!fragments.IsInLayoutNGInlineFormattingContext())
       return;
     // Compute the offset of |new_visual_rect| from the local coordinate.
     LayoutRect local_object_rect = object.LocalVisualRect();
