@@ -9,18 +9,26 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/common/content_export.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace net {
+class CertVerifier;
+class CertVerifyResult;
 class SourceStream;
-}
+class URLRequestContextGetter;
+class X509Certificate;
+}  // namespace net
 
 namespace content {
 
@@ -29,7 +37,7 @@ class SignedExchangeCertFetcher;
 class URLLoaderThrottle;
 class MerkleIntegritySourceStream;
 
-// IMPORTANT: Currenly SignedExchangeHandler doesn't implement any verifying
+// IMPORTANT: Currenly SignedExchangeHandler partially implements the verifying
 // logic.
 // TODO(https://crbug.com/803774): Implement verifying logic.
 class CONTENT_EXPORT SignedExchangeHandler {
@@ -46,6 +54,10 @@ class CONTENT_EXPORT SignedExchangeHandler {
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
+  // TODO(https://crbug.com/817187): Find a more sophisticated way to use a
+  // MockCertVerifier in browser tests instead of using the static method.
+  static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
+
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read
   // from |payload_stream| passed to |headers_callback|. |url_loader_factory|
@@ -56,7 +68,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
       ExchangeHeadersCallback headers_callback,
       url::Origin request_initiator,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter);
+      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~SignedExchangeHandler();
 
  protected:
@@ -68,7 +81,10 @@ class CONTENT_EXPORT SignedExchangeHandler {
   bool RunHeadersCallback();
   void RunErrorCallback(net::Error);
 
-  void OnCertReceived(scoped_refptr<net::X509Certificate> cert);
+  void OnCertReceived(
+      std::unique_ptr<SignedExchangeSignatureVerifier::Input> verifier_input,
+      scoped_refptr<net::X509Certificate> cert);
+  void OnCertVerifyComplete(int result);
 
   // Signed exchange contents.
   GURL request_url_;
@@ -93,6 +109,19 @@ class CONTENT_EXPORT SignedExchangeHandler {
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
 
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+
+  scoped_refptr<net::X509Certificate> unverified_cert_;
+
+  // CertVerifyResult must be freed after the Request has been destructed.
+  // So |cert_verify_result_| must be written before |cert_verifier_request_|.
+  net::CertVerifyResult cert_verify_result_;
+  std::unique_ptr<net::CertVerifier::Request> cert_verifier_request_;
+
+  // TODO(https://crbug.com/767450): figure out what we should do for NetLog
+  // with Network Service.
+  net::NetLogWithSource net_log_;
 
   base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
 

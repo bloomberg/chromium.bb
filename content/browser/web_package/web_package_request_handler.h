@@ -10,6 +10,10 @@
 #include "content/public/common/resource_type.h"
 #include "url/origin.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace content {
 
 class SharedURLLoaderFactory;
@@ -27,7 +31,8 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
       url::Origin request_initiator,
       uint32_t url_loader_options,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter);
+      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~WebPackageRequestHandler() override;
 
   // URLLoaderRequestHandler implementation
@@ -53,6 +58,7 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
   const uint32_t url_loader_options_;
   scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   base::WeakPtrFactory<WebPackageRequestHandler> weak_factory_;
 

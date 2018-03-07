@@ -339,7 +339,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               resource_context_, url_request_context_getter),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this))));
+              base::Unretained(this)),
+          url_request_context_getter));
     }
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
@@ -482,7 +483,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this))));
+              base::Unretained(this)),
+          url_request_context_getter));
     }
 
     Restart();

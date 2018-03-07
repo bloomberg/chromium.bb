@@ -128,15 +128,26 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   input.signature = (*signature)[0];
   input.certificate = certlist[0];
 
-  EXPECT_TRUE(SignedExchangeSignatureVerifier::Verify(input));
+  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
+            SignedExchangeSignatureVerifier::Verify(input));
 
   SignedExchangeSignatureVerifier::Input corrupted_input(input);
   corrupted_input.url = "https://example.com/bad.html";
-  EXPECT_FALSE(SignedExchangeSignatureVerifier::Verify(corrupted_input));
+  EXPECT_EQ(
+      SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
+      SignedExchangeSignatureVerifier::Verify(corrupted_input));
 
   SignedExchangeSignatureVerifier::Input badsig_input(input);
   badsig_input.signature.sig[0]++;
-  EXPECT_FALSE(SignedExchangeSignatureVerifier::Verify(badsig_input));
+  EXPECT_EQ(
+      SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
+      SignedExchangeSignatureVerifier::Verify(badsig_input));
+
+  SignedExchangeSignatureVerifier::Input badsigsha256_input(input);
+  badsigsha256_input.signature.cert_sha256->data[0]++;
+  EXPECT_EQ(
+      SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
+      SignedExchangeSignatureVerifier::Verify(badsigsha256_input));
 }
 
 }  // namespace

@@ -15,6 +15,7 @@
 #include "content/public/common/shared_url_loader_factory.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -79,7 +80,8 @@ WebPackageLoader::WebPackageLoader(
     url::Origin request_initiator,
     uint32_t url_loader_options,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter)
+    URLLoaderThrottlesGetter url_loader_throttles_getter,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : original_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(original_response)),
       forwarding_client_(std::move(forwarding_client)),
@@ -88,6 +90,7 @@ WebPackageLoader::WebPackageLoader(
       url_loader_options_(url_loader_options),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
+      request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   url_loader_.Bind(std::move(endpoints->url_loader));
@@ -171,7 +174,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(request_initiator_), std::move(url_loader_factory_),
-      std::move(url_loader_throttles_getter_));
+      std::move(url_loader_throttles_getter_),
+      std::move(request_context_getter_));
 }
 
 void WebPackageLoader::OnComplete(

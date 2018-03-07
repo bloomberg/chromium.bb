@@ -7,9 +7,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
@@ -20,6 +22,9 @@
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
@@ -64,10 +69,12 @@ class WebPackageRequestHandlerBrowserTest
     : public ContentBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
-  WebPackageRequestHandlerBrowserTest() = default;
+  WebPackageRequestHandlerBrowserTest()
+      : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()){};
   ~WebPackageRequestHandlerBrowserTest() = default;
 
   void SetUp() override {
+    SignedExchangeHandler::SetCertVerifierForTesting(mock_cert_verifier_.get());
     if (is_network_service_enabled()) {
       feature_list_.InitWithFeatures(
           {features::kSignedHTTPExchange, network::features::kNetworkService},
@@ -78,9 +85,20 @@ class WebPackageRequestHandlerBrowserTest
     ContentBrowserTest::SetUp();
   }
 
-  void TearDownOnMainThread() override { interceptor_.reset(); }
+  void TearDownOnMainThread() override {
+    interceptor_.reset();
+    SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
+  }
 
  protected:
+  static scoped_refptr<net::X509Certificate> LoadCertificate(
+      const std::string& cert_file) {
+    base::ScopedAllowBlockingForTesting allow_io;
+    return net::CreateCertificateChainFromFile(
+        net::GetTestCertsDirectory(), cert_file,
+        net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  }
+
   void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       if (!interceptor_) {
@@ -96,6 +114,8 @@ class WebPackageRequestHandlerBrowserTest
           base::BindOnce(&InstallMockInterceptors, url, data_path));
     }
   }
+
+  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
  private:
   static std::string ReadFile(const std::string& data_path) {
@@ -153,6 +173,16 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/htxg/wildcard_example.org.public.pem.msg");
 
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
@@ -160,6 +190,23 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
+  ASSERT_TRUE(entry->GetSSL().certificate);
+
+  // "wildcard_example.org.public.pem.msg" is generated from "wildcard.pem". So
+  // the SHA256 of the certificates must match.
+  const net::SHA256HashValue fingerprint =
+      net::X509Certificate::CalculateFingerprint256(
+          entry->GetSSL().certificate->cert_buffer());
+  const net::SHA256HashValue original_fingerprint =
+      net::X509Certificate::CalculateFingerprint256(
+          original_cert->cert_buffer());
+  EXPECT_EQ(original_fingerprint, fingerprint);
 }
 
 IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
@@ -170,6 +217,60 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
 
+  NavigationFailureObserver failure_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(failure_observer.did_fail());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
+                       CertSha256Mismatch) {
+  // The certificate is for "127.0.0.1". And the SHA 256 hash of the certificate
+  // is different from the certSha256 of the signature in the htxg file. So the
+  // certification verification must fail.
+  InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
+                        "content/test/data/htxg/127.0.0.1.public.pem.msg");
+
+  // Set the default result of MockCertVerifier to OK, to check that the
+  // verification of SignedExchange must fail even if the certificate is valid.
+  mock_cert_verifier_->set_default_result(net::OK);
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+
+  NavigationFailureObserver failure_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(failure_observer.did_fail());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, VerifyCertFailure) {
+  // The certificate is for "*.example.com". But the request URL of the htxg
+  // file is "https://test.example.com/test/". So the certification verification
+  // must fail.
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/htxg/wildcard_example.org.public.pem.msg");
+
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
+                                               dummy_result, net::OK);
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/htxg/test.example.com_invalid_test.htxg");
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
   EXPECT_TRUE(failure_observer.did_fail());

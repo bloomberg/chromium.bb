@@ -44,7 +44,17 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     scoped_refptr<net::X509Certificate> certificate;
   };
 
-  static bool Verify(const Input& input);
+  enum class Result {
+    kSuccess,
+    kErrNoCertificate,
+    kErrNoCertificateSHA256,
+    kErrCertificateSHA256Mismatch,
+    kErrInvalidSignatureFormat,
+    kErrSignatureVerificationFailed,
+    kErrInvalidSignatureIntegrity
+  };
+
+  static Result Verify(const Input& input);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
       const Input& input);

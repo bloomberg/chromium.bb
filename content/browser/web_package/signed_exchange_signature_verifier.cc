@@ -116,15 +116,19 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
   cbor::CBORValue::MapValue map;
   // 11.4.1. "If certSha256 is set: The text string "certSha256" to the byte
   // string value of certSha256." [spec text]
-  if (!input.signature.cert_sha256.empty()) {
-    map.insert_or_assign(cbor::CBORValue(kCertSha256Key),
-                         cbor::CBORValue(input.signature.cert_sha256,
-                                         cbor::CBORValue::Type::BYTE_STRING));
+  if (input.signature.cert_sha256.has_value()) {
+    map.insert_or_assign(
+        cbor::CBORValue(kCertSha256Key),
+        cbor::CBORValue(
+            base::StringPiece(reinterpret_cast<const char*>(
+                                  input.signature.cert_sha256->data),
+                              sizeof(input.signature.cert_sha256->data)),
+            cbor::CBORValue::Type::BYTE_STRING));
   }
   // 11.4.2. "The text string "validityUrl" to the byte string value of
   // validityUrl." [spec text]
   map.insert_or_assign(cbor::CBORValue(kValidityUrlKey),
-                       cbor::CBORValue(input.signature.validity_url,
+                       cbor::CBORValue(input.signature.validity_url.spec(),
                                        cbor::CBORValue::Type::BYTE_STRING));
   // 11.4.3. "The text string "date" to the integer value of date." [spec text]
   if (!base::IsValueInRangeForNumericType<int64_t>(input.signature.date))
@@ -214,14 +218,30 @@ SignedExchangeSignatureVerifier::Input::Input(const Input&) = default;
 
 SignedExchangeSignatureVerifier::Input::~Input() = default;
 
-bool SignedExchangeSignatureVerifier::Verify(const Input& input) {
-  // TODO(crbug.com/803774): Verify input.signature.certSha256 against
-  // input.certificate.
+SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
+    const Input& input) {
+  if (!input.certificate) {
+    DVLOG(1) << "No certificate set.";
+    return Result::kErrNoCertificate;
+  }
+
+  if (!input.signature.cert_sha256.has_value()) {
+    DVLOG(1) << "No certSha256 set.";
+    return Result::kErrNoCertificateSHA256;
+  }
+
+  // The main-certificate is the first certificate in certificate-chain.
+  if (*input.signature.cert_sha256 !=
+      net::X509Certificate::CalculateFingerprint256(
+          input.certificate->cert_buffer())) {
+    DVLOG(1) << "certSha256 mismatch.";
+    return Result::kErrCertificateSHA256Mismatch;
+  }
 
   auto message = GenerateSignedMessage(input);
   if (!message) {
     DVLOG(1) << "Failed to reconstruct signed message.";
-    return false;
+    return Result::kErrInvalidSignatureFormat;
   }
 
   const std::string& sig = input.signature.sig;
@@ -230,18 +250,18 @@ bool SignedExchangeSignatureVerifier::Verify(const Input& input) {
                           sig.size()),
           *message, input.certificate)) {
     DVLOG(1) << "Failed to verify signature \"sig\".";
-    return false;
+    return Result::kErrSignatureVerificationFailed;
   }
 
   if (!base::EqualsCaseInsensitiveASCII(input.signature.integrity, "mi")) {
     DVLOG(1)
         << "The current implemention only supports \"mi\" integrity scheme.";
-    return false;
+    return Result::kErrInvalidSignatureIntegrity;
   }
 
   // TODO(crbug.com/803774): Verify input.signature.{date,expires}.
 
-  return true;
+  return Result::kSuccess;
 }
 
 base::Optional<std::vector<uint8_t>>

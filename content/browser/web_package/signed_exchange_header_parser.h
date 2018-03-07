@@ -8,10 +8,13 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "net/base/hash_value.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -27,10 +30,11 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
     std::string label;
     std::string sig;
     std::string integrity;
-    std::string cert_url;
-    std::string cert_sha256;
-    std::string ed25519_key;
-    std::string validity_url;
+    GURL cert_url;
+    base::Optional<net::SHA256HashValue> cert_sha256;
+    // TODO(https://crbug.com/819467): Support ed25519key.
+    // std::string ed25519_key;
+    GURL validity_url;
     uint64_t date;
     uint64_t expires;
   };

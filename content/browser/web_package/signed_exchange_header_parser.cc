@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "crypto/sha2.h"
 
 namespace content {
 
@@ -213,12 +214,42 @@ SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
     Signature& sig = signatures.back();
     sig.label = value.label;
     sig.sig = value.params["sig"];
+    if (sig.sig.empty()) {
+      DVLOG(1) << "ParseSignature: 'sig' parameter is not set";
+      return base::nullopt;
+    }
     sig.integrity = value.params["integrity"];
-    sig.cert_url = value.params["certUrl"];
-    sig.cert_sha256 = value.params["certSha256"];
-    sig.ed25519_key = value.params["ed25519Key"];
-    sig.validity_url = value.params["validityUrl"];
-
+    if (sig.integrity.empty()) {
+      DVLOG(1) << "ParseSignature: 'integrity' parameter is not set";
+      return base::nullopt;
+    }
+    sig.cert_url = GURL(value.params["certUrl"]);
+    if (!sig.cert_url.is_valid()) {
+      // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
+      // params may not have "certUrl".
+      DVLOG(1) << "ParseSignature: 'certUrl' parameter is not a valid URL: "
+               << value.params["certUrl"];
+      return base::nullopt;
+    }
+    const std::string cert_sha256_string = value.params["certSha256"];
+    if (cert_sha256_string.size() != crypto::kSHA256Length) {
+      // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
+      // params may not have "certSha256".
+      DVLOG(1) << "ParseSignature: 'certSha256' parameter is not a valid "
+                  "SHA-256 digest.";
+      return base::nullopt;
+    }
+    net::SHA256HashValue cert_sha256;
+    memcpy(&cert_sha256.data, cert_sha256_string.data(), crypto::kSHA256Length);
+    sig.cert_sha256 = std::move(cert_sha256);
+    // TODO(https://crbug.com/819467): Support ed25519key.
+    // sig.ed25519_key = value.params["ed25519Key"];
+    sig.validity_url = GURL(value.params["validityUrl"]);
+    if (!sig.validity_url.is_valid()) {
+      DVLOG(1) << "ParseSignature: 'validityUrl' parameter is not a valid URL: "
+               << value.params["validityUrl"];
+      return base::nullopt;
+    }
     if (!base::StringToUint64(value.params["date"], &sig.date)) {
       DVLOG(1) << "ParseSignature: 'date' parameter is not a number: "
                << sig.date;
@@ -227,18 +258,6 @@ SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
     if (!base::StringToUint64(value.params["expires"], &sig.expires)) {
       DVLOG(1) << "ParseSignature: 'expires' parameter is not a number:"
                << sig.expires;
-      return base::nullopt;
-    }
-
-    bool has_cert = !sig.cert_url.empty() && !sig.cert_sha256.empty();
-    bool has_ed25519_key = !sig.ed25519_key.empty();
-    if (sig.sig.empty() || sig.integrity.empty() || sig.validity_url.empty() ||
-        (!has_cert && !has_ed25519_key)) {
-      DVLOG(1) << "ParseSignature: incomplete signature";
-      return base::nullopt;
-    }
-    if (has_cert && has_ed25519_key) {
-      DVLOG(1) << "ParseSignature: signature has both certUrl and ed25519Key";
       return base::nullopt;
     }
   }
