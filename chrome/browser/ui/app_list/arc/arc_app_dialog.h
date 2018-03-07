@@ -14,12 +14,25 @@ class Profile;
 
 namespace arc {
 
+using ArcUsbConfirmCallback = base::OnceCallback<void(bool)>;
+
 // Shows a dialog for user to confirm uninstallation of ARC app.
 // Currently, ARC app can only be manually uninstalled from AppList. But it
 // would be simple to enable the dialog to shown from other source.
 void ShowArcAppUninstallDialog(Profile* profile,
                                AppListControllerDelegate* controller,
                                const std::string& app_id);
+
+// Shows permission request dialog for scan USB device list.
+void ShowUsbScanDeviceListPermissionDialog(Profile* profile,
+                                           const std::string& app_id,
+                                           ArcUsbConfirmCallback callback);
+
+// Shows permission request dialog for targeting device name.
+void ShowUsbAccessPermissionDialog(Profile* profile,
+                                   const std::string& app_id,
+                                   const base::string16& device_name,
+                                   ArcUsbConfirmCallback callback);
 
 // Test purpose methods.
 bool IsArcAppDialogViewAliveForTest();

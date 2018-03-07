@@ -24,8 +24,6 @@ namespace arc {
 
 class ArcUsbHostBridge;
 
-using ArcUsbConfirmCallback = base::OnceCallback<void(bool)>;
-
 class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
                                     public ArcUsbHostUiDelegate,
                                     public KeyedService {
@@ -101,18 +99,6 @@ class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
   ~ArcUsbHostPermissionManager() override;
   static ArcUsbHostPermissionManager* GetForBrowserContext(
       content::BrowserContext* context);
-
-  // Shows permission request dialog for scan USB device list.
-  static void ShowScanDeviceListPermissionDialog(
-      Profile* profile,
-      const std::string& app_id,
-      ArcUsbConfirmCallback callback);
-
-  // Shows permission request dialog for targeting device name.
-  static void ShowAccessPermissionDialog(Profile* profile,
-                                         const std::string& app_id,
-                                         const base::string16& device_name,
-                                         ArcUsbConfirmCallback callback);
 
   // ArcUsbHostUiDelegate:
   void RequestUsbScanDeviceListPermission(
