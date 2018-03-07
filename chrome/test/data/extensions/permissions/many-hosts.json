@@ -1,5 +1,6 @@
 {
   "name": "Host Permissions",
+  "manifest_version": 2,
   "version": "1.0",
   "description": "Test the permissions message with hosts on various RCDs.",
   "content_scripts": [
