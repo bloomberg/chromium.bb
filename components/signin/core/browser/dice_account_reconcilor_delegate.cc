@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 
 namespace signin {
 
@@ -115,11 +117,14 @@ void DiceAccountReconcilorDelegate::OnReconcileFinished(
     bool reconcile_is_noop) {
   last_known_first_account_ = first_account;
 
-  // Migration happens on startup if the last reconcile was a no-op.
+  // Migration happens on startup if the last reconcile was a no-op and the
+  // refresh tokens are Dice-compatible.
   if (DiceMethodGreaterOrEqual(
           account_consistency_,
           AccountConsistencyMethod::kDicePrepareMigration)) {
-    signin_client_->SetReadyForDiceMigration(reconcile_is_noop);
+    signin_client_->SetReadyForDiceMigration(
+        reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
+                                 prefs::kTokenServiceDiceCompatible));
   }
 }
 

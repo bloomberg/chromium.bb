@@ -123,6 +123,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountMerge);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           DiceNoMigrationWhenTokensNotReady);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceNoMigrationAfterReconcile);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceReconcileReuseGaiaFirstAccount);

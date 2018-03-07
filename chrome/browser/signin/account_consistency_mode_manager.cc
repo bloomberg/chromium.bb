@@ -22,7 +22,7 @@ namespace {
 // Preference indicating that the Dice migration should happen at the next
 // Chrome startup.
 const char kDiceMigrationOnStartupPref[] =
-    "signin.AccountReconcilor.kDiceMigrationOnStartup";
+    "signin.AccountReconcilor.kDiceMigrationOnStartup2";
 
 const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
 

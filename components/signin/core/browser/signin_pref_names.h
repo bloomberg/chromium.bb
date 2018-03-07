@@ -27,6 +27,7 @@ extern const char kReverseAutologinEnabled[];
 extern const char kReverseAutologinRejectedEmailList[];
 extern const char kSignedInTime[];
 extern const char kSigninAllowed[];
+extern const char kTokenServiceDiceCompatible[];
 extern const char kTokenServiceExcludeAllSecondaryAccounts[];
 extern const char kTokenServiceExcludedSecondaryAccounts[];
 

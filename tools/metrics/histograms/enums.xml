@@ -40160,6 +40160,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Different account"/>
 </enum>
 
+<enum name="SigninLoadTokenFromDB">
+  <int value="0" label="Loaded"/>
+  <int value="1" label="Revoked by Dice migration"/>
+  <int value="2" label="Revoked as secondary account"/>
+</enum>
+
 <enum name="SigninReason">
   <int value="0" label="Signin primary account"/>
   <int value="1" label="Add secondary account"/>
