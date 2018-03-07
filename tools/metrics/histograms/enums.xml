@@ -1384,9 +1384,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <summary>Defines Arc intent handler actions</summary>
   <int value="0" label="Error"/>
   <int value="1" label="Dialog deactivated"/>
-  <int value="2" label="Always"/>
-  <int value="3" label="Just once"/>
+  <int value="2" label="DEPRECATED: Always"/>
+  <int value="3" label="DEPRECATED: Just once"/>
   <int value="4" label="Preferred activity found"/>
+  <int value="5" label="Chrome pressed"/>
+  <int value="6" label="Chrome preferred and pressed"/>
+  <int value="7" label="ARC app pressed"/>
+  <int value="8" label="ARC app preferred and pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
