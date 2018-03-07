@@ -232,11 +232,6 @@ const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
 const char kDisableOfflineAutoReloadVisibleOnly[] =
     "disable-offline-auto-reload-visible-only";
 
-// Disables permission action reporting to Safe Browsing servers for opted in
-// users.
-const char kDisablePermissionActionReporting[] =
-    "disable-permission-action-reporting";
-
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -335,11 +330,6 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 // Only auto-reload error pages when the tab is visible.
 const char kEnableOfflineAutoReloadVisibleOnly[] =
     "enable-offline-auto-reload-visible-only";
-
-// Enables permission action reporting to Safe Browsing servers for opted in
-// users.
-const char kEnablePermissionActionReporting[] =
-    "enable-permission-action-reporting";
 
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)

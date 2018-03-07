@@ -17,13 +17,6 @@
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
@@ -69,7 +62,6 @@ using content::PermissionType;
 
 namespace {
 
-static bool gIsFakeOfficialBuildForTest = false;
 const int kPriorCountCap = 10;
 
 std::string GetPermissionRequestString(PermissionRequestType type) {
@@ -129,23 +121,6 @@ void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
 }
 
 }  // anonymous namespace
-
-// PermissionReportInfo -------------------------------------------------------
-PermissionReportInfo::PermissionReportInfo(
-    const GURL& origin,
-    ContentSettingsType permission,
-    PermissionAction action,
-    PermissionSourceUI source_ui,
-    PermissionRequestGestureType gesture_type,
-    int num_prior_dismissals,
-    int num_prior_ignores)
-    : origin(origin), permission(permission), action(action),
-      source_ui(source_ui), gesture_type(gesture_type),
-      num_prior_dismissals(num_prior_dismissals),
-      num_prior_ignores(num_prior_ignores) {}
-
-PermissionReportInfo::PermissionReportInfo(
-    const PermissionReportInfo& other) = default;
 
 // PermissionUmaUtil ----------------------------------------------------------
 
@@ -365,56 +340,6 @@ void PermissionUmaUtil::RecordWithBatteryBucket(const std::string& histogram) {
 }
 #endif
 
-void PermissionUmaUtil::FakeOfficialBuildForTest() {
-  gIsFakeOfficialBuildForTest = true;
-}
-
-bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePermissionActionReporting)) {
-    return false;
-  }
-
-  bool official_build = gIsFakeOfficialBuildForTest;
-#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
-  official_build = true;
-#endif
-
-  if (!official_build)
-    return false;
-
-  DCHECK(profile);
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE)
-    return false;
-  if (!profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
-    return false;
-
-  browser_sync::ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-
-  // Do not report if profile can't get a profile sync service or sync cannot
-  // start.
-  if (!(profile_sync_service && profile_sync_service->CanSyncStart()))
-    return false;
-
-  // Do not report for users with a Custom passphrase set. We need to wait for
-  // Sync to be active in order to check the passphrase, so we don't report if
-  // Sync is not active yet.
-  if (!profile_sync_service->IsSyncActive() ||
-      profile_sync_service->IsUsingSecondaryPassphrase()) {
-    return false;
-  }
-
-  syncer::ModelTypeSet preferred_data_types =
-      profile_sync_service->GetPreferredDataTypes();
-  if (!(preferred_data_types.Has(syncer::PROXY_TABS) &&
-        preferred_data_types.Has(syncer::PRIORITY_PREFERENCES))) {
-    return false;
-  }
-
-  return true;
-}
-
 void PermissionUmaUtil::RecordPermissionAction(
     ContentSettingsType permission,
     PermissionAction action,
@@ -428,14 +353,6 @@ void PermissionUmaUtil::RecordPermissionAction(
   int dismiss_count =
       autoblocker->GetDismissCount(requesting_origin, permission);
   int ignore_count = autoblocker->GetIgnoreCount(requesting_origin, permission);
-
-  if (IsOptedIntoPermissionActionReporting(profile)) {
-    PermissionReportInfo report_info(requesting_origin, permission, action,
-                                     source_ui, gesture_type, dismiss_count,
-                                     ignore_count);
-    g_browser_process->safe_browsing_service()
-        ->ui_manager()->ReportPermissionAction(report_info);
-  }
 
   if (web_contents) {
     ukm::SourceId source_id =

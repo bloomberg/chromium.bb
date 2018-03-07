@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
 
@@ -23,7 +22,6 @@ class GURL;
 
 namespace content {
 class WebContents;
-struct PermissionReportInfo;
 }  // namespace content
 
 namespace history {
@@ -74,10 +72,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
       const safe_browsing::HitReport& hit_report,
       const content::WebContents* web_contents) override;
 
-  // Report permission action to SafeBrowsing servers. Can only be called on UI
-  // thread.
-  void ReportPermissionAction(const PermissionReportInfo& report_info);
-
   // Creates the whitelist URL set for tests that create a blocking page
   // themselves and then simulate OnBlockingPageDone(). OnBlockingPageDone()
   // expects the whitelist to exist, but the tests don't necessarily call
@@ -116,10 +110,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
  private:
   friend class SafeBrowsingUIManagerTest;
   friend class TestSafeBrowsingUIManager;
-
-  // Report permission action to SafeBrowsing servers.
-  void ReportPermissionActionOnIOThread(
-      const PermissionReportInfo& report_info);
 
   static GURL GetMainFrameWhitelistUrlForResourceForTesting(
       const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);

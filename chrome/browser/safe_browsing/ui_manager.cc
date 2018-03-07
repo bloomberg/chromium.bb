@@ -144,15 +144,6 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
   sb_service_->ping_manager()->ReportSafeBrowsingHit(hit_report);
 }
 
-void SafeBrowsingUIManager::ReportPermissionAction(
-    const PermissionReportInfo& report_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SafeBrowsingUIManager::ReportPermissionActionOnIOThread,
-                     this, report_info));
-}
-
 // Static.
 void SafeBrowsingUIManager::CreateWhitelistForTesting(
     content::WebContents* web_contents) {
@@ -185,18 +176,6 @@ history::HistoryService* SafeBrowsingUIManager::history_service(
 const GURL SafeBrowsingUIManager::default_safe_page() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GURL(chrome::kChromeUINewTabURL);
-}
-
-void SafeBrowsingUIManager::ReportPermissionActionOnIOThread(
-    const PermissionReportInfo& report_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // The service may delete the ping manager (i.e. when user disabling service,
-  // etc). This happens on the IO thread.
-  if (!sb_service_ || !sb_service_->ping_manager())
-    return;
-
-  sb_service_->ping_manager()->ReportPermissionAction(report_info);
 }
 
 // If the user had opted-in to send ThreatDetails, this gets called

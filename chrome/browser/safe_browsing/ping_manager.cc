@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/notification_image_reporter.h"
-#include "chrome/browser/safe_browsing/permission_reporter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -33,19 +32,12 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     const SafeBrowsingProtocolConfig& config)
     : BasePingManager(request_context_getter, config) {
   if (request_context_getter) {
-    permission_reporter_ = std::make_unique<PermissionReporter>(
-        request_context_getter->GetURLRequestContext());
     notification_image_reporter_ = std::make_unique<NotificationImageReporter>(
         request_context_getter->GetURLRequestContext());
   }
 }
 
 SafeBrowsingPingManager::~SafeBrowsingPingManager() {
-}
-
-void SafeBrowsingPingManager::ReportPermissionAction(
-    const PermissionReportInfo& report_info) {
-  permission_reporter_->SendReport(report_info);
 }
 
 void SafeBrowsingPingManager::ReportNotificationImage(
