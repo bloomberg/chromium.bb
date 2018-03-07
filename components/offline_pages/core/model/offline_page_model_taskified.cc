@@ -30,7 +30,6 @@
 #include "components/offline_pages/core/model/persistent_pages_consistency_check_task.h"
 #include "components/offline_pages/core/model/temporary_pages_consistency_check_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"

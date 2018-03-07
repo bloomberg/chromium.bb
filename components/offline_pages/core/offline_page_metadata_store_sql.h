@@ -17,7 +17,8 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "components/offline_pages/core/offline_page_metadata_store.h"
+#include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/offline_store_types.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -28,8 +29,10 @@ class Connection;
 }
 
 namespace offline_pages {
-// OfflinePageMetadataStoreSQL is an instance of OfflinePageMetadataStore
-// which is implemented using a SQLite database.
+typedef StoreUpdateResult<OfflinePageItem> OfflinePagesUpdateResult;
+
+// OfflinePageMetadataStoreSQL keeps metadata for the offline pages in an SQLite
+// database.
 //
 // This store has a history of schema updates in pretty much every release.
 // Original schema was delivered in M52. Since then, the following changes
@@ -61,8 +64,22 @@ namespace offline_pages {
 //   |UpgradeFrom54|.
 // * Upgrade should use |UpgradeWithQuery| and simply specify SQL command to
 //   move data from old table (prefixed by temp_) to the new one.
-class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
+class OfflinePageMetadataStoreSQL {
  public:
+  // This enum is used in an UMA histogram. Hence the entries here shouldn't
+  // be deleted or re-ordered and new ones should be added to the end.
+  enum LoadStatus {
+    LOAD_SUCCEEDED,
+    STORE_INIT_FAILED,
+    STORE_LOAD_FAILED,
+    DATA_PARSING_FAILED,
+
+    // NOTE: always keep this entry at the end.
+    LOAD_STATUS_COUNT
+  };
+
+  typedef base::RepeatingCallback<void(bool /* success */)> ResetCallback;
+
   // Definition of the callback that is going to run the core of the command in
   // the |Execute| method.
   template <typename T>
@@ -89,19 +106,7 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const base::FilePath& database_dir);
 
-  ~OfflinePageMetadataStoreSQL() override;
-
-  // Implementation methods.
-  void Initialize(const InitializeCallback& callback) override;
-  void GetOfflinePages(const LoadCallback& callback) override;
-  void AddOfflinePage(const OfflinePageItem& offline_page,
-                      const AddCallback& callback) override;
-  void UpdateOfflinePages(const std::vector<OfflinePageItem>& pages,
-                          const UpdateCallback& callback) override;
-  void RemoveOfflinePages(const std::vector<int64_t>& offline_ids,
-                          const UpdateCallback& callback) override;
-  void Reset(const ResetCallback& callback) override;
-  StoreState state() const override;
+  ~OfflinePageMetadataStoreSQL();
 
   // Executes a |run_callback| on SQL store on the blocking thread, and posts
   // its result back to calling thread through |result_callback|.
@@ -153,6 +158,7 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
 
   // Helper function used to force incorrect state for testing purposes.
   void SetStateForTesting(StoreState state, bool reset_db);
+  StoreState GetStateForTesting() const;
 
  private:
   // Initializes database and calls callback.
