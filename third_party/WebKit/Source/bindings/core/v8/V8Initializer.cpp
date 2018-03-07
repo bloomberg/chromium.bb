@@ -78,17 +78,13 @@ namespace blink {
 
 static void ReportFatalErrorInMainThread(const char* location,
                                          const char* message) {
-  int memory_usage_mb = Platform::Current()->ActualMemoryUsageMB();
-  DVLOG(1) << "V8 error: " << message << " (" << location
-           << ").  Current memory usage: " << memory_usage_mb << " MB";
+  DVLOG(1) << "V8 error: " << message << " (" << location << ").";
   LOG(FATAL);
 }
 
 static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
-  int memory_usage_mb = Platform::Current()->ActualMemoryUsageMB();
   DVLOG(1) << "V8 " << (is_js_heap ? "javascript" : "process") << " OOM: ("
-           << location << ").  Current memory usage: " << memory_usage_mb
-           << " MB";
+           << location << ").";
   OOM_CRASH();
 }
 

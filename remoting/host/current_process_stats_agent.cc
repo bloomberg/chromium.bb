@@ -5,6 +5,13 @@
 #include "remoting/host/current_process_stats_agent.h"
 
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include <windows.h>  // This include must come first.
+
+#include <psapi.h>
+#endif
 
 namespace remoting {
 
@@ -20,7 +27,15 @@ protocol::ProcessResourceUsage CurrentProcessStatsAgent::GetResourceUsage() {
   current.set_process_name(process_name_);
   current.set_processor_usage(metrics_->GetPlatformIndependentCPUUsage());
   current.set_working_set_size(metrics_->GetWorkingSetSize());
-  current.set_pagefile_size(metrics_->GetPagefileUsage());
+
+// The concept of "Page File" is only well defined on Windows.
+#if defined(OS_WIN)
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    current.set_working_set_size(pmc.PagefileUsage);
+  }
+#endif
+
   return current;
 }
 

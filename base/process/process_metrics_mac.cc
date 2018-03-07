@@ -132,13 +132,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process, port_provider));
 }
 
-size_t ProcessMetrics::GetPagefileUsage() const {
-  task_basic_info_64 task_info_data;
-  if (!GetTaskInfo(TaskForPid(process_), &task_info_data))
-    return 0;
-  return task_info_data.virtual_size;
-}
-
 size_t ProcessMetrics::GetPeakPagefileUsage() const {
   return 0;
 }

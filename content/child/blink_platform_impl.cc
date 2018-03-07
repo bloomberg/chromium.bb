@@ -40,7 +40,6 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/content_child_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
@@ -742,10 +741,6 @@ bool BlinkPlatformImpl::DatabaseSetFileSize(
     const blink::WebString& vfs_file_name,
     long long size) {
   return false;
-}
-
-size_t BlinkPlatformImpl::ActualMemoryUsageMB() {
-  return GetMemoryUsageKB() >> 10;
 }
 
 size_t BlinkPlatformImpl::NumberOfProcessors() {

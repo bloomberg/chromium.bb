@@ -46,14 +46,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-size_t ProcessMetrics::GetPagefileUsage() const {
-  PROCESS_MEMORY_COUNTERS pmc;
-  if (GetProcessMemoryInfo(process_.Get(), &pmc, sizeof(pmc))) {
-    return pmc.PagefileUsage;
-  }
-  return 0;
-}
-
 // Returns the peak space allocated for the pagefile, in bytes.
 size_t ProcessMetrics::GetPeakPagefileUsage() const {
   PROCESS_MEMORY_COUNTERS pmc;

@@ -97,10 +97,6 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
 
 #if !defined(OS_MACOSX)
 
-size_t ChromeTestProcessMetrics::GetPagefileUsage() {
-  return process_metrics_->GetPagefileUsage();
-}
-
 size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
   return process_metrics_->GetWorkingSetSize();
 }
