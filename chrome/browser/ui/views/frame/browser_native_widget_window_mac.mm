@@ -4,6 +4,10 @@
 
 #import "chrome/browser/ui/views/frame/browser_native_widget_window_mac.h"
 
+#if !defined(GOOGLE_CHROME_BUILD)
+#import "chrome/browser/ui/views/frame/macviews_under_construction_window_mac.h"
+#endif
+
 #import <AppKit/AppKit.h>
 
 namespace {
@@ -66,4 +70,15 @@ WEAK_IMPORT_ATTRIBUTE
 - (BOOL)_usesCustomDrawing {
   return NO;
 }
+
+// NSWindow overrides.
+
+- (void)orderWindow:(NSWindowOrderingMode)place relativeTo:(NSInteger)otherWin {
+  [super orderWindow:place relativeTo:otherWin];
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (place != NSWindowOut)
+    [MacViewsUnderConstructionWindow attachToWindow:self];
+#endif
+}
+
 @end
