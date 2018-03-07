@@ -12,13 +12,21 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/process/process_metrics.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/installer/zucchini/io_utils.h"
 #include "chrome/installer/zucchini/zucchini_commands.h"
 
+#if defined(OS_WIN)
+#include <windows.h>  // This include must come first.
+
+#include <psapi.h>
+#endif
+
 namespace {
+
+#if defined(OS_WIN)
+#endif
 
 /******** Command ********/
 
@@ -68,25 +76,27 @@ class ScopedResourceUsageTracker {
   ScopedResourceUsageTracker() {
     start_time_ = base::TimeTicks::Now();
 
-#if !defined(OS_MACOSX)
-    std::unique_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateProcessMetrics(
-            base::GetCurrentProcessHandle()));
-    start_peak_page_file_usage_ = process_metrics->GetPeakPagefileUsage();
-    start_peak_working_set_size_ = process_metrics->GetPeakWorkingSetSize();
-#endif  // !defined(OS_MACOSX)
+#if defined(OS_WIN)
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+      start_peak_page_file_usage_ = pmc.PeakPagefileUsage;
+      start_peak_working_set_size_ = pmc.PeakWorkingSetSize;
+    }
+#endif
   }
 
   // Computes and prints usage.
   ~ScopedResourceUsageTracker() {
     base::TimeTicks end_time = base::TimeTicks::Now();
 
-#if !defined(OS_MACOSX)
-    std::unique_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateProcessMetrics(
-            base::GetCurrentProcessHandle()));
-    size_t cur_peak_page_file_usage = process_metrics->GetPeakPagefileUsage();
-    size_t cur_peak_working_set_size = process_metrics->GetPeakWorkingSetSize();
+#if defined(OS_WIN)
+    size_t cur_peak_page_file_usage = 0;
+    size_t cur_peak_working_set_size = 0;
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+      cur_peak_page_file_usage = pmc.PeakPagefileUsage;
+      cur_peak_working_set_size = pmc.PeakWorkingSetSize;
+    }
 
     LOG(INFO) << "Zucchini.PeakPagefileUsage "
               << cur_peak_page_file_usage / 1024 << " KiB";
@@ -107,9 +117,9 @@ class ScopedResourceUsageTracker {
 
  private:
   base::TimeTicks start_time_;
-#if !defined(OS_MACOSX)
-  size_t start_peak_page_file_usage_;
-  size_t start_peak_working_set_size_;
+#if defined(OS_WIN)
+  size_t start_peak_page_file_usage_ = 0;
+  size_t start_peak_working_set_size_ = 0;
 #endif  // !defined(OS_MACOSX)
 };
 

@@ -132,19 +132,11 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process, port_provider));
 }
 
-size_t ProcessMetrics::GetPeakPagefileUsage() const {
-  return 0;
-}
-
 size_t ProcessMetrics::GetWorkingSetSize() const {
   size_t resident_bytes = 0;
   if (!GetMemoryBytes(nullptr, nullptr, &resident_bytes, nullptr))
     return 0;
   return resident_bytes;
-}
-
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  return 0;
 }
 
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,

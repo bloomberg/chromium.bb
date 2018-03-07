@@ -21,10 +21,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-size_t ProcessMetrics::GetPeakPagefileUsage() const {
-  return 0;
-}
-
 size_t ProcessMetrics::GetWorkingSetSize() const {
   struct kinfo_proc info;
   size_t length;
@@ -40,10 +36,6 @@ size_t ProcessMetrics::GetWorkingSetSize() const {
     return -1;
 
   return info.p_vm_rssize * getpagesize();
-}
-
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  return 0;
 }
 
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,

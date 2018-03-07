@@ -35,11 +35,6 @@ size_t ProcessMetrics::GetWorkingSetSize() const {
   return 0;
 }
 
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
-  return 0;
-}
-
 bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
   NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
   return false;

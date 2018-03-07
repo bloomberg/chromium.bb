@@ -135,13 +135,9 @@ class BASE_EXPORT ProcessMetrics {
   // convenience wrapper for CreateProcessMetrics().
   static std::unique_ptr<ProcessMetrics> CreateCurrentProcessMetrics();
 
-  // Returns the peak space allocated for the pagefile, in bytes.
-  size_t GetPeakPagefileUsage() const;
   // Returns the current working set size, in bytes.  On Linux, this returns
   // the resident set size.
   size_t GetWorkingSetSize() const;
-  // Returns the peak working set size, in bytes.
-  size_t GetPeakWorkingSetSize() const;
   // Returns private and sharedusage, in bytes. Private bytes is the amount of
   // memory currently allocated to a process that cannot be shared. Returns
   // false on platform specific error conditions.  Note: |private_bytes|

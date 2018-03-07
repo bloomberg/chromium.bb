@@ -26,10 +26,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-size_t ProcessMetrics::GetPeakPagefileUsage() const {
-  return 0;
-}
-
 size_t ProcessMetrics::GetWorkingSetSize() const {
   struct kinfo_proc info;
   int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, process_ };
@@ -39,10 +35,6 @@ size_t ProcessMetrics::GetWorkingSetSize() const {
     return 0;
 
   return info.ki_rssize * getpagesize();
-}
-
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  return 0;
 }
 
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,

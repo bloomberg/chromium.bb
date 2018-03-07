@@ -27,7 +27,6 @@
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -41,6 +40,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,6 +82,12 @@
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
+
+#if defined(OS_WIN)
+#include <windows.h>  // This include must come first.
+
+#include <psapi.h>
+#endif
 
 using installer::InstallerState;
 using installer::InstallationState;
@@ -1455,15 +1461,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                             installer::MAX_INSTALL_STATUS);
 
   // Dump peak memory usage.
-  std::unique_ptr<base::ProcessMetrics> process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(
-          base::GetCurrentProcessHandle()));
-  UMA_HISTOGRAM_MEMORY_KB("Setup.Install.PeakPagefileUsage",
-      base::saturated_cast<base::HistogramBase::Sample>(
-          process_metrics->GetPeakPagefileUsage() / 1024));
-  UMA_HISTOGRAM_MEMORY_KB("Setup.Install.PeakWorkingSetSize",
-      base::saturated_cast<base::HistogramBase::Sample>(
-          process_metrics->GetPeakWorkingSetSize() / 1024));
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    UMA_HISTOGRAM_MEMORY_KB("Setup.Install.PeakPagefileUsage",
+                            base::saturated_cast<base::HistogramBase::Sample>(
+                                pmc.PeakPagefileUsage / 1024));
+    UMA_HISTOGRAM_MEMORY_KB("Setup.Install.PeakWorkingSetSize",
+                            base::saturated_cast<base::HistogramBase::Sample>(
+                                pmc.PeakWorkingSetSize / 1024));
+  }
 
   int return_code = 0;
   // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will

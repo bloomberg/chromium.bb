@@ -116,14 +116,6 @@ ChromeTestProcessMetrics::ChromeTestProcessMetrics(
   process_handle_ = process;
 }
 
-size_t ChromeTestProcessMetrics::GetPeakPagefileUsage() {
-  return process_metrics_->GetPeakPagefileUsage();
-}
-
-size_t ChromeTestProcessMetrics::GetPeakWorkingSetSize() {
-  return process_metrics_->GetPeakWorkingSetSize();
-}
-
 bool ChromeTestProcessMetrics::GetIOCounters(base::IoCounters* io_counters) {
   return process_metrics_->GetIOCounters(io_counters);
 }
