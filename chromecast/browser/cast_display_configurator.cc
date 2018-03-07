@@ -81,7 +81,7 @@ CastDisplayConfigurator::CastDisplayConfigurator(CastScreen* screen)
   if (delegate_) {
     delegate_->AddObserver(this);
     delegate_->Initialize();
-    OnConfigurationChanged();
+    ForceInitialConfigure();
   } else {
     ConfigureDisplayFromCommandLine();
   }
@@ -95,9 +95,9 @@ CastDisplayConfigurator::~CastDisplayConfigurator() {
 // display::NativeDisplayObserver interface
 void CastDisplayConfigurator::OnConfigurationChanged() {
   DCHECK(delegate_);
-  delegate_->GetDisplays(
-      base::Bind(&CastDisplayConfigurator::OnDisplaysAcquired,
-                 weak_factory_.GetWeakPtr()));
+  delegate_->GetDisplays(base::Bind(
+      &CastDisplayConfigurator::OnDisplaysAcquired, weak_factory_.GetWeakPtr(),
+      false /* force_initial_configure */));
 }
 
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
@@ -106,7 +106,14 @@ void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
                GetRotationFromCommandLine());
 }
 
+void CastDisplayConfigurator::ForceInitialConfigure() {
+  delegate_->GetDisplays(base::Bind(
+      &CastDisplayConfigurator::OnDisplaysAcquired, weak_factory_.GetWeakPtr(),
+      true /* force_initial_configure */));
+}
+
 void CastDisplayConfigurator::OnDisplaysAcquired(
+    bool force_initial_configure,
     const std::vector<display::DisplaySnapshot*>& displays) {
   DCHECK(delegate_);
   if (displays.empty()) {
@@ -126,6 +133,17 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
   }
 
   gfx::Point origin;
+  gfx::Size native_size(display->native_mode()->size());
+  if (force_initial_configure) {
+    // For initial configuration, pass the native geometry to gfx::Screen
+    // before calling Configure(), so that this information is available
+    // to chrome during startup. Otherwise we will not have a valid display
+    // during the first queries to display::Screen.
+    UpdateScreen(display->display_id(), gfx::Rect(origin, native_size),
+                 GetDeviceScaleFactor(native_size),
+                 GetRotationFromCommandLine());
+  }
+
   delegate_->Configure(
       *display, display->native_mode(), origin,
       base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
