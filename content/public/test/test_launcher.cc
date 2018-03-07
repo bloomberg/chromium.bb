@@ -537,6 +537,8 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
   result.output_snippet = GetTestOutputSnippet(result, output);
 
+  launcher_delegate_->PostRunTest(&result);
+
   if (base::ContainsKey(dependent_test_map_, test_name)) {
     RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
   } else {

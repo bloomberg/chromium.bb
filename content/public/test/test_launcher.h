@@ -58,6 +58,12 @@ class TestLauncherDelegate {
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options);
 
+  // Called after running each test. Can modify test result.
+  //
+  // NOTE: Just like PreRunTest, this is not called when --single_process is
+  // supplied.
+  virtual void PostRunTest(base::TestResult* result) {}
+
   // Allows a TestLauncherDelegate to do work before the launcher shards test
   // jobs.
   virtual void PreSharding() {}
