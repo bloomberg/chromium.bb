@@ -176,7 +176,13 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporterTest);
 };
 
-TEST_F(OutOfMemoryReporterTest, SimpleOOM) {
+// Flaky on Android:  http://crbug.com/819592
+#if defined(OS_ANDROID)
+#define MAYBE_SimpleOOM DISABLED_SimpleOOM
+#else
+#define MAYBE_SimpleOOM SimpleOOM
+#endif
+TEST_F(OutOfMemoryReporterTest, MAYBE_SimpleOOM) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
 
