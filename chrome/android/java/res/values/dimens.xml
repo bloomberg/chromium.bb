@@ -333,10 +333,10 @@
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="ntp_search_box_logo_padding">8dp</dimen>
     <dimen name="ntp_search_box_voice_search_margin_end_modern">6dp</dimen>
-    <!-- Lateral offset added to the search box bounds when modern is enabled. 8dp is added to both
-         the top and bottom bounds to bring the 40dp modern_toolbar_background_size to 56dp
+    <!-- Negative lateral inset added to the search box bounds when modern is enabled. 8dp is added
+         to both the top and bottom bounds to bring the 40dp modern_toolbar_background_size to 56dp
          (matches toolbar_height_no_shadow). -->
-    <dimen name="ntp_search_box_bounds_lateral_offset_modern">8dp</dimen>
+    <dimen name="ntp_search_box_bounds_lateral_inset_modern">-8dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
