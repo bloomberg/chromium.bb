@@ -32,7 +32,8 @@ class ClientSharedBitmap : public SharedBitmap {
                      id,
                      sequence_number),
         shared_bitmap_allocation_notifier_(
-            std::move(shared_bitmap_allocation_notifier)) {}
+            std::move(shared_bitmap_allocation_notifier)),
+        tracing_id_(shared_memory->mapped_id()) {}
 
   ClientSharedBitmap(
       scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
@@ -51,17 +52,16 @@ class ClientSharedBitmap : public SharedBitmap {
     (*shared_bitmap_allocation_notifier_)->DidDeleteSharedBitmap(id());
   }
 
-  // SharedBitmap:
-  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
-    if (!shared_memory_holder_)
-      return base::SharedMemoryHandle();
-    return shared_memory_holder_->handle();
+  // SharedBitmap implementation.
+  base::UnguessableToken GetCrossProcessGUID() const override {
+    return tracing_id_;
   }
 
  private:
   scoped_refptr<mojom::ThreadSafeSharedBitmapAllocationNotifierPtr>
       shared_bitmap_allocation_notifier_;
   std::unique_ptr<base::SharedMemory> shared_memory_holder_;
+  base::UnguessableToken tracing_id_;
 };
 
 // Collect extra information for debugging bitmap creation failures.

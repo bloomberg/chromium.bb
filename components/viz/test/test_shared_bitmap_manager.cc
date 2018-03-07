@@ -27,8 +27,8 @@ class OwnedSharedBitmap : public SharedBitmap {
   ~OwnedSharedBitmap() override = default;
 
   // SharedBitmap:
-  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
-    return shared_memory_->handle();
+  base::UnguessableToken GetCrossProcessGUID() const override {
+    return shared_memory_->mapped_id();
   }
 
  private:
@@ -37,13 +37,19 @@ class OwnedSharedBitmap : public SharedBitmap {
 
 class UnownedSharedBitmap : public SharedBitmap {
  public:
-  UnownedSharedBitmap(uint8_t* pixels, const SharedBitmapId& id)
-      : SharedBitmap(pixels, id, g_next_sequence_number++) {}
+  UnownedSharedBitmap(uint8_t* pixels,
+                      const SharedBitmapId& id,
+                      const base::UnguessableToken& tracing_id)
+      : SharedBitmap(pixels, id, g_next_sequence_number++),
+        tracing_id_(tracing_id) {}
 
   // SharedBitmap:
-  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
-    return base::SharedMemoryHandle();
+  base::UnguessableToken GetCrossProcessGUID() const override {
+    return tracing_id_;
   }
+
+ private:
+  base::UnguessableToken tracing_id_;
 };
 
 }  // namespace
@@ -69,7 +75,8 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
   uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
-  return std::make_unique<UnownedSharedBitmap>(pixels, id);
+  const base::UnguessableToken& tracing_id = bitmap_map_[id]->mapped_id();
+  return std::make_unique<UnownedSharedBitmap>(pixels, id, tracing_id);
 }
 
 bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
