@@ -270,6 +270,7 @@ void MediaRouterWebUIMessageHandler::UpdateRoutes(
         current_cast_modes) {
   std::unique_ptr<base::ListValue> routes_val(
       RoutesToValue(routes, joinable_route_ids, current_cast_modes));
+
   web_ui()->CallJavascriptFunctionUnsafe(kSetRouteList, *routes_val);
 }
 
@@ -330,7 +331,6 @@ void MediaRouterWebUIMessageHandler::UpdateMediaRouteStatus(
 
   base::DictionaryValue status_value;
   status_value.SetString("title", status.title);
-  status_value.SetString("description", status.description);
   status_value.SetBoolean("canPlayPause", status.can_play_pause);
   status_value.SetBoolean("canMute", status.can_mute);
   status_value.SetBoolean("canSetVolume", status.can_set_volume);

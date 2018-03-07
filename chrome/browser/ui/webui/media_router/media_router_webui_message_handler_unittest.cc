@@ -398,7 +398,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, SetCastModesList) {
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateMediaRouteStatus) {
   MediaStatus status;
   status.title = "test title";
-  status.description = "test description";
   status.can_play_pause = true;
   status.can_set_volume = true;
   status.play_state = MediaStatus::PlayState::BUFFERING;
@@ -414,7 +413,6 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateMediaRouteStatus) {
       ExtractDictFromCallArg("media_router.ui.updateRouteStatus");
 
   EXPECT_EQ(status.title, GetStringFromDict(status_value, "title"));
-  EXPECT_EQ(status.description, GetStringFromDict(status_value, "description"));
   EXPECT_EQ(status.can_play_pause,
             GetBooleanFromDict(status_value, "canPlayPause"));
   EXPECT_EQ(status.can_mute, GetBooleanFromDict(status_value, "canMute"));

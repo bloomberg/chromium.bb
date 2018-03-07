@@ -45,7 +45,7 @@ cr.define('route_controls', function() {
       var createRouteStatus = function(params = {}) {
         return new media_router.RouteStatus(
             params.title ? params.title : '',
-            params.status ? params.status : '', !!params.canPlayPause,
+            !!params.canPlayPause,
             !!params.canMute, !!params.canSetVolume, !!params.canSeek,
             params.playState ? params.playState :
                                media_router.PlayState.PLAYING,
@@ -89,16 +89,20 @@ cr.define('route_controls', function() {
         assertElementText(fakeRouteTwo.description, 'route-description');
       });
 
-      // Tests that the route title and status are shown when RouteStatus is
+      // Tests that the route status title is shown when RouteStatus is
       // updated.
       test('update route text', function() {
-        var title = 'test title';
-        var status = 'test status';
-        controls.routeStatus =
-            createRouteStatus({title: title, status: status});
+        // Set |route|.
+        controls.onRouteUpdated_(fakeRouteOne);
+        assertElementText(fakeRouteOne.description, 'route-description');
 
+        // Set the route status title.
+        var title = 'test title';
+        controls.routeStatus =
+            createRouteStatus({title: title});
+
+        assertElementText(fakeRouteOne.description, 'route-description');
         assertElementText(title, 'route-title');
-        assertElementText(status, 'route-description');
       });
 
       // Tests that media controls are shown and hidden when RouteStatus is
