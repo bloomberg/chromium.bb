@@ -29,10 +29,10 @@
 
 namespace extensions {
 
-namespace {
-
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
+
+namespace {
 
 struct ManifestPermissions : public Extension::ManifestData {
   ManifestPermissions(std::unique_ptr<const PermissionSet> permissions);
