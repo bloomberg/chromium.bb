@@ -334,14 +334,6 @@ gfx::Size ContentViewCore::GetViewportSizePix() const {
                    Java_ContentViewCoreImpl_getViewportHeightPix(env, j_obj));
 }
 
-int ContentViewCore::GetMouseWheelMinimumGranularity() const {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return 0;
-  return Java_ContentViewCoreImpl_getMouseWheelTickMultiplier(env, j_obj);
-}
-
 void ContentViewCore::SendScreenRectsAndResizeWidget() {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view) {

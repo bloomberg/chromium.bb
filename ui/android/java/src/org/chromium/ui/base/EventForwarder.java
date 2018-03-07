@@ -277,12 +277,11 @@ public class EventForwarder {
         return 0;
     }
 
-    public boolean onMouseWheelEvent(
-            long timeMs, float x, float y, float ticksX, float ticksY, float pixelsPerTick) {
+    public boolean onMouseWheelEvent(long timeMs, float x, float y, float ticksX, float ticksY) {
         assert mNativeEventForwarder != 0;
         float scale = getEventSourceScaling();
         nativeOnMouseWheelEvent(
-                mNativeEventForwarder, timeMs, x / scale, y / scale, ticksX, ticksY, pixelsPerTick);
+                mNativeEventForwarder, timeMs, x / scale, y / scale, ticksX, ticksY);
         return true;
     }
 
@@ -404,8 +403,8 @@ public class EventForwarder {
     private native void nativeOnMouseEvent(long nativeEventForwarder, long timeMs, int action,
             float x, float y, int pointerId, float pressure, float orientation, float tilt,
             int changedButton, int buttonState, int metaState, int toolType);
-    private native void nativeOnMouseWheelEvent(long nativeEventForwarder, long timeMs, float x,
-            float y, float ticksX, float ticksY, float pixelsPerTick);
+    private native void nativeOnMouseWheelEvent(
+            long nativeEventForwarder, long timeMs, float x, float y, float ticksX, float ticksY);
     private native void nativeOnDragEvent(long nativeEventForwarder, int action, int x, int y,
             int screenX, int screenY, String[] mimeTypes, String content);
     private native boolean nativeOnGestureEvent(

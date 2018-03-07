@@ -4,9 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
-import android.util.TypedValue;
-
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -39,10 +36,6 @@ public class RenderCoordinates {
     // Cached device density.
     private float mDeviceScaleFactor = 1.0f;
 
-    // Multiplier that determines how many (device) pixels to scroll per mouse
-    // wheel tick. Defaults to the preferred list item height.
-    private float mWheelScrollFactor;
-
     private float mTopContentOffsetYPix;
 
     private boolean mHasFrameInfo;
@@ -59,23 +52,8 @@ public class RenderCoordinates {
         mContentHeightCss = contentHeightCss;
     }
 
-    public void setDeviceScaleFactor(float dipScale, Context context) {
+    public void setDeviceScaleFactor(float dipScale) {
         mDeviceScaleFactor = dipScale;
-
-        // The wheel scroll factor depends on the theme in the context.
-        // This code assumes that the theme won't change between this call and
-        // getWheelScrollFactor().
-
-        TypedValue outValue = new TypedValue();
-        // This is the same attribute used by Android Views to scale wheel
-        // event motion into scroll deltas.
-        if (context != null && context.getTheme().resolveAttribute(
-                android.R.attr.listPreferredItemHeight, outValue, true)) {
-            mWheelScrollFactor = outValue.getDimension(context.getResources().getDisplayMetrics());
-        } else {
-            // If attribute retrieval fails, just use a sensible default.
-            mWheelScrollFactor = 64 * mDeviceScaleFactor;
-        }
     }
 
     public void updateFrameInfo(float scrollXCss, float scrollYCss, float contentWidthCss,
@@ -351,13 +329,6 @@ public class RenderCoordinates {
      */
     public float getDeviceScaleFactor() {
         return mDeviceScaleFactor;
-    }
-
-    /**
-     * @return Current wheel scroll factor (physical pixels per mouse scroll click).
-     */
-    public float getWheelScrollFactor() {
-        return mWheelScrollFactor;
     }
 
     /**

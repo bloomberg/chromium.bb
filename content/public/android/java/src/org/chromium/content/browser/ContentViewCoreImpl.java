@@ -271,7 +271,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
         setContainerView(containerView);
         mRenderCoordinates = mWebContents.getRenderCoordinates();
-        mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext().get());
+        mRenderCoordinates.setDeviceScaleFactor(dipScale);
         WebContentsAccessibilityImpl wcax = WebContentsAccessibilityImpl.create(
                 mContext, containerView, webContents, mProductVersion);
         setContainerViewInternals(internalDispatcher);
@@ -434,15 +434,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @CalledByNative
     private int getViewportHeightPix() {
         return mContainerView.getHeight();
-    }
-
-    /**
-     * @return The number of pixels (DIPs) each tick of the mouse wheel should scroll.
-     */
-    @CalledByNative
-    private float getMouseWheelTickMultiplier() {
-        return mRenderCoordinates.getWheelScrollFactor()
-                / mRenderCoordinates.getDeviceScaleFactor();
     }
 
     @VisibleForTesting
@@ -691,8 +682,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 case MotionEvent.ACTION_SCROLL:
                     getEventForwarder().onMouseWheelEvent(event.getEventTime(), event.getX(),
                             event.getY(), event.getAxisValue(MotionEvent.AXIS_HSCROLL),
-                            event.getAxisValue(MotionEvent.AXIS_VSCROLL),
-                            mRenderCoordinates.getWheelScrollFactor());
+                            event.getAxisValue(MotionEvent.AXIS_VSCROLL));
                     return true;
                 case MotionEvent.ACTION_BUTTON_PRESS:
                 case MotionEvent.ACTION_BUTTON_RELEASE:
@@ -956,7 +946,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         WindowAndroid windowAndroid = getWindowAndroid();
         if (windowAndroid == null || mNativeContentViewCore == 0) return;
 
-        mRenderCoordinates.setDeviceScaleFactor(dipScale, getWindowAndroid().getContext().get());
+        mRenderCoordinates.setDeviceScaleFactor(dipScale);
         nativeSetDIPScale(mNativeContentViewCore, dipScale);
     }
 

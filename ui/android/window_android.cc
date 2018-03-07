@@ -24,6 +24,8 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
+const float kDefaultMouseWheelTickMultiplier = 64;
+
 class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
  public:
   explicit WindowBeginFrameSource(WindowAndroid* window)
@@ -125,12 +127,18 @@ WindowAndroid* WindowAndroid::FromJavaWindowAndroid(
       AttachCurrentThread(), jwindow_android));
 }
 
-WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, int display_id)
+WindowAndroid::WindowAndroid(JNIEnv* env,
+                             jobject obj,
+                             int display_id,
+                             float scroll_factor)
     : display_id_(display_id),
       compositor_(NULL),
       begin_frame_source_(new WindowBeginFrameSource(this)),
       needs_begin_frames_(false) {
   java_window_.Reset(env, obj);
+  mouse_wheel_tick_multiplier_ = scroll_factor > 0
+                                     ? scroll_factor / GetDipScale()
+                                     : kDefaultMouseWheelTickMultiplier;
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -295,8 +303,10 @@ ScopedJavaLocalRef<jobject> WindowAndroid::GetWindowToken() {
 
 jlong JNI_WindowAndroid_Init(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
-                             int sdk_display_id) {
-  WindowAndroid* window = new WindowAndroid(env, obj, sdk_display_id);
+                             int sdk_display_id,
+                             float scroll_factor) {
+  WindowAndroid* window =
+      new WindowAndroid(env, obj, sdk_display_id, scroll_factor);
   return reinterpret_cast<intptr_t>(window);
 }
 
