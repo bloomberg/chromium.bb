@@ -848,6 +848,8 @@ Bug(none) transforms/transformed-caret.html [ Pass Failure ]
 Bug(none) compositing/geometry/transformed-abs-position-inside-composited.html [ Failure ]
 Bug(none) fast/table/border-collapsing/001-vertical.html [ Failure ]
 Bug(none) fast/table/border-collapsing/001.html [ Failure ]
+Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
+Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
 
 crbug.com/644358 paint/invalidation/selection/selection-after-delete.html [ Failure ]
 crbug.com/644358 paint/invalidation/selection/selection-after-remove.html [ Failure ]

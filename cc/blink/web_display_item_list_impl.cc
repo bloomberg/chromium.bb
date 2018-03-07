@@ -84,7 +84,7 @@ void WebDisplayItemListImpl::AppendEndClipPathItem() {
 
 void WebDisplayItemListImpl::AppendFloatClipItem(
     const blink::WebFloatRect& clip_rect) {
-  bool antialias = false;
+  bool antialias = true;
   display_item_list_->StartPaint();
   display_item_list_->push<cc::SaveOp>();
   display_item_list_->push<cc::ClipRectOp>(gfx::RectFToSkRect(clip_rect),

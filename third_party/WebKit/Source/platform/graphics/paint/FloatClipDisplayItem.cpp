@@ -12,7 +12,7 @@ namespace blink {
 
 void FloatClipDisplayItem::Replay(GraphicsContext& context) const {
   context.Save();
-  context.Clip(clip_rect_);
+  context.ClipRect(clip_rect_, kAntiAliased);
 }
 
 void FloatClipDisplayItem::AppendToWebDisplayItemList(
