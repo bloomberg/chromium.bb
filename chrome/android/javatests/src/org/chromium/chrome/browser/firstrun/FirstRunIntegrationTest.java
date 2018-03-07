@@ -214,7 +214,8 @@ public class FirstRunIntegrationTest {
         // startup flow where they were interrupted.
         mActivity = instrumentation.waitForMonitorWithTimeout(
                 freMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        instrumentation.removeMonitor(freMonitor);
+        Assert.assertNotNull(mActivity);
+
         ActivityMonitor activityMonitor =
                 new ActivityMonitor(ChromeLauncherActivity.class.getName(), null, false);
         instrumentation.addMonitor(activityMonitor);
@@ -226,6 +227,7 @@ public class FirstRunIntegrationTest {
 
         mActivity = instrumentation.waitForMonitorWithTimeout(
                 activityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertNotNull(mActivity);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -278,7 +280,8 @@ public class FirstRunIntegrationTest {
         // startup flow where they were interrupted.
         mActivity = instrumentation.waitForMonitorWithTimeout(
                 freMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        instrumentation.removeMonitor(freMonitor);
+        Assert.assertNotNull(mActivity);
+
         ActivityMonitor activityMonitor =
                 new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
         instrumentation.addMonitor(activityMonitor);
