@@ -302,7 +302,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
 
   // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
   HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
-  gpu_info->optimus = nvd3d9wrap != NULL;
+  gpu_info->optimus = nvd3d9wrap != nullptr;
 
   // Taken from http://www.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
@@ -324,6 +324,9 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     // Chained DD" or the citrix display driver.
     if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0 &&
         wcscmp(dd.DeviceString, L"Citrix Systems Inc. Display Driver") != 0) {
+      // Set vendor_id/device_id for blacklisting purpose.
+      gpu_info->gpu.vendor_id = 0xffff;
+      gpu_info->gpu.device_id = 0xfffe;
       return false;
     }
   }
