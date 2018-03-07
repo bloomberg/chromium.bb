@@ -20,9 +20,7 @@ namespace policy {
 
 class VariationsServiceDevicePolicyTest : public DevicePolicyCrosBrowserTest {
  protected:
-  VariationsServiceDevicePolicyTest() {
-    variations::VariationsService::EnableForTesting();
-  }
+  VariationsServiceDevicePolicyTest() {}
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
