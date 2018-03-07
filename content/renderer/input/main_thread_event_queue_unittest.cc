@@ -13,7 +13,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -43,9 +42,6 @@ namespace {
 
 // Simulate a 16ms frame signal.
 const base::TimeDelta kFrameInterval = base::TimeDelta::FromMilliseconds(16);
-
-const char* kCoalescedCountHistogram =
-    "Event.MainThreadEventQueue.CoalescedCount";
 
 }  // namespace
 
@@ -251,8 +247,6 @@ class MainThreadEventQueueTest : public testing::Test,
 };
 
 TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
-  base::HistogramTester histogram_tester;
-
   WebMouseWheelEvent kEvents[4] = {
       SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false),
       SyntheticWebMouseWheelEventBuilder::Build(20, 20, 0, 53, 0, false),
@@ -346,13 +340,9 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_EQ(coalesced_event, *coalesced_wheel_event1);
   }
-
-  histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 1, 2);
 }
 
 TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
-  base::HistogramTester histogram_tester;
-
   EXPECT_CALL(renderer_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
@@ -446,13 +436,9 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_EQ(coalesced_event, *coalesced_touch_event1);
   }
-
-  histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 0, 1);
-  histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 1, 1);
 }
 
 TEST_F(MainThreadEventQueueTest, BlockingTouch) {
-  base::HistogramTester histogram_tester;
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
   kEvents[1].PressPoint(10, 10);
@@ -503,7 +489,6 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
   EXPECT_THAT(GetAndResetCallbackResults(),
               testing::Each(ReceivedCallback(
                   CallbackReceivedState::kCalledWhileHandlingEvent, false)));
-  histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 2);
 }
 
 TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
