@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
@@ -86,6 +87,18 @@ blink::mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
   return IsWhitelistedPermissionType(permission)
              ? blink::mojom::PermissionStatus::GRANTED
              : blink::mojom::PermissionStatus::DENIED;
+}
+
+blink::mojom::PermissionStatus
+ShellPermissionManager::GetPermissionStatusForFrame(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  return GetPermissionStatus(
+      permission, requesting_origin,
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL()
+          .GetOrigin());
 }
 
 int ShellPermissionManager::SubscribePermissionStatusChange(

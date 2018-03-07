@@ -62,6 +62,14 @@ blink::mojom::PermissionStatus HeadlessPermissionManager::GetPermissionStatus(
   return blink::mojom::PermissionStatus::ASK;
 }
 
+blink::mojom::PermissionStatus
+HeadlessPermissionManager::GetPermissionStatusForFrame(
+    content::PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  return blink::mojom::PermissionStatus::ASK;
+}
+
 int HeadlessPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,

@@ -522,6 +522,33 @@ PermissionStatus PermissionManager::GetPermissionStatus(
   return ContentSettingToPermissionStatus(result.content_setting);
 }
 
+PermissionStatus PermissionManager::GetPermissionStatusForFrame(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PermissionResult result =
+      GetPermissionStatusForFrame(PermissionTypeToContentSetting(permission),
+                                  render_frame_host, requesting_origin);
+
+  // TODO(benwells): split this into two functions, GetPermissionStatus and
+  // GetPermissionStatusForPermissionsAPI.
+  PermissionContextBase* context =
+      GetPermissionContext(PermissionTypeToContentSetting(permission));
+  if (context) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(render_frame_host);
+    GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+    result = context->UpdatePermissionStatusWithDeviceStatus(
+        result, GetCanonicalOrigin(requesting_origin, embedding_origin),
+        content::WebContents::FromRenderFrameHost(render_frame_host)
+            ->GetLastCommittedURL()
+            .GetOrigin());
+  }
+
+  return ContentSettingToPermissionStatus(result.content_setting);
+}
+
 int PermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

@@ -55,6 +55,15 @@ blink::mojom::PermissionStatus CastPermissionManager::GetPermissionStatus(
   return blink::mojom::PermissionStatus::GRANTED;
 }
 
+blink::mojom::PermissionStatus
+CastPermissionManager::GetPermissionStatusForFrame(
+    content::PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
+  return blink::mojom::PermissionStatus::GRANTED;
+}
+
 int CastPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,

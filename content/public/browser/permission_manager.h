@@ -60,11 +60,22 @@ class CONTENT_EXPORT PermissionManager {
 
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
-  // outside of a frame context.
+  // outside of a frame context. Prefer GetPermissionStatusForFrame (below)
+  // whenever possible.
   virtual blink::mojom::PermissionStatus GetPermissionStatus(
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) = 0;
+
+  // Returns the permission status for a given frame. Use this over
+  // GetPermissionStatus whenever possible.
+  // TODO(raymes): Currently we still pass the |requesting_origin| as a separate
+  // parameter because we can't yet guarantee that it matches the last committed
+  // origin of the RenderFrameHost. See https://crbug.com/698985.
+  virtual blink::mojom::PermissionStatus GetPermissionStatusForFrame(
+      PermissionType permission,
+      RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin) = 0;
 
   // Sets the permission back to its default for the requesting_origin/
   // embedding_origin tuple.

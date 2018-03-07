@@ -143,6 +143,18 @@ blink::mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   return it->second;
 }
 
+blink::mojom::PermissionStatus
+LayoutTestPermissionManager::GetPermissionStatusForFrame(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  return GetPermissionStatus(
+      permission, requesting_origin,
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL()
+          .GetOrigin());
+}
+
 int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,
