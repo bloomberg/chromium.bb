@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/test/scoped_task_environment.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
@@ -63,7 +64,8 @@ class TabGridMediatorTest : public PlatformTest {
 // mediator.
 TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
   [[consumer_ verify] populateItems:[OCMArg checkWithBlock:^BOOL(id value) {
-                        NSArray* items = static_cast<NSArray*>(value);
+                        NSArray* items =
+                            base::mac::ObjCCastStrict<NSArray>(value);
                         EXPECT_EQ(3UL, items.count);
                         return YES;
                       }]
@@ -80,7 +82,8 @@ TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
   [[consumer_ verify] insertItem:[OCMArg checkWithBlock:^BOOL(id value) {
-                        GridItem* item = static_cast<GridItem*>(value);
+                        GridItem* item =
+                            base::mac::ObjCCastStrict<GridItem>(value);
                         EXPECT_NSEQ(item_identifier, item.identifier);
                         return YES;
                       }]
@@ -111,7 +114,7 @@ TEST_F(TabGridMediatorTest, ConsumerReplaceItem) {
   [[consumer_ verify]
       replaceItemAtIndex:1
                 withItem:[OCMArg checkWithBlock:^BOOL(id value) {
-                  GridItem* item = static_cast<GridItem*>(value);
+                  GridItem* item = base::mac::ObjCCastStrict<GridItem>(value);
                   EXPECT_NSEQ(new_item_identifier, item.identifier);
                   return YES;
                 }]];
