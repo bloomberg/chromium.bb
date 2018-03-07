@@ -52,14 +52,12 @@ enum HandshakeProtocol {
 
 // A parsed QUIC version label which determines that handshake protocol
 // and the transport version.
-struct ParsedQuicVersion {
+struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   HandshakeProtocol handshake_protocol;
   QuicTransportVersion transport_version;
 
   ParsedQuicVersion(HandshakeProtocol handshake_protocol,
-                    QuicTransportVersion transport_version)
-      : handshake_protocol(handshake_protocol),
-        transport_version(transport_version) {}
+                    QuicTransportVersion transport_version);
 
   ParsedQuicVersion(const ParsedQuicVersion& other)
       : handshake_protocol(other.handshake_protocol),

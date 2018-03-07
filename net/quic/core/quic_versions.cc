@@ -25,6 +25,16 @@ QuicVersionLabel MakeVersionLabel(char a, char b, char c, char d) {
 
 }  // namespace
 
+ParsedQuicVersion::ParsedQuicVersion(HandshakeProtocol handshake_protocol,
+                                     QuicTransportVersion transport_version)
+    : handshake_protocol(handshake_protocol),
+      transport_version(transport_version) {
+  if (handshake_protocol == PROTOCOL_TLS1_3 &&
+      !FLAGS_quic_supports_tls_handshake) {
+    QUIC_BUG << "TLS use attempted when not enabled";
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, const ParsedQuicVersion& version) {
   os << ParsedQuicVersionToString(version);
   return os;
@@ -37,9 +47,6 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       proto = 'Q';
       break;
     case PROTOCOL_TLS1_3:
-      if (!FLAGS_quic_supports_tls_handshake) {
-        QUIC_BUG << "TLS use attempted when not enabled";
-      }
       proto = 'T';
       break;
     default:

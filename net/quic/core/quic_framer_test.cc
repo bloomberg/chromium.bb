@@ -294,6 +294,12 @@ struct PacketFragment {
 
 using PacketFragments = std::vector<struct PacketFragment>;
 
+ParsedQuicVersionVector AllSupportedVersionsIncludingTls() {
+  QuicFlagSaver flags;
+  SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
+  return AllSupportedVersions();
+}
+
 class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
  public:
   QuicFramerTest()
@@ -301,11 +307,20 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
         decrypter_(new test::TestDecrypter()),
         version_(GetParam()),
         start_(QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(0x10)),
-        framer_(AllSupportedVersions(), start_, Perspective::IS_SERVER) {
+        framer_(AllSupportedVersionsIncludingTls(),
+                start_,
+                Perspective::IS_SERVER) {
+    SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
     framer_.set_version(version_);
     framer_.SetDecrypter(ENCRYPTION_NONE, decrypter_);
     framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
+  }
+
+  // Helper function to get unsigned char representation of the handshake
+  // protocol byte of the current QUIC version number.
+  unsigned char GetQuicVersionProtocolByte() {
+    return (CreateQuicVersionLabel(version_) >> 24) & 0xff;
   }
 
   // Helper function to get unsigned char representation of digit in the
@@ -467,6 +482,7 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     return BuildUnsizedDataPacket(&framer_, header, frames, packet_size);
   }
 
+  QuicFlagSaver flags_;
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   ParsedQuicVersion version_;
@@ -475,10 +491,19 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
   test::TestQuicVisitor visitor_;
 };
 
+// Multiple test cases of QuicFramerTest use byte arrays to define packets for
+// testing, and these byte arrays contain the QUIC version. This macro explodes
+// the 32-bit version into four bytes in network order. Since it uses methods of
+// QuicFramerTest, it is only valid to use this in a QuicFramerTest.
+#define QUIC_VERSION_BYTES                                      \
+  GetQuicVersionProtocolByte(), '0', GetQuicVersionDigitTens(), \
+      GetQuicVersionDigitOnes()
+
 // Run all framer tests with all supported versions of QUIC.
-INSTANTIATE_TEST_CASE_P(QuicFramerTests,
-                        QuicFramerTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_CASE_P(
+    QuicFramerTests,
+    QuicFramerTest,
+    ::testing::ValuesIn(AllSupportedVersionsIncludingTls()));
 
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochStart) {
   // A few quick manual sanity checks.
@@ -715,7 +740,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"Unable to read protocol version.",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes()}},
+       {QUIC_VERSION_BYTES}},
       // packet number
       {"Unable to read packet number.",
        {0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12}},
@@ -730,7 +755,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"Unable to read protocol version.",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes()}},
+       {QUIC_VERSION_BYTES}},
       // packet number
       {"Unable to read packet number.",
        {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}},
@@ -1781,7 +1806,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes()}},
+       {QUIC_VERSION_BYTES}},
       // packet number
       {"",
        {0xBC, 0x9A, 0x78, 0x56,
@@ -1815,7 +1840,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes()}},
+       {QUIC_VERSION_BYTES}},
       // packet number
       {"",
        {0x12, 0x34, 0x56, 0x78,
@@ -1849,7 +1874,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes()}},
+       {QUIC_VERSION_BYTES}},
       // packet number
       {"",
        {0x12, 0x34, 0x56, 0x78,
@@ -3436,7 +3461,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"Unable to read supported version in negotiation.",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+       {QUIC_VERSION_BYTES,
         'Q', '2', '.', '0'}},
   };
   // clang-format on
@@ -3471,7 +3496,7 @@ TEST_P(QuicFramerTest, OldVersionNegotiationPacket) {
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
       // version tag
       {"Unable to read supported version in negotiation.",
-       {'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+       {QUIC_VERSION_BYTES,
         'Q', '2', '.', '0'}},
   };
   // clang-format on
@@ -3929,7 +3954,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      QUIC_VERSION_BYTES,
       // packet number
       0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
 
@@ -3949,7 +3974,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      QUIC_VERSION_BYTES,
       // packet number
       0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
 
@@ -3969,7 +3994,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      QUIC_VERSION_BYTES,
       // packet number
       0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
 
@@ -4007,7 +4032,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      QUIC_VERSION_BYTES,
   };
   // clang-format on
 
@@ -6010,6 +6035,7 @@ extern "C" {
 void QuicFramerFuzzFunc(unsigned char* data, size_t size) {
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
                     Perspective::IS_SERVER);
+  ASSERT_EQ(GetQuicFlag(FLAGS_quic_supports_tls_handshake), true);
   const char* const packet_bytes = reinterpret_cast<const char*>(data);
 
   // Test the CryptoFramer.
