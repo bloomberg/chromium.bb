@@ -2217,7 +2217,9 @@ def _CheckSingletonInHeaders(input_api, output_api):
     # It's ok for base/memory/singleton.h to have |Singleton<|.
     black_list = (_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
-                  (r"^base[\\\/]memory[\\\/]singleton\.h$",))
+                  (r"^base[\\\/]memory[\\\/]singleton\.h$",
+                   r"^net[\\\/]quic[\\\/]platform[\\\/]impl[\\\/]"
+                       r"quic_singleton_impl\.h$"))
     return input_api.FilterSourceFile(affected_file, black_list=black_list)
 
   pattern = input_api.re.compile(r'(?<!class\sbase::)Singleton\s*<')

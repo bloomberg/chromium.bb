@@ -9,6 +9,7 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_singleton.h"
 
 namespace net {
 
@@ -23,9 +24,8 @@ namespace {
 
 class SslIndexSingleton {
  public:
-  static const SslIndexSingleton* GetInstance() {
-    static const base::NoDestructor<SslIndexSingleton> instance;
-    return instance.get();
+  static SslIndexSingleton* GetInstance() {
+    return QuicSingleton<SslIndexSingleton>::get();
   }
 
   int HandshakerIndex() const { return ssl_ex_data_index_handshaker_; }
@@ -37,7 +37,7 @@ class SslIndexSingleton {
     CHECK_LE(0, ssl_ex_data_index_handshaker_);
   }
 
-  friend class base::NoDestructor<SslIndexSingleton>;
+  friend QuicSingletonFriend<SslIndexSingleton>;
 
   int ssl_ex_data_index_handshaker_;
 
