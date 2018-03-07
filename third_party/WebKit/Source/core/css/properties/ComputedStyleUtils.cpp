@@ -1716,6 +1716,12 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
       NOTREACHED();
     }
   }
+  if (!list->length()) {
+    PseudoId pseudoId = style.StyleType();
+    if (pseudoId == kPseudoIdBefore || pseudoId == kPseudoIdAfter)
+      return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueNormal);
+  }
   return list;
 }
 
