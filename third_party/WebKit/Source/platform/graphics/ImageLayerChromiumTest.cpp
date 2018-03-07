@@ -29,7 +29,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/FakeGraphicsLayerClient.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -93,7 +92,7 @@ class TestImage : public Image {
 TEST(ImageLayerChromiumTest, imageLayerContentReset) {
   FakeGraphicsLayerClient client;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer =
-      WTF::WrapUnique(new FakeGraphicsLayer(client));
+      std::make_unique<FakeGraphicsLayer>(client);
   ASSERT_TRUE(graphics_layer.get());
 
   ASSERT_FALSE(graphics_layer->HasContentsLayer());
@@ -115,7 +114,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset) {
 TEST(ImageLayerChromiumTest, opaqueImages) {
   FakeGraphicsLayerClient client;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer =
-      WTF::WrapUnique(new FakeGraphicsLayer(client));
+      std::make_unique<FakeGraphicsLayer>(client);
   ASSERT_TRUE(graphics_layer.get());
 
   bool opaque = true;

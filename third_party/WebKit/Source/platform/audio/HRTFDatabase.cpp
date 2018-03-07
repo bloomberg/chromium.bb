@@ -29,8 +29,10 @@
 #include "platform/audio/HRTFDatabase.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -44,7 +46,7 @@ const unsigned HRTFDatabase::kNumberOfTotalElevations =
     kNumberOfRawElevations * kInterpolationFactor;
 
 std::unique_ptr<HRTFDatabase> HRTFDatabase::Create(float sample_rate) {
-  return WTF::WrapUnique(new HRTFDatabase(sample_rate));
+  return base::WrapUnique(new HRTFDatabase(sample_rate));
 }
 
 HRTFDatabase::HRTFDatabase(float sample_rate)

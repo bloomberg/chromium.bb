@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -23,7 +25,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -56,7 +57,7 @@ class PLATFORM_EXPORT PaintController {
 
  public:
   static std::unique_ptr<PaintController> Create() {
-    return WTF::WrapUnique(new PaintController());
+    return base::WrapUnique(new PaintController());
   }
 
   ~PaintController() {

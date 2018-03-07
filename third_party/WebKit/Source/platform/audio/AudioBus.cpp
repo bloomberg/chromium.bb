@@ -32,6 +32,8 @@
 #include <math.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "platform/SharedBuffer.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
@@ -62,8 +64,8 @@ AudioBus::AudioBus(unsigned number_of_channels, size_t length, bool allocate)
 
   for (unsigned i = 0; i < number_of_channels; ++i) {
     std::unique_ptr<AudioChannel> channel =
-        allocate ? WTF::WrapUnique(new AudioChannel(length))
-                 : WTF::WrapUnique(new AudioChannel(nullptr, length));
+        allocate ? std::make_unique<AudioChannel>(length)
+                 : std::make_unique<AudioChannel>(nullptr, length);
     channels_.push_back(std::move(channel));
   }
 

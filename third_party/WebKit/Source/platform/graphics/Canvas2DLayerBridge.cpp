@@ -26,6 +26,8 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -63,7 +65,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          int msaa_sample_count,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params)
-    : logger_(WTF::WrapUnique(new Logger)),
+    : logger_(std::make_unique<Logger>()),
       weak_ptr_factory_(this),
       msaa_sample_count_(msaa_sample_count),
       bytes_allocated_(0),
@@ -102,7 +104,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 
 void Canvas2DLayerBridge::StartRecording() {
   DCHECK(is_deferral_enabled_);
-  recorder_ = WTF::WrapUnique(new PaintRecorder);
+  recorder_ = std::make_unique<PaintRecorder>();
   PaintCanvas* canvas =
       recorder_->beginRecording(size_.Width(), size_.Height());
   // Always save an initial frame, to support resetting the top level matrix

@@ -25,6 +25,9 @@
 
 #include "platform/graphics/DecodingImageGenerator.h"
 
+#include <utility>
+#include <vector>
+
 #include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageFrameGenerator.h"
@@ -65,8 +68,8 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
   sk_sp<DecodingImageGenerator> generator = DecodingImageGenerator::Create(
       std::move(frame), info, std::move(segment_reader), std::move(frames),
       PaintImage::GetNextContentId(), true);
-  return WTF::WrapUnique(new SkiaPaintImageGenerator(
-      std::move(generator), PaintImage::kDefaultFrameIndex));
+  return std::make_unique<SkiaPaintImageGenerator>(
+      std::move(generator), PaintImage::kDefaultFrameIndex);
 }
 
 // static

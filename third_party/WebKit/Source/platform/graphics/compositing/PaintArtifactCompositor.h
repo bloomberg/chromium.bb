@@ -6,13 +6,15 @@
 #define PaintArtifactCompositor_h
 
 #include <memory>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace cc {
@@ -50,7 +52,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   static std::unique_ptr<PaintArtifactCompositor> Create(
       WebLayerScrollClient& client) {
-    return WTF::WrapUnique(new PaintArtifactCompositor(client));
+    return base::WrapUnique(new PaintArtifactCompositor(client));
   }
 
   // Updates the layer tree to match the provided paint artifact.

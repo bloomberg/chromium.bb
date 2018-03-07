@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 #include "SkMatrix44.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
 #include "platform/DragImage.h"
@@ -60,7 +61,6 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "platform/wtf/text/WTFString.h"
@@ -77,7 +77,7 @@ namespace blink {
 
 std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
     GraphicsLayerClient& client) {
-  return WTF::WrapUnique(new GraphicsLayer(client));
+  return base::WrapUnique(new GraphicsLayer(client));
 }
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)

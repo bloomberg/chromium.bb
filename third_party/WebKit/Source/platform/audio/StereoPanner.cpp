@@ -5,6 +5,9 @@
 #include "platform/audio/StereoPanner.h"
 
 #include <algorithm>
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/MathExtras.h"
@@ -15,7 +18,7 @@ namespace blink {
 // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
 
 std::unique_ptr<StereoPanner> StereoPanner::Create(float sample_rate) {
-  return WTF::WrapUnique(new StereoPanner(sample_rate));
+  return base::WrapUnique(new StereoPanner(sample_rate));
 }
 
 StereoPanner::StereoPanner(float sample_rate) {}

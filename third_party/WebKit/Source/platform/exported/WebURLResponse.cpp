@@ -30,13 +30,17 @@
 
 #include "public/platform/WebURLResponse.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/loader/fetch/ResourceLoadTiming.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebHTTPLoadInfo.h"
 #include "public/platform/WebString.h"
@@ -60,7 +64,7 @@ class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
 
  private:
   explicit URLResponseExtraDataContainer(WebURLResponse::ExtraData* extra_data)
-      : extra_data_(WTF::WrapUnique(extra_data)) {}
+      : extra_data_(base::WrapUnique(extra_data)) {}
 
   std::unique_ptr<WebURLResponse::ExtraData> extra_data_;
 };

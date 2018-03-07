@@ -33,6 +33,8 @@
 #include "platform/graphics/ImageDataBuffer.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
@@ -76,7 +78,7 @@ ImageDataBuffer::ImageDataBuffer(const SkPixmap& pixmap)
 std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
     scoped_refptr<StaticBitmapImage> image) {
   std::unique_ptr<ImageDataBuffer> buffer =
-      WTF::WrapUnique(new ImageDataBuffer(image));
+      base::WrapUnique(new ImageDataBuffer(image));
   if (!buffer->IsValid())
     return nullptr;
   return buffer;
@@ -85,7 +87,7 @@ std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
 std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
     const SkPixmap& pixmap) {
   std::unique_ptr<ImageDataBuffer> buffer =
-      WTF::WrapUnique(new ImageDataBuffer(pixmap));
+      base::WrapUnique(new ImageDataBuffer(pixmap));
   if (!buffer->IsValid())
     return nullptr;
   return buffer;

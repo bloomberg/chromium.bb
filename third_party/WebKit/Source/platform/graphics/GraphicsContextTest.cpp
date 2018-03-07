@@ -33,7 +33,6 @@
 #include "platform/testing/FontTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextRun.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -147,9 +146,9 @@ class GraphicsContextHighConstrastTest : public ::testing::Test {
   void SetUp() override {
     bitmap_.allocN32Pixels(4, 1);
     bitmap_.eraseColor(0);
-    canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(bitmap_));
+    canvas_ = std::make_unique<SkiaPaintCanvas>(bitmap_);
     paint_controller_ = PaintController::Create();
-    context_ = WTF::WrapUnique(new GraphicsContext(*paint_controller_));
+    context_ = std::make_unique<GraphicsContext>(*paint_controller_);
     context_->BeginRecording(FloatRect(0, 0, 4, 1));
   }
 

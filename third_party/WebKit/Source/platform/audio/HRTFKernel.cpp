@@ -30,9 +30,10 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "platform/audio/AudioChannel.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -103,7 +104,7 @@ HRTFKernel::HRTFKernel(AudioChannel* channel,
 
 std::unique_ptr<AudioChannel> HRTFKernel::CreateImpulseResponse() {
   std::unique_ptr<AudioChannel> channel =
-      WTF::WrapUnique(new AudioChannel(FftSize()));
+      std::make_unique<AudioChannel>(FftSize());
   FFTFrame fft_frame(*fft_frame_);
 
   // Add leading delay back in.

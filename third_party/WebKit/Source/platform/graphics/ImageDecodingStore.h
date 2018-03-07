@@ -27,15 +27,17 @@
 #define ImageDecodingStore_h
 
 #include <memory>
+#include <utility>
+
 #include "SkSize.h"
 #include "SkTypes.h"
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/skia/SkSizeHash.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/DoublyLinkedList.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"
 
@@ -113,7 +115,7 @@ class DecoderCacheEntry final : public CacheEntry {
   static std::unique_ptr<DecoderCacheEntry> Create(
       const ImageFrameGenerator* generator,
       std::unique_ptr<ImageDecoder> decoder) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new DecoderCacheEntry(generator, 0, std::move(decoder)));
   }
 
@@ -233,7 +235,7 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
  public:
   static std::unique_ptr<ImageDecodingStore> Create() {
-    return WTF::WrapUnique(new ImageDecodingStore);
+    return base::WrapUnique(new ImageDecodingStore);
   }
   ~ImageDecodingStore();
 

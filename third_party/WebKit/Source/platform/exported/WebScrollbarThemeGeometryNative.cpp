@@ -26,16 +26,17 @@
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/exported/WebScrollbarThemeClientImpl.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebScrollbar.h"
 
 namespace blink {
 
 std::unique_ptr<WebScrollbarThemeGeometryNative>
 WebScrollbarThemeGeometryNative::Create(ScrollbarTheme& theme) {
-  return WTF::WrapUnique(new WebScrollbarThemeGeometryNative(theme));
+  return base::WrapUnique(new WebScrollbarThemeGeometryNative(theme));
 }
 
 WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(

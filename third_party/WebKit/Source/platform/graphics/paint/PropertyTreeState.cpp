@@ -4,14 +4,16 @@
 
 #include "platform/graphics/paint/PropertyTreeState.h"
 
+#include <memory>
+
 namespace blink {
 
 const PropertyTreeState& PropertyTreeState::Root() {
   DEFINE_STATIC_LOCAL(
       std::unique_ptr<PropertyTreeState>, root,
-      (WTF::WrapUnique(new PropertyTreeState(
-          TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-          EffectPaintPropertyNode::Root()))));
+      (std::make_unique<PropertyTreeState>(TransformPaintPropertyNode::Root(),
+                                           ClipPaintPropertyNode::Root(),
+                                           EffectPaintPropertyNode::Root())));
   return *root;
 }
 

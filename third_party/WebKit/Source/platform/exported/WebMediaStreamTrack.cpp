@@ -25,9 +25,11 @@
 #include "public/platform/WebMediaStreamTrack.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStream.h"
@@ -134,7 +136,7 @@ void WebMediaStreamTrack::SetTrackData(TrackData* extra_data) {
   DCHECK(!private_.IsNull());
 
   private_->SetTrackData(
-      WTF::WrapUnique(new TrackDataContainer(WTF::WrapUnique(extra_data))));
+      std::make_unique<TrackDataContainer>(base::WrapUnique(extra_data)));
 }
 
 void WebMediaStreamTrack::SetSourceProvider(WebAudioSourceProvider* provider) {

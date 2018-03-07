@@ -30,10 +30,12 @@
 #define HRTFKernel_h
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -59,13 +61,13 @@ class PLATFORM_EXPORT HRTFKernel {
   static std::unique_ptr<HRTFKernel> Create(AudioChannel* channel,
                                             size_t fft_size,
                                             float sample_rate) {
-    return WTF::WrapUnique(new HRTFKernel(channel, fft_size, sample_rate));
+    return base::WrapUnique(new HRTFKernel(channel, fft_size, sample_rate));
   }
 
   static std::unique_ptr<HRTFKernel> Create(std::unique_ptr<FFTFrame> fft_frame,
                                             float frame_delay,
                                             float sample_rate) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new HRTFKernel(std::move(fft_frame), frame_delay, sample_rate));
   }
 

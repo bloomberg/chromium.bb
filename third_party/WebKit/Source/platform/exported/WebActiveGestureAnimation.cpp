@@ -26,7 +26,9 @@
 #include "platform/exported/WebActiveGestureAnimation.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebGestureCurveTarget.h"
 
@@ -37,7 +39,7 @@ WebActiveGestureAnimation::CreateWithTimeOffset(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
     double start_time) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new WebActiveGestureAnimation(std::move(curve), target, start_time));
 }
 

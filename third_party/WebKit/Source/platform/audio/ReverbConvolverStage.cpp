@@ -28,12 +28,13 @@
 
 #include "platform/audio/ReverbConvolverStage.h"
 
+#include <algorithm>
 #include <memory>
+
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolver.h"
 #include "platform/audio/ReverbInputBuffer.h"
 #include "platform/audio/VectorMath.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ ReverbConvolverStage::ReverbConvolverStage(
     DCHECK(!stage_offset);
     DCHECK_LE(stage_length, fft_size / 2);
 
-    direct_kernel_ = WTF::WrapUnique(new AudioFloatArray(fft_size / 2));
+    direct_kernel_ = std::make_unique<AudioFloatArray>(fft_size / 2);
     direct_kernel_->CopyToRange(impulse_response, 0, stage_length);
     direct_convolver_ = std::make_unique<DirectConvolver>(render_slice_size);
   }

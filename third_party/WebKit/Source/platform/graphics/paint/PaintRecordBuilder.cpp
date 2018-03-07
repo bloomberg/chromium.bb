@@ -7,7 +7,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -35,8 +34,8 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
   const HighContrastSettings* high_contrast_settings =
       containing_context ? &containing_context->high_contrast_settings()
                          : nullptr;
-  context_ = WTF::WrapUnique(
-      new GraphicsContext(*paint_controller_, disabled_mode, meta_data));
+  context_ = std::make_unique<GraphicsContext>(*paint_controller_,
+                                               disabled_mode, meta_data);
   if (high_contrast_settings)
     context_->SetHighContrast(*high_contrast_settings);
 

@@ -31,6 +31,9 @@
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
@@ -61,7 +64,7 @@ WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::AdoptParamsAndCreate(
     WebCryptoAlgorithmId id,
     WebCryptoKeyAlgorithmParams* params) {
-  return WebCryptoKeyAlgorithm(id, WTF::WrapUnique(params));
+  return WebCryptoKeyAlgorithm(id, base::WrapUnique(params));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateAes(
@@ -83,8 +86,8 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateHmac(
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
       kWebCryptoAlgorithmIdHmac,
-      WTF::WrapUnique(new WebCryptoHmacKeyAlgorithmParams(CreateHash(hash),
-                                                          key_length_bits)));
+      std::make_unique<WebCryptoHmacKeyAlgorithmParams>(CreateHash(hash),
+                                                        key_length_bits));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateRsaHashed(
@@ -97,9 +100,9 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateRsaHashed(
   if (!WebCryptoAlgorithm::IsHash(hash))
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
-      id, WTF::WrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(
+      id, std::make_unique<WebCryptoRsaHashedKeyAlgorithmParams>(
               modulus_length_bits, public_exponent, public_exponent_size,
-              CreateHash(hash))));
+              CreateHash(hash)));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateEc(

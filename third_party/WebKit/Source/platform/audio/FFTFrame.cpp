@@ -32,7 +32,6 @@
 #include <memory>
 #include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -54,7 +53,7 @@ std::unique_ptr<FFTFrame> FFTFrame::CreateInterpolatedFrame(
     const FFTFrame& frame2,
     double x) {
   std::unique_ptr<FFTFrame> new_frame =
-      WTF::WrapUnique(new FFTFrame(frame1.FftSize()));
+      std::make_unique<FFTFrame>(frame1.FftSize());
 
   new_frame->InterpolateFrequencyComponents(frame1, frame2, x);
 
