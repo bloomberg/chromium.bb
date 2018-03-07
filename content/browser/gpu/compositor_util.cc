@@ -128,6 +128,9 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
        (command_line.HasSwitch(switches::kDisableWebGL) ||
         command_line.HasSwitch(switches::kDisableWebGL2)),
        "WebGL2 has been disabled via blacklist or the command line.", false},
+      {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
+       !base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
+       "Viz service display compositor is not enabled by default.", false},
       {"checker_imaging", gpu::kGpuFeatureStatusEnabled,
        !IsCheckerImagingEnabled(),
        "Checker-imaging has been disabled via finch trial or the command line.",
@@ -315,6 +318,10 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
       }
       if (gpu_feature_data.name == "surface_synchronization") {
         if (features::IsSurfaceSynchronizationEnabled())
+          status += "_on";
+      }
+      if (gpu_feature_data.name == "viz_display_compositor") {
+        if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
           status += "_on";
       }
     }
