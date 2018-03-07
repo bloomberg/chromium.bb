@@ -34,7 +34,7 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  protected:
   // Creates a validator configured to validate a user policy. The caller owns
   // the resulting object until StartValidation() is invoked.
-  std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
+  virtual std::unique_ptr<UserCloudPolicyValidator> CreateValidator(
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       CloudPolicyValidatorBase::ValidateTimestampOption option);
 

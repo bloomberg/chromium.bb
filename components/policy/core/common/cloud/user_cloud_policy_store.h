@@ -60,6 +60,12 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback) = 0;
 
+  // Validate the |cached_key| with the |owning_domain|.
+  void ValidateKeyAndSignature(
+      UserCloudPolicyValidator* validator,
+      const enterprise_management::PolicySigningKey* cached_key,
+      const std::string& owning_domain);
+
   // Callback invoked to install a just-loaded policy after validation has
   // finished.
   void InstallLoadedPolicyAfterValidation(bool doing_key_rotation,

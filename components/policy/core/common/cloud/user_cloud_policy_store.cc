@@ -267,6 +267,60 @@ void DesktopCloudPolicyStore::PolicyLoaded(bool validate_in_background,
   }
 }
 
+void DesktopCloudPolicyStore::ValidateKeyAndSignature(
+    UserCloudPolicyValidator* validator,
+    const em::PolicySigningKey* cached_key,
+    const std::string& owning_domain) {
+  // There are 4 cases:
+  //
+  // 1) Validation after loading from cache with no cached key.
+  // Action: Just validate signature with an empty key - this will result in
+  // a failed validation and the cached policy will be rejected.
+  //
+  // 2) Validation after loading from cache with a cached key
+  // Action: Validate signature on policy blob but don't allow key rotation.
+  //
+  // 3) Validation after loading new policy from the server with no cached key
+  // Action: Validate as initial key provisioning (case where we are migrating
+  // from unsigned policy)
+  //
+  // 4) Validation after loading new policy from the server with a cached key
+  // Action: Validate as normal, and allow key rotation.
+  if (cached_key) {
+    // Case #1/#2 - loading from cache. Validate the cached key (if no key,
+    // then the validation will fail), then do normal policy data signature
+    // validation using the cached key.
+
+    // Loading from cache should not change the cached keys.
+    DCHECK(persisted_policy_key_.empty() ||
+           persisted_policy_key_ == cached_key->signing_key());
+    DLOG_IF(WARNING, !cached_key->has_signing_key())
+        << "Unsigned policy blob detected";
+
+    validator->ValidateCachedKey(cached_key->signing_key(),
+                                 cached_key->signing_key_signature(),
+                                 owning_domain);
+    // Loading from cache, so don't allow key rotation.
+    validator->ValidateSignature(cached_key->signing_key());
+  } else {
+    // No passed cached_key - this is not validating the initial policy load
+    // from cache, but rather an update from the server.
+    if (persisted_policy_key_.empty()) {
+      // Case #3 - no valid existing policy key (either this is the initial
+      // policy fetch, or we're doing a key rotation), so this new policy fetch
+      // should include an initial key provision.
+      validator->ValidateInitialKey(owning_domain);
+    } else {
+      // Case #4 - verify new policy with existing key. We always allow key
+      // rotation - the verification key will prevent invalid policy from being
+      // injected. |persisted_policy_key_| is already known to be valid, so no
+      // need to verify via ValidateCachedKey().
+      validator->ValidateSignatureAllowingRotation(persisted_policy_key_,
+                                                   owning_domain);
+    }
+  }
+}
+
 void DesktopCloudPolicyStore::InstallLoadedPolicyAfterValidation(
     bool doing_key_rotation,
     const std::string& signing_key,
@@ -399,54 +453,7 @@ void UserCloudPolicyStore::Validate(
         gaia::CanonicalizeEmail(gaia::SanitizeEmail(signin_username_)));
   }
 
-  // There are 4 cases:
-  //
-  // 1) Validation after loading from cache with no cached key.
-  // Action: Just validate signature with an empty key - this will result in
-  // a failed validation and the cached policy will be rejected.
-  //
-  // 2) Validation after loading from cache with a cached key
-  // Action: Validate signature on policy blob but don't allow key rotation.
-  //
-  // 3) Validation after loading new policy from the server with no cached key
-  // Action: Validate as initial key provisioning (case where we are migrating
-  // from unsigned policy)
-  //
-  // 4) Validation after loading new policy from the server with a cached key
-  // Action: Validate as normal, and allow key rotation.
-  if (cached_key) {
-    // Case #1/#2 - loading from cache. Validate the cached key (if no key,
-    // then the validation will fail), then do normal policy data signature
-    // validation using the cached key.
-
-    // Loading from cache should not change the cached keys.
-    DCHECK(persisted_policy_key_.empty() ||
-           persisted_policy_key_ == cached_key->signing_key());
-    DLOG_IF(WARNING, !cached_key->has_signing_key()) <<
-        "Unsigned policy blob detected";
-
-    validator->ValidateCachedKey(cached_key->signing_key(),
-                                 cached_key->signing_key_signature(),
-                                 owning_domain);
-    // Loading from cache, so don't allow key rotation.
-    validator->ValidateSignature(cached_key->signing_key());
-  } else {
-    // No passed cached_key - this is not validating the initial policy load
-    // from cache, but rather an update from the server.
-    if (persisted_policy_key_.empty()) {
-      // Case #3 - no valid existing policy key (either this is the initial
-      // policy fetch, or we're doing a key rotation), so this new policy fetch
-      // should include an initial key provision.
-      validator->ValidateInitialKey(owning_domain);
-    } else {
-      // Case #4 - verify new policy with existing key. We always allow key
-      // rotation - the verification key will prevent invalid policy from being
-      // injected. |persisted_policy_key_| is already known to be valid, so no
-      // need to verify via ValidateCachedKey().
-      validator->ValidateSignatureAllowingRotation(persisted_policy_key_,
-                                                   owning_domain);
-    }
-  }
+  ValidateKeyAndSignature(validator.get(), cached_key.get(), owning_domain);
 
   if (validate_in_background) {
     // Start validation in the background.
