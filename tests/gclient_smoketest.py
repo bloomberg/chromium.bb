@@ -514,6 +514,24 @@ class GClientSmokeGIT(GClientSmokeBase):
         ['sync', '-v', '-v', '-v', '--revision', 'refs/changes/1212'])
     self.assertEquals(0, rc)
 
+  def testSyncUrl(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient([
+        'sync', '-v', '-v', '-v',
+        '--revision', 'src/repo2@%s' % self.githash('repo_2', 1),
+        '--revision', '%srepo_2@%s' % (self.git_base, self.githash('repo_2', 2))
+    ])
+    # repo_2 should've been synced to @2 instead of @1, since URLs override
+    # paths.
+    tree = self.mangle_git_tree(('repo_1@2', 'src'),
+                                ('repo_2@2', 'src/repo2'),
+                                ('repo_3@2', 'src/repo2/repo_renamed'))
+    tree['src/git_hooked1'] = 'git_hooked1'
+    tree['src/git_hooked2'] = 'git_hooked2'
+    self.assertTree(tree)
+
   def testRunHooks(self):
     if not self.enabled:
       return

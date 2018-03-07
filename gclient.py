@@ -962,8 +962,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     parsed_url = self.LateOverride(self.url)
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(self.name, None)
-    if not revision_override and parsed_url:
-      revision_override = revision_overrides.get(parsed_url.split('@')[0], None)
+    if parsed_url:
+      revision_override = revision_overrides.pop(
+          parsed_url.split('@')[0], revision_override)
     if run_scm and parsed_url:
       # Create a shallow copy to mutate revision.
       options = copy.copy(options)
@@ -2599,9 +2600,12 @@ def CMDsync(parser, args):
                     dest='revisions', metavar='REV', default=[],
                     help='Enforces revision/hash for the solutions with the '
                          'format src@rev. The src@ part is optional and can be '
-                         'skipped. -r can be used multiple times when .gclient '
-                         'has multiple solutions configured and will work even '
-                         'if the src@ part is skipped.')
+                         'skipped. You can also specify URLs instead of paths '
+                         'and gclient will find the solution corresponding to '
+                         'the given URL. If a path is also specified, the URL '
+                         'takes precedence. -r can be used multiple times when '
+                         '.gclient has multiple solutions configured, and will '
+                         'work even if the src@ part is skipped.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
