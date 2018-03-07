@@ -10610,7 +10610,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10635,7 +10636,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10660,7 +10662,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10685,7 +10688,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10714,7 +10718,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10746,7 +10751,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10786,7 +10792,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10812,7 +10819,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10837,7 +10845,8 @@
               "os": "Mac-10.12",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -10865,6 +10874,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 20
         }
       },
@@ -10891,6 +10901,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 2
         }
       }
