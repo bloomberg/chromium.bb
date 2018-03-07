@@ -21,6 +21,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
@@ -37,6 +38,21 @@ using base::Time;
 
 namespace {
 
+// Used to populate a histogram for problems when loading cookies.
+//
+// Please do not reorder or remove entries. New entries must be added to the
+// end of the list, just before COOKIE_LOAD_PROBLEM_LAST_ENTRY.
+enum CookieLoadProblem {
+  COOKIE_LOAD_PROBLEM_DECRYPT_FAILED = 0,
+  COOKIE_LOAD_PROBLEM_DECRYPT_TIMEOUT = 1,
+  COOKIE_LOAD_PROBLEM_LAST_ENTRY
+};
+
+void RecordCookieLoadProblem(CookieLoadProblem event) {
+  UMA_HISTOGRAM_ENUMERATION("Cookie.LoadProblem", event,
+                            COOKIE_LOAD_PROBLEM_LAST_ENTRY);
+};
+
 // The persistent cookie store is loaded into memory on eTLD at a time. This
 // variable controls the delay between loading eTLDs, so as to not overload the
 // CPU or I/O with these low priority requests immediately after start up.
@@ -49,6 +65,38 @@ const int kLoadDelayMilliseconds = 0;
 #else
 const int kLoadDelayMilliseconds = 0;
 #endif
+
+// A little helper to help us log (on client thread) if the background runner
+// gets stuck.
+class TimeoutTracker : public base::RefCountedThreadSafe<TimeoutTracker> {
+ public:
+  // Runs on background runner.
+  static scoped_refptr<TimeoutTracker> Begin(
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner) {
+    scoped_refptr<TimeoutTracker> tracker = new TimeoutTracker;
+    client_task_runner->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&TimeoutTracker::TimerElapsed, tracker),
+        base::TimeDelta::FromSeconds(60));
+    return tracker;
+  }
+
+  // Runs on background runner.
+  void End() { done_.Set(); }
+
+ private:
+  friend class base::RefCountedThreadSafe<TimeoutTracker>;
+  TimeoutTracker() {}
+  ~TimeoutTracker() { DCHECK(done_.IsSet()); }
+
+  // Run on client runner.
+  void TimerElapsed() {
+    if (!done_.IsSet())
+      RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_DECRYPT_TIMEOUT);
+  }
+
+  base::AtomicFlag done_;
+  DISALLOW_COPY_AND_ASSIGN(TimeoutTracker);
+};
 
 }  // namespace
 
@@ -817,13 +865,20 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
 void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
     sql::Statement* statement) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   sql::Statement& smt = *statement;
   while (smt.Step()) {
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {
-      if (!crypto_->DecryptString(encrypted_value, &value))
+      scoped_refptr<TimeoutTracker> timeout_tracker =
+          TimeoutTracker::Begin(client_task_runner_);
+      bool decrypt_ok = crypto_->DecryptString(encrypted_value, &value);
+      timeout_tracker->End();
+      if (!decrypt_ok) {
+        RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_DECRYPT_FAILED);
         continue;
+      }
     } else {
       value = smt.ColumnString(3);
     }

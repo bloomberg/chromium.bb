@@ -7214,6 +7214,11 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="CookieLoadProblem">
+  <int value="0" label="Entry decryption failed"/>
+  <int value="1" label="Entry decryption taking over a minute"/>
+</enum>
+
 <enum name="CookieOrCacheDeletion">
   <int value="0" label="Neither"/>
   <int value="1" label="Only cookies"/>
