@@ -286,6 +286,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         mEventObservers.add(eventObserver);
     }
 
+    public void removeEventObserver(ImeEventObserver eventObserver) {
+        mEventObservers.remove(eventObserver);
+    }
+
     private void createInputConnectionFactory() {
         if (mInputConnectionFactory != null) return;
         mInputConnectionFactory = new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);

@@ -406,7 +406,11 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         }
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
-        getImeAdapter().resetAndHideKeyboard();
+        ImeAdapterImpl imeAdapter = getImeAdapter();
+        imeAdapter.resetAndHideKeyboard();
+        imeAdapter.removeEventObserver(getSelectionPopupController());
+        imeAdapter.removeEventObserver(getJoystick());
+        imeAdapter.removeEventObserver(getTapDisambiguator());
         getGestureListenerManager().reset();
         removeWindowAndroidChangedObserver(getTextSuggestionHost());
         mWindowEventObservers.clear();
