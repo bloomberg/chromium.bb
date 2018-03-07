@@ -227,16 +227,10 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
     arch = self._run.DetermineAndroidABI(self._current_board)
 
-    if 'master-arc' in android_build_branch:
-      symbols_file_url = constants.ANDROID_SYMBOLS_BERTHA_URL_TEMPLATE % {
-          'branch': android_build_branch,
-          'arch': arch,
-          'version': android_version}
-    else:
-      symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
-          'branch': android_build_branch,
-          'arch': arch,
-          'version': android_version}
+    symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
+        'branch': android_build_branch,
+        'arch': arch,
+        'version': android_version}
     symbols_file = os.path.join(self.archive_path,
                                 constants.ANDROID_SYMBOLS_FILE)
     gs_context = gs.GSContext()
