@@ -97,13 +97,6 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   bool IsWebInputEvent() const override { return true; }
 
   void Dispatch(MainThreadEventQueue* queue) override {
-    // Report the coalesced count only for continuous events; otherwise
-    // the zero value would be dominated by non-continuous events.
-    if (IsContinuousEvent()) {
-      UMA_HISTOGRAM_COUNTS_1000("Event.MainThreadEventQueue.CoalescedCount",
-                                coalescedCount());
-    }
-
     HandledEventCallback callback =
         base::BindOnce(&QueuedWebInputEvent::HandledEvent,
                        base::Unretained(this), base::RetainedRef(queue));
