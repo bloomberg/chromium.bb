@@ -881,21 +881,36 @@ TEST_P(WebSocketStreamCreateTest, DoubleAccept) {
             failure_message());
 }
 
-// Response code 200 must be rejected.
-TEST_P(WebSocketStreamCreateTest, InvalidStatusCode) {
-  static const char kInvalidStatusCodeResponse[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Upgrade: websocket\r\n"
-      "Connection: Upgrade\r\n"
-      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
-      "\r\n";
-  CreateAndConnectCustomResponse("ws://www.example.org/", "www.example.org",
-                                 "/", NoSubProtocols(), Origin(), Url(), {}, {},
-                                 kInvalidStatusCodeResponse);
-  WaitUntilConnectDone();
-  EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
-            failure_message());
+// When upgrading an HTTP/1 connection, response code 200 is invalid and must be
+// rejected.  Response code 101 means success.  On the other hand, when
+// requesting a WebSocket stream over HTTP/2, response code 101 is invalid and
+// must be rejected.  Response code 200 means success.
+TEST_P(WebSocketMultiProtocolStreamCreateTest, InvalidStatusCode) {
+  AddSSLData();
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    static const char kInvalidStatusCodeResponse[] =
+        "HTTP/1.1 200 OK\r\n"
+        "Upgrade: websocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+        "\r\n";
+    CreateAndConnectCustomResponse("wss://www.example.org/", "www.example.org",
+                                   "/", NoSubProtocols(), Origin(), Url(), {},
+                                   {}, kInvalidStatusCodeResponse);
+    WaitUntilConnectDone();
+    EXPECT_TRUE(has_failed());
+    EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
+              failure_message());
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
+    SetHttp2ResponseStatus("101");
+    CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
+                             NoSubProtocols(), Origin(), Url(), {}, {}, {});
+    WaitUntilConnectDone();
+    EXPECT_TRUE(has_failed());
+    EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 101",
+              failure_message());
+  }
 }
 
 // Redirects are not followed (according to the WHATWG WebSocket API, which

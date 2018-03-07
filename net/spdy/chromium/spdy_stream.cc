@@ -392,9 +392,13 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
           return;
         }
 
-        // Ignore informational headers.
+        // Ignore informational headers like 103 Early Hints.
         // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
-        if (status / 100 == 1) {
+        // However, do not ignore 101 Switching Protocols, because broken
+        // servers might send this as a response to a WebSocket request,
+        // in which case it needs to pass through so that the WebSocket layer
+        // can signal an error.
+        if (status / 100 == 1 && status != 101) {
           return;
         }
       }
