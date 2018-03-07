@@ -401,10 +401,12 @@ MojoResult UserMessageImpl::AttachContext(
   return MOJO_RESULT_OK;
 }
 
-MojoResult UserMessageImpl::AttachSerializedMessageBuffer(
-    uint32_t payload_size,
-    const MojoHandle* handles,
-    uint32_t num_handles) {
+MojoResult UserMessageImpl::AppendData(uint32_t additional_payload_size,
+                                       const MojoHandle* handles,
+                                       uint32_t num_handles) {
+  if (HasContext())
+    return MOJO_RESULT_FAILED_PRECONDITION;
+
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   if (num_handles > 0) {
     MojoResult acquire_result = internal::g_core->AcquireDispatchersForTransit(
@@ -412,78 +414,61 @@ MojoResult UserMessageImpl::AttachSerializedMessageBuffer(
     if (acquire_result != MOJO_RESULT_OK)
       return acquire_result;
   }
-  Channel::MessagePtr channel_message;
-  MojoResult rv = CreateOrExtendSerializedEventMessage(
-      message_event_, payload_size,
-      std::max(payload_size, kMinimumPayloadBufferSize), dispatchers.data(),
-      num_handles, &channel_message, &header_, &header_size_, &user_payload_);
-  if (num_handles > 0) {
-    internal::g_core->ReleaseDispatchersForTransit(dispatchers,
-                                                   rv == MOJO_RESULT_OK);
-  }
-  if (rv != MOJO_RESULT_OK)
-    return MOJO_RESULT_ABORTED;
-  user_payload_size_ = payload_size;
-  channel_message_ = std::move(channel_message);
-  has_serialized_handles_ = true;
-  return MOJO_RESULT_OK;
-}
 
-MojoResult UserMessageImpl::ExtendSerializedMessagePayload(
-    uint32_t new_payload_size,
-    const MojoHandle* handles,
-    uint32_t num_handles) {
-  if (!IsSerialized())
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  if (new_payload_size < user_payload_size_)
-    return MOJO_RESULT_OUT_OF_RANGE;
+  if (!IsSerialized()) {
+    // First data for this message.
+    Channel::MessagePtr channel_message;
+    MojoResult rv = CreateOrExtendSerializedEventMessage(
+        message_event_, additional_payload_size,
+        std::max(additional_payload_size, kMinimumPayloadBufferSize),
+        dispatchers.data(), num_handles, &channel_message, &header_,
+        &header_size_, &user_payload_);
+    if (num_handles > 0) {
+      internal::g_core->ReleaseDispatchersForTransit(dispatchers,
+                                                     rv == MOJO_RESULT_OK);
+    }
+    if (rv != MOJO_RESULT_OK)
+      return MOJO_RESULT_ABORTED;
 
-  if (num_handles > 0) {
-    // In order to avoid rather expensive message resizing on every individual
-    // handle attachment operation, we merely lock and prepare the handle for
-    // transit here, deferring serialization until FinalizeEventMessage().
-    MojoResult acquire_result = internal::g_core->AcquireDispatchersForTransit(
-        handles, num_handles, &pending_handle_attachments_);
-    if (acquire_result != MOJO_RESULT_OK)
-      return acquire_result;
-  }
+    user_payload_size_ = additional_payload_size;
+    channel_message_ = std::move(channel_message);
+    has_serialized_handles_ = true;
+  } else {
+    // Extend the existing message payload.
 
-  if (new_payload_size > user_payload_size_) {
-    size_t header_offset =
-        static_cast<uint8_t*>(header_) -
-        static_cast<const uint8_t*>(channel_message_->payload());
-    size_t user_payload_offset =
-        static_cast<uint8_t*>(user_payload_) -
-        static_cast<const uint8_t*>(channel_message_->payload());
-    channel_message_->ExtendPayload(user_payload_offset + new_payload_size);
-    header_ = static_cast<uint8_t*>(channel_message_->mutable_payload()) +
-              header_offset;
-    user_payload_ = static_cast<uint8_t*>(channel_message_->mutable_payload()) +
-                    user_payload_offset;
-    user_payload_size_ = new_payload_size;
+    // In order to avoid rather expensive message resizing on every handle
+    // attachment operation, we merely lock and prepare the handle for transit
+    // here, deferring serialization until |CommitSize()|.
+    std::copy(dispatchers.begin(), dispatchers.end(),
+              std::back_inserter(pending_handle_attachments_));
+
+    if (additional_payload_size) {
+      size_t header_offset =
+          static_cast<uint8_t*>(header_) -
+          static_cast<const uint8_t*>(channel_message_->payload());
+      size_t user_payload_offset =
+          static_cast<uint8_t*>(user_payload_) -
+          static_cast<const uint8_t*>(channel_message_->payload());
+      channel_message_->ExtendPayload(user_payload_offset + user_payload_size_ +
+                                      additional_payload_size);
+      header_ = static_cast<uint8_t*>(channel_message_->mutable_payload()) +
+                header_offset;
+      user_payload_ =
+          static_cast<uint8_t*>(channel_message_->mutable_payload()) +
+          user_payload_offset;
+      user_payload_size_ += additional_payload_size;
+    }
   }
 
   return MOJO_RESULT_OK;
 }
 
-MojoResult UserMessageImpl::CommitSerializedContents(
-    uint32_t final_payload_size) {
+MojoResult UserMessageImpl::CommitSize() {
   if (!IsSerialized())
     return MOJO_RESULT_FAILED_PRECONDITION;
-
-  if (final_payload_size > user_payload_capacity() ||
-      final_payload_size < user_payload_size_) {
-    return MOJO_RESULT_OUT_OF_RANGE;
-  }
 
   if (is_committed_)
     return MOJO_RESULT_OK;
-
-  size_t user_payload_offset =
-      static_cast<uint8_t*>(user_payload_) -
-      static_cast<const uint8_t*>(channel_message_->payload());
-  user_payload_size_ = final_payload_size;
-  channel_message_->ExtendPayload(user_payload_offset + user_payload_size_);
 
   if (!pending_handle_attachments_.empty()) {
     CreateOrExtendSerializedEventMessage(

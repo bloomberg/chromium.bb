@@ -19,8 +19,15 @@ Buffer::Buffer(void* data, size_t size, size_t cursor)
   DCHECK(IsAligned(data_));
 }
 
-Buffer::Buffer(MessageHandle message, void* data, size_t size)
-    : message_(message), data_(data), size_(size), cursor_(0) {
+Buffer::Buffer(MessageHandle message,
+               size_t message_payload_size,
+               void* data,
+               size_t size)
+    : message_(message),
+      message_payload_size_(message_payload_size),
+      data_(data),
+      size_(size),
+      cursor_(0) {
   DCHECK(IsAligned(data_));
 }
 
@@ -32,6 +39,7 @@ Buffer::~Buffer() = default;
 
 Buffer& Buffer::operator=(Buffer&& other) {
   message_ = other.message_;
+  message_payload_size_ = other.message_payload_size_;
   data_ = other.data_;
   size_ = other.size_;
   cursor_ = other.cursor_;
@@ -51,12 +59,15 @@ size_t Buffer::Allocate(size_t num_bytes) {
   if (new_cursor > size_) {
     // If we have an underlying message object we can extend its payload to
     // obtain more storage capacity.
-    DCHECK(base::IsValueInRangeForNumericType<uint32_t>(new_cursor));
+    DCHECK_LE(message_payload_size_, new_cursor);
+    size_t additional_bytes = new_cursor - message_payload_size_;
+    DCHECK(base::IsValueInRangeForNumericType<uint32_t>(additional_bytes));
     uint32_t new_size;
-    MojoResult rv = MojoExtendSerializedMessagePayload(
-        message_.value(), static_cast<uint32_t>(new_cursor), nullptr, 0, &data_,
-        &new_size);
+    MojoResult rv = MojoAppendMessageData(
+        message_.value(), static_cast<uint32_t>(additional_bytes), nullptr, 0,
+        nullptr, &data_, &new_size);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
+    message_payload_size_ = new_cursor;
     size_ = new_size;
   }
 
@@ -79,10 +90,9 @@ void Buffer::AttachHandles(std::vector<ScopedHandle>* handles) {
   DCHECK(message_.is_valid());
 
   uint32_t new_size = 0;
-  MojoResult rv = MojoExtendSerializedMessagePayload(
-      message_.value(), static_cast<uint32_t>(cursor_),
-      reinterpret_cast<MojoHandle*>(handles->data()),
-      static_cast<uint32_t>(handles->size()), &data_, &new_size);
+  MojoResult rv = MojoAppendMessageData(
+      message_.value(), 0, reinterpret_cast<MojoHandle*>(handles->data()),
+      static_cast<uint32_t>(handles->size()), nullptr, &data_, &new_size);
   if (rv != MOJO_RESULT_OK)
     return;
 
@@ -96,13 +106,21 @@ void Buffer::Seal() {
     return;
 
   // Ensure that the backing message has the final accumulated payload size.
-  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(cursor_));
+  DCHECK_LE(message_payload_size_, cursor_);
+  size_t additional_bytes = cursor_ - message_payload_size_;
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(additional_bytes));
+
+  MojoAppendMessageDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* data;
   uint32_t size;
-  MojoResult rv = MojoCommitSerializedMessageContents(
-      message_.value(), static_cast<uint32_t>(cursor_), &data, &size);
+  MojoResult rv = MojoAppendMessageData(message_.value(),
+                                        static_cast<uint32_t>(additional_bytes),
+                                        nullptr, 0, &options, &data, &size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   message_ = MessageHandle();
+  message_payload_size_ = cursor_;
   data_ = data;
   size_ = size;
 }

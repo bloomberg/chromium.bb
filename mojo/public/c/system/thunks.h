@@ -89,29 +89,20 @@ struct MojoSystemThunks {
   MojoResult (*CreateMessage)(MojoMessageHandle* message);
   MojoResult (*DestroyMessage)(MojoMessageHandle message);
   MojoResult (*SerializeMessage)(MojoMessageHandle message);
-  MojoResult (*AttachSerializedMessageBuffer)(MojoMessageHandle message,
-                                              uint32_t payload_size,
-                                              const MojoHandle* handles,
-                                              uint32_t num_handles,
-                                              void** buffer,
-                                              uint32_t* buffer_size);
-  MojoResult (*ExtendSerializedMessagePayload)(MojoMessageHandle message,
-                                               uint32_t new_payload_size,
-                                               const MojoHandle* handles,
-                                               uint32_t num_handles,
-                                               void** buffer,
-                                               uint32_t* buffer_size);
-  MojoResult (*CommitSerializedMessageContents)(MojoMessageHandle message,
-                                                uint32_t final_payload_size,
-                                                void** buffer,
-                                                uint32_t* buffer_size);
-  MojoResult (*GetSerializedMessageContents)(
+  MojoResult (*AppendMessageData)(
       MojoMessageHandle message,
+      uint32_t additional_payload_size,
+      const MojoHandle* handles,
+      uint32_t num_handles,
+      const struct MojoAppendMessageDataOptions* options,
       void** buffer,
-      uint32_t* num_bytes,
-      MojoHandle* handles,
-      uint32_t* num_handles,
-      MojoGetSerializedMessageContentsFlags flags);
+      uint32_t* buffer_size);
+  MojoResult (*GetMessageData)(MojoMessageHandle message,
+                               const struct MojoGetMessageDataOptions* options,
+                               void** buffer,
+                               uint32_t* num_bytes,
+                               MojoHandle* handles,
+                               uint32_t* num_handles);
   MojoResult (*AttachMessageContext)(MojoMessageHandle message,
                                      uintptr_t context,
                                      MojoMessageContextSerializer serializer,

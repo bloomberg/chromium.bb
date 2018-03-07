@@ -123,13 +123,10 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   MojoResult AttachContext(uintptr_t context,
                            MojoMessageContextSerializer serializer,
                            MojoMessageContextDestructor destructor);
-  MojoResult AttachSerializedMessageBuffer(uint32_t payload_size,
-                                           const MojoHandle* handles,
-                                           uint32_t num_handles);
-  MojoResult ExtendSerializedMessagePayload(uint32_t new_payload_size,
-                                            const MojoHandle* handles,
-                                            uint32_t num_handles);
-  MojoResult CommitSerializedContents(uint32_t final_payload_size);
+  MojoResult AppendData(uint32_t additional_payload_size,
+                        const MojoHandle* handles,
+                        uint32_t num_handles);
+  MojoResult CommitSize();
 
   // If this message is not already serialized, this serializes it.
   MojoResult SerializeIfNecessary();

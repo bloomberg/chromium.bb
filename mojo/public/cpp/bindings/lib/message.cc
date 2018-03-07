@@ -90,19 +90,20 @@ void CreateSerializedMessageObject(uint32_t name,
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(total_size));
   DCHECK(!handles ||
          base::IsValueInRangeForNumericType<uint32_t>(handles->size()));
-  rv = MojoAttachSerializedMessageBuffer(
+  rv = MojoAppendMessageData(
       handle->value(), static_cast<uint32_t>(total_size),
       handles ? reinterpret_cast<MojoHandle*>(handles->data()) : nullptr,
-      handles ? static_cast<uint32_t>(handles->size()) : 0, &buffer,
+      handles ? static_cast<uint32_t>(handles->size()) : 0, nullptr, &buffer,
       &buffer_size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   if (handles) {
-    // Handle ownership has been taken by MojoAttachSerializedMessageBuffer.
+    // Handle ownership has been taken by MojoAppendMessageData.
     for (size_t i = 0; i < handles->size(); ++i)
       ignore_result(handles->at(i).release());
   }
 
-  internal::Buffer payload_buffer(handle.get(), buffer, buffer_size);
+  internal::Buffer payload_buffer(handle.get(), total_size, buffer,
+                                  buffer_size);
 
   // Make sure we zero the memory first!
   memset(payload_buffer.data(), 0, total_size);
@@ -118,12 +119,13 @@ void SerializeUnserializedContext(MojoMessageHandle message,
       reinterpret_cast<internal::UnserializedMessageContext*>(context_value);
   void* buffer;
   uint32_t buffer_size;
-  MojoResult attach_result = MojoAttachSerializedMessageBuffer(
-      message, 0, nullptr, 0, &buffer, &buffer_size);
+  MojoResult attach_result = MojoAppendMessageData(
+      message, 0, nullptr, 0, nullptr, &buffer, &buffer_size);
   if (attach_result != MOJO_RESULT_OK)
     return;
 
-  internal::Buffer payload_buffer(MessageHandle(message), buffer, buffer_size);
+  internal::Buffer payload_buffer(MessageHandle(message), 0, buffer,
+                                  buffer_size);
   WriteMessageHeader(context->message_name(), context->message_flags(),
                      0 /* payload_interface_id_count */, &payload_buffer);
 
@@ -211,15 +213,13 @@ Message::Message(ScopedMessageHandle handle) {
     uint32_t num_bytes;
     void* buffer;
     uint32_t num_handles = 0;
-    MojoResult rv = MojoGetSerializedMessageContents(
-        handle->value(), &buffer, &num_bytes, nullptr, &num_handles,
-        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+    MojoResult rv = MojoGetMessageData(handle->value(), nullptr, &buffer,
+                                       &num_bytes, nullptr, &num_handles);
     if (rv == MOJO_RESULT_RESOURCE_EXHAUSTED) {
       handles_.resize(num_handles);
-      rv = MojoGetSerializedMessageContents(
-          handle->value(), &buffer, &num_bytes,
-          reinterpret_cast<MojoHandle*>(handles_.data()), &num_handles,
-          MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+      rv = MojoGetMessageData(handle->value(), nullptr, &buffer, &num_bytes,
+                              reinterpret_cast<MojoHandle*>(handles_.data()),
+                              &num_handles);
     } else {
       // No handles, so it's safe to retransmit this message if the caller
       // really wants to.
