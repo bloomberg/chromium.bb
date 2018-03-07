@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -84,9 +85,12 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
   } else if (email.empty()) {
     source->AddLocalizedString("signinErrorTitle", IDS_SIGNIN_ERROR_TITLE);
   } else {
-    source->AddString(
-        "signinErrorTitle",
-        l10n_util::GetStringFUTF16(IDS_SIGNIN_ERROR_EMAIL_TITLE, email));
+    int title_string_id =
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(signin_profile)
+            ? IDS_SIGNIN_ERROR_DICE_EMAIL_TITLE
+            : IDS_SIGNIN_ERROR_EMAIL_TITLE;
+    source->AddString("signinErrorTitle",
+                      l10n_util::GetStringFUTF16(title_string_id, email));
   }
 
   source->AddString("signinErrorMessage", base::string16());
