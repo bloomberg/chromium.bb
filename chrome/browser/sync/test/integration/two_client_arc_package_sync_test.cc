@@ -20,9 +20,7 @@ bool AllProfilesHaveSameArcPackageDetails() {
 
 class TwoClientArcPackageSyncTest : public SyncTest {
  public:
-  TwoClientArcPackageSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {
-    DisableVerifier();
-  }
+  TwoClientArcPackageSyncTest() : SyncTest(TWO_CLIENT) { DisableVerifier(); }
 
   ~TwoClientArcPackageSyncTest() override {}
 

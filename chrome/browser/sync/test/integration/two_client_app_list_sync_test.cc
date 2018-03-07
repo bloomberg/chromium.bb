@@ -53,9 +53,7 @@ const app_list::AppListSyncableService::SyncItem* GetSyncItem(
 
 class TwoClientAppListSyncTest : public SyncTest {
  public:
-  TwoClientAppListSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {
-    DisableVerifier();
-  }
+  TwoClientAppListSyncTest() : SyncTest(TWO_CLIENT) { DisableVerifier(); }
 
   ~TwoClientAppListSyncTest() override {}
 
