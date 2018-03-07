@@ -1573,7 +1573,7 @@ cr.define('login', function() {
       // global focus change event. Sometimes focus requests are ignored while
       // loading the page. See crbug.com/725622.
       if (opt_ensureFocus) {
-        var INTERVAL_REPEAT_MS = 10
+        var INTERVAL_REPEAT_MS = 10;
         var input = this.mainInput;
         var intervalId = setInterval(function() {
           input.focus();
@@ -1756,8 +1756,8 @@ cr.define('login', function() {
       this.classList.toggle('signing-in', false);
       if (takeFocus) {
         if (!this.multiProfilesPolicyApplied) {
-          // This will set a custom tab order.
-          this.focusInput(true /*opt_ensureFocus*/);
+          this.focusInput(
+              this.mainInput.tagName == 'INPUT' /*opt_ensureFocus*/);
         }
       }
       else
