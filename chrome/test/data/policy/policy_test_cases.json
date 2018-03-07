@@ -985,7 +985,7 @@
         },
         "bcdefghijklmnopabcdefghijklmnopa" : {
           "installation_mode": "force_installed",
-          "update_url": "http://example.com/update_url",
+          "update_url": "https://clients2.google.com/service/update2/crx",
           "allowed_permissions": ["downloads"]
         },
         "*": {
