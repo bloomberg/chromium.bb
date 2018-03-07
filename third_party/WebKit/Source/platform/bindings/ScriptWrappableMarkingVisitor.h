@@ -66,7 +66,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
       return;
 
     // If the wrapper is already marked we can bail out here.
-    if (TraceTrait<T>::GetHeapObjectHeader(dst_object)->IsWrapperHeaderMarked())
+    if (TraceTrait<T>::GetHeapObjectHeader(const_cast<T*>(dst_object))
+            ->IsWrapperHeaderMarked())
       return;
 
     CurrentVisitor(thread_state->GetIsolate())
@@ -99,7 +100,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
  protected:
   // ScriptWrappableVisitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) const override;
-  void Visit(const WrapperDescriptor&) const override;
+  void Visit(const TraceWrapperDescriptor&) const override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) const override;
 
@@ -108,20 +109,18 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
  private:
   class MarkingDequeItem {
    public:
-    explicit MarkingDequeItem(const WrapperDescriptor& wrapper_descriptor)
-        : trace_wrappers_callback_(wrapper_descriptor.trace_wrappers_callback),
-          heap_object_header_callback_(
-              wrapper_descriptor.heap_object_header_callback),
-          raw_object_pointer_(wrapper_descriptor.traceable) {
-      DCHECK(trace_wrappers_callback_);
-      DCHECK(heap_object_header_callback_);
+    explicit MarkingDequeItem(const TraceWrapperDescriptor& wrapper_descriptor)
+        : raw_object_pointer_(wrapper_descriptor.base_object_payload),
+          trace_wrappers_callback_(wrapper_descriptor.trace_wrappers_callback) {
       DCHECK(raw_object_pointer_);
+      DCHECK(trace_wrappers_callback_);
     }
 
     // Traces wrappers if the underlying object has not yet been invalidated.
     inline void TraceWrappers(ScriptWrappableVisitor* visitor) const {
       if (raw_object_pointer_) {
-        trace_wrappers_callback_(visitor, raw_object_pointer_);
+        trace_wrappers_callback_(visitor,
+                                 const_cast<void*>(raw_object_pointer_));
       }
     }
 
@@ -139,13 +138,11 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
 
    private:
     inline const HeapObjectHeader* GetHeapObjectHeader() {
-      DCHECK(raw_object_pointer_);
-      return heap_object_header_callback_(raw_object_pointer_);
+      return HeapObjectHeader::FromPayload(raw_object_pointer_);
     }
 
-    TraceWrappersCallback trace_wrappers_callback_;
-    HeapObjectHeaderCallback heap_object_header_callback_;
     const void* raw_object_pointer_;
+    TraceWrappersCallback trace_wrappers_callback_;
   };
 
   void MarkWrapperHeader(HeapObjectHeader*) const;

@@ -16,7 +16,6 @@ namespace blink {
 template <typename T>
 class GarbageCollected;
 class HeapObjectHeader;
-class ScriptWrappableVisitor;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
 // field when checking for proper usage.  When using GC_PLUGIN_IGNORE
@@ -54,6 +53,14 @@ struct TraceDescriptor {
   bool can_trace_eagerly;
 };
 
+struct TraceWrapperDescriptor {
+  STACK_ALLOCATED();
+  void* base_object_payload;
+  TraceWrappersCallback trace_wrappers_callback;
+  MissedWriteBarrierCallback missed_write_barrier_callback;
+  NameCallback name_callback;
+};
+
 // The GarbageCollectedMixin interface and helper macro
 // USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
 // TraceTrait/ObjectAliveTrait on non-leftmost deriving classes
@@ -71,43 +78,41 @@ struct TraceDescriptor {
 // };
 //
 // With the helper, as long as we are using Member<B>, TypeTrait<B> will
-// dispatch adjustAndMark dynamically to find collect addr of the object header.
+// dispatch dynamically to retrieve the necessary tracing and header methods.
 // Note that this is only enabled for Member<B>. For Member<A> which we can
-// compute the object header addr statically, this dynamic dispatch is not used.
-//
+// compute the necessary methods and pointers statically and this dynamic
+// dispatch is not used.
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
   virtual void Trace(Visitor*) {}
-  virtual TraceDescriptor GetTraceDescriptor() const = 0;
   virtual HeapObjectHeader* GetHeapObjectHeader() const = 0;
-  virtual void AdjustAndTraceMarkedWrapper(
-      const ScriptWrappableVisitor*) const = 0;
+  virtual TraceDescriptor GetTraceDescriptor() const = 0;
+  virtual TraceWrapperDescriptor GetTraceWrapperDescriptor() const = 0;
 };
 
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                          \
- public:                                                                      \
-  TraceDescriptor GetTraceDescriptor() const override {                       \
-    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
-                                      blink::GarbageCollected>                \
-        IsSubclassOfGarbageCollected;                                         \
-    static_assert(                                                            \
-        IsSubclassOfGarbageCollected::value,                                  \
-        "only garbage collected objects can have garbage collected mixins");  \
-    return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),                \
-            TraceTrait<TYPE>::Trace, TraceEagerlyTrait<TYPE>::value};         \
-  }                                                                           \
-                                                                              \
-  void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor* visitor)     \
-      const override {                                                        \
-    const TYPE* base = static_cast<const TYPE*>(this);                        \
-    TraceTrait<TYPE>::TraceMarkedWrapper(visitor, base);                      \
-  }                                                                           \
-                                                                              \
-  HeapObjectHeader* GetHeapObjectHeader() const override {                    \
-    return HeapObjectHeader::FromPayload(static_cast<const TYPE*>(this));     \
-  }                                                                           \
-                                                                              \
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                         \
+ public:                                                                     \
+  HeapObjectHeader* GetHeapObjectHeader() const override {                   \
+    static_assert(                                                           \
+        WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,    \
+                                  blink::GarbageCollected>::value,           \
+        "only garbage collected objects can have garbage collected mixins"); \
+    return HeapObjectHeader::FromPayload(static_cast<const TYPE*>(this));    \
+  }                                                                          \
+                                                                             \
+  TraceDescriptor GetTraceDescriptor() const override {                      \
+    return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),               \
+            TraceTrait<TYPE>::Trace, TraceEagerlyTrait<TYPE>::value};        \
+  }                                                                          \
+                                                                             \
+  TraceWrapperDescriptor GetTraceWrapperDescriptor() const override {        \
+    return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),               \
+            TraceTrait<TYPE>::TraceWrappers,                                 \
+            ScriptWrappableVisitor::MissedWriteBarrier<TYPE>,                \
+            ScriptWrappableVisitor::NameCallback<TYPE>};                     \
+  }                                                                          \
+                                                                             \
  private:
 
 // A C++ object's vptr will be initialized to its leftmost base's vtable after
@@ -212,14 +217,13 @@ class GarbageCollectedMixinConstructorMarker
 //    // ambiguous. USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later
 //    // and provides the implementations.
 //  };
-#define MERGE_GARBAGE_COLLECTED_MIXINS()                          \
- public:                                                          \
-  TraceDescriptor GetTraceDescriptor() const override = 0;        \
-  HeapObjectHeader* GetHeapObjectHeader() const override = 0;     \
-  void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor*) \
-      const override = 0;                                         \
-                                                                  \
- private:                                                         \
+#define MERGE_GARBAGE_COLLECTED_MIXINS()                                 \
+ public:                                                                 \
+  HeapObjectHeader* GetHeapObjectHeader() const override = 0;            \
+  TraceDescriptor GetTraceDescriptor() const override = 0;               \
+  TraceWrapperDescriptor GetTraceWrapperDescriptor() const override = 0; \
+                                                                         \
+ private:                                                                \
   using merge_garbage_collected_mixins_requires_semicolon = void
 
 // Base class for objects allocated in the Blink garbage-collected heap.

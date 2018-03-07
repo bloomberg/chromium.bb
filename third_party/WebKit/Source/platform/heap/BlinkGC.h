@@ -16,6 +16,7 @@ namespace blink {
 
 class MarkingVisitor;
 class Visitor;
+class ScriptWrappableVisitor;
 
 using Address = uint8_t*;
 
@@ -23,8 +24,11 @@ using FinalizationCallback = void (*)(void*);
 using VisitorCallback = void (*)(Visitor*, void*);
 using MarkingVisitorCallback = void (*)(MarkingVisitor*, void*);
 using TraceCallback = VisitorCallback;
+using TraceWrappersCallback = void (*)(ScriptWrappableVisitor*, void*);
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
+using MissedWriteBarrierCallback = void (*)();
+using NameCallback = const char* (*)(const void* self);
 
 // Simple alias to avoid heap compaction type signatures turning into
 // a sea of generic |void*|s.

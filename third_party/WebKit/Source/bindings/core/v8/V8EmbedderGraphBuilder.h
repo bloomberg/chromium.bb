@@ -29,7 +29,7 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
  protected:
   // ScriptWrappableVisitor overrides.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) const final;
-  void Visit(const WrapperDescriptor&) const final;
+  void Visit(const TraceWrapperDescriptor&) const final;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable*) const final;
 
@@ -74,7 +74,8 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
     TraceWrappersCallback trace_wrappers_callback;
   };
 
-  WorklistItem ToWorklistItem(Graph::Node*, const WrapperDescriptor&) const;
+  WorklistItem ToWorklistItem(Graph::Node*,
+                              const TraceWrapperDescriptor&) const;
 
   Graph::Node* GraphNode(const v8::Local<v8::Value>&) const;
   Graph::Node* GraphNode(Traceable, const char* name) const;

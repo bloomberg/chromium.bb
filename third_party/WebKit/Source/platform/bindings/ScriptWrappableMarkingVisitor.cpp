@@ -253,9 +253,9 @@ void ScriptWrappableMarkingVisitor::Visit(
 }
 
 void ScriptWrappableMarkingVisitor::Visit(
-    const WrapperDescriptor& wrapper_descriptor) const {
-  HeapObjectHeader* header = wrapper_descriptor.heap_object_header_callback(
-      wrapper_descriptor.traceable);
+    const TraceWrapperDescriptor& wrapper_descriptor) const {
+  HeapObjectHeader* header =
+      HeapObjectHeader::FromPayload(wrapper_descriptor.base_object_payload);
   if (header->IsWrapperHeaderMarked())
     return;
   MarkWrapperHeader(header);
