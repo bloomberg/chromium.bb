@@ -17,16 +17,24 @@
     targetAdded: async function(target) {
       if (!target.name().startsWith('inner'))
         return;
-      let mainTarget = SDK.targetManager.mainTarget();
-      await ElementsTestRunner.expandAndDump();
+      target.pageAgent().setLifecycleEventsEnabled(true);
+      target.model(SDK.ResourceTreeModel).addEventListener(SDK.ResourceTreeModel.Events.LifecycleEvent, async (event) => {
+        if (event.data.name !== 'load')
+          return;
 
-      await mainTarget.model(SDK.ResourceTreeModel)._agent.setLifecycleEventsEnabled(true);
-      TestRunner.evaluateInPagePromise(`document.getElementById('page-iframe').src = 'http://127.0.0.1:8000/devtools/oopif/resources/inner-iframe.html';`);
-      mainTarget.model(SDK.ResourceTreeModel).addEventListener(SDK.ResourceTreeModel.Events.LifecycleEvent, async (event) => {
-        if (event.data.name === 'load') {
-          await ElementsTestRunner.expandAndDump();
-          TestRunner.completeTest();
-        }
+        // OOPIF loaded, proceed with the test.
+        await ElementsTestRunner.expandAndDump();
+
+        // Navigate iframe to in-process
+        let mainTarget = SDK.targetManager.mainTarget();
+        await mainTarget.model(SDK.ResourceTreeModel)._agent.setLifecycleEventsEnabled(true);
+        TestRunner.evaluateInPagePromise(`document.getElementById('page-iframe').src = 'http://127.0.0.1:8000/devtools/oopif/resources/inner-iframe.html';`);
+        mainTarget.model(SDK.ResourceTreeModel).addEventListener(SDK.ResourceTreeModel.Events.LifecycleEvent, async (event) => {
+          if (event.data.name === 'load') {
+            await ElementsTestRunner.expandAndDump();
+            TestRunner.completeTest();
+          }
+        });
       });
     },
 
