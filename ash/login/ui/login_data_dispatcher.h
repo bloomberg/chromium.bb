@@ -63,6 +63,20 @@ class ASH_EXPORT LoginDataDispatcher {
         const std::string& os_version_label_text,
         const std::string& enterprise_info_text,
         const std::string& bluetooth_name);
+
+    // Called when public session display name is changed for user with
+    // |account_id|.
+    virtual void OnPublicSessionDisplayNameChanged(
+        const AccountId& account_id,
+        const std::string& display_name);
+
+    // Called when public session locales are changed for user with
+    // |account_id|.
+    virtual void OnPublicSessionLocalesChanged(
+        const AccountId& account_id,
+        const base::ListValue& locales,
+        const std::string& default_locale,
+        bool show_advanced_view);
   };
 
   LoginDataDispatcher();
@@ -80,6 +94,12 @@ class ASH_EXPORT LoginDataDispatcher {
   void SetDevChannelInfo(const std::string& os_version_label_text,
                          const std::string& enterprise_info_text,
                          const std::string& bluetooth_name);
+  void SetPublicSessionDisplayName(const AccountId& account_id,
+                                   const std::string& display_name);
+  void SetPublicSessionLocales(const AccountId& account_id,
+                               std::unique_ptr<base::ListValue> locales,
+                               const std::string& default_locale,
+                               bool show_advanced_view);
 
  private:
   base::ObserverList<Observer> observers_;

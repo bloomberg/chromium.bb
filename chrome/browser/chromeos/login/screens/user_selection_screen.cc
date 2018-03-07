@@ -862,6 +862,10 @@ UserSelectionScreen::UpdateAndReturnUserListForMojo() {
   return user_info_list;
 }
 
+void UserSelectionScreen::SetUsersLoaded(bool loaded) {
+  users_loaded_ = loaded;
+}
+
 EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
     const AccountId& account_id) const {
   if (GetScreenType() == OTHER_SCREEN)

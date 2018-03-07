@@ -104,6 +104,13 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnDevChannelInfoChanged(const std::string& os_version_label_text,
                                const std::string& enterprise_info_text,
                                const std::string& bluetooth_name) override;
+  void OnPublicSessionDisplayNameChanged(
+      const AccountId& account_id,
+      const std::string& display_name) override;
+  void OnPublicSessionLocalesChanged(const AccountId& account_id,
+                                     const base::ListValue& locales,
+                                     const std::string& default_locale,
+                                     bool show_advanced_view) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;

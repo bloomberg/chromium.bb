@@ -20,11 +20,11 @@ class UserSelectionScreenProxy : public chromeos::UserBoardView {
 
   // UserBoardView:
   void SetPublicSessionDisplayName(const AccountId& account_id,
-                                   const std::string& display_name) override{};
+                                   const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,
                                std::unique_ptr<base::ListValue> locales,
                                const std::string& default_locale,
-                               bool multiple_recommended_locales) override{};
+                               bool multiple_recommended_locales) override;
   void ShowBannerMessage(const base::string16& message) override{};
   void ShowUserPodCustomIcon(
       const AccountId& account_id,

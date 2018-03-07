@@ -67,6 +67,23 @@ UserSelectionScreenProxy::UserSelectionScreenProxy() = default;
 
 UserSelectionScreenProxy::~UserSelectionScreenProxy() = default;
 
+void UserSelectionScreenProxy::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  LoginScreenClient::Get()->SetPublicSessionDisplayName(account_id,
+                                                        display_name);
+}
+
+void UserSelectionScreenProxy::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::unique_ptr<base::ListValue> locales,
+    const std::string& default_locale,
+    bool multiple_recommended_locales) {
+  LoginScreenClient::Get()->SetPublicSessionLocales(
+      account_id, std::move(locales), default_locale,
+      multiple_recommended_locales);
+}
+
 void UserSelectionScreenProxy::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&

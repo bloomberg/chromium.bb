@@ -65,6 +65,12 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                          const std::string& enterprise_info_text,
                          const std::string& bluetooth_name) override;
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
+  void SetPublicSessionDisplayName(const AccountId& account_id,
+                                   const std::string& display_name) override;
+  void SetPublicSessionLocales(const AccountId& account_id,
+                               std::unique_ptr<base::ListValue> locales,
+                               const std::string& default_locale,
+                               bool show_advanced_view) override;
 
   // Wrappers around the mojom::LoginScreenClient interface. Hash the password
   // and send AuthenticateUser request to LoginScreenClient.

@@ -48,6 +48,7 @@ void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
   user_selection_screen_->Init(filtered_users);
   client->LoadUsers(user_selection_screen_->UpdateAndReturnUserListForMojo(),
                     show_guest);
+  user_selection_screen_->SetUsersLoaded(true /*loaded*/);
 }
 
 void LoginDisplayViews::OnPreferencesChanged() {

@@ -31,6 +31,16 @@ void LoginDataDispatcher::Observer::OnDevChannelInfoChanged(
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {}
 
+void LoginDataDispatcher::Observer::OnPublicSessionDisplayNameChanged(
+    const AccountId& account_id,
+    const std::string& display_name) {}
+
+void LoginDataDispatcher::Observer::OnPublicSessionLocalesChanged(
+    const AccountId& account_id,
+    const base::ListValue& locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {}
+
 LoginDataDispatcher::LoginDataDispatcher() = default;
 
 LoginDataDispatcher::~LoginDataDispatcher() = default;
@@ -80,6 +90,24 @@ void LoginDataDispatcher::SetDevChannelInfo(
   for (auto& observer : observers_) {
     observer.OnDevChannelInfoChanged(os_version_label_text,
                                      enterprise_info_text, bluetooth_name);
+  }
+}
+
+void LoginDataDispatcher::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  for (auto& observer : observers_)
+    observer.OnPublicSessionDisplayNameChanged(account_id, display_name);
+}
+
+void LoginDataDispatcher::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::unique_ptr<base::ListValue> locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  for (auto& observer : observers_) {
+    observer.OnPublicSessionLocalesChanged(account_id, *locales, default_locale,
+                                           show_advanced_view);
   }
 }
 
