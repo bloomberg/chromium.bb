@@ -260,9 +260,6 @@ class BrowserAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
 
-// Configures the geolocation provider to always return the given position.
-void OverrideGeolocation(double latitude, double longitude);
-
 // Enumerates all history contents on the backend thread. Returns them in
 // descending order by time.
 class HistoryEnumerator {
