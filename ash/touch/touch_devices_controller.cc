@@ -151,16 +151,16 @@ void TouchDevicesController::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
       prefs::kTapDraggingEnabled,
-      base::Bind(&TouchDevicesController::UpdateTapDraggingEnabled,
-                 base::Unretained(this)));
+      base::BindRepeating(&TouchDevicesController::UpdateTapDraggingEnabled,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kTouchpadEnabled,
-      base::Bind(&TouchDevicesController::UpdateTouchpadEnabled,
-                 base::Unretained(this)));
+      base::BindRepeating(&TouchDevicesController::UpdateTouchpadEnabled,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kTouchscreenEnabled,
-      base::Bind(&TouchDevicesController::UpdateTouchscreenEnabled,
-                 base::Unretained(this)));
+      base::BindRepeating(&TouchDevicesController::UpdateTouchscreenEnabled,
+                          base::Unretained(this)));
   // Load current state.
   UpdateTapDraggingEnabled();
   UpdateTouchpadEnabled();
@@ -198,7 +198,7 @@ void TouchDevicesController::UpdateTouchpadEnabled() {
 
   GetInputDeviceControllerClient()->SetInternalTouchpadEnabled(
       prefs->GetBoolean(prefs::kTouchpadEnabled),
-      base::BindOnce(&OnSetTouchpadEnabledDone));
+      base::BindRepeating(&OnSetTouchpadEnabledDone));
 }
 
 void TouchDevicesController::UpdateTouchscreenEnabled() {

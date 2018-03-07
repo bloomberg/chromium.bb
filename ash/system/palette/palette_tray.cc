@@ -206,8 +206,8 @@ void PaletteTray::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
   pref_change_registrar_user_->Init(pref_service);
   pref_change_registrar_user_->Add(
       prefs::kEnableStylusTools,
-      base::Bind(&PaletteTray::OnPaletteEnabledPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&PaletteTray::OnPaletteEnabledPrefChanged,
+                          base::Unretained(this)));
 
   // Read the initial value.
   OnPaletteEnabledPrefChanged();
@@ -253,8 +253,8 @@ void PaletteTray::OnLocalStatePrefServiceInitialized(
   pref_change_registrar_local_->Init(local_state_pref_service_);
   pref_change_registrar_local_->Add(
       prefs::kHasSeenStylus,
-      base::Bind(&PaletteTray::OnHasSeenStylusPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&PaletteTray::OnHasSeenStylusPrefChanged,
+                          base::Unretained(this)));
 
   OnHasSeenStylusPrefChanged();
 }

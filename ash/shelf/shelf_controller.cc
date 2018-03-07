@@ -315,11 +315,11 @@ void ShelfController::OnActiveUserPrefServiceChanged(
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);
   pref_change_registrar_->Add(prefs::kShelfAlignmentLocal,
-                              base::Bind(&SetShelfAlignmentFromPrefs));
+                              base::BindRepeating(&SetShelfAlignmentFromPrefs));
   pref_change_registrar_->Add(prefs::kShelfAutoHideBehaviorLocal,
-                              base::Bind(&SetShelfAutoHideFromPrefs));
+                              base::BindRepeating(&SetShelfAutoHideFromPrefs));
   pref_change_registrar_->Add(prefs::kShelfPreferences,
-                              base::Bind(&SetShelfBehaviorsFromPrefs));
+                              base::BindRepeating(&SetShelfBehaviorsFromPrefs));
 }
 
 void ShelfController::OnTabletModeStarted() {

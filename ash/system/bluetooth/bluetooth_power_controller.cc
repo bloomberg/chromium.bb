@@ -75,7 +75,7 @@ void BluetoothPowerController::StartWatchingActiveUserPrefsChanges() {
   active_user_pref_change_registrar_->Init(active_user_pref_service_);
   active_user_pref_change_registrar_->Add(
       prefs::kUserBluetoothAdapterEnabled,
-      base::Bind(
+      base::BindRepeating(
           &BluetoothPowerController::OnBluetoothPowerActiveUserPrefChanged,
           base::Unretained(this)));
 }
