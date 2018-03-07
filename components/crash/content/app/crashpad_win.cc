@@ -53,11 +53,11 @@ void GetPlatformCrashpadAnnotations(
 #endif
 }
 
-base::FilePath PlatformCrashpadInitialization(
-    bool initial_client,
-    bool browser_process,
-    bool embedded_handler,
-    const std::string& user_data_dir) {
+base::FilePath PlatformCrashpadInitialization(bool initial_client,
+                                              bool browser_process,
+                                              bool embedded_handler,
+                                              const std::string& user_data_dir,
+                                              const base::FilePath& exe_path) {
   base::FilePath database_path;  // Only valid in the browser process.
   base::FilePath metrics_path;  // Only valid in the browser process.
 
@@ -90,11 +90,14 @@ base::FilePath PlatformCrashpadInitialization(
     // isn't present in the environment then the default URL will remain.
     env->GetVar(kServerUrlVar, &url);
 
-    wchar_t exe_file_path[MAX_PATH] = {};
-    CHECK(
-        ::GetModuleFileName(nullptr, exe_file_path, arraysize(exe_file_path)));
+    base::FilePath exe_file(exe_path);
+    if (exe_file.empty()) {
+      wchar_t exe_file_path[MAX_PATH] = {};
+      CHECK(::GetModuleFileName(nullptr, exe_file_path,
+                                arraysize(exe_file_path)));
 
-    base::FilePath exe_file(exe_file_path);
+      exe_file = base::FilePath(exe_file_path);
+    }
 
     if (crash_reporter_client->GetShouldDumpLargerDumps()) {
       const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;

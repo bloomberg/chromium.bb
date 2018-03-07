@@ -10,6 +10,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
@@ -209,8 +210,8 @@ void HeadlessContentMainDelegate::InitCrashReporter(
 // crashpad is already enabled.
 // TODO(dvallet): Ideally we would also want to avoid this for component builds.
 #elif defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL)
-  crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
-                                                        process_type, "");
+  crash_reporter::InitializeCrashpadWithEmbeddedHandler(
+      process_type.empty(), process_type, "", base::FilePath());
 #endif  // defined(HEADLESS_USE_BREAKPAD)
 #endif  // defined(OS_FUCHSIA)
 }

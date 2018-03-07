@@ -10,6 +10,8 @@ executable("notification_helper") {
   sources = [
     "notification_helper.cc",
     "notification_helper.rc",
+    "notification_helper_crash_reporter_client.cc",
+    "notification_helper_crash_reporter_client.h",
   ]
 
   configs -= [ "//build/config/win:console" ]
@@ -20,7 +22,11 @@ executable("notification_helper") {
     ":version_resources",
     "//base",
     "//build/win:default_exe_manifest",
+    "//chrome/common:version_header",
     "//chrome/install_static:primary_module",
+    "//components/crash/content/app",
+    "//components/crash/content/app:crash_export_thunks",
+    "//components/version_info:channel",
   ]
 
   libs = [ "runtimeobject.lib" ]
@@ -33,6 +39,8 @@ source_set("lib") {
     "com_server_module.h",
     "notification_activator.cc",
     "notification_activator.h",
+    "notification_helper_util.cc",
+    "notification_helper_util.h",
     "trace_util.cc",
     "trace_util.h",
   ]
