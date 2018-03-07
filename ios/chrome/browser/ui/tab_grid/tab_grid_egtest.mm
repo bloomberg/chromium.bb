@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -19,6 +20,10 @@ id<GREYMatcher> TabGridDoneButton() {
   return grey_allOf(grey_accessibilityID(kTabGridDoneButtonAccessibilityID),
                     grey_sufficientlyVisible(), nil);
 }
+// Identifer for cell at given |index|.
+NSString* IdentifierForCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
 }  // namespace
 
 @interface TabGridTestCase : ChromeTestCase
@@ -32,6 +37,17 @@ id<GREYMatcher> TabGridDoneButton() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:TabGridDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that tapping on the first cell shows that tab.
+- (void)testTappingOnFirstCell {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          IdentifierForCellAtIndex(0))]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end
