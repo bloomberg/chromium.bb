@@ -635,13 +635,11 @@ void LocalFrameClientImpl::ForwardResourceTimingToParent(
   web_frame_->Client()->ForwardResourceTimingToParent(info);
 }
 
-void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request,
-                                       const String& suggested_name) {
+void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request) {
   if (!web_frame_->Client())
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
-  web_frame_->Client()->DownloadURL(WrappedResourceRequest(request),
-                                    suggested_name);
+  web_frame_->Client()->DownloadURL(WrappedResourceRequest(request));
 }
 
 void LocalFrameClientImpl::LoadErrorPage(int reason) {

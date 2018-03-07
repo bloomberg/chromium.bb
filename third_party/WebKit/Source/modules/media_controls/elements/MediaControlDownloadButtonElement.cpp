@@ -82,7 +82,7 @@ void MediaControlDownloadButtonElement::DefaultEventHandler(Event* event) {
     request.SetSuggestedFilename(String());
     request.SetRequestContext(WebURLRequest::kRequestContextDownload);
     request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
-    GetDocument().GetFrame()->Client()->DownloadURL(request, String());
+    GetDocument().GetFrame()->Client()->DownloadURL(request);
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }

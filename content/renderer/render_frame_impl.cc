@@ -3955,15 +3955,13 @@ void RenderFrameImpl::DidAddMessageToConsole(
       static_cast<int32_t>(source_line), source_name.Utf16()));
 }
 
-void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request,
-                                  const blink::WebString& suggested_name) {
+void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request) {
   FrameHostMsg_DownloadUrl_Params params;
   params.render_view_id = render_view_->GetRoutingID();
   params.render_frame_id = GetRoutingID();
   params.url = request.Url();
   params.referrer = RenderViewImpl::GetReferrerFromRequest(frame_, request);
   params.initiator_origin = request.RequestorOrigin();
-  params.suggested_name = suggested_name.Utf16();
 
   Send(new FrameHostMsg_DownloadUrl(params));
 }
@@ -6159,31 +6157,24 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       (info.archive_status == NavigationPolicyInfo::ArchiveStatus::Present) &&
       !url.SchemeIs(url::kDataScheme);
 
-  // If the navigation is not synchronous, send it to the browser.  This
-  // includes navigations with no request being sent to the network stack.
-  if (info.url_request.CheckForBrowserSideNavigation() &&
-      IsURLHandledByNetworkStack(url) && !use_archive) {
-    if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
-      // The BeginNavigation() call happens in didStartProvisionalLoad(). We
-      // need to save information about the navigation here.
+  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
+    // If the navigation is not synchronous, send it to the browser.  This
+    // includes navigations with no request being sent to the network stack.
+    if (!use_archive && info.url_request.CheckForBrowserSideNavigation() &&
+        IsURLHandledByNetworkStack(url)) {
       pending_navigation_info_.reset(new PendingNavigationInfo(info));
       return blink::kWebNavigationPolicyHandledByClient;
-    } else if (info.default_policy == blink::kWebNavigationPolicyDownload) {
-      DownloadURL(info.url_request, blink::WebString());
-      return blink::kWebNavigationPolicyIgnore;
     } else {
-      OpenURL(info, /*send_referrer=*/true,
-              /*is_history_navigation_in_new_child=*/false);
-      return blink::kWebNavigationPolicyIgnore;
+      return blink::kWebNavigationPolicyCurrentTab;
     }
   }
 
-  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab ||
-      info.default_policy == blink::kWebNavigationPolicyDownload) {
-    return info.default_policy;
+  if (info.default_policy == blink::kWebNavigationPolicyDownload) {
+    DownloadURL(info.url_request);
+  } else {
+    OpenURL(info, /*send_referrer=*/true,
+            /*is_history_navigation_in_new_child=*/false);
   }
-  OpenURL(info, /*send_referrer=*/true,
-          /*is_history_navigation_in_new_child=*/false);
   return blink::kWebNavigationPolicyIgnore;
 }
 
