@@ -2859,8 +2859,10 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
     ia2_state |= IA2_STATE_SELECTABLE_TEXT;
   }
 
-  if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty())
+  if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
+      IsAutofillField()) {
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
+  }
 
   if (GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
     ia2_state |= IA2_STATE_MODAL;
@@ -3024,6 +3026,11 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
 
   StringAttributeToIA2(result, ax::mojom::StringAttribute::kAutoComplete,
                        "autocomplete");
+  if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
+      IsAutofillField()) {
+    result.push_back(L"autocomplete:list");
+  }
+
   StringAttributeToIA2(result, ax::mojom::StringAttribute::kRoleDescription,
                        "roledescription");
   StringAttributeToIA2(result, ax::mojom::StringAttribute::kKeyShortcuts,
@@ -3386,6 +3393,11 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
   return data.HasState(ax::mojom::State::kFocusable);
 }
 
+bool AXPlatformNodeWin::IsAutofillField() {
+  return IsAutofillShown() && IsPlainTextField() &&
+         delegate_->GetFocus() == GetNativeViewAccessible();
+}
+
 int AXPlatformNodeWin::MSAAState() {
   const AXNodeData& data = GetData();
   int msaa_state = 0;
@@ -3412,11 +3424,8 @@ int AXPlatformNodeWin::MSAAState() {
 
   // Note: autofill is special-cased here because there is no way for the
   // browser to know when the autofill popup is shown.
-  if (data.HasState(ax::mojom::State::kHaspopup) ||
-      (IsAutofillShown() && data.role == ax::mojom::Role::kTextField &&
-       delegate_->GetFocus() == GetNativeViewAccessible())) {
+  if (data.HasState(ax::mojom::State::kHaspopup) || IsAutofillField())
     msaa_state |= STATE_SYSTEM_HASPOPUP;
-  }
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal
 
