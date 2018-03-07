@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -51,6 +52,9 @@ ProfileOAuth2TokenServiceFactory*
 void ProfileOAuth2TokenServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID)
+  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
+#endif
 }
 
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
@@ -63,7 +67,8 @@ KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   auto delegate = std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       SigninErrorControllerFactory::GetInstance()->GetForProfile(profile),
-      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
+      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
+      AccountConsistencyModeManager::GetMethodForProfile(profile));
 #endif
   ProfileOAuth2TokenService* service =
       new ProfileOAuth2TokenService(std::move(delegate));

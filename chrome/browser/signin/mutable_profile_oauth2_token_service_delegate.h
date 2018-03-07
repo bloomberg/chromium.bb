@@ -12,12 +12,17 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 class MutableProfileOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
@@ -27,8 +32,11 @@ class MutableProfileOAuth2TokenServiceDelegate
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
       SigninErrorController* signin_error_controller,
-      AccountTrackerService* account_tracker_service);
+      AccountTrackerService* account_tracker_service,
+      signin::AccountConsistencyMethod account_consistency);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // OAuth2TokenServiceDelegate overrides.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
@@ -176,6 +184,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   SigninClient* client_;
   SigninErrorController* signin_error_controller_;
   AccountTrackerService* account_tracker_service_;
+  signin::AccountConsistencyMethod account_consistency_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };

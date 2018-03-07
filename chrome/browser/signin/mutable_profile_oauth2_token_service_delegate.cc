@@ -11,9 +11,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -27,6 +30,21 @@ namespace {
 
 const char kAccountIdPrefix[] = "AccountId-";
 const size_t kAccountIdPrefixLength = 10;
+
+// Enum for the Signin.LoadTokenFromDB histogram.
+// Do not modify, or add or delete other than directly before
+// NUM_LOAD_TOKEN_FROM_DB_STATUS.
+enum class LoadTokenFromDBStatus {
+  // Token was loaded.
+  TOKEN_LOADED = 0,
+  // Token was revoked as part of Dice migration.
+  TOKEN_REVOKED_DICE_MIGRATION,
+  // Token was revoked because it is a secondary account and account consistency
+  // is disabled.
+  TOKEN_REVOKED_SECONDARY_ACCOUNT,
+
+  NUM_LOAD_TOKEN_FROM_DB_STATUS
+};
 
 std::string ApplyAccountIdPrefix(const std::string& account_id) {
   return kAccountIdPrefix + account_id;
@@ -59,6 +77,42 @@ LoadCredentialsStateFromTokenResult(TokenServiceTable::Result token_result) {
   }
   NOTREACHED();
   return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN;
+}
+
+// Returns whether the token service should be migrated to Dice.
+// Migration can happen if the following conditions are met:
+// - Token service Dice migration is not already done,
+// - AccountTrackerService migration is done,
+// - All accounts in the AccountTrackerService are valid,
+// - Account consistency is DiceMigration or greater.
+// TODO(droger): Remove this code once Dice is fully enabled.
+bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
+                         PrefService* prefs,
+                         AccountTrackerService* account_tracker,
+                         const std::map<std::string, std::string>& db_tokens) {
+  AccountTrackerService::AccountIdMigrationState migration_state =
+      account_tracker->GetMigrationState();
+  if ((account_consistency == signin::AccountConsistencyMethod::kMirror) ||
+      !signin::DiceMethodGreaterOrEqual(
+          account_consistency,
+          signin::AccountConsistencyMethod::kDiceMigration) ||
+      (migration_state != AccountTrackerService::MIGRATION_DONE) ||
+      prefs->GetBoolean(prefs::kTokenServiceDiceCompatible)) {
+    return false;
+  }
+
+  // Do not migrate if some accounts are not valid.
+  for (std::map<std::string, std::string>::const_iterator iter =
+           db_tokens.begin();
+       iter != db_tokens.end(); ++iter) {
+    const std::string& prefixed_account_id = iter->first;
+    std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
+    AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
+    if (!account_info.IsValid()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -151,17 +205,20 @@ MutableProfileOAuth2TokenServiceDelegate::
     MutableProfileOAuth2TokenServiceDelegate(
         SigninClient* client,
         SigninErrorController* signin_error_controller,
-        AccountTrackerService* account_tracker_service)
+        AccountTrackerService* account_tracker_service,
+        signin::AccountConsistencyMethod account_consistency)
     : web_data_service_request_(0),
       load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
       signin_error_controller_(signin_error_controller),
-      account_tracker_service_(account_tracker_service) {
+      account_tracker_service_(account_tracker_service),
+      account_consistency_(account_consistency) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(signin_error_controller);
+  DCHECK(account_tracker_service_);
   // It's okay to fill the backoff policy after being used in construction.
   backoff_policy_.num_errors_to_ignore = 0;
   backoff_policy_.initial_delay_ms = 1000;
@@ -178,6 +235,12 @@ MutableProfileOAuth2TokenServiceDelegate::
   VLOG(1) << "MutablePO2TS::~MutablePO2TS";
   DCHECK(server_revokes_.empty());
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+}
+
+// static
+void MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kTokenServiceDiceCompatible, false);
 }
 
 OAuth2AccessTokenFetcher*
@@ -282,7 +345,10 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   }
 
   load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
-  if (primary_account_id.empty() && !signin::IsDicePrepareMigrationEnabled()) {
+  if (primary_account_id.empty() &&
+      !signin::DiceMethodGreaterOrEqual(
+          account_consistency_,
+          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
     load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
     FireRefreshTokensLoaded();
     return;
@@ -343,7 +409,9 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // map.  The entry could be missing if there is a corruption in the token DB
   // while this profile is connected to an account.
   DCHECK(!loading_primary_account_id_.empty() ||
-         signin::IsDicePrepareMigrationEnabled());
+         signin::DiceMethodGreaterOrEqual(
+             account_consistency_,
+             signin::AccountConsistencyMethod::kDicePrepareMigration));
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
     if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
@@ -371,6 +439,9 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
 void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
     const std::map<std::string, std::string>& db_tokens) {
   std::string old_login_token;
+  bool migrate_to_dice =
+      ShouldMigrateToDice(account_consistency_, client_->GetPrefs(),
+                          account_tracker_service_, db_tokens);
 
   {
     ScopedBatchChange batch(this);
@@ -399,47 +470,85 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         DCHECK(!refresh_token.empty());
         std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
 
-        if (migration_state == AccountTrackerService::MIGRATION_IN_PROGRESS) {
-          // Migrate to gaia-ids.
-          AccountInfo account_info =
-              account_tracker_service_->FindAccountInfoByEmail(account_id);
-          // |account_info.gaia| could be empty if |account_id| is already gaia
-          // id. This could happen if the chrome was closed in the middle of
-          // migration.
-          if (!account_info.gaia.empty()) {
-            ClearPersistedCredentials(account_id);
-            PersistCredentials(account_info.gaia, refresh_token);
-            account_id = account_info.gaia;
+        switch (migration_state) {
+          case AccountTrackerService::MIGRATION_IN_PROGRESS: {
+            // Migrate to gaia-ids.
+            AccountInfo account_info =
+                account_tracker_service_->FindAccountInfoByEmail(account_id);
+            // |account_info.gaia| could be empty if |account_id| is already
+            // gaia id. This could happen if the chrome was closed in the middle
+            // of migration.
+            if (!account_info.gaia.empty()) {
+              ClearPersistedCredentials(account_id);
+              PersistCredentials(account_info.gaia, refresh_token);
+              account_id = account_info.gaia;
+            }
+
+            // Skip duplicate accounts, this could happen if migration was
+            // crashed in the middle.
+            if (refresh_tokens_.count(account_id) != 0)
+              continue;
+            break;
           }
-
-          // Skip duplicate accounts, this could happen if migration was
-          // crashed in the middle.
-          if (refresh_tokens_.count(account_id) != 0)
-            continue;
-        }
-
-        // If the account_id is an email address, then canonicalize it.  This
-        // is to support legacy account_ids, and will not be needed after
-        // switching to gaia-ids.
-        if (account_id.find('@') != std::string::npos) {
-          // If the canonical account id is not the same as the loaded
-          // account id, make sure not to overwrite a refresh token from
-          // a canonical version.  If no canonical version was loaded, then
-          // re-persist this refresh token with the canonical account id.
-          std::string canon_account_id = gaia::CanonicalizeEmail(account_id);
-          if (canon_account_id != account_id) {
-            ClearPersistedCredentials(account_id);
-            if (db_tokens.count(ApplyAccountIdPrefix(canon_account_id)) == 0)
-              PersistCredentials(canon_account_id, refresh_token);
-          }
-
-          account_id = canon_account_id;
+          case AccountTrackerService::MIGRATION_NOT_STARTED:
+            // If the account_id is an email address, then canonicalize it. This
+            // is to support legacy account_ids, and will not be needed after
+            // switching to gaia-ids.
+            if (account_id.find('@') != std::string::npos) {
+              // If the canonical account id is not the same as the loaded
+              // account id, make sure not to overwrite a refresh token from
+              // a canonical version.  If no canonical version was loaded, then
+              // re-persist this refresh token with the canonical account id.
+              std::string canon_account_id =
+                  gaia::CanonicalizeEmail(account_id);
+              if (canon_account_id != account_id) {
+                ClearPersistedCredentials(account_id);
+                if (db_tokens.count(ApplyAccountIdPrefix(canon_account_id)) ==
+                    0)
+                  PersistCredentials(canon_account_id, refresh_token);
+              }
+              account_id = canon_account_id;
+            }
+            break;
+          case AccountTrackerService::MIGRATION_DONE:
+            DCHECK_EQ(std::string::npos, account_id.find('@'));
+            break;
+          case AccountTrackerService::NUM_MIGRATION_STATES:
+            NOTREACHED();
+            break;
         }
 
         // Only load secondary accounts when account consistency is enabled.
-        if (account_id == loading_primary_account_id_ ||
-            signin::IsDicePrepareMigrationEnabled() ||
-            signin::IsAccountConsistencyMirrorEnabled()) {
+        bool load_account =
+            (account_id == loading_primary_account_id_) ||
+            (account_consistency_ ==
+             signin::AccountConsistencyMethod::kMirror) ||
+            signin::DiceMethodGreaterOrEqual(
+                account_consistency_,
+                signin::AccountConsistencyMethod::kDicePrepareMigration);
+        LoadTokenFromDBStatus load_token_status =
+            load_account
+                ? LoadTokenFromDBStatus::TOKEN_LOADED
+                : LoadTokenFromDBStatus::TOKEN_REVOKED_SECONDARY_ACCOUNT;
+
+        if (migrate_to_dice) {
+          // Revoke old hosted domain accounts as part of Dice migration.
+          AccountInfo account_info =
+              account_tracker_service_->GetAccountInfo(account_id);
+          DCHECK(account_info.IsValid());
+          if (account_info.hosted_domain !=
+              AccountTrackerService::kNoHostedDomainFound) {
+            load_account = false;
+            load_token_status =
+                LoadTokenFromDBStatus::TOKEN_REVOKED_DICE_MIGRATION;
+          }
+        }
+
+        UMA_HISTOGRAM_ENUMERATION(
+            "Signin.LoadTokenFromDB", load_token_status,
+            LoadTokenFromDBStatus::NUM_LOAD_TOKEN_FROM_DB_STATUS);
+
+        if (load_account) {
           refresh_tokens_[account_id].reset(new AccountStatus(
               signin_error_controller_, account_id, refresh_token));
           FireRefreshTokenAvailable(account_id);
@@ -457,6 +566,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         UpdateCredentials(loading_primary_account_id_, old_login_token);
     }
   }
+
+  if (migrate_to_dice)
+    client_->GetPrefs()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
