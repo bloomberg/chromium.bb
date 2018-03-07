@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -24,10 +25,8 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
@@ -508,7 +507,7 @@ class DownloadFileTest : public testing::Test {
     closure.Run();
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;
