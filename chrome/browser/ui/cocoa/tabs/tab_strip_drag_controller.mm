@@ -63,9 +63,6 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 - (void)maybeStartDrag:(NSEvent*)theEvent forTab:(TabController*)tab {
   [self resetDragControllers];
 
-  // Activate the tab.
-  [tab selectTab:self];
-
   // Resolve overlay back to original window.
   sourceWindow_ = [[tab view] window];
   if ([sourceWindow_ isKindOfClass:[NSPanel class]]) {
@@ -139,6 +136,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     } else if (type == NSLeftMouseDragged) {
       [self continueDrag:theEvent];
     } else if (type == NSLeftMouseUp) {
+      [tab selectTab:self];
       [self endDrag:theEvent];
       break;
     } else {
