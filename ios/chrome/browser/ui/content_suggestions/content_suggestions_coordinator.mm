@@ -152,8 +152,6 @@
         self.primaryToolbarViewController;
 
     self.primaryToolbarMediator = [[ToolbarMediator alloc] init];
-    self.primaryToolbarMediator.voiceSearchProvider =
-        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
     self.primaryToolbarMediator.consumer = self.primaryToolbarViewController;
     self.primaryToolbarMediator.webStateList = self.webStateList;
   }

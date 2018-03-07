@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
@@ -46,9 +47,7 @@
 
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize consumer = _consumer;
-@synthesize imageProvider = _imageProvider;
 @synthesize templateURLService = _templateURLService;
-@synthesize voiceSearchProvider = _voiceSearchProvider;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
 
@@ -179,19 +178,6 @@
   }
 }
 
-- (void)setImageProvider:(BrandedImageProvider*)imageProvider {
-  _imageProvider = imageProvider;
-  [self searchEngineChanged];
-}
-
-- (void)setVoiceSearchProvider:(VoiceSearchProvider*)voiceSearchProvider {
-  _voiceSearchProvider = voiceSearchProvider;
-  if (_voiceSearchProvider) {
-    [self.consumer
-        setVoiceSearchEnabled:_voiceSearchProvider->IsVoiceSearchEnabled()];
-  }
-}
-
 - (void)setWebState:(web::WebState*)webState {
   if (_webState) {
     _webState->RemoveObserver(_webStateObserver.get());
@@ -210,10 +196,9 @@
 
 - (void)setConsumer:(id<ToolbarConsumer>)consumer {
   _consumer = consumer;
-  if (self.voiceSearchProvider) {
-    [consumer
-        setVoiceSearchEnabled:self.voiceSearchProvider->IsVoiceSearchEnabled()];
-  }
+  [_consumer setVoiceSearchEnabled:ios::GetChromeBrowserProvider()
+                                       ->GetVoiceSearchProvider()
+                                       ->IsVoiceSearchEnabled()];
   [self searchEngineChanged];
   if (self.webState) {
     [self updateConsumer];
@@ -329,22 +314,23 @@
 #pragma mark - SearchEngineObserving
 
 - (void)searchEngineChanged {
-  if (!self.templateURLService || !self.imageProvider) {
-    [self.consumer setSearchIcon:[UIImage imageNamed:@"toolbar_search"]];
-    return;
+  BOOL showBrandedSearchIcon = NO;
+  if (self.templateURLService) {
+    const TemplateURL* defaultURL =
+        self.templateURLService->GetDefaultSearchProvider();
+    if (defaultURL) {
+      showBrandedSearchIcon =
+          defaultURL->GetEngineType(
+              self.templateURLService->search_terms_data()) ==
+          SEARCH_ENGINE_GOOGLE;
+    }
   }
 
-  BOOL showBrandedSearchIcon = NO;
-  const TemplateURL* defaultURL =
-      self.templateURLService->GetDefaultSearchProvider();
-  if (defaultURL) {
-    showBrandedSearchIcon = defaultURL->GetEngineType(
-                                self.templateURLService->search_terms_data()) ==
-                            SEARCH_ENGINE_GOOGLE;
-  }
   UIImage* searchIcon = nil;
   if (showBrandedSearchIcon) {
-    searchIcon = self.imageProvider->GetToolbarSearchButtonImage();
+    searchIcon = ios::GetChromeBrowserProvider()
+                     ->GetBrandedImageProvider()
+                     ->GetToolbarSearchButtonImage();
   }
   if (!searchIcon) {
     searchIcon = [UIImage imageNamed:@"toolbar_search"];

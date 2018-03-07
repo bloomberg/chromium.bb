@@ -59,10 +59,6 @@
   self.mediator = [[ToolbarMediator alloc] init];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
-  self.mediator.imageProvider =
-      ios::GetChromeBrowserProvider()->GetBrandedImageProvider();
-  self.mediator.voiceSearchProvider =
-      ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = self.webStateList;
   self.mediator.bookmarkModel =

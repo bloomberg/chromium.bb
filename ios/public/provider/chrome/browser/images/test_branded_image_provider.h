@@ -12,15 +12,7 @@ class TestBrandedImageProvider : public BrandedImageProvider {
   TestBrandedImageProvider();
   ~TestBrandedImageProvider() override;
 
-  void set_toolbar_search_button_image(UIImage* toolbar_search_button_image) {
-    toolbar_search_button_image_ = toolbar_search_button_image;
-  }
-
-  // BrandedImageProvider implementation.
-  UIImage* GetToolbarSearchButtonImage() override;
-
  private:
-  UIImage* toolbar_search_button_image_;
   DISALLOW_COPY_AND_ASSIGN(TestBrandedImageProvider);
 };
 

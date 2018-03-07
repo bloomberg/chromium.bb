@@ -23,7 +23,9 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
+#include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -42,8 +44,79 @@ using bookmarks::BookmarkNode;
 using bookmarks::BookmarkModel;
 
 namespace {
-class MockEnabledVoiceSearchProvider : public VoiceSearchProvider {
-  bool IsVoiceSearchEnabled() const override { return true; }
+
+// Test VoiceSearchProvider that allow overriding whether voice search
+// is enabled or not.
+class TestToolbarMediatorVoiceSearchProvider : public VoiceSearchProvider {
+ public:
+  TestToolbarMediatorVoiceSearchProvider() = default;
+  ~TestToolbarMediatorVoiceSearchProvider() override = default;
+
+  // Setter to control the value returned by IsVoiceSearchEnabled().
+  void set_voice_search_enabled(bool enabled) {
+    voice_search_enabled_ = enabled;
+  }
+
+  // VoiceSearchProvider implementation.
+  bool IsVoiceSearchEnabled() const override { return voice_search_enabled_; }
+
+ private:
+  bool voice_search_enabled_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(TestToolbarMediatorVoiceSearchProvider);
+};
+
+// Test BrandedImageProvider that return different branded images for Google
+// Search search engine.
+class TestToolbarMediatorBrandedImageProvider
+    : public TestBrandedImageProvider {
+ public:
+  TestToolbarMediatorBrandedImageProvider()
+      : google_search_icon_([[UIImage alloc] init]) {}
+
+  ~TestToolbarMediatorBrandedImageProvider() override = default;
+
+  // Getter for search engine images for unit test.
+  UIImage* google_search_icon() { return google_search_icon_; }
+
+  // BrandedImageProvider implementation.
+  UIImage* GetToolbarSearchButtonImage() override {
+    return google_search_icon_;
+  }
+
+ private:
+  UIImage* google_search_icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestToolbarMediatorBrandedImageProvider);
+};
+
+// Test ChromeBrowserProvider that install custom BrandedImageProvider and
+// VoiceSearchProvider for ToolbarMediator unit tests.
+class TestToolbarMediatorChromeBrowserProvider
+    : public ios::TestChromeBrowserProvider {
+ public:
+  TestToolbarMediatorChromeBrowserProvider()
+      : branded_image_provider_(
+            std::make_unique<TestToolbarMediatorBrandedImageProvider>()),
+        voice_search_provider_(
+            std::make_unique<TestToolbarMediatorVoiceSearchProvider>()) {}
+
+  ~TestToolbarMediatorChromeBrowserProvider() override = default;
+
+  // ChromeBrowserProvider implementation.
+  BrandedImageProvider* GetBrandedImageProvider() const override {
+    return branded_image_provider_.get();
+  }
+
+  VoiceSearchProvider* GetVoiceSearchProvider() const override {
+    return voice_search_provider_.get();
+  }
+
+ private:
+  std::unique_ptr<BrandedImageProvider> branded_image_provider_;
+  std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestToolbarMediatorChromeBrowserProvider);
 };
 }
 
@@ -62,7 +135,9 @@ static const char kTestUrl2[] = "http://www.notChromium.org";
 
 class ToolbarMediatorTest : public PlatformTest {
  public:
-  ToolbarMediatorTest() {
+  ToolbarMediatorTest()
+      : scoped_provider_(
+            std::make_unique<TestToolbarMediatorChromeBrowserProvider>()) {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
@@ -83,7 +158,6 @@ class ToolbarMediatorTest : public PlatformTest {
     consumer_ = OCMProtocolMock(@protocol(ToolbarConsumer));
     strict_consumer_ = OCMStrictProtocolMock(@protocol(ToolbarConsumer));
     SetUpWebStateList();
-    image_provider_ = std::make_unique<TestBrandedImageProvider>();
     url_service_ = ios::TemplateURLServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
     SetDefaultSearchEngineGoogle();
@@ -147,6 +221,19 @@ class ToolbarMediatorTest : public PlatformTest {
     url_service_->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
+  UIImage* google_search_icon() {
+    return static_cast<TestToolbarMediatorBrandedImageProvider*>(
+               ios::GetChromeBrowserProvider()->GetBrandedImageProvider())
+        ->google_search_icon();
+  }
+
+  void set_voice_search_enabled(bool enabled) {
+    static_cast<TestToolbarMediatorVoiceSearchProvider*>(
+        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider())
+        ->set_voice_search_enabled(enabled);
+  }
+
+  IOSChromeScopedTestingChromeBrowserProvider scoped_provider_;
   TestToolbarMediator* mediator_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
@@ -155,7 +242,6 @@ class ToolbarMediatorTest : public PlatformTest {
   id consumer_;
   id strict_consumer_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<TestBrandedImageProvider> image_provider_;
   TemplateURLService* url_service_;
   BookmarkModel* bookmark_model_;
 
@@ -308,11 +394,8 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set.
 TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
-  UIImage* test_image = [[UIImage alloc] init];
-  image_provider_->set_toolbar_search_button_image(test_image);
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
-  mediator_.imageProvider = image_provider_.get();
   mediator_.templateURLService = url_service_;
   mediator_.consumer = consumer_;
 
@@ -320,25 +403,22 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
-  [[consumer_ verify] setSearchIcon:test_image];
+  [[consumer_ verify] setSearchIcon:google_search_icon()];
 }
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set in reverse order.
 TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
-  UIImage* test_image = [[UIImage alloc] init];
-  image_provider_->set_toolbar_search_button_image(test_image);
   mediator_.consumer = consumer_;
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
   mediator_.templateURLService = url_service_;
-  mediator_.imageProvider = image_provider_.get();
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
-  [[consumer_ verify] setSearchIcon:test_image];
+  [[consumer_ verify] setSearchIcon:google_search_icon()];
 }
 
 // Test the WebstateList related setup gets called when the mediator's WebState
@@ -479,34 +559,21 @@ TEST_F(ToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
   [[consumer_ verify] setTabCount:kNumberOfWebStates - 1];
 }
 
-// Test that setting the voice search provider after the consumer works.
-TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderAfterConsumer) {
-  MockEnabledVoiceSearchProvider provider;
+// Test that consumer is informed that voice search is enabled.
+TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderEnabled) {
+  set_voice_search_enabled(true);
 
   OCMExpect([consumer_ setVoiceSearchEnabled:YES]);
-  mediator_.consumer = consumer_;
-  mediator_.voiceSearchProvider = &provider;
-
-  EXPECT_OCMOCK_VERIFY(consumer_);
-}
-
-// Test that setting the voice search provider after the consumer works.
-TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderBeforeConsumer) {
-  MockEnabledVoiceSearchProvider provider;
-
-  OCMExpect([consumer_ setVoiceSearchEnabled:YES]);
-  mediator_.voiceSearchProvider = &provider;
   mediator_.consumer = consumer_;
 
   EXPECT_OCMOCK_VERIFY(consumer_);
 }
 
-// Test that setting the voice search provider after the consumer works.
+// Test that consumer is informed that voice search is not enabled.
 TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderNotEnabled) {
-  VoiceSearchProvider provider;
+  set_voice_search_enabled(false);
 
   OCMExpect([consumer_ setVoiceSearchEnabled:NO]);
-  mediator_.voiceSearchProvider = &provider;
   mediator_.consumer = consumer_;
 
   EXPECT_OCMOCK_VERIFY(consumer_);
@@ -548,7 +615,6 @@ TEST_F(ToolbarMediatorTest, TestSetConsumerDefaultSearchEngineNotGoogle) {
   OCMExpect([consumer_ setSearchIcon:[OCMArg isNotNil]]);
 
   mediator_.consumer = consumer_;
-  mediator_.imageProvider = image_provider_.get();
   mediator_.templateURLService = url_service_;
 
   EXPECT_OCMOCK_VERIFY(consumer_);
@@ -557,14 +623,11 @@ TEST_F(ToolbarMediatorTest, TestSetConsumerDefaultSearchEngineNotGoogle) {
 // Tests that changing the search engine to google gives the image from the
 // image provider.
 TEST_F(ToolbarMediatorTest, TestChangeSearchEngineToGoogle) {
-  UIImage* test_image = [[UIImage alloc] init];
-  image_provider_->set_toolbar_search_button_image(test_image);
   SetDefaultSearchEngineNotGoogle();
   mediator_.consumer = consumer_;
-  mediator_.imageProvider = image_provider_.get();
   mediator_.templateURLService = url_service_;
 
-  OCMExpect([consumer_ setSearchIcon:test_image]);
+  OCMExpect([consumer_ setSearchIcon:google_search_icon()]);
 
   SetDefaultSearchEngineGoogle();
 
@@ -574,14 +637,11 @@ TEST_F(ToolbarMediatorTest, TestChangeSearchEngineToGoogle) {
 // Tests that changing the search engine to not-google gives an image different
 // from the image provider's one.
 TEST_F(ToolbarMediatorTest, TestChangeSearchEngineToNotGoogle) {
-  UIImage* test_image = [[UIImage alloc] init];
-  image_provider_->set_toolbar_search_button_image(test_image);
   SetDefaultSearchEngineGoogle();
   mediator_.consumer = consumer_;
-  mediator_.imageProvider = image_provider_.get();
   mediator_.templateURLService = url_service_;
 
-  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotEqual:test_image]]);
+  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotEqual:google_search_icon()]]);
 
   SetDefaultSearchEngineNotGoogle();
 
@@ -603,7 +663,6 @@ TEST_F(ToolbarMediatorTest, TestSetConsumerNoImageProvider) {
 TEST_F(ToolbarMediatorTest, TestSetConsumerImageProviderNoImage) {
   SetDefaultSearchEngineGoogle();
   OCMExpect([consumer_ setSearchIcon:[OCMArg isNotNil]]);
-  mediator_.imageProvider = image_provider_.get();
   mediator_.templateURLService = url_service_;
   mediator_.consumer = consumer_;
 
