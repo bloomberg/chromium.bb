@@ -6,7 +6,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/browser/test/cast_browser_test.h"
-#include "chromecast/browser/test/fake_web_contents_observer.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
@@ -26,9 +25,8 @@ class CastNavigationBrowserTest : public CastBrowserTest {
   CastNavigationBrowserTest() {}
 
   void LoadAboutBlank() {
-    content::WebContents* web_contents = CreateWebView();
-    FakeWebContentsObserver web_contents_observer(web_contents);
-    NavigateToURL(GURL(url::kAboutBlankURL));
+    content::WebContents* web_contents =
+        NavigateToURL(GURL(url::kAboutBlankURL));
     content::TitleWatcher title_watcher(
         web_contents, base::ASCIIToUTF16(url::kAboutBlankURL));
     base::string16 result = title_watcher.WaitAndGetTitle();
@@ -60,9 +58,7 @@ class CastNavigationBrowserTest : public CastBrowserTest {
   }
 
   std::string RunTest(const GURL& gurl, const std::string& expected_title) {
-    content::WebContents* web_contents = CreateWebView();
-    FakeWebContentsObserver web_contents_observer(web_contents);
-    NavigateToURL(gurl);
+    content::WebContents* web_contents = NavigateToURL(gurl);
     content::TitleWatcher title_watcher(web_contents,
                                         base::ASCIIToUTF16(expected_title));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));

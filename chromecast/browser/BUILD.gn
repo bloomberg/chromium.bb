@@ -316,8 +316,6 @@ cast_source_set("test_support") {
   sources = [
     "test/cast_browser_test.cc",
     "test/cast_browser_test.h",
-    "test/fake_web_contents_observer.cc",
-    "test/fake_web_contents_observer.h",
   ]
 
   public_deps = [
@@ -328,7 +326,6 @@ cast_source_set("test_support") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//chromecast/common:interfaces",
     "//content/public/browser",
     "//content/public/common",
     "//testing/gtest",
