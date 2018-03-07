@@ -1377,20 +1377,9 @@ solutions = [
 cache_dir = %(cache_dir)r
 """)
 
-  DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
-  { "name"        : "%(solution_name)s",
-    "url"         : "%(solution_url)s",
-    "deps_file"   : "%(deps_file)s",
-    "managed"     : %(managed)s,
-    "custom_deps" : {
-%(solution_deps)s    },
-  },
-""")
-
   DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
 # Snapshot generated with gclient revinfo --snapshot
-solutions = [
-%(solution_list)s]
+solutions = %(solution_list)s
 """)
 
   def __init__(self, root_dir, options):
@@ -1783,7 +1772,7 @@ it or fix the checkout.
       return '%s@%s' % (url, scm.revinfo(self._options, [], None))
 
     if self._options.snapshot:
-      new_gclient = ''
+      json_output = []
       # First level at .gclient
       for d in self.dependencies:
         entries = {}
@@ -1795,22 +1784,23 @@ it or fix the checkout.
               entries[d.name] = rev
             GrabDeps(d)
         GrabDeps(d)
-        custom_deps = []
-        for k in sorted(entries.keys()):
-          if entries[k]:
-            # Quotes aren't escaped...
-            custom_deps.append('      \"%s\": \'%s\',\n' % (k, entries[k]))
-          else:
-            custom_deps.append('      \"%s\": None,\n' % k)
-        new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
-            'solution_name': d.name,
+        json_output.append({
+            'name': d.name,
             'solution_url': d.url,
             'deps_file': d.deps_file,
             'managed': d.managed,
-            'solution_deps': ''.join(custom_deps),
-        }
-      # Print the snapshot configuration file
-      print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient})
+            'custom_deps': entries,
+        })
+      if self._options.output_json == '-':
+        print(json.dumps(json_output, indent=2, separators=(',', ': ')))
+      elif self._options.output_json:
+        with open(self._options.output_json, 'w') as f:
+          json.dump(json_output, f)
+      else:
+        # Print the snapshot configuration file
+        print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {
+            'solution_list': pprint.pformat(json_output, indent=2),
+        })
     else:
       entries = {}
       for d in self.root.subtree(False):
@@ -1820,9 +1810,23 @@ it or fix the checkout.
           rev = d.parsed_url
         if ShouldPrintRevision(d.name, rev):
           entries[d.name] = rev
-      keys = sorted(entries.keys())
-      for x in keys:
-        print('%s: %s' % (x, entries[x]))
+      if self._options.output_json:
+        json_output = {
+            name: {
+                'url': rev.split('@')[0],
+                'rev': rev.split('@')[1] if '@' in rev else None,
+            }
+            for name, rev in entries.iteritems()
+        }
+        if self._options.output_json == '-':
+          print(json.dumps(json_output, indent=2, separators=(',', ': ')))
+        else:
+          with open(self._options.output_json, 'w') as f:
+            json.dump(json_output, f)
+      else:
+        keys = sorted(entries.keys())
+        for x in keys:
+          print('%s: %s' % (x, entries[x]))
     logging.info(str(self))
 
   def ParseDepsFile(self):
@@ -2803,6 +2807,9 @@ def CMDrevinfo(parser, args):
   parser.add_option('-p', '--path', action='append',
                      help='Display revision information only for the specified '
                           'paths.')
+  parser.add_option('--output-json',
+                    help='Output a json document to this path containing '
+                         'information about the revisions.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:

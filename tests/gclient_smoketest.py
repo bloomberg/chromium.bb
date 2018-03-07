@@ -693,6 +693,58 @@ class GClientSmokeGIT(GClientSmokeBase):
           })
     self.check((out, '', 0), results)
 
+  def testRevInfoJsonOutput(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    output_json = os.path.join(self.root_dir, 'output.json')
+    self.gclient(['revinfo', '--deps', 'mac', '--output-json', output_json])
+    with open(output_json) as f:
+      output_json = json.load(f)
+
+    out = {
+        'src': {
+            'url': self.git_base + 'repo_1',
+            'rev': None,
+        },
+        'src/repo2': {
+            'url': self.git_base + 'repo_2',
+            'rev': self.githash('repo_2', 1)[:7],
+        },
+       'src/repo2/repo_renamed': {
+           'url': self.git_base + 'repo_3',
+           'rev': None,
+        },
+    }
+    self.assertEqual(out, output_json)
+
+  def testRevInfoJsonOutputSnapshot(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    output_json = os.path.join(self.root_dir, 'output.json')
+    self.gclient(['revinfo', '--deps', 'mac', '--snapshot',
+                  '--output-json', output_json])
+    with open(output_json) as f:
+      output_json = json.load(f)
+
+    out = [{
+        'solution_url': self.git_base + 'repo_1',
+        'managed': True,
+        'name': 'src',
+        'deps_file': 'DEPS',
+        'custom_deps': {
+            'foo/bar': None,
+            'src/repo2': '%srepo_2@%s' % (
+                self.git_base, self.githash('repo_2', 1)),
+            u'src/repo2/repo_renamed': '%srepo_3@%s' % (
+                self.git_base, self.githash('repo_3', 2)),
+        },
+    }]
+    self.assertEqual(out, output_json)
+
   def testFlatten(self):
     if not self.enabled:
       return
