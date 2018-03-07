@@ -88,10 +88,9 @@ interface ExternalNavigationDelegate {
 
     /**
      * @param url The requested url.
-     * @param tab The current tab.
      * @return Whether we should block the navigation and request file access before proceeding.
      */
-    boolean shouldRequestFileAccess(String url, Tab tab);
+    boolean shouldRequestFileAccess(String url);
 
     /**
      * Trigger a UI affordance that will ask the user to grant file access.  After the access
@@ -99,10 +98,9 @@ interface ExternalNavigationDelegate {
      *
      * @param intent The intent to continue loading the file URL.
      * @param referrerUrl The HTTP referrer URL.
-     * @param tab The current tab.
      * @param needsToCloseTab Whether this action should close the current tab.
      */
-    void startFileIntent(Intent intent, String referrerUrl, Tab tab, boolean needsToCloseTab);
+    void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab);
 
     /**
      * Launches a Chrome Custom Tab to be shown on top of a WebappActivity.
@@ -117,11 +115,10 @@ interface ExternalNavigationDelegate {
      *
      * @param url The new URL after clobbering the current tab.
      * @param referrerUrl The HTTP referrer URL.
-     * @param tab The current tab.
      * @return OverrideUrlLoadingResult (if the tab has been clobbered, or we're launching an
      *         intent.)
      */
-    OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl, Tab tab);
+    OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl);
 
     /** Adds a window id to the intent, if necessary. */
     void maybeSetWindowId(Intent intent);
@@ -147,20 +144,17 @@ interface ExternalNavigationDelegate {
     /**
      * Check if the URL should be handled by an instant app, or kick off an async request for an
      * instant app banner.
-     * @param tab The current tab.
      * @param url The current URL.
      * @param referrerUrl The referrer URL.
      * @param isIncomingRedirect Whether we are handling an incoming redirect to an instant app.
      * @return Whether we launched an instant app.
      */
-    boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
-            boolean isIncomingRedirect);
+    boolean maybeLaunchInstantApp(String url, String referrerUrl, boolean isIncomingRedirect);
 
     /**
-     * @param tab The current tab.
      * @return whether this navigation is from the search results page.
      */
-    boolean isSerpReferrer(Tab tab);
+    boolean isSerpReferrer();
 
     /**
      * @return The previously committed URL from the WebContents.
