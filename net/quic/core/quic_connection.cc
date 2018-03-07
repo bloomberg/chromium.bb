@@ -165,6 +165,19 @@ class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAlarmDelegate);
 };
 
+class RetransmittableOnWireAlarmDelegate : public QuicAlarm::Delegate {
+ public:
+  explicit RetransmittableOnWireAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
+
+  void OnAlarm() override { connection_->OnPingTimeout(); }
+
+ private:
+  QuicConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(RetransmittableOnWireAlarmDelegate);
+};
+
 }  // namespace
 
 #define ENDPOINT \
@@ -225,6 +238,7 @@ QuicConnection::QuicConnection(
       pending_retransmission_alarm_(false),
       defer_send_in_response_to_packets_(false),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
+      retransmittable_on_wire_timeout_(QuicTime::Delta::Infinite()),
       arena_(),
       ack_alarm_(alarm_factory_->CreateAlarm(arena_.New<AckAlarmDelegate>(this),
                                              &arena_)),
@@ -245,6 +259,9 @@ QuicConnection::QuicConnection(
                                       &arena_)),
       mtu_discovery_alarm_(alarm_factory_->CreateAlarm(
           arena_.New<MtuDiscoveryAlarmDelegate>(this),
+          &arena_)),
+      retransmittable_on_wire_alarm_(alarm_factory_->CreateAlarm(
+          arena_.New<RetransmittableOnWireAlarmDelegate>(this),
           &arena_)),
       visitor_(nullptr),
       debug_visitor_(nullptr),
@@ -1887,13 +1904,17 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
                                  packet->transmission_type, packet_send_time);
   }
-  // Only adjust the last sent time (for the purpose of tracking the idle
-  // timeout) if this is the first retransmittable packet sent after a
-  // packet is received. If it were updated on every sent packet, then
-  // sending into a black hole might never timeout.
-  if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA &&
-      last_send_for_timeout_ <= time_of_last_received_packet_) {
-    last_send_for_timeout_ = packet_send_time;
+  if (IsRetransmittable(*packet) == HAS_RETRANSMITTABLE_DATA) {
+    // A retransmittable packet has been put on the wire, so no need for the
+    // |retransmittable_on_wire_alarm_| to possibly send a PING.
+    retransmittable_on_wire_alarm_->Cancel();
+    // Only adjust the last sent time (for the purpose of tracking the idle
+    // timeout) if this is the first retransmittable packet sent after a
+    // packet is received. If it were updated on every sent packet, then
+    // sending into a black hole might never timeout.
+    if (last_send_for_timeout_ <= time_of_last_received_packet_) {
+      last_send_for_timeout_ = packet_send_time;
+    }
   }
   SetPingAlarm();
   MaybeSetMtuAlarm(packet_number);
@@ -2304,6 +2325,7 @@ void QuicConnection::CancelAllAlarms() {
   send_alarm_->Cancel();
   timeout_alarm_->Cancel();
   mtu_discovery_alarm_->Cancel();
+  retransmittable_on_wire_alarm_->Cancel();
 }
 
 void QuicConnection::SendGoAway(QuicErrorCode error,
@@ -2907,6 +2929,11 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting) {
   // have a better estimate of the current rtt than when it was set.
   SetRetransmissionAlarm();
 
+  if (!sent_packet_manager_.HasUnackedPackets() &&
+      !retransmittable_on_wire_alarm_->IsSet()) {
+    SetRetransmittableOnWireAlarm();
+  }
+
   if (send_stop_waiting) {
     ++stop_waiting_count_;
   } else {
@@ -2930,6 +2957,24 @@ void QuicConnection::SetTransmissionType(TransmissionType type) {
 
 bool QuicConnection::session_decides_what_to_write() const {
   return sent_packet_manager_.session_decides_what_to_write();
+}
+
+void QuicConnection::SetRetransmittableOnWireAlarm() {
+  if (perspective_ == Perspective::IS_SERVER) {
+    // Only clients send pings.
+    return;
+  }
+  if (retransmittable_on_wire_timeout_.IsInfinite()) {
+    return;
+  }
+  if (!visitor_->HasOpenDynamicStreams()) {
+    retransmittable_on_wire_alarm_->Cancel();
+    // Don't send a ping unless there are open streams.
+    return;
+  }
+  retransmittable_on_wire_alarm_->Update(
+      clock_->ApproximateNow() + retransmittable_on_wire_timeout_,
+      QuicTime::Delta::Zero());
 }
 
 }  // namespace net
