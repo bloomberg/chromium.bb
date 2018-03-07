@@ -186,8 +186,8 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
   ASSERT_TRUE(shelf_layout_manager);
 
   // Set the accessibility panel height.
-  int chromevox_panel_height = 45;
-  shelf_layout_manager->SetChromeVoxPanelHeight(chromevox_panel_height);
+  int accessibility_panel_height = 45;
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -199,18 +199,18 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Rect target_bounds = primary_display.bounds();
-  target_bounds.Inset(0 /* left */, chromevox_panel_height /* top */,
+  target_bounds.Inset(0 /* left */, accessibility_panel_height /* top */,
                       0 /* right */, 0 /* bottom */);
 
   EXPECT_EQ(target_bounds, window->GetBoundsInScreen());
 
   // Update the accessibility panel height, and verify the window bounds are
   // updated accordingly.
-  chromevox_panel_height = 25;
-  shelf_layout_manager->SetChromeVoxPanelHeight(chromevox_panel_height);
+  accessibility_panel_height = 25;
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   target_bounds = primary_display.bounds();
-  target_bounds.Inset(0 /* left */, chromevox_panel_height /* top */,
+  target_bounds.Inset(0 /* left */, accessibility_panel_height /* top */,
                       0 /* right */, 0 /* bottom */);
 
   EXPECT_EQ(target_bounds, window->GetBoundsInScreen());
@@ -343,8 +343,8 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 
-  int chromevox_panel_height = 45;
-  shelf_layout_manager->SetChromeVoxPanelHeight(chromevox_panel_height);
+  int accessibility_panel_height = 45;
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -358,7 +358,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
 
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  target_bounds.Inset(0, chromevox_panel_height, 0, 0);
+  target_bounds.Inset(0, accessibility_panel_height, 0, 0);
   EXPECT_EQ(target_bounds, window->GetBoundsInScreen());
 
   // Restore window with bounds in the second display, the window should be

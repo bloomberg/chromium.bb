@@ -95,6 +95,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfVisibilityState GetVisibilityState() const;
 
   int GetAccessibilityPanelHeight() const;
+  void SetAccessibilityPanelHeight(int height);
 
   // Returns the height of the Docked Magnifier viewport.
   int GetDockedMagnifierHeight() const;

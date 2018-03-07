@@ -9,7 +9,7 @@
 #include <queue>
 #include <vector>
 
-#include "ash/accessibility/chromevox_layout_manager.h"
+#include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/ash_touch_exploration_manager_chromeos.h"
@@ -714,7 +714,8 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 }
 
 void RootWindowController::InitLayoutManagers() {
-  // Create the shelf and status area widgets.
+  // Create the shelf and status area widgets. Creates the ShelfLayoutManager
+  // as a side-effect.
   DCHECK(!shelf_->shelf_widget());
   aura::Window* root = GetRootWindow();
   shelf_->CreateShelfWidget(root);
@@ -924,13 +925,14 @@ void RootWindowController::CreateContainers() {
   settings_bubble_container->SetProperty(kUsesScreenCoordinatesKey, true);
   settings_bubble_container->SetProperty(kLockedToRootKey, true);
 
-  aura::Window* chromevox_container =
-      CreateContainer(kShellWindowId_ChromeVoxContainer, "ChromeVoxContainer",
-                      lock_screen_related_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(chromevox_container);
-  chromevox_container->SetProperty(kUsesScreenCoordinatesKey, true);
-  chromevox_container->SetProperty(kLockedToRootKey, true);
-  chromevox_container->SetLayoutManager(new ChromeVoxLayoutManager());
+  aura::Window* accessibility_panel_container = CreateContainer(
+      kShellWindowId_AccessibilityPanelContainer, "AccessibilityPanelContainer",
+      lock_screen_related_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(accessibility_panel_container);
+  accessibility_panel_container->SetProperty(kUsesScreenCoordinatesKey, true);
+  accessibility_panel_container->SetProperty(kLockedToRootKey, true);
+  accessibility_panel_container->SetLayoutManager(
+      new AccessibilityPanelLayoutManager());
 
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "VirtualKeyboardParentContainer",
