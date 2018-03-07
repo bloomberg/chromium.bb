@@ -136,28 +136,10 @@ const char kNewTabHtml[] = "<html>NewTabOverride!</html>";
 
 }  // namespace
 
-enum class TestConfig {
-  kDefault,
-  kYieldBetweenContentScriptRunsEnabled,
-};
-
-class ContentScriptApiTest : public ExtensionApiTest,
-                             public testing::WithParamInterface<TestConfig> {
+class ContentScriptApiTest : public ExtensionApiTest {
  public:
   ContentScriptApiTest() {}
   ~ContentScriptApiTest() override {}
-
-  void SetUp() override {
-    if (GetParam() == TestConfig::kYieldBetweenContentScriptRunsEnabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kYieldBetweenContentScriptRuns);
-    } else {
-      DCHECK_EQ(TestConfig::kDefault, GetParam());
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kYieldBetweenContentScriptRuns);
-    }
-    ExtensionApiTest::SetUp();
-  }
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -170,24 +152,18 @@ class ContentScriptApiTest : public ExtensionApiTest,
   DISALLOW_COPY_AND_ASSIGN(ContentScriptApiTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAllFrames) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptAllFrames) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/all_frames")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAboutBlankIframes) {
-  const char* testArg =
-      GetParam() == TestConfig::kYieldBetweenContentScriptRunsEnabled
-          ? "YieldBetweenContentScriptRunsEnabled"
-          : "YieldBetweenContentScriptRunsDisabled";
-
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptAboutBlankIframes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("content_scripts/about_blank_iframes", testArg))
+  ASSERT_TRUE(RunExtensionTest("content_scripts/about_blank_iframes"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAboutBlankAndSrcdoc) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptAboutBlankAndSrcdoc) {
   // The optional "*://*/*" permission is requested after verifying that
   // content script insertion solely depends on content_scripts[*].matches.
   // The permission is needed for chrome.tabs.executeScript tests.
@@ -199,18 +175,18 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAboutBlankAndSrcdoc) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptExtensionIframe) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionIframe) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/extension_iframe")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptExtensionProcess) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionProcess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionTest("content_scripts/extension_process")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptFragmentNavigation) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptFragmentNavigation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   const char extension_name[] = "content_scripts/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
@@ -222,7 +198,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptFragmentNavigation) {
 #else
 #define MAYBE_ContentScriptIsolatedWorlds ContentScriptIsolatedWorlds
 #endif
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        MAYBE_ContentScriptIsolatedWorlds) {
   // This extension runs various bits of script and tests that they all run in
   // the same isolated world.
@@ -234,7 +210,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
   ASSERT_TRUE(RunExtensionTest("content_scripts/isolated_world2")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        ContentScriptIgnoreHostPermissions) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest(
@@ -242,14 +218,14 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 }
 
 // crbug.com/39249 -- content scripts js should not run on view source.
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptViewSource) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
 }
 
 // crbug.com/126257 -- content scripts should not get injected into other
 // extensions.
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptOtherExtensions) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptOtherExtensions) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // First, load extension that sets up content script.
   ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/injector"))
@@ -282,7 +258,7 @@ class ContentScriptCssInjectionTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        ContentScriptDuplicateScriptInjection) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -373,12 +349,12 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(styles_injected);
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptCSSLocalization) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptCSSLocalization) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptExtensionAPIs) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   const extensions::Extension* extension = LoadExtension(
@@ -407,7 +383,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptPermissionsApi) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptPermissionsApi) {
   extensions::PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   extensions::PermissionsRequestFunction::SetAutoConfirmForTests(true);
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -470,14 +446,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBypassPageCSP) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBypassPageCSP) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp")) << message_;
 }
 
 // Test that when injecting a blocking content script, other scripts don't run
 // until the blocking script finishes.
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBlockingScript) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlockingScript) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Load up two extensions.
@@ -522,7 +498,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBlockingScript) {
 
 // Test that closing a tab with a blocking script results in no further scripts
 // running (and we don't crash).
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        ContentScriptBlockingScriptTabClosed) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -574,7 +550,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 // There was a bug by which content scripts that blocked and ran on
 // document_idle could be injected twice (crbug.com/431263). Test for
 // regression.
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        ContentScriptBlockingScriptsDontRunTwice) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -607,7 +583,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 }
 
 // Bug fix for crbug.com/507461.
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        DocumentStartInjectionFromExtensionTabNavigation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -644,7 +620,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
   EXPECT_TRUE(listener.was_satisfied());
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        DontInjectContentScriptsInBackgroundPages) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Load two extensions, one with an iframe to a.com in its background page,
@@ -661,7 +637,7 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
   EXPECT_FALSE(content_script_listener.was_satisfied());
 }
 
-IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, CannotScriptTheNewTabPage) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CannotScriptTheNewTabPage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ExtensionTestMessageListener test_listener("ready", true);
@@ -698,11 +674,5 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, CannotScriptTheNewTabPage) {
   EXPECT_TRUE(
       did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
 }
-
-INSTANTIATE_TEST_CASE_P(
-    ContentScriptApiTests,
-    ContentScriptApiTest,
-    testing::Values(TestConfig::kDefault,
-                    TestConfig::kYieldBetweenContentScriptRunsEnabled));
 
 }  // namespace extensions

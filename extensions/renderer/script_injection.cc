@@ -322,9 +322,7 @@ void ScriptInjection::InjectJs(
         sources.front(), is_user_gesture, callback.release());
   } else {
     blink::WebLocalFrame::ScriptExecutionType option;
-    if (injector_->script_type() == UserScript::CONTENT_SCRIPT &&
-        base::FeatureList::IsEnabled(
-            features::kYieldBetweenContentScriptRuns)) {
+    if (injector_->script_type() == UserScript::CONTENT_SCRIPT) {
       switch (run_location_) {
         case UserScript::DOCUMENT_END:
         case UserScript::DOCUMENT_IDLE:

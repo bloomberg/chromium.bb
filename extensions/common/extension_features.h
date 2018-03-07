@@ -12,7 +12,6 @@ namespace features {
 
 extern const base::Feature kNativeCrxBindings;
 extern const base::Feature kNewExtensionUpdaterService;
-extern const base::Feature kYieldBetweenContentScriptRuns;
 
 }  // namespace features
 }  // namespace extensions
