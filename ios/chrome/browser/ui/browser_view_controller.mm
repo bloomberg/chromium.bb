@@ -1989,7 +1989,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [[self view] addSubview:_fakeStatusBarView];
   } else {
     // Add a white bar on phone so that the status bar on the NTP is white.
-    [_fakeStatusBarView setBackgroundColor:[UIColor whiteColor]];
+    [_fakeStatusBarView setBackgroundColor:ntp_home::kNTPBackgroundColor()];
     [self.view insertSubview:_fakeStatusBarView atIndex:0];
   }
 }

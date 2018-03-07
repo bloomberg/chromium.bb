@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -841,7 +842,7 @@ enum class OverscrollViewState {
   switch (style) {
     case OverscrollStyle::NTP_NON_INCOGNITO:
       [self.shadowView setHidden:YES];
-      self.backgroundColor = [UIColor whiteColor];
+      self.backgroundColor = ntp_home::kNTPBackgroundColor();
       break;
     case OverscrollStyle::NTP_INCOGNITO:
       [self.shadowView setHidden:YES];
