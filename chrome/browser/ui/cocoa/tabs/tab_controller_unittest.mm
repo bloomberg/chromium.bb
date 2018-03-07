@@ -307,7 +307,7 @@ class TabControllerTest : public CocoaTest {
       switch ([controller iconCapacity]) {
         case 0:
           EXPECT_FALSE([controller shouldShowCloseButton]);
-          EXPECT_FALSE([controller shouldShowIcon]);
+          EXPECT_TRUE([controller shouldShowIcon]);
           EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
         case 1:
@@ -471,21 +471,23 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   int cap = [controller iconCapacity];
   EXPECT_GT(cap, 0);
 
-  // Tab is minimum width, both icon and close box should be hidden.
+  // Tab is minimum width, close box should be hidden. On the other hand, icon
+  // should be visible.
   NSRect frame = [[controller view] frame];
   frame.size.width = [TabController minTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
   EXPECT_FALSE([controller shouldShowCloseButton]);
 
-  // Setting the icon when tab is at min width should not show icon (bug 18359).
+  // Setting the icon when tab is at min width should show icon (bug 813637).
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::scoped_nsobject<NSImage> favicon(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   [controller setIconImage:favicon forLoadingState:kTabDone showIcon:YES];
+  EXPECT_TRUE([controller shouldShowIcon]);
   [controller updateVisibility];
   NSView* newIcon = [controller iconView];
-  EXPECT_TRUE([newIcon isHidden]);
+  EXPECT_FALSE([newIcon isHidden]);
 
   // Tab is at active minimum width. Since it's active, the close box
   // should be visible.
@@ -576,7 +578,6 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   [controller updateVisibility];
 
   const NSRect originalTabFrame = [[controller view] frame];
-  const NSRect originalIconFrame = [[controller iconView] frame];
   const NSRect originalCloseFrame = [[controller closeButton] frame];
   const NSRect originalTitleFrame = [[controller tabView] titleFrame];
 
@@ -590,15 +591,15 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   tabFrame.size.width = [TabController minTabWidth];
   [[controller view] setFrame:tabFrame];
 
-  // The icon view and close button should be hidden and the title view should
-  // resize to take up their space.
-  EXPECT_TRUE([[controller iconView] isHidden]);
+  // The close button should be hidden and the title view should resize to take
+  // up it's space.
+  EXPECT_FALSE([[controller iconView] isHidden]);
   EXPECT_TRUE([[controller closeButton] isHidden]);
   EXPECT_GT(NSWidth([[controller view] frame]),
             NSWidth([[controller tabView] titleFrame]));
-  EXPECT_EQ(LeftMargin(originalTabFrame, originalIconFrame),
-            LeftMargin([[controller view] frame],
-                       [[controller tabView] titleFrame]));
+  EXPECT_LT(
+      LeftMargin([[controller view] frame], [[controller iconView] frame]),
+      LeftMargin([[controller view] frame], [[controller tabView] titleFrame]));
   EXPECT_EQ(RightMargin(originalTabFrame, originalCloseFrame),
             RightMargin([[controller view] frame],
                         [[controller tabView] titleFrame]));
