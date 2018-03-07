@@ -105,6 +105,12 @@ Polymer({
     /** @private {!Array<number>} Display zoom percentage values for slider */
     zoomValues_: Array,
 
+    /** @private {!DropdownMenuOptionList} */
+    displayModeList_: {
+      type: Array,
+      value: [],
+    },
+
     /** @private */
     unifiedDesktopAvailable_: {
       type: Boolean,
@@ -176,6 +182,7 @@ Polymer({
   observers: [
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
+    'onSelectedModeChange_(selectedModePref_.value)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -276,6 +283,29 @@ Polymer({
   },
 
   /**
+   * Returns the list of display modes that is shown to the user in a drop down
+   * menu.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {!DropdownMenuOptionList}
+   * @private
+   */
+  getDisplayModeOptionList_: function(selectedDisplay) {
+    let optionList = [];
+    for (let i = 0; i < selectedDisplay.modes.length; ++i) {
+      const option = this.i18n(
+          'displayResolutionMenuItem',
+          selectedDisplay.modes[i].width.toString(),
+          selectedDisplay.modes[i].height.toString(),
+          Math.round(selectedDisplay.modes[i].refreshRate).toString());
+      optionList.push({
+        name: option,
+        value: i,
+      });
+    }
+    return optionList;
+  },
+
+  /**
    * Returns a value from |zoomValues_| that is closest to the display zoom
    * percentage currently selected for the |selectedDisplay|.
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
@@ -307,10 +337,18 @@ Polymer({
   getZoomValues_: function(selectedDisplay) {
     let effectiveWidth = selectedDisplay.bounds.width;
 
+    // Update the effective width if the display has a device scale factor
+    // applied.
+    if (selectedDisplay.modes.length) {
+      const mode =
+          selectedDisplay.modes[this.getSelectedModeIndex_(selectedDisplay)];
+      effectiveWidth = mode.widthInNativePixels / mode.deviceScaleFactor;
+    }
+
     // The list of deltas between two consecutive zoom level. Any display must
     // have one of these values as the difference between two consecutive zoom
     // level.
-    const ZOOM_FACTOR_DELTAS = [10, 15, 20, 25, 50, 100];
+    const ZOOM_FACTOR_DELTAS = [5, 10, 15, 20, 25, 50, 100];
 
     // Keep this value in sync with the value in DisplayInfoProviderChromeOS.
     // The maximum logical resolution width allowed when zooming out for a
@@ -324,14 +362,6 @@ Polymer({
 
     // The total number of display zoom ticks to choose from on the slider.
     const NUM_OF_ZOOM_TICKS = 9;
-
-    // Update the effective width if the display has a device scale factor
-    // applied.
-    if (selectedDisplay.modes.length) {
-      const mode =
-          selectedDisplay.modes[this.getSelectedModeIndex_(selectedDisplay)];
-      effectiveWidth = mode.widthInNativePixels / mode.deviceScaleFactor;
-    }
 
     // The logical resolution will vary from half of the mode resolution to
     // double the mode resolution.
@@ -409,10 +439,22 @@ Polymer({
         'selectedZoomPref_.value',
         this.getSelectedDisplayZoom_(selectedDisplay));
 
+    this.displayModeList_ = this.getDisplayModeOptionList_(selectedDisplay);
     // Set |selectedDisplay| first since only the resolution slider depends
     // on |selectedModePref_|.
     this.selectedDisplay = selectedDisplay;
     this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
+  },
+
+  /**
+   * Returns true if the resolution setting needs to be displayed.
+   * @param {!chrome.system.display.DisplayUnitInfo} display
+   * @return {boolean}
+   * @private
+   */
+  showDropDownResolutionSetting_: function(display) {
+    return !display.isInternal &&
+        loadTimeData.getBoolean('enableDisplayZoomSetting');
   },
 
   /**
@@ -646,10 +688,13 @@ Polymer({
    * Triggered when the 'change' event for the selected mode slider is
    * triggered. This only occurs when the value is committed (i.e. not while
    * the slider is being dragged).
+   * @param {number} newModeIndex The new index value for which thie function is
+   *     called.
    * @private
    */
-  onSelectedModeChange_: function() {
+  onSelectedModeChange_: function(newModeIndex) {
     if (this.currentSelectedModeIndex_ == -1 ||
+        this.currentSelectedModeIndex_ == newModeIndex ||
         this.currentSelectedModeIndex_ == this.selectedModePref_.value) {
       // Don't change the selected display mode until we have received an update
       // from Chrome and the mode differs from the current mode.

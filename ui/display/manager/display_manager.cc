@@ -602,6 +602,10 @@ bool DisplayManager::SetDisplayMode(int64_t display_id,
           // continue to fill |display_info_list|, since we won't be
           // synchronously updating the displays here.
           resolution_changed = true;
+
+          // Different resolutions allow different zoom factors to be set in the
+          // UI. To avoid confusion in the UI, reset the zoom factor to 1.0.
+          display_zoom_factors_[display_id] = 1.f;
           break;
         }
         if (info.device_scale_factor() != display_mode.device_scale_factor()) {
@@ -690,7 +694,8 @@ bool DisplayManager::GetActiveModeForDisplayId(int64_t display_id,
 
   for (const auto& display_mode : display_modes) {
     if (GetDisplayIdForUIScaling() == display_id) {
-      if (info.configured_ui_scale() == display_mode.ui_scale()) {
+      if (info.configured_ui_scale() == display_mode.ui_scale() ||
+          display_modes.size() == 1) {
         *mode = display_mode;
         return true;
       }
@@ -1585,6 +1590,7 @@ void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {
   SetInternalManagedDisplayModeList(info);
 }
 
+// TODO(malaykeshav): Make this work with display zoom.
 bool DisplayManager::ZoomInternalDisplay(bool up) {
   int64_t display_id =
       IsInUnifiedMode() ? kUnifiedDisplayId : GetDisplayIdForUIScaling();

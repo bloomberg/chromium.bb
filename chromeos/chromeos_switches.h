@@ -208,6 +208,9 @@ CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
 // Returns true if experimental accessibility features are enabled.
 CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
 
+// Returns true if experimental display zoom setting is enabled.
+CHROMEOS_EXPORT bool IsDisplayZoomSettingEnabled();
+
 }  // namespace switches
 }  // namespace chromeos
 

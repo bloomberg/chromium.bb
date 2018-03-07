@@ -6215,6 +6215,7 @@ chrome.system.display.Point;
  *   heightInNativePixels: number,
  *   uiScale: number,
  *   deviceScaleFactor: number,
+ *   refreshRate: number,
  *   isNative: boolean,
  *   isSelected: boolean
  * }}

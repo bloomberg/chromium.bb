@@ -704,5 +704,10 @@ bool AreExperimentalAccessibilityFeaturesEnabled() {
       chromeos::switches::kEnableExperimentalAccessibilityFeatures);
 }
 
+bool IsDisplayZoomSettingEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableDisplayZoomSetting);
+}
+
 }  // namespace switches
 }  // namespace chromeos

@@ -82,6 +82,9 @@ namespace system.display {
     // The display mode device scale factor.
     double deviceScaleFactor;
 
+    // The display mode refresh rate in hertz.
+    double refreshRate;
+
     // True if the mode is the display's native mode.
     boolean isNative;
 

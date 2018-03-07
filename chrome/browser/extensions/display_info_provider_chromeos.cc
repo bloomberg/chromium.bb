@@ -478,6 +478,7 @@ system_display::DisplayMode GetDisplayMode(
   result.ui_scale = display_mode.ui_scale();
   result.device_scale_factor = display_mode.device_scale_factor();
   result.is_native = display_mode.native();
+  result.refresh_rate = display_mode.refresh_rate();
 
   display::ManagedDisplayMode mode;
   const bool success =
