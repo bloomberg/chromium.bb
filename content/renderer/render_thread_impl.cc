@@ -1384,6 +1384,8 @@ void RenderThreadImpl::InitializeWebKit(
 
   RenderMediaClient::Initialize();
 
+  idle_timer_.SetTaskRunner(GetRendererScheduler()->DefaultTaskRunner());
+
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
   } else {
