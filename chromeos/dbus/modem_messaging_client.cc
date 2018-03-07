@@ -26,8 +26,7 @@ namespace {
 class ModemMessagingProxy {
  public:
   typedef ModemMessagingClient::SmsReceivedHandler SmsReceivedHandler;
-  typedef ModemMessagingClient::ListCallback ListCallback;
-  typedef ModemMessagingClient::DeleteCallback DeleteCallback;
+  using ListCallback = ModemMessagingClient::ListCallback;
 
   ModemMessagingProxy(dbus::Bus* bus,
            const std::string& service_name,
@@ -58,7 +57,7 @@ class ModemMessagingProxy {
 
   // Calls Delete method.
   void Delete(const dbus::ObjectPath& message_path,
-              const DeleteCallback& callback) {
+              VoidDBusMethodCallback callback) {
     dbus::MethodCall method_call(modemmanager::kModemManager1MessagingInterface,
                                  modemmanager::kSMSDeleteFunction);
     dbus::MessageWriter writer(&method_call);
@@ -66,17 +65,17 @@ class ModemMessagingProxy {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ModemMessagingProxy::OnDelete,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // Calls List method.
-  virtual void List(const ListCallback& callback) {
+  virtual void List(ListCallback callback) {
     dbus::MethodCall method_call(modemmanager::kModemManager1MessagingInterface,
                                  modemmanager::kSMSListFunction);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ModemMessagingProxy::OnList,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  private:
@@ -96,21 +95,24 @@ class ModemMessagingProxy {
   }
 
   // Handles responses of Delete method calls.
-  void OnDelete(const DeleteCallback& callback, dbus::Response* response) {
-    if (!response)
-      return;
-    callback.Run();
+  void OnDelete(VoidDBusMethodCallback callback, dbus::Response* response) {
+    std::move(callback).Run(response);
   }
 
   // Handles responses of List method calls.
-  void OnList(const ListCallback& callback, dbus::Response* response) {
-    if (!response)
+  void OnList(ListCallback callback, dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
       return;
+    }
     dbus::MessageReader reader(response);
     std::vector<dbus::ObjectPath> sms_paths;
-    if (!reader.PopArrayOfObjectPaths(&sms_paths))
+    if (!reader.PopArrayOfObjectPaths(&sms_paths)) {
       LOG(WARNING) << "Invalid response: " << response->ToString();
-    callback.Run(sms_paths);
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(std::move(sms_paths));
   }
 
   // Handles the result of signal connection setup.
@@ -150,14 +152,14 @@ class CHROMEOS_EXPORT ModemMessagingClientImpl : public ModemMessagingClient {
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
               const dbus::ObjectPath& sms_path,
-              const DeleteCallback& callback) override {
-    GetProxy(service_name, object_path)->Delete(sms_path, callback);
+              VoidDBusMethodCallback callback) override {
+    GetProxy(service_name, object_path)->Delete(sms_path, std::move(callback));
   }
 
   void List(const std::string& service_name,
             const dbus::ObjectPath& object_path,
-            const ListCallback& callback) override {
-    GetProxy(service_name, object_path)->List(callback);
+            ListCallback callback) override {
+    GetProxy(service_name, object_path)->List(std::move(callback));
   }
 
  protected:

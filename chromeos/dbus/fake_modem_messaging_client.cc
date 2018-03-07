@@ -35,29 +35,28 @@ void FakeModemMessagingClient::ResetSmsReceivedHandler(
 void FakeModemMessagingClient::Delete(const std::string& service_name,
                                       const dbus::ObjectPath& object_path,
                                       const dbus::ObjectPath& sms_path,
-                                      const DeleteCallback& callback) {
+                                      VoidDBusMethodCallback callback) {
   std::vector<dbus::ObjectPath>::iterator it(
       find(message_paths_.begin(), message_paths_.end(), sms_path));
   if (it != message_paths_.end())
     message_paths_.erase(it);
-  callback.Run();
+  std::move(callback).Run(true);
 }
 
 void FakeModemMessagingClient::List(const std::string& service_name,
                                     const dbus::ObjectPath& object_path,
-                                    const ListCallback& callback) {
+                                    ListCallback callback) {
   // This entire FakeModemMessagingClient is for testing.
   // Calling List with |service_name| equal to "AddSMS" allows unit
   // tests to confirm that the sms_received_handler is functioning.
   if (service_name == "AddSMS") {
-    std::vector<dbus::ObjectPath> no_paths;
     const dbus::ObjectPath kSmsPath("/SMS/0");
     message_paths_.push_back(kSmsPath);
     if (!sms_received_handler_.is_null())
       sms_received_handler_.Run(kSmsPath, true);
-    callback.Run(no_paths);
+    std::move(callback).Run({});
   } else {
-    callback.Run(message_paths_);
+    std::move(callback).Run(message_paths_);
   }
 }
 
