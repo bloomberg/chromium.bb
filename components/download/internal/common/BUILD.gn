@@ -25,6 +25,7 @@ source_set("internal") {
 
   deps = [
     "//base",
+    "//components/download/public/common:interfaces",
     "//components/download/quarantine",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
