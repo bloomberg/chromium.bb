@@ -4,7 +4,7 @@
 
 // Represents a skewX value in a CSSTransformValue used for properties like
 // "transform".
-// Spec: https://drafts.css-houdini.org/css-typed-om-1/#cssskewx
+// Spec: https://drafts.css-houdini.org/css-typed-om/#cssskewx
 [
     Constructor(CSSNumericValue ax),
     RuntimeEnabled=CSSTypedOM,

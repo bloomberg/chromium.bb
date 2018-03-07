@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Represents the negation of a CSSNumericValue.
-// https://drafts.css-houdini.org/css-typed-om-1/#cssmathnegate
+// https://drafts.css-houdini.org/css-typed-om/#cssmathnegate
 [
   Constructor(CSSNumberish arg),
   RuntimeEnabled=CSSTypedOM,

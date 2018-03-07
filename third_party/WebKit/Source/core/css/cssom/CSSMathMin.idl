@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Represents the minimum of one or more CSSNumericValues.
-// https://drafts.css-houdini.org/css-typed-om-1/#cssmathsum
+// https://drafts.css-houdini.org/css-typed-om/#cssmathsum
 [
   Constructor(CSSNumberish... args),
   RuntimeEnabled=CSSTypedOM,

@@ -14,7 +14,7 @@ class StyleRule;
 
 // This class implements declared StylePropertMap in the Typed CSSOM
 // API. The specification is here:
-// https://drafts.css-houdini.org/css-typed-om-1/#declared-stylepropertymap-objects
+// https://drafts.css-houdini.org/css-typed-om/#declared-stylepropertymap-objects
 //
 // The declared StylePropertyMap retrieves styles specified by a CSS style rule
 // and returns them as CSSStyleValues. The IDL for this class is in

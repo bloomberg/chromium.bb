@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://drafts.css-houdini.org/css-typed-om-1/#computed-stylepropertymapreadonly-objects
+// https://drafts.css-houdini.org/css-typed-om/#computed-stylepropertymapreadonly-objects
 
 [
     ImplementedAs=ElementComputedStyleMap,

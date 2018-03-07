@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://drafts.fxtf.org/css-masking-1/#InterfaceSVGMaskElement
+// https://drafts.fxtf.org/css-masking/#InterfaceSVGMaskElement
 
 interface SVGMaskElement : SVGElement {
     [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedEnumeration maskUnits;

@@ -521,7 +521,7 @@ SVGGraphicsElement* SVGUseElement::VisibleTargetGraphicsElementForClipping()
   // Spec: "If a <use> element is a child of a clipPath element, it must
   // directly reference <path>, <text> or basic shapes elements. Indirect
   // references are an error and the clipPath element must be ignored."
-  // http://dev.w3.org/fxtf/css-masking-1/#the-clip-path
+  // https://drafts.fxtf.org/css-masking/#the-clip-path
   if (!IsDirectReference(element)) {
     // Spec: Indirect references are an error (14.3.5)
     return nullptr;
