@@ -28,6 +28,7 @@
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
@@ -189,7 +190,7 @@ class RasterBufferProviderTest
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
         raster_buffer_provider_ = std::make_unique<BitmapRasterBufferProvider>(
-            resource_provider_.get(), &shared_bitmap_manager_);
+            layer_tree_frame_sink_.get());
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
             base::TimeDelta(), ResourcePool::Mode::kSoftware, true);
@@ -302,12 +303,14 @@ class RasterBufferProviderTest
     viz::TestWebGraphicsContext3D* context3d =
         context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
+    layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         context_provider_.get(), &shared_bitmap_manager_,
         &gpu_memory_buffer_manager_);
   }
 
   void CreateSoftwareResourceProvider() {
+    layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         nullptr, &shared_bitmap_manager_, &gpu_memory_buffer_manager_);
   }
@@ -321,6 +324,7 @@ class RasterBufferProviderTest
   scoped_refptr<viz::TestContextProvider> context_provider_;
   scoped_refptr<viz::TestContextProvider> worker_context_provider_;
   std::unique_ptr<ResourcePool> pool_;
+  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;

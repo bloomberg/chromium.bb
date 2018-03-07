@@ -4,6 +4,7 @@ include_rules = [
   "+gpu/command_buffer/common",
   "+gpu/GLES2",
   "+mojo/public/cpp/system/buffer.h",
+  "+mojo/public/cpp/system/platform_handle.h",
   "+third_party/khronos/GLES2",
   "+third_party/skia",
 ]

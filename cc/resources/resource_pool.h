@@ -51,6 +51,15 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
    public:
     virtual ~GpuBacking() = default;
 
+    // Guids for for memory dumps. This guid will be valid once the GpuBacking
+    // has memory allocated. Called on the compositor thread.
+    virtual base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
+        uint64_t tracing_process_id) = 0;
+    // Some gpu resources can be shared memory-backed, and this guid should be
+    // prefered in that case. But if not then this will be empty. Called on the
+    // compositor thread.
+    virtual base::UnguessableToken SharedMemoryGuid() = 0;
+
     gpu::Mailbox mailbox;
     gpu::SyncToken mailbox_sync_token;
     GLenum texture_target = 0;
@@ -64,15 +73,18 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     // compositor. The client of ResourcePool needs to wait on this token, if it
     // exists, before using a resource handed out by the ResourcePool.
     gpu::SyncToken returned_sync_token;
+  };
 
-    // Guids for for memory dumps. This guid will be valid once the GpuBacking
-    // has memory allocated. Called on the compositor thread.
-    virtual base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
-        uint64_t tracing_process_id) = 0;
-    // Some gpu resources can be shared memory-backed, and this guid should be
-    // prefered in that case. But if not then this will be empty. Called on the
-    // compositor thread.
+  // A base class to hold ownership of software backed PoolResources. Allows the
+  // client to define destruction semantics.
+  class SoftwareBacking {
+   public:
+    virtual ~SoftwareBacking() = default;
+
+    // Return the guid for this resource, based on the shared memory backing it.
     virtual base::UnguessableToken SharedMemoryGuid() = 0;
+
+    viz::SharedBitmapId shared_bitmap_id;
   };
 
   // Scoped move-only object returned when getting a resource from the pool.
@@ -125,15 +137,13 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     }
 
     // Only valid when the ResourcePool is vending software-backed resources.
-    viz::SharedBitmap* shared_bitmap() const {
+    SoftwareBacking* software_backing() const {
       DCHECK(!is_gpu_);
-      return resource_->shared_bitmap();
+      return resource_->software_backing();
     }
-    void set_shared_bitmap(
-        std::unique_ptr<viz::SharedBitmap> shared_bitmap) const {
+    void set_software_backing(std::unique_ptr<SoftwareBacking> software) const {
       DCHECK(!is_gpu_);
-      DCHECK(!resource_->shared_bitmap());
-      resource_->set_shared_bitmap(std::move(shared_bitmap));
+      resource_->set_software_backing(std::move(software));
     }
 
     // Production code should not be built around these ids, but tests use them
@@ -248,9 +258,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       gpu_backing_ = std::move(gpu);
     }
 
-    viz::SharedBitmap* shared_bitmap() const { return shared_bitmap_.get(); }
-    void set_shared_bitmap(std::unique_ptr<viz::SharedBitmap> shared_bitmap) {
-      shared_bitmap_ = std::move(shared_bitmap);
+    SoftwareBacking* software_backing() const {
+      return software_backing_.get();
+    }
+    void set_software_backing(std::unique_ptr<SoftwareBacking> software) {
+      software_backing_ = std::move(software);
     }
 
     uint64_t content_id() const { return content_id_; }
@@ -297,7 +309,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     // The backing for software resources. Initially null for resources given
     // out by ResourcePool, to be filled in by the client. Is destroyed on the
     // compositor thread.
-    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
+    std::unique_ptr<SoftwareBacking> software_backing_;
   };
 
   // Callback from the ResourceProvider to notify when an exported PoolResource

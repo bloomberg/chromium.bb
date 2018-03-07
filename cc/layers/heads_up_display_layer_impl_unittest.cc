@@ -17,6 +17,7 @@ namespace cc {
 namespace {
 
 void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
+                    LayerTreeFrameSink* frame_sink,
                     LayerTreeResourceProvider* resource_provider,
                     viz::ContextProvider* context_provider,
                     DrawMode draw_mode) {
@@ -27,8 +28,8 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
     layer->AppendQuads(render_pass.get(), &data);
   viz::RenderPassList pass_list;
   pass_list.push_back(std::move(render_pass));
-  layer->UpdateHudTexture(draw_mode, resource_provider, context_provider,
-                          pass_list);
+  layer->UpdateHudTexture(draw_mode, frame_sink, resource_provider,
+                          context_provider, pass_list);
   if (will_draw)
     layer->DidDraw(resource_provider);
 
@@ -57,14 +58,16 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Check regular hardware draw is ok.
-  CheckDrawLayer(layer, host_impl.resource_provider(),
+  CheckDrawLayer(layer, host_impl.layer_tree_frame_sink(),
+                 host_impl.resource_provider(),
                  layer_tree_frame_sink->context_provider(), DRAW_MODE_HARDWARE);
 
   // Simulate a resource loss on transitioning to resourceless software mode.
   layer->ReleaseResources();
 
   // Should skip resourceless software draw and not crash in UpdateHudTexture.
-  CheckDrawLayer(layer, host_impl.resource_provider(),
+  CheckDrawLayer(layer, host_impl.layer_tree_frame_sink(),
+                 host_impl.resource_provider(),
                  layer_tree_frame_sink->context_provider(),
                  DRAW_MODE_RESOURCELESS_SOFTWARE);
 }
@@ -88,7 +91,8 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Check Ganesh canvas drawing is ok.
-  CheckDrawLayer(layer, host_impl.resource_provider(),
+  CheckDrawLayer(layer, host_impl.layer_tree_frame_sink(),
+                 host_impl.resource_provider(),
                  layer_tree_frame_sink->context_provider(), DRAW_MODE_HARDWARE);
 
   host_impl.ReleaseLayerTreeFrameSink();
@@ -96,8 +100,8 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
   host_impl.InitializeRenderer(layer_tree_frame_sink.get());
 
   // Check SW canvas drawing is ok.
-  CheckDrawLayer(layer, host_impl.resource_provider(), nullptr,
-                 DRAW_MODE_SOFTWARE);
+  CheckDrawLayer(layer, host_impl.layer_tree_frame_sink(),
+                 host_impl.resource_provider(), nullptr, DRAW_MODE_SOFTWARE);
 }
 
 }  // namespace

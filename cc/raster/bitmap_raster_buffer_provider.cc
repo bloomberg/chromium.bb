@@ -15,18 +15,31 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/raster/raster_source.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource.h"
+#include "cc/trees/layer_tree_frame_sink.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace cc {
 namespace {
 
+class BitmapSoftwareBacking : public ResourcePool::SoftwareBacking {
+ public:
+  ~BitmapSoftwareBacking() override {
+    frame_sink->DidDeleteSharedBitmap(shared_bitmap_id);
+  }
+
+  base::UnguessableToken SharedMemoryGuid() override {
+    return shared_memory->mapped_id();
+  }
+
+  LayerTreeFrameSink* frame_sink;
+  std::unique_ptr<base::SharedMemory> shared_memory;
+};
+
 class BitmapRasterBufferImpl : public RasterBuffer {
  public:
-  BitmapRasterBufferImpl(LayerTreeResourceProvider* resource_provider,
-                         const gfx::Size& size,
+  BitmapRasterBufferImpl(const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          void* pixels,
                          uint64_t resource_content_id,
@@ -73,10 +86,8 @@ class BitmapRasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 BitmapRasterBufferProvider::BitmapRasterBufferProvider(
-    LayerTreeResourceProvider* resource_provider,
-    viz::SharedBitmapManager* shared_bitmap_manager)
-    : resource_provider_(resource_provider),
-      shared_bitmap_manager_(shared_bitmap_manager) {}
+    LayerTreeFrameSink* frame_sink)
+    : frame_sink_(frame_sink) {}
 
 BitmapRasterBufferProvider::~BitmapRasterBufferProvider() = default;
 
@@ -89,16 +100,26 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
 
   const gfx::Size& size = resource.size();
   const gfx::ColorSpace& color_space = resource.color_space();
-  if (!resource.shared_bitmap()) {
-    // Allocate a backing that can be shared out of process to the display
-    // compositor, and give ownership to the ResourcePool.
-    resource.set_shared_bitmap(
-        shared_bitmap_manager_->AllocateSharedBitmap(size));
+  if (!resource.software_backing()) {
+    auto backing = std::make_unique<BitmapSoftwareBacking>();
+    backing->frame_sink = frame_sink_;
+    backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
+    backing->shared_memory = viz::bitmap_allocation::AllocateMappedBitmap(size);
+
+    mojo::ScopedSharedBufferHandle handle =
+        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
+            backing->shared_memory.get(), size);
+    frame_sink_->DidAllocateSharedBitmap(std::move(handle),
+                                         backing->shared_bitmap_id);
+
+    resource.set_software_backing(std::move(backing));
   }
+  BitmapSoftwareBacking* backing =
+      static_cast<BitmapSoftwareBacking*>(resource.software_backing());
 
   return std::make_unique<BitmapRasterBufferImpl>(
-      resource_provider_, size, color_space, resource.shared_bitmap()->pixels(),
-      resource_content_id, previous_content_id);
+      size, color_space, backing->shared_memory->memory(), resource_content_id,
+      previous_content_id);
 }
 
 void BitmapRasterBufferProvider::Flush() {}

@@ -1899,7 +1899,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (active_tree_->hud_layer()) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
-        draw_mode, resource_provider_.get(),
+        draw_mode, layer_tree_frame_sink_, resource_provider_.get(),
         // The hud uses Gpu rasterization if the device is capable, not related
         // to the content of the web page.
         gpu_rasterization_status_ != GpuRasterizationStatus::OFF_DEVICE,
@@ -2607,11 +2607,8 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
 
   viz::ContextProvider* compositor_context_provider =
       layer_tree_frame_sink_->context_provider();
-  if (!compositor_context_provider) {
-    return std::make_unique<BitmapRasterBufferProvider>(
-        resource_provider_.get(),
-        layer_tree_frame_sink_->shared_bitmap_manager());
-  }
+  if (!compositor_context_provider)
+    return std::make_unique<BitmapRasterBufferProvider>(layer_tree_frame_sink_);
 
   viz::RasterContextProvider* worker_context_provider =
       layer_tree_frame_sink_->worker_context_provider();
@@ -2721,6 +2718,7 @@ void LayerTreeHostImpl::CleanUpTileManagerResources() {
   tile_manager_.FinishTasksAndCleanUp();
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_cache_ = nullptr;
+  raster_buffer_provider_ = nullptr;
   // Any resources that were allocated previously should be considered not good
   // for reuse, as the RasterBufferProvider will be replaced and it may choose
   // to allocate future resources differently.
