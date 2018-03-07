@@ -550,9 +550,6 @@
     'bottombar': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/compositor/bottombar/',
     },
-    'browser_chromeos': {
-      'filepath': 'chrome/browser/chromeos/',
-    },
     'browser_components': {
       'filepath': 'chrome/browser/autofill/' \
                   '|chrome/browser/bookmarks/' \
@@ -675,6 +672,9 @@
     },
     'chromeos_geolocation': {
       'filepath': 'chromeos/geolocation/',
+    },
+    'chromeos_lkgm': {
+      'filepath': 'chromeos/CHROMEOS_LKGM',
     },
     'chromeos_login': {
       'filepath': 'chrome/browser/chromeos/login/|'\
@@ -1879,7 +1879,6 @@
     'bookmarks': ['tfarina@chromium.org'],
     'bottombar': ['donnd+watch@chromium.org',
                   'mdjones+watch@chromium.org'],
-    'browser_chromeos': ['davemoore+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['piman+watch@chromium.org',
                            'vollick@chromium.org'],
@@ -1930,6 +1929,8 @@
     'chromeos_calculator': ['dharcourt@chromium.org'],
     'chromeos_dbus': ['hashimoto+watch@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
+    'chromeos_lkgm': ['achuith+watch@chromium.org',
+                      'stevenjb+watch@chromium.org'],
     'chromeos_login': ['achuith+watch@chromium.org',
                        'alemate+watch@chromium.org'],
     'chromeos_net': ['stevenjb+watch@chromium.org'],
