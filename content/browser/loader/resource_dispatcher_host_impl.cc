@@ -718,7 +718,6 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   is_shutdown_ = true;
-  keepalive_statistics_recorder_.Shutdown();
 
   pending_loaders_.clear();
 

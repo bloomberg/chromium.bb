@@ -40,8 +40,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) KeepaliveStatisticsRecorder
   // Called when a request with keepalive set finishes.
   void OnLoadFinished(int process_id);
 
-  void Shutdown();
-
   const std::unordered_map<int, PerProcessStats>& per_process_records() const {
     return per_process_records_;
   }
@@ -50,12 +48,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) KeepaliveStatisticsRecorder
   int peak_inflight_requests() const { return peak_inflight_requests_; }
 
  private:
-  void DumpPerProcessStats(const PerProcessStats& stats);
-
   std::unordered_map<int, PerProcessStats> per_process_records_;
   int num_inflight_requests_ = 0;
   int peak_inflight_requests_ = 0;
-  bool is_active_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KeepaliveStatisticsRecorder);
 };
