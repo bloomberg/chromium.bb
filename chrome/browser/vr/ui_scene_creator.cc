@@ -634,7 +634,7 @@ void UiSceneCreator::CreateHostedUi() {
   backplane->SetDrawPhase(kPhaseForeground);
   backplane->SetName(kHostedUiBackplane);
   backplane->SetSize(kSceneSize, kSceneSize);
-  backplane->SetTranslate(0.0, 0.0, -kContentDistance);
+  backplane->SetTranslate(0.0, kContentVerticalOffset, -kContentDistance);
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser) {
