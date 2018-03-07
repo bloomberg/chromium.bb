@@ -1479,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
       &header_value));
   EXPECT_NE(kUserAgentOverride, header_value);
 
-  shell()->web_contents()->SetUserAgentOverride("foo");
+  shell()->web_contents()->SetUserAgentOverride("foo", false);
   NavigateToURL(shell(), kUrl);
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       shell()->web_contents(),

@@ -896,8 +896,13 @@ void NavigatorImpl::OnBeginNavigation(
   }
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   NavigationEntryImpl* current_entry = controller_->GetLastCommittedEntry();
+  // Only consult the delegate for override state if there is no current entry,
+  // since that state should only apply to newly created tabs (and not cases
+  // where the NavigationEntry recorded the state).
   bool override_user_agent =
-      current_entry ? current_entry->GetIsOverridingUserAgent() : false;
+      current_entry
+          ? current_entry->GetIsOverridingUserAgent()
+          : delegate_ && delegate_->ShouldOverrideUserAgentInNewTabs();
   frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
           frame_tree_node, pending_entry, common_params,

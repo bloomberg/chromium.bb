@@ -548,6 +548,10 @@ const std::string& InterstitialPageImpl::GetUserAgentOverride() const {
   return base::EmptyString();
 }
 
+bool InterstitialPageImpl::ShouldOverrideUserAgentInNewTabs() {
+  return false;
+}
+
 bool InterstitialPageImpl::ShowingInterstitialPage() const {
   // An interstitial page never shows a second interstitial.
   return false;

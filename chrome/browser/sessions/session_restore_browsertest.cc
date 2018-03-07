@@ -1245,8 +1245,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   // Create a tab with an overridden user agent.
   ui_test_utils::NavigateToURL(browser(), url1_);
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
-  browser()->tab_strip_model()->GetWebContentsAt(0)->
-      SetUserAgentOverride("override");
+  browser()->tab_strip_model()->GetWebContentsAt(0)->SetUserAgentOverride(
+      "override", false);
 
   // Create a tab without an overridden user agent.
   ui_test_utils::NavigateToURLWithDisposition(

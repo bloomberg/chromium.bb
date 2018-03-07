@@ -1178,9 +1178,12 @@ WebUI* WebContentsImpl::GetCommittedWebUI() const {
   return frame_tree_.root()->current_frame_host()->web_ui();
 }
 
-void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
+void WebContentsImpl::SetUserAgentOverride(const std::string& override,
+                                           bool override_in_new_tabs) {
   if (GetUserAgentOverride() == override)
     return;
+
+  should_override_user_agent_in_new_tabs_ = override_in_new_tabs;
 
   renderer_preferences_.user_agent_override = override;
 
@@ -1201,6 +1204,10 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
 
 const std::string& WebContentsImpl::GetUserAgentOverride() const {
   return renderer_preferences_.user_agent_override;
+}
+
+bool WebContentsImpl::ShouldOverrideUserAgentInNewTabs() {
+  return should_override_user_agent_in_new_tabs_;
 }
 
 void WebContentsImpl::EnableWebContentsOnlyAccessibilityMode() {

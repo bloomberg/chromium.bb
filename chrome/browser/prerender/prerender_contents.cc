@@ -294,7 +294,7 @@ void PrerenderContents::StartPrerendering(
 
   // Transfer over the user agent override.
   prerender_contents_.get()->SetUserAgentOverride(
-      prerender_manager_->config().user_agent_override);
+      prerender_manager_->config().user_agent_override, false);
 
   content::NavigationController::LoadURLParams load_url_params(
       prerender_url_);

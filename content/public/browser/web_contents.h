@@ -321,7 +321,10 @@ class WebContents : public PageNavigator,
   virtual WebUI* GetCommittedWebUI() const = 0;
 
   // Allows overriding the user agent used for NavigationEntries it owns.
-  virtual void SetUserAgentOverride(const std::string& override) = 0;
+  // |override_in_new_tabs| is set when we are overriding user agent for new
+  // tabs.
+  virtual void SetUserAgentOverride(const std::string& override,
+                                    bool override_in_new_tabs) = 0;
   virtual const std::string& GetUserAgentOverride() const = 0;
 
   // Set the accessibility mode so that accessibility events are forwarded

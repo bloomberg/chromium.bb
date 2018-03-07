@@ -77,7 +77,7 @@ WebContents* CreateRestoredTab(
   std::vector<std::unique_ptr<NavigationEntry>> entries =
       ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, browser->profile());
-  web_contents->SetUserAgentOverride(user_agent_override);
+  web_contents->SetUserAgentOverride(user_agent_override, false);
   web_contents->GetController().Restore(
       selected_navigation, GetRestoreType(browser, from_last_session),
       &entries);
