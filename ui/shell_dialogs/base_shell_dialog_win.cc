@@ -64,6 +64,7 @@ void BaseShellDialogImpl::DisableOwner(HWND owner) {
 // static
 base::Thread* BaseShellDialogImpl::CreateDialogThread() {
   base::Thread* thread = new base::Thread("Chrome_ShellDialogThread");
+  // Many shell dialogs require a COM Single-Threaded Apartment (STA) to run.
   thread->init_com_with_mta(false);
   bool started = thread->Start();
   DCHECK(started);
