@@ -27,9 +27,6 @@ crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 
-# https://crbug.com/697111: assert failures in test added in r451938.
-crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
-
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 
@@ -229,9 +226,7 @@ Bug(none) external/wpt/webmessaging/without-ports/020.html [ Failure ]
 Bug(none) external/wpt/webusb/usb-disabled-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/webvr/webvr-enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
 Bug(none) jquery/manipulation.html [ Timeout ]
-Bug(none) storage/indexeddb/blob-valid-after-deletion.html [ Failure ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
-Bug(none) storage/indexeddb/empty-crash.html [ Timeout ]
 Bug(none) virtual/outofblink-cors/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-url-allow.html [ Pass Timeout ]
