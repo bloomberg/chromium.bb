@@ -497,7 +497,6 @@ source_set("blink_headers") {
     "web/WebFrameWidget.h",
     "web/WebGlobalObjectReusePolicy.h",
     "web/WebHeap.h",
-    "web/WebHelperPlugin.h",
     "web/WebHistoryCommitType.h",
     "web/WebHistoryItem.h",
     "web/WebHitTestResult.h",
