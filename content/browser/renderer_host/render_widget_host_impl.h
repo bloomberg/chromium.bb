@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/drag_event_source_info.h"
@@ -602,7 +603,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   RenderFrameMetadataProvider* render_frame_metadata_provider() {
-    return render_frame_metadata_provider_.get();
+    return &render_frame_metadata_provider_;
   }
 
   bool HasGestureStopped() override;
@@ -1090,7 +1091,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool next_resize_needs_resize_ack_ = false;
 
-  std::unique_ptr<RenderFrameMetadataProvider> render_frame_metadata_provider_;
+  RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
 
   const viz::FrameSinkId frame_sink_id_;
 

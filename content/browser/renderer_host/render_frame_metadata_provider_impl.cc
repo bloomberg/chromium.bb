@@ -6,14 +6,8 @@
 
 namespace content {
 
-RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl(
-    mojom::RenderFrameMetadataObserverClientRequest client_request,
-    mojom::RenderFrameMetadataObserverPtr observer)
-    : render_frame_metadata_observer_client_binding_(this),
-      render_frame_metadata_observer_ptr_(std::move(observer)) {
-  render_frame_metadata_observer_client_binding_.Bind(
-      std::move(client_request));
-}
+RenderFrameMetadataProviderImpl::RenderFrameMetadataProviderImpl()
+    : render_frame_metadata_observer_client_binding_(this) {}
 
 RenderFrameMetadataProviderImpl::~RenderFrameMetadataProviderImpl() = default;
 
@@ -25,8 +19,18 @@ void RenderFrameMetadataProviderImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void RenderFrameMetadataProviderImpl::Bind(
+    mojom::RenderFrameMetadataObserverClientRequest client_request,
+    mojom::RenderFrameMetadataObserverPtr observer) {
+  render_frame_metadata_observer_ptr_ = std::move(observer);
+  render_frame_metadata_observer_client_binding_.Close();
+  render_frame_metadata_observer_client_binding_.Bind(
+      std::move(client_request));
+}
+
 void RenderFrameMetadataProviderImpl::ReportAllFrameSubmissionsForTesting(
     bool enabled) {
+  DCHECK(render_frame_metadata_observer_ptr_);
   render_frame_metadata_observer_ptr_->ReportAllFrameSubmissionsForTesting(
       enabled);
 }

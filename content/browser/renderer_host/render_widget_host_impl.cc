@@ -57,7 +57,6 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
-#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -2684,10 +2683,9 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     mojom::RenderFrameMetadataObserverClientRequest
         render_frame_metadata_observer_client_request,
     mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer) {
-  render_frame_metadata_provider_ =
-      std::make_unique<RenderFrameMetadataProviderImpl>(
-          std::move(render_frame_metadata_observer_client_request),
-          std::move(render_frame_metadata_observer));
+  render_frame_metadata_provider_.Bind(
+      std::move(render_frame_metadata_observer_client_request),
+      std::move(render_frame_metadata_observer));
   if (enable_viz_) {
       // Connects the viz process end of CompositorFrameSink message pipes. The
       // renderer compositor may request a new CompositorFrameSink on context
