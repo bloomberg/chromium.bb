@@ -52,16 +52,19 @@ void CombineResults(std::vector<SpellCheckResult>* remote_results,
 
 }  // namespace
 
+// SpellingRequest is owned by SpellCheckHostChromeImpl.
 class SpellingRequest {
  public:
   using RequestTextCheckCallback =
       spellcheck::mojom::SpellCheckHost::RequestTextCheckCallback;
+  using DestructionCallback = base::OnceCallback<void(SpellingRequest*)>;
 
   SpellingRequest(SpellingServiceClient* client,
                   const base::string16& text,
                   const service_manager::Identity& renderer_identity,
                   int document_tag,
-                  RequestTextCheckCallback callback);
+                  RequestTextCheckCallback callback,
+                  DestructionCallback destruction_callback);
 
  private:
   // Request server-side checking for |text_|.
@@ -73,13 +76,18 @@ class SpellingRequest {
   // Check if all pending requests are done, send reply to render process if so.
   void OnCheckCompleted();
 
-  // Called when server-side checking is complete.
+  // Called when server-side checking is complete. Must be called on UI thread.
   void OnRemoteCheckCompleted(bool success,
                               const base::string16& text,
                               const std::vector<SpellCheckResult>& results);
 
-  // Called when local checking is complete.
+  // Called when local checking is complete. Must be called on UI thread.
   void OnLocalCheckCompleted(const std::vector<SpellCheckResult>& results);
+
+  // Forwards the results back to UI thread when local checking completes.
+  static void OnLocalCheckCompletedOnAnyThread(
+      base::WeakPtr<SpellingRequest> request,
+      const std::vector<SpellCheckResult>& results);
 
   std::vector<SpellCheckResult> local_results_;
   std::vector<SpellCheckResult> remote_results_;
@@ -92,6 +100,10 @@ class SpellingRequest {
   const service_manager::Identity renderer_identity_;
   int document_tag_;
   RequestTextCheckCallback callback_;
+
+  DestructionCallback destruction_callback_;
+
+  base::WeakPtrFactory<SpellingRequest> weak_factory_;
 };
 
 SpellingRequest::SpellingRequest(
@@ -99,19 +111,21 @@ SpellingRequest::SpellingRequest(
     const base::string16& text,
     const service_manager::Identity& renderer_identity,
     int document_tag,
-    RequestTextCheckCallback callback)
+    RequestTextCheckCallback callback,
+    DestructionCallback destruction_callback)
     : remote_success_(false),
       text_(text),
       renderer_identity_(renderer_identity),
       document_tag_(document_tag),
-      callback_(std::move(callback)) {
+      callback_(std::move(callback)),
+      destruction_callback_(std::move(destruction_callback)),
+      weak_factory_(this) {
   DCHECK(!text_.empty());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Send the remote query out. The barrier owns |this|, ensuring it is deleted
-  // after completion.
-  completion_barrier_ = BarrierClosure(
-      2, base::BindOnce(&SpellingRequest::OnCheckCompleted, base::Owned(this)));
+  completion_barrier_ =
+      BarrierClosure(2, base::BindOnce(&SpellingRequest::OnCheckCompleted,
+                                       weak_factory_.GetWeakPtr()));
   RequestRemoteCheck(client);
   RequestLocalCheck();
 }
@@ -123,21 +137,24 @@ void SpellingRequest::RequestRemoteCheck(SpellingServiceClient* client) {
   if (host)
     context = host->GetBrowserContext();
 
+  // |this| may be gone at callback invocation if the owner has been removed.
   client->RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text_,
       base::BindOnce(&SpellingRequest::OnRemoteCheckCompleted,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SpellingRequest::RequestLocalCheck() {
+  // |this| may be gone at callback invocation if the owner has been removed.
   spellcheck_platform::RequestTextCheck(
       document_tag_, text_,
-      base::BindOnce(&SpellingRequest::OnLocalCheckCompleted,
-                     base::Unretained(this)));
+      base::BindOnce(&SpellingRequest::OnLocalCheckCompletedOnAnyThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SpellingRequest::OnCheckCompleted() {
-  // Final completion can happen on any thread - don't DCHECK thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   std::vector<SpellCheckResult>* check_results = &local_results_;
   if (remote_success_) {
     std::sort(remote_results_.begin(), remote_results_.end(), CompareLocation);
@@ -146,13 +163,11 @@ void SpellingRequest::OnCheckCompleted() {
     check_results = &remote_results_;
   }
 
-  // |callback_| must be run on UI thread.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback_), std::move(*check_results)));
+  std::move(callback_).Run(*check_results);
 
-  // Object is self-managed - at this point, its life span is over.
-  // No need to delete, since the OnCheckCompleted callback owns |this|.
+  std::move(destruction_callback_).Run(this);
+
+  // |destruction_callback_| removes |this|. No more operations allowed.
 }
 
 void SpellingRequest::OnRemoteCheckCompleted(
@@ -165,12 +180,29 @@ void SpellingRequest::OnRemoteCheckCompleted(
   completion_barrier_.Run();
 }
 
-void SpellingRequest::OnLocalCheckCompleted(
+// static
+void SpellingRequest::OnLocalCheckCompletedOnAnyThread(
+    base::WeakPtr<SpellingRequest> request,
     const std::vector<SpellCheckResult>& results) {
   // Local checking can happen on any thread - don't DCHECK thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&SpellingRequest::OnLocalCheckCompleted, request,
+                     results));
+}
+
+void SpellingRequest::OnLocalCheckCompleted(
+    const std::vector<SpellCheckResult>& results) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   local_results_ = results;
   completion_barrier_.Run();
 }
+
+SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
+    const service_manager::Identity& renderer_identity)
+    : renderer_identity_(renderer_identity), weak_factory_(this) {}
+
+SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
 
 // static
 void SpellCheckHostChromeImpl::CombineResultsForTesting(
@@ -208,9 +240,18 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
   // happen on UI thread.
   GetSpellcheckService();
 
-  // SpellingRequest self-destructs.
-  new SpellingRequest(&client_, text, renderer_identity_,
-                      ToDocumentTag(route_id), std::move(callback));
+  // |SpellingRequest| self-destructs on completion.
+  // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
+  requests_.insert(std::make_unique<SpellingRequest>(
+      &client_, text, renderer_identity_, ToDocumentTag(route_id),
+      std::move(callback),
+      base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
+                     base::Unretained(this))));
+}
+
+void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
+  auto iterator = requests_.find(request);
+  requests_.erase(iterator);
 }
 
 int SpellCheckHostChromeImpl::ToDocumentTag(int route_id) {

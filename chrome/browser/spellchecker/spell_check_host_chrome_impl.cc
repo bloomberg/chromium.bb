@@ -16,11 +16,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
+#if !defined(OS_MACOSX)
+// Mac needs different constructor and destructor for Mac-only members.
+
 SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
     const service_manager::Identity& renderer_identity)
     : renderer_identity_(renderer_identity), weak_factory_(this) {}
 
 SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
+#endif
 
 // static
 void SpellCheckHostChromeImpl::Create(
