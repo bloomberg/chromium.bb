@@ -63,8 +63,11 @@ void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
                                                const std::string& folder_id) {
   size_t index;
   if (FindItemIndexForTest(id, &index)) {
-    ChromeAppListItem::TestApi test_api(items_[index].get());
+    ChromeAppListItem* item = items_[index].get();
+    ChromeAppListItem::TestApi test_api(item);
     test_api.SetFolderId(folder_id);
+    if (delegate_)
+      delegate_->OnAppListItemUpdated(item);
   }
 }
 
@@ -184,4 +187,37 @@ syncer::StringOrdinal FakeAppListModelUpdater::GetOemFolderPos() {
   const ChromeAppListItem* web_store_app_item =
       ItemAtForTest(web_store_app_index);
   return web_store_app_item->position().CreateAfter();
+}
+
+void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
+    app_list::AppListSyncableService::SyncItem* sync_item,
+    bool update_name,
+    bool update_folder) {
+  // In chrome & ash:
+  ChromeAppListItem* chrome_item = FindItem(sync_item->item_id);
+  if (!chrome_item)
+    return;
+
+  VLOG(2) << this << " UpdateAppItemFromSyncItem: " << sync_item->ToString();
+  if (sync_item->item_ordinal.IsValid() &&
+      !chrome_item->position().Equals(sync_item->item_ordinal)) {
+    // This updates the position in both chrome and ash:
+    chrome_item->SetPosition(sync_item->item_ordinal);
+  }
+  // Only update the item name if it is a Folder or the name is empty.
+  if (update_name && sync_item->item_name != chrome_item->name() &&
+      (chrome_item->is_folder() || chrome_item->name().empty())) {
+    // This updates the name in both chrome and ash:
+    chrome_item->SetName(sync_item->item_name);
+  }
+  if (update_folder && chrome_item->folder_id() != sync_item->parent_id) {
+    VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
+    // This updates the folder in both chrome and ash:
+    MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
+  }
+}
+
+void FakeAppListModelUpdater::SetDelegate(
+    AppListModelUpdaterDelegate* delegate) {
+  delegate_ = delegate;
 }

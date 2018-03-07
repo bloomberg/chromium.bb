@@ -64,6 +64,15 @@ class ChromeAppListItem {
   void SetMetadata(ash::mojom::AppListItemMetadataPtr metadata);
   ash::mojom::AppListItemMetadataPtr CloneMetadata() const;
 
+  // The following methods set Chrome side data here, and call model updater
+  // interfaces that talk to ash directly.
+  void SetIcon(const gfx::ImageSkia& icon);
+  void SetName(const std::string& name);
+  void SetNameAndShortName(const std::string& name,
+                           const std::string& short_name);
+  void SetFolderId(const std::string& folder_id);
+  void SetPosition(const syncer::StringOrdinal& position);
+
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
 
@@ -88,9 +97,6 @@ class ChromeAppListItem {
   std::string ToDebugString() const;
 
  protected:
-  // TODO(hejq): break the inheritance and remove this.
-  friend class ChromeAppListModelUpdater;
-
   Profile* profile() const { return profile_; }
 
   extensions::AppSorting* GetAppSorting();
@@ -114,15 +120,6 @@ class ChromeAppListItem {
   // Get the context menu of a certain app. This could be different for
   // different kinds of items.
   virtual app_list::AppContextMenu* GetAppContextMenu();
-
-  // The following methods set Chrome side data here, and call model updater
-  // interfaces that talk to ash directly.
-  void SetIcon(const gfx::ImageSkia& icon);
-  void SetName(const std::string& name);
-  void SetNameAndShortName(const std::string& name,
-                           const std::string& short_name);
-  void SetFolderId(const std::string& folder_id);
-  void SetPosition(const syncer::StringOrdinal& position);
 
   void set_chrome_folder_id(const std::string& folder_id) {
     metadata_->folder_id = folder_id;

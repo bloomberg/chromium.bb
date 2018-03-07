@@ -95,7 +95,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 using browser_sync::ProfileSyncService;
 using content::BrowserThread;
@@ -551,6 +555,13 @@ bool SyncTest::SetupClients() {
     // Sets Arc flags, need to be called before create test profiles.
     ArcAppListPrefsFactory::SetFactoryForSyncTest();
   }
+
+  // Uses a fake app list model updater to avoid interacting with Ash.
+  model_updater_factory_ = std::make_unique<
+      app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>(
+      base::Bind([]() -> std::unique_ptr<AppListModelUpdater> {
+        return std::make_unique<FakeAppListModelUpdater>();
+      }));
 #endif
 
   for (int i = 0; i < num_clients_; ++i) {

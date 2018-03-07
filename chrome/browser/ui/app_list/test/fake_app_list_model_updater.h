@@ -33,6 +33,10 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position) override;
+  void UpdateAppItemFromSyncItem(
+      app_list::AppListSyncableService::SyncItem* sync_item,
+      bool update_name,
+      bool update_folder) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
   void MoveItemToFolder(const std::string& id,
@@ -63,12 +67,13 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
     return search_results_;
   }
 
-  void SetDelegate(AppListModelUpdaterDelegate* delegate) override {}
+  void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 
  private:
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
   std::vector<std::unique_ptr<app_list::SearchResult>> search_results_;
+  AppListModelUpdaterDelegate* delegate_ = nullptr;
 
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(
       const std::string& oem_folder_id,

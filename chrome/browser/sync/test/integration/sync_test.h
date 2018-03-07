@@ -12,9 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "build/buildflag.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/configuration_refresher.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/sync_protocol_error.h"
@@ -22,6 +24,10 @@
 #include "components/sync/test/local_sync_test_server.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 // The E2E tests are designed to run against real backend servers. To identify
 // those tests we use *E2ETest* test name filter and run disabled tests.
@@ -470,6 +476,14 @@ class SyncTest : public InProcessBrowserTest {
 
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+  // A factory-like callback to create a model updater for testing, which will
+  // take the place of the real updater in AppListSyncableService for testing.
+  std::unique_ptr<
+      app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>
+      model_updater_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };
