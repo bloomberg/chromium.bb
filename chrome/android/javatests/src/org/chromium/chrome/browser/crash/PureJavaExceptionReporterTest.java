@@ -55,8 +55,9 @@ public class PureJavaExceptionReporterTest {
             PureJavaExceptionReporter.DEVICE, PureJavaExceptionReporter.GMS_CORE_VERSION,
             PureJavaExceptionReporter.INSTALLER_PACKAGE_NAME, PureJavaExceptionReporter.ABI_NAME,
             PureJavaExceptionReporter.PACKAGE, PureJavaExceptionReporter.MODEL,
-            PureJavaExceptionReporter.BRAND, PureJavaExceptionReporter.EXCEPTION_INFO,
-            PureJavaExceptionReporter.PROCESS_TYPE, PureJavaExceptionReporter.EARLY_JAVA_EXCEPTION};
+            PureJavaExceptionReporter.BRAND, PureJavaExceptionReporter.BOARD,
+            PureJavaExceptionReporter.EXCEPTION_INFO, PureJavaExceptionReporter.PROCESS_TYPE,
+            PureJavaExceptionReporter.EARLY_JAVA_EXCEPTION};
 
     private String readFileToString(File file) {
         StringBuilder sb = new StringBuilder();
