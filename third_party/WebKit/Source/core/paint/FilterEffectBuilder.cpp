@@ -67,8 +67,8 @@ inline void LastMatrixRow(Vector<float>& matrix) {
 Vector<float> GrayscaleMatrix(double amount) {
   double one_minus_amount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See https://drafts.fxtf.org/filters/#grayscaleEquivalent for information on
-  // parameters.
+  // See https://drafts.fxtf.org/filter-effects/#grayscaleEquivalent for
+  // information on parameters.
   Vector<float> matrix;
   matrix.ReserveInitialCapacity(20);
 
@@ -94,8 +94,8 @@ Vector<float> GrayscaleMatrix(double amount) {
 Vector<float> SepiaMatrix(double amount) {
   double one_minus_amount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See https://drafts.fxtf.org/filters/#sepiaEquivalent for information on
-  // parameters.
+  // See https://drafts.fxtf.org/filter-effects/#sepiaEquivalent for information
+  // on parameters.
   Vector<float> matrix;
   matrix.ReserveInitialCapacity(20);
 

@@ -40,8 +40,8 @@ class FilterEffect;
 class PaintLayer;
 
 // PaintLayerResourceInfo holds the filter information for painting
-// https://drafts.fxtf.org/filters/. It also acts as the resource client for
-// change notifications from <clipPath> elements for the clip-path property.
+// https://drafts.fxtf.org/filter-effects/. It also acts as the resource client
+// for change notifications from <clipPath> elements for the clip-path property.
 //
 // Because PaintLayer is not allocated for SVG objects, SVG filters (both
 // software and hardware-accelerated) use a different code path to paint the

@@ -73,7 +73,7 @@ FilterEffect* SVGFEGaussianBlurElement::Build(SVGFilterBuilder* filter_builder,
 
   // "A negative value or a value of zero disables the effect of the given
   // filter primitive (i.e., the result is the filter input image)."
-  // (https://drafts.fxtf.org/filters/#element-attrdef-fegaussianblur-stddeviation)
+  // (https://drafts.fxtf.org/filter-effects/#element-attrdef-fegaussianblur-stddeviation)
   //
   // => Clamp to non-negative.
   float std_dev_x = std::max(0.0f, stdDeviationX()->CurrentValue()->Value());

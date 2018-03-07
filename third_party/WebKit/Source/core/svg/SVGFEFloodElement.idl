@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://drafts.fxtf.org/filters/#InterfaceSVGFEFloodElement
+// https://drafts.fxtf.org/filter-effects/#InterfaceSVGFEFloodElement
 
 interface SVGFEFloodElement : SVGElement {
 };

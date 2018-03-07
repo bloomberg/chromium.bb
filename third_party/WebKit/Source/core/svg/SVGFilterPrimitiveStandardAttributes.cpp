@@ -113,7 +113,7 @@ void SVGFilterPrimitiveStandardAttributes::ChildrenChanged(
 }
 
 static FloatRect DefaultFilterPrimitiveSubregion(FilterEffect* filter_effect) {
-  // https://drafts.fxtf.org/filters/#FilterPrimitiveSubRegion
+  // https://drafts.fxtf.org/filter-effects/#FilterPrimitiveSubRegion
   DCHECK(filter_effect->GetFilter());
 
   // <feTurbulence>, <feFlood> and <feImage> don't have input effects, so use

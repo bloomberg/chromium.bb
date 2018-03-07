@@ -105,7 +105,7 @@ FilterEffect* SVGFEMorphologyElement::Build(SVGFilterBuilder* filter_builder,
 
   // "A negative or zero value disables the effect of the given filter
   // primitive (i.e., the result is the filter input image)."
-  // https://drafts.fxtf.org/filters/#element-attrdef-femorphology-radius
+  // https://drafts.fxtf.org/filter-effects/#element-attrdef-femorphology-radius
   //
   // (This is handled by FEMorphology)
   float x_radius = radiusX()->CurrentValue()->Value();
