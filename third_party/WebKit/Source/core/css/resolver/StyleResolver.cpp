@@ -1479,7 +1479,7 @@ void StyleResolver::ApplyAllProperty(
     // all shorthand spec says:
     // The all property is a shorthand that resets all CSS properties
     // except direction and unicode-bidi.
-    // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+    // c.f. https://drafts.csswg.org/css-cascade/#all-shorthand
     // We skip applyProperty when a given property is unicode-bidi or
     // direction.
     if (!property_class.IsAffectedByAll())

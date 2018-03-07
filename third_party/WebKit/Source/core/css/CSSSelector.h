@@ -347,7 +347,7 @@ class CORE_EXPORT CSSSelector {
   bool IsLastInTagHistory() const { return is_last_in_tag_history_; }
   void SetLastInTagHistory(bool is_last) { is_last_in_tag_history_ = is_last; }
 
-  // http://dev.w3.org/csswg/selectors4/#compound
+  // https://drafts.csswg.org/selectors/#compound
   bool IsCompound() const;
 
   enum LinkMatchMask {

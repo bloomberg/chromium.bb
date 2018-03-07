@@ -143,7 +143,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
 }
 
 unsigned CSSSelector::SpecificityForPage() const {
-  // See http://dev.w3.org/csswg/css3-page/#cascading-and-page-context
+  // See https://drafts.csswg.org/css-page/#cascading-and-page-context
   unsigned s = 0;
 
   for (const CSSSelector* component = this; component;

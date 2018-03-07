@@ -3030,7 +3030,7 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
   if (containing_block->IsFlexibleBox()) {
     // We need to let flexbox handle the margin adjustment - otherwise, flexbox
     // will think we're wider than we actually are and calculate line sizes
-    // wrong. See also http://dev.w3.org/csswg/css-flexbox/#auto-margins
+    // wrong. See also https://drafts.csswg.org/css-flexbox/#auto-margins
     if (margin_start_length.IsAuto())
       margin_start_length.SetValue(0);
     if (margin_end_length.IsAuto())

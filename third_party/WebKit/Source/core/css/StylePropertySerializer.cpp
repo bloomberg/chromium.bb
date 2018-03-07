@@ -135,7 +135,7 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
 
   // The all property is a shorthand that resets all CSS properties except
   // direction and unicode-bidi. It only accepts the CSS-wide keywords.
-  // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+  // c.f. https://drafts.csswg.org/css-cascade/#all-shorthand
   if (!property_class.IsAffectedByAll())
     return longhand_property_used_.test(index);
 

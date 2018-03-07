@@ -90,7 +90,7 @@
     // - affected_by_all
     // The affected_by_all flag indicates whether a change to the CSS property
     // "all" affects this property.
-    // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
+    // c.f. https://drafts.csswg.org/css-cascade/#all-shorthand
     // Descriptors (is_property: false) are never affected by changes to the
     // all property.
     affected_by_all: {

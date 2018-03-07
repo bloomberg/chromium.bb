@@ -40,7 +40,7 @@ inline NinePiece& operator++(NinePiece& piece) {
 // The NinePieceImageGrid class is responsible for computing drawing information
 // for the nine piece image.
 //
-// http://dev.w3.org/csswg/css-backgrounds-3/#border-image-process
+// https://drafts.csswg.org/css-backgrounds/#border-image-process
 //
 // Given an image, a set of slices and a border area:
 //

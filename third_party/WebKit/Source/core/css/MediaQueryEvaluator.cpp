@@ -352,7 +352,7 @@ static bool EvalResolution(const MediaQueryExpValue& value,
       clampTo<float>(value.value * (canonical_factor / dppx_factor));
   if (value.unit == CSSPrimitiveValue::UnitType::kDotsPerCentimeter) {
     // To match DPCM to DPPX values, we limit to 2 decimal points.
-    // The http://dev.w3.org/csswg/css3-values/#absolute-lengths recommends
+    // The https://drafts.csswg.org/css-values/#absolute-lengths recommends
     // "that the pixel unit refer to the whole number of device pixels that best
     // approximates the reference pixel". With that in mind, allowing 2 decimal
     // point precision seems appropriate.

@@ -353,8 +353,8 @@ AffineTransform SVGElement::CalculateTransform(
     //     under a 1.0 zoom)
     //
     // Note: objectBoundingBox is an emptyRect for elements like pattern or
-    // clipPath. See the "Object bounding box units" section of
-    // http://dev.w3.org/csswg/css3-transforms/
+    // clipPath. See
+    // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
     float zoom = style->EffectiveZoom();
     TransformationMatrix transform;
     if (zoom != 1)

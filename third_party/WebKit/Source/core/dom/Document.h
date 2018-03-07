@@ -951,7 +951,7 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLElement* body() const;
 
   // "HTML body element" as defined by CSSOM View spec
-  // (http://dev.w3.org/csswg/cssom-view/#the-html-body-element).
+  // (https://drafts.csswg.org/cssom-view/#the-html-body-element).
   // That is, the first body child of the document element.
   HTMLBodyElement* FirstBodyElement() const;
 

@@ -540,7 +540,7 @@ void InlineFlowBox::PlaceBoxRangeInInlineDirection(
 FontBaseline InlineFlowBox::DominantBaseline() const {
   // Use "central" (Ideographic) baseline if writing-mode is vertical-* and
   // text-orientation is not sideways-*.
-  // http://dev.w3.org/csswg/css-writing-modes-3/#text-baselines
+  // https://drafts.csswg.org/css-writing-modes/#text-baselines
   if (!IsHorizontal() && GetLineLayoutItem()
                              .Style(IsFirstLineStyle())
                              ->GetFontDescription()
