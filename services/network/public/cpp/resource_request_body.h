@@ -46,6 +46,19 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   void AppendBlob(const std::string& uuid);
   void AppendDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
 
+  // |chunked_data_pipe_getter| will provide the upload body for a chunked
+  // upload. Unlike the other methods, which support concatenating data of
+  // various types, when this is called, |chunked_data_pipe_getter| will provide
+  // the entire response body, and other types of data may not added when
+  // sending chunked data.
+  //
+  // It's unclear how widespread support for chunked uploads is, since there are
+  // no web APIs that send uploads with unknown request body sizes, so this
+  // method should only be used when talking to servers that are are known to
+  // support chunked uploads.
+  void SetToChunkedDataPipe(
+      mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter);
+
   const std::vector<DataElement>* elements() const { return &elements_; }
   std::vector<DataElement>* elements_mutable() { return &elements_; }
   void swap_elements(std::vector<DataElement>* elements) {

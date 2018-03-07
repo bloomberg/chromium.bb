@@ -79,7 +79,7 @@ component("cpp_base") {
     "url_request_mojom_traits.h",
   ]
   public_deps = [
-    "//services/network/public/mojom:data_pipe_interface",
+    "//services/network/public/mojom:data_pipe_interfaces",
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
   ]

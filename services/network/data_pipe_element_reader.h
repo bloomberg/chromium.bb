@@ -32,9 +32,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeElementReader
  public:
   // |resource_request_body| is just passed in to keep the object around for the
   // life of the ElementReader.
+  //
+  // TODO(mmenke): This class doesn't handle the case where the DataPipeGetter
+  // pipe is closed. That should be fixed.
   DataPipeElementReader(
       scoped_refptr<ResourceRequestBody> resource_request_body,
-      mojom::DataPipeGetterPtr data_pipe_getter_);
+      mojom::DataPipeGetterPtr data_pipe_getter);
 
   ~DataPipeElementReader() override;
 

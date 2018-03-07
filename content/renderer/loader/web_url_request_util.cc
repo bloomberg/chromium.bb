@@ -424,6 +424,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
       }
       case network::DataElement::TYPE_UNKNOWN:
       case network::DataElement::TYPE_RAW_FILE:
+      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
         NOTREACHED();
         break;
     }

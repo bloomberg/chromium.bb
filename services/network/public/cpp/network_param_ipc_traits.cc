@@ -542,11 +542,19 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       break;
     }
     case network::DataElement::TYPE_DATA_PIPE: {
-      WriteParam(m,
-                 const_cast<network::mojom::DataPipeGetterPtr&>(p.data_pipe())
-                     .PassInterface()
-                     .PassHandle()
-                     .release());
+      WriteParam(m, const_cast<network::DataElement&>(p)
+                        .ReleaseDataPipeGetter()
+                        .PassInterface()
+                        .PassHandle()
+                        .release());
+      break;
+    }
+    case network::DataElement::TYPE_CHUNKED_DATA_PIPE: {
+      WriteParam(m, const_cast<network::DataElement&>(p)
+                        .ReleaseChunkedDataPipeGetter()
+                        .PassInterface()
+                        .PassHandle()
+                        .release());
       break;
     }
     case network::DataElement::TYPE_UNKNOWN: {
@@ -630,6 +638,17 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToDataPipe(std::move(data_pipe_getter));
       return true;
     }
+    case network::DataElement::TYPE_CHUNKED_DATA_PIPE: {
+      network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter;
+      mojo::MessagePipeHandle message_pipe;
+      if (!ReadParam(m, iter, &message_pipe))
+        return false;
+      chunked_data_pipe_getter.Bind(
+          network::mojom::ChunkedDataPipeGetterPtrInfo(
+              mojo::ScopedMessagePipeHandle(message_pipe), 0u));
+      r->SetToChunkedDataPipe(std::move(chunked_data_pipe_getter));
+      return true;
+    }
     case network::DataElement::TYPE_UNKNOWN: {
       NOTREACHED();
       return false;
@@ -666,6 +685,13 @@ bool ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Read(
   std::vector<network::DataElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
+  // A chunked element is only allowed if it's the only one element.
+  if (elements.size() > 1) {
+    for (const auto& element : elements) {
+      if (element.type() == network::DataElement::TYPE_CHUNKED_DATA_PIPE)
+        return false;
+    }
+  }
   int64_t identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;

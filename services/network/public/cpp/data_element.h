@@ -21,13 +21,14 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
 
-// Represents a base Web data element. This could be either one of
-// bytes, file or blob data.
+// Represents part of an upload body. This could be either one of bytes, file or
+// blob data.
 class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
  public:
   static const uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
@@ -37,6 +38,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
     // Only used for Upload with Network Service as of now:
     TYPE_DATA_PIPE,
+    TYPE_CHUNKED_DATA_PIPE,
     TYPE_RAW_FILE,
 
     // Used for Upload when Network Service is disabled:
@@ -151,8 +153,18 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
                       uint64_t offset,
                       uint64_t length);
 
-  // Sets TYPE_DATA_PIPE data.
+  // Sets TYPE_DATA_PIPE data. The data pipe consumer can safely wait for the
+  // callback passed to Read() to be invoked before reading the request body.
   void SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
+
+  // Sets TYPE_CHUNKED_DATA_PIPE data. The data pipe consumer must not wait
+  // for the callback passed to GetSize() to be invoked before reading the
+  // request body, as the length may not be known until the entire body has been
+  // sent. This method triggers a chunked upload, which not all servers may
+  // support, so SetToDataPipe should be used instead, unless talking with a
+  // server known to support chunked uploads.
+  void SetToChunkedDataPipe(
+      mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter);
 
   // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
   // for reading (asynchronous reading on Windows).
@@ -161,16 +173,28 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // Takes ownership of the DataPipeGetter, if this is of TYPE_DATA_PIPE.
   mojom::DataPipeGetterPtr ReleaseDataPipeGetter();
 
+  // Takes ownership of the DataPipeGetter, if this is of
+  // TYPE_CHUNKED_DATA_PIPE.
+  mojom::ChunkedDataPipeGetterPtr ReleaseChunkedDataPipeGetter();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
   friend void PrintTo(const DataElement& x, ::std::ostream* os);
   Type type_;
-  std::vector<char> buf_;  // For TYPE_BYTES.
-  const char* bytes_;      // For TYPE_BYTES.
-  base::FilePath path_;    // For TYPE_FILE and TYPE_RAW_FILE.
-  base::File file_;        // For TYPE_RAW_FILE.
-  std::string blob_uuid_;  // For TYPE_BLOB.
-  mojom::DataPipeGetterPtr data_pipe_getter_;  // For TYPE_DATA_PIPE.
+  // For TYPE_BYTES.
+  std::vector<char> buf_;
+  // For TYPE_BYTES.
+  const char* bytes_;
+  // For TYPE_FILE and TYPE_RAW_FILE.
+  base::FilePath path_;
+  // For TYPE_RAW_FILE.
+  base::File file_;
+  // For TYPE_BLOB.
+  std::string blob_uuid_;
+  // For TYPE_DATA_PIPE.
+  mojom::DataPipeGetterPtr data_pipe_getter_;
+  // For TYPE_CHUNKED_DATA_PIPE.
+  mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

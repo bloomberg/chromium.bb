@@ -8,9 +8,10 @@ module network.mojom;
 // as backed by content like a Blob that can be read multiple times.
 interface DataPipeGetter {
   // Reads all the content, writing into |pipe|. Calls the callback with |size|
-  // once the size of the content is known. If an error occurred before the
-  // size was known, the callback is instead called with the net::Error
-  // |status|.
+  // once the size of the content is known.  The callback must be invoked before
+  // writing to |pipe|, since the size needs to be known to generate the
+  // Content-Length request header. If an error occurred before the size was
+  // known, the callback is instead called with the net::Error |status|.
   Read(handle<data_pipe_producer> pipe) => (int32 status, uint64 size);
 
   // Makes a clone so there can be multiple handles to this interface. This

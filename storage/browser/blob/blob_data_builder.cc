@@ -125,6 +125,7 @@ void BlobDataBuilder::AppendIPCDataElement(
     case network::DataElement::TYPE_UNKNOWN:
     // This type can't be sent by IPC.
     case network::DataElement::TYPE_DATA_PIPE:
+    case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
       NOTREACHED();
       break;
   }

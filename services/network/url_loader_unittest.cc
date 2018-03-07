@@ -48,6 +48,7 @@
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_url_loader_client.h"
+#include "services/network/test_chunked_data_pipe_getter.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1246,6 +1247,38 @@ TEST_F(URLLoaderTest, UploadDoubleRawFile) {
   std::string response_body;
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
   EXPECT_EQ(expected_body + expected_body, response_body);
+}
+
+// Tests a request body with a chunked data pipe element.
+TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
+  const std::string kRequestBody = "Request Body";
+
+  TestChunkedDataPipeGetter data_pipe_getter;
+
+  ResourceRequest request =
+      CreateResourceRequest("POST", test_server()->GetURL("/echo"));
+  request.request_body = base::MakeRefCounted<ResourceRequestBody>();
+  request.request_body->SetToChunkedDataPipe(
+      data_pipe_getter.GetDataPipeGetterPtr());
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoader(context(), nullptr /* network_service_client */,
+                mojo::MakeRequest(&loader), 0, request,
+                false /* report_raw_headers */, client()->CreateInterfacePtr(),
+                TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* process_id */,
+                nullptr /* resource_scheduler_client */,
+                nullptr /* keepalive_statistics_reporter */);
+
+  mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback =
+      data_pipe_getter.WaitForGetSize();
+  mojo::common::BlockingCopyFromString(kRequestBody,
+                                       data_pipe_getter.WaitForStartReading());
+  std::move(get_size_callback).Run(net::OK, kRequestBody.size());
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(kRequestBody, ReadBody());
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
 
 // Tests that SSLInfo is not attached to OnComplete messages when there is no
