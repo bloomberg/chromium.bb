@@ -92,6 +92,7 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
 
   if (pending_successful_present_request_) {
     CHECK(!on_present_result_callback_.is_null());
+    pending_successful_present_request_ = false;
     base::ResetAndReturn(&on_present_result_callback_).Run(true);
   }
   JNIEnv* env = AttachCurrentThread();
@@ -101,6 +102,11 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
 
 void VrShellDelegate::RemoveDelegate() {
   vr_shell_ = nullptr;
+  if (pending_successful_present_request_) {
+    CHECK(!on_present_result_callback_.is_null());
+    pending_successful_present_request_ = false;
+    base::ResetAndReturn(&on_present_result_callback_).Run(false);
+  }
   device::VRDevice* device = GetDevice();
   if (device) {
     device->SetMagicWindowEnabled(true);
@@ -144,7 +150,6 @@ void VrShellDelegate::OnPresentResult(
       std::move(present_options));
 
   std::move(callback).Run(true, vr_shell_->GetVRDisplayFrameTransportOptions());
-  pending_successful_present_request_ = false;
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,

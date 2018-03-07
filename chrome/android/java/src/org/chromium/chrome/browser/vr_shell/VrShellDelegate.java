@@ -917,7 +917,6 @@ public class VrShellDelegate
         boolean donSuceeded = mDonSucceeded;
         mDonSucceeded = false;
         if (!createVrShell()) {
-            maybeSetPresentResult(false, donSuceeded);
             cancelPendingVrEntry();
             mInVr = false;
             mVrDaydreamApi.launchVrHomescreen();
@@ -1414,9 +1413,7 @@ public class VrShellDelegate
         // If we fail to enter VR when we should have entered VR, return to the home screen.
         if (!mInVr && !enterVrAfterDon()) {
             cancelPendingVrEntry();
-            maybeSetPresentResult(false, mDonSucceeded);
             mVrDaydreamApi.launchVrHomescreen();
-            mDonSucceeded = false;
         }
     }
 
@@ -1563,6 +1560,7 @@ public class VrShellDelegate
     private void cancelPendingVrEntry() {
         removeBlackOverlayView(mActivity);
         mDonSucceeded = false;
+        maybeSetPresentResult(false, false);
         if (!mShowingDaydreamDoff) {
             mVrClassesWrapper.setVrModeEnabled(mActivity, false);
             restoreWindowMode();
