@@ -186,6 +186,6 @@ bool ChromeAppListItem::CompareForTest(const ChromeAppListItem* other) const {
 }
 
 std::string ChromeAppListItem::ToDebugString() const {
-  return id().substr(0, 8) + " '" + name() + "'" + " [" +
+  return id().substr(0, 8) + " '" + name() + "' (" + folder_id() + ") [" +
          position().ToDebugString() + "]";
 }

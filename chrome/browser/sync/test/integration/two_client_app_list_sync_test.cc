@@ -464,11 +464,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, FolderAddRemove) {
   const size_t kNumAppsToMove = 3;
   std::string folder_id = "Folder 0";
   // The folder will be created at the end of the list; always move the
-  // first non default item in the list.
+  // non default items in the list.
+  // Note: We don't care about the order of items in Chrome, so when we
+  //       changes a file's folder, its index in the list remains unchanged.
+  //       The |kNumAppsToMove| items to move are
+  //       app_ids[item_index..(item_index+kNumAppsToMove-1)].
   size_t item_index = kNumDefaultApps;
   for (size_t i = 0; i < kNumAppsToMove; ++i) {
     SyncAppListHelper::GetInstance()->MoveAppToFolder(
-        GetProfile(0), app_ids[item_index], folder_id);
+        GetProfile(0), app_ids[item_index + i], folder_id);
   }
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppList());

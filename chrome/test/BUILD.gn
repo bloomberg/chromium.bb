@@ -5167,6 +5167,10 @@ if (!is_android && !is_fuchsia) {
       ]
     }
     if (enable_app_list) {
+      sources += [
+        "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
+        "../browser/ui/app_list/test/fake_app_list_model_updater.h",
+      ]
       deps += [ "//ui/app_list:test_support" ]
     } else {
       sources -= [
