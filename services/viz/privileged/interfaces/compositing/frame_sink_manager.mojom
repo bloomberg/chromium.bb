@@ -23,7 +23,7 @@ import "services/viz/public/interfaces/compositing/video_detector_observer.mojom
 struct RootCompositorFrameSinkParams {
   FrameSinkId frame_sink_id;
   gpu.mojom.SurfaceHandle widget;
-  bool force_software_compositing = false;
+  bool gpu_compositing = true;
   RendererSettings renderer_settings;
 
   associated CompositorFrameSink& compositor_frame_sink;

@@ -54,7 +54,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
-#include "components/viz/host/forwarding_compositing_mode_reporter_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -1180,7 +1179,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   host_frame_sink_manager_.reset();
   frame_sink_manager_impl_.reset();
   compositing_mode_reporter_impl_.reset();
-  forwarding_compositing_mode_reporter_impl_.reset();
 #endif
 
 // The device monitors are using |system_monitor_| as dependency, so delete
@@ -1316,10 +1314,7 @@ void BrowserMainLoop::GetCompositingModeReporter(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    forwarding_compositing_mode_reporter_impl_->BindRequest(std::move(request));
-  else
-    compositing_mode_reporter_impl_->BindRequest(std::move(request));
+  compositing_mode_reporter_impl_->BindRequest(std::move(request));
 #endif
 }
 
@@ -1393,13 +1388,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (browser_is_viz_host) {
     host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-    if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
-      forwarding_compositing_mode_reporter_impl_ =
-          std::make_unique<viz::ForwardingCompositingModeReporterImpl>();
+    compositing_mode_reporter_impl_ =
+        std::make_unique<viz::CompositingModeReporterImpl>();
 
+    if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
       auto transport_factory = std::make_unique<VizProcessTransportFactory>(
           BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner(),
-          forwarding_compositing_mode_reporter_impl_.get());
+          compositing_mode_reporter_impl_.get());
       transport_factory->ConnectHostFrameSinkManager();
       ImageTransportFactory::SetFactory(std::move(transport_factory));
     } else {
@@ -1409,8 +1404,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       surface_utils::ConnectWithLocalFrameSinkManager(
           host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
 
-      compositing_mode_reporter_impl_ =
-          std::make_unique<viz::CompositingModeReporterImpl>();
 
       ImageTransportFactory::SetFactory(
           std::make_unique<GpuProcessTransportFactory>(

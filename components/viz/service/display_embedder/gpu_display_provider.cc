@@ -14,7 +14,6 @@
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
@@ -66,8 +65,7 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    gpu::GpuChannelManager* gpu_channel_manager,
-    CompositingModeReporterImpl* compositing_mode_reporter)
+    gpu::GpuChannelManager* gpu_channel_manager)
     : restart_id_(restart_id),
       gpu_service_(std::move(gpu_service)),
       gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
@@ -75,7 +73,6 @@ GpuDisplayProvider::GpuDisplayProvider(
           std::make_unique<InProcessGpuMemoryBufferManager>(
               gpu_channel_manager)),
       image_factory_(GetImageFactory(gpu_channel_manager)),
-      compositing_mode_reporter_(compositing_mode_reporter),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK_NE(restart_id_, BeginFrameSource::kNotRestartableId);
 }
@@ -85,7 +82,7 @@ GpuDisplayProvider::~GpuDisplayProvider() = default;
 std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
-    bool force_software_compositing,
+    bool gpu_compositing,
     ExternalBeginFrameControllerImpl* external_begin_frame_controller,
     const RendererSettings& renderer_settings,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
@@ -101,27 +98,27 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     display_begin_frame_source = synthetic_begin_frame_source.get();
   }
 
-  // TODO(crbug.com/730660): Fallback to software if gpu doesn't work with
-  // compositing_mode_reporter_->SetUsingSoftwareCompositing(), and once that
-  // is done, always make software-based Displays only.
-  bool gpu_compositing = !force_software_compositing;
-  (void)compositing_mode_reporter_;
-
   std::unique_ptr<OutputSurface> output_surface;
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle), task_runner_);
   } else {
-    auto context_provider = base::MakeRefCounted<InProcessContextProvider>(
-        gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
-        image_factory_, gpu_channel_manager_delegate_,
-        gpu::SharedMemoryLimits(), nullptr /* shared_context */);
+    scoped_refptr<InProcessContextProvider> context_provider;
 
-    // TODO(rjkroege): If there is something better to do than CHECK, add it.
-    // TODO(danakj): Should retry if the result is kTransientFailure.
-    auto result = context_provider->BindToCurrentThread();
-    CHECK_EQ(result, gpu::ContextResult::kSuccess);
+    // Retry creating and binding |context_provider| on transient failures.
+    gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
+    while (context_result != gpu::ContextResult::kSuccess) {
+      context_provider = base::MakeRefCounted<InProcessContextProvider>(
+          gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
+          image_factory_, gpu_channel_manager_delegate_,
+          gpu::SharedMemoryLimits(), nullptr /* shared_context */);
+      context_result = context_provider->BindToCurrentThread();
+
+      // TODO(crbug.com/819474): Don't crash here, instead fallback to software
+      // compositing for fatal failures.
+      CHECK_NE(context_result, gpu::ContextResult::kFatalFailure);
+    }
 
     if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)

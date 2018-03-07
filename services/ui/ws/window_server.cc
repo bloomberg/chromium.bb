@@ -85,7 +85,7 @@ class VizHostProxyImpl : public VizHostProxy {
   void CreateRootCompositorFrameSink(
       viz::mojom::RootCompositorFrameSinkParamsPtr params) override {
     // No software compositing on ChromeOS.
-    params->force_software_compositing = false;
+    params->gpu_compositing = true;
 
     if (manager_)
       manager_->CreateRootCompositorFrameSink(std::move(params));

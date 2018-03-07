@@ -38,7 +38,7 @@ class ContextProviderCommandBuffer;
 }
 
 namespace viz {
-class ForwardingCompositingModeReporterImpl;
+class CompositingModeReporterImpl;
 class RasterContextProvider;
 }
 
@@ -59,7 +59,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   VizProcessTransportFactory(
       gpu::GpuChannelEstablishFactory* gpu_channel_establish_factory,
       scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner,
-      viz::ForwardingCompositingModeReporterImpl* forwarding_mode_reporter);
+      viz::CompositingModeReporterImpl* compositing_mode_reporter);
   ~VizProcessTransportFactory() override;
 
   // Connects HostFrameSinkManager to FrameSinkManagerImpl in viz process.
@@ -157,12 +157,10 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   gpu::GpuChannelEstablishFactory* const gpu_channel_establish_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> const resize_task_runner_;
-  // Acts as a proxy from the mojo connection to the authoritive
-  // |compositing_mode_reporter_|. This will forward the state on to clients of
-  // the browser process (eg the renderers). Since the browser process is not
-  // restartable, it prevents these clients from having to reconnect to their
-  // CompositingModeReporter.
-  viz::ForwardingCompositingModeReporterImpl* const forwarding_mode_reporter_;
+
+  // Controls the compositing mode based on what mode the display compositors
+  // are using.
+  viz::CompositingModeReporterImpl* const compositing_mode_reporter_;
 
   base::flat_map<ui::Compositor*, CompositorData> compositor_data_map_;
   bool is_gpu_compositing_disabled_ = false;
@@ -179,11 +177,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   const viz::RendererSettings renderer_settings_;
-
-  // The class is a CompositingModeWatcher, which is bound to mojo through
-  // this member.
-  mojo::Binding<viz::mojom::CompositingModeWatcher>
-      compositing_mode_watcher_binding_;
 
   base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_;
 

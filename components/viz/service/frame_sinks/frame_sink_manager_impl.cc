@@ -144,9 +144,15 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(
-      params->frame_sink_id, params->widget, params->force_software_compositing,
+      params->frame_sink_id, params->widget, params->gpu_compositing,
       external_begin_frame_controller.get(), params->renderer_settings,
       &begin_frame_source);
+
+  // Creating display failed. Drop the CompositorFrameSink message pipes here
+  // and let host send a new request, potential with a different compositing
+  // mode.
+  if (!display)
+    return;
 
   sink_map_[params->frame_sink_id] =
       std::make_unique<RootCompositorFrameSinkImpl>(

@@ -150,8 +150,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // browser must submit CompositorFrames over IPC.
   void ConnectFrameSinkManager(
       viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtrInfo client,
-      viz::mojom::CompositingModeWatcherPtrInfo mode_watcher);
+      viz::mojom::FrameSinkManagerClientPtrInfo client);
 
   void RequestGPUInfo(RequestGPUInfoCallback request_cb);
   void RequestHDRStatus(RequestHDRStatusCallback request_cb);
