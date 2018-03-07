@@ -438,9 +438,11 @@ const CGFloat kResizeFactor = 4;
     }
   }
 
-  // Changing the model even when the tab is the same at the end of the
-  // animation allows the UI to recover.
-  [model_ setCurrentTab:destinationTab];
+  if (destinationTab != model_.currentTab) {
+    // The old tab is now hidden. The new tab will be inserted once the
+    // animation is complete.
+    model_.currentTab.webState->WasHidden();
+  }
 
   // Make sure the dominant card animates on top.
   [dominantCard.superview bringSubviewToFront:dominantCard];
@@ -453,6 +455,9 @@ const CGFloat kResizeFactor = 4;
         [_rightCard setFrame:rightFrame];
       }
       completion:^(BOOL finished) {
+        // Changing the model even when the tab is the same at the end of the
+        // animation allows the UI to recover.
+        [model_ setCurrentTab:destinationTab];
         [_leftCard setImage:nil];
         [_rightCard setImage:nil];
         [_leftCard setTopToolbarImage:nil isNewTabPage:NO];
