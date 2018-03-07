@@ -225,8 +225,7 @@ cc::LayerSelection ConvertWebSelection(const WebSelection& web_selection) {
   return cc_selection;
 }
 
-gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor,
-                                   const ScreenInfo& screen_info) {
+gfx::Size CalculateDefaultTileSize(const ScreenInfo& screen_info) {
   int default_tile_size = 256;
 #if defined(OS_ANDROID)
   const gfx::Size screen_size = gfx::ScaleToFlooredSize(
@@ -250,7 +249,7 @@ gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor,
     default_tile_size += 32;
 #elif defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // Use 512 for high DPI (dsf=2.0f) devices.
-  if (initial_device_scale_factor >= 2.0f)
+  if (screen_info.device_scale_factor >= 2.0f)
     default_tile_size = 512;
 #endif
 
@@ -310,13 +309,11 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
     cc::LayerTreeHostSingleThreadClient* single_thread_client,
     cc::MutatorHost* mutator_host,
     CompositorDependencies* deps,
-    float device_scale_factor,
     const ScreenInfo& screen_info) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   const bool is_threaded = !!deps->GetCompositorImplThreadTaskRunner();
   cc::LayerTreeSettings settings = GenerateLayerTreeSettings(
-      *cmd, deps, device_scale_factor, client->IsForSubframe(), screen_info,
-      is_threaded);
+      *cmd, deps, client->IsForSubframe(), screen_info, is_threaded);
 
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host;
 
@@ -351,7 +348,6 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
 cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     const base::CommandLine& cmd,
     CompositorDependencies* compositor_deps,
-    float device_scale_factor,
     bool is_for_subframe,
     const ScreenInfo& screen_info,
     bool is_threaded) {
@@ -384,8 +380,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   // TODO(danakj): This should not be a setting O_O; it should change when the
   // device scale factor on LayerTreeHost changes.
-  settings.default_tile_size =
-      CalculateDefaultTileSize(device_scale_factor, screen_info);
+  settings.default_tile_size = CalculateDefaultTileSize(screen_info);
   if (cmd.HasSwitch(switches::kDefaultTileWidth)) {
     int tile_width = 0;
     GetSwitchValueAsInt(cmd, switches::kDefaultTileWidth, 1,

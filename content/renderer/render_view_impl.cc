@@ -1823,7 +1823,7 @@ gfx::Size RenderViewImpl::GetSize() const {
 }
 
 float RenderViewImpl::GetDeviceScaleFactor() const {
-  return device_scale_factor_;
+  return GetWebDeviceScaleFactor();
 }
 
 float RenderViewImpl::GetZoomLevel() const {
@@ -1913,8 +1913,8 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
 
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size, device_scale_factor_),
-        gfx::ScaleToCeiledSize(max_size, device_scale_factor_));
+        gfx::ScaleToCeiledSize(min_size, GetWebDeviceScaleFactor()),
+        gfx::ScaleToCeiledSize(max_size, GetWebDeviceScaleFactor()));
   } else {
     webview()->EnableAutoResizeMode(min_size, max_size);
   }
@@ -1962,8 +1962,8 @@ void RenderViewImpl::OnSetLocalSurfaceIdForAutoResize(
 
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size, device_scale_factor_),
-        gfx::ScaleToCeiledSize(max_size, device_scale_factor_));
+        gfx::ScaleToCeiledSize(min_size, GetWebDeviceScaleFactor()),
+        gfx::ScaleToCeiledSize(max_size, GetWebDeviceScaleFactor()));
   } else {
     webview()->EnableAutoResizeMode(min_size, max_size);
   }
@@ -2293,7 +2293,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
 
   // The touch_rect, target_rects and zoom_rect are in the outer viewport
   // reference frame.
-  float to_pix = IsUseZoomForDSFEnabled() ? 1 : device_scale_factor_;
+  float to_pix = IsUseZoomForDSFEnabled() ? 1 : GetWebDeviceScaleFactor();
   gfx::Rect zoom_rect;
   float new_total_scale =
       DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
@@ -2335,7 +2335,8 @@ bool RenderViewImpl::DidTapMultipleTargets(
         // TODO(trchen): Cleanup the device scale factor mess.
         // device scale will be applied in WebKit
         // --> zoom_rect doesn't include device scale,
-        //     but WebKit will still draw on zoom_rect * device_scale_factor_
+        //     but WebKit will still draw on zoom_rect *
+        //     GetWebDeviceScaleFactor()
         canvas.scale(new_total_scale / to_pix, new_total_scale / to_pix);
         canvas.translate(-zoom_rect.x() * to_pix, -zoom_rect.y() * to_pix);
 

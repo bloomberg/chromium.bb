@@ -449,7 +449,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     params.needs_resize_ack = false;
     params.content_source_id = view()->GetContentSourceId();
     view()->OnResize(params);
-    ASSERT_EQ(dsf, view()->device_scale_factor_);
+    ASSERT_EQ(dsf, view()->GetWebDeviceScaleFactor());
+    ASSERT_EQ(dsf, view()->GetOriginalDeviceScaleFactor());
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr,

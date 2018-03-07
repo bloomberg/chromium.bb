@@ -408,7 +408,11 @@ class CONTENT_EXPORT RenderWidget
     return mouse_lock_dispatcher_.get();
   }
 
-  // When emulated, this returns original device scale factor.
+  // Returns the device scale factor exposed to Blink. In device emulation, this
+  // may not match the compositor device scale factor.
+  float GetWebDeviceScaleFactor() const;
+
+  // When emulated, this returns original (non-emulated) device scale factor.
   float GetOriginalDeviceScaleFactor() const;
 
   // Helper to convert |point| using ConvertWindowToViewport().
@@ -821,10 +825,6 @@ class CONTENT_EXPORT RenderWidget
   // Properties of the screen hosting this RenderWidget instance.
   ScreenInfo screen_info_;
 
-  // The device scale factor. This value is computed from the DPI entries in
-  // |screen_info_| on some platforms, and defaults to 1 on other platforms.
-  float device_scale_factor_;
-
   // True if the IME requests updated composition info.
   bool monitor_composition_info_;
 
@@ -886,9 +886,9 @@ class CONTENT_EXPORT RenderWidget
                     blink::WebPopupType popup_type,
                     int32_t* routing_id);
 
-  void UpdateCompositorSurface(viz::LocalSurfaceId new_local_surface_id,
-                               const gfx::Size& new_physical_backing_size,
-                               float new_device_scale_factor);
+  void UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId new_local_surface_id,
+                                  const gfx::Size& new_physical_backing_size,
+                                  const ScreenInfo& new_screen_info);
 
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will
