@@ -761,6 +761,7 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   output[1] = round_shift(x1, bit);
   output[2] = round_shift(x2, bit);
   output[3] = round_shift(x3, bit);
+  range_check_buf(6, input, output, 4, stage_range[6]);
 }
 
 void av1_iadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
