@@ -3511,8 +3511,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     best_tx_type = mbmi->txk_type[txk_type_idx];
   }
 
-  if (cpi->sf.adaptive_txb_search)
-    if (this_rd > ref_best_rd) return;
+  if (cpi->sf.adaptive_txb_search && this_rd > ref_best_rd) {
+    *is_cost_valid = 0;
+    return;
+  }
 
   int tx_split_prune_flag = 0;
   if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE)

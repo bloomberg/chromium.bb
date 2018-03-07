@@ -295,6 +295,10 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
       plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
+  if (!plane) {
+    assert(tx_size_wide[tx_size] >= tx_size_wide[plane_tx_size] &&
+           tx_size_high[tx_size] >= tx_size_high[plane_tx_size]);
+  }
 
   if (tx_size == plane_tx_size || plane) {
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg,
