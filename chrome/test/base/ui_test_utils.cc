@@ -70,6 +70,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
@@ -401,23 +402,11 @@ Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
 
 namespace {
 
-void GetCookieListCallback(base::WaitableEvent* event,
-                           net::CookieList* cookies,
-                           const net::CookieList& cookie_list) {
+void GetCookieCallback(base::RepeatingClosure callback,
+                       net::CookieList* cookies,
+                       const net::CookieList& cookie_list) {
   *cookies = cookie_list;
-  event->Signal();
-}
-
-void GetCookiesOnIOThread(
-    const GURL& url,
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    base::WaitableEvent* event,
-    net::CookieList* cookie_list) {
-  context_getter->GetURLRequestContext()
-      ->cookie_store()
-      ->GetCookieListWithOptionsAsync(
-          url, net::CookieOptions(),
-          base::BindOnce(&GetCookieListCallback, event, cookie_list));
+  callback.Run();
 }
 
 }  // namespace
@@ -428,19 +417,15 @@ void GetCookies(const GURL& url,
                 std::string* value) {
   *value_size = -1;
   if (url.is_valid() && contents) {
-    scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->GetMainFrame()
-            ->GetProcess()
-            ->GetStoragePartition()
-            ->GetURLRequestContext();
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+    base::RunLoop loop;
+    auto* storage_partition =
+        contents->GetMainFrame()->GetProcess()->GetStoragePartition();
+    net::CookieOptions options;
     net::CookieList cookie_list;
-    CHECK(content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&GetCookiesOnIOThread, url, context_getter, &event,
-                       &cookie_list)));
-    event.Wait();
+    storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+        url, options,
+        base::BindOnce(GetCookieCallback, loop.QuitClosure(), &cookie_list));
+    loop.Run();
 
     *value = net::CanonicalCookie::BuildCookieLine(cookie_list);
     *value_size = static_cast<int>(value->size());
