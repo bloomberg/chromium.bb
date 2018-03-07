@@ -18,5 +18,10 @@ void FakeAssistantManagerServiceImpl::SetAccessToken(
 
 void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
+void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
+
+void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(
+    mojom::AssistantEventSubscriberPtr subscriber) {}
+
 }  // namespace assistant
 }  // namespace chromeos

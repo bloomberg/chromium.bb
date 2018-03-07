@@ -20,7 +20,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl()
           assistant_client::AssistantManager::Create(&platform_api_,
                                                      kDefaultConfigStr)),
       assistant_manager_internal_(
-          UnwrapAssistantManagerInternal(assistant_manager_.get())) {}
+          UnwrapAssistantManagerInternal(assistant_manager_.get())) {
+  display_connection_.SetAssistantEventObserver(this);
+}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -50,6 +52,23 @@ void AssistantManagerServiceImpl::SetAccessToken(
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
   assistant_manager_->EnableListening(enable);
+}
+
+void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
+  assistant_manager_internal_->SendTextQuery(query);
+}
+
+void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
+    mojom::AssistantEventSubscriberPtr subscriber) {
+  subscribers_.AddPtr(std::move(subscriber));
+}
+
+void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
+  subscribers_.ForAllPtrs([&html](auto* ptr) { ptr->OnHtmlResponse(html); });
+}
+
+void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
+  subscribers_.ForAllPtrs([&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
 }  // namespace assistant

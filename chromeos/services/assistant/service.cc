@@ -38,8 +38,7 @@ constexpr char kScopeAssistant[] =
 
 Service::Service()
     : session_observer_binding_(this),
-      token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
-      weak_factory_(this) {}
+      token_refresh_timer_(std::make_unique<base::OneShotTimer>()) {}
 
 Service::~Service() = default;
 
@@ -66,6 +65,13 @@ void Service::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void Service::BindAssistantConnection(mojom::AssistantRequest request) {
+  // Assistant interface is supposed to be used when UI is actually in
+  // use, which should be way later than assistant is created.
+  DCHECK(assistant_manager_service_);
+  bindings_.AddBinding(assistant_manager_service_.get(), std::move(request));
 }
 
 void Service::OnSessionActivated(bool activated) {
@@ -120,6 +126,8 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
 #endif
     assistant_manager_service_->Start(token.value());
     AddAshSessionObserver();
+    registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
+        &Service::BindAssistantConnection, base::Unretained(this)));
   } else {
     assistant_manager_service_->SetAccessToken(token.value());
   }

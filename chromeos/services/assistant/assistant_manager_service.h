@@ -8,13 +8,15 @@
 #include <memory>
 #include <string>
 
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+
 namespace chromeos {
 namespace assistant {
 
 // Interface class that defines all assistant functionalities.
-class AssistantManagerService {
+class AssistantManagerService : public mojom::Assistant {
  public:
-  virtual ~AssistantManagerService() = default;
+  ~AssistantManagerService() override = default;
 
   // Start the assistant in the background with |token|.
   virtual void Start(const std::string& access_token) = 0;

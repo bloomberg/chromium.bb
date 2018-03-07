@@ -13,8 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -51,6 +54,7 @@ class Service : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindAssistantConnection(mojom::AssistantRequest request);
 
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
@@ -75,14 +79,14 @@ class Service : public service_manager::Service,
 
   identity::mojom::IdentityManagerPtr identity_manager_;
 
+  mojo::BindingSet<mojom::Assistant> bindings_;
+
   mojo::Binding<ash::mojom::SessionActivationObserver>
       session_observer_binding_;
 
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
 
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
-
-  base::WeakPtrFactory<Service> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
