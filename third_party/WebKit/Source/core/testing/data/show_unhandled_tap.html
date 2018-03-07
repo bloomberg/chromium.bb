@@ -24,6 +24,8 @@
 <div id="mutate">This block gets mutated to change the DOM.</div>
 <div id="style_active">This block gets red if active</div>
 <input id="checkbox" type="checkbox"><span>indeterminate checkbox</span>
+<input id="editable" type="text" value="editable">
+<div id="focusable" tabindex="1">focusable</div>
 </div>
 
 <p style="position: absolute; left: 8px; top: 400px; width: 400px; height: 30px;"><span id="bottom">Bottom.</span></p>
@@ -55,7 +57,6 @@ function handle(event) {
 var t = document.getElementById('target');
 t.addEventListener('mousedown', handle);
 t.addEventListener('mouseup', handle);
-t.addEventListener('mousemove', handle);
 t.addEventListener('click', handle);
 </script>
 </body>
