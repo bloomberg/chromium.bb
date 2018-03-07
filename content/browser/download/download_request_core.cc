@@ -22,6 +22,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/download_utils.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
@@ -246,10 +247,10 @@ bool DownloadRequestCore::OnResponseStarted(
   download_start_time_ = base::TimeTicks::Now();
 
   download::DownloadInterruptReason result =
-      request()->response_headers()
-          ? HandleSuccessfulServerResponse(*request()->response_headers(),
-                                           save_info_.get(), fetch_error_body_)
-          : download::DOWNLOAD_INTERRUPT_REASON_NONE;
+      request()->response_headers() ? download::HandleSuccessfulServerResponse(
+                                          *request()->response_headers(),
+                                          save_info_.get(), fetch_error_body_)
+                                    : download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (request()->response_headers()) {
     download::RecordDownloadHttpResponseCode(
@@ -287,7 +288,7 @@ bool DownloadRequestCore::OnResponseStarted(
 
   // Get the last modified time and etag.
   const net::HttpResponseHeaders* headers = request()->response_headers();
-  HandleResponseHeaders(headers, create_info.get());
+  download::HandleResponseHeaders(headers, create_info.get());
 
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).
@@ -399,9 +400,10 @@ void DownloadRequestCore::OnResponseCompleted(
     if (error_code == net::OK)
       error_code = net::ERR_FAILED;
   }
-  download::DownloadInterruptReason reason = HandleRequestCompletionStatus(
-      error_code, has_strong_validators, request()->ssl_info().cert_status,
-      abort_reason_);
+  download::DownloadInterruptReason reason =
+      download::HandleRequestCompletionStatus(error_code, has_strong_validators,
+                                              request()->ssl_info().cert_status,
+                                              abort_reason_);
 
   std::string accept_ranges;
   if (request()->response_headers()) {
