@@ -29,10 +29,10 @@ class CHROMEOS_EXPORT FakeModemMessagingClient : public ModemMessagingClient {
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
               const dbus::ObjectPath& sms_path,
-              const DeleteCallback& callback) override;
+              VoidDBusMethodCallback callback) override;
   void List(const std::string& service_name,
             const dbus::ObjectPath& object_path,
-            const ListCallback& callback) override;
+            ListCallback callback) override;
 
  private:
   SmsReceivedHandler sms_received_handler_;

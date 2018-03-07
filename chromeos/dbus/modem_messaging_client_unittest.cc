@@ -185,13 +185,15 @@ TEST_F(ModemMessagingClientTest, Delete) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   response_ = response.get();
   // Call Delete.
-  bool called = false;
+  bool success = false;
   client_->Delete(kServiceName, dbus::ObjectPath(kObjectPath), kSmsPath,
-                  base::Bind([](bool* called) { *called = true; }, &called));
+                  base::BindOnce([](bool* success_out,
+                                    bool success) { *success_out = true; },
+                                 &success));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
+  EXPECT_TRUE(success);
 }
 
 TEST_F(ModemMessagingClientTest, List) {
@@ -214,18 +216,14 @@ TEST_F(ModemMessagingClientTest, List) {
       kServiceName, dbus::ObjectPath(kObjectPath),
       base::Bind(
           [](base::Optional<std::vector<dbus::ObjectPath>>* result_out,
-             const std::vector<dbus::ObjectPath>& result) {
-            result_out->emplace(result);
+             base::Optional<std::vector<dbus::ObjectPath>> result) {
+            *result_out = std::move(result);
           },
           &result));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
-
-  // TODO(crbug.com/784732): We should be able to skip explicit has_value()
-  // check.
-  ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(kExpectedResult, result.value());
+  EXPECT_EQ(kExpectedResult, result);
 }
 
 }  // namespace chromeos
