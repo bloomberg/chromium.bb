@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.view.MotionEvent;
 import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -31,7 +32,8 @@ public class AndroidUiGestureTarget {
 
     @CalledByNative
     private void setPointer(int x, int y) {
-        mMotionEventSynthesizer.setPointer(0 /* index */, x, y, 0 /* id */);
+        mMotionEventSynthesizer.setPointer(
+                0 /* index */, x, y, 0 /* id */, MotionEvent.TOOL_TYPE_STYLUS);
     }
 
     @CalledByNative
