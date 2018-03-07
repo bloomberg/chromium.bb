@@ -12,6 +12,7 @@
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/browser/permission_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -53,6 +54,17 @@ class TestPermissionManager : public content::PermissionManager {
     last_embedding_origin_ = embedding_origin;
 
     return permission_status_;
+  }
+
+  blink::mojom::PermissionStatus GetPermissionStatusForFrame(
+      content::PermissionType permission,
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin) override {
+    return GetPermissionStatus(
+        permission, requesting_origin,
+        content::WebContents::FromRenderFrameHost(render_frame_host)
+            ->GetLastCommittedURL()
+            .GetOrigin());
   }
 
   int RequestPermission(

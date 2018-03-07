@@ -432,6 +432,17 @@ PermissionStatus AwPermissionManager::GetPermissionStatus(
   return PermissionStatus::DENIED;
 }
 
+PermissionStatus AwPermissionManager::GetPermissionStatusForFrame(
+    PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin) {
+  return GetPermissionStatus(
+      permission, requesting_origin,
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL()
+          .GetOrigin());
+}
+
 int AwPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,

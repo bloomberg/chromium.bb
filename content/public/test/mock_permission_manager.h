@@ -27,6 +27,11 @@ class MockPermissionManager : public PermissionManager {
                blink::mojom::PermissionStatus(PermissionType permission,
                                               const GURL& requesting_origin,
                                               const GURL& embedding_origin));
+  MOCK_METHOD3(GetPermissionStatusForFrame,
+               blink::mojom::PermissionStatus(
+                   PermissionType permission,
+                   content::RenderFrameHost* render_frame_host,
+                   const GURL& requesting_origin));
   int RequestPermission(
       PermissionType permission,
       RenderFrameHost* render_frame_host,

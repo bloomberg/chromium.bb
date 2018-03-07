@@ -270,6 +270,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kUsb,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {mojom::FeaturePolicyFeature::kAccessibilityEvents,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
                            {mojom::FeaturePolicyFeature::kWebVr,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {mojom::FeaturePolicyFeature::kAccelerometer,

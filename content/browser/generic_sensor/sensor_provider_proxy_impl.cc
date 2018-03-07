@@ -66,17 +66,11 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
 }
 
 bool SensorProviderProxyImpl::CheckPermission() const {
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host_);
-  if (!web_contents)
-    return false;
-
-  const GURL& embedding_origin = web_contents->GetLastCommittedURL();
   const GURL& requesting_origin = render_frame_host_->GetLastCommittedURL();
 
   blink::mojom::PermissionStatus permission_status =
-      permission_manager_->GetPermissionStatus(
-          PermissionType::SENSORS, requesting_origin, embedding_origin);
+      permission_manager_->GetPermissionStatusForFrame(
+          PermissionType::SENSORS, render_frame_host_, requesting_origin);
   return permission_status == blink::mojom::PermissionStatus::GRANTED;
 }
 
