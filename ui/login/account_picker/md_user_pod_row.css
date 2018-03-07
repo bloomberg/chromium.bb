@@ -33,11 +33,25 @@ pin-keyboard {
 }
 
 .pod .pin-container {
-  left: 36px;
   position: absolute;
-  top: 300px;
   width: 234px;
   z-index: 3;
+}
+
+.pod .pin-container.pin-enabled {
+  left: 36px;
+  opacity: 1;
+  top: 300px;
+  transition: opacity 200ms ease-in-out 180ms;
+  visibility: visible;
+}
+
+.pod .pin-container.pin-disabled {
+  opacity: 0; /* Opacity is set to 1 after the pin element is loaded. */
+  transition: none;
+  visibility: hidden; /* Needed because pin-keyboard's offsetHeight is
+                         checked to determine if loaded. */
+  z-index: -1;
 }
 
 .pod.faded {
