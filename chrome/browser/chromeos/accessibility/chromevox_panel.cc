@@ -4,11 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
 
-#include "ash/public/cpp/accessibility_types.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -27,7 +24,6 @@
 
 namespace {
 
-const int kPanelHeight = 35;
 const char kChromeVoxPanelRelativeUrl[] = "/cvox2/background/panel.html";
 const char kChromeVoxPanelBlockedUserSessionQuery[] =
     "?blockedUserSession=true";
@@ -75,7 +71,6 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
                                bool for_blocked_user_session)
     : widget_(nullptr),
       web_view_(nullptr),
-      panel_fullscreen_(false),
       for_blocked_user_session_(for_blocked_user_session) {
   std::string url("chrome-extension://");
   url += extension_misc::kChromeVoxExtensionId;
@@ -103,7 +98,7 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   params.parent = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_ChromeVoxContainer);
+      root_window, ash::kShellWindowId_AccessibilityPanelContainer);
   params.delegate = this;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.bounds = gfx::Rect(0, 0, root_window->bounds().width(),
@@ -112,15 +107,9 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
   widget_->Init(params);
   wm::SetShadowElevation(widget_->GetNativeWindow(),
                          wm::kShadowElevationInactiveWindow);
-
-  display::Screen::GetScreen()->AddObserver(this);
-  ash::Shell::Get()->AddShellObserver(this);
 }
 
-ChromeVoxPanel::~ChromeVoxPanel() {
-  ash::Shell::Get()->RemoveShellObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
-}
+ChromeVoxPanel::~ChromeVoxPanel() = default;
 
 aura::Window* ChromeVoxPanel::GetRootWindow() {
   return GetWidget()->GetNativeWindow()->GetRootWindow();
@@ -131,14 +120,6 @@ void ChromeVoxPanel::Close() {
   // WebContentsImpl accesses a deleted RenderFrameHost. It's not clear if it's
   // legal to close a WebContents during DidFinishNavigation.
   widget_->Close();
-}
-
-void ChromeVoxPanel::UpdatePanelHeight() {
-  SendPanelHeightToAsh(kPanelHeight);
-}
-
-void ChromeVoxPanel::ResetPanelHeight() {
-  SendPanelHeightToAsh(0);
 }
 
 const views::Widget* ChromeVoxPanel::GetWidget() const {
@@ -157,32 +138,25 @@ views::View* ChromeVoxPanel::GetContentsView() {
   return web_view_;
 }
 
-void ChromeVoxPanel::OnDisplayMetricsChanged(const display::Display& display,
-                                             uint32_t changed_metrics) {
-  UpdateWidgetBounds();
-}
-
-void ChromeVoxPanel::OnFullscreenStateChanged(bool is_fullscreen,
-                                              aura::Window* root_window) {
-  UpdateWidgetBounds();
-}
-
 void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
   widget_->Show();
-  UpdatePanelHeight();
 }
 
 void ChromeVoxPanel::EnterFullscreen() {
   Focus();
-  panel_fullscreen_ = true;
-  UpdateWidgetBounds();
+  // TODO(jamescook): Convert to mojo.
+  ash::Shell::Get()
+      ->accessibility_controller()
+      ->SetAccessibilityPanelFullscreen(true);
 }
 
 void ChromeVoxPanel::ExitFullscreen() {
   widget_->Deactivate();
   widget_->widget_delegate()->set_can_activate(false);
-  panel_fullscreen_ = false;
-  UpdateWidgetBounds();
+  // TODO(jamescook): Convert to mojo.
+  ash::Shell::Get()
+      ->accessibility_controller()
+      ->SetAccessibilityPanelFullscreen(false);
 }
 
 void ChromeVoxPanel::DisableSpokenFeedback() {
@@ -196,36 +170,3 @@ void ChromeVoxPanel::Focus() {
   web_view_->RequestFocus();
 }
 
-void ChromeVoxPanel::UpdateWidgetBounds() {
-  gfx::Rect bounds(GetRootWindow()->bounds().size());
-  if (!panel_fullscreen_)
-    bounds.set_height(kPanelHeight);
-
-  // If we're in full-screen mode, give the panel a height of 0 unless
-  // it's active.
-  if (ash::RootWindowController::ForWindow(GetRootWindow())
-          ->GetWindowForFullscreenMode() &&
-      !widget_->IsActive()) {
-    bounds.set_height(0);
-  }
-
-  // Make sure the ChromeVox panel is always below the Docked Magnifier viewport
-  // so it shows up and gets magnified.
-  const int docked_magnifier_height =
-      ash::Shelf::ForWindow(GetRootWindow())->GetDockedMagnifierHeight();
-  bounds.Offset(0, docked_magnifier_height);
-
-  widget_->SetBounds(bounds);
-}
-
-void ChromeVoxPanel::SendPanelHeightToAsh(int panel_height) {
-  ash::Shelf* shelf = ash::Shelf::ForWindow(GetRootWindow());
-  ash::ShelfLayoutManager* shelf_layout_manager =
-      shelf ? shelf->shelf_layout_manager() : nullptr;
-  if (shelf_layout_manager)
-    shelf_layout_manager->SetChromeVoxPanelHeight(panel_height);
-  // NOTE: Setting the panel height causes a display work area change,
-  // which causes a display::DisplayManager::NotifyMetricsChanged, which calls
-  // OnDisplayMetricsChanged which calls UpdateWidgetBounds. This can result
-  // in multiple bounds updates when the window is opened and closed.
-}

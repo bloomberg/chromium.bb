@@ -13,7 +13,8 @@ namespace ash {
 // containers appearing later in the list.
 const int32_t kActivatableShellWindowIds[] = {
     kShellWindowId_OverlayContainer, kShellWindowId_LockSystemModalContainer,
-    kShellWindowId_ChromeVoxContainer, kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_AccessibilityPanelContainer,
+    kShellWindowId_SettingBubbleContainer,
     kShellWindowId_LockActionHandlerContainer,
     kShellWindowId_LockScreenContainer, kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer, kShellWindowId_AppListContainer,

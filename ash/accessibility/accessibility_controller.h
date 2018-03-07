@@ -124,6 +124,10 @@ class ASH_EXPORT AccessibilityController
   // countdown.
   void PlaySpokenFeedbackToggleCountdown(int tick_count);
 
+  // Sets whether the accessibility panel is filling the entire screen.
+  // TODO(jamescook): Convert to mojo interface.
+  void SetAccessibilityPanelFullscreen(bool fullscreen);
+
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;

@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_highlight_controller.h"
+#include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
@@ -31,6 +33,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -312,6 +315,19 @@ void AccessibilityController::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
   if (client_)
     client_->PlaySpokenFeedbackToggleCountdown(tick_count);
+}
+
+void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
+  // The accessibility panel is only shown on the primary display.
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  aura::Window* container =
+      Shell::GetContainer(root, kShellWindowId_AccessibilityPanelContainer);
+  // TODO(jamescook): Avoid this cast by moving ash::AccessibilityObserver
+  // ownership to this class and notifying it on ChromeVox fullscreen updates.
+  AccessibilityPanelLayoutManager* layout =
+      static_cast<AccessibilityPanelLayoutManager*>(
+          container->layout_manager());
+  layout->SetPanelFullscreen(fullscreen);
 }
 
 void AccessibilityController::SetClient(
