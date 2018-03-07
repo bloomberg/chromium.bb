@@ -30,6 +30,6 @@ interface HTMLFrameElement : HTMLElement {
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString marginHeight;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString marginWidth;
 };

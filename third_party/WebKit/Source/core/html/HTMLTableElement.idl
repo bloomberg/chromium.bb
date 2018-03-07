@@ -47,7 +47,7 @@ interface HTMLTableElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString summary;
     [CEReactions, Reflect] attribute DOMString width;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString cellPadding;
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString cellSpacing;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString bgColor;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString cellPadding;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString cellSpacing;
 };

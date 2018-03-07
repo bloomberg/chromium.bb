@@ -51,7 +51,7 @@
     [CEReactions, Reflect] attribute unsigned long vspace;
     [CEReactions, Reflect, URL] attribute DOMString longDesc;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString border;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString border;
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-htmlimageelement-interface
