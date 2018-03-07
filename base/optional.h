@@ -393,6 +393,17 @@ using RemoveCvRefT = std::remove_cv_t<std::remove_reference_t<T>>;
 
 }  // namespace internal
 
+// On Windows, by default, empty-base class optimization does not work,
+// which means even if the base class is empty struct, it still consumes one
+// byte for its body. __declspec(empty_bases) enables the optimization.
+// cf)
+// https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
+#ifdef OS_WIN
+#define OPTIONAL_DECLSPEC_EMPTY_BASES __declspec(empty_bases)
+#else
+#define OPTIONAL_DECLSPEC_EMPTY_BASES
+#endif
+
 // base::Optional is a Chromium version of the C++17 optional class:
 // std::optional documentation:
 // http://en.cppreference.com/w/cpp/utility/optional
@@ -413,7 +424,7 @@ using RemoveCvRefT = std::remove_cv_t<std::remove_reference_t<T>>;
 // both clang and gcc has same limitation. MSVC SFINAE looks to have different
 // behavior, but anyway it reports an error, too.
 template <typename T>
-class Optional
+class OPTIONAL_DECLSPEC_EMPTY_BASES Optional
     : public internal::OptionalBase<T>,
       public internal::CopyConstructible<std::is_copy_constructible<T>::value>,
       public internal::MoveConstructible<std::is_move_constructible<T>::value>,
@@ -422,6 +433,7 @@ class Optional
       public internal::MoveAssignable<std::is_move_constructible<T>::value &&
                                       std::is_move_assignable<T>::value> {
  public:
+#undef OPTIONAL_DECLSPEC_EMPTY_BASES
   using value_type = T;
 
   // Defer default/copy/move constructor implementation to OptionalBase.
