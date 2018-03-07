@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://drafts.fxtf.org/filters/#InterfaceSVGFEFuncBElement
+// https://drafts.fxtf.org/filter-effects/#InterfaceSVGFEFuncBElement
 
 interface SVGFEFuncBElement : SVGComponentTransferFunctionElement {
 };
