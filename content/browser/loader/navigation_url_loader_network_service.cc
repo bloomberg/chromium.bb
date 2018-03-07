@@ -250,6 +250,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kInclude;
   new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  new_request->fetch_request_context_type =
+      request_info->begin_params->request_context_type;
   return new_request;
 }
 
