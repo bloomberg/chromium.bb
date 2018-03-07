@@ -80,7 +80,6 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   void DidCreateDocumentElement() override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidFinishDocumentLoad() override;
-  void DidFinishLoad() override;
   void FrameDetached() override;
   void OnDestruct() override;
   void OnStop() override;
@@ -180,35 +179,25 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
           base::Bind(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
                      weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_END));
 
-  // We try to run idle in two places: here and DidFinishLoad.
-  // DidFinishDocumentLoad() corresponds to completing the document's load,
-  // whereas DidFinishLoad corresponds to completing the document and all
-  // subresources' load. We don't want to hold up script injection for a
-  // particularly slow subresource, so we set a delayed task from here - but if
-  // we finish everything before that point (i.e., DidFinishLoad() is
-  // triggered), then there's no reason to keep waiting.
+  // We try to run idle in two places: a delayed task here and in response to
+  // ContentRendererClient::RunScriptsAtDocumentIdle(). DidFinishDocumentLoad()
+  // corresponds to completing the document's load, whereas
+  // RunScriptsAtDocumentIdle() corresponds to completing the document and all
+  // subresources' load (but before the window.onload event). We don't want to
+  // hold up script injection for a particularly slow subresource, so we set a
+  // delayed task from here - but if we finish everything before that point
+  // (i.e., RunScriptsAtDocumentIdle() is triggered), then there's no reason to
+  // keep waiting.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kScriptIdleTimeoutInMs));
 
-  if (base::FeatureList::IsEnabled(features::kYieldBetweenContentScriptRuns)) {
-    ExtensionFrameHelper::Get(render_frame())
-        ->ScheduleAtDocumentIdle(
-            base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
-                       weak_factory_.GetWeakPtr()));
-  }
-}
-
-void ScriptInjectionManager::RFOHelper::DidFinishLoad() {
-  DCHECK(content::RenderThread::Get());
-  if (!base::FeatureList::IsEnabled(features::kYieldBetweenContentScriptRuns)) {
-    // Ensure that we don't block any UI progress by running scripts.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
-                              weak_factory_.GetWeakPtr()));
-  }
+  ExtensionFrameHelper::Get(render_frame())
+      ->ScheduleAtDocumentIdle(
+          base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ScriptInjectionManager::RFOHelper::FrameDetached() {
@@ -415,9 +404,8 @@ void ScriptInjectionManager::InjectScripts(
   active_injection_frames_.insert(frame);
 
   ScriptsRunInfo scripts_run_info(frame, run_location);
-  scoped_refptr<AsyncScriptsRunInfo> async_run_info;
-  if (base::FeatureList::IsEnabled(features::kYieldBetweenContentScriptRuns))
-    async_run_info = base::MakeRefCounted<AsyncScriptsRunInfo>(run_location);
+  scoped_refptr<AsyncScriptsRunInfo> async_run_info =
+      base::MakeRefCounted<AsyncScriptsRunInfo>(run_location);
 
   for (auto iter = frame_injections.begin(); iter != frame_injections.end();) {
     // It's possible for the frame to be invalidated in the course of injection
