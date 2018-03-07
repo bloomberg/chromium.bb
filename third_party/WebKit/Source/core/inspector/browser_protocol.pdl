@@ -3990,6 +3990,8 @@ domain Network
       optional Page.ResourceType type
       # Frame identifier.
       optional Page.FrameId frameId
+      # Whether the request is initiated by a user gesture. Defaults to false.
+      optional boolean hasUserGesture
 
   # Fired when resource loading priority is changed
   experimental event resourceChangedPriority

@@ -1264,7 +1264,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
       id, id, StripFragment(common_params.url), std::move(request),
       current_ticks, current_wall_time, std::move(initiator),
       std::move(redirect_response),
-      std::string(Page::ResourceTypeEnum::Document), std::move(frame_token));
+      std::string(Page::ResourceTypeEnum::Document), std::move(frame_token),
+      common_params.has_user_gesture);
 }
 
 void NetworkHandler::RequestSent(const std::string& request_id,
@@ -1290,7 +1291,8 @@ void NetworkHandler::RequestSent(const std::string& request_id,
       base::Time::Now().ToDoubleT(),
       Network::Initiator::Create().SetType(initiator_type).Build(),
       std::unique_ptr<Network::Response>(),
-      std::string(Page::ResourceTypeEnum::Other));
+      std::string(Page::ResourceTypeEnum::Other),
+      Maybe<std::string>() /* frame_id */, request.has_user_gesture);
 }
 
 void NetworkHandler::ResponseReceived(const std::string& request_id,
@@ -1369,7 +1371,9 @@ void NetworkHandler::NavigationFailed(NavigationRequest* navigation_request) {
           .SetType(Network::Initiator::TypeEnum::Parser)
           .Build(),
       std::unique_ptr<Network::Response>(),
-      std::string(Page::ResourceTypeEnum::Document));
+      std::string(Page::ResourceTypeEnum::Document),
+      Maybe<std::string>() /* frame_id */,
+      navigation_request->common_params().has_user_gesture);
 
   frontend_->LoadingFailed(
       request_id,

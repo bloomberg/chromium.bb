@@ -793,7 +793,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       request_id, loader_id, documentURL, std::move(request_info),
       CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
-      std::move(maybe_frame_id));
+      std::move(maybe_frame_id), request.HasUserGesture());
   if (pending_xhr_replay_data_ && !pending_xhr_replay_data_->Async())
     GetFrontend()->flush();
 }
