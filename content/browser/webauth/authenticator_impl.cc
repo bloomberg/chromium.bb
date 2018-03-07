@@ -220,7 +220,8 @@ CreateMakeCredentialResponse(const std::string& client_data_json,
 
 webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     const std::string& client_data_json,
-    device::SignResponseData response_data) {
+    device::SignResponseData response_data,
+    bool echo_appid_extension) {
   auto response = webauth::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = webauth::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -231,6 +232,7 @@ webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   response->authenticator_data = response_data.GetAuthenticatorDataBytes();
   response->signature = response_data.signature();
   response->user_handle.emplace();
+  response->echo_appid_extension = echo_appid_extension;
   return response;
 }
 
@@ -456,6 +458,8 @@ void AuthenticatorImpl::GetAssertion(
     }
 
     alternative_application_parameter = std::move(appid_hash);
+    // TODO(agl): needs a test once a suitable, mock U2F device exists.
+    echo_appid_extension_ = true;
   }
 
   DCHECK(get_assertion_response_callback_.is_null());
@@ -581,7 +585,8 @@ void AuthenticatorImpl::OnSignResponse(
           std::move(get_assertion_response_callback_),
           webauth::mojom::AuthenticatorStatus::SUCCESS,
           CreateGetAssertionResponse(std::move(client_data_json_),
-                                     std::move(*response_data)));
+                                     std::move(*response_data),
+                                     echo_appid_extension_));
       return;
   }
   NOTREACHED();
@@ -625,6 +630,7 @@ void AuthenticatorImpl::Cleanup() {
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();
+  echo_appid_extension_ = false;
 }
 
 }  // namespace content

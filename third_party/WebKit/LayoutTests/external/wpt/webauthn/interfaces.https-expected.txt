@@ -10,7 +10,7 @@ PASS PublicKeyCredential interface: attribute rawId
 PASS Unscopable handled correctly for rawId property on PublicKeyCredential
 PASS PublicKeyCredential interface: attribute response
 PASS Unscopable handled correctly for response property on PublicKeyCredential
-FAIL PublicKeyCredential interface: operation getClientExtensionResults() assert_own_property: interface prototype object missing non-static operation expected property "getClientExtensionResults" missing
+PASS PublicKeyCredential interface: operation getClientExtensionResults()
 PASS Unscopable handled correctly for getClientExtensionResults() on PublicKeyCredential
 PASS PublicKeyCredential interface: operation isUserVerifyingPlatformAuthenticatorAvailable()
 PASS Unscopable handled correctly for isUserVerifyingPlatformAuthenticatorAvailable() on PublicKeyCredential

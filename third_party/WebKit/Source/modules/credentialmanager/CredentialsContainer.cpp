@@ -323,7 +323,8 @@ void OnMakePublicKeyCredentialComplete(
         AuthenticatorAttestationResponse::Create(client_data_buffer,
                                                  attestation_buffer);
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response));
+                                                  authenticator_response,
+                                                  {} /* extensions_outputs */));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -360,8 +361,11 @@ void OnGetAssertionComplete(
         AuthenticatorAssertionResponse::Create(client_data_buffer,
                                                authenticator_buffer,
                                                signature_buffer, user_handle);
+    AuthenticationExtensionsClientOutputs extension_outputs;
+    extension_outputs.setAppid(credential->echo_appid_extension);
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response));
+                                                  authenticator_response,
+                                                  extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
