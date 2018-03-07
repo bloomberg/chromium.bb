@@ -70,6 +70,7 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
   MOCK_METHOD1(
       GetMediaSinkServiceStatusInternal,
       void(mojom::MediaRouter::GetMediaSinkServiceStatusCallback& callback));
+  MOCK_METHOD0(GetMediaSinkServiceStatus, std::string());
 };
 
 }  // namespace media_router

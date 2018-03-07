@@ -185,4 +185,9 @@ void MediaRouterBase::UnregisterRemotingSource(int32_t tab_id) {
   remoting_sources_.erase(it);
 }
 
+base::Value MediaRouterBase::GetState() const {
+  NOTREACHED() << "Should not invoke MediaRouterBase::GetState()";
+  return base::Value(base::Value::Type::DICTIONARY);
+}
+
 }  // namespace media_router

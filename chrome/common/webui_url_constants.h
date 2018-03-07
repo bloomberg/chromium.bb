@@ -98,6 +98,8 @@ extern const char kChromeUIMdUserManagerUrl[];
 extern const char kChromeUIMediaEngagementHost[];
 extern const char kChromeUIMediaRouterHost[];
 extern const char kChromeUIMediaRouterURL[];
+extern const char kChromeUIMediaRouterInternalsHost[];
+extern const char kChromeUIMediaRouterInternalsURL[];
 extern const char kChromeUIMemoryInternalsHost[];
 extern const char kChromeUINTPTilesInternalsHost[];
 extern const char kChromeUINaClHost[];

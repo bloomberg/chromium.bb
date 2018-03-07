@@ -8,7 +8,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/values.h"
 
 namespace media_router {
 
@@ -141,14 +140,18 @@ void MediaSinkServiceStatus::UpdateAvailableSinks(
   available_sinks_.Put(key, available_sinks);
 }
 
-std::string MediaSinkServiceStatus::GetStatusAsJSONString() const {
-  base::DictionaryValue status_dict;
+base::Value MediaSinkServiceStatus::GetStatusAsValue() const {
+  base::Value status_dict(base::Value::Type::DICTIONARY);
   status_dict.SetKey("discovered_sinks",
                      ConvertDiscoveredSinksToValues(discovered_sinks_));
   status_dict.SetKey("available_sinks",
                      ConvertAvailableSinksToValues(available_sinks_));
 
-  return ToJSONString(status_dict);
+  return status_dict;
+}
+
+std::string MediaSinkServiceStatus::GetStatusAsJSONString() const {
+  return ToJSONString(GetStatusAsValue());
 }
 
 }  // namespace media_router

@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/mru_cache.h"
+#include "base/values.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
 
@@ -26,11 +27,15 @@ class MediaSinkServiceStatus {
   void UpdateDiscoveredSinks(
       const std::string& provider_name,
       const std::vector<MediaSinkInternal>& discovered_sinks);
+
   // Called when a media sink service reports available sinks for an app to MR.
   void UpdateAvailableSinks(
       MediaRouteProviderId provider_id,
       const std::string& media_source,
       const std::vector<MediaSinkInternal>& available_sinks);
+
+  // Returns current status as a JSON string represented by base::Value.
+  base::Value GetStatusAsValue() const;
 
   // Returns current status as a JSON string.
   std::string GetStatusAsJSONString() const;

@@ -51,6 +51,10 @@ void MediaRouterDesktop::OnUserGesture() {
 #endif
 }
 
+base::Value MediaRouterDesktop::GetState() const {
+  return media_sink_service_status_.GetStatusAsValue();
+}
+
 base::Optional<MediaRouteProviderId>
 MediaRouterDesktop::GetProviderIdForPresentation(
     const std::string& presentation_id) {
