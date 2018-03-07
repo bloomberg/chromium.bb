@@ -382,9 +382,13 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   // Add the month and year comboboxes if the expiration date is needed.
   month_input_ = new views::Combobox(&month_combobox_model_);
   month_input_->set_listener(this);
+  month_input_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_MONTH));
   input_row_->AddChildView(month_input_);
   year_input_ = new views::Combobox(&year_combobox_model_);
   year_input_->set_listener(this);
+  year_input_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_YEAR));
   input_row_->AddChildView(year_input_);
   if (!controller_->ShouldRequestExpirationDate()) {
     month_input_->SetVisible(false);
