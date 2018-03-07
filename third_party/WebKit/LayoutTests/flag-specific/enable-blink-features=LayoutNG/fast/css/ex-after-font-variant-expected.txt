@@ -1,0 +1,20 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
+      LayoutNGBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 52x19
+          text run at (0,0) width 52: "Test for "
+        LayoutInline {I} at (0,0) size 684x19
+          LayoutInline {A} at (0,0) size 349x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 349x19
+              text run at (51,0) width 349: "http://bugzilla.opendarwin.org/show_bug.cgi?id=4227"
+          LayoutText {#text} at (399,0) size 336x19
+            text run at (399,0) width 336: " The ex unit doesn't work for font-variant: small-caps"
+        LayoutText {#text} at (734,0) size 5x19
+          text run at (734,0) width 5: "."
+      LayoutNGBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 244x19
+          text run at (0,0) width 244: "There should be a green square below:"
+      LayoutNGBlockFlow {DIV} at (0,72) size 140x140 [bgcolor=#008000]
