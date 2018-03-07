@@ -1043,6 +1043,7 @@ group("chromium_builder_perf") {
       "//chrome/test:load_library_perf_tests",
       "//chrome/test:performance_test_suite",
       "//chrome/test:telemetry_perf_tests",
+      "//chrome/test:telemetry_perf_tests_experimental",
       "//components/tracing:tracing_perftests",
       "//gpu:command_buffer_perftests",
       "//gpu:gpu_perftests",
