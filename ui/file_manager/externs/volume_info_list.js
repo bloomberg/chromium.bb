@@ -60,6 +60,14 @@ VolumeInfoList.prototype.findByEntry = function(entry) {};
 VolumeInfoList.prototype.findByDevicePath = function(devicePath) {};
 
 /**
+ * Returns a VolumInfo for the volume ID, or null if not found.
+ *
+ * @param {string} volumeId
+ * @return {VolumeInfo} The volume's information, or null if not found.
+ */
+VolumeInfoList.prototype.findByVolumeId = function(volumeId) {};
+
+/**
  * Returns a promise that will be resolved when volume info, identified
  * by {@code volumeId} is created.
  *
