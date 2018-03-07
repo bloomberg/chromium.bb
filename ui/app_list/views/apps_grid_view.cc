@@ -2085,10 +2085,14 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
     const std::string& new_folder_id = reparent_item->folder_id();
     size_t new_folder_index;
     if (item_list_->FindItemIndex(new_folder_id, &new_folder_index)) {
+      // Save the target view's bounds before deletion, which will be used as
+      // new folder view's bounds.
+      gfx::Rect target_rect = target_view->bounds();
       int target_view_index = view_model_.GetIndexOfView(target_view);
       DeleteItemViewAtIndex(target_view_index);
       AppListItemView* new_folder_view =
           CreateViewForItemAtIndex(new_folder_index);
+      new_folder_view->SetBoundsRect(target_rect);
       view_model_.Add(new_folder_view, target_view_index);
       AddChildViewAt(new_folder_view,
                      GetAppListItemViewIndexOffset() + new_folder_index);
@@ -2125,6 +2129,9 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
   if (!source_folder || source_folder->ChildItemCount() != 1u)
     return;
 
+  // Save the folder item view's bounds before deletion, which will be used as
+  // last item view's bounds.
+  gfx::Rect folder_rect = activated_folder_item_view()->bounds();
   // Delete view associated with the folder item to be removed.
   DeleteItemViewAtIndex(
       view_model_.GetIndexOfView(activated_folder_item_view()));
@@ -2141,6 +2148,7 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     return;
   }
   AppListItemView* last_item_view = CreateViewForItemAtIndex(last_item_index);
+  last_item_view->SetBoundsRect(folder_rect);
   view_model_.Add(last_item_view, last_item_index);
   AddChildViewAt(last_item_view,
                  GetAppListItemViewIndexOffset() + last_item_index);
