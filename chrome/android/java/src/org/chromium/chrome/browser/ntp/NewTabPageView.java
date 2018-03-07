@@ -148,10 +148,10 @@ public class NewTabPageView
     private ContextMenuManager mContextMenuManager;
 
     /**
-     * Lateral offset to add to the top and bottom of the search box bounds. May be 0 if no offset
-     * should be applied.
+     * Lateral inset to add to the top and bottom of the search box bounds. May be 0 if no inset
+     * should be applied. See {@link Rect#inset(int, int)}.
      */
-    private int mSearchBoxBoundsLateralOffset;
+    private int mSearchBoxBoundsLateralInset;
 
     /**
      * Manages the view interaction with the rest of the system.
@@ -290,8 +290,8 @@ public class NewTabPageView
             if (!DeviceFormFactor.isTablet()) {
                 mSearchBoxView.getLayoutParams().height = getResources().getDimensionPixelSize(
                         R.dimen.modern_toolbar_background_size);
-                mSearchBoxBoundsLateralOffset = getResources().getDimensionPixelSize(
-                        R.dimen.ntp_search_box_bounds_lateral_offset_modern);
+                mSearchBoxBoundsLateralInset = getResources().getDimensionPixelSize(
+                        R.dimen.ntp_search_box_bounds_lateral_inset_modern);
             } else {
                 mSearchBoxView.getLayoutParams().height =
                         getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
@@ -774,7 +774,7 @@ public class NewTabPageView
                 + mNewTabPageLayout.getPaddingTop();
         int target = Math.max(basePosition,
                 mSearchBoxView.getBottom() - mSearchBoxView.getPaddingBottom()
-                        + mSearchBoxBoundsLateralOffset);
+                        - mSearchBoxBoundsLateralInset);
 
         mNewTabPageLayout.setTranslationY(percent * (basePosition - target));
     }
@@ -811,10 +811,9 @@ public class NewTabPageView
         int searchBoxX = (int) mSearchBoxView.getX();
         int searchBoxY = (int) mSearchBoxView.getY();
         bounds.set(searchBoxX + mSearchBoxView.getPaddingLeft(),
-                searchBoxY + mSearchBoxView.getPaddingTop() - mSearchBoxBoundsLateralOffset,
+                searchBoxY + mSearchBoxView.getPaddingTop(),
                 searchBoxX + mSearchBoxView.getWidth() - mSearchBoxView.getPaddingRight(),
-                searchBoxY + mSearchBoxView.getHeight() - mSearchBoxView.getPaddingBottom()
-                        + mSearchBoxBoundsLateralOffset);
+                searchBoxY + mSearchBoxView.getHeight() - mSearchBoxView.getPaddingBottom());
 
         translation.set(0, 0);
 
@@ -833,6 +832,10 @@ public class NewTabPageView
             translation.offset((int) view.getX(), (int) view.getY());
         }
         bounds.offset(translation.x, translation.y);
+
+        if (translation.y != Integer.MIN_VALUE) {
+            bounds.inset(0, mSearchBoxBoundsLateralInset);
+        }
     }
 
     /**
