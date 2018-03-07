@@ -14,7 +14,6 @@ class URLRequestContextGetter;
 
 namespace content {
 
-class URLRequestContextGetter;
 class ResourceContext;
 
 // A URLLoaderFactory used for fetching certificate of signed HTTP exchange

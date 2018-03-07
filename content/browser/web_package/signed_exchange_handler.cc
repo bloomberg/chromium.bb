@@ -5,20 +5,28 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/ssl/ssl_config.h"
+#include "net/ssl/ssl_config_service.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -30,6 +38,8 @@ namespace {
 constexpr size_t kBufferSizeForRead = 65536;
 
 constexpr char kMiHeader[] = "MI";
+
+net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
 cbor::CBORValue BytestringFromString(base::StringPiece in_string) {
   return cbor::CBORValue(
@@ -65,17 +75,28 @@ class BufferSourceStream : public net::SourceStream {
 
 }  // namespace
 
+// static
+void SignedExchangeHandler::SetCertVerifierForTesting(
+    net::CertVerifier* cert_verifier) {
+  g_cert_verifier_for_testing = cert_verifier;
+}
+
 SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
     url::Origin request_initiator,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter)
+    URLLoaderThrottlesGetter url_loader_throttles_getter,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
       request_initiator_(std::move(request_initiator)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
+      request_context_getter_(std::move(request_context_getter)),
+      net_log_(net::NetLogWithSource::Make(
+          request_context_getter_->GetURLRequestContext()->net_log(),
+          net::NetLogSourceType::CERT_VERIFIER_JOB)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
 
@@ -114,6 +135,8 @@ void SignedExchangeHandler::DidRead(bool completed_syncly, int result) {
     return;
   }
 
+  // TODO(https://crbug.com/815019): This logic can cause browser-side DoS. We
+  // MUST fix it before shipping.
   original_body_string_.append(read_buf_->data(), result);
 
   if (completed_syncly) {
@@ -209,8 +232,18 @@ bool SignedExchangeHandler::RunHeadersCallback() {
   }
   base::StringPiece status_code_str =
       status_iter->second.GetBytestringAsString();
+  int status_code;
+  if (!base::StringToInt(status_code_str, &status_code)) {
+    DVLOG(1) << "Invalid status code " << status_code_str;
+    return false;
+  }
 
   base::Optional<std::vector<SignedExchangeHeaderParser::Signature>> signatures;
+  // TODO(https://crbug.com/803774): Rename
+  // SignedExchangeSignatureVerifier::Input to SignedExchangeSignatureHeader and
+  // implement the following logic in SignedExchangeHeaderParser.
+  auto verifier_input =
+      std::make_unique<SignedExchangeSignatureVerifier::Input>();
 
   std::string fake_header_str("HTTP/1.1 ");
   status_code_str.AppendToString(&fake_header_str);
@@ -225,13 +258,18 @@ bool SignedExchangeHandler::RunHeadersCallback() {
     if (name == kMethodKey)
       continue;
 
+    // TODO(https://crbug.com/803774): Stop going through
+    // net::HttpResponseHeaders but just use
+    // SignedExchangeSignatureVerifier::Input.
+    // TODO(https://crbug.com/803774): Check that name and value don't contain
+    // special characters using IsValidHeaderName and IsValidHeaderValue.
     name.AppendToString(&fake_header_str);
     fake_header_str.append(": ");
     value.AppendToString(&fake_header_str);
     fake_header_str.append("\r\n");
-    if (std::string(name) == "signature") {
+    if (name == "signature")
       signatures = SignedExchangeHeaderParser::ParseSignature(value);
-    }
+    verifier_input->response_headers[name.as_string()] = value.as_string();
   }
   fake_header_str.append("\r\n");
   response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
@@ -256,15 +294,26 @@ bool SignedExchangeHandler::RunHeadersCallback() {
   if (!signatures || signatures->empty())
     return false;
 
+  verifier_input->method = request_method_;
+  verifier_input->url = request_url_.spec();
+  verifier_input->response_code = status_code;
+  verifier_input->signature = (*signatures)[0];
+
+  // Copy |cert_url| to keep after |verifier_input| is passed to base::BindOnce.
+  const GURL cert_url = verifier_input->signature.cert_url;
+  // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
+  // may be empty.
+  DCHECK(cert_url.is_valid());
+
   DCHECK(url_loader_factory_);
   DCHECK(url_loader_throttles_getter_);
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
       std::move(url_loader_throttles_getter_).Run();
   cert_fetcher_ = SignedExchangeCertFetcher::CreateAndStart(
-      std::move(url_loader_factory_), std::move(throttles),
-      GURL((*signatures)[0].cert_url), std::move(request_initiator_), false,
+      std::move(url_loader_factory_), std::move(throttles), cert_url,
+      std::move(request_initiator_), false,
       base::BindOnce(&SignedExchangeHandler::OnCertReceived,
-                     base::Unretained(this)));
+                     base::Unretained(this), std::move(verifier_input)));
   return true;
 }
 
@@ -276,17 +325,73 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
 }
 
 void SignedExchangeHandler::OnCertReceived(
+    std::unique_ptr<SignedExchangeSignatureVerifier::Input> verifier_input,
     scoped_refptr<net::X509Certificate> cert) {
   if (!cert) {
     DVLOG(1) << "Fetching certificate error";
     RunErrorCallback(net::ERR_FAILED);
     return;
   }
-  // TODO(https://crbug.com/803774): Verify the certificate and generate a
-  // SSLInfo.
+  verifier_input->certificate = cert;
+  if (SignedExchangeSignatureVerifier::Verify(*verifier_input) !=
+      SignedExchangeSignatureVerifier::Result::kSuccess) {
+    RunErrorCallback(net::ERR_FAILED);
+    return;
+  }
+  net::URLRequestContext* request_context =
+      request_context_getter_->GetURLRequestContext();
+  if (!request_context) {
+    RunErrorCallback(net::ERR_CONTEXT_SHUT_DOWN);
+    return;
+  }
+
+  unverified_cert_ = cert;
+
+  net::SSLConfig config;
+  request_context->ssl_config_service()->GetSSLConfig(&config);
+
+  net::CertVerifier* cert_verifier = g_cert_verifier_for_testing
+                                         ? g_cert_verifier_for_testing
+                                         : request_context->cert_verifier();
+  // TODO(https://crbug.com/815024): Get the OCSP response from the
+  // “status_request” extension of the main-certificate, and check the lifetime
+  // (nextUpdate - thisUpdate) is less than 7 days.
+  int result = cert_verifier->Verify(
+      net::CertVerifier::RequestParams(
+          unverified_cert_, request_url_.host(), config.GetCertVerifyFlags(),
+          std::string() /* ocsp_response */, net::CertificateList()),
+      net::SSLConfigService::GetCRLSet().get(), &cert_verify_result_,
+      base::BindRepeating(&SignedExchangeHandler::OnCertVerifyComplete,
+                          base::Unretained(this)),
+      &cert_verifier_request_, net_log_);
+  // TODO(https://crbug.com/803774): Avoid these recursive patterns by using
+  // explicit state machines (eg: DoLoop() in //net).
+  if (result != net::ERR_IO_PENDING)
+    OnCertVerifyComplete(result);
+}
+
+void SignedExchangeHandler::OnCertVerifyComplete(int result) {
+  if (result != net::OK) {
+    DVLOG(1) << "Certificate verification error: " << result;
+    RunErrorCallback(static_cast<net::Error>(result));
+    return;
+  }
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert = cert_verify_result_.verified_cert;
+  ssl_info.unverified_cert = unverified_cert_;
+  ssl_info.cert_status = cert_verify_result_.cert_status;
+  ssl_info.is_issued_by_known_root =
+      cert_verify_result_.is_issued_by_known_root;
+  ssl_info.public_key_hashes = cert_verify_result_.public_key_hashes;
+  ssl_info.ocsp_result = cert_verify_result_.ocsp_result;
+  ssl_info.is_fatal_cert_error =
+      net::IsCertStatusError(ssl_info.cert_status) &&
+      !net::IsCertStatusMinorError(ssl_info.cert_status);
+  // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.
   std::move(headers_callback_)
       .Run(net::OK, request_url_, request_method_, response_head_,
-           std::move(mi_stream_), base::Optional<net::SSLInfo>());
+           std::move(mi_stream_), ssl_info);
 }
 
 }  // namespace content

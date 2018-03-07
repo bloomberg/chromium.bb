@@ -17,6 +17,7 @@
 
 namespace net {
 class SourceStream;
+class URLRequestContextGetter;
 }  // namespace net
 
 namespace content {
@@ -38,13 +39,15 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
-  WebPackageLoader(const network::ResourceResponseHead& original_response,
-                   network::mojom::URLLoaderClientPtr forwarding_client,
-                   network::mojom::URLLoaderClientEndpointsPtr endpoints,
-                   url::Origin request_initiator,
-                   uint32_t url_loader_options,
-                   scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-                   URLLoaderThrottlesGetter url_loader_throttles_getter);
+  WebPackageLoader(
+      const network::ResourceResponseHead& original_response,
+      network::mojom::URLLoaderClientPtr forwarding_client,
+      network::mojom::URLLoaderClientEndpointsPtr endpoints,
+      url::Origin request_initiator,
+      uint32_t url_loader_options,
+      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~WebPackageLoader() override;
 
   // network::mojom::URLLoaderClient implementation
@@ -123,6 +126,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   const uint32_t url_loader_options_;
   scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   base::Optional<net::SSLInfo> ssl_info_;
 
