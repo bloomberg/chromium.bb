@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
@@ -158,6 +159,8 @@ class EasyUnlockServiceRegular
 
   TurnOffFlowStatus turn_off_flow_status_;
   std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
+  ScopedObserver<cryptauth::CryptAuthDeviceManager, EasyUnlockServiceRegular>
+      scoped_crypt_auth_device_manager_observer_;
 
   AutoPairingResultCallback auto_pairing_callback_;
 
