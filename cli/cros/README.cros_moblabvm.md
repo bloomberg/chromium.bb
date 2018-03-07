@@ -11,7 +11,56 @@ connected to it on the private network.
 
 Here is a typical flow for using the setup.
 
-- Obtain and unzip a moblab image. You can start with artifacts from a [recent 
+- Use an existing workspace uploaded by the [moblab-generic-vm-paladin
+  builder](https://uberchromegw.corp.google.com/i/chromiumos/builders/moblab-generic-vm-paladin).
+  Simply download the workspace and untar it:
+  ```
+  pprabhu@pprabhu:scratch$ gsutil -m cp gs://chromeos-image-archive/moblab-generic-vm-paladin/R67-10469.0.0-rc1/workspace.tar.bz2 .
+  Copying gs://chromeos-image-archive/moblab-generic-vm-paladin/R67-10469.0.0-rc1/workspace.tar.bz2...
+  \ [1/1 files][  5.4 GiB/  5.4 GiB] 100% Done  93.6 MiB/s ETA 00:00:00
+  Operation completed over 1 objects/5.4 GiB.
+  pprabhu@pprabhu:scratch$ pbzip2 -d workspace.tar.bz2
+  pprabhu@pprabhu:scratch$ tar -C moblabvm/ -xvf workspace.tar
+  ./
+  ./dut_image/
+  ./dut_image/esp/
+  ./dut_image/pack_partitions.sh
+  ./dut_image/chromiumos_qemu_image.bin
+  ./dut_image/config.txt
+  ./dut_image/license_credits.html
+  ./dut_image/boot.desc
+  ./dut_image/id_rsa.pub
+  ./dut_image/vmlinuz.bin
+  ./dut_image/id_rsa
+  ./dut_image/boot.config
+  ./dut_image/umount_image.sh
+  ./dut_image/partition_script.sh
+  ./dut_image/au-generator.zip
+  ./dut_image/mount_image.sh
+  ./dut_image/unpack_partitions.sh
+  ./moblab_image/
+  ./moblab_image/esp/
+  ./moblab_image/pack_partitions.sh
+  ./moblab_image/chromiumos_qemu_image.bin
+  ./moblab_image/config.txt
+  ./moblab_image/license_credits.html
+  ./moblab_image/boot.desc
+  ./moblab_image/id_rsa.pub
+  ./moblab_image/vmlinuz.bin
+  ./moblab_image/id_rsa
+  ./moblab_image/boot.config
+  ./moblab_image/umount_image.sh
+  ./moblab_image/partition_script.sh
+  ./moblab_image/au-generator.zip
+  ./moblab_image/moblab_disk
+  ./moblab_image/mount_image.sh
+  ./moblab_image/unpack_partitions.sh
+  ./moblabvm.json
+  ```
+  Now jump to the instructions below for starting the VMs from this pre-created
+  workspace.
+
+- Obtain and unzip a moblab image. You can start with artifacts from a [recent
   moblab-generic-vm-paladin run](https://uberchromegw.corp.google.com/i/chromiumos/builders/moblab-generic-vm-paladin).
   - It is faster to download the image via gsutil.
     ```
