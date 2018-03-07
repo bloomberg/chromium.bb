@@ -8,8 +8,47 @@
 // APIs to set memory read-write and read-only when required. Protected memory
 // should be set read-write for the minimum amount of time required.
 
-// Variables stored in protected memory must be global variables declared in the
-// PROTECTED_MEMORY_SECTION so they are set to read-only upon start-up.
+// Normally mutable variables are held in read-write memory and constant data
+// is held in read-only memory to ensure it is not accidentally overwritten.
+// In some cases we want to hold mutable variables in read-only memory, except
+// when they are being written to, to ensure that they are not tampered with.
+//
+// ProtectedMemory is a container class intended to hold a single variable in
+// read-only memory, except when explicitly set read-write. The variable can be
+// set read-write by creating a scoped AutoWritableMemory object by calling
+// AutoWritableMemory::Create(), the memory stays writable until the returned
+// object goes out of scope and is destructed. The wrapped variable can be
+// accessed using operator* and operator->.
+//
+// Instances of ProtectedMemory must be declared in the PROTECTED_MEMORY_SECTION
+// and as global variables. Because protected memory variables are globals, the
+// the same rules apply disallowing non-trivial constructors and destructors.
+// Global definitions are required to avoid the linker placing statics in
+// inlinable functions into a comdat section and setting the protected memory
+// section read-write when they are merged.
+//
+// EXAMPLE:
+//
+//  struct Items { void* item1; };
+//  static PROTECTED_MEMORY_SECTION base::ProtectedMemory<Items> items;
+//  void InitializeItems() {
+//    // Explicitly set items read-write before writing to it.
+//    auto writer = base::AutoWritableMemory::Create(items);
+//    items->item1 = /* ... */;
+//    assert(items->item1 != nullptr);
+//    // items is set back to read-only on the destruction of writer
+//  }
+//
+//  using FnPtr = void (*)(void);
+//  PROTECTED_MEMORY_SECTION base::ProtectedMemory<FnPtr> fnPtr;
+//  FnPtr ResolveFnPtr(void) {
+//    // The Initializer nested class is a helper class for creating a static
+//    // initializer for a ProtectedMemory variable. It implicitly sets the
+//    // variable read-write during initialization.
+//    static base::ProtectedMemory<FnPtr>::Initializer I(&fnPtr,
+//      reinterpret_cast<FnPtr>(dlsym(/* ... */)));
+//    return *fnPtr;
+//  }
 
 #ifndef BASE_MEMORY_PROTECTED_MEMORY_H_
 #define BASE_MEMORY_PROTECTED_MEMORY_H_
@@ -47,6 +86,30 @@ extern char __start_protected_memory __asm(
 extern char __stop_protected_memory __asm(
     "section$end$PROTECTED_MEMORY$protected_memory");
 
+#elif defined(OS_WIN)
+// Define a read-write prot section. The $a, $mem, and $z 'sub-sections' are
+// merged alphabetically so $a and $z are used to define the start and end of
+// the protected memory section, and $mem holds protected variables.
+// (Note: Sections in Portable Executables are equivalent to segments in other
+// executable formats, so this section is mapped into its own pages.)
+#pragma section("prot$a", read, write)
+#pragma section("prot$mem", read, write)
+#pragma section("prot$z", read, write)
+
+// We want the protected memory section to be read-only, not read-write so we
+// instruct the linker to set the section read-only at link time. We do this
+// at link time instead of compile time, because defining the prot section
+// read-only would cause mis-compiles due to optimizations assuming that the
+// section contents are constant.
+#pragma comment(linker, "/SECTION:prot,R")
+
+__declspec(allocate("prot$a")) __declspec(selectany)
+char __start_protected_memory;
+__declspec(allocate("prot$z")) __declspec(selectany)
+char __stop_protected_memory;
+
+#define PROTECTED_MEMORY_SECTION __declspec(allocate("prot$mem"))
+
 #else
 #undef PROTECTED_MEMORY_ENABLED
 #define PROTECTED_MEMORY_ENABLED 0
@@ -54,48 +117,6 @@ extern char __stop_protected_memory __asm(
 #endif
 
 namespace base {
-
-// Normally mutable variables are held in read-write memory and constant data
-// is held in read-only memory to ensure it is not accidentally overwritten.
-// In some cases we want to hold mutable variables in read-only memory, except
-// when they are being written to, to ensure that they are not tampered with.
-//
-// ProtectedMemory is a container class intended to hold a single variable in
-// read-only memory, except when explicitly set read-write. The variable can be
-// set read-write by creating a scoped AutoWritableMemory object by calling
-// AutoWritableMemory::Create(), the memory stays writable until the returned
-// object goes out of scope and is destructed. The wrapped variable can be
-// accessed using operator* and operator->.
-//
-// Instances of ProtectedMemory must be declared in the PROTECTED_MEMORY_SECTION
-// and as global variables. Because protected memory variables are globals, the
-// the same rules apply disallowing non-trivial constructors and destructors.
-// Global definitions are required to avoid the linker placing statics in
-// inlinable functions into a comdat section and setting the protected memory
-// section read-write when they are merged.
-//
-// EXAMPLE:
-//
-//  struct Items { void* item1; };
-//  static PROTECTED_MEMORY_SECTION ProtectedMemory<Items> items;
-//  void InitializeItems() {
-//    // Explicitly set items read-write before writing to it.
-//    auto writer = AutoWritableMemory::Create(items);
-//    items->item1 = /* ... */;
-//    assert(items->item1 != nullptr);
-//    // items is set back to read-only on the destruction of writer
-//  }
-//
-//  using FnPtr = void (*)(void);
-//  PROTECTED_MEMORY_SECTION ProtectedMemory<FnPtr> fnPtr;
-//  FnPtr ResolveFnPtr(void) {
-//    // The Initializer nested class is a helper class for creating a static
-//    // initializer for a ProtectedMemory variable. It implicitly sets the
-//    // variable read-write during initialization.
-//    static ProtectedMemory<FnPtr>::Initializer(&fnPtr,
-//      reinterpret_cast<FnPtr>(dlsym(/* ... */)));
-//    return *fnPtr;
-//  }
 
 template <typename T>
 class ProtectedMemory {
