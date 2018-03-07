@@ -31,6 +31,8 @@
 
 namespace {
 
+constexpr float kIndicatorRadius = 3.0f;
+
 // A C++ delegate that handles enabling/disabling menu items and handling when
 // a menu command is chosen. Also fixes up the menu item label for "pin/unpin
 // tab".
@@ -82,8 +84,25 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @property(nonatomic) int currentAttentionTypes;  // Bitmask of AttentionType.
 
+// Combines nested mask and parentMask. parentMask's contents will be updated.
++ (void)combineMaskLayers:(CALayer*)parentMask nested:(CALayer*)mask;
+
+// Creates circular mask around attention dot view.
++ (CALayer*)createAttentionDotViewMask:(CGRect)maskBounds
+                       indicatorCenter:(CGPoint)center;
+
 // Recomputes the iconView's frame and updates it with or without animation.
 - (void)updateIconViewFrameWithAnimation:(BOOL)shouldAnimate;
+
+// Update mask for icon view. When icon capacity is less than 1 or attention
+// icon is visible, the mask will be set.
+- (void)updateIconViewMask;
+
+// Creates or removes attentionDotView based on attentionType.
+- (void)resetAttentionDotView;
+
+// Recomputes and updates the attentionToView's frame.
+- (void)updateAttentionDotViewFrame;
 
 @end
 
@@ -135,9 +154,40 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   return kPinnedTabWidth;
 }
 
++ (void)combineMaskLayers:(CALayer*)parentMask nested:(CALayer*)nestedMask {
+  nestedMask.frame = parentMask.bounds;
+  parentMask.mask = nestedMask;
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  CGContextRef maskContext = CGBitmapContextCreate(
+      NULL, parentMask.bounds.size.width, parentMask.bounds.size.height, 8,
+      parentMask.bounds.size.width * 4, colorSpace,
+      kCGImageAlphaPremultipliedLast);
+  CGColorSpaceRelease(colorSpace);
+  [parentMask renderInContext:maskContext];
+  parentMask.contents = (id)CGBitmapContextCreateImage(maskContext);
+}
+
 - (TabView*)tabView {
   DCHECK([[self view] isKindOfClass:[TabView class]]);
   return static_cast<TabView*>([self view]);
+}
+
++ (CALayer*)createAttentionDotViewMask:(CGRect)maskBounds
+                       indicatorCenter:(CGPoint)center {
+  const CGFloat kIndicatorCropRadius = 4.5;
+  CGRect cropCircleBounds = CGRectZero;
+  cropCircleBounds.origin = center;
+  cropCircleBounds = CGRectInset(cropCircleBounds, -kIndicatorCropRadius,
+                                 -kIndicatorCropRadius);
+
+  base::ScopedCFTypeRef<CGMutablePathRef> maskPath(CGPathCreateMutable());
+  CGPathAddRect(maskPath, nil, maskBounds);
+  CGPathAddEllipseInRect(maskPath, nil, cropCircleBounds);
+
+  CAShapeLayer* maskLayer = [CAShapeLayer layer];
+  maskLayer.path = maskPath.get();
+  maskLayer.fillRule = kCAFillRuleEvenOdd;
+  return maskLayer;
 }
 
 - (id)init {
@@ -333,6 +383,12 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   CGFloat leadingPadding =
       [self pinned] ? kPinnedTabLeadingPadding : kTabLeadingPadding;
 
+  if ([self iconCapacity] < 1) {
+    // If available width is not enough, align center.
+    leadingPadding =
+        ([[self tabView] frame].size.width - gfx::kFaviconSize) / 2.0;
+  }
+
   NSRect iconViewFrame = [iconView_ frame];
   iconViewFrame.origin.x = isRTL ? NSWidth([[self tabView] frame]) -
                                        leadingPadding - gfx::kFaviconSize
@@ -347,6 +403,118 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   } else {
     [iconView_ setFrame:iconViewFrame];
   }
+
+  [self updateAttentionDotViewFrame];
+}
+
+- (void)updateIconViewMask {
+  BOOL needTabShapeMask = [self iconCapacity] < 1;
+  if ([iconView_ isHidden] || (!needTabShapeMask && !attentionDotView_)) {
+    // We don't need mask.
+    iconView_.get().layer.mask = nil;
+    return;
+  }
+
+  CALayer* tabShapeMaskLayer = nil;
+  if (needTabShapeMask) {
+    // stroke(1) + extra padding(1)
+    tabShapeMaskLayer = [[self tabView] maskLayerWithPadding:2];
+  }
+
+  if (!attentionDotView_) {
+    if (tabShapeMaskLayer != nil) {
+      // Only tab shape mask is needed.
+      tabShapeMaskLayer.anchorPoint = CGPointMake(0, 0);
+      tabShapeMaskLayer.position = CGPointMake(-iconView_.get().frame.origin.x,
+                                               -iconView_.get().frame.origin.y);
+      iconView_.get().layer.mask = tabShapeMaskLayer;
+    }
+    return;
+  }
+
+  // When we have tab shape mask too, we should combine it with circular mask.
+  // In this case, circular mask should be positioned based on tab view's
+  // coordinate system.
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  CGRect iconViewBounds = iconView_.get().layer.bounds;
+  CGPoint indicatorCenter = CGPointMake(
+      isRTL ? CGRectGetMinX(iconViewBounds) : CGRectGetMaxX(iconViewBounds),
+      CGRectGetMinY(iconViewBounds));
+  CGRect maskBounds = iconViewBounds;
+  if (tabShapeMaskLayer) {
+    NSRect iconViewFrame = [iconView_ frame];
+    indicatorCenter = CGPointMake(indicatorCenter.x + iconViewFrame.origin.x,
+                                  indicatorCenter.y + iconViewFrame.origin.y);
+    maskBounds = tabShapeMaskLayer.bounds;
+  }
+
+  CALayer* maskLayer =
+      [TabController createAttentionDotViewMask:maskBounds
+                                indicatorCenter:indicatorCenter];
+  if (tabShapeMaskLayer) {
+    [TabController combineMaskLayers:tabShapeMaskLayer nested:maskLayer];
+    tabShapeMaskLayer.anchorPoint = CGPointMake(0, 0);
+    tabShapeMaskLayer.position = CGPointMake(-iconView_.get().frame.origin.x,
+                                             -iconView_.get().frame.origin.y);
+    iconView_.get().layer.mask = tabShapeMaskLayer;
+  } else {
+    maskLayer.frame = iconViewBounds;
+    iconView_.get().layer.mask = maskLayer;
+  }
+}
+
+- (void)resetAttentionDotView {
+  // Don't show the attention indicator for blocked WebContentses if the tab is
+  // active; it's distracting.
+  int actualAttentionTypes = self.currentAttentionTypes;
+  if ([self active])
+    actualAttentionTypes &= ~AttentionType::kBlockedWebContents;
+
+  if (([iconView_ isHidden] || actualAttentionTypes == 0)) {
+    // We don't need attentionDotView.
+    if (attentionDotView_) {
+      [attentionDotView_ removeFromSuperview];
+      attentionDotView_.reset();
+    }
+    return;
+  }
+
+  // The attention indicator consists of two parts:
+  // . a wedge cut out of the bottom right (or left in rtl) of the favicon.
+  // . a circle in the bottom right (or left in rtl) of the favicon.
+  //
+  // The favicon's view is too small to contain the dot (the second part of
+  // the indicator), so the dot is added as a separate subview.
+  // As for wedge cut, please see updateIconViewMask().
+  if (!attentionDotView_) {
+    attentionDotView_.reset([[NSView alloc] init]);
+    attentionDotView_.get().wantsLayer = YES;
+    SkColor indicatorColor =
+        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+            ui::NativeTheme::kColorId_ProminentButtonColor);
+    attentionDotView_.get().layer.backgroundColor =
+        skia::SkColorToSRGBNSColor(indicatorColor).CGColor;
+    attentionDotView_.get().layer.cornerRadius = kIndicatorRadius;
+    [[self view] addSubview:attentionDotView_];
+    [self updateAttentionDotViewFrame];
+  }
+}
+
+- (void)updateAttentionDotViewFrame {
+  if (!attentionDotView_)
+    return;
+
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  NSRect iconViewFrame = [iconView_ frame];
+  NSPoint indicatorCenter =
+      NSMakePoint(isRTL ? NSMinX(iconViewFrame) : NSMaxX(iconViewFrame),
+                  NSMinY(iconViewFrame));
+
+  NSRect indicatorCircleFrame = NSZeroRect;
+  indicatorCircleFrame.origin = indicatorCenter;
+  indicatorCircleFrame =
+      NSInsetRect(indicatorCircleFrame, -kIndicatorRadius, -kIndicatorRadius);
+  attentionDotView_.get().frame = indicatorCircleFrame;
 }
 
 - (AlertIndicatorButton*)alertIndicatorButton {
@@ -394,7 +562,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   if (currentAttentionTypes_ == attentionTypes)
     return;
   currentAttentionTypes_ = attentionTypes;
-  [self updateAttentionIndicator];
+  [self updateAttentionIndicatorAndMask];
 }
 
 - (HoverCloseButton*)closeButton {
@@ -470,77 +638,16 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   }
 }
 
-- (void)updateAttentionIndicator {
-  // Don't show the attention indicator for blocked WebContentses if the tab is
-  // active; it's distracting.
-  int actualAttentionTypes = self.currentAttentionTypes;
-  if ([self active])
-    actualAttentionTypes &= ~AttentionType::kBlockedWebContents;
-
-  if (actualAttentionTypes != 0 && ![iconView_ isHidden]) {
-    // The attention indicator consists of two parts:
-    // . a wedge cut out of the bottom right (or left in rtl) of the favicon.
-    // . a circle in the bottom right (or left in rtl) of the favicon.
-    //
-    // The favicon lives in a view to itself, a view which is too small to
-    // contain the dot (the second part of the indicator), so the dot is added
-    // as a separate subview.
-    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-    CGRect iconViewBounds = iconView_.get().layer.bounds;
-    CGPoint indicatorCenter = CGPointMake(
-        isRTL ? CGRectGetMinX(iconViewBounds) : CGRectGetMaxX(iconViewBounds),
-        CGRectGetMinY(iconViewBounds));
-
-    const CGFloat kIndicatorCropRadius = 4.5;
-    CGRect cropCircleBounds = CGRectZero;
-    cropCircleBounds.origin = indicatorCenter;
-    cropCircleBounds = CGRectInset(cropCircleBounds, -kIndicatorCropRadius,
-                                   -kIndicatorCropRadius);
-
-    base::ScopedCFTypeRef<CGMutablePathRef> maskPath(CGPathCreateMutable());
-    CGPathAddRect(maskPath, nil, iconViewBounds);
-    CGPathAddEllipseInRect(maskPath, nil, cropCircleBounds);
-
-    CAShapeLayer* maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = iconViewBounds;
-    maskLayer.path = maskPath.get();
-    maskLayer.fillRule = kCAFillRuleEvenOdd;
-    iconView_.get().layer.mask = maskLayer;
-
-    if (!attentionDotView_) {
-      NSRect iconViewFrame = [iconView_ frame];
-      NSPoint indicatorCenter =
-          NSMakePoint(isRTL ? NSMinX(iconViewFrame) : NSMaxX(iconViewFrame),
-                      NSMinY(iconViewFrame));
-
-      const float kIndicatorRadius = 3.0f;
-      NSRect indicatorCircleFrame = NSZeroRect;
-      indicatorCircleFrame.origin = indicatorCenter;
-      indicatorCircleFrame = NSInsetRect(indicatorCircleFrame,
-                                         -kIndicatorRadius, -kIndicatorRadius);
-      attentionDotView_.reset(
-          [[NSView alloc] initWithFrame:indicatorCircleFrame]);
-      attentionDotView_.get().wantsLayer = YES;
-      SkColor indicatorColor =
-          ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-              ui::NativeTheme::kColorId_ProminentButtonColor);
-      attentionDotView_.get().layer.backgroundColor =
-          skia::SkColorToSRGBNSColor(indicatorColor).CGColor;
-      attentionDotView_.get().layer.cornerRadius = kIndicatorRadius;
-
-      [[self view] addSubview:attentionDotView_];
-    }
-  } else {
-    iconView_.get().layer.mask = nil;
-    [attentionDotView_ removeFromSuperview];
-    attentionDotView_.reset();
-  }
+- (void)updateAttentionIndicatorAndMask {
+  [self resetAttentionDotView];
+  [self updateIconViewMask];
 }
 
 - (void)updateVisibility {
   BOOL newShowIcon = [self shouldShowIcon];
 
   [iconView_ setHidden:!newShowIcon];
+  [self updateIconViewFrameWithAnimation:false];
 
   // If the tab is a pinned-tab, hide the title.
   TabView* tabView = [self tabView];
@@ -618,7 +725,7 @@ constexpr CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
   [tabView setTitleFrame:newTitleFrame];
 
-  [self updateAttentionIndicator];
+  [self updateAttentionIndicatorAndMask];
 }
 
 - (void)updateTitleColor {
