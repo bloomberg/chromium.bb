@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -14,7 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/av_sync.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -24,6 +25,14 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/sample_format.h"
 #include "media/filters/audio_renderer_algorithm.h"
+
+#if defined(OS_LINUX)
+#include "chromecast/media/cma/backend/audio_buildflags.h"
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_FUCHSIA)
+#include <zircon/syscalls.h>
+#endif  // defined(OS_FUCHSIA)
 
 #define TRACE_FUNCTION_ENTRY0() TRACE_EVENT0("cma", __FUNCTION__)
 
@@ -55,6 +64,22 @@ const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 const int64_t kNoPendingOutput = -1;
 
+#if defined(OS_LINUX)
+int64_t MonotonicClockNow() {
+  timespec now = {0, 0};
+#if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
+  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+#else
+  clock_gettime(CLOCK_MONOTONIC, &now);
+#endif
+  return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
+}
+#else
+int64_t MonotonicClockNow() {
+  return zx_clock_get(ZX_CLOCK_MONOTONIC) / 1000;
+}
+#endif
+
 }  // namespace
 
 AudioDecoderForMixer::RateShifterInfo::RateShifterInfo(float playback_rate)
@@ -79,7 +104,6 @@ AudioDecoderForMixer::AudioDecoderForMixer(
       pending_output_frames_(kNoPendingOutput),
       volume_multiplier_(1.0f),
       pool_(new ::media::AudioBufferMemoryPool()),
-      av_sync_(AvSync::Create(backend->GetTaskRunner(), backend)),
       weak_factory_(this) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(backend_);
@@ -191,7 +215,7 @@ int64_t AudioDecoderForMixer::GetCurrentPts() const {
     return kInvalidTimestamp;
 
   DCHECK(!rate_shifter_info_.empty());
-  int64_t now = backend_->MonotonicClockNow();
+  int64_t now = MonotonicClockNow();
   int64_t estimate =
       last_push_pts_ +
       std::min(static_cast<int64_t>((now - last_push_timestamp_) *
@@ -413,7 +437,7 @@ void AudioDecoderForMixer::OnBufferDecoded(
         DCHECK(!pushed_eos_);
         pushed_eos_ = true;
       }
-      WritePcmWrapper(decoded);
+      mixer_input_->WritePcm(decoded);
       return;
     }
 
@@ -484,7 +508,7 @@ void AudioDecoderForMixer::PushRateShifted() {
 
       scoped_refptr<DecoderBufferBase> eos_buffer(
           new DecoderBufferAdapter(::media::DecoderBuffer::CreateEOSBuffer()));
-      WritePcmWrapper(eos_buffer);
+      mixer_input_->WritePcm(eos_buffer);
     }
     return;
   }
@@ -515,7 +539,7 @@ void AudioDecoderForMixer::PushRateShifted() {
            rate_shifter_output_->channel(c), channel_data_size);
   }
   pending_output_frames_ = out_frames;
-  WritePcmWrapper(output_buffer);
+  mixer_input_->WritePcm(output_buffer);
 
   if (rate_shifter_info_.size() > 1 &&
       rate_info->output_frames == possible_output_frames) {
@@ -585,14 +609,6 @@ void AudioDecoderForMixer::OnMixerError(MixerError error) {
 void AudioDecoderForMixer::OnEos() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   delegate_->OnEndOfStream();
-}
-
-void AudioDecoderForMixer::WritePcmWrapper(
-    const scoped_refptr<DecoderBufferBase>& buffer) {
-  av_sync_->NotifyAudioBufferPushed(
-      buffer->end_of_stream() ? INT64_MAX : buffer->timestamp(),
-      GetRenderingDelay());
-  mixer_input_->WritePcm(buffer);
 }
 
 }  // namespace media

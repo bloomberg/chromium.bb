@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
@@ -22,7 +23,7 @@ namespace chromecast {
 namespace media {
 
 class AudioDecoderForMixer;
-class VideoDecoderForMixer;
+class VideoDecoderNull;
 
 // CMA Backend implementation for audio devices.
 class MediaPipelineBackendForMixer : public MediaPipelineBackend {
@@ -46,11 +47,6 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   std::string DeviceId() const;
   AudioContentType ContentType() const;
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
-  VideoDecoderForMixer* video_decoder() const { return video_decoder_.get(); }
-  AudioDecoderForMixer* audio_decoder() const { return audio_decoder_.get(); }
-
-  // Gets current time on the same clock as the rendering delay timestamp.
-  int64_t MonotonicClockNow() const;
 
  private:
   // State variable for DCHECKing caller correctness.
@@ -63,7 +59,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   State state_;
 
   const MediaPipelineDeviceParams params_;
-  std::unique_ptr<VideoDecoderForMixer> video_decoder_;
+  std::unique_ptr<VideoDecoderNull> video_decoder_;
   std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
