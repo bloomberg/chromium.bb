@@ -15,10 +15,9 @@ namespace blink {
 class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  protected:
   void Visit(const TraceWrapperV8Reference<v8::Value>&) const final {}
-  void Visit(const WrapperDescriptor& wrapper_descriptor) const final {
-    HeapObjectHeader* header = wrapper_descriptor.heap_object_header_callback(
-        wrapper_descriptor.traceable);
-    if (!header->IsWrapperHeaderMarked()) {
+  void Visit(const TraceWrapperDescriptor& descriptor) const final {
+    if (!HeapObjectHeader::FromPayload(descriptor.base_object_payload)
+             ->IsWrapperHeaderMarked()) {
       // If this branch is hit, it means that a white (not discovered by
       // traceWrappers) object was assigned as a member to a black object
       // (already processed by traceWrappers). Black object will not be
@@ -29,7 +28,7 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
       // This means there is a write barrier missing somewhere. Check the
       // backtrace to see which types are causing this and review all the
       // places where white object is set to a black object.
-      wrapper_descriptor.missed_write_barrier_callback();
+      descriptor.missed_write_barrier_callback();
       NOTREACHED();
     }
   }

@@ -17,7 +17,6 @@ namespace blink {
 
 template <typename T>
 class DOMWrapperMap;
-class HeapObjectHeader;
 class ScriptWrappable;
 class ScriptWrappableVisitor;
 template <typename T>
@@ -27,31 +26,15 @@ class TraceWrapperBaseForSupplement;
 template <typename T>
 class TraceWrapperV8Reference;
 
-using HeapObjectHeaderCallback = HeapObjectHeader* (*)(const void*);
-using MissedWriteBarrierCallback = void (*)();
-using TraceWrappersCallback = void (*)(const ScriptWrappableVisitor*,
-                                       const void* self);
-using NameCallback = const char* (*)(const void* self);
-
-#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)                   \
-  template <>                                                        \
-  inline void TraceTrait<ClassName>::TraceMarkedWrapper(             \
-      const ScriptWrappableVisitor* visitor, const void* t) {        \
-    const ClassName* traceable = ToWrapperTracingType(t);            \
-    traceable->TraceWrappers(visitor);                               \
+#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)                            \
+  template <>                                                                 \
+  inline void TraceTrait<ClassName>::TraceWrappers(                           \
+      ScriptWrappableVisitor* visitor, void* t) {                             \
+    static_assert(sizeof(ClassName), "type needs to be defined");             \
+    static_assert(IsGarbageCollectedType<ClassName>::value,                   \
+                  "only objects deriving from GarbageCollected can be used"); \
+    static_cast<ClassName*>(t)->TraceWrappers(visitor);                       \
   }
-
-// WrapperDescriptor contains enough information to visit a
-// ScriptWrappable without knowing its type statically.
-// It is passed to ScriptWrappableVisitor::Visit method.
-struct WrapperDescriptor {
-  STACK_ALLOCATED();
-  const void* traceable;
-  TraceWrappersCallback trace_wrappers_callback;
-  HeapObjectHeaderCallback heap_object_header_callback;
-  MissedWriteBarrierCallback missed_write_barrier_callback;
-  NameCallback name_callback;
-};
 
 // Abstract visitor for wrapper references in a ScriptWrappable.
 // Usage:
@@ -62,6 +45,17 @@ struct WrapperDescriptor {
 // wrapper references in traceable.
 class PLATFORM_EXPORT ScriptWrappableVisitor {
  public:
+  template <typename T>
+  static NOINLINE void MissedWriteBarrier() {
+    NOTREACHED();
+  }
+
+  template <typename T>
+  static const char* NameCallback(const void* traceable) {
+    // Mixns never inherit from TraceWrapperBase.
+    return NameInHeapSnapshot(static_cast<const T*>(traceable));
+  }
+
   // Trace all wrappers of |tracable|.
   //
   // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
@@ -119,24 +113,16 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // The visitor interface. Derived visitors should override this
   // function to visit V8 references and ScriptWrappables.
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const = 0;
-  virtual void Visit(const WrapperDescriptor&) const = 0;
+  virtual void Visit(const TraceWrapperDescriptor&) const = 0;
   virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
                      const ScriptWrappable* key) const = 0;
 
   template <typename T>
-  static WrapperDescriptor WrapperDescriptorFor(const T* traceable) {
-    return {traceable, TraceTrait<T>::TraceMarkedWrapper,
-            TraceTrait<T>::GetHeapObjectHeader,
-            ScriptWrappableVisitor::MissedWriteBarrier<T>,
-            ScriptWrappableVisitor::NameCallback<T>};
+  static TraceWrapperDescriptor WrapperDescriptorFor(const T* traceable) {
+    return TraceTrait<T>::GetTraceWrapperDescriptor(const_cast<T*>(traceable));
   }
 
  private:
-  template <typename T>
-  static NOINLINE void MissedWriteBarrier() {
-    NOTREACHED();
-  }
-
   static const char* NameInHeapSnapshot(const TraceWrapperBase* traceable) {
     return traceable->NameInHeapSnapshot();
   }
@@ -144,11 +130,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   static const char* NameInHeapSnapshot(...) {
     // Default case for all non-TraceWrapperBase classes.
     return "InternalNode";
-  }
-
-  template <typename T>
-  static const char* NameCallback(const void* traceable) {
-    return NameInHeapSnapshot(static_cast<const T*>(traceable));
   }
 
   // Helper method to invoke the virtual Visit method with wrapper descriptor.
