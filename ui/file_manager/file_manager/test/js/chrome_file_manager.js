@@ -9,7 +9,8 @@
 mockVolumeManager = new MockVolumeManager();
 mockVolumeManager
     .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
-    .fileSystem.populate(['/New Folder/', '/a.txt', '/kittens.jpg']);
+    .fileSystem.populate(
+        ['/New Folder/', '/a.txt', '/kittens.jpg', '/unknown.ext']);
 mockVolumeManager
     .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
     .fileSystem.populate(
@@ -44,6 +45,11 @@ chrome.fileManagerPrivate = {
   },
   enableExternalFileScheme: () => {
     console.debug('c.fmp.enableExternalFileScheme called');
+  },
+  executeTask: (taskId, entries, callback) => {
+    console.debug('c.fmp.executeTask called', taskId, entries);
+    // Returns opened|message_sent|failed|empty.
+    setTimeout(callback, 0, 'failed');
   },
   getDriveConnectionState: (callback) => {
     console.debug('c.fmp.getDriveConnectionState called');

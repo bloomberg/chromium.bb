@@ -16,6 +16,11 @@ chrome = {
         addListener: () => {},
       },
     },
+    window: {
+      current: () => {
+        return window;
+      },
+    },
   },
 
   commandLinePrivate: {
@@ -117,4 +122,20 @@ chrome = {
       }
     },
   },
+};
+
+// cws_widget_container.js loads the chrome web store widget as
+// a WebView.  It calls WebView.request.onBeforeSendHeaders.
+HTMLElement.prototype.request = {
+  onBeforeSendHeaders: {
+    addListener: () => {
+      console.debug(
+          'HTMLElement.request.onBeforeSendHeaders.addListener called');
+    },
+  },
+};
+
+// cws_widget_container.js also calls WebView.stop.
+HTMLElement.prototype.stop = () => {
+  console.debug('HTMLElement.stop called');
 };
