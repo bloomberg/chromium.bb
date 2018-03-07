@@ -164,9 +164,9 @@ ScopedMessageHandle CreateUnserializedMessageObject(
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(handle.is_valid());
 
-  rv = MojoAttachMessageContext(
+  rv = MojoSetMessageContext(
       handle->value(), reinterpret_cast<uintptr_t>(context.release()),
-      &SerializeUnserializedContext, &DestroyUnserializedContext);
+      &SerializeUnserializedContext, &DestroyUnserializedContext, nullptr);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   return handle;
 }
@@ -206,8 +206,8 @@ Message::Message(ScopedMessageHandle handle) {
   DCHECK(handle.is_valid());
 
   uintptr_t context_value = 0;
-  MojoResult get_context_result = MojoGetMessageContext(
-      handle->value(), &context_value, MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE);
+  MojoResult get_context_result =
+      MojoGetMessageContext(handle->value(), nullptr, &context_value);
   if (get_context_result == MOJO_RESULT_NOT_FOUND) {
     // It's a serialized message. Extract handles if possible.
     uint32_t num_bytes;
@@ -417,7 +417,7 @@ bool Message::DeserializeAssociatedEndpointHandles(
 }
 
 void Message::SerializeIfNecessary() {
-  MojoResult rv = MojoSerializeMessage(handle_->value());
+  MojoResult rv = MojoSerializeMessage(handle_->value(), nullptr);
   if (rv == MOJO_RESULT_FAILED_PRECONDITION)
     return;
 
@@ -430,8 +430,8 @@ Message::TakeUnserializedContext(
     const internal::UnserializedMessageContext::Tag* tag) {
   DCHECK(handle_.is_valid());
   uintptr_t context_value = 0;
-  MojoResult rv = MojoGetMessageContext(handle_->value(), &context_value,
-                                        MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE);
+  MojoResult rv =
+      MojoGetMessageContext(handle_->value(), nullptr, &context_value);
   if (rv == MOJO_RESULT_NOT_FOUND)
     return nullptr;
   DCHECK_EQ(MOJO_RESULT_OK, rv);
@@ -442,10 +442,8 @@ Message::TakeUnserializedContext(
     return nullptr;
 
   // Detach the context from the message.
-  rv = MojoGetMessageContext(handle_->value(), &context_value,
-                             MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE);
+  rv = MojoSetMessageContext(handle_->value(), 0, nullptr, nullptr, nullptr);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
-  DCHECK_EQ(context_value, reinterpret_cast<uintptr_t>(context));
   return base::WrapUnique(context);
 }
 

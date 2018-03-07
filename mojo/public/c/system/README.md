@@ -133,7 +133,7 @@ create a new message object as follows:
 
 ``` c
 MojoMessageHandle message;
-MojoResult result = MojoCreateMessage(&message);
+MojoResult result = MojoCreateMessage(nullptr, &message);
 ```
 
 Note that we have a special `MojoMessageHandle` type for message objects.
@@ -192,8 +192,8 @@ void DestroyMessage(uintptr_t context) {
 MyMessage* data = malloc(sizeof(MyMessage));
 // initialize *data...
 
-MojoResult result = MojoAttachMessageContext(
-    message, (uintptr_t)data, &SerializeMessage, &DestroyMessage);
+MojoResult result = MojoSetMessageContext(
+    message, (uintptr_t)data, &SerializeMessage, &DestroyMessage, nullptr);
 ```
 
 If we change our mind and decide not to send the message, we can destroy it:
@@ -295,7 +295,7 @@ MojoCreateMessagePipe(NULL, &c, &d);
 MojoMessageHandle message;
 void* buffer;
 uint32_t buffer_size;
-MojoCreateMessage(&message);
+MojoCreateMessage(nullptr, &message);
 
 MojoAppendMessageDataOptions options;
 options.struct_size = sizeof(options);

@@ -52,7 +52,7 @@ using ScopedMessageHandle = ScopedHandleBase<MessageHandle>;
 
 inline MojoResult CreateMessage(ScopedMessageHandle* handle) {
   MojoMessageHandle raw_handle;
-  MojoResult rv = MojoCreateMessage(&raw_handle);
+  MojoResult rv = MojoCreateMessage(nullptr, &raw_handle);
   if (rv != MOJO_RESULT_OK)
     return rv;
 

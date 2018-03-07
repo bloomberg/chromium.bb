@@ -83,7 +83,6 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
       std::unique_ptr<ports::UserMessageEvent> event);
 
   bool HasContext() const { return context_ != 0; }
-  uintptr_t ReleaseContext();
 
   uintptr_t context() const { return context_; }
 
@@ -120,9 +119,9 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
   void set_source_node(const ports::NodeName& name) { source_node_ = name; }
   const ports::NodeName& source_node() const { return source_node_; }
 
-  MojoResult AttachContext(uintptr_t context,
-                           MojoMessageContextSerializer serializer,
-                           MojoMessageContextDestructor destructor);
+  MojoResult SetContext(uintptr_t context,
+                        MojoMessageContextSerializer serializer,
+                        MojoMessageContextDestructor destructor);
   MojoResult AppendData(uint32_t additional_payload_size,
                         const MojoHandle* handles,
                         uint32_t num_handles);

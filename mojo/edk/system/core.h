@@ -192,9 +192,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                         uintptr_t* ready_contexts,
                         MojoResult* ready_results,
                         MojoHandleSignalsState* ready_signals_states);
-  MojoResult CreateMessage(MojoMessageHandle* message_handle);
+  MojoResult CreateMessage(const MojoCreateMessageOptions* options,
+                           MojoMessageHandle* message_handle);
   MojoResult DestroyMessage(MojoMessageHandle message_handle);
-  MojoResult SerializeMessage(MojoMessageHandle message_handle);
+  MojoResult SerializeMessage(MojoMessageHandle message_handle,
+                              const MojoSerializeMessageOptions* options);
   MojoResult AppendMessageData(MojoMessageHandle message_handle,
                                uint32_t additional_payload_size,
                                const MojoHandle* handles,
@@ -208,13 +210,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                             uint32_t* num_bytes,
                             MojoHandle* handles,
                             uint32_t* num_handles);
-  MojoResult AttachMessageContext(MojoMessageHandle message_handle,
-                                  uintptr_t context,
-                                  MojoMessageContextSerializer serializer,
-                                  MojoMessageContextDestructor destructor);
+  MojoResult SetMessageContext(MojoMessageHandle message_handle,
+                               uintptr_t context,
+                               MojoMessageContextSerializer serializer,
+                               MojoMessageContextDestructor destructor,
+                               const MojoSetMessageContextOptions* options);
   MojoResult GetMessageContext(MojoMessageHandle message_handle,
-                               uintptr_t* context,
-                               MojoGetMessageContextFlags flags);
+                               const MojoGetMessageContextOptions* options,
+                               uintptr_t* context);
   MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in

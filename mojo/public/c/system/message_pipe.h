@@ -76,21 +76,41 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_NONE = 0;
 #define MOJO_READ_MESSAGE_FLAG_NONE ((MojoReadMessageFlags)0)
 #endif
 
-// |MojoGetMessageContextFlags|: Used to specify different options for
-// |MojoGetMessageContext|.
-//   |MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE| - No flags; default mode.
-//   |MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE| - Causes the message object to
-//       release its reference to its own context before returning.
-
-typedef uint32_t MojoGetMessageContextFlags;
+// Flags passed to |MojoCreateMessage()| via |MojoCreateMessageOptions|.
+typedef uint32_t MojoCreateMessageFlags;
 
 #ifdef __cplusplus
-const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE = 0;
-const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE = 1;
+const MojoCreateMessageFlags MOJO_CREATE_MESSAGE__FLAG_NONE = 0;
 #else
-#define MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE ((MojoGetMessageContextFlags)0)
-#define MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE ((MojoGetMessageContextFlags)1)
+#define MOJO_CREATE_MESSAGE_FLAG_NONE ((MojoCreateMessageFlags)0)
 #endif
+
+// Options passed to |MojoCreateMessage()|.
+struct MOJO_ALIGNAS(8) MojoCreateMessageOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoCreateMessageFlags|.
+  MojoCreateMessageFlags flags;
+};
+
+// Flags passed to |MojoSerializeMessage()| via |MojoSerializeMessageOptions|.
+typedef uint32_t MojoSerializeMessageFlags;
+
+#ifdef __cplusplus
+const MojoSerializeMessageFlags MOJO_SERIALIZE_MESSAGE_FLAG_NONE = 0;
+#else
+#define MOJO_SERIALIZE_MESSAGE_FLAG_NONE ((MojoSerializeMessageFlags)0)
+#endif
+
+// Options passed to |MojoSerializeMessage()|.
+struct MOJO_ALIGNAS(8) MojoSerializeMessageOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoSerializeMessageFlags|.
+  MojoSerializeMessageFlags flags;
+};
 
 // Flags passed to |MojoAppendMessageData()| via |MojoAppendMessageDataOptions|.
 typedef uint32_t MojoAppendMessageDataFlags;
@@ -133,13 +153,49 @@ struct MOJO_ALIGNAS(8) MojoGetMessageDataOptions {
   MojoGetMessageDataFlags flags;
 };
 
+// Flags passed to |MojoSetMessageContext()| via |MojoSetMessageContextOptions|.
+typedef uint32_t MojoSetMessageContextFlags;
+
+#ifdef __cplusplus
+const MojoSetMessageContextFlags MOJO_SET_MESSAGE_CONTEXT_FLAG_NONE = 0;
+#else
+#define MOJO_SET_MESSAGE_CONTEXT_FLAG_NONE ((MojoSetMessageContextFlags)0)
+#endif
+
+// Options passed to |MojoSetMessageContext()|.
+struct MOJO_ALIGNAS(8) MojoSetMessageContextOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoSetMessageContextFlags|.
+  MojoSetMessageContextFlags flags;
+};
+
+// Flags passed to |MojoGetMessageContext()| via |MojoGetMessageContextOptions|.
+typedef uint32_t MojoGetMessageContextFlags;
+
+#ifdef __cplusplus
+const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE = 0;
+#else
+#define MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE ((MojoGetMessageContextFlags)0)
+#endif
+
+// Options passed to |MojoGetMessageContext()|.
+struct MOJO_ALIGNAS(8) MojoGetMessageContextOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoGetMessageContextFlags|.
+  MojoGetMessageContextFlags flags;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // A callback which can serialize a message given some context. Passed to
-// MojoAttachMessageContext along with a context it knows how to serialize.
-// See |MojoAttachMessageContext()| for more details.
+// |MojoSetMessageContext()| along with a context it knows how to serialize.
+// See |MojoSetMessageContext()| for more details.
 //
 //   |message| is a message object which had |context| attached.
 //   |context| the context which was attached to |message|.
@@ -247,7 +303,7 @@ MOJO_SYSTEM_EXPORT MojoResult
 //
 // In its initial state the message object cannot be successfully written to a
 // message pipe, but must first have either an opaque context or some serialized
-// data attached (see |MojoAttachMessageContext()| and
+// data attached (see |MojoSetMessageContext()| and
 // |MojoAppendMessageData()|).
 //
 // NOTE: Unlike other types of Mojo API objects, messages are NOT thread-safe
@@ -258,7 +314,9 @@ MOJO_SYSTEM_EXPORT MojoResult
 //   |MOJO_RESULT_OK| if a new message was created. |*message| contains a handle
 //       to the new message object upon return.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is null.
-MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessage(MojoMessageHandle* message);
+MOJO_SYSTEM_EXPORT MojoResult
+MojoCreateMessage(const struct MojoCreateMessageOptions* options,
+                  MojoMessageHandle* message);
 
 // Destroys a message object created by |MojoCreateMessage()| or
 // |MojoReadMessage()|.
@@ -293,7 +351,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDestroyMessage(MojoMessageHandle message);
 // Note that unserialized messages may be successfully transferred from one
 // message pipe endpoint to another without ever being serialized. This function
 // allows callers to coerce eager serialization.
-MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
+MOJO_SYSTEM_EXPORT MojoResult
+MojoSerializeMessage(MojoMessageHandle message,
+                     const struct MojoSerializeMessageOptions* options);
 
 // Appends data to a message object.
 //
@@ -407,7 +467,8 @@ MojoGetMessageData(MojoMessageHandle message,
                    MojoHandle* handles,
                    uint32_t* num_handles);
 
-// Attachs an unserialized message context to a message.
+// Sets an opaque context value on a message object. The presence of an opaque
+// context is mutually exclusive to the presence of message data.
 //
 // |context| is the context value to associate with this message, and
 // |serializer| is a function which may be called at some later time to convert
@@ -418,10 +479,9 @@ MojoGetMessageData(MojoMessageHandle message,
 // without ever being serialized.
 //
 // Typically a caller will use |context| as an opaque pointer to some heap
-// object which is effectively owned by the newly created message once this
-// returns. In this way, messages can be sent over a message pipe to a peer
-// endpoint in the same process as the sender without ever performing a
-// serialization step.
+// object which is effectively owned by the message once this returns. In this
+// way, messages can be sent over a message pipe to a peer endpoint in the same
+// process as the sender without performing a serialization step.
 //
 // If the message does need to cross a process boundary or is otherwise
 // forced to serialize (see |MojoSerializeMessage()| below), it will be
@@ -434,38 +494,42 @@ MojoGetMessageData(MojoMessageHandle message,
 // If |destructor| is null, it is assumed that no cleanup is required after
 // serializing or destroying a message with |context| attached.
 //
+// A |context| value of zero is invalid, and setting this on a message
+// effectively removes its context. This is necessary if the caller wishes to
+// attach data to the message or if the caller wants to destroy the message
+// object without triggering |destructor|.
+//
+// |options| may be null.
+//
 // Returns:
-//   |MOJO_RESULT_OK| if the context was successfully attached.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |context| is 0 or |message| is not a
-//       valid message object.
-//   |MOJO_RESULT_ALREADY_EXISTS| if |message| already has a context attached.
-//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| already has a serialized
-//       buffer attached.
+//   |MOJO_RESULT_OK| if the opaque context value was successfully set.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object;
+//       |options| is non-null and |*options| contains one or more malformed
+//       fields; or |context| is zero but either |serializer| or |destructor| is
+//       non-null.
+//   |MOJO_RESULT_ALREADY_EXISTS| if |message| already has a non-zero context.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| has data attached.
 MOJO_SYSTEM_EXPORT MojoResult
-MojoAttachMessageContext(MojoMessageHandle message,
-                         uintptr_t context,
-                         MojoMessageContextSerializer serializer,
-                         MojoMessageContextDestructor destructor);
+MojoSetMessageContext(MojoMessageHandle message,
+                      uintptr_t context,
+                      MojoMessageContextSerializer serializer,
+                      MojoMessageContextDestructor destructor,
+                      const struct MojoSetMessageContextOptions* options);
 
-// Extracts the user-provided context from a message and returns it to the
-// caller.
+// Retrieves a message object's opaque context value.
 //
-// |flags|: Flags to alter the behavior of this call. See
-//     |MojoGetMessageContextFlags| for details.
+// |options| may be null.
 //
 // Returns:
-//   |MOJO_RESULT_OK| if |message| is a valid message object which has a
-//       |context| attached. Upon return, |*context| contains the value of the
-//       attached context. If |flags| contains
-//       |MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE|, the |context| is detached from
-//       |message|.
-//   |MOJO_RESULT_NOT_FOUND| if |message| is a valid message object which has no
-//       attached context.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
+//   |MOJO_RESULT_OK| if |message| is a valid message object. |*context|
+//       contains its opaque context value, which may be zero.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object
+//       or |options| is non-null and |*options| contains one or more malformed
+//       fields.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoGetMessageContext(MojoMessageHandle message,
-                      uintptr_t* context,
-                      MojoGetMessageContextFlags flags);
+                      const struct MojoGetMessageContextOptions* options,
+                      uintptr_t* context);
 
 // Notifies the system that a bad message was received on a message pipe,
 // according to whatever criteria the caller chooses. This ultimately tries to

@@ -59,16 +59,19 @@ MojoResult MojoCancelWatchImpl(MojoHandle watcher_handle, uintptr_t context) {
   return g_core->CancelWatch(watcher_handle, context);
 }
 
-MojoResult MojoCreateMessageImpl(MojoMessageHandle* message) {
-  return g_core->CreateMessage(message);
+MojoResult MojoCreateMessageImpl(const MojoCreateMessageOptions* options,
+                                 MojoMessageHandle* message) {
+  return g_core->CreateMessage(options, message);
+}
+
+MojoResult MojoSerializeMessageImpl(
+    MojoMessageHandle message,
+    const MojoSerializeMessageOptions* options) {
+  return g_core->SerializeMessage(message, options);
 }
 
 MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
   return g_core->DestroyMessage(message);
-}
-
-MojoResult MojoSerializeMessageImpl(MojoMessageHandle message) {
-  return g_core->SerializeMessage(message);
 }
 
 MojoResult MojoAppendMessageDataImpl(
@@ -93,18 +96,21 @@ MojoResult MojoGetMessageDataImpl(MojoMessageHandle message,
                                 num_handles);
 }
 
-MojoResult MojoAttachMessageContextImpl(
+MojoResult MojoSetMessageContextImpl(
     MojoMessageHandle message,
     uintptr_t context,
     MojoMessageContextSerializer serializer,
-    MojoMessageContextDestructor destructor) {
-  return g_core->AttachMessageContext(message, context, serializer, destructor);
+    MojoMessageContextDestructor destructor,
+    const MojoSetMessageContextOptions* options) {
+  return g_core->SetMessageContext(message, context, serializer, destructor,
+                                   options);
 }
 
-MojoResult MojoGetMessageContextImpl(MojoMessageHandle message,
-                                     uintptr_t* context,
-                                     MojoGetMessageContextFlags flags) {
-  return g_core->GetMessageContext(message, context, flags);
+MojoResult MojoGetMessageContextImpl(
+    MojoMessageHandle message,
+    const MojoGetMessageContextOptions* options,
+    uintptr_t* context) {
+  return g_core->GetMessageContext(message, options, context);
 }
 
 MojoResult MojoCreateMessagePipeImpl(
@@ -281,7 +287,7 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoSerializeMessageImpl,
                                     MojoAppendMessageDataImpl,
                                     MojoGetMessageDataImpl,
-                                    MojoAttachMessageContextImpl,
+                                    MojoSetMessageContextImpl,
                                     MojoGetMessageContextImpl,
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,

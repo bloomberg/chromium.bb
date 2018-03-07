@@ -480,8 +480,11 @@ MojoResult Core::ArmWatcher(MojoHandle watcher_handle,
                       ready_signals_states);
 }
 
-MojoResult Core::CreateMessage(MojoMessageHandle* message_handle) {
+MojoResult Core::CreateMessage(const MojoCreateMessageOptions* options,
+                               MojoMessageHandle* message_handle) {
   if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   *message_handle = reinterpret_cast<MojoMessageHandle>(
       UserMessageImpl::CreateEventForNewMessage().release());
@@ -497,8 +500,11 @@ MojoResult Core::DestroyMessage(MojoMessageHandle message_handle) {
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::SerializeMessage(MojoMessageHandle message_handle) {
+MojoResult Core::SerializeMessage(MojoMessageHandle message_handle,
+                                  const MojoSerializeMessageOptions* options) {
   if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   RequestContext request_context;
   return reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -589,21 +595,27 @@ MojoResult Core::GetMessageData(MojoMessageHandle message_handle,
       UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
 }
 
-MojoResult Core::AttachMessageContext(MojoMessageHandle message_handle,
-                                      uintptr_t context,
-                                      MojoMessageContextSerializer serializer,
-                                      MojoMessageContextDestructor destructor) {
-  if (!message_handle || !context)
+MojoResult Core::SetMessageContext(
+    MojoMessageHandle message_handle,
+    uintptr_t context,
+    MojoMessageContextSerializer serializer,
+    MojoMessageContextDestructor destructor,
+    const MojoSetMessageContextOptions* options) {
+  if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
-  return message->AttachContext(context, serializer, destructor);
+  return message->SetContext(context, serializer, destructor);
 }
 
 MojoResult Core::GetMessageContext(MojoMessageHandle message_handle,
-                                   uintptr_t* context,
-                                   MojoGetMessageContextFlags flags) {
+                                   const MojoGetMessageContextOptions* options,
+                                   uintptr_t* context) {
   if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -611,10 +623,7 @@ MojoResult Core::GetMessageContext(MojoMessageHandle message_handle,
   if (!message->HasContext())
     return MOJO_RESULT_NOT_FOUND;
 
-  if (flags & MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE)
-    *context = message->ReleaseContext();
-  else
-    *context = message->context();
+  *context = message->context();
   return MOJO_RESULT_OK;
 }
 

@@ -51,7 +51,7 @@ TEST_F(CoreTest, Basic) {
 
   ASSERT_EQ(0u, info.GetWriteMessageCallCount());
   MojoMessageHandle message;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetWriteMessageCallCount());
@@ -173,10 +173,10 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Write to |h[1]|.
   const uintptr_t kTestMessageContext = 123;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
-                                         nullptr));
+            core()->SetMessageContext(message, kTestMessageContext, nullptr,
+                                      nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -189,8 +189,9 @@ TEST_F(CoreTest, MessagePipe) {
             core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->GetMessageContext(message, &context,
-                                      MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
+            core()->GetMessageContext(message, nullptr, &context));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->SetMessageContext(message, 0, nullptr, nullptr, nullptr));
   ASSERT_EQ(kTestMessageContext, context);
   ASSERT_EQ(MOJO_RESULT_OK, core()->DestroyMessage(message));
 
@@ -201,10 +202,10 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
   // Write to |h[0]|.
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
-                                         nullptr));
+            core()->SetMessageContext(message, kTestMessageContext, nullptr,
+                                      nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -240,10 +241,10 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfiable_signals);
 
   // Try writing to |h[1]|.
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
-                                         nullptr));
+            core()->SetMessageContext(message, kTestMessageContext, nullptr,
+                                      nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -260,10 +261,10 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   // Make sure that |h_passing[]| work properly.
   const uintptr_t kTestMessageContext = 42;
   MojoMessageHandle message;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(&message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->AttachMessageContext(message, kTestMessageContext, nullptr,
-                                         nullptr));
+            core()->SetMessageContext(message, kTestMessageContext, nullptr,
+                                      nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h_passing[0], message,
                                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
@@ -277,8 +278,9 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                                 MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->GetMessageContext(message_handle, &context,
-                                      MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
+            core()->GetMessageContext(message_handle, nullptr, &context));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->SetMessageContext(message, 0, nullptr, nullptr, nullptr));
   ASSERT_EQ(kTestMessageContext, context);
   ASSERT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 

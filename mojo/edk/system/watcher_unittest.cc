@@ -1762,9 +1762,9 @@ void DoRandomThing(MojoHandle* watchers,
     case 3:
     case 4: {
       MojoMessageHandle message;
-      ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+      ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
       ASSERT_EQ(MOJO_RESULT_OK,
-                MojoAttachMessageContext(message, 1, nullptr, nullptr));
+                MojoSetMessageContext(message, 1, nullptr, nullptr, nullptr));
       MojoWriteMessage(RandomHandle(watched_handles, num_watched_handles),
                        message, MOJO_WRITE_MESSAGE_FLAG_NONE);
       break;

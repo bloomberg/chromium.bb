@@ -173,9 +173,10 @@ MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
   return g_thunks.FuseMessagePipes(handle0, handle1);
 }
 
-MojoResult MojoCreateMessage(MojoMessageHandle* message) {
+MojoResult MojoCreateMessage(const MojoCreateMessageOptions* options,
+                             MojoMessageHandle* message) {
   assert(g_thunks.CreateMessage);
-  return g_thunks.CreateMessage(message);
+  return g_thunks.CreateMessage(options, message);
 }
 
 MojoResult MojoDestroyMessage(MojoMessageHandle message) {
@@ -183,9 +184,10 @@ MojoResult MojoDestroyMessage(MojoMessageHandle message) {
   return g_thunks.DestroyMessage(message);
 }
 
-MojoResult MojoSerializeMessage(MojoMessageHandle message) {
+MojoResult MojoSerializeMessage(MojoMessageHandle message,
+                                const MojoSerializeMessageOptions* options) {
   assert(g_thunks.SerializeMessage);
-  return g_thunks.SerializeMessage(message);
+  return g_thunks.SerializeMessage(message, options);
 }
 
 MojoResult MojoAppendMessageData(MojoMessageHandle message,
@@ -211,20 +213,21 @@ MojoResult MojoGetMessageData(MojoMessageHandle message,
                                  num_handles);
 }
 
-MojoResult MojoAttachMessageContext(MojoMessageHandle message,
-                                    uintptr_t context,
-                                    MojoMessageContextSerializer serializer,
-                                    MojoMessageContextDestructor destructor) {
-  assert(g_thunks.AttachMessageContext);
-  return g_thunks.AttachMessageContext(message, context, serializer,
-                                       destructor);
+MojoResult MojoSetMessageContext(MojoMessageHandle message,
+                                 uintptr_t context,
+                                 MojoMessageContextSerializer serializer,
+                                 MojoMessageContextDestructor destructor,
+                                 const MojoSetMessageContextOptions* options) {
+  assert(g_thunks.SetMessageContext);
+  return g_thunks.SetMessageContext(message, context, serializer, destructor,
+                                    options);
 }
 
 MojoResult MojoGetMessageContext(MojoMessageHandle message,
-                                 uintptr_t* context,
-                                 MojoGetMessageContextFlags flags) {
+                                 const MojoGetMessageContextOptions* options,
+                                 uintptr_t* context) {
   assert(g_thunks.GetMessageContext);
-  return g_thunks.GetMessageContext(message, context, flags);
+  return g_thunks.GetMessageContext(message, options, context);
 }
 
 MojoResult MojoWrapPlatformHandle(

@@ -365,12 +365,6 @@ Channel::MessagePtr UserMessageImpl::FinalizeEventMessage(
   return channel_message;
 }
 
-uintptr_t UserMessageImpl::ReleaseContext() {
-  uintptr_t context = context_;
-  context_ = 0;
-  return context;
-}
-
 size_t UserMessageImpl::user_payload_capacity() const {
   DCHECK(IsSerialized());
   const size_t user_payload_offset =
@@ -387,11 +381,13 @@ size_t UserMessageImpl::num_handles() const {
   return static_cast<const MessageHeader*>(header_)->num_dispatchers;
 }
 
-MojoResult UserMessageImpl::AttachContext(
+MojoResult UserMessageImpl::SetContext(
     uintptr_t context,
     MojoMessageContextSerializer serializer,
     MojoMessageContextDestructor destructor) {
-  if (HasContext())
+  if (!context && (serializer || destructor))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (context && HasContext())
     return MOJO_RESULT_ALREADY_EXISTS;
   if (IsSerialized())
     return MOJO_RESULT_FAILED_PRECONDITION;
@@ -493,7 +489,8 @@ MojoResult UserMessageImpl::SerializeIfNecessary() {
   if (!context_serializer_)
     return MOJO_RESULT_NOT_FOUND;
 
-  uintptr_t context = ReleaseContext();
+  uintptr_t context = context_;
+  context_ = 0;
   context_serializer_(reinterpret_cast<MojoMessageHandle>(message_event_),
                       context);
 

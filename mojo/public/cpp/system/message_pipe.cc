@@ -47,7 +47,7 @@ MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  rv = MojoSerializeMessage(message_handle->value());
+  rv = MojoSerializeMessage(message_handle->value(), nullptr);
   if (rv != MOJO_RESULT_OK && rv != MOJO_RESULT_FAILED_PRECONDITION)
     return MOJO_RESULT_ABORTED;
 
