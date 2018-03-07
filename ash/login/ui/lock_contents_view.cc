@@ -329,6 +329,7 @@ void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
                              previous_id);
+  node_data->SetNameExplicitlyEmpty();
 }
 
 void LockContentsView::OnUsersChanged(
