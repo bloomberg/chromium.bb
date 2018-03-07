@@ -4,10 +4,10 @@
     <title>
       Test Convolver Channel Outputs for Response with 1 channel
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit-util.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -99,7 +99,8 @@
                   should(c1, '1: Channel 1').beConstantValueOf(0);
 
                   // The expected and actual results should be identical
-                  should(actual, 'Convolver output').beEqualToArray(expected);
+                  should(actual, 'Convolver output')
+                    .beCloseToArray(expected, {absoluteThreshold: 4.1724e-7});
                 })
                 .then(() => task.done());
           });
