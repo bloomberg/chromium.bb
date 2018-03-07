@@ -313,7 +313,7 @@ def RemoveDirectory(*path):
   remove_with_retry(os.rmdir, file_path)
 
 
-def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
+def MakeZip(output_dir, archive_name, file_list, file_relative_dir, dir_in_zip,
             raise_error=True, remove_archive_directory=True, strip_files=None,
             ignore_sub_folder=False):
   """Packs files into a new zip archive.
@@ -335,6 +335,7 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
       file_relative_dir.
     file_relative_dir: Absolute path to the directory containing the files
       and subdirectories in the file_list.
+    dir_in_zip: Directory where the files are archived into.
     raise_error: Whether to raise a PathNotFound error if one of the files in
       the list is not found.
     remove_archive_directory: Whether to remove the archive staging directory
@@ -352,7 +353,7 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
 
   start_time = time.clock()
   # Collect files into the archive directory.
-  archive_dir = os.path.join(output_dir, archive_name)
+  archive_dir = os.path.join(output_dir, dir_in_zip)
   print 'output_dir: %s, archive_name: %s' % (output_dir, archive_name)
   print 'archive_dir: %s, remove_archive_directory: %s, exists: %s' % (
       archive_dir, remove_archive_directory, os.path.exists(archive_dir))
@@ -402,8 +403,8 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
   print 'Took %f seconds to create archive directory.' % (end_time - start_time)
 
   # Pack the zip file.
-  output_file = '%s.zip' % archive_dir
-  previous_file = '%s_old.zip' % archive_dir
+  output_file = os.path.join(output_dir, '%s.zip' % archive_name)
+  previous_file = os.path.join(output_dir, '%s_old.zip' % archive_name)
   MoveFile(output_file, previous_file)
 
   # If we have 7z, use that as it's much faster. See http://crbug.com/418702.

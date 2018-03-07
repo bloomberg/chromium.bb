@@ -42,16 +42,22 @@ CHROME_REQUIRED_FILES = {
         'chrome',
         'chrome_100_percent.pak',
         'chrome_200_percent.pak',
-        'default_apps',
+        'chromedriver',
+        'default_apps/',
         'icudtl.dat',
+        'libclearkeycdm.so',
+        'libclearkeycdmadapter.so',
         'libwidevinecdm.so',
-        'locales',
+        'libwidevinecdmadapter.so',
+        'locales/',
         'nacl_helper',
         'nacl_helper_bootstrap',
+        'nacl_helper_nonsfi',
         'nacl_irt_x86_64.nexe',
         'natives_blob.bin',
-        'PepperFlash',
+        'pnacl/',
         'product_logo_48.png',
+        'resources/',
         'resources.pak',
         'v8_context_snapshot.bin',
         'xdg-mime',
@@ -65,6 +71,7 @@ CHROME_REQUIRED_FILES = {
         'chrome_child.dll',
         'chrome_elf.dll',
         'chrome_watcher.dll',
+        'chromedriver.exe',
         'default_apps',
         'd3dcompiler_47.dll',
         'icudtl.dat',
@@ -76,9 +83,10 @@ CHROME_REQUIRED_FILES = {
         'PepperFlash',
         'resources.pak',
         'SecondaryTile.png',
-        'v8_context_snapshot.bin',
+        'v8_context_snapshot.bin'
     ],
     'mac': [
+        'chromedriver',
         'Google Chrome.app'
     ]
 }
@@ -97,6 +105,8 @@ CHROME_STRIP_LIST = {
 # API to convert Githash to Commit position number.
 CHROMIUM_GITHASH_TO_SVN_URL = (
     'https://cr-rev.appspot.com/_ah/api/crrev/v1/commit/%s')
+CHROMIUM_CP_TO_GITHASH = (
+'https://cr-rev.appspot.com/_ah/api/crrev/v1/redirect/%s')
 
 REVISION_MAP_FILE = 'revision_map.json'
 
@@ -154,7 +164,7 @@ class PathContext(object):
     # Perf builders archives the binaries in out/Release directory.
     if self.archive in ['arm', 'arm64']:
       return os.path.join('out', 'Release')
-    self.file_prefix
+    return self.file_prefix
 
 
 def get_cp_from_hash(git_hash):
@@ -293,11 +303,12 @@ def make_lightweight_archive(file_archive, archive_name, files_to_archive,
   """
   strip_list = CHROME_STRIP_LIST.get(context.archive)
   tmp_archive = os.path.join(staging_dir, 'tmp_%s' % archive_name)
-  (zip_file, zip_dir) = bisect_repackage_utils.MakeZip(
+  (zip_dir, zip_file) = bisect_repackage_utils.MakeZip(
       tmp_archive, archive_name, files_to_archive, file_archive,
+      dir_in_zip=context.GetExtractedDir(),
       raise_error=False, strip_files=strip_list,
       ignore_sub_folder=ignore_sub_folder)
-  return (zip_file, zip_dir, tmp_archive)
+  return (zip_dir, zip_file, tmp_archive)
 
 
 def remove_created_files_and_path(files, paths):
@@ -339,29 +350,29 @@ def repackage_single_revision(revision_map, verify_run, staging_dir,
   archive_name = '%s_%s' %(context.file_prefix, cp_num)
   file_archive = os.path.join(staging_dir, archive_name)
   zip_file_name = '%s.zip' % (file_archive)
-
   download_build(cp_num, revision_map, zip_file_name, context)
 
   extract_dir = os.path.join(staging_dir, archive_name)
   is_android = context.archive in ['arm', 'arm64']
-  if CHROME_WHITELIST_FILES.get(context.archive):
-    whitelist_files = get_whitelist_files(extracted_folder, context.archive)
-    files_to_include = (whitelist_files +
-                        CHROME_REQUIRED_FILES.get(context.archive))
-  else:
-    files_to_include = CHROME_REQUIRED_FILES.get(context.archive)
+  files_to_include = CHROME_REQUIRED_FILES.get(context.archive)
 
   dir_path_in_zip = context.GetExtractedDir()
   extract_file_list = []
   # Only extract required files and directories.
-  if is_android:
+  # And when there is no pattern checking for files.
+  if not CHROME_WHITELIST_FILES.get(context.archive):
     for f in files_to_include:
       if f.endswith('/'):
         f += '*'
       extract_file_list.append(os.path.join(dir_path_in_zip, f))
+
   bisect_repackage_utils.ExtractZip(
       zip_file_name, extract_dir, extract_file_list)
   extracted_folder = os.path.join(extract_dir, dir_path_in_zip)
+
+  if CHROME_WHITELIST_FILES.get(context.archive):
+    whitelist_files = get_whitelist_files(extracted_folder, context.archive)
+    files_to_include += whitelist_files
 
   (zip_dir, zip_file, tmp_archive) = make_lightweight_archive(extracted_folder,
                                                               archive_name,
@@ -373,6 +384,12 @@ def repackage_single_revision(revision_map, verify_run, staging_dir,
   if verify_run:
     verify_chrome_run(zip_dir)
   upload_build(zip_file, context)
+  with open('upload_revs.json', 'r+') as rfile:
+    update_map = json.load(rfile)
+    update_map[str(cp_num)] = 'Done'
+    rfile.seek(0)
+    json.dump(update_map, rfile)
+    rfile.truncate()
   # Removed temporary files created during repackaging process.
   remove_created_files_and_path([zip_file_name],
                                 [zip_dir, extract_dir, tmp_archive])
@@ -410,6 +427,34 @@ def get_revisions_to_package(revision_map, context):
   not_already_packaged = list(set(revision_map.keys())-set(already_packaged))
   revisions_to_package = sorted(not_already_packaged, reverse=True)
   return revisions_to_package
+
+
+def get_hash_from_cp(cp_num):
+  """Converts a commit position number to git hash."""
+  json_url = CHROMIUM_CP_TO_GITHASH % cp_num
+  response = urllib.urlopen(json_url)
+  if response.getcode() == 200:
+    try:
+      data = json.loads(response.read())
+      if 'git_sha' in data:
+        return data['git_sha']
+    except Exception, e:
+      logging.warning('Failed to fetch git_hash: %s, error: %s' % json_url, e)
+  else:
+      logging.warning('Failed to fetch git_hash: %s, CP: %s' % json_url, cp_num)
+  return None
+
+
+def get_revision_map_for_range(start_rev, end_rev):
+  revision_map = {}
+  for cp_num in range(start_rev, end_rev + 1 ):
+    git_hash = get_hash_from_cp(cp_num)
+    if git_hash:
+      revision_map[cp_num] = git_hash
+  return revision_map
+
+def get_overwrite_revisions(revision_map):
+  return sorted(revision_map.keys(), reverse=True)
 
 
 class RepackageJob(object):
@@ -494,6 +539,26 @@ def main(argv):
                            help='Google storage bucket name '
                                  'to re-archive Chrome builds')
 
+  # Overwrites build archives for a given range.
+  option_parser.add_option('-w', '--overwrite',
+                           action='store_true',
+                           dest='overwrite',
+                           help='Overwrite build archives')
+
+  # Start revision for build overwrite.
+  option_parser.add_option('-s', '--start_rev',
+                           type='str',
+                           dest='start_rev',
+                           help='Start revision for overwrite')
+
+  # Start revision for build overwrite.
+  option_parser.add_option('-e', '--end_rev',
+                           type='str',
+                           dest='end_rev',
+                           help='end revision for overwrite')
+
+
+
   verify_run = False
   (opts, args) = option_parser.parse_args()
   if opts.archive is None:
@@ -514,8 +579,19 @@ def main(argv):
   if opts.verify:
     verify_run = True
 
-  revision_map = get_revision_map(context)
-  backward_rev = get_revisions_to_package(revision_map, context)
+  if opts.overwrite:
+    if not opts.start_rev or not opts.end_rev:
+      raise ValueError('Need to specify overwrite range start (-s) and end (-e)'
+                       ' revision.')
+    revision_map = get_revision_map_for_range(
+        int(opts.start_rev), int(opts.end_rev))
+    backward_rev = get_overwrite_revisions(revision_map)
+    with open('upload_revs.json', 'w') as revision_file:
+      json.dump(revision_map, revision_file)
+  else:
+    revision_map = get_revision_map(context)
+    backward_rev = get_revisions_to_package(revision_map, context)
+
   base_dir = os.path.join('.', context.archive)
   # Clears any uncleared staging directories and create one
   bisect_repackage_utils.RemovePath(base_dir)
