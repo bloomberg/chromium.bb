@@ -177,6 +177,11 @@ class NullAwViewMethods implements AwViewMethods {
     }
 
     @Override
+    public boolean onCheckIsTextEditor() {
+        return false;
+    }
+
+    @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         return null;
     }

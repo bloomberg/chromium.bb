@@ -163,6 +163,11 @@ interface AwViewMethods {
     void computeScroll();
 
     /**
+     * @see android.view.View#onCheckIsTextEditor
+     */
+    boolean onCheckIsTextEditor();
+
+    /**
      * @see android.view.View#getAccessibilityNodeProvider
      */
     AccessibilityNodeProvider getAccessibilityNodeProvider();
