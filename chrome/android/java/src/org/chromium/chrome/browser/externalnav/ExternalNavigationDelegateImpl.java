@@ -398,8 +398,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             final String fallbackUrl, final Tab tab, final boolean needsToCloseTab,
             final boolean proxy) {
         try {
-            startIncognitoIntentInternal(
-                    intent, referrerUrl, fallbackUrl, tab, needsToCloseTab, proxy);
+            startIncognitoIntentInternal(intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);
         } catch (BadTokenException e) {
             return false;
         }
@@ -407,9 +406,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     private void startIncognitoIntentInternal(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final Tab tab, final boolean needsToCloseTab,
-            final boolean proxy) {
-        Context context = tab.getWindowAndroid().getContext().get();
+            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
+        if (!hasValidTab()) return;
+        Context context = mTab.getWindowAndroid().getContext().get();
         if (!(context instanceof Activity)) return;
 
         Activity activity = (Activity) context;
@@ -421,9 +420,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 startActivity(intent, proxy);
-                                if (tab != null && !tab.isClosing() && tab.isInitialized()
+                                if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
                                         && needsToCloseTab) {
-                                    closeTab(tab);
+                                    closeTab();
                                 }
                             }
                         })
@@ -431,23 +430,23 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab,
+                                loadIntent(intent, referrerUrl, fallbackUrl, mTab, needsToCloseTab,
                                         true);
                             }
                         })
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab, true);
+                        loadIntent(intent, referrerUrl, fallbackUrl, mTab, needsToCloseTab, true);
                     }
                 })
                 .show();
     }
 
     @Override
-    public boolean shouldRequestFileAccess(String url, Tab tab) {
+    public boolean shouldRequestFileAccess(String url) {
         // If the tab is null, then do not attempt to prompt for access.
-        if (tab == null) return false;
+        if (!hasValidTab()) return false;
 
         // If the url points inside of Chromium's data directory, no permissions are necessary.
         // This is required to prevent permission prompt when uses wants to access offline pages.
@@ -455,30 +454,32 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return false;
         }
 
-        return !tab.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
-                && tab.getWindowAndroid().canRequestPermission(permission.READ_EXTERNAL_STORAGE);
+        return !mTab.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
+                && mTab.getWindowAndroid().canRequestPermission(permission.READ_EXTERNAL_STORAGE);
     }
 
     @Override
-    public void startFileIntent(final Intent intent, final String referrerUrl, final Tab tab,
-            final boolean needsToCloseTab) {
+    public void startFileIntent(
+            final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
         PermissionCallback permissionCallback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadIntent(intent, referrerUrl, null, tab, needsToCloseTab, tab.isIncognito());
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && hasValidTab()) {
+                    loadIntent(
+                            intent, referrerUrl, null, mTab, needsToCloseTab, mTab.isIncognito());
                 } else {
                     // TODO(tedchoc): Show an indication to the user that the navigation failed
                     //                instead of silently dropping it on the floor.
                     if (needsToCloseTab) {
                         // If the access was not granted, then close the tab if necessary.
-                        closeTab(tab);
+                        closeTab();
                     }
                 }
             }
         };
-        tab.getWindowAndroid().requestPermissions(
+        if (!hasValidTab()) return;
+        mTab.getWindowAndroid().requestPermissions(
                 new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
     }
 
@@ -494,7 +495,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         String url = fallbackUrl != null ? fallbackUrl : intent.getDataString();
         if (!UrlUtilities.isAcceptedScheme(url)) {
-            if (needsToCloseTab) closeTab(tab);
+            if (needsToCloseTab) closeTab();
             return;
         }
 
@@ -509,7 +510,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             IntentHandler.addTrustedIntentExtras(intent);
             startActivity(intent, false);
 
-            if (needsToCloseTab) closeTab(tab);
+            if (needsToCloseTab) closeTab();
             return;
         }
 
@@ -534,8 +535,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public OverrideUrlLoadingResult clobberCurrentTab(
-            String url, String referrerUrl, final Tab tab) {
+    public OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl) {
         int transitionType = PageTransition.LINK;
         final LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
         if (!TextUtils.isEmpty(referrerUrl)) {
@@ -543,7 +543,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     new Referrer(referrerUrl, WebReferrerPolicy.ALWAYS);
             loadUrlParams.setReferrer(referrer);
         }
-        if (tab != null) {
+        if (hasValidTab()) {
             // Loading URL will start a new navigation which cancels the current one
             // that this clobbering is being done for. It leads to UAF. To avoid that,
             // we're loading URL asynchronously. See https://crbug.com/732260.
@@ -552,7 +552,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 public void run() {
                     // Tab might be closed when this is run. See https://crbug.com/662877
                     if (!mIsTabDestroyed) {
-                        tab.loadUrl(loadUrlParams);
+                        mTab.loadUrl(loadUrlParams);
                     }
                 }
             });
@@ -589,10 +589,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return Telephony.Sms.getDefaultSmsPackage(mApplicationContext);
     }
 
-    private void closeTab(Tab tab) {
-        Context context = tab.getWindowAndroid().getContext().get();
+    private void closeTab() {
+        if (!hasValidTab()) return;
+        Context context = mTab.getWindowAndroid().getContext().get();
         if (context instanceof ChromeActivity) {
-            ((ChromeActivity) context).getTabModelSelector().closeTab(tab);
+            ((ChromeActivity) context).getTabModelSelector().closeTab(mTab);
         }
     }
 
@@ -611,12 +612,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isSerpReferrer(Tab tab) {
+    public boolean isSerpReferrer() {
         // TODO (thildebr): Investigate whether or not we can use getLastCommittedUrl() instead of
         // the NavigationController.
-        if (tab == null || tab.getWebContents() == null) return false;
+        if (!hasValidTab() || mTab.getWebContents() == null) return false;
 
-        NavigationController nController = tab.getWebContents().getNavigationController();
+        NavigationController nController = mTab.getWebContents().getNavigationController();
         int index = nController.getLastCommittedEntryIndex();
         if (index == -1) return false;
 
@@ -627,13 +628,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
-            boolean isIncomingRedirect) {
-        if (tab == null || tab.getWebContents() == null) return false;
+    public boolean maybeLaunchInstantApp(
+            String url, String referrerUrl, boolean isIncomingRedirect) {
+        if (!hasValidTab() || mTab.getWebContents() == null) return false;
 
         InstantAppsHandler handler = InstantAppsHandler.getInstance();
-        Intent intent = tab.getTabRedirectHandler() != null
-                ? tab.getTabRedirectHandler().getInitialIntent() : null;
+        Intent intent = mTab.getTabRedirectHandler() != null
+                ? mTab.getTabRedirectHandler().getInitialIntent()
+                : null;
         // TODO(mariakhomenko): consider also handling NDEF_DISCOVER action redirects.
         if (isIncomingRedirect && intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
             // Set the URL the redirect was resolved to for checking the existence of the
@@ -644,9 +646,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     LaunchIntentDispatcher.isCustomTabIntent(resolvedIntent), true);
         } else if (!isIncomingRedirect) {
             // Check if the navigation is coming from SERP and skip instant app handling.
-            if (isSerpReferrer(tab)) return false;
+            if (isSerpReferrer()) return false;
             return handler.handleNavigation(getAvailableContext(), url,
-                    TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl), tab);
+                    TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl), mTab);
         }
         return false;
     }
@@ -668,5 +670,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         proxyIntent.putExtra(AuthenticatedProxyActivity.AUTHENTICATED_INTENT_EXTRA, intent);
         getAvailableContext().startActivity(proxyIntent);
+    }
+
+    /**
+     * @return Whether or not we have a valid {@link Tab} available.
+     */
+    private boolean hasValidTab() {
+        return mTab != null && !mIsTabDestroyed;
     }
 }

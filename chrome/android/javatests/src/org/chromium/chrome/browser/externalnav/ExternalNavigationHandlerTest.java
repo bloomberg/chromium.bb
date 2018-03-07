@@ -1561,13 +1561,12 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean shouldRequestFileAccess(String url, Tab tab) {
+        public boolean shouldRequestFileAccess(String url) {
             return shouldRequestFileAccess;
         }
 
         @Override
-        public void startFileIntent(Intent intent, String referrerUrl, Tab tab,
-                boolean needsToCloseTab) {
+        public void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab) {
             startFileIntentCalled = true;
         }
 
@@ -1577,8 +1576,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public OverrideUrlLoadingResult clobberCurrentTab(
-                String url, String referrerUrl, Tab tab) {
+        public OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl) {
             mNewUrlAfterClobbering = url;
             mReferrerUrlForClobbering = referrerUrl;
             return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
@@ -1608,13 +1606,13 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
-                boolean isIncomingRedirect) {
+        public boolean maybeLaunchInstantApp(
+                String url, String referrerUrl, boolean isIncomingRedirect) {
             return mCanHandleWithInstantApp;
         }
 
         @Override
-        public boolean isSerpReferrer(Tab tab) {
+        public boolean isSerpReferrer() {
             return mIsSerpReferrer;
         }
 
