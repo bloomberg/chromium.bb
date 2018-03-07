@@ -136,6 +136,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   for (std::size_t i = 1u; i < users.size(); ++i) {
     auto* view = new LoginUserView(
         layout_params_.display_style, false /*show_dropdown*/,
+        false /*show_domain*/,
         base::BindRepeating(on_user_view_tap, i - 1) /*on_tap*/);
     user_views_.push_back(view);
     view->UpdateForUser(users[i], false /*animate*/);

@@ -49,6 +49,7 @@ class ASH_EXPORT LoginUserView : public views::View,
 
   LoginUserView(LoginDisplayStyle style,
                 bool show_dropdown,
+                bool show_domain,
                 const OnTap& on_tap);
   ~LoginUserView() override;
 
@@ -72,6 +73,7 @@ class ASH_EXPORT LoginUserView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  class UserDomainInfoView;
   class UserImage;
   class UserLabel;
   class TapButton;
@@ -103,6 +105,9 @@ class ASH_EXPORT LoginUserView : public views::View,
   LoginButton* user_dropdown_ = nullptr;
   TapButton* tap_button_ = nullptr;
   std::unique_ptr<LoginBubble> user_menu_;
+
+  // Show the domain information for public account user.
+  UserDomainInfoView* user_domain_ = nullptr;
 
   // True iff the view is currently opaque (ie, opacity = 1).
   bool is_opaque_ = false;
