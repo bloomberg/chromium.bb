@@ -418,6 +418,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
 
       // Filtered set:
       {"apple,pear,orange", "", "apple", true},
+      {"apple,pear,orange", "", "aPPle", true},
       {"apple,pear,orange", "", "fancy INTEL pear device", false},
       {"apple,pear,orange", "", "fancy INTEL GRAPE device", false},
       // Somehow tagged as both, but still valid.

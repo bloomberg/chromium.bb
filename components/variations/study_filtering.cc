@@ -21,6 +21,17 @@ base::Time ConvertStudyDateToBaseTime(int64_t date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
+// Similar to base::ContainsValue(), but specifically for ASCII strings and
+// case-insensitive comparison.
+template <typename Collection>
+bool ContainsStringIgnoreCaseASCII(const Collection& collection,
+                                   const std::string& value) {
+  return std::find_if(std::begin(collection), std::end(collection),
+                      [&value](const std::string& s) -> bool {
+                        return base::EqualsCaseInsensitiveASCII(s, value);
+                      }) != std::end(collection);
+}
+
 }  // namespace
 
 namespace internal {
@@ -69,11 +80,14 @@ bool CheckStudyHardwareClass(const Study::Filter& filter,
   // Checks if we are supposed to filter for a specified set of
   // hardware_classes. Note that this means this overrides the
   // exclude_hardware_class in case that ever occurs (which it shouldn't).
-  if (filter.hardware_class_size() > 0)
-    return base::ContainsValue(filter.hardware_class(), hardware_class);
+  if (filter.hardware_class_size() > 0) {
+    return ContainsStringIgnoreCaseASCII(filter.hardware_class(),
+                                         hardware_class);
+  }
 
   // Omit if we match the blacklist.
-  return !base::ContainsValue(filter.exclude_hardware_class(), hardware_class);
+  return !ContainsStringIgnoreCaseASCII(filter.exclude_hardware_class(),
+                                        hardware_class);
 }
 
 bool CheckStudyLocale(const Study::Filter& filter, const std::string& locale) {

@@ -358,7 +358,7 @@ std::string VariationsFieldTrialCreator::GetShortHardwareClass() {
   if (index != std::string::npos)
     board.resize(index);
 
-  return base::ToLowerASCII(board);
+  return base::ToUpperASCII(board);
 #else
   return std::string();
 #endif  // OS_CHROMEOS
