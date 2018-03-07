@@ -25,12 +25,6 @@ const char kAshDisableLoginDimAndBlur[] = "ash-disable-login-dim-and-blur";
 const char kAshDisableSmoothScreenRotation[] =
     "ash-disable-smooth-screen-rotation";
 
-// Disables autohide titlebars feature. With this flag disabled, apps in tablet
-// mode will have visible titlebars instead of autohidden titlebars.
-// TODO(crbug.com/764393): Remove this flag in M66/M67.
-const char kAshDisableTabletAutohideTitlebars[] =
-    "ash-disable-tablet-autohide-titlebars";
-
 // Disables the split view on tablet mode.
 const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
 

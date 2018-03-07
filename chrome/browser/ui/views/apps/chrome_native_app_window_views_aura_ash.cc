@@ -605,6 +605,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldUseImmersiveMode() const {
   // mode.
   // TODO(sammiequon): Investigate whether we should check resizability using
   // WindowState instead of CanResize.
-  return client && client->tablet_mode_enabled() &&
-         client->auto_hide_title_bars() && CanResize() && !IsMinimized();
+  return client && client->tablet_mode_enabled() && CanResize() &&
+         !IsMinimized();
 }

@@ -123,8 +123,6 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 TabletModeController::TabletModeController()
     : tablet_mode_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      auto_hide_title_bars_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTabletAutohideTitlebars)),
       binding_(this),
       scoped_session_observer_(this),
       weak_factory_(this) {
@@ -225,10 +223,9 @@ void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
 }
 
 bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
-  const bool allowed =
-      auto_hide_title_bars_ && IsTabletModeWindowManagerEnabled();
-  if (!allowed || !widget)
-    return allowed;
+  const bool tablet_mode = IsTabletModeWindowManagerEnabled();
+  if (!tablet_mode || !widget)
+    return tablet_mode;
 
   return widget->IsMaximized() ||
          wm::GetWindowState(widget->GetNativeWindow())->IsSnapped();

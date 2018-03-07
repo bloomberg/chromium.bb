@@ -3491,12 +3491,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnablePixelCanvasRecording)},
 
-    {"disable-tablet-autohide-titlebars",
-     flag_descriptions::kDisableTabletAutohideTitlebarsName,
-     flag_descriptions::kDisableTabletAutohideTitlebarsDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(
-         ash::switches::kAshDisableTabletAutohideTitlebars)},
-
     {"disable-tablet-splitview", flag_descriptions::kDisableTabletSplitViewName,
      flag_descriptions::kDisableTabletSplitViewDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshDisableTabletSplitView)},
