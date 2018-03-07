@@ -75,6 +75,10 @@ declare_args() {
     device_logs_provider_package = ""
     device_logs_provider_class = ""
   }
+
+  # Set to true to enable a CMA media backend that allows mixed audio to be
+  # output with sync'd video.
+  enable_video_with_mixed_audio = false
 }
 
 declare_args() {
