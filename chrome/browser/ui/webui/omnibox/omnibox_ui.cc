@@ -14,7 +14,8 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
+OmniboxUI::OmniboxUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController<mojom::OmniboxPageHandler>(web_ui) {
   // Set up the chrome://omnibox/ source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOmniboxHost);

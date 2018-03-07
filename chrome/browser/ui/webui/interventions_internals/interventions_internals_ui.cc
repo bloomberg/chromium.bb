@@ -45,7 +45,8 @@ content::WebUIDataSource* GetUnsupportedSource() {
 }  // namespace
 
 InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
-    : MojoWebUIController(web_ui), previews_ui_service_(nullptr) {
+    : ui::MojoWebUIController<mojom::InterventionsInternalsPageHandler>(web_ui),
+      previews_ui_service_(nullptr) {
   // Set up the chrome://interventions-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
 

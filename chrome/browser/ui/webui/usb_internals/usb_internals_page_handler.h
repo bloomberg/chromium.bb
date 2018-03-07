@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_USB_INTERNALS_USB_INTERNALS_PAGE_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler,
-                                public MojoWebUIHandler {
+class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
  public:
   explicit UsbInternalsPageHandler(
       mojom::UsbInternalsPageHandlerRequest request);

@@ -21,6 +21,7 @@ source_set("bluetooth_internals") {
     "//chrome/common",
     "//content/public/browser",
     "//device/bluetooth",
+    "//ui/webui",
   ]
 }
 

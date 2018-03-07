@@ -7,14 +7,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 // Handles API requests from chrome://bluetooth-internals page by implementing
 // mojom::BluetoothInternalsHandler.
-class BluetoothInternalsHandler : public mojom::BluetoothInternalsHandler,
-                                  public MojoWebUIHandler {
+class BluetoothInternalsHandler : public mojom::BluetoothInternalsHandler {
  public:
   explicit BluetoothInternalsHandler(
       mojom::BluetoothInternalsHandlerRequest request);

@@ -828,9 +828,6 @@ split_static_library("ui") {
     "webui/memory_internals_ui.h",
     "webui/metrics_handler.cc",
     "webui/metrics_handler.h",
-    "webui/mojo_web_ui_controller.cc",
-    "webui/mojo_web_ui_controller.h",
-    "webui/mojo_web_ui_handler.h",
     "webui/net_export_ui.cc",
     "webui/net_export_ui.h",
     "webui/net_internals/net_internals_ui.cc",
@@ -1096,6 +1093,7 @@ split_static_library("ui") {
     "//ui/strings",
     "//ui/surface",
     "//ui/web_dialogs",
+    "//ui/webui",
     "//v8:v8_version",
   ]
   allow_circular_includes_from +=
@@ -2173,6 +2171,7 @@ split_static_library("ui") {
       "webui/discards/discards_ui.cc",
       "webui/discards/discards_ui.h",
     ]
+    deps += [ "//ui/webui" ]
   }
 
   if (is_win || is_mac || is_desktop_linux) {

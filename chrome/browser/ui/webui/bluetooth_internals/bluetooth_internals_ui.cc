@@ -11,7 +11,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
-    : MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController<mojom::BluetoothInternalsHandler>(web_ui) {
   // Set up the chrome://bluetooth-internals source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothInternalsHost);

@@ -11,7 +11,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
-    : MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController<mojom::UsbInternalsPageHandler>(web_ui) {
   // Set up the chrome://usb-internals source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUsbInternalsHost);
