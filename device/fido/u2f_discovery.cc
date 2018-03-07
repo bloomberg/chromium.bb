@@ -6,12 +6,57 @@
 
 #include <utility>
 
+#include "base/logging.h"
+#include "build/build_config.h"
+#include "device/fido/u2f_ble_discovery.h"
 #include "device/fido/u2f_device.h"
+
+// HID is not supported on Android.
+#if !defined(OS_ANDROID)
+#include "device/fido/u2f_hid_discovery.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace device {
 
-U2fDiscovery::U2fDiscovery() = default;
+namespace {
 
+std::unique_ptr<U2fDiscovery> CreateU2fDiscoveryImpl(
+    U2fTransportProtocol transport,
+    service_manager::Connector* connector) {
+  std::unique_ptr<U2fDiscovery> discovery;
+  switch (transport) {
+    case U2fTransportProtocol::kUsbHumanInterfaceDevice:
+#if !defined(OS_ANDROID)
+      DCHECK(connector);
+      discovery = std::make_unique<U2fHidDiscovery>(connector);
+#else
+      NOTREACHED() << "USB HID not supported on Android.";
+#endif  // !defined(OS_ANDROID)
+      break;
+    case U2fTransportProtocol::kBluetoothLowEnergy:
+      discovery = std::make_unique<U2fBleDiscovery>();
+      break;
+  }
+
+  DCHECK(discovery);
+  DCHECK_EQ(discovery->GetTransportProtocol(), transport);
+  return discovery;
+}
+
+}  // namespace
+
+// static
+U2fDiscovery::FactoryFuncPtr U2fDiscovery::g_factory_func_ =
+    &CreateU2fDiscoveryImpl;
+
+// static
+std::unique_ptr<U2fDiscovery> U2fDiscovery::Create(
+    U2fTransportProtocol transport,
+    service_manager::Connector* connector) {
+  return (*g_factory_func_)(transport, connector);
+}
+
+U2fDiscovery::U2fDiscovery() = default;
 U2fDiscovery::~U2fDiscovery() = default;
 
 void U2fDiscovery::AddObserver(Observer* observer) {

@@ -15,10 +15,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
+#include "device/fido/u2f_transport_protocol.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace device {
 
 class U2fDevice;
+
+namespace test {
+class ScopedFakeU2fDiscoveryFactory;
+}
 
 class U2fDiscovery {
  public:
@@ -31,9 +40,18 @@ class U2fDiscovery {
     virtual void DeviceRemoved(U2fDiscovery* discovery, U2fDevice* device) = 0;
   };
 
-  U2fDiscovery();
+  // Factory function to construct an instance that discovers authenticators on
+  // the given |transport| protocol.
+  //
+  // U2fTransportProtocol::kUsbHumanInterfaceDevice requires specifying a valid
+  // |connector| on Desktop, and is not valid on Android.
+  static std::unique_ptr<U2fDiscovery> Create(
+      U2fTransportProtocol transport,
+      ::service_manager::Connector* connector);
+
   virtual ~U2fDiscovery();
 
+  virtual U2fTransportProtocol GetTransportProtocol() const = 0;
   virtual void Start() = 0;
   virtual void Stop() = 0;
 
@@ -52,6 +70,8 @@ class U2fDiscovery {
   const U2fDevice* GetDevice(base::StringPiece device_id) const;
 
  protected:
+  U2fDiscovery();
+
   virtual bool AddDevice(std::unique_ptr<U2fDevice> device);
   virtual bool RemoveDevice(base::StringPiece device_id);
 
@@ -59,6 +79,12 @@ class U2fDiscovery {
   base::ObserverList<Observer> observers_;
 
  private:
+  friend class test::ScopedFakeU2fDiscoveryFactory;
+
+  // Factory function can be overridden by tests to construct fakes.
+  using FactoryFuncPtr = decltype(&Create);
+  static FactoryFuncPtr g_factory_func_;
+
   DISALLOW_COPY_AND_ASSIGN(U2fDiscovery);
 };
 

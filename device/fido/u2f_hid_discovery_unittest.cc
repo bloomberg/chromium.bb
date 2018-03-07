@@ -9,7 +9,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
-#include "device/fido/mock_u2f_discovery.h"
+#include "device/fido/mock_u2f_discovery_observer.h"
 #include "device/fido/u2f_hid_device.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"

@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/bluetooth_test.h"
-#include "device/fido/mock_u2f_discovery.h"
+#include "device/fido/mock_u2f_discovery_observer.h"
 #include "device/fido/u2f_ble_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

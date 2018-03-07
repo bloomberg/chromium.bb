@@ -29,7 +29,7 @@ class U2fSign : public U2fRequest {
 
   static std::unique_ptr<U2fRequest> TrySign(
       service_manager::Connector* connector,
-      const base::flat_set<U2fTransportProtocol>& protocols,
+      const base::flat_set<U2fTransportProtocol>& transports,
       std::vector<std::vector<uint8_t>> registered_keys,
       std::vector<uint8_t> challenge_digest,
       std::vector<uint8_t> application_parameter,
@@ -37,7 +37,7 @@ class U2fSign : public U2fRequest {
       SignResponseCallback completion_callback);
 
   U2fSign(service_manager::Connector* connector,
-          const base::flat_set<U2fTransportProtocol>& protocols,
+          const base::flat_set<U2fTransportProtocol>& transports,
           std::vector<std::vector<uint8_t>> registered_keys,
           std::vector<uint8_t> challenge_digest,
           std::vector<uint8_t> application_parameter,

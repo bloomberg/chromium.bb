@@ -13,14 +13,14 @@ namespace device {
 // static
 std::unique_ptr<U2fRequest> U2fSign::TrySign(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& protocols,
+    const base::flat_set<U2fTransportProtocol>& transports,
     std::vector<std::vector<uint8_t>> registered_keys,
     std::vector<uint8_t> challenge_digest,
     std::vector<uint8_t> application_parameter,
     base::Optional<std::vector<uint8_t>> alt_application_parameter,
     SignResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fSign>(
-      connector, protocols, registered_keys, challenge_digest,
+      connector, transports, registered_keys, challenge_digest,
       application_parameter, std::move(alt_application_parameter),
       std::move(completion_callback));
   request->Start();
@@ -29,14 +29,14 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
 }
 
 U2fSign::U2fSign(service_manager::Connector* connector,
-                 const base::flat_set<U2fTransportProtocol>& protocols,
+                 const base::flat_set<U2fTransportProtocol>& transports,
                  std::vector<std::vector<uint8_t>> registered_keys,
                  std::vector<uint8_t> challenge_digest,
                  std::vector<uint8_t> application_parameter,
                  base::Optional<std::vector<uint8_t>> alt_application_parameter,
                  SignResponseCallback completion_callback)
     : U2fRequest(connector,
-                 protocols,
+                 transports,
                  std::move(application_parameter),
                  std::move(challenge_digest),
                  std::move(registered_keys)),

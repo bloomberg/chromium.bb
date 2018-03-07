@@ -6,30 +6,58 @@
 
 #include <utility>
 
-#include "device/fido/mock_u2f_discovery.h"
+#include "base/macros.h"
+#include "device/fido/mock_u2f_device.h"
+#include "device/fido/mock_u2f_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
+namespace {
+
 using ::testing::_;
 using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
+// A minimal implementation of U2FDiscovery that is no longer abstract.
+class ConcreteU2fDiscovery : public U2fDiscovery {
+ public:
+  ConcreteU2fDiscovery() = default;
+  ~ConcreteU2fDiscovery() override = default;
+
+  using U2fDiscovery::AddDevice;
+  using U2fDiscovery::RemoveDevice;
+
+  const base::ObserverList<Observer>& observers() const { return observers_; }
+
+ protected:
+  U2fTransportProtocol GetTransportProtocol() const override {
+    return U2fTransportProtocol::kUsbHumanInterfaceDevice;
+  }
+  void Start() override {}
+  void Stop() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConcreteU2fDiscovery);
+};
+
+}  // namespace
+
 TEST(U2fDiscoveryTest, TestAddAndRemoveObserver) {
-  MockU2fDiscovery discovery;
+  ConcreteU2fDiscovery discovery;
   MockU2fDiscoveryObserver observer;
-  EXPECT_FALSE(discovery.GetObservers().HasObserver(&observer));
+  EXPECT_FALSE(discovery.observers().HasObserver(&observer));
 
   discovery.AddObserver(&observer);
-  EXPECT_TRUE(discovery.GetObservers().HasObserver(&observer));
+  EXPECT_TRUE(discovery.observers().HasObserver(&observer));
 
   discovery.RemoveObserver(&observer);
-  EXPECT_FALSE(discovery.GetObservers().HasObserver(&observer));
+  EXPECT_FALSE(discovery.observers().HasObserver(&observer));
 }
 
 TEST(U2fDiscoveryTest, TestNotifications) {
-  MockU2fDiscovery discovery;
+  ConcreteU2fDiscovery discovery;
   MockU2fDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
@@ -54,7 +82,7 @@ TEST(U2fDiscoveryTest, TestNotifications) {
 }
 
 TEST(U2fDiscoveryTest, TestAddRemoveDevices) {
-  MockU2fDiscovery discovery;
+  ConcreteU2fDiscovery discovery;
   MockU2fDiscoveryObserver observer;
   discovery.AddObserver(&observer);
 
