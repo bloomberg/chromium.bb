@@ -4,21 +4,24 @@
     <title>
       Test AudioWorkletNode's basic AudioParam features
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
-      let context;
+
       let sampleRate = 48000;
       let renderLength = 48000 * 0.6;
+      let context;
+
+      let filePath = 'processors/gain-processor.js';
 
       // Sets up AudioWorklet and OfflineAudioContext.
       audit.define('Initializing AudioWorklet and Context', (task, should) => {
         context = new OfflineAudioContext(1, renderLength, sampleRate);
-        context.audioWorklet.addModule('gain-processor.js').then(() => {
+        context.audioWorklet.addModule(filePath).then(() => {
           task.done();
         });
       });

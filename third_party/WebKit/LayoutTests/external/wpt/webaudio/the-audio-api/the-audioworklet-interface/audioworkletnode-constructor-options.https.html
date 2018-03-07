@@ -4,9 +4,9 @@
     <title>
       Test of AudioWorkletNodeOptions
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -15,10 +15,12 @@
       const audit = Audit.createTaskRunner();
       let context;
 
+      let filePath = 'processors/dummy-processor.js';
+
       // Load script file and create a OfflineAudiocontext.
       audit.define('setup', (task, should) => {
         context = new OfflineAudioContext(1, 1, sampleRate);
-        context.audioWorklet.addModule('dummy-processor.js').then(() => {
+        context.audioWorklet.addModule(filePath).then(() => {
           task.done();
         });
       });

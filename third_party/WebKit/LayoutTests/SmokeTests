@@ -318,6 +318,7 @@ external/wpt/web-animations/timing-model/animation-effects/active-time.html
 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html
 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
+external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html
 external/wpt/webaudio/the-audio-api/the-constantsourcenode-interface/constant-source-onended.html
 external/wpt/webaudio/the-audio-api/the-delaynode-interface/delaynode-scheduling.html
 external/wpt/webaudio/the-audio-api/the-iirfilternode-interface/iirfilter-getFrequencyResponse.html
@@ -822,7 +823,6 @@ http/tests/streams/chromium/get-reader-byob.html
 http/tests/uri/escaped-entity.html
 http/tests/uri/resolve-encoding-relative.html
 http/tests/uri/utf8-path.html
-http/tests/webaudio/audio-worklet/context-audio-worklet.html
 http/tests/websocket/bad-handshake-crash.html
 http/tests/websocket/compressed-control-frame.html
 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html

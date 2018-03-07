@@ -4,9 +4,9 @@
     <title>
       Test the invocation order of AudioWorklet.addModule() and BaseAudioContext
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -15,6 +15,8 @@
       let sampleRate = 48000;
       let realtimeContext = new AudioContext();
       let offlineContext = new OfflineAudioContext(1, sampleRate, sampleRate);
+
+      let filePath = 'processors/dummy-processor.js';
 
       // Test if the browser does not crash upon addModule() call after the
       // realtime context construction.
@@ -47,8 +49,8 @@
           });
 
       Promise.all([
-          realtimeContext.audioWorklet.addModule('dummy-processor.js'),
-          offlineContext.audioWorklet.addModule('dummy-processor.js')
+          realtimeContext.audioWorklet.addModule(filePath),
+          offlineContext.audioWorklet.addModule(filePath)
         ]).then(() => {
           audit.run();
         });
