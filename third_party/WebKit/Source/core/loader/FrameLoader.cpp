@@ -914,7 +914,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
 
   if (!target_frame && !request.FrameName().IsEmpty()) {
     if (policy == kNavigationPolicyDownload) {
-      Client()->DownloadURL(request.GetResourceRequest(), String());
+      Client()->DownloadURL(request.GetResourceRequest());
       return;  // Navigation/download will be handled by the client.
     } else if (ShouldNavigateTargetFrame(policy)) {
       request.GetResourceRequest().SetFrameType(
@@ -1443,18 +1443,12 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       request, origin_document, loader, type, policy,
       replaces_current_history_item, is_client_redirect, triggering_event_info,
       form, should_check_main_world_content_security_policy);
-  if (policy == kNavigationPolicyCurrentTab ||
-      policy == kNavigationPolicyIgnore ||
-      policy == kNavigationPolicyHandledByClient ||
-      policy == kNavigationPolicyHandledByClientForInitialHistory) {
-    return policy;
-  } else if (policy == kNavigationPolicyDownload) {
-    // TODO(csharrison): Could probably move this logic into
-    // DecidePolicyForNavigation and handle it by the embedder, or deal with it
-    // earlier.
-    Client()->DownloadURL(request, String());
-  }
-  return kNavigationPolicyIgnore;
+  DCHECK(policy == kNavigationPolicyCurrentTab ||
+         policy == kNavigationPolicyIgnore ||
+         policy == kNavigationPolicyHandledByClient ||
+         policy == kNavigationPolicyHandledByClientForInitialHistory)
+      << policy;
+  return policy;
 }
 
 NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(

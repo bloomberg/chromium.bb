@@ -160,8 +160,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
-  virtual void DownloadURL(const ResourceRequest&,
-                           const String& suggested_name) = 0;
+  virtual void DownloadURL(const ResourceRequest&) = 0;
   virtual void LoadErrorPage(int reason) = 0;
 
   virtual bool NavigateBackForward(int offset) const = 0;

@@ -113,7 +113,16 @@ String LinkSelectionTestBase::GetSelectionText() {
 
 class TestFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  MOCK_METHOD2(DownloadURL, void(const WebURLRequest&, const WebString&));
+  WebNavigationPolicy DecidePolicyForNavigation(
+      const NavigationPolicyInfo& info) override {
+    last_policy_ = info.default_policy;
+    return kWebNavigationPolicyIgnore;
+  }
+
+  WebNavigationPolicy GetLastNavigationPolicy() const { return last_policy_; }
+
+ private:
+  WebNavigationPolicy last_policy_ = kWebNavigationPolicyCurrentTab;
 };
 
 class LinkSelectionTest : public LinkSelectionTestBase {
@@ -229,9 +238,10 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
 }
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload) {
-  EXPECT_CALL(test_frame_client_, DownloadURL(_, _));
   EmulateMouseClick(left_point_in_link_, WebMouseEvent::Button::kLeft,
                     WebInputEvent::kAltKey);
+  EXPECT_EQ(kWebNavigationPolicyDownload,
+            test_frame_client_.GetLastNavigationPolicy());
 }
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
@@ -247,9 +257,10 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
                                   selection_rect.MaxXMaxYCorner());
   EXPECT_FALSE(GetSelectionText().IsEmpty());
 
-  EXPECT_CALL(test_frame_client_, DownloadURL(_, WebString()));
   EmulateMouseClick(left_point_in_link_, WebMouseEvent::Button::kLeft,
                     WebInputEvent::kAltKey);
+  EXPECT_EQ(kWebNavigationPolicyDownload,
+            test_frame_client_.GetLastNavigationPolicy());
 }
 
 class LinkSelectionClickEventsTest : public LinkSelectionTestBase {

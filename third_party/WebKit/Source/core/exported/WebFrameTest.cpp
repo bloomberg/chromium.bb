@@ -7515,6 +7515,11 @@ class TestNavigationPolicyWebFrameClient
                              bool) override {
     EXPECT_TRUE(false);
   }
+
+  WebNavigationPolicy DecidePolicyForNavigation(
+      const NavigationPolicyInfo& info) override {
+    return kWebNavigationPolicyIgnore;
+  }
 };
 
 TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick) {
@@ -7571,7 +7576,7 @@ class TestNewWindowWebFrameClient
   WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override {
     decide_policy_call_count_++;
-    return info.default_policy;
+    return kWebNavigationPolicyIgnore;
   }
 
   int DecidePolicyCallCount() const { return decide_policy_call_count_; }

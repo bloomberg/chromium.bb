@@ -367,12 +367,9 @@ void WebFrameTestClient::ShowContextMenu(
       ->SetContextMenuData(context_menu_data);
 }
 
-void WebFrameTestClient::DownloadURL(const blink::WebURLRequest& request,
-                                     const blink::WebString& suggested_name) {
+void WebFrameTestClient::DownloadURL(const blink::WebURLRequest& request) {
   if (test_runner()->shouldWaitUntilExternalURLLoad()) {
-    delegate_->PrintMessage(
-        std::string("Downloading URL with suggested filename \"") +
-        suggested_name.Utf8() + "\"\n");
+    delegate_->PrintMessage(std::string("Download started\n"));
     delegate_->TestFinished();
   }
 }

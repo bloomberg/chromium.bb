@@ -319,8 +319,7 @@ class BLINK_EXPORT WebFrameClient {
   // Load commands -------------------------------------------------------
 
   // The client should handle the request as a download.
-  virtual void DownloadURL(const WebURLRequest&,
-                           const WebString& download_name) {}
+  virtual void DownloadURL(const WebURLRequest&) {}
 
   // The client should load an error page in the current frame.
   virtual void LoadErrorPage(int reason) {}
