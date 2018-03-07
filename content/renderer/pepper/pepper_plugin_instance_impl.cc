@@ -30,7 +30,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/event_conversion.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -854,11 +853,6 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   // Unbind current 2D or 3D graphics context.
   BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
-
-  if (content_decryptor_delegate_) {
-    content_decryptor_delegate_->InstanceCrashed();
-    content_decryptor_delegate_.reset();
-  }
 
   if (render_frame_)
     render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
@@ -2365,22 +2359,6 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
                                            offsets[0], offsets[1]);
 }
 
-ContentDecryptorDelegate*
-PepperPluginInstanceImpl::GetContentDecryptorDelegate() {
-  if (content_decryptor_delegate_)
-    return content_decryptor_delegate_.get();
-
-  const PPP_ContentDecryptor_Private* plugin_decryption_interface =
-      static_cast<const PPP_ContentDecryptor_Private*>(
-          module_->GetPluginInterface(PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE));
-  if (!plugin_decryption_interface)
-    return nullptr;
-
-  content_decryptor_delegate_ = std::make_unique<ContentDecryptorDelegate>(
-      pp_instance_, plugin_decryption_interface);
-  return content_decryptor_delegate_.get();
-}
-
 PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
                                                PP_Resource device) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::BindGraphics");
@@ -2583,28 +2561,26 @@ PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
 }
 
 // These PPB_ContentDecryptor_Private calls are responses to
-// PPP_ContentDecryptor_Private calls made on |content_decryptor_delegate_|.
-// Therefore, |content_decryptor_delegate_| must have been initialized when
-// the following methods are called.
+// PPP_ContentDecryptor_Private calls, which should never be made since pepper
+// CDM is deprecated.
+// TODO(crbug.com/772160): Remove these after ppapi/ is updated.
 void PepperPluginInstanceImpl::PromiseResolved(PP_Instance instance,
                                                uint32_t promise_id) {
-  content_decryptor_delegate_->OnPromiseResolved(promise_id);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::PromiseResolvedWithKeyStatus(
     PP_Instance instance,
     uint32_t promise_id,
     PP_CdmKeyStatus key_status) {
-  content_decryptor_delegate_->OnPromiseResolvedWithKeyStatus(promise_id,
-                                                              key_status);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::PromiseResolvedWithSession(
     PP_Instance instance,
     uint32_t promise_id,
     PP_Var session_id_var) {
-  content_decryptor_delegate_->OnPromiseResolvedWithSession(promise_id,
-                                                            session_id_var);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::PromiseRejected(
@@ -2613,8 +2589,7 @@ void PepperPluginInstanceImpl::PromiseRejected(
     PP_CdmExceptionCode exception_code,
     uint32_t system_code,
     PP_Var error_description_var) {
-  content_decryptor_delegate_->OnPromiseRejected(
-      promise_id, exception_code, system_code, error_description_var);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
@@ -2622,9 +2597,7 @@ void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
                                               PP_CdmMessageType message_type,
                                               PP_Var message_var,
                                               PP_Var legacy_destination_url) {
-  // |legacy_destination_url| is obsolete.
-  content_decryptor_delegate_->OnSessionMessage(session_id_var, message_type,
-                                                message_var);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::SessionKeysChange(
@@ -2633,21 +2606,19 @@ void PepperPluginInstanceImpl::SessionKeysChange(
     PP_Bool has_additional_usable_key,
     uint32_t key_count,
     const struct PP_KeyInformation key_information[]) {
-  content_decryptor_delegate_->OnSessionKeysChange(
-      session_id_var, has_additional_usable_key, key_count, key_information);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::SessionExpirationChange(
     PP_Instance instance,
     PP_Var session_id_var,
     PP_Time new_expiry_time) {
-  content_decryptor_delegate_->OnSessionExpirationChange(session_id_var,
-                                                         new_expiry_time);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,
                                              PP_Var session_id_var) {
-  content_decryptor_delegate_->OnSessionClosed(session_id_var);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::LegacySessionError(
@@ -2657,13 +2628,14 @@ void PepperPluginInstanceImpl::LegacySessionError(
     uint32_t system_code,
     PP_Var error_description_var) {
   // Obsolete.
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DeliverBlock(
     PP_Instance instance,
     PP_Resource decrypted_block,
     const PP_DecryptedBlockInfo* block_info) {
-  content_decryptor_delegate_->DeliverBlock(decrypted_block, block_info);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DecoderInitializeDone(
@@ -2671,37 +2643,35 @@ void PepperPluginInstanceImpl::DecoderInitializeDone(
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id,
     PP_Bool success) {
-  content_decryptor_delegate_->DecoderInitializeDone(
-      decoder_type, request_id, success);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DecoderDeinitializeDone(
     PP_Instance instance,
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id) {
-  content_decryptor_delegate_->DecoderDeinitializeDone(decoder_type,
-                                                       request_id);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DecoderResetDone(
     PP_Instance instance,
     PP_DecryptorStreamType decoder_type,
     uint32_t request_id) {
-  content_decryptor_delegate_->DecoderResetDone(decoder_type, request_id);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DeliverFrame(
     PP_Instance instance,
     PP_Resource decrypted_frame,
     const PP_DecryptedFrameInfo* frame_info) {
-  content_decryptor_delegate_->DeliverFrame(decrypted_frame, frame_info);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::DeliverSamples(
     PP_Instance instance,
     PP_Resource audio_frames,
     const PP_DecryptedSampleInfo* sample_info) {
-  content_decryptor_delegate_->DeliverSamples(audio_frames, sample_info);
+  NOTREACHED();
 }
 
 void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(

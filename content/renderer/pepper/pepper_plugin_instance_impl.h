@@ -107,7 +107,6 @@ class PdfMetafileSkia;
 
 namespace content {
 
-class ContentDecryptorDelegate;
 class FullscreenContainer;
 class MessageChannel;
 class PepperAudioController;
@@ -382,8 +381,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void set_document_loader(blink::WebAssociatedURLLoaderClient* loader) {
     document_loader_ = loader;
   }
-
-  ContentDecryptorDelegate* GetContentDecryptorDelegate();
 
   void SetGraphics2DTransform(const float& scale,
                               const gfx::PointF& translation);
@@ -941,10 +938,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   blink::WebURLResponse external_document_response_;
   std::unique_ptr<ExternalDocumentLoader> external_document_loader_;
   bool external_document_load_;
-
-  // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
-  // calls and handles PPB_ContentDecryptor_Private calls.
-  std::unique_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
 
   // The link currently under the cursor.
   base::string16 link_under_cursor_;
