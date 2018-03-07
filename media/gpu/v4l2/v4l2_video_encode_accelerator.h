@@ -58,6 +58,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
+  void Flush(FlushCallback flush_callback) override;
 
  private:
   // Auto-destroy reference for BitstreamBuffer, for tracking buffers passed to
@@ -103,6 +104,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     kUninitialized,  // Initialize() not yet called.
     kInitialized,    // Initialize() returned true; ready to start encoding.
     kEncoding,       // Encoding frames.
+    kFlushing,       // Flushing frames.
     kError,          // Error in encoder state.
   };
 
@@ -131,6 +133,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Device destruction task.
   void DestroyTask();
+
+  // Flush all the encoded frames. After all frames is flushed successfully or
+  // any error occurs, |flush_callback| will be called to notify client.
+  void FlushTask(FlushCallback flush_callback);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
   // DevicePollTask().
@@ -279,6 +285,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Bitstream buffers ready to be used to return encoded output, as a LIFO
   // since we don't care about ordering.
   std::vector<std::unique_ptr<BitstreamBufferRef>> encoder_output_queue_;
+
+  // The completion callback of the Flush() function.
+  FlushCallback flush_callback_;
 
   // Image processor, if one is in use.
   std::unique_ptr<V4L2ImageProcessor> image_processor_;
