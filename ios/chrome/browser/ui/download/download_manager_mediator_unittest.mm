@@ -113,6 +113,7 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInstantUpdate) {
       base::SysNSStringToUTF16(kTestSuggestedFileName));
   task()->SetTotalBytes(kTestTotalBytes);
   task()->SetReceivedBytes(kTestReceivedBytes);
+  task()->SetPercentComplete(80);
 
   mediator_.SetDownloadTask(task());
   mediator_.SetConsumer(consumer_);
@@ -122,6 +123,7 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInstantUpdate) {
   EXPECT_NSEQ(kTestSuggestedFileName, consumer_.fileName);
   EXPECT_EQ(kTestTotalBytes, consumer_.countOfBytesExpectedToReceive);
   EXPECT_EQ(kTestReceivedBytes, consumer_.countOfBytesReceived);
+  EXPECT_FLOAT_EQ(0.8f, consumer_.progress);
 
   mediator_.SetDownloadTask(nullptr);
 }
@@ -180,6 +182,7 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInProgressStateUpdate) {
   task()->Start(std::make_unique<net::URLFetcherStringWriter>());
   EXPECT_EQ(kDownloadManagerStateInProgress, consumer_.state);
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
+  EXPECT_EQ(0.0, consumer_.progress);
 
   mediator_.SetDownloadTask(nullptr);
 }

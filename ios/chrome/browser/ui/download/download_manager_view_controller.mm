@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/download/radial_progress_view.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -44,10 +45,12 @@ NSString* GetSizeString(long long size_in_bytes) {
   UILabel* _statusLabel;
   UIButton* _actionButton;
   UIButton* _installDriveButton;
+  RadialProgressView* _progressView;
 
   NSString* _fileName;
   int64_t _countOfBytesReceived;
   int64_t _countOfBytesExpectedToReceive;
+  float _progress;
   DownloadManagerState _state;
   BOOL _installDriveButtonVisible;
 }
@@ -101,6 +104,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.downloadControlsRow addSubview:self.closeButton];
   [self.downloadControlsRow addSubview:self.statusIcon];
   [self.downloadControlsRow addSubview:self.statusLabel];
+  [self.downloadControlsRow addSubview:self.progressView];
   [self.downloadControlsRow addSubview:self.actionButton];
   [self.installDriveControlsRow addSubview:self.installDriveButton];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
@@ -177,6 +181,17 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:downloadRow.layoutMarginsGuide.leadingAnchor],
   ]];
 
+  // progress view constraints.
+  RadialProgressView* progressView = self.progressView;
+  [NSLayoutConstraint activateConstraints:@[
+    [progressView.leadingAnchor
+        constraintEqualToAnchor:statusIcon.leadingAnchor],
+    [progressView.trailingAnchor
+        constraintEqualToAnchor:statusIcon.trailingAnchor],
+    [progressView.topAnchor constraintEqualToAnchor:statusIcon.topAnchor],
+    [progressView.bottomAnchor constraintEqualToAnchor:statusIcon.bottomAnchor],
+  ]];
+
   // status label constraints.
   UILabel* statusLabel = self.statusLabel;
   UIButton* actionButton = self.actionButton;
@@ -244,12 +259,20 @@ NSString* GetSizeString(long long size_in_bytes) {
   }
 }
 
+- (void)setProgress:(float)value {
+  if (_progress != value) {
+    _progress = value;
+    [self updateProgressView];
+  }
+}
+
 - (void)setState:(DownloadManagerState)state {
   if (_state != state) {
     _state = state;
     [self updateStatusIcon];
     [self updateStatusLabel];
     [self updateActionButton];
+    [self updateProgressView];
   }
 }
 
@@ -374,6 +397,17 @@ NSString* GetSizeString(long long size_in_bytes) {
         forState:UIControlStateNormal];
   }
   return _installDriveButton;
+}
+
+- (RadialProgressView*)progressView {
+  if (!_progressView) {
+    _progressView = [[RadialProgressView alloc] initWithFrame:CGRectZero];
+    _progressView.translatesAutoresizingMaskIntoConstraints = NO;
+    _progressView.lineWidth = 2;
+    _progressView.tintColor = [MDCPalette bluePalette].tint500;
+    [self updateProgressView];
+  }
+  return _progressView;
 }
 
 - (UIView*)horizontalLine {
@@ -534,6 +568,11 @@ NSString* GetSizeString(long long size_in_bytes) {
 
   [self.actionButton setTitle:title forState:UIControlStateNormal];
   self.actionButton.hidden = _state == kDownloadManagerStateInProgress;
+}
+
+- (void)updateProgressView {
+  self.progressView.hidden = _state != kDownloadManagerStateInProgress;
+  self.progressView.progress = _progress;
 }
 
 // Updates alpha value for install google drive controls row.

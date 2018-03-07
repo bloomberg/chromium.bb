@@ -16,6 +16,7 @@ extern NSString* const kDownloadManagerSucceededImage;
 extern NSString* const kDownloadManagerFailedImage;
 
 @class DownloadManagerViewController;
+@class RadialProgressView;
 
 @protocol DownloadManagerViewControllerDelegate<NSObject>
 @optional
@@ -66,6 +67,9 @@ extern NSString* const kDownloadManagerFailedImage;
 // Install Google Drive button. Only visible if
 // setInstallGoogleDriveButtonVisible:animated: was called with YES.
 @property(nonatomic, readonly) UIButton* installDriveButton;
+
+// View that represents download progress.
+@property(nonatomic, readonly) RadialProgressView* progressView;
 
 @end
 
