@@ -212,8 +212,13 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
     std::unique_ptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy(
         new {{class_name}}_{{method.name}}_ProxyToResponder(
             request_id, is_sync, std::move(responder)));
+{%- if use_once_callback %}
+    return base::BindOnce(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
+                          std::move(proxy));
+{%- else %}
     return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
                       base::Passed(&proxy));
+{%- endif %}
   }
 
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
@@ -610,7 +615,11 @@ void {{interface.name}}AsyncWaiter::{{method.name}}(
 {%-   for param in method.parameters -%}
       std::move({{param.name}}),
 {%-   endfor %}
+{%-   if use_once_callback %}
+      base::BindOnce(
+{%-   else %}
       base::Bind(
+{%-   endif %}
           [](base::RunLoop* loop
 {%-   for param in method.response_parameters -%},
              {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}
