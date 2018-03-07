@@ -107,6 +107,8 @@ class BASE_EXPORT BuildInfo {
     return build_type_;
   }
 
+  const char* board() const { return board_; }
+
   const char* installer_package_name() const { return installer_package_name_; }
 
   const char* abi_name() const { return abi_name_; }
@@ -141,6 +143,7 @@ class BASE_EXPORT BuildInfo {
   const char* const model_;
   const int sdk_int_;
   const char* const build_type_;
+  const char* const board_;
   const char* const host_package_name_;
   const char* const host_version_code_;
   const char* const host_package_label_;

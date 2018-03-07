@@ -45,6 +45,7 @@ public class PureJavaExceptionReporter {
     public static final String PACKAGE = "package";
     public static final String MODEL = "model";
     public static final String BRAND = "brand";
+    public static final String BOARD = "board";
     public static final String EXCEPTION_INFO = "exception_info";
     public static final String PROCESS_TYPE = "ptype";
     public static final String EARLY_JAVA_EXCEPTION = "early_java_exception";
@@ -126,6 +127,7 @@ public class PureJavaExceptionReporter {
         addPairedString(ANDROID_BUILD_ID, Build.ID);
         addPairedString(MODEL, Build.MODEL);
         addPairedString(BRAND, Build.BRAND);
+        addPairedString(BOARD, Build.BOARD);
         addPairedString(ANDROID_BUILD_FP, buildInfo.androidBuildFingerprint);
         addPairedString(GMS_CORE_VERSION, buildInfo.gmsVersionCode);
         addPairedString(INSTALLER_PACKAGE_NAME, buildInfo.installerPackageName);

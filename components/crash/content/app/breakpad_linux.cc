@@ -1710,6 +1710,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     static const char abi_name[] = "abi_name";
     static const char model[] = "model";
     static const char brand[] = "brand";
+    static const char board[] = "board";
     static const char exception_info[] = "exception_info";
 
     base::android::BuildInfo* android_build_info =
@@ -1725,6 +1726,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString(model, android_build_info->model());
     writer.AddBoundary();
     writer.AddPairString(brand, android_build_info->brand());
+    writer.AddBoundary();
+    writer.AddPairString(board, android_build_info->board());
     writer.AddBoundary();
     writer.AddPairString(gms_core_version,
         android_build_info->gms_version_code());
