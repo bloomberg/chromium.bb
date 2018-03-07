@@ -138,6 +138,9 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
 }
 
 TemplateURL* TemplateURLTableModel::GetTemplateURL(int index) {
+  // Sanity check for https://crbug.com/781703.
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), entries_.size());
   return entries_[index];
 }
 

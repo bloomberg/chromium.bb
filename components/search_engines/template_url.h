@@ -597,7 +597,11 @@ class TemplateURL {
   const std::string& sync_guid() const { return data_.sync_guid; }
 
   const std::vector<TemplateURLRef>& url_refs() const { return url_refs_; }
-  const TemplateURLRef& url_ref() const { return url_refs_.back(); }
+  const TemplateURLRef& url_ref() const {
+    // Sanity check for https://crbug.com/781703.
+    CHECK(!url_refs_.empty());
+    return url_refs_.back();
+  }
   const TemplateURLRef& suggestions_url_ref() const {
     return suggestions_url_ref_;
   }
