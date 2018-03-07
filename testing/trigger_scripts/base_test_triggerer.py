@@ -74,12 +74,6 @@ class BaseTestTriggerer(object):
     list, to either affect the trigger command, or what the bot runs.
 
     """
-
-
-
-    assert '--' in all_args, (
-        'Malformed trigger command; -- argument expected but not found')
-    dash_ind = all_args.index('--')
     bot_args = ['--dump-json', temp_file]
     if total_shards > 1:
       bot_args.append('--env')
@@ -92,8 +86,12 @@ class BaseTestTriggerer(object):
       bot_args.append('--dimension')
       bot_args.append(key)
       bot_args.append(val)
-    return self.append_additional_args(
-        all_args[:dash_ind] + bot_args + all_args[dash_ind:])
+    if '--' in all_args:
+      dash_ind = all_args.index('--')
+      additional_args = all_args[:dash_ind] + bot_args + all_args[dash_ind:]
+    else:
+      additional_args = all_args + bot_args
+    return self.append_additional_args(additional_args)
 
   def append_additional_args(self, args):
     """ Gives subclasses ability to append additional args if necessary
