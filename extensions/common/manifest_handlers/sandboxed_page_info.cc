@@ -19,10 +19,10 @@
 
 namespace extensions {
 
-namespace {
-
 namespace keys = extensions::manifest_keys;
 namespace errors = manifest_errors;
+
+namespace {
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
