@@ -1063,6 +1063,14 @@ public class LocationBarLayout extends FrameLayout
                 setUrlBarText("", null);
             }
             mUrlBar.deEmphasizeUrl();
+
+            // Explicitly tell InputMethodManager that the url bar is focused before any callbacks
+            // so that it updates the active view accordingly. Otherwise, it may fail to update
+            // the correct active view if ViewGroup.addView() or ViewGroup.removeView() is called
+            // to update a view that accepts text input.
+            InputMethodManager imm = (InputMethodManager) mUrlBar.getContext().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.viewClicked(mUrlBar);
         } else {
             mUrlFocusedFromFakebox = false;
             mUrlFocusedWithoutAnimations = false;
@@ -2073,6 +2081,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void backKeyPressed() {
+        setUrlBarFocus(false);
         hideSuggestions();
         UiUtils.hideKeyboard(mUrlBar);
         // Revert the URL to match the current page.
