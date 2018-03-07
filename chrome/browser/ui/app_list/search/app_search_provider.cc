@@ -334,10 +334,10 @@ void AppSearchProvider::RefreshApps() {
 }
 
 void AppSearchProvider::UpdateRecommendedResults(
-    const std::unordered_map<std::string, size_t>& id_to_app_list_index) {
+    const std::unordered_map<std::string, uint16_t>& id_to_app_list_index) {
   SearchProvider::Results new_results;
   std::set<std::string> seen_or_filtered_apps;
-  const size_t apps_size = apps_.size();
+  const uint16_t apps_size = apps_.size();
   new_results.reserve(apps_size);
 
   for (auto& app : apps_) {

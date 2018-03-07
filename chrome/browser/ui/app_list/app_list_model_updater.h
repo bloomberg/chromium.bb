@@ -88,8 +88,8 @@ class AppListModelUpdater {
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
   virtual ChromeAppListItem* FindFolderItem(const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
-  using GetIdToAppListIndexMapCallback =
-      base::OnceCallback<void(const std::unordered_map<std::string, size_t>&)>;
+  using GetIdToAppListIndexMapCallback = base::OnceCallback<void(
+      const std::unordered_map<std::string, uint16_t>&)>;
   virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
   }
   virtual void ContextMenuItemSelected(const std::string& id,
