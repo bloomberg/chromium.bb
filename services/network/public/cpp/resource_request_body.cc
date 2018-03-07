@@ -19,6 +19,9 @@ scoped_refptr<ResourceRequestBody> ResourceRequestBody::CreateFromBytes(
 }
 
 void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
+  DCHECK(elements_.empty() ||
+         elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
+
   if (bytes_len > 0) {
     elements_.push_back(DataElement());
     elements_.back().SetToBytes(bytes, bytes_len);
@@ -30,6 +33,9 @@ void ResourceRequestBody::AppendFileRange(
     uint64_t offset,
     uint64_t length,
     const base::Time& expected_modification_time) {
+  DCHECK(elements_.empty() ||
+         elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
+
   elements_.push_back(DataElement());
   elements_.back().SetToFilePathRange(file_path, offset, length,
                                       expected_modification_time);
@@ -41,20 +47,37 @@ void ResourceRequestBody::AppendRawFileRange(
     uint64_t offset,
     uint64_t length,
     const base::Time& expected_modification_time) {
+  DCHECK(elements_.empty() ||
+         elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
+
   elements_.push_back(DataElement());
   elements_.back().SetToFileRange(std::move(file), file_path, offset, length,
                                   expected_modification_time);
 }
 
 void ResourceRequestBody::AppendBlob(const std::string& uuid) {
+  DCHECK(elements_.empty() ||
+         elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
+
   elements_.push_back(DataElement());
   elements_.back().SetToBlob(uuid);
 }
 
 void ResourceRequestBody::AppendDataPipe(
     mojom::DataPipeGetterPtr data_pipe_getter) {
+  DCHECK(elements_.empty() ||
+         elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
+
   elements_.push_back(DataElement());
   elements_.back().SetToDataPipe(std::move(data_pipe_getter));
+}
+
+void ResourceRequestBody::SetToChunkedDataPipe(
+    mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter) {
+  DCHECK(elements_.empty());
+
+  elements_.push_back(DataElement());
+  elements_.back().SetToChunkedDataPipe(std::move(chunked_data_pipe_getter));
 }
 
 std::vector<base::FilePath> ResourceRequestBody::GetReferencedFiles() const {

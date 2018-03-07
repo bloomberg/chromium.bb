@@ -181,6 +181,10 @@ ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
                                   element.offset(), element.length(),
                                   element.expected_modification_time());
         break;
+      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
+        NOTREACHED() << "There should be no chunked data pipes going through "
+                        "ServiceWorker";
+        break;
       case network::DataElement::TYPE_BLOB:
         NOTREACHED() << "There should be no blob elements in NetworkService";
         break;

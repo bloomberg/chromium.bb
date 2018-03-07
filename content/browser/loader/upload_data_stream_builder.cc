@@ -110,6 +110,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
       }
       case network::DataElement::TYPE_RAW_FILE:
       case network::DataElement::TYPE_DATA_PIPE:
+      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;

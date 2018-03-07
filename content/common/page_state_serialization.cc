@@ -708,6 +708,7 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         break;
       case network::DataElement::TYPE_RAW_FILE:
       case network::DataElement::TYPE_DATA_PIPE:
+      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         continue;

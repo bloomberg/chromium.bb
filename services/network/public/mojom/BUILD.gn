@@ -4,11 +4,12 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# This interface is put in its own target to avoid a circular dependency, which
-# comes from the fact that the typemap for url_loader.mojom
-# (ResourceRequestBody) uses the interface from data_pipe_getter.mojom.
-mojom("data_pipe_interface") {
+# These interfaces are put in their own target to avoid a circular dependency,
+# which comes from the fact that the typemap for url_loader.mojom
+# (ResourceRequestBody) uses these interfaces.
+mojom("data_pipe_interfaces") {
   sources = [
+    "chunked_data_pipe_getter.mojom",
     "data_pipe_getter.mojom",
   ]
 
@@ -73,7 +74,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    ":data_pipe_interface",
+    ":data_pipe_interfaces",
     ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
     "//mojo/common:common_custom_types",

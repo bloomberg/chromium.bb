@@ -22,6 +22,7 @@
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
@@ -150,6 +151,15 @@ class RawFileElementReader : public net::UploadFileElementReader {
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     ResourceRequestBody* body,
     base::SequencedTaskRunner* file_task_runner) {
+  // In the case of a chunked upload, there will just be one element.
+  if (body->elements()->size() == 1 &&
+      body->elements()->begin()->type() ==
+          DataElement::TYPE_CHUNKED_DATA_PIPE) {
+    return std::make_unique<network::ChunkedDataPipeUploadDataStream>(
+        body, const_cast<DataElement&>(body->elements()->front())
+                  .ReleaseChunkedDataPipeGetter());
+  }
+
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
@@ -172,6 +182,12 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
       case DataElement::TYPE_DATA_PIPE: {
         element_readers.push_back(std::make_unique<DataPipeElementReader>(
             body, const_cast<DataElement*>(&element)->ReleaseDataPipeGetter()));
+        break;
+      }
+      case DataElement::TYPE_CHUNKED_DATA_PIPE: {
+        // This shouldn't happen, as the traits logic should ensure that if
+        // there's a chunked pipe, there's one and only one element.
+        NOTREACHED();
         break;
       }
       case DataElement::TYPE_UNKNOWN:

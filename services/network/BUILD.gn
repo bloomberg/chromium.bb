@@ -10,6 +10,8 @@ import("//services/service_manager/public/tools/test/service_test.gni")
 
 component("network_service") {
   sources = [
+    "chunked_data_pipe_upload_data_stream.cc",
+    "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",
     "conditional_cache_deletion_helper.h",
     "cookie_manager.cc",
@@ -119,6 +121,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_manager_unittest.cc",
     "cors/cors_url_loader_unittest.cc",
     "cors/preflight_controller_unittest.cc",
@@ -134,6 +137,8 @@ source_set("tests") {
     "resource_scheduler_unittest.cc",
     "restricted_cookie_manager_unittest.cc",
     "test/test_url_loader_factory_unittest.cc",
+    "test_chunked_data_pipe_getter.cc",
+    "test_chunked_data_pipe_getter.h",
     "throttling/throttling_controller_unittest.cc",
     "udp_socket_factory_unittest.cc",
     "udp_socket_unittest.cc",
