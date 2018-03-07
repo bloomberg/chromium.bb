@@ -24,8 +24,9 @@ class LoginUserViewUnittest : public LoginTestBase {
   // Builds a new LoginUserView instance and adds it to |container_|.
   LoginUserView* AddUserView(LoginDisplayStyle display_style,
                              bool show_dropdown) {
+    // TODO(crbug.com/809635): Add test case for show_domain.
     auto* view =
-        new LoginUserView(display_style, show_dropdown,
+        new LoginUserView(display_style, show_dropdown, false /*show_domain*/,
                           base::BindRepeating(&LoginUserViewUnittest::OnTapped,
                                               base::Unretained(this)));
     mojom::LoginUserInfoPtr user = CreateUser("foo@foo.com");

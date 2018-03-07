@@ -44,7 +44,10 @@ const int kDistanceBetweenUserViewAndPasswordDp = 28;
 const int kDistanceBetweenPasswordFieldAndPinKeyboard = 20;
 
 // Distance from the end of pin keyboard to the bottom of the big user view.
-const int kDistanceFromPinKeyboardToBigUserViewBottom = 48;
+const int kDistanceFromPinKeyboardToBigUserViewBottom = 50;
+
+// Distance from the top of the user view to the user icon.
+constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
 
 // Returns an observer that will hide |view| when it fires. The observer will
 // delete itself after firing. Make sure to call |observer->SetReady()| after
@@ -108,9 +111,12 @@ LoginAuthUserView::LoginAuthUserView(
       on_auth_(on_auth),
       on_tap_(on_tap),
       weak_factory_(this) {
+  DCHECK_NE(user->basic_user_info->type,
+            user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
   // Build child views.
   user_view_ = new LoginUserView(
-      LoginDisplayStyle::kLarge, true /*show_dropdown*/,
+      LoginDisplayStyle::kLarge, true /*show_dropdown*/, false /*show_domain*/,
       base::Bind(&LoginAuthUserView::OnUserViewTap, base::Unretained(this)));
 
   password_view_ = new LoginPasswordView();
@@ -164,6 +170,7 @@ LoginAuthUserView::LoginAuthUserView(
   };
 
   // Add views in rendering order.
+  add_padding(kDistanceFromTopOfBigUserViewToUserIconDp);
   add_view(wrapped_user_view);
   add_padding(kDistanceBetweenUserViewAndPasswordDp);
   add_view(password_view_);
