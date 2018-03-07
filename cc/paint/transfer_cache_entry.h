@@ -82,7 +82,8 @@ class CC_PAINT_EXPORT ServiceTransferCacheEntry {
 
   // Deserialize the cache entry from the given span of memory with the given
   // context.
-  virtual bool Deserialize(GrContext* context, base::span<uint8_t> data) = 0;
+  virtual bool Deserialize(GrContext* context,
+                           base::span<const uint8_t> data) = 0;
 };
 
 // Helpers to simplify subclassing.

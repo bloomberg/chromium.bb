@@ -44,7 +44,7 @@ class CC_PAINT_EXPORT ServiceColorSpaceTransferCacheEntry final
   ServiceColorSpaceTransferCacheEntry();
   ~ServiceColorSpaceTransferCacheEntry() override;
   size_t CachedSize() const override;
-  bool Deserialize(GrContext* context, base::span<uint8_t> data) override;
+  bool Deserialize(GrContext* context, base::span<const uint8_t> data) override;
 
   const gfx::ColorSpace& color_space() const { return color_space_; }
 

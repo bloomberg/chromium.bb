@@ -134,3 +134,17 @@ fuzzer_test("paint_op_buffer_eq_fuzzer") {
     "//cc/paint",
   ]
 }
+
+fuzzer_test("transfer_cache_fuzzer") {
+  sources = [
+    "transfer_cache_fuzzer.cc",
+  ]
+
+  libfuzzer_options = [ "max_len=4096" ]
+
+  deps = [
+    "//cc:test_support",
+    "//cc/paint",
+    "//components/viz/test:test_support",
+  ]
+}

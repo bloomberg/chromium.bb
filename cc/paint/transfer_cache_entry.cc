@@ -27,7 +27,6 @@ std::unique_ptr<ServiceTransferCacheEntry> ServiceTransferCacheEntry::Create(
       return std::make_unique<ServiceColorSpaceTransferCacheEntry>();
   }
 
-  NOTREACHED();
   return nullptr;
 }
 

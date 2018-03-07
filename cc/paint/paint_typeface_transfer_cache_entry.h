@@ -37,7 +37,7 @@ class CC_PAINT_EXPORT ServicePaintTypefaceTransferCacheEntry
   ServicePaintTypefaceTransferCacheEntry();
   ~ServicePaintTypefaceTransferCacheEntry() final;
   size_t CachedSize() const final;
-  bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
+  bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
 
   const PaintTypeface& typeface() const { return typeface_; }
 
@@ -50,7 +50,9 @@ class CC_PAINT_EXPORT ServicePaintTypefaceTransferCacheEntry
   PaintTypeface typeface_;
   size_t size_ = 0;
   bool valid_ = true;
-  base::span<uint8_t> data_;
+  // TODO(enne): this transient value shouldn't be a member and should just be
+  // passed around internally to functions that need it.
+  base::span<const uint8_t> data_;
 };
 
 }  // namespace cc

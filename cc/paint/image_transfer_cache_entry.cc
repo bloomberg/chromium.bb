@@ -87,8 +87,9 @@ size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
 }
 
-bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
-                                                 base::span<uint8_t> data) {
+bool ServiceImageTransferCacheEntry::Deserialize(
+    GrContext* context,
+    base::span<const uint8_t> data) {
   PaintOpReader reader(data.data(), data.size(), nullptr);
   SkColorType color_type;
   reader.Read(&color_type);
@@ -109,6 +110,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
 
   SkImageInfo image_info = SkImageInfo::Make(
       width, height, color_type, kPremul_SkAlphaType, pixmap_color_space);
+  if (image_info.computeMinByteSize() > pixel_size)
+    return false;
   const volatile void* pixel_data = reader.ExtractReadableMemory(pixel_size);
   if (!reader.valid())
     return false;
