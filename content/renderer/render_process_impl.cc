@@ -102,22 +102,6 @@ RenderProcessImpl::RenderProcessImpl(
     std::unique_ptr<base::TaskScheduler::InitParams> task_scheduler_init_params)
     : RenderProcess("Renderer", std::move(task_scheduler_init_params)),
       enabled_bindings_(0) {
-#if defined(OS_WIN)
-  // HACK:  See http://b/issue?id=1024307 for rationale.
-  if (GetModuleHandle(L"LPK.DLL") == NULL) {
-    // Makes sure lpk.dll is loaded by gdi32 to make sure ExtTextOut() works
-    // when buffering into a EMF buffer for printing.
-    typedef BOOL (__stdcall *GdiInitializeLanguagePack)(int LoadedShapingDLLs);
-    GdiInitializeLanguagePack gdi_init_lpk =
-        reinterpret_cast<GdiInitializeLanguagePack>(GetProcAddress(
-            GetModuleHandle(L"GDI32.DLL"),
-            "GdiInitializeLanguagePack"));
-    DCHECK(gdi_init_lpk);
-    if (gdi_init_lpk) {
-      gdi_init_lpk(0);
-    }
-  }
-#endif
 
 #if DCHECK_IS_ON() && defined(SYZYASAN)
   // SyzyASAN official builds can ship with DCHECKs compiled in. Failing DCHECKs
