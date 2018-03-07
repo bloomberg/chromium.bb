@@ -20,16 +20,20 @@ constexpr char kPublicKeyCredentialType[] = "public-key";
 PublicKeyCredential* PublicKeyCredential::Create(
     const String& id,
     DOMArrayBuffer* raw_id,
-    AuthenticatorResponse* response) {
-  return new PublicKeyCredential(id, raw_id, response);
+    AuthenticatorResponse* response,
+    const AuthenticationExtensionsClientOutputs& extension_outputs) {
+  return new PublicKeyCredential(id, raw_id, response, extension_outputs);
 }
 
-PublicKeyCredential::PublicKeyCredential(const String& id,
-                                         DOMArrayBuffer* raw_id,
-                                         AuthenticatorResponse* response)
+PublicKeyCredential::PublicKeyCredential(
+    const String& id,
+    DOMArrayBuffer* raw_id,
+    AuthenticatorResponse* response,
+    const AuthenticationExtensionsClientOutputs& extension_outputs)
     : Credential(id, kPublicKeyCredentialType),
       raw_id_(raw_id),
-      response_(response) {}
+      response_(response),
+      extension_outputs_(extension_outputs) {}
 
 ScriptPromise
 PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
@@ -37,6 +41,11 @@ PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
   return ScriptPromise::RejectWithDOMException(
       script_state,
       DOMException::Create(kNotSupportedError, "Operation not implemented."));
+}
+
+void PublicKeyCredential::getClientExtensionResults(
+    AuthenticationExtensionsClientOutputs& result) const {
+  result = extension_outputs_;
 }
 
 void PublicKeyCredential::Trace(blink::Visitor* visitor) {

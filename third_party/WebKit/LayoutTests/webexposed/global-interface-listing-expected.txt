@@ -5234,6 +5234,7 @@ interface PublicKeyCredential : Credential
     getter rawId
     getter response
     method constructor
+    method getClientExtensionResults
 interface PushManager
     static getter supportedContentEncodings
     attribute @@toStringTag

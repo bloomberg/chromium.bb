@@ -137,6 +137,12 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   std::unique_ptr<base::OneShotTimer> timer_;
   RenderFrameHost* render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
+
+  // Whether or not a GetAssertion call should return a PublicKeyCredential
+  // instance whose getClientExtensionResults() method yields a
+  // AuthenticationExtensions dictionary that contains the `appid: true`
+  // extension output.
+  bool echo_appid_extension_ = false;
   base::WeakPtrFactory<AuthenticatorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorImpl);
