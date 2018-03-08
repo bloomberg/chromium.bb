@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -55,12 +56,15 @@ public class LocationBarPhone extends LocationBarLayout {
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
     private boolean mCloseSheetOnBackButton;
+    private LinearLayout mUrlActionContainer;
 
     /**
      * Constructor used to inflate from XML.
      */
     public LocationBarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
     }
 
     @Override
@@ -400,5 +404,28 @@ public class LocationBarPhone extends LocationBarLayout {
             removeView(mIncognitoBadge);
             mIncognitoBadge = null;
         }
+    }
+
+    @Override
+    protected int getUrlContainerMarginEnd() {
+        assert mUrlActionContainer != null;
+        boolean addMarginForActionsContainer =
+                (mBottomSheet == null || !mUrlFocusChangeInProgress || isUrlBarFocused())
+                && mUrlActionContainer.getVisibility() != GONE;
+        int urlContainerMarginEnd = 0;
+
+        if (addMarginForActionsContainer) {
+            for (int i = 0; i < mUrlActionContainer.getChildCount(); i++) {
+                View button = mUrlActionContainer.getChildAt(i);
+                LinearLayout.LayoutParams buttonLayoutParams =
+                        (LinearLayout.LayoutParams) button.getLayoutParams();
+                if (button.getVisibility() != GONE) {
+                    urlContainerMarginEnd += buttonLayoutParams.width
+                            + ApiCompatibilityUtils.getMarginStart(buttonLayoutParams)
+                            + ApiCompatibilityUtils.getMarginEnd(buttonLayoutParams);
+                }
+            }
+        }
+        return urlContainerMarginEnd;
     }
 }
