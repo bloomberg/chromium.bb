@@ -131,8 +131,8 @@ class RemoteTryJob(object):
     # Needed for handling local patches.
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
 
-    # List of buildbucket_ids for submitted jobs.
-    self.buildbucket_ids = []
+    # List of tuples. Each tuple is (config_name, buildbucket_id, URL)
+    self.results = []
 
   def _VerifyForBuildbot(self):
     """Early validation, to ensure the job can be processed by buildbot."""
@@ -163,6 +163,9 @@ class RemoteTryJob(object):
       testjob: Submit job to the test branch of the tryjob repo.  The tryjob
                will be ignored by production master.
       dryrun: Setting to true will run everything except the final submit step.
+
+    Returns:
+      List of (build_config, buildbot_id) tuples.
     """
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
@@ -189,7 +192,7 @@ class RemoteTryJob(object):
                                 patch.tracking_branch, tag))
 
     self._VerifyForBuildbot()
-    self._PostConfigsToBuildBucket(testjob, dryrun)
+    return self._PostConfigsToBuildBucket(testjob, dryrun)
 
   def _GetBuilder(self, bot):
     """Find and return the builder for bot."""
@@ -248,6 +251,26 @@ class RemoteTryJob(object):
         'tags': tags,
     }
 
+  def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
+    """Posts the tryjob configs to buildbucket.
+
+    Args:
+      dryrun: Whether to skip the request to buildbucket.
+      testjob: Whether to use the test instance of the buildbucket server.
+
+    Returns:
+      List of dicts containing 'build_config', 'buildbucket_id', 'url'
+    """
+    host = (buildbucket_lib.BUILDBUCKET_TEST_HOST if testjob
+            else buildbucket_lib.BUILDBUCKET_HOST)
+    buildbucket_client = buildbucket_lib.BuildbucketClient(
+        auth.GetAccessToken, host,
+        service_account_json=buildbucket_lib.GetServiceAccount(
+            constants.CHROMEOS_SERVICE_ACCOUNT))
+
+    return [self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)
+            for bot in self.build_configs]
+
   def _PutConfigToBuildBucket(self, buildbucket_client, bot, dryrun):
     """Put the tryjob request to buildbucket.
 
@@ -255,6 +278,9 @@ class RemoteTryJob(object):
       buildbucket_client: The buildbucket client instance.
       bot: The bot config to put.
       dryrun: Whether a dryrun.
+
+    Returns:
+      Dict containing 'build_config', 'buildbucket_id', 'url'
     """
     request_body = self._GetRequestBody(bot)
     content = buildbucket_client.PutBuildRequest(
@@ -267,48 +293,37 @@ class RemoteTryJob(object):
            buildbucket_lib.GetErrorMessage(content)))
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
-    self.buildbucket_ids.append(buildbucket_id)
-    print(self.BUILDBUCKET_PUT_RESP_FORMAT %
-          (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
+    logging.info(self.BUILDBUCKET_PUT_RESP_FORMAT %
+                 (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
 
-  def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
-    """Posts the tryjob configs to buildbucket.
+    return {
+        'build_config': bot,
+        'buildbucket_id': buildbucket_id,
+        'url': self.TryjobUrl(buildbucket_id),
+    }
+
+  def TryjobUrl(self, buildbucket_id):
+    """Find URL for build_details page of a given build.
 
     Args:
-      dryrun: Whether to skip the request to buildbucket.
-      testjob: Whether to use the test instance of the buildbucket server.
-    """
-    host = (buildbucket_lib.BUILDBUCKET_TEST_HOST if testjob
-            else buildbucket_lib.BUILDBUCKET_HOST)
-    buildbucket_client = buildbucket_lib.BuildbucketClient(
-        auth.GetAccessToken, host,
-        service_account_json=buildbucket_lib.GetServiceAccount(
-            constants.CHROMEOS_SERVICE_ACCOUNT))
-
-    for bot in self.build_configs:
-      self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)
-
-  def GetTrybotWaterfallLinks(self):
-    """Get link to the waterfall for the user.
+      buildbucket_id: buildbucket id of a given build as a string.
 
     Returns:
-      List of URLs to view submitted tryjobs.
+      URL of build details page as a string.
     """
-    results = []
-    # GE build details page(s)
-    results.extend([BUILD_DETAILS_PATTERN % {'buildbucket_id': b}
-                    for b in self.buildbucket_ids])
+    return BUILD_DETAILS_PATTERN % {'buildbucket_id': buildbucket_id}
 
-    if not self.swarming:
-      # TODO: Remove waterfall links after some soak time.
+  def LegacyBuildbotWaterfallLink(self, build_configs):
+    """Get buildbot link to the waterfall for the submitted jobs.
 
-      # Note that this will only show the jobs submitted by the user in the last
-      # 24 hours.
-      builders = set(self._GetBuilder(bot) for bot in self.build_configs)
-      results.append(
-          '%s/waterfall?committer=%s&%s' % (
-              constants.TRYBOT_DASHBOARD, self.user_email,
-              '&'.join('builder=%s' % b for b in sorted(builders)))
-      )
+    Args:
+      build_configs: List of build config names as strings.
 
-    return results
+    Returns:
+      URL to view submitted tryjobs on buildbot waterfall.
+    """
+    assert not self.swarming
+    builders = set(self._GetBuilder(bot) for bot in build_configs)
+    return ('%s/waterfall?committer=%s&%s' %
+            (constants.TRYBOT_DASHBOARD, self.user_email,
+             '&'.join('builder=%s' % b for b in sorted(builders))))
