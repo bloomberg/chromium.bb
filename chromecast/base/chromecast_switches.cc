@@ -16,8 +16,8 @@ const char kSwitchValueTrue[] = "true";
 const char kSwitchValueFalse[] = "false";
 
 // Server url to upload crash data to.
-// Default is "http://clients2.google.com/cr/report" for prod devices.
-// Default is "http://clients2.google.com/cr/staging_report" for non prod.
+// Default is "https://clients2.google.com/cr/report" for prod devices.
+// Default is "https://clients2.google.com/cr/staging_report" for non prod.
 const char kCrashServerUrl[] = "crash-server-url";
 
 // Enable file accesses. It should not be enabled for most Cast devices.
