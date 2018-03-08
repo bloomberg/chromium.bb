@@ -21,9 +21,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
@@ -81,7 +81,8 @@ class MockByteStreamReader : public ByteStreamReader {
   MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 
-class MockDownloadDestinationObserver : public DownloadDestinationObserver {
+class MockDownloadDestinationObserver
+    : public download::DownloadDestinationObserver {
  public:
   MOCK_METHOD3(DestinationUpdate,
                void(int64_t,
@@ -121,11 +122,12 @@ enum DownloadFileRenameMethodType { RENAME_AND_UNIQUIFY, RENAME_AND_ANNOTATE };
 // retries renames failed due to ACCESS_DENIED.
 class TestDownloadFileImpl : public DownloadFileImpl {
  public:
-  TestDownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
-                       const base::FilePath& default_downloads_directory,
-                       std::unique_ptr<DownloadManager::InputStream> stream,
-                       uint32_t download_id,
-                       base::WeakPtr<DownloadDestinationObserver> observer)
+  TestDownloadFileImpl(
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      std::unique_ptr<DownloadManager::InputStream> stream,
+      uint32_t download_id,
+      base::WeakPtr<download::DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
@@ -473,7 +475,7 @@ class DownloadFileTest : public testing::Test {
   }
 
   std::unique_ptr<StrictMock<MockDownloadDestinationObserver>> observer_;
-  base::WeakPtrFactory<DownloadDestinationObserver> observer_factory_;
+  base::WeakPtrFactory<download::DownloadDestinationObserver> observer_factory_;
 
   // DownloadFile instance we are testing.
   std::unique_ptr<DownloadFileImpl> download_file_;

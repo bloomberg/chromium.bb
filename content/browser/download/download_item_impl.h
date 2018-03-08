@@ -18,11 +18,11 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/resume_mode.h"
-#include "content/browser/download/download_destination_observer.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -34,8 +34,9 @@ class DownloadJob;
 class WebContents;
 
 // See download_item.h for usage.
-class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
-                                        public DownloadDestinationObserver {
+class CONTENT_EXPORT DownloadItemImpl
+    : public download::DownloadItem,
+      public download::DownloadDestinationObserver {
  public:
   // Information about the initial request that triggers the download. Most of
   // the fields are immutable after the download::DownloadItem is successfully
@@ -305,8 +306,8 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.
-  virtual base::WeakPtr<DownloadDestinationObserver>
-      DestinationObserverAsWeakPtr();
+  virtual base::WeakPtr<download::DownloadDestinationObserver>
+  DestinationObserverAsWeakPtr();
 
   // DownloadItemImpl routines only needed by SavePackage ----------------------
 
@@ -322,7 +323,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
 
   download::DownloadSource download_source() const { return download_source_; }
 
-  // DownloadDestinationObserver
+  // download::DownloadDestinationObserver
   void DestinationUpdate(
       int64_t bytes_so_far,
       int64_t bytes_per_sec,

@@ -17,7 +17,7 @@ DownloadFile* DownloadFileFactory::CreateFile(
     const base::FilePath& default_downloads_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,
-    base::WeakPtr<DownloadDestinationObserver> observer) {
+    base::WeakPtr<download::DownloadDestinationObserver> observer) {
   return new DownloadFileImpl(std::move(save_info), default_downloads_directory,
                               std::move(stream), download_id, observer);
 }

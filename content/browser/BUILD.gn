@@ -688,7 +688,6 @@ jumbo_source_set("browser") {
     "dom_storage/session_storage_database_adapter.h",
     "dom_storage/session_storage_namespace_impl.cc",
     "dom_storage/session_storage_namespace_impl.h",
-    "download/download_destination_observer.h",
     "download/download_file.h",
     "download/download_file_factory.cc",
     "download/download_file_factory.h",

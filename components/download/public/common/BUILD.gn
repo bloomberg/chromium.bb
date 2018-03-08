@@ -19,6 +19,8 @@ component("public") {
     "download_content.h",
     "download_create_info.h",
     "download_danger_type.h",
+    "download_destination_observer.cc",
+    "download_destination_observer.h",
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
     "download_interrupt_reasons_utils.h",

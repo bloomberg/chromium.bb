@@ -24,11 +24,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_file.h"
@@ -836,7 +836,7 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
 TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
   base::HistogramTester histogram_tester;
   DownloadItemImpl* item = CreateDownloadItem();
-  base::WeakPtr<DownloadDestinationObserver> as_observer(
+  base::WeakPtr<download::DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
   MockDownloadFile* mock_download_file_ref = nullptr;
@@ -1554,7 +1554,7 @@ TEST_F(DownloadItemTest, DestinationUpdate) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* file =
       DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  base::WeakPtr<DownloadDestinationObserver> as_observer(
+  base::WeakPtr<download::DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
 
@@ -1590,7 +1590,7 @@ TEST_F(DownloadItemTest, DestinationError_NoRestartRequired) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  base::WeakPtr<DownloadDestinationObserver> as_observer(
+  base::WeakPtr<download::DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
 
@@ -1625,7 +1625,7 @@ TEST_F(DownloadItemTest, DestinationError_RestartRequired) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  base::WeakPtr<DownloadDestinationObserver> as_observer(
+  base::WeakPtr<download::DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
 
@@ -1658,7 +1658,7 @@ TEST_F(DownloadItemTest, DestinationCompleted) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  base::WeakPtr<DownloadDestinationObserver> as_observer(
+  base::WeakPtr<download::DownloadDestinationObserver> as_observer(
       item->DestinationObserverAsWeakPtr());
   TestDownloadItemObserver observer(item);
 
@@ -2104,7 +2104,7 @@ namespace {
 // various permutations of observer calls that will then be applied to a
 // download::DownloadItem in a state as yet undetermined.
 using CurriedObservation =
-    base::Callback<void(base::WeakPtr<DownloadDestinationObserver>)>;
+    base::Callback<void(base::WeakPtr<download::DownloadDestinationObserver>)>;
 
 // A list of observations that are to be made during some event in the
 // DownloadItemImpl control flow. Ordering of the observations is significant.
@@ -2128,7 +2128,7 @@ const int kEventCount = 4;
 void DestinationUpdateInvoker(
     int64_t bytes_so_far,
     int64_t bytes_per_sec,
-    base::WeakPtr<DownloadDestinationObserver> observer) {
+    base::WeakPtr<download::DownloadDestinationObserver> observer) {
   DVLOG(20) << "DestinationUpdate(bytes_so_far:" << bytes_so_far
             << ", bytes_per_sec:" << bytes_per_sec
             << ") observer:" << !!observer;
@@ -2142,7 +2142,7 @@ void DestinationUpdateInvoker(
 void DestinationErrorInvoker(
     download::DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    base::WeakPtr<DownloadDestinationObserver> observer) {
+    base::WeakPtr<download::DownloadDestinationObserver> observer) {
   DVLOG(20) << "DestinationError(reason:"
             << DownloadInterruptReasonToString(reason)
             << ", bytes_so_far:" << bytes_so_far << ") observer:" << !!observer;
@@ -2153,7 +2153,7 @@ void DestinationErrorInvoker(
 
 void DestinationCompletedInvoker(
     int64_t total_bytes,
-    base::WeakPtr<DownloadDestinationObserver> observer) {
+    base::WeakPtr<download::DownloadDestinationObserver> observer) {
   DVLOG(20) << "DestinationComplete(total_bytes:" << total_bytes
             << ") observer:" << !!observer;
   if (observer)
@@ -2263,7 +2263,7 @@ class DownloadItemDestinationUpdateRaceTest
   // that are already scheduled.
   void ScheduleObservations(
       const ObservationList& observations,
-      base::WeakPtr<DownloadDestinationObserver> observer) {
+      base::WeakPtr<download::DownloadDestinationObserver> observer) {
     for (const auto action : observations)
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               base::BindOnce(action, observer));
@@ -2301,7 +2301,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   item_->Start(std::move(file_), std::move(request_handle_), *create_info());
   task_environment_.RunUntilIdle();
 
-  base::WeakPtr<DownloadDestinationObserver> destination_observer =
+  base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
       item_->DestinationObserverAsWeakPtr();
 
   ScheduleObservations(PreInitializeFileObservations(), destination_observer);
@@ -2348,7 +2348,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   item_->Start(std::move(file_), std::move(request_handle_), *create_info());
   task_environment_.RunUntilIdle();
 
-  base::WeakPtr<DownloadDestinationObserver> destination_observer =
+  base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
       item_->DestinationObserverAsWeakPtr();
 
   ScheduleObservations(PreInitializeFileObservations(), destination_observer);
@@ -2412,7 +2412,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   item_->Start(std::move(file_), std::move(request_handle_), *create_info());
   task_environment_.RunUntilIdle();
 
-  base::WeakPtr<DownloadDestinationObserver> destination_observer =
+  base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
       item_->DestinationObserverAsWeakPtr();
 
   ScheduleObservations(PreInitializeFileObservations(), destination_observer);
