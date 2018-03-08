@@ -8,10 +8,6 @@ source_set("images") {
     "branded_image_icon_types.h",
     "branded_image_provider.h",
     "branded_image_provider.mm",
-
-    # This header is deprecated. It will be removed once downstream code
-    # has been fixed to use branded_image_icon_types.h instead.
-    "whats_new_icon.h",
   ]
   deps = [
     "//base",
