@@ -19,6 +19,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
@@ -2058,6 +2059,53 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
   EXPECT_TRUE(window_selector()
                   ->grid_list_for_testing()[0]
                   ->IsNoItemsIndicatorLabelVisibleForTesting());
+}
+
+// Verify that the overview no windows indicator position is as expected.
+TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorPosition) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
+  UpdateDisplay("400x300");
+  // Midpoint of height minus shelf.
+  const int expected_y = (300 - kShelfSize) / 2;
+
+  // Helper to check points. Uses EXPECT_NEAR on each coordinate to account for
+  // rounding.
+  auto check_point = [](const gfx::Point& expected, const gfx::Point& actual) {
+    EXPECT_NEAR(expected.x(), actual.x(), 1);
+    EXPECT_NEAR(expected.y(), actual.y(), 1);
+  };
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector());
+
+  // Verify that originally the label is in the center of the workspace.
+  WindowGrid* grid = window_selector()->grid_list_for_testing()[0].get();
+  check_point(gfx::Point(200, expected_y),
+              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
+
+  // Verify that when grid bounds are on the left, the label is centered on the
+  // left side of the workspace.
+  grid->SetBoundsAndUpdatePositions(gfx::Rect(0, 0, 200, 300 - kShelfSize));
+  check_point(gfx::Point(100, expected_y),
+              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
+
+  // Verify that when grid bounds are on the right, the label is centered on the
+  // right side of the workspace.
+  grid->SetBoundsAndUpdatePositions(gfx::Rect(200, 0, 200, 300 - kShelfSize));
+  check_point(gfx::Point(300, expected_y),
+              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
+
+  // Verify that after rotating the display, the label is centered in the
+  // workspace 300x(400-shelf).
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display& display = screen->GetPrimaryDisplay();
+  display_manager()->SetDisplayRotation(
+      display.id(), display::Display::ROTATE_90,
+      display::Display::RotationSource::ACTIVE);
+  check_point(gfx::Point(150, (400 - kShelfSize) / 2),
+              grid->GetNoItemsIndicatorLabelBoundsForTesting().CenterPoint());
 }
 
 // Verify that when opening overview mode with multiple displays, the no items

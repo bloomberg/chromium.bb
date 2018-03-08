@@ -162,6 +162,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   bool IsNoItemsIndicatorLabelVisibleForTesting();
 
+  gfx::Rect GetNoItemsIndicatorLabelBoundsForTesting() const;
+
   WindowSelector* window_selector() { return window_selector_; }
 
   void set_window_animation_observer(
