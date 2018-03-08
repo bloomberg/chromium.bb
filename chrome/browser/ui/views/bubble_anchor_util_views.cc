@@ -28,11 +28,8 @@ views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
 
   if (anchor == kLocationBar)
     return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
-  if (anchor == kHostedAppMenu) {
-    auto* frame_view = static_cast<BrowserNonClientFrameView*>(
-        browser_view->GetWidget()->non_client_view()->frame_view());
-    return frame_view->GetHostedAppMenuView();
-  }
+  if (anchor == kAppMenuButton)
+    return browser_view->button_provider()->GetAppMenuButton();
   NOTREACHED();
   return nullptr;
 }

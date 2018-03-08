@@ -679,7 +679,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_HOSTED_APP_MENU_APP_INFO:
       ShowPageInfoDialog(browser_->tab_strip_model()->GetActiveWebContents(),
-                         bubble_anchor_util::kHostedAppMenu);
+                         bubble_anchor_util::kAppMenuButton);
       break;
 
     default:

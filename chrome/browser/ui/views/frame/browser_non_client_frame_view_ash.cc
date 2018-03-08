@@ -245,11 +245,6 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
   }
 }
 
-views::View* BrowserNonClientFrameViewAsh::GetHostedAppMenuView() {
-  DCHECK(hosted_app_button_container_);
-  return hosted_app_button_container_;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
