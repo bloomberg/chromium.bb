@@ -152,7 +152,7 @@ QUIC_FLAG(
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
 // If true, enable QUIC version 42.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42_2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42_2, true)
 
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, false)
