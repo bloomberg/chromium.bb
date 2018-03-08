@@ -308,6 +308,10 @@ void WindowSelector::Init(const WindowList& windows,
       }
       window_grid->PrepareForOverview();
       window_grid->PositionWindows(/*animate=*/true);
+      // Reset |should_animate_when_entering_| in order to animate during
+      // overview mode, such as dragging animations.
+      if (IsNewOverviewAnimationsEnabled())
+        window_grid->ResetWindowListAnimationStates();
     }
 
     // Image used for text filter textfield.

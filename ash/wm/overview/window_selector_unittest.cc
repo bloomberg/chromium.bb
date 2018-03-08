@@ -2164,21 +2164,13 @@ TEST_F(WindowSelectorTest, SetWindowListAnimationStates) {
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
   EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
 
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   // Enter overview.
   ToggleOverview();
-
-  const int grid_index = 0;
-  WindowSelectorItem* selector_item1 =
-      GetWindowItemForWindow(grid_index, window1.get());
-  WindowSelectorItem* selector_item2 =
-      GetWindowItemForWindow(grid_index, window2.get());
-  WindowSelectorItem* selector_item3 =
-      GetWindowItemForWindow(grid_index, window3.get());
-
-  // All the animation states during entering overview are correctly updated.
-  EXPECT_TRUE(selector_item1->ShouldAnimateWhenEntering());
-  EXPECT_TRUE(selector_item2->ShouldAnimateWhenEntering());
-  EXPECT_FALSE(selector_item3->ShouldAnimateWhenEntering());
+  EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(window3->layer()->GetAnimator()->is_animating());
 
   ToggleOverview();
 }
@@ -2512,6 +2504,36 @@ TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   EXPECT_FALSE(window6->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window7->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window8->layer()->GetAnimator()->is_animating());
+  RunAllPendingInMessageLoop();
+}
+
+// Verify that the selector item can animate after the item is dragged and
+// released.
+TEST_F(WindowSelectorTest, WindowItemCanAnimateOnDragRelease) {
+  UpdateDisplay("400x400");
+  const gfx::Rect bounds(10, 10, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  // The item dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  ToggleOverview();
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  // Drag |item2| in a way so that |window2| does not get activated.
+  GetEventGenerator().MoveMouseTo(item2->target_bounds().CenterPoint());
+  GetEventGenerator().PressLeftButton();
+  RunAllPendingInMessageLoop();
+
+  GetEventGenerator().MoveMouseTo(gfx::Point(200, 200));
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  GetEventGenerator().ReleaseLeftButton();
+  EXPECT_TRUE(window2->layer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty::TRANSFORM));
   RunAllPendingInMessageLoop();
 }
 
