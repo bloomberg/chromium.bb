@@ -42,12 +42,12 @@ class WeakMember;
 template <typename T>
 class WeakPersistent;
 
-template <typename T, bool = NeedsAdjustAndMark<T>::value>
-class AdjustAndMarkTrait;
+template <typename T, bool = NeedsAdjustPointer<T>::value>
+class AdjustPointerTrait;
 
 template <typename T>
-class AdjustAndMarkTrait<T, false> {
-  STATIC_ONLY(AdjustAndMarkTrait);
+class AdjustPointerTrait<T, false> {
+  STATIC_ONLY(AdjustPointerTrait);
 
  public:
   static TraceDescriptor GetTraceDescriptor(void* self) {
@@ -69,8 +69,8 @@ class AdjustAndMarkTrait<T, false> {
 };
 
 template <typename T>
-class AdjustAndMarkTrait<T, true> {
-  STATIC_ONLY(AdjustAndMarkTrait);
+class AdjustPointerTrait<T, true> {
+  STATIC_ONLY(AdjustPointerTrait);
 
  public:
   static TraceDescriptor GetTraceDescriptor(const T* self) {
@@ -190,16 +190,16 @@ class TraceTrait {
 
  public:
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return AdjustAndMarkTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
+    return AdjustPointerTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
   }
 
   static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
-    return AdjustAndMarkTrait<T>::GetTraceWrapperDescriptor(
+    return AdjustPointerTrait<T>::GetTraceWrapperDescriptor(
         static_cast<T*>(self));
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
-    return AdjustAndMarkTrait<T>::GetHeapObjectHeader(static_cast<T*>(self));
+    return AdjustPointerTrait<T>::GetHeapObjectHeader(static_cast<T*>(self));
   }
 
   static void Trace(Visitor*, void* self);
@@ -222,7 +222,6 @@ void TraceTrait<T>::TraceWrappers(ScriptWrappableVisitor* visitor, void* self) {
                 "only objects deriving from GarbageCollected can be used");
   visitor->DispatchTraceWrappers(static_cast<T*>(self));
 }
-
 
 template <typename T, typename Traits>
 struct TraceTrait<HeapVectorBacking<T, Traits>> {

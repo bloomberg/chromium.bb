@@ -273,10 +273,10 @@ class GarbageCollectedFinalized : public GarbageCollected<T> {
 template <typename T,
           bool = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type,
                                            GarbageCollected>::value>
-class NeedsAdjustAndMark;
+class NeedsAdjustPointer;
 
 template <typename T>
-class NeedsAdjustAndMark<T, true> {
+class NeedsAdjustPointer<T, true> {
   static_assert(sizeof(T), "T must be fully defined");
 
  public:
@@ -284,7 +284,7 @@ class NeedsAdjustAndMark<T, true> {
 };
 
 template <typename T>
-class NeedsAdjustAndMark<T, false> {
+class NeedsAdjustPointer<T, false> {
   static_assert(sizeof(T), "T must be fully defined");
 
  public:
