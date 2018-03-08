@@ -45,9 +45,9 @@ class ChannelSplitterHandler final : public AudioHandler {
   void SetChannelCountMode(const String&, ExceptionState&) final;
   void SetChannelInterpretation(const String&, ExceptionState&) final;
 
-  // AudioNode
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
+  bool RequiresTailProcessing() const final { return false; }
 
  private:
   ChannelSplitterHandler(AudioNode&,

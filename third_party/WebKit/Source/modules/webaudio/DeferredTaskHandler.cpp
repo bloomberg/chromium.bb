@@ -170,6 +170,48 @@ void DeferredTaskHandler::ProcessAutomaticPullNodes(size_t frames_to_process) {
     rendering_automatic_pull_nodes_[i]->ProcessIfNecessary(frames_to_process);
 }
 
+void DeferredTaskHandler::AddTailProcessingHandler(
+    scoped_refptr<AudioHandler> handler) {
+  DCHECK(IsGraphOwner());
+
+  if (!tail_processing_handlers_.Contains(handler)) {
+#if DEBUG_AUDIONODE_REFERENCES > 1
+    handler->AddTailProcessingDebug();
+#endif
+    tail_processing_handlers_.push_back(handler);
+  }
+}
+
+void DeferredTaskHandler::RemoveTailProcessingHandler(
+    scoped_refptr<AudioHandler> handler) {
+  DCHECK(IsGraphOwner());
+
+  size_t index = tail_processing_handlers_.Find(handler);
+  if (index != kNotFound) {
+#if DEBUG_AUDIONODE_REFERENCES > 1
+    handler->RemoveTailProcessingDebug();
+#endif
+    handler->DisableOutputs();
+    tail_processing_handlers_.EraseAt(index);
+  }
+}
+
+void DeferredTaskHandler::UpdateTailProcessingHandlers() {
+  DCHECK(IsAudioThread());
+
+  for (unsigned k = tail_processing_handlers_.size(); k > 0; --k) {
+    scoped_refptr<AudioHandler> handler = tail_processing_handlers_[k - 1];
+    if (handler->PropagatesSilence()) {
+#if DEBUG_AUDIONODE_REFERENCES
+      fprintf(stderr, "[%16p]: %16p: %2d: updateTail @%.15g\n",
+              handler->Context(), handler.get(), handler->GetNodeType(),
+              handler->Context()->currentTime());
+#endif
+      RemoveTailProcessingHandler(handler);
+    }
+  }
+}
+
 void DeferredTaskHandler::AddChangedChannelCountMode(AudioHandler* node) {
   DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
@@ -231,6 +273,7 @@ void DeferredTaskHandler::HandleDeferredTasks() {
   HandleDirtyAudioSummingJunctions();
   HandleDirtyAudioNodeOutputs();
   UpdateAutomaticPullNodes();
+  UpdateTailProcessingHandlers();
 }
 
 void DeferredTaskHandler::ContextWillBeDestroyed() {
@@ -282,6 +325,7 @@ void DeferredTaskHandler::DeleteHandlersOnMainThread() {
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(*this);
+  tail_processing_handlers_.clear();
   rendering_orphan_handlers_.clear();
   deletable_orphan_handlers_.clear();
 }
@@ -290,6 +334,15 @@ void DeferredTaskHandler::SetAudioThreadToCurrentThread() {
   DCHECK(!IsMainThread());
   ThreadIdentifier thread = CurrentThread();
   ReleaseStore(&audio_thread_, thread);
+}
+
+void DeferredTaskHandler::FinishTailProcessing() {
+  DCHECK(IsMainThread());
+  // DisableOutputs must run with the graph lock.
+  GraphAutoLocker locker(*this);
+
+  for (auto& handler : tail_processing_handlers_)
+    handler->DisableOutputs();
 }
 
 }  // namespace blink

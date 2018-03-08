@@ -71,6 +71,8 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
     return nullptr;
   }
 
+  bool RequiresTailProcessing() const final { return false; }
+
  private:
   MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
   // As an audio source, we will never propagate silence.

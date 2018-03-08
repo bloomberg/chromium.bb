@@ -346,6 +346,10 @@ ScriptPromise OfflineAudioContext::resumeContext(ScriptState* script_state) {
 void OfflineAudioContext::FireCompletionEvent() {
   DCHECK(IsMainThread());
 
+  // Context is finished, so remove any tail processing nodes; there's nowhere
+  // for the output to go.
+  GetDeferredTaskHandler().FinishTailProcessing();
+
   // We set the state to closed here so that the oncomplete event handler sees
   // that the context has been closed.
   SetContextState(kClosed);

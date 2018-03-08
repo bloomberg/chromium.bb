@@ -175,6 +175,9 @@ void BaseAudioContext::Uninitialize() {
   if (destination_node_)
     destination_node_->Handler().Uninitialize();
 
+  // Remove tail nodes since the context is done.
+  GetDeferredTaskHandler().FinishTailProcessing();
+
   // Get rid of the sources which may still be playing.
   ReleaseActiveSourceNodes();
 

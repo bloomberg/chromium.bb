@@ -36,6 +36,7 @@
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/Vector.h"
 
+// Higher values produce more debugging output.
 #define DEBUG_AUDIONODE_REFERENCES 0
 
 namespace blink {
@@ -188,6 +189,18 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 #if DEBUG_AUDIONODE_REFERENCES
   static void PrintNodeCounts();
 #endif
+#if DEBUG_AUDIONODE_REFERENCES > 1
+  void TailProcessingDebug(const char* debug_note);
+  void AddTailProcessingDebug();
+  void RemoveTailProcessingDebug();
+#endif
+
+  // True if the node has a tail time or latency time that requires
+  // special tail processing to behave properly.  Ideally, this can be
+  // checked using TailTime and LatencyTime, but these aren't
+  // available on the main thread, and the tail processing check can
+  // happen on the main thread.
+  virtual bool RequiresTailProcessing() const = 0;
 
   // TailTime() is the length of time (not counting latency time) where
   // non-zero output may occur after continuous silent input.
@@ -212,6 +225,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 
   void EnableOutputsIfNecessary();
   void DisableOutputsIfNecessary();
+  void DisableOutputs();
 
   unsigned long ChannelCount();
   virtual void SetChannelCount(unsigned long, ExceptionState&);
