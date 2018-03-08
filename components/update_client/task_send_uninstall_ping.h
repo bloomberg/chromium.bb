@@ -34,7 +34,7 @@ class TaskSendUninstallPing : public Task {
   // |id| represents the CRX to send the ping for.
   // |callback| is called to return the execution flow back to creator of
   //    this task when the task is done.
-  TaskSendUninstallPing(UpdateEngine* update_engine,
+  TaskSendUninstallPing(scoped_refptr<UpdateEngine> update_engine,
                         const std::string& id,
                         const base::Version& version,
                         int reason,
@@ -54,8 +54,7 @@ class TaskSendUninstallPing : public Task {
   void TaskComplete(Error error);
 
   base::ThreadChecker thread_checker_;
-
-  UpdateEngine* update_engine_;  // Not owned by this class.
+  scoped_refptr<UpdateEngine> update_engine_;
   const std::string id_;
   const base::Version version_;
   int reason_;

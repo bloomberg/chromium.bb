@@ -34,7 +34,7 @@ class PingManagerTest : public testing::Test {
   ~PingManagerTest() override {}
 
   PingManager::Callback MakePingCallback();
-  std::unique_ptr<UpdateContext> MakeFakeUpdateContext() const;
+  scoped_refptr<UpdateContext> MakeFakeUpdateContext() const;
 
   // Overrides from testing::Test.
   void SetUp() override;
@@ -96,8 +96,8 @@ void PingManagerTest::PingSentCallback(int error, const std::string& response) {
   Quit();
 }
 
-std::unique_ptr<UpdateContext> PingManagerTest::MakeFakeUpdateContext() const {
-  return std::make_unique<UpdateContext>(
+scoped_refptr<UpdateContext> PingManagerTest::MakeFakeUpdateContext() const {
+  return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
       UpdateEngine::Callback(), nullptr);

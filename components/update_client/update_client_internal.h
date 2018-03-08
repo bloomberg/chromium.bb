@@ -80,11 +80,8 @@ class UpdateClientImpl : public UpdateClient {
   // tasks are running. In addition, concurrent install tasks for the same id
   // are not allowed.
   std::set<scoped_refptr<Task>> tasks_;
-
-  // TODO(sorin): try to make the ping manager an observer of the service.
   scoped_refptr<PingManager> ping_manager_;
-  std::unique_ptr<UpdateEngine> update_engine_;
-
+  scoped_refptr<UpdateEngine> update_engine_;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientImpl);

@@ -15,11 +15,12 @@
 
 namespace update_client {
 
-TaskSendUninstallPing::TaskSendUninstallPing(UpdateEngine* update_engine,
-                                             const std::string& id,
-                                             const base::Version& version,
-                                             int reason,
-                                             Callback callback)
+TaskSendUninstallPing::TaskSendUninstallPing(
+    scoped_refptr<UpdateEngine> update_engine,
+    const std::string& id,
+    const base::Version& version,
+    int reason,
+    Callback callback)
     : update_engine_(update_engine),
       id_(id),
       version_(version),

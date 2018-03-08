@@ -87,10 +87,11 @@ void UpdateEngine::Update(bool is_foreground,
     return;
   }
 
-  const auto result = update_contexts_.insert(std::make_unique<UpdateContext>(
-      config_, is_foreground, ids, std::move(crx_data_callback),
-      notify_observers_callback_, std::move(callback),
-      crx_downloader_factory_));
+  const auto result =
+      update_contexts_.insert(base::MakeRefCounted<UpdateContext>(
+          config_, is_foreground, ids, std::move(crx_data_callback),
+          notify_observers_callback_, std::move(callback),
+          crx_downloader_factory_));
 
   DCHECK(result.second);
 
@@ -354,10 +355,12 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto result = update_contexts_.insert(std::make_unique<UpdateContext>(
-      config_, false, std::vector<std::string>{id},
-      UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      std::move(callback), nullptr));
+  const auto result =
+      update_contexts_.insert(base::MakeRefCounted<UpdateContext>(
+          config_, false, std::vector<std::string>{id},
+          UpdateClient::CrxDataCallback(),
+          UpdateEngine::NotifyObserversCallback(), std::move(callback),
+          nullptr));
 
   DCHECK(result.second);
 
