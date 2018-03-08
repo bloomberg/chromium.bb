@@ -77,14 +77,6 @@ class MockAppMenuModel : public AppMenuModel {
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
-class DummyRouter : public sync_sessions::LocalSessionEventRouter {
- public:
-  ~DummyRouter() override {}
-  void StartRoutingTo(
-      sync_sessions::LocalSessionEventHandler* handler) override {}
-  void Stop() override {}
-};
-
 class BrowserRemovedObserver : public BrowserListObserver {
  public:
   BrowserRemovedObserver() { BrowserList::AddObserver(this); }
@@ -132,8 +124,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
             ->GetSyncSessionsClient(),
-        sync_prefs_.get(), local_device_.get(), &dummy_router_,
-        base::Closure());
+        sync_prefs_.get(), local_device_.get(), base::Closure());
 
     manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS, syncer::SyncDataList(),
@@ -190,7 +181,6 @@ class AppMenuControllerTest : public CocoaProfileTest {
 
  private:
   std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
-  DummyRouter dummy_router_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;

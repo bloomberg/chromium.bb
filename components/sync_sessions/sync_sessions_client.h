@@ -11,10 +11,6 @@
 
 class GURL;
 
-namespace bookmarks {
-class BookmarkModel;
-}
-
 namespace favicon {
 class FaviconService;
 }
@@ -36,7 +32,6 @@ class SyncSessionsClient {
   virtual ~SyncSessionsClient();
 
   // Getters for services that sessions depends on.
-  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
 

@@ -20,6 +20,7 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/time.h"
+#include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/tab_node_pool.h"
 
@@ -137,7 +138,6 @@ SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
     syncer::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
-    LocalSessionEventRouter* router,
     const base::RepeatingClosure& sessions_updated_callback)
     : sessions_client_(sessions_client),
       session_tracker_(sessions_client),
@@ -153,9 +153,7 @@ SessionsSyncManager::SessionsSyncManager(
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(sync_prefs),
       local_device_(local_device),
-      local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
-      local_event_router_(router),
       sessions_updated_callback_(sessions_updated_callback) {}
 
 SessionsSyncManager::~SessionsSyncManager() {}
@@ -201,8 +199,6 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     sync_processor_->AddLocalChangeObserver(lost_navigations_recorder_.get());
   }
 
-  local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
-
   // Make sure we have a machine tag.  We do this now (versus earlier) as it's
   // a conveniently safe time to assert sync is ready and the cache_guid is
   // initialized.
@@ -245,7 +241,8 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   merge_result.set_error(sync_processor_->ProcessSyncChanges(
       FROM_HERE, *batch.sync_change_list()));
 
-  local_event_router_->StartRoutingTo(local_session_event_handler_.get());
+  sessions_client_->GetLocalSessionEventRouter()->StartRoutingTo(
+      local_session_event_handler_.get());
   return merge_result;
 }
 
@@ -263,7 +260,7 @@ bool SessionsSyncManager::RebuildAssociations() {
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
-  local_event_router_->Stop();
+  sessions_client_->GetLocalSessionEventRouter()->Stop();
   local_session_event_handler_.reset();
   if (sync_processor_.get() && lost_navigations_recorder_.get()) {
     sync_processor_->RemoveLocalChangeObserver(
@@ -275,7 +272,6 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   session_tracker_.Clear();
   current_machine_tag_.clear();
   current_session_name_.clear();
-  local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
 }
 
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
