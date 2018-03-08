@@ -639,25 +639,10 @@ public class BottomSheet
     }
 
     /**
-     * @param tabModelSelector A TabModelSelector for getting the current tab and activity.
-     */
-    public void setTabModelSelector(TabModelSelector tabModelSelector) {
-        mTabModelSelector = tabModelSelector;
-    }
-
-    /**
      * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
      */
     public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
         getIphBubbleController().setLayoutManagerChrome(layoutManager);
-    }
-
-    /**
-     * @param fullscreenManager Chrome's fullscreen manager for information about toolbar offsets.
-     */
-    public void setFullscreenManager(ChromeFullscreenManager fullscreenManager) {
-        mFullscreenManager = fullscreenManager;
-        getIphBubbleController().setFullscreenManager(fullscreenManager);
     }
 
     /**
@@ -685,6 +670,10 @@ public class BottomSheet
      * @param activity The activity displaying the bottom sheet.
      */
     public void init(View root, ChromeActivity activity) {
+        mTabModelSelector = activity.getTabModelSelector();
+        mFullscreenManager = activity.getFullscreenManager();
+
+        getIphBubbleController().setFullscreenManager(mFullscreenManager);
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
@@ -803,7 +792,7 @@ public class BottomSheet
             }
         });
 
-        mActivity.getFullscreenManager().addListener(new FullscreenListener() {
+        mFullscreenManager.addListener(new FullscreenListener() {
             @Override
             public void onToggleOverlayVideoMode(boolean enabled) {
                 if (isSheetOpen()) setSheetState(SHEET_STATE_PEEK, false);
@@ -1165,10 +1154,11 @@ public class BottomSheet
         // the correct toolbar height and container height are not know until those views are
         // inflated. The other views are a specific DP distance from the top and bottom and are
         // also updated.
-        mStateRatios[0] = (mToolbarHeight + mToolbarShadowHeight) / mContainerHeight;
-        mStateRatios[1] = HALF_HEIGHT_RATIO;
+        mStateRatios[SHEET_STATE_PEEK] = (mToolbarHeight + mToolbarShadowHeight) / mContainerHeight;
+        mStateRatios[SHEET_STATE_HALF] = HALF_HEIGHT_RATIO;
         // The max height ratio will be greater than 1 to account for the toolbar shadow.
-        mStateRatios[2] = (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
+        mStateRatios[SHEET_STATE_FULL] =
+                (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
 
         if (mCurrentState == SHEET_STATE_HALF && isSmallScreen()) {
             setSheetState(SHEET_STATE_FULL, false);
@@ -1277,7 +1267,7 @@ public class BottomSheet
      */
     @VisibleForTesting
     public float getPeekRatio() {
-        return mStateRatios[0];
+        return mStateRatios[SHEET_STATE_PEEK];
     }
 
     /**
@@ -1285,7 +1275,7 @@ public class BottomSheet
      */
     @VisibleForTesting
     public float getHalfRatio() {
-        return mStateRatios[1];
+        return mStateRatios[SHEET_STATE_HALF];
     }
 
     /**
@@ -1293,7 +1283,7 @@ public class BottomSheet
      */
     @VisibleForTesting
     public float getFullRatio() {
-        return mStateRatios[2];
+        return mStateRatios[SHEET_STATE_FULL];
     }
 
     /**
