@@ -45,9 +45,12 @@ class DiceTurnSyncOnHelperTest;
 
 namespace {
 
-const char kEmail[] = "email@foo.com";
+const char kEmail[] = "foo@gmail.com";
+const char kGaiaID[] = "foo_gaia_id";
 const char kPreviousEmail[] = "notme@bar.com";
-const char kGaiaID[] = "gaia_id";
+const char kEnterpriseEmail[] = "enterprise@managed.com";
+const char kEnterpriseGaiaID[] = "enterprise_gaia_id";
+
 const signin_metrics::AccessPoint kAccessPoint =
     signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
 const signin_metrics::Reason kSigninReason =
@@ -128,8 +131,9 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
 
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
   void set_client_id(const std::string& client_id) { client_id_ = client_id; }
-  void set_account_id(const std::string& account_id) {
+  void set_account(const std::string& account_id, const std::string& email) {
     account_id_ = account_id;
+    email_ = email;
   }
 
   // policy::UserPolicySigninService:
@@ -137,7 +141,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
       const std::string& username,
       const std::string& account_id,
       const PolicyRegistrationCallback& callback) override {
-    EXPECT_EQ(kEmail, username);
+    EXPECT_EQ(email_, username);
     EXPECT_EQ(account_id_, account_id);
     callback.Run(dm_token_, client_id_);
   }
@@ -156,6 +160,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   std::string dm_token_;
   std::string client_id_;
   std::string account_id_;
+  std::string email_;
 };
 
 }  // namespace
@@ -182,13 +187,12 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
         policy::UserPolicySigninServiceFactory::GetInstance(),
         &FakeUserPolicySigninService::Build);
     profile_ = profile_builder.Build();
-
-    account_id_ =
-        AccountTrackerServiceFactory::GetForProfile(profile())->SeedAccountInfo(
-            kGaiaID, kEmail);
+    account_tracker_service_ =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    account_id_ = account_tracker_service_->SeedAccountInfo(kGaiaID, kEmail);
     user_policy_signin_service_ = static_cast<FakeUserPolicySigninService*>(
         policy::UserPolicySigninServiceFactory::GetForProfile(profile()));
-    user_policy_signin_service_->set_account_id(account_id_);
+    user_policy_signin_service_->set_account(account_id_, kEmail);
     token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
     token_service_->UpdateCredentials(account_id_, "refresh_token");
     signin_manager_ = SigninManagerFactory::GetForProfile(profile());
@@ -222,6 +226,13 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     return new DiceTurnSyncOnHelper(
         profile(), kAccessPoint, kSigninReason, account_id_, mode,
         std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this));
+  }
+
+  void UseEnterpriseAccount() {
+    account_id_ = account_tracker_service_->SeedAccountInfo(kEnterpriseGaiaID,
+                                                            kEnterpriseEmail);
+    user_policy_signin_service_->set_account(account_id_, kEnterpriseEmail);
+    token_service_->UpdateCredentials(account_id_, "enterprise_refresh_token");
   }
 
   void SetExpectationsForSyncStartupCompleted() {
@@ -356,6 +367,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   ScopedTestingLocalState local_state_;
   std::string account_id_;
   std::unique_ptr<TestingProfile> profile_;
+  AccountTrackerService* account_tracker_service_ = nullptr;
   ProfileOAuth2TokenService* token_service_ = nullptr;
   SigninManager* signin_manager_ = nullptr;
   FakeUserPolicySigninService* user_policy_signin_service_ = nullptr;
@@ -619,8 +631,33 @@ TEST_F(DiceTurnSyncOnHelperTest, StartSync) {
 
 // Tests that the user is signed in and Sync configuration is complete.
 // Regression test for http://crbug.com/812546
+TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
+  // Set expectations.
+  expected_sync_confirmation_shown_ = true;
+  sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
+      SYNC_WITH_DEFAULT_SETTINGS;
+  SetExpectationsForSyncStartupCompleted();
+  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+
+  // Signin flow.
+  EXPECT_FALSE(signin_manager()->IsAuthenticated());
+  CreateDiceTurnOnSyncHelper(
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+
+  // Check expectations.
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
+  EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
+  CheckDelegateCalls();
+}
+
+// For enterprise user, tests that the user is signed in only after Sync engine
+// starts.
+// Regression test for http://crbug.com/812546
 TEST_F(DiceTurnSyncOnHelperTest,
-       ShowSyncDialogBlockedUntilSyncStartupCompleted) {
+       ShowSyncDialogBlockedUntilSyncStartupCompletedForEnterpriseAccount) {
+  // Reset the account info to be an enterprise account.
+  UseEnterpriseAccount();
+
   // Set expectations.
   expected_sync_confirmation_shown_ = false;
   SetExpectationsForSyncStartupPending();
@@ -645,9 +682,14 @@ TEST_F(DiceTurnSyncOnHelperTest,
   CheckDelegateCalls();
 }
 
-// Tests that the user is signed in and Sync configuration is complete.
+// For enterprise user, tests that the user is signed in only after Sync engine
+// fails to start.
 // Regression test for http://crbug.com/812546
-TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogBlockedUntilSyncStartupFailed) {
+TEST_F(DiceTurnSyncOnHelperTest,
+       ShowSyncDialogBlockedUntilSyncStartupFailedForEnterpriseAccount) {
+  // Reset the account info to be an enterprise account.
+  UseEnterpriseAccount();
+
   // Set expectations.
   expected_sync_confirmation_shown_ = false;
   SetExpectationsForSyncStartupPending();
