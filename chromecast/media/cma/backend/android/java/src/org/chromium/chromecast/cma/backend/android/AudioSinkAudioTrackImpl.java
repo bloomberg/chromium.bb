@@ -48,7 +48,7 @@ import java.nio.ByteOrder;
 @JNINamespace("chromecast::media")
 @TargetApi(Build.VERSION_CODES.N)
 class AudioSinkAudioTrackImpl {
-    private static final String TAG = "AudiotrackImpl";
+    private static final String TAG = "AATrack";
     private static final int DEBUG_LEVEL = 0;
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
@@ -93,6 +93,10 @@ class AudioSinkAudioTrackImpl {
 
     private static final long TIMESTAMP_UPDATE_PERIOD = 250 * MSEC_IN_NSEC;
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
+
+    private static long sInstanceCounter;
+
+    private String mTag = TAG;
 
     // Maximum amount a timestamp may deviate from the previous one to be considered stable at
     // startup or after an underrun event.
@@ -257,18 +261,19 @@ class AudioSinkAudioTrackImpl {
     @CalledByNative
     private void init(
             @AudioContentType int castContentType, int sampleRateInHz, int bytesPerBuffer) {
-        Log.i(TAG,
+        mTag = TAG + "(" + castContentType + ":" + (sInstanceCounter++) + ")";
+        Log.i(mTag,
                 "Init:"
                         + " sampleRateInHz=" + sampleRateInHz
                         + " bytesPerBuffer=" + bytesPerBuffer);
 
         if (mIsInitialized) {
-            Log.w(TAG, "Init: already initialized.");
+            Log.w(mTag, "Init: already initialized.");
             return;
         }
 
         if (sampleRateInHz <= 0) {
-            Log.e(TAG, "Invalid sampleRateInHz=" + sampleRateInHz + " given!");
+            Log.e(mTag, "Invalid sampleRateInHz=" + sampleRateInHz + " given!");
             return;
         }
         mSampleRateInHz = sampleRateInHz;
@@ -287,7 +292,7 @@ class AudioSinkAudioTrackImpl {
         int bufferSizeInBytes = MIN_BUFFER_SIZE_MULTIPLIER
                 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
         int bufferSizeInMs = 1000 * bufferSizeInBytes / (BYTES_PER_FRAME * mSampleRateInHz);
-        Log.i(TAG,
+        Log.i(mTag,
                 "Init: create an AudioTrack of size=" + bufferSizeInBytes + " (" + bufferSizeInMs
                         + "ms) usageType=" + usageType + " contentType=" + contentType
                         + " with session-id=" + sessionId);
@@ -323,7 +328,7 @@ class AudioSinkAudioTrackImpl {
 
     @CalledByNative
     private void play() {
-        Log.i(TAG, "Start playback");
+        Log.i(mTag, "Start playback");
         mSRWindowFramesWritten = 0;
         mAudioTrack.play();
         mTriggerTimestampUpdateNow = true; // Get a fresh timestamp asap.
@@ -331,16 +336,16 @@ class AudioSinkAudioTrackImpl {
 
     @CalledByNative
     private void pause() {
-        Log.i(TAG, "Pausing playback");
+        Log.i(mTag, "Pausing playback");
         mAudioTrack.pause();
     }
 
     @CalledByNative
     private void setVolume(float volume) {
-        Log.i(TAG, "Setting volume to " + volume);
+        Log.i(mTag, "Setting volume to " + volume);
         int ret = mAudioTrack.setVolume(volume);
         if (ret != AudioTrack.SUCCESS) {
-            Log.e(TAG, "Cannot set volume: ret=" + ret);
+            Log.e(mTag, "Cannot set volume: ret=" + ret);
         }
     }
 
@@ -385,9 +390,9 @@ class AudioSinkAudioTrackImpl {
     /** Closes the instance by stopping playback and releasing the AudioTrack
      * object. */
     private void close() {
-        Log.i(TAG, "Close AudioSinkAudioTrackImpl!");
+        Log.i(mTag, "Close AudioSinkAudioTrackImpl!");
         if (!mIsInitialized) {
-            Log.w(TAG, "Close: not initialized.");
+            Log.w(mTag, "Close: not initialized.");
             return;
         }
         if (!isStopped()) mAudioTrack.stop();
@@ -421,14 +426,14 @@ class AudioSinkAudioTrackImpl {
     @CalledByNative
     private int writePcm(int sizeInBytes) {
         if (DEBUG_LEVEL >= 3) {
-            Log.i(TAG,
+            Log.i(mTag,
                     "Writing new PCM data:"
                             + " sizeInBytes=" + sizeInBytes + " state=" + getPlayStateString()
                             + " underruns=" + mLastUnderrunCount);
         }
 
         if (!mIsInitialized) {
-            Log.e(TAG, "not initialized!");
+            Log.e(mTag, "not initialized!");
             return -1;
         }
 
@@ -442,7 +447,7 @@ class AudioSinkAudioTrackImpl {
 
         if (bytesWritten < 0) {
             int error = bytesWritten;
-            Log.e(TAG, "Couldn't write into AudioTrack (" + error + ")");
+            Log.e(mTag, "Couldn't write into AudioTrack (" + error + ")");
             return error;
         }
 
@@ -459,7 +464,7 @@ class AudioSinkAudioTrackImpl {
                         mAudioTrack.write(mPcmBuffer, bytesLeft, AudioTrack.WRITE_BLOCKING);
                 if (moreBytesWritten < 0) {
                     int error = moreBytesWritten;
-                    Log.e(TAG, "Couldn't write into AudioTrack (" + error + ")");
+                    Log.e(mTag, "Couldn't write into AudioTrack (" + error + ")");
                     return error;
                 }
                 bytesWritten += moreBytesWritten;
@@ -470,7 +475,7 @@ class AudioSinkAudioTrackImpl {
         mTotalFramesWritten += framesWritten;
 
         if (DEBUG_LEVEL >= 3) {
-            Log.i(TAG,
+            Log.i(mTag,
                     "  wrote " + bytesWritten + "/" + sizeInBytes
                             + " total_bytes_written=" + (mTotalFramesWritten * BYTES_PER_FRAME)
                             + " took:" + (SystemClock.elapsedRealtime() - beforeMsecs) + "ms");
@@ -507,7 +512,7 @@ class AudioSinkAudioTrackImpl {
         long periodNsec = elapsedNsec(mSRWindowStartTimeNsec);
         float sampleRate = 1e9f * mSRWindowFramesWritten / periodNsec;
         if (DEBUG_LEVEL >= 3) {
-            Log.i(TAG,
+            Log.i(mTag,
                     "SR=" + mSRWindowFramesWritten + "/" + (periodNsec / 1000)
                             + "us = " + sampleRate);
         }
@@ -534,7 +539,7 @@ class AudioSinkAudioTrackImpl {
         mRenderingDelayBuffer.putLong(8, nowUsecs);
 
         if (DEBUG_LEVEL >= 3) {
-            Log.i(TAG, "RenderingDelay: delay=" + delayUsecs + " play=" + nowUsecs);
+            Log.i(mTag, "RenderingDelay: delay=" + delayUsecs + " play=" + nowUsecs);
         }
     }
 
@@ -596,7 +601,7 @@ class AudioSinkAudioTrackImpl {
         long deviation = mRefNanoTimeAtFramePos0Candidate - newNanoTimeAtFramePos0;
         if (Math.abs(deviation) > MAX_STABLE_TIMESTAMP_DEVIATION_NSEC) {
             // not stable
-            Log.i(TAG,
+            Log.i(mTag,
                     "Timestamp [" + mTimestampStabilityCounter + "/"
                             + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000
                             + "ms] is not stable (deviation:" + deviation / 1000 + "us)");
@@ -642,7 +647,7 @@ class AudioSinkAudioTrackImpl {
                 // First stable timestamp.
                 mRefNanoTimeAtFramePos0 = prevRefNanoTimeAtFramePos0 = newNanoTimeAtFramePos0;
                 mReferenceTimestampState = ReferenceTimestampState.STABLE;
-                Log.i(TAG,
+                Log.i(mTag,
                         "First stable timestamp [" + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
@@ -666,7 +671,7 @@ class AudioSinkAudioTrackImpl {
                 // Found a new stable timestamp.
                 mRefNanoTimeAtFramePos0 = newNanoTimeAtFramePos0;
                 mReferenceTimestampState = ReferenceTimestampState.STABLE;
-                Log.i(TAG,
+                Log.i(mTag,
                         "New stable timestamp after underrun [" + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
@@ -680,13 +685,13 @@ class AudioSinkAudioTrackImpl {
                 // Currently none of the devices using this code do this.
                 long devNsec = mRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0;
                 if (Math.abs(devNsec) > TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC) {
-                    Log.i(TAG, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
+                    Log.i(mTag, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
                     long timeSinceLastGoodTstamp = elapsedNsec(mLastTimestampUpdateNsec);
                     if (timeSinceLastGoodTstamp <= MAX_TIME_IGNORING_TSTAMPS_NSECS) {
                         return; // Ignore this one.
                     }
                     // We ignored jittery timestamps for too long, let this one pass.
-                    Log.i(TAG, "Too many jittery timestamps ignored!");
+                    Log.i(mTag, "Too many jittery timestamps ignored!");
                 }
                 // Low-pass filter: 0.10*New + 0.90*Ref. Do integer math with proper rounding.
                 mRefNanoTimeAtFramePos0 =
@@ -698,7 +703,7 @@ class AudioSinkAudioTrackImpl {
         if (DEBUG_LEVEL >= 1) {
             long dev1 = convertNsecsToUsecs(prevRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0);
             long dev2 = convertNsecsToUsecs(prevRefNanoTimeAtFramePos0 - mRefNanoTimeAtFramePos0);
-            Log.i(TAG,
+            Log.i(mTag,
                     "Updated mRefNanoTimeAtFramePos0=" + mRefNanoTimeAtFramePos0 / 1000 + " us ("
                             + dev1 + "/" + dev2 + ")");
         }
@@ -712,7 +717,7 @@ class AudioSinkAudioTrackImpl {
         if (DEBUG_LEVEL >= 1
                 || (mLastUnderrunLogNsec == NO_TIMESTAMP
                            || elapsedNsec(mLastUnderrunLogNsec) > UNDERRUN_LOG_THROTTLE_PERIOD)) {
-            Log.i(TAG,
+            Log.i(mTag,
                     "Underrun detected (" + mLastUnderrunCount + "->" + newUnderruns
                             + ")! Resetting rendering delay logic.");
             mLastUnderrunLogNsec = System.nanoTime();
