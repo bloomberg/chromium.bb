@@ -577,8 +577,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         ConstraintSpace().BfcOffset().block_offset)
       container_builder_.SetIsPushedByFloats();
 
-    LayoutUnit line_height =
-        container_builder_.Metrics().LineHeight().ClampNegativeToZero();
+    LayoutUnit line_height = container_builder_.LineHeight();
 
     // Success!
     positioned_floats_.AppendVector(positioned_floats);
