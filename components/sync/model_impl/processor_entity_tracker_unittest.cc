@@ -92,12 +92,13 @@ CommitResponseData GenerateAckData(const CommitRequestData& request,
 // Some simple sanity tests for the ProcessorEntityTracker.
 //
 // A lot of the more complicated sync logic is implemented in the
-// SharedModelTypeProcessor that owns the ProcessorEntityTracker.  We can't unit
-// test it here.
+// ClientTagBasedModelTypeProcessor that owns the ProcessorEntityTracker.  We
+// can't unit test it here.
 //
 // Instead, we focus on simple tests to make sure that variables are getting
 // properly intialized and flags properly set.  Anything more complicated would
-// be a redundant and incomplete version of the SharedModelTypeProcessor tests.
+// be a redundant and incomplete version of the ClientTagBasedModelTypeProcessor
+// tests.
 class ProcessorEntityTrackerTest : public ::testing::Test {
  public:
   ProcessorEntityTrackerTest()
