@@ -105,4 +105,7 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     public boolean isInVrSession() {
         return true;
     }
+
+    @Override
+    public void launchGvrSettings() {}
 }

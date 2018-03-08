@@ -87,4 +87,9 @@ public interface VrDaydreamApi {
      * Closes this DaydreamApi instance.
      */
     void close();
+
+    /**
+     * Launch the Daydream Settings Activity.
+     */
+    void launchGvrSettings();
 }

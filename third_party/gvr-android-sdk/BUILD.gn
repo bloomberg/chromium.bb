@@ -35,6 +35,8 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/vr/cardboard/FrameMonitor.class",
     "*google/vr/cardboard/IsEmulator.class",
     "*google/vr/cardboard/PackageUtils.class",
+    "*google/vr/cardboard/StoragePermissionUtils.class",
+    "*google/vr/cardboard/UiUtils.class",
     "*google/vr/cardboard/VrContextWrapper.class",
     "*google/vr/cardboard/VrCoreLibraryLoader.class",
     "*google/vr/cardboard/VrParamsProvider.class",
