@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -30,13 +29,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/resize_area.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,9 +78,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       AddChildView(resize_area_);
     }
     resize_animation_.reset(new gfx::SlideAnimation(this));
-    const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-    warning_highlight_painter_ =
-        views::Painter::CreateImageGridPainter(kWarningImages);
   }
 }
 
@@ -327,7 +321,7 @@ gfx::Size BrowserActionsContainer::GetMinimumSize() const {
 }
 
 void BrowserActionsContainer::Layout() {
-  if (toolbar_actions_bar_->suppress_layout())
+  if (toolbar_actions_bar()->suppress_layout())
     return;
 
   if (toolbar_action_views_.empty()) {
@@ -341,8 +335,8 @@ void BrowserActionsContainer::Layout() {
 
   // The range of visible icons, from start_index (inclusive) to end_index
   // (exclusive).
-  size_t start_index = toolbar_actions_bar_->GetStartIndexInBounds();
-  size_t end_index = toolbar_actions_bar_->GetEndIndexInBounds();
+  size_t start_index = toolbar_actions_bar()->GetStartIndexInBounds();
+  size_t end_index = toolbar_actions_bar()->GetEndIndexInBounds();
 
   // Now draw the icons for the actions in the available space. Once all the
   // variables are in place, the layout works equally well for the main and
@@ -352,8 +346,14 @@ void BrowserActionsContainer::Layout() {
     if (i < start_index || i >= end_index) {
       view->SetVisible(false);
     } else {
-      view->SetBoundsRect(toolbar_actions_bar_->GetFrameForIndex(i));
+      view->SetBoundsRect(toolbar_actions_bar()->GetFrameForIndex(i));
       view->SetVisible(true);
+      if (!ShownInsideMenu()) {
+        view->AnimateInkDrop(toolbar_actions_bar()->is_highlighting()
+                                 ? views::InkDropState::ACTIVATED
+                                 : views::InkDropState::HIDDEN,
+                             nullptr);
+      }
     }
   }
 }
@@ -590,14 +590,6 @@ content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
 }
 
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
-  // If the views haven't been initialized yet, wait for the next call to
-  // paint (one will be triggered by entering highlight mode).
-  if (toolbar_actions_bar_->is_highlighting() &&
-      !toolbar_action_views_.empty() && !ShownInsideMenu()) {
-    views::Painter::PaintPainterAt(canvas, warning_highlight_painter_.get(),
-                                   GetLocalBounds());
-  }
-
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
   // dragging (like we do for tab dragging).
   if (drop_position_.get()) {
