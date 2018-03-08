@@ -79,6 +79,7 @@ class IDLLexer(object):
     'legacycaller' : 'LEGACYCALLER',
     'long' : 'LONG',
     'maplike': 'MAPLIKE',
+    'mixin': 'MIXIN',
     'namespace' : 'NAMESPACE',
     'Nan' : 'NAN',
     'null' : 'NULL',
