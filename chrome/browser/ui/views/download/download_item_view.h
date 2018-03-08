@@ -64,7 +64,9 @@ class DownloadItemView : public views::InkDropHostView,
                          public download::DownloadItem::Observer,
                          public gfx::AnimationDelegate {
  public:
-  DownloadItemView(download::DownloadItem* download, DownloadShelfView* parent);
+  DownloadItemView(download::DownloadItem* download,
+                   DownloadShelfView* parent,
+                   views::View* accessible_alert);
   ~DownloadItemView() override;
 
   // Timer callback for handling animations
@@ -237,8 +239,23 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Update the accessible name to reflect the current state of the control,
   // so that screenreaders can access the filename, status text, and
-  // dangerous download warning message (if any).
+  // dangerous download warning message (if any). The name will be presented
+  // when the download item receives focus.
   void UpdateAccessibleName();
+
+  // Update accessible status text.
+  // If |is_last_update| is false, then a timer is used to notify screen readers
+  // to speak the alert text on a regular interval. If |is_last_update| is true,
+  // then the screen reader is notified of the request to speak the alert
+  // immediately, and any running timer is ended.
+  void UpdateAccessibleAlert(const base::string16& alert, bool is_last_update);
+
+  // Get the accessible alert text for a download that is currently in progress.
+  base::string16 GetInProgressAccessibleAlertText();
+
+  // Callback for |accessible_update_timer_|, or can be used to ask a screen
+  // reader to speak the current alert immediately.
+  void AnnounceAccessibleAlert();
 
   // Show/Hide/Reset |animation| based on the state transition specified by
   // |from| and |to|.
@@ -332,6 +349,17 @@ class DownloadItemView : public views::InkDropHostView,
 
   // The name of this view as reported to assistive technology.
   base::string16 accessible_name_;
+
+  // A hidden view for accessible status alerts, that are spoken by screen
+  // readers when a download changes state.
+  views::View* accessible_alert_;
+
+  // A timer for accessible alerts that helps reduce the number of similar
+  // messages spoken in a short period of time.
+  base::RepeatingTimer accessible_alert_timer_;
+
+  // Force the reading of the current alert text the next time it updates.
+  bool announce_accessible_alert_soon_;
 
   // The icon loaded in the download shelf is based on the file path of the
   // item.  Store the path used, so that we can detect a change in the path
