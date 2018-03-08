@@ -844,6 +844,12 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
             static_cast<webrtc::SdpSemanticNegotiated>(counter),
             webrtc::kSdpSemanticNegotiatedMax);
         break;
+      case webrtc::kEnumCounterKeyProtocolMediaType:
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebRTC.PeerConnection.KeyProtocolByMedia",
+            static_cast<webrtc::KeyExchangeProtocolMedia>(counter),
+            webrtc::kEnumCounterKeyProtocolMediaTypeMax);
+        break;
       default:
         // The default clause is expected to be reached when new enum types are
         // added.
