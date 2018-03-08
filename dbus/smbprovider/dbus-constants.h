@@ -28,6 +28,7 @@ const char kCreateDirectoryMethod[] = "CreateDirectory";
 const char kMoveEntryMethod[] = "MoveEntry";
 const char kCopyEntryMethod[] = "CopyEntry";
 const char kGetDeleteListMethod[] = "GetDeleteList";
+const char kGetSharesMethod[] = "GetShares";
 
 }  // namespace smbprovider
 

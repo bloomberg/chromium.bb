@@ -201,3 +201,9 @@ message GetDeleteListOptionsProto {
 message DeleteListProto {
   repeated string entries = 1;
 }
+
+// Used for passing inputs into SmbProvider.GetShares().
+message GetSharesOptionsProto {
+  // Url of the server containing the shares. (e.g. "smb://192.168.0.1")
+  optional string server_url = 1;
+}
