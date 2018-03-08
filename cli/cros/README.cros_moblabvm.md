@@ -321,3 +321,16 @@ Images are large, and so if their location is chosen poorly you may run out of
 disk space while unzipping the pre-existing images or creating the new ones.
 Development machines generally have a extra partition with >60G of
 space, which may be named `/work` or `/dev`, where you can place them.
+
+## qemu-ifup fails
+
+If you see:
+```
+network script /etc/qemu-ifup failed with status 256
+```
+You don't have qemu-kvm installed.
+
+Run:
+```
+sudo apt-get install qemu-kvm
+```
