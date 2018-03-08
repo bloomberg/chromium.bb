@@ -8,7 +8,6 @@ import "content/common/navigation_params.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/resource_type.mojom";
-import "content/public/common/subresource_load_info.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
@@ -99,7 +98,7 @@ interface FrameNavigationControl {
   // (i.e. flattened HTML, JS, CSS).
   //
   // When the Network Service is enabled, |subresource_loader_factories| may
-  // also be provided by the browser as a means for the renderer to load
+  // also be provided by the browser as a a means for the renderer to load
   // subresources where applicable.
   CommitFailedNavigation(
       CommonNavigationParams common_params,
@@ -273,7 +272,12 @@ interface FrameHost {
 
   // Sent when a subresource response has started.
   SubresourceResponseStarted(
-      SubresourceLoadInfo url_load_info);
+      url.mojom.Url url,
+      url.mojom.Url referrer,
+      string method,
+      ResourceType resource_type,
+      string ip,
+      uint32 cert_status);
 
   // Sent when the frame changes its window.name.
   DidChangeName(string name, string unique_name);
