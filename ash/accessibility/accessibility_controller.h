@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -28,6 +29,7 @@ class Connector;
 namespace ash {
 
 class AccessibilityHighlightController;
+class AccessibilityObserver;
 class ScopedBacklightsForcedOff;
 
 // The controller for accessibility features in ash. Features can be enabled
@@ -42,6 +44,9 @@ class ASH_EXPORT AccessibilityController
 
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
+
+  void AddObserver(AccessibilityObserver* observer);
+  void RemoveObserver(AccessibilityObserver* observer);
 
   // Binds the mojom::AccessibilityController interface to this object.
   void BindRequest(mojom::AccessibilityControllerRequest request);
@@ -128,6 +133,11 @@ class ASH_EXPORT AccessibilityController
   // TODO(jamescook): Convert to mojo interface.
   void SetAccessibilityPanelFullscreen(bool fullscreen);
 
+  // Public because a11y features like screen magnifier and tap dragging are
+  // managed outside of this controller.
+  void NotifyAccessibilityStatusChanged(
+      AccessibilityNotificationVisibility notify);
+
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;
@@ -195,6 +205,8 @@ class ASH_EXPORT AccessibilityController
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
+
+  base::ObserverList<AccessibilityObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityController);
 };

@@ -4,13 +4,13 @@
 
 #include "ash/touch/touch_devices_controller.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -181,7 +181,7 @@ void TouchDevicesController::UpdateTapDraggingEnabled() {
   // Tap dragging is listed as a11y feature, so notifying a11y status changed.
   // TODO(warx): tap dragging is considered to be removed from a11y feature.
   // https://crbug.com/164273, https://crbug.com/724501.
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
+  Shell::Get()->accessibility_controller()->NotifyAccessibilityStatusChanged(
       A11Y_NOTIFICATION_NONE);
 
   if (!GetInputDeviceControllerClient())

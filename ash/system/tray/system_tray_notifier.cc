@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/system_tray_notifier.h"
 
-#include "ash/system/accessibility_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -21,22 +20,6 @@ namespace ash {
 SystemTrayNotifier::SystemTrayNotifier() = default;
 
 SystemTrayNotifier::~SystemTrayNotifier() = default;
-
-void SystemTrayNotifier::AddAccessibilityObserver(
-    AccessibilityObserver* observer) {
-  accessibility_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAccessibilityObserver(
-    AccessibilityObserver* observer) {
-  accessibility_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
-  for (auto& observer : accessibility_observers_)
-    observer.OnAccessibilityStatusChanged(notify);
-}
 
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.AddObserver(observer);

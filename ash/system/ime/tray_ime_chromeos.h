@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
-#include "ash/system/accessibility_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_tray_item.h"

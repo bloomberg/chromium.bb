@@ -4,6 +4,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -11,8 +12,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/system/accessibility_observer.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
@@ -101,7 +100,7 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
   EXPECT_FALSE(controller->IsAutoclickEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetAutoclickEnabled(true);
@@ -112,7 +111,7 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
   EXPECT_FALSE(controller->IsAutoclickEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
@@ -121,7 +120,7 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
   EXPECT_FALSE(controller->IsCaretHighlightEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetCaretHighlightEnabled(true);
@@ -132,7 +131,7 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
   EXPECT_FALSE(controller->IsCaretHighlightEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
@@ -141,7 +140,7 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
   EXPECT_FALSE(controller->IsCursorHighlightEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetCursorHighlightEnabled(true);
@@ -152,7 +151,7 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
   EXPECT_FALSE(controller->IsCursorHighlightEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
@@ -161,7 +160,7 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
   EXPECT_FALSE(controller->IsFocusHighlightEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetFocusHighlightEnabled(true);
@@ -172,7 +171,7 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
   EXPECT_FALSE(controller->IsFocusHighlightEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
@@ -181,7 +180,7 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
   EXPECT_FALSE(controller->IsHighContrastEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetHighContrastEnabled(true);
@@ -192,7 +191,7 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
   EXPECT_FALSE(controller->IsHighContrastEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
@@ -201,7 +200,7 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   EXPECT_FALSE(controller->IsLargeCursorEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetLargeCursorEnabled(true);
@@ -212,7 +211,7 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   EXPECT_FALSE(controller->IsLargeCursorEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
@@ -238,7 +237,7 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
   EXPECT_FALSE(controller->IsMonoAudioEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetMonoAudioEnabled(true);
@@ -249,7 +248,7 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
   EXPECT_FALSE(controller->IsMonoAudioEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
@@ -258,7 +257,7 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
   EXPECT_EQ(0, observer.notification_show_changed_);
 
@@ -272,7 +271,7 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
   EXPECT_EQ(1, observer.notification_none_changed_);
   EXPECT_EQ(1, observer.notification_show_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
@@ -281,7 +280,7 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
   EXPECT_FALSE(controller->IsStickyKeysEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   StickyKeysController* sticky_keys_controller =
@@ -296,7 +295,7 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
   EXPECT_FALSE(controller->IsStickyKeysEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetTapDraggingEnabled) {
@@ -305,7 +304,7 @@ TEST_F(AccessibilityControllerTest, SetTapDraggingEnabled) {
   EXPECT_FALSE(controller->IsTapDraggingEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetTapDraggingEnabled(true);
@@ -316,7 +315,7 @@ TEST_F(AccessibilityControllerTest, SetTapDraggingEnabled) {
   EXPECT_FALSE(controller->IsTapDraggingEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
@@ -325,7 +324,7 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
 
   TestAccessibilityObserver observer;
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.notification_none_changed_);
 
   controller->SetVirtualKeyboardEnabled(true);
@@ -338,7 +337,7 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
   EXPECT_EQ(2, observer.notification_none_changed_);
 
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+  controller->RemoveObserver(&observer);
 }
 
 // Tests that ash's controller gets shutdown sound duration properly from

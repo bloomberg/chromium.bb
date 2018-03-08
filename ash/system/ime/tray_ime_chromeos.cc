@@ -159,14 +159,14 @@ TrayIME::TrayIME(SystemTray* system_tray)
   DCHECK(ime_controller_);
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddVirtualKeyboardObserver(this);
-  tray_notifier->AddAccessibilityObserver(this);
   tray_notifier->AddIMEObserver(this);
+  Shell::Get()->accessibility_controller()->AddObserver(this);
 }
 
 TrayIME::~TrayIME() {
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
-  tray_notifier->RemoveAccessibilityObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
 }
 

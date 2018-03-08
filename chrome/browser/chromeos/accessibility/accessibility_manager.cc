@@ -11,13 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -372,8 +372,9 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
     return;
 
   // Update system tray menu visibility.
-  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-      ash::A11Y_NOTIFICATION_NONE);
+  ash::Shell::Get()
+      ->accessibility_controller()
+      ->NotifyAccessibilityStatusChanged(ash::A11Y_NOTIFICATION_NONE);
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
@@ -1089,8 +1090,9 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
   if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
-    ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-        details.notify);
+    ash::Shell::Get()
+        ->accessibility_controller()
+        ->NotifyAccessibilityStatusChanged(details.notify);
   }
 }
 
