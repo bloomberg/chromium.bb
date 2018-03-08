@@ -178,27 +178,14 @@ gfx::Vector2d RenderThreadManager::GetScrollOffsetOnRT() {
 std::unique_ptr<ChildFrame> RenderThreadManager::SetFrameOnUI(
     std::unique_ptr<ChildFrame> new_frame) {
   DCHECK(new_frame);
-  base::AutoLock lock(lock_);
-
   has_received_frame_ = true;
 
+  base::AutoLock lock(lock_);
   if (child_frames_.empty()) {
     child_frames_.emplace_back(std::move(new_frame));
     return nullptr;
   }
   std::unique_ptr<ChildFrame> uncommitted_frame;
-  if (new_frame->frame) {
-    // Optimization for synchronous path.
-    // TODO(boliu): Remove when synchronous path is fully removed.
-    DCHECK_LE(child_frames_.size(), 1u);
-    if (!child_frames_.empty()) {
-      uncommitted_frame = std::move(child_frames_.front());
-      child_frames_.pop_front();
-    }
-    child_frames_.emplace_back(std::move(new_frame));
-    return uncommitted_frame;
-  }
-
   DCHECK_LE(child_frames_.size(), 2u);
   ChildFrameQueue pruned_frames =
       HardwareRenderer::WaitAndPruneFrameQueue(&child_frames_);
@@ -400,11 +387,6 @@ void RenderThreadManager::SetCompositorFrameProducer(
          compositor_frame_producer_ == nullptr ||
          compositor_frame_producer == nullptr);
   compositor_frame_producer_ = compositor_frame_producer;
-}
-
-bool RenderThreadManager::HasFrameOnUI() const {
-  base::AutoLock lock(lock_);
-  return has_received_frame_;
 }
 
 bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {

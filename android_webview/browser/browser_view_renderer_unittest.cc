@@ -269,17 +269,13 @@ class CompositorNoFrameTest : public RenderingTest {
   }
 
   void DidOnDraw(bool success) override {
+    // OnDraw should succeed even when there are no frames from compositor.
+    EXPECT_TRUE(success);
     if (0 == on_draw_count_) {
-      // Should fail as there has been no frames from compositor.
-      EXPECT_FALSE(success);
       browser_view_renderer_->PostInvalidate(ActiveCompositor());
     } else if (1 == on_draw_count_) {
-      // Should succeed with frame from compositor.
-      EXPECT_TRUE(success);
       browser_view_renderer_->PostInvalidate(ActiveCompositor());
     } else if (2 == on_draw_count_) {
-      // Should still succeed with last frame, even if no frame from compositor.
-      EXPECT_TRUE(success);
       EndTest();
     }
     on_draw_count_++;

@@ -79,12 +79,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   // |viewport_size| is the current size to improve results during resize.
   // |viewport_rect_for_tile_priority| and |transform_for_tile_priority| are
   // used to customize the tiling decisions of compositor.
-  virtual Frame DemandDrawHw(
-      const gfx::Size& viewport_size,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority) = 0;
-
-  // Same as DemandDrawHw, but uses asynchronous IPC messages.
   virtual scoped_refptr<FrameFuture> DemandDrawHwAsync(
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,

@@ -51,7 +51,6 @@ class CompositorFrameConsumer {
       ReturnedResourcesMap* returned_resource_map) = 0;
   virtual bool ReturnedResourcesEmptyOnUI() const = 0;
   virtual ChildFrameQueue PassUncommittedFrameOnUI() = 0;
-  virtual bool HasFrameOnUI() const = 0;
   virtual void DeleteHardwareRendererOnUI() = 0;
 
  protected:
