@@ -59,6 +59,7 @@ struct FormFieldData {
     DD_TAG,
     LI_TAG,
     PLACE_HOLDER,
+    ARIA_LABEL,
     COMBINED,  // Combined with various elements.
     VALUE,     // label is the value of element.
   };

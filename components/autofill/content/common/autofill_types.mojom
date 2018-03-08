@@ -96,6 +96,7 @@ enum LabelSource {
   DD_TAG,
   LI_TAG,
   PLACE_HOLDER,
+  ARIA_LABEL,
   COMBINED,
   VALUE,
 };

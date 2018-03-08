@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -392,6 +393,16 @@ base::string16 InferLabelFromPlaceholder(const WebFormControlElement& element) {
   return base::string16();
 }
 
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// the aria-label. e.g. <input aria-label="foo">
+base::string16 InferLabelFromAriaLabel(const WebFormControlElement& element) {
+  static const base::NoDestructor<WebString> kAriaLabel("aria-label");
+  if (element.HasAttribute(*kAriaLabel))
+    return element.GetAttribute(*kAriaLabel).Utf16();
+
+  return base::string16();
+}
+
 // Helper for |InferLabelForElement()| that infers a label, from
 // the value attribute when it is present and user has not typed in (if
 // element's value attribute is same as the element's value).
@@ -707,6 +718,14 @@ bool InferLabelForElement(const WebFormControlElement& element,
   base::string16 inferred_label = InferLabelFromPlaceholder(element);
   if (IsLabelValid(inferred_label, stop_words)) {
     *label_source = FormFieldData::LabelSource::PLACE_HOLDER;
+    *label = std::move(inferred_label);
+    return true;
+  }
+
+  // If we didn't find a placeholder, check for aria-label text.
+  inferred_label = InferLabelFromAriaLabel(element);
+  if (IsLabelValid(inferred_label, stop_words)) {
+    *label_source = FormFieldData::LabelSource::ARIA_LABEL;
     *label = std::move(inferred_label);
     return true;
   }

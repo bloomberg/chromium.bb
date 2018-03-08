@@ -488,6 +488,8 @@ EnumTraits<autofill::mojom::LabelSource, autofill::FormFieldData::LabelSource>::
       return autofill::mojom::LabelSource::LI_TAG;
     case autofill::FormFieldData::LabelSource::PLACE_HOLDER:
       return autofill::mojom::LabelSource::PLACE_HOLDER;
+    case autofill::FormFieldData::LabelSource::ARIA_LABEL:
+      return autofill::mojom::LabelSource::ARIA_LABEL;
     case autofill::FormFieldData::LabelSource::COMBINED:
       return autofill::mojom::LabelSource::COMBINED;
     case autofill::FormFieldData::LabelSource::VALUE:
@@ -527,6 +529,9 @@ bool EnumTraits<autofill::mojom::LabelSource,
       return true;
     case autofill::mojom::LabelSource::PLACE_HOLDER:
       *output = autofill::FormFieldData::LabelSource::PLACE_HOLDER;
+      return true;
+    case autofill::mojom::LabelSource::ARIA_LABEL:
+      *output = autofill::FormFieldData::LabelSource::ARIA_LABEL;
       return true;
     case autofill::mojom::LabelSource::COMBINED:
       *output = autofill::FormFieldData::LabelSource::COMBINED;
