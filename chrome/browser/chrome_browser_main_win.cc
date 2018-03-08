@@ -52,6 +52,7 @@
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -72,6 +73,7 @@
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/crash/content/app/dump_hung_process_with_ptype.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -493,7 +495,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   static crash_reporter::CrashKeyString<32> update_cohort_name("cohort-name");
   update_cohort_name.Set(base::UTF16ToUTF8(details.update_cohort_name()));
 
-  if (details.channel().find(L"canary") == 0) {
+  if (chrome::GetChannel() == version_info::Channel::CANARY) {
     content::RenderProcessHost::SetHungRendererAnalysisFunction(
         &DumpHungRendererProcessImpl);
   }
