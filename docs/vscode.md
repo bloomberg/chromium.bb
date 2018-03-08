@@ -352,6 +352,28 @@ You might have to adjust the commands to your situation and needs.
         "file": 1, "severity": 3, "message": 4
       }
     }]
+  },
+  {
+    "taskName": "6-build_current_file",
+    "command": "compile_single_file --build-dir=out/Debug --file-path=${file}",
+    "isShellCommand": true,
+    "problemMatcher": [
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    },
+    {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "severity": 3, "message": 4
+      }
+    }]
   }]
 }
 ```
