@@ -426,13 +426,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                              "for more details.",
                              milestoneString(M62))};
 
-    case WebFeature::kVibrateWithoutUserGesture:
-      return {"VibrateWithoutUserGesture", M60,
-              willBeRemoved("A call to navigator.vibrate without user tap on "
-                            "the frame or any "
-                            "embedded frame",
-                            M60, "5644273861001216")};
-
     case WebFeature::kChildSrcAllowedWorkerThatScriptSrcBlocked:
       return {"ChildSrcAllowedWorkerThatScriptSrcBlocked", M60,
               replacedWillBeRemoved("The 'child-src' directive",
