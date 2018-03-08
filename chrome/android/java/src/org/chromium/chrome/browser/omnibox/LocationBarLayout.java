@@ -47,7 +47,6 @@ import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -161,7 +160,6 @@ public class LocationBarLayout extends FrameLayout
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
-    private LinearLayout mUrlActionContainer;
 
     /** A handle to the bottom sheet for chrome home. */
     protected BottomSheet mBottomSheet;
@@ -722,8 +720,6 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), this, mSuggestionItems);
 
         mMicButton = (TintedImageButton) findViewById(R.id.mic_button);
-
-        mUrlActionContainer = (LinearLayout) findViewById(R.id.url_action_container);
     }
 
     @Override
@@ -1546,21 +1542,22 @@ public class LocationBarLayout extends FrameLayout
             }
         }
 
+        assert urlContainerChildIndex != -1;
+        int urlContainerMarginEnd = 0;
+
         // When Chrome Home is enabled, the URL actions container slides out of view during the
         // URL defocus animation. Adding margin during this animation creates a hole.
         boolean addMarginForActionsContainer =
-                (mBottomSheet == null || !mUrlFocusChangeInProgress || mUrlHasFocus)
-                && mUrlActionContainer != null && mUrlActionContainer.getVisibility() != GONE;
-        int urlContainerMarginEnd = 0;
+                mBottomSheet == null || !mUrlFocusChangeInProgress || mUrlHasFocus;
         if (addMarginForActionsContainer) {
-            for (int i = 0; i < mUrlActionContainer.getChildCount(); i++) {
-                View button = mUrlActionContainer.getChildAt(i);
-                LinearLayout.LayoutParams buttonLayoutParams =
-                        (LinearLayout.LayoutParams) button.getLayoutParams();
-                if (button.getVisibility() != GONE) {
-                    urlContainerMarginEnd += buttonLayoutParams.width
-                            + ApiCompatibilityUtils.getMarginStart(buttonLayoutParams)
-                            + ApiCompatibilityUtils.getMarginEnd(buttonLayoutParams);
+            for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
+                View childView = getChildAt(i);
+                if (childView.getVisibility() != GONE) {
+                    LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
+                    urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
+                            childLayoutParams.width
+                                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
+                                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
                 }
             }
         }
