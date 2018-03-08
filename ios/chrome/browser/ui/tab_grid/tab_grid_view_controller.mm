@@ -257,6 +257,11 @@ UIAlertController* NotImplementedAlert() {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
+  // TODO(crbug.com/818699) : Localize strings.
+  viewController.emptyStateView = [self
+      createEmptyStateViewWithTopText:@"No Incognito Tabs"
+                           bottomText:
+                               @"Open a tab to browse the web privately."];
   viewController.theme = GridThemeDark;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -287,6 +292,10 @@ UIAlertController* NotImplementedAlert() {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
+  // TODO(crbug.com/818699) : Localize strings.
+  viewController.emptyStateView =
+      [self createEmptyStateViewWithTopText:@"No Open Tabs"
+                                 bottomText:@"Open a tab to browse the web."];
   viewController.theme = GridThemeLight;
   viewController.delegate = self;
   if (@available(iOS 11, *)) {
@@ -333,6 +342,34 @@ UIAlertController* NotImplementedAlert() {
         constraintEqualToAnchor:self.view.widthAnchor]
   ];
   [NSLayoutConstraint activateConstraints:constraints];
+}
+
+// Creates an empty state view.
+- (UIView*)createEmptyStateViewWithTopText:(NSString*)topText
+                                bottomText:(NSString*)bottomText {
+  UIView* view = [[UIView alloc] init];
+  UILabel* topLabel = [[UILabel alloc] init];
+  topLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  topLabel.text = topText;
+  topLabel.textColor = [UIColor whiteColor];
+  topLabel.font = [UIFont boldSystemFontOfSize:20.0f];
+  [view addSubview:topLabel];
+  UILabel* bottomLabel = [[UILabel alloc] init];
+  bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  bottomLabel.text = bottomText;
+  bottomLabel.textColor = [UIColor whiteColor];
+  bottomLabel.font = [UIFont systemFontOfSize:18.0f];
+  [view addSubview:bottomLabel];
+  NSArray* constraints = @[
+    [topLabel.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
+    [bottomLabel.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
+    [topLabel.centerYAnchor constraintEqualToAnchor:view.centerYAnchor
+                                           constant:-10.0f],
+    [bottomLabel.centerYAnchor constraintEqualToAnchor:view.centerYAnchor
+                                              constant:10.0f],
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
+  return view;
 }
 
 // Adds the top toolbar and sets constraints.
