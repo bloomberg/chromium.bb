@@ -20,13 +20,38 @@
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 
-#define btf_16_ssse3(w0, w1, in, out0, out1) \
-  {                                          \
-    __m128i _w0 = _mm_set1_epi16(w0 * 8);    \
-    __m128i _w1 = _mm_set1_epi16(w1 * 8);    \
-    out0 = _mm_mulhrs_epi16(in, _w0);        \
-    out1 = _mm_mulhrs_epi16(in, _w1);        \
-  }
+#define btf_16_ssse3(w0, w1, in, out0, out1)    \
+  do {                                          \
+    const __m128i _w0 = _mm_set1_epi16(w0 * 8); \
+    const __m128i _w1 = _mm_set1_epi16(w1 * 8); \
+    const __m128i _in = in;                     \
+    out0 = _mm_mulhrs_epi16(_in, _w0);          \
+    out1 = _mm_mulhrs_epi16(_in, _w1);          \
+  } while (0)
+
+#define btf_16_adds_subs_sse2(in0, in1) \
+  do {                                  \
+    const __m128i _in0 = in0;           \
+    const __m128i _in1 = in1;           \
+    in0 = _mm_adds_epi16(_in0, _in1);   \
+    in1 = _mm_subs_epi16(_in0, _in1);   \
+  } while (0)
+
+#define btf_16_subs_adds_sse2(in0, in1) \
+  do {                                  \
+    const __m128i _in0 = in0;           \
+    const __m128i _in1 = in1;           \
+    in1 = _mm_subs_epi16(_in0, _in1);   \
+    in0 = _mm_adds_epi16(_in0, _in1);   \
+  } while (0)
+
+#define btf_16_adds_subs_out_sse2(out0, out1, in0, in1) \
+  do {                                                  \
+    const __m128i _in0 = in0;                           \
+    const __m128i _in1 = in1;                           \
+    out0 = _mm_adds_epi16(_in0, _in1);                  \
+    out1 = _mm_subs_epi16(_in0, _in1);                  \
+  } while (0)
 
 #ifdef __cplusplus
 extern "C" {
