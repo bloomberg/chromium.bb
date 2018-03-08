@@ -746,6 +746,9 @@ void RenderWidgetHostViewMac::Show() {
 }
 
 void RenderWidgetHostViewMac::Hide() {
+  if (!browser_compositor_)
+    return;
+
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:YES];
 
@@ -754,11 +757,17 @@ void RenderWidgetHostViewMac::Hide() {
 }
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
+  if (!browser_compositor_)
+    return;
+
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
   render_widget_host_->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
+  if (!browser_compositor_)
+    return;
+
   render_widget_host_->WasHidden();
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
 }
