@@ -163,3 +163,14 @@ wheel: <
     platform: "manylinux1_x86_64"
   >
 >
+
+# Used by:
+#   content/test/gpu/gpu_tests/color_profile_manager_mac.py
+# Note: there's a version of this wheel for even older OS versions,
+# but we don't need it for the GPU tests, and it looks like there are
+# bugs in the not_match_tag implementation.
+wheel: <
+  name: "infra/python/wheels/pyobjc/${vpython_platform}"
+  version: "version:4.1"
+  match_tag: < platform: "macosx_10_10_intel" >
+>
