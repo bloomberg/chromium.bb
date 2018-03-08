@@ -3156,6 +3156,7 @@ void RenderFrameImpl::CommitNavigation(
         &item_for_history_navigation, &load_type);
   }
 
+  base::OnceClosure continue_navigation;
   if (commit_status == blink::mojom::CommitResult::Ok) {
     base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
     // Check if the navigation being committed originated as a client redirect.
@@ -3181,13 +3182,17 @@ void RenderFrameImpl::CommitNavigation(
       frame_->Load(request, load_type, item_for_history_navigation,
                    blink::kWebHistoryDifferentDocumentLoad, is_client_redirect,
                    devtools_navigation_token);
-
       // The load of the URL can result in this frame being removed. Use a
       // WeakPtr as an easy way to detect whether this has occured. If so, this
       // method should return immediately and not touch any part of the object,
       // otherwise it will result in a use-after-free bug.
       if (!weak_this)
         return;
+
+      RequestExtraData* extra_data =
+          static_cast<RequestExtraData*>(request.GetExtraData());
+      continue_navigation =
+          extra_data->TakeContinueNavigationFunctionOwnerShip();
     }
   } else {
     // The browser expects the frame to be loading this navigation. Inform it
@@ -3203,6 +3208,15 @@ void RenderFrameImpl::CommitNavigation(
   frame_->GetDocumentLoader()->ResetSourceLocation();
   if (frame_->GetProvisionalDocumentLoader())
     frame_->GetProvisionalDocumentLoader()->ResetSourceLocation();
+
+  // Continue the navigation.
+  // TODO(arthursonzogni): Pass the data needed to continue the navigation to
+  // this function instead of storing it in the StreamOverrideParameters.
+  // The architecture of committing the navigation in the renderer process
+  // should be simplified and avoid going through the ResourceFetcher for the
+  // main resource.
+  if (continue_navigation)
+    std::move(continue_navigation).Run();
 }
 
 void RenderFrameImpl::CommitFailedNavigation(

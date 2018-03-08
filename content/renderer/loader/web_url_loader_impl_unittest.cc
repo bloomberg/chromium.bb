@@ -91,8 +91,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints)
-      override {
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      base::OnceClosure* continue_navigation_function) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.encoded_body_length != -1)
       EXPECT_TRUE(is_sync);

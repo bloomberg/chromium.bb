@@ -155,7 +155,8 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        network::mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr(),
+        nullptr /* continue_navigation_function */);
   }
 
   void Run(TestRequestPeer::Context* context) {

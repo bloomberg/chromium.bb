@@ -110,7 +110,8 @@ class CONTENT_EXPORT ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      base::OnceClosure* continue_navigation_function);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.

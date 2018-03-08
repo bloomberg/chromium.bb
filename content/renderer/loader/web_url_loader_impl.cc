@@ -757,12 +757,15 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
+  base::OnceClosure continue_navigation_function;
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
       extra_data->frame_origin(), GetTrafficAnnotationTag(request),
       false /* is_sync */, std::move(peer), url_loader_factory_,
       extra_data->TakeURLLoaderThrottles(),
-      std::move(url_loader_client_endpoints));
+      std::move(url_loader_client_endpoints), &continue_navigation_function);
+  extra_data->set_continue_navigation_function(
+      std::move(continue_navigation_function));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
