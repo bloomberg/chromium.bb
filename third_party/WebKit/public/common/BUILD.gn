@@ -14,7 +14,7 @@ component("common") {
 
   public_deps = [
     "//third_party/WebKit/public/common:headers",
-    "//third_party/WebKit/public/mojom",
+    "//third_party/WebKit/public/mojom:mojom_core",
   ]
   deps = [
     "//third_party/WebKit/common",
@@ -50,7 +50,7 @@ source_set("headers") {
   ]
 
   public_deps = [
-    "//third_party/WebKit/public/mojom",
+    "//third_party/WebKit/public/mojom:mojom_core",
   ]
 
   deps = [
