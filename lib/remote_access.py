@@ -401,12 +401,12 @@ class RemoteAccess(object):
     """
     new_boot_id = self._GetBootId(rebooting=True)
     if new_boot_id is None:
-      logging.warn('Unable to get new boot_id after reboot from boot_id %s',
-                   old_boot_id)
+      logging.debug('Unable to get new boot_id after reboot from boot_id %s',
+                    old_boot_id)
       return False
     elif new_boot_id == old_boot_id:
-      logging.warn('Checking if rebooted from boot_id %s, still running %s',
-                   old_boot_id, new_boot_id)
+      logging.debug('Checking if rebooted from boot_id %s, still running %s',
+                    old_boot_id, new_boot_id)
       return False
     else:
       logging.debug('Checking if rebooted from boot_id %s, now running %s',
