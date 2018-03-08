@@ -321,6 +321,7 @@ typedef struct AV1Common {
   int disable_intra_edge_filter;  // 1 - disable corner/edge/upsampling
   int allow_screen_content_tools;
   int allow_intrabc;
+  int allow_filter_intra;
   int allow_interintra_compound;
   int allow_masked_compound;
 

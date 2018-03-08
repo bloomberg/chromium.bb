@@ -2494,7 +2494,7 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
       total_rate += palette_mode_cost;
     }
   }
-  if (av1_filter_intra_allowed(mbmi)) {
+  if (av1_filter_intra_allowed(&cpi->common, mbmi)) {
     total_rate += x->filter_intra_cost[mbmi->sb_type][use_filter_intra];
     if (use_filter_intra) {
       total_rate += x->filter_intra_mode_cost[mbmi->filter_intra_mode_info
@@ -2603,7 +2603,8 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         x->angle_delta_cost[mbmi->mode - V_PRED]
                            [MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]];
   }
-  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_bsize(mbmi->sb_type)) {
+  if (mbmi->mode == DC_PRED &&
+      av1_filter_intra_allowed_bsize(cm, mbmi->sb_type)) {
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const int mode = mbmi->filter_intra_mode_info.filter_intra_mode;
       mode_cost += x->filter_intra_cost[mbmi->sb_type][1] +
@@ -3303,7 +3304,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               ctx->blk_skip[0]);
   }
 
-  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize)) {
+  if (beat_best_rd && av1_filter_intra_allowed_bsize(&cpi->common, bsize)) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd, ctx)) {
@@ -8863,7 +8864,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       memcpy(best_blk_skip, x->blk_skip[0],
              sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
 
-      if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_bsize(bsize)) {
+      if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_bsize(cm, bsize)) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;
@@ -8872,7 +8873,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
         FILTER_INTRA_MODE best_fi_mode = FILTER_DC_PRED;
         int64_t best_rd_tmp = INT64_MAX;
-        if (rate_y != INT_MAX && av1_filter_intra_allowed_bsize(bsize)) {
+        if (rate_y != INT_MAX) {
           best_rd_tmp = RDCOST(x->rdmult,
                                rate_y + x->filter_intra_cost[bsize][0] +
                                    intra_mode_cost[mbmi->mode],

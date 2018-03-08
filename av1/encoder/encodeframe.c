@@ -731,11 +731,11 @@ static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
   }
 }
 
-static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
-                            const MODE_INFO *mi, const MODE_INFO *above_mi,
-                            const MODE_INFO *left_mi, const int intraonly,
-                            const int mi_row, const int mi_col,
-                            uint8_t allow_update_cdf) {
+static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
+                            MACROBLOCKD *xd, const MODE_INFO *mi,
+                            const MODE_INFO *above_mi, const MODE_INFO *left_mi,
+                            const int intraonly, const int mi_row,
+                            const int mi_col, uint8_t allow_update_cdf) {
   FRAME_CONTEXT *fc = xd->tile_ctx;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const PREDICTION_MODE y_mode = mbmi->mode;
@@ -761,7 +761,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
   }
 
-  if (av1_filter_intra_allowed(mbmi)) {
+  if (av1_filter_intra_allowed(cm, mbmi)) {
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra;
 #if CONFIG_ENTROPY_STATS
@@ -950,7 +950,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   }
 
   if (!is_inter_block(mbmi)) {
-    sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
+    sum_intra_stats(cm, td->counts, xd, mi, xd->above_mi, xd->left_mi,
                     frame_is_intra_only(cm), mi_row, mi_col,
                     tile_data->allow_update_cdf);
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize) &&

@@ -755,18 +755,6 @@ static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
 
-static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
-  if (bs == BLOCK_INVALID) return 0;
-
-  return block_size_wide[bs] <= 32 && block_size_high[bs] <= 32;
-}
-
-static INLINE int av1_filter_intra_allowed(const MB_MODE_INFO *mbmi) {
-  return mbmi->mode == DC_PRED &&
-         mbmi->palette_mode_info.palette_size[0] == 0 &&
-         av1_filter_intra_allowed_bsize(mbmi->sb_type);
-}
-
 // Converts block_index for given transform size to index of the block in raster
 // order.
 static INLINE int av1_block_index_to_raster_order(TX_SIZE tx_size,

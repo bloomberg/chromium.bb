@@ -123,7 +123,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   av1_cost_tokens_from_cdf(x->filter_intra_mode_cost, fc->filter_intra_mode_cdf,
                            NULL);
   for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
-    if (av1_filter_intra_allowed_bsize(i))
+    if (av1_filter_intra_allowed_bsize(cm, i))
       av1_cost_tokens_from_cdf(x->filter_intra_cost[i],
                                fc->filter_intra_cdfs[i], NULL);
   }

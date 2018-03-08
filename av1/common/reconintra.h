@@ -64,6 +64,20 @@ static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
   return cm->allow_screen_content_tools && cm->allow_intrabc;
 }
 
+static INLINE int av1_filter_intra_allowed_bsize(const AV1_COMMON *const cm,
+                                                 BLOCK_SIZE bs) {
+  if (!cm->allow_filter_intra || bs == BLOCK_INVALID) return 0;
+
+  return block_size_wide[bs] <= 32 && block_size_high[bs] <= 32;
+}
+
+static INLINE int av1_filter_intra_allowed(const AV1_COMMON *const cm,
+                                           const MB_MODE_INFO *mbmi) {
+  return mbmi->mode == DC_PRED &&
+         mbmi->palette_mode_info.palette_size[0] == 0 &&
+         av1_filter_intra_allowed_bsize(cm, mbmi->sb_type);
+}
+
 extern const int8_t av1_filter_intra_taps[FILTER_INTRA_MODES][8][8];
 
 #ifdef __cplusplus

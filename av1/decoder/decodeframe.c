@@ -2697,6 +2697,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
   cm->error_resilient_mode = aom_rb_read_bit(rb);
   cm->disable_intra_edge_filter = aom_rb_read_bit(rb);
+  cm->allow_filter_intra = aom_rb_read_bit(rb);
 
 #if CONFIG_CDF_UPDATE_MODE
   cm->disable_cdf_update = aom_rb_read_bit(rb);
