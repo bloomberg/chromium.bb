@@ -40,6 +40,7 @@ void SSLInfo::Reset() {
   channel_id_sent = false;
   token_binding_negotiated = false;
   token_binding_key_param = TB_PARAM_ECDSAP256;
+  dummy_pq_padding_received = false;
   handshake_type = HANDSHAKE_UNKNOWN;
   base::STLClearObject(&public_key_hashes);
   base::STLClearObject(&pinning_failure_log);

@@ -113,6 +113,11 @@ class NET_EXPORT SSLInfo {
   // extension.
   TokenBindingParam token_binding_key_param;
 
+  // True if the server echoed a dummy post-quantum padding extension. See
+  // https://crbug.com/801302.
+  // TODO(agl): remove by 2018-05-31.
+  bool dummy_pq_padding_received;
+
   HandshakeType handshake_type;
 
   // The hashes, in several algorithms, of the SubjectPublicKeyInfos from
