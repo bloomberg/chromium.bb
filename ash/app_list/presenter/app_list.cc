@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/presenter/app_list.h"
+#include "ash/app_list/presenter/app_list.h"
 
 #include <utility>
 
+#include "ash/app_list/presenter/app_list_delegate.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/presenter/app_list_delegate.h"
 #include "ui/events/event.h"
 
 namespace app_list {

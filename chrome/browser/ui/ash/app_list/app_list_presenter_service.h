@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_PRESENTER_SERVICE_H_
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_PRESENTER_SERVICE_H_
 
+#include "ash/app_list/presenter/app_list_presenter.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/app_list/presenter/app_list_presenter.mojom.h"
 
 namespace app_list {
 class AppListPresenterImpl;

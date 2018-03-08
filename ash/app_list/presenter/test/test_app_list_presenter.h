@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
-#define UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
+#ifndef ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
+#define ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
 
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/presenter/app_list_presenter.mojom.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/app_list/presenter/app_list_presenter.mojom.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 namespace app_list {
 namespace test {
@@ -52,4 +52,4 @@ class TestAppListPresenter : public mojom::AppListPresenter {
 }  // namespace test
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
+#endif  // ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_

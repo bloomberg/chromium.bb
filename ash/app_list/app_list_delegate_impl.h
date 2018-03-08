@@ -5,9 +5,9 @@
 #ifndef ASH_APP_LIST_APP_LIST_DELEGATE_IMPL_H_
 #define ASH_APP_LIST_APP_LIST_DELEGATE_IMPL_H_
 
+#include "ash/app_list/presenter/app_list_delegate.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/app_list/presenter/app_list_delegate.h"
 
 namespace ash {
 

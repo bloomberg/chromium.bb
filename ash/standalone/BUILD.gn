@@ -20,10 +20,10 @@ service("ash_standalone") {
     "//ash:ash_service_resources",
     "//ash:ash_service_resources_200",
     "//ash:ash_shell_lib",
+    "//ash/app_list/presenter",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
-    "//ui/app_list/presenter",
     "//ui/views/examples:views_examples_lib",
   ]
 

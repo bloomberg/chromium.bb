@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
 #include "ash/shell.h"
@@ -34,7 +35,6 @@
 #include "content/shell/browser/shell_net_log.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"

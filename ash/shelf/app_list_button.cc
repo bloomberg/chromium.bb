@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -27,7 +28,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"

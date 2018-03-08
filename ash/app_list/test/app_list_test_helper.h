@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 
 namespace app_list {
 class AppListView;

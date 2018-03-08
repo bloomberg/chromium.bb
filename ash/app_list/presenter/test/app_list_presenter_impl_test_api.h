@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
-#define UI_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
+#ifndef ASH_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
+#define ASH_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
 
 #include "base/macros.h"
 
@@ -31,4 +31,4 @@ class AppListPresenterImplTestApi {
 }  // namespace test
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
+#endif  // ASH_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_

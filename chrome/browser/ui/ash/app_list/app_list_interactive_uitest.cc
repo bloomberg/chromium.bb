@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
@@ -14,8 +16,6 @@
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 

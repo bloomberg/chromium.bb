@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -39,7 +40,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 namespace mojo_interface_factory {

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
-#define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#ifndef ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#define ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
 
 #include <stdint.h>
 
 #include <memory>
 
+#include "ash/app_list/presenter/app_list_presenter.mojom.h"
+#include "ash/app_list/presenter/app_list_presenter_delegate.h"
+#include "ash/app_list/presenter/app_list_presenter_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/pagination_model_observer.h"
-#include "ui/app_list/presenter/app_list_presenter.mojom.h"
-#include "ui/app_list/presenter/app_list_presenter_delegate.h"
-#include "ui/app_list/presenter/app_list_presenter_export.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -156,4 +156,4 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_

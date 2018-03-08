@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_
-#define UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_
+#ifndef ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_
+#define ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_
 
+#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 #include "base/macros.h"
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
 namespace app_list {
@@ -29,4 +29,4 @@ class TestAppListViewDelegateFactory : public AppListViewDelegateFactory {
 }  // namespace test
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_
+#endif  // ASH_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_VIEW_DELEGATE_FACTORY_H_

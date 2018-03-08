@@ -4,6 +4,8 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -20,8 +22,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"

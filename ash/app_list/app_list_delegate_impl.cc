@@ -4,9 +4,9 @@
 
 #include "ash/app_list/app_list_delegate_impl.h"
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 

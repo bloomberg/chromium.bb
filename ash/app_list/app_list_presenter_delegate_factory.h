@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 
 namespace app_list {
 class AppListViewDelegateFactory;

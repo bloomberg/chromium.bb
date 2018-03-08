@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
+#include "ash/app_list/presenter/test/test_app_list_presenter.h"
 
 #include <memory>
 
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
-#include "ui/app_list/presenter/test/test_app_list_view_delegate_factory.h"
+#include "ash/app_list/presenter/test/test_app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 
 namespace app_list {
