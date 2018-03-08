@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
@@ -16,7 +17,9 @@
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -26,6 +29,49 @@ namespace keys = extension_web_request_api_constants;
 namespace extensions {
 
 namespace {
+
+// UploadDataSource abstracts an interface for feeding an arbitrary data element
+// to an UploadDataPresenter. This is helpful because in the Network Service vs
+// non-Network Service case, upload data comes from different types of source
+// objects, but we'd like to share parsing code.
+class UploadDataSource {
+ public:
+  virtual ~UploadDataSource() {}
+
+  virtual void FeedToPresenter(UploadDataPresenter* presenter) = 0;
+};
+
+class BytesUploadDataSource : public UploadDataSource {
+ public:
+  BytesUploadDataSource(const base::StringPiece& bytes) : bytes_(bytes) {}
+  ~BytesUploadDataSource() override = default;
+
+  // UploadDataSource:
+  void FeedToPresenter(UploadDataPresenter* presenter) override {
+    presenter->FeedBytes(bytes_);
+  }
+
+ private:
+  base::StringPiece bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(BytesUploadDataSource);
+};
+
+class FileUploadDataSource : public UploadDataSource {
+ public:
+  FileUploadDataSource(const base::FilePath& path) : path_(path) {}
+  ~FileUploadDataSource() override = default;
+
+  // UploadDataSource:
+  void FeedToPresenter(UploadDataPresenter* presenter) override {
+    presenter->FeedFile(path_);
+  }
+
+ private:
+  base::FilePath path_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileUploadDataSource);
+};
 
 std::unique_ptr<base::Value> NetLogExtensionIdCallback(
     const std::string& extension_id,
@@ -82,18 +128,72 @@ class NetworkServiceLogger : public WebRequestInfo::Logger {
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceLogger);
 };
 
-std::unique_ptr<base::DictionaryValue> ExtractRequestBodyData(
-    net::URLRequest* url_request) {
+bool CreateUploadDataSourcesFromURLRequest(
+    net::URLRequest* url_request,
+    std::vector<std::unique_ptr<UploadDataSource>>* data_sources) {
   const net::UploadDataStream* upload_data = url_request->get_upload();
-  if (!upload_data ||
-      (url_request->method() != "POST" && url_request->method() != "PUT")) {
-    return nullptr;
+  if (!upload_data)
+    return false;
+
+  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
+      upload_data->GetElementReaders();
+  for (const auto& reader : *readers) {
+    if (const auto* bytes_reader = reader->AsBytesReader()) {
+      data_sources->push_back(std::make_unique<BytesUploadDataSource>(
+          base::StringPiece(bytes_reader->bytes(), bytes_reader->length())));
+    } else if (const auto* file_reader = reader->AsFileReader()) {
+      data_sources->push_back(
+          std::make_unique<FileUploadDataSource>(file_reader->path()));
+    } else {
+      NOTIMPLEMENTED();
+    }
   }
+
+  return true;
+}
+
+bool CreateUploadDataSourcesFromResourceRequest(
+    const network::ResourceRequest& request,
+    std::vector<std::unique_ptr<UploadDataSource>>* data_sources) {
+  if (!request.request_body)
+    return false;
+
+  for (auto& element : *request.request_body->elements()) {
+    switch (element.type()) {
+      case network::DataElement::TYPE_DATA_PIPE:
+        // TODO(https://crbug.com/721414): Support data pipe elements.
+        break;
+
+      case network::DataElement::TYPE_BYTES:
+        data_sources->push_back(std::make_unique<BytesUploadDataSource>(
+            base::StringPiece(element.bytes(), element.length())));
+        break;
+
+      case network::DataElement::TYPE_FILE:
+        // Should not be hit in the Network Service case.
+        NOTREACHED();
+        break;
+
+      default:
+        NOTIMPLEMENTED();
+        break;
+    }
+  }
+
+  return true;
+}
+
+std::unique_ptr<base::DictionaryValue> CreateRequestBodyData(
+    const std::string& method,
+    const net::HttpRequestHeaders& request_headers,
+    const std::vector<std::unique_ptr<UploadDataSource>>& data_sources) {
+  if (method != "POST" && method != "PUT")
+    return nullptr;
 
   auto request_body_data = std::make_unique<base::DictionaryValue>();
 
   // Get the data presenters, ordered by how specific they are.
-  ParsedDataPresenter parsed_data_presenter(*url_request);
+  ParsedDataPresenter parsed_data_presenter(request_headers);
   RawDataPresenter raw_data_presenter;
   UploadDataPresenter* const presenters[] = {
       &parsed_data_presenter,  // 1: any parseable forms? (Specific to forms.)
@@ -102,13 +202,11 @@ std::unique_ptr<base::DictionaryValue> ExtractRequestBodyData(
   // Keys for the results of the corresponding presenters.
   static const char* const kKeys[] = {keys::kRequestBodyFormDataKey,
                                       keys::kRequestBodyRawKey};
-  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
-      upload_data->GetElementReaders();
   bool some_succeeded = false;
-  if (readers) {
+  if (!data_sources.empty()) {
     for (size_t i = 0; i < arraysize(presenters); ++i) {
-      for (const auto& reader : *readers)
-        presenters[i]->FeedNext(*reader);
+      for (auto& source : data_sources)
+        source->FeedToPresenter(presenters[i]);
       if (presenters[i]->Succeeded()) {
         request_body_data->Set(kKeys[i], presenters[i]->Result());
         some_succeeded = true;
@@ -116,9 +214,9 @@ std::unique_ptr<base::DictionaryValue> ExtractRequestBodyData(
       }
     }
   }
-  if (!some_succeeded) {
+
+  if (!some_succeeded)
     request_body_data->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
-  }
 
   return request_body_data;
 }
@@ -135,7 +233,6 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
       initiator(url_request->initiator()),
       extra_request_headers(url_request->extra_request_headers()),
       is_pac_request(url_request->is_pac_request()),
-      request_body_data(ExtractRequestBodyData(url_request)),
       logger(std::make_unique<NetLogLogger>(url_request)) {
   if (url.SchemeIsWSOrWSS()) {
     web_request_type = WebRequestResourceType::WEB_SOCKET;
@@ -172,6 +269,12 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
     is_browser_side_navigation = true;
 
   InitializeWebViewAndFrameData(navigation_ui_data);
+
+  std::vector<std::unique_ptr<UploadDataSource>> data_sources;
+  if (CreateUploadDataSourcesFromURLRequest(url_request, &data_sources)) {
+    request_body_data =
+        CreateRequestBodyData(method, extra_request_headers, data_sources);
+  }
 }
 
 WebRequestInfo::WebRequestInfo(
@@ -200,9 +303,15 @@ WebRequestInfo::WebRequestInfo(
 
   InitializeWebViewAndFrameData(navigation_ui_data.get());
 
+  std::vector<std::unique_ptr<UploadDataSource>> data_sources;
+  if (CreateUploadDataSourcesFromResourceRequest(request, &data_sources)) {
+    request_body_data =
+        CreateRequestBodyData(method, extra_request_headers, data_sources);
+  }
+
   // TODO(https://crbug.com/721414): For this constructor (i.e. the Network
-  // Service case), we are still missing information for |is_async|,
-  // |request_body_data|, and |is_pac_request|.
+  // Service case), we are still missing information for |is_async| and
+  // |is_pac_request|.
 }
 
 WebRequestInfo::~WebRequestInfo() = default;

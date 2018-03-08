@@ -12,9 +12,7 @@
 #include "base/values.h"
 #include "extensions/browser/api/web_request/form_data_parser.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
-#include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
-#include "net/url_request/url_request.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -58,20 +56,18 @@ RawDataPresenter::RawDataPresenter()
 }
 RawDataPresenter::~RawDataPresenter() {}
 
-void RawDataPresenter::FeedNext(const net::UploadElementReader& reader) {
+void RawDataPresenter::FeedBytes(base::StringPiece bytes) {
   if (!success_)
     return;
 
-  if (reader.AsBytesReader()) {
-    const net::UploadBytesElementReader* bytes_reader = reader.AsBytesReader();
-    FeedNextBytes(bytes_reader->bytes(), bytes_reader->length());
-  } else if (reader.AsFileReader()) {
-    // Insert the file path instead of the contents, which may be too large.
-    const net::UploadFileElementReader* file_reader = reader.AsFileReader();
-    FeedNextFile(file_reader->path().AsUTF8Unsafe());
-  } else {
-    NOTIMPLEMENTED();
-  }
+  FeedNextBytes(bytes.data(), bytes.size());
+}
+
+void RawDataPresenter::FeedFile(const base::FilePath& path) {
+  if (!success_)
+    return;
+
+  FeedNextFile(path.AsUTF8Unsafe());
 }
 
 bool RawDataPresenter::Succeeded() {
@@ -98,24 +94,19 @@ void RawDataPresenter::FeedNextFile(const std::string& filename) {
                              list_.get());
 }
 
-ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest& request)
-  : parser_(FormDataParser::Create(request)),
-    success_(parser_.get() != NULL),
-    dictionary_(success_ ? new base::DictionaryValue() : NULL) {
-}
+ParsedDataPresenter::ParsedDataPresenter(
+    const net::HttpRequestHeaders& request_headers)
+    : parser_(FormDataParser::Create(request_headers)),
+      success_(parser_ != nullptr),
+      dictionary_(success_ ? new base::DictionaryValue() : nullptr) {}
 
 ParsedDataPresenter::~ParsedDataPresenter() {}
 
-void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
+void ParsedDataPresenter::FeedBytes(base::StringPiece bytes) {
   if (!success_)
     return;
 
-  const net::UploadBytesElementReader* bytes_reader = reader.AsBytesReader();
-  if (!bytes_reader)
-    return;
-
-  if (!parser_->SetSource(base::StringPiece(bytes_reader->bytes(),
-                                            bytes_reader->length()))) {
+  if (!parser_->SetSource(bytes)) {
     Abort();
     return;
   }
@@ -126,6 +117,8 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
     list->GetList().emplace_back(result.take_value());
   }
 }
+
+void ParsedDataPresenter::FeedFile(const base::FilePath& path) {}
 
 bool ParsedDataPresenter::Succeeded() {
   if (success_ && !parser_->AllDataReadOK())

@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using base::DictionaryValue;
@@ -314,10 +314,10 @@ FormDataParser::~FormDataParser() {}
 
 // static
 std::unique_ptr<FormDataParser> FormDataParser::Create(
-    const net::URLRequest& request) {
+    const net::HttpRequestHeaders& request_headers) {
   std::string value;
-  const bool found = request.extra_request_headers().GetHeader(
-      net::HttpRequestHeaders::kContentType, &value);
+  const bool found =
+      request_headers.GetHeader(net::HttpRequestHeaders::kContentType, &value);
   return CreateFromContentTypeHeader(found ? &value : NULL);
 }
 

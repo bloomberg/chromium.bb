@@ -13,9 +13,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class ListValue;
 class Value;
 }
@@ -25,8 +27,7 @@ class FormDataParser;
 }
 
 namespace net {
-class URLRequest;
-class UploadElementReader;
+class HttpRequestHeaders;
 }
 
 namespace extensions {
@@ -54,7 +55,8 @@ FORWARD_DECLARE_TEST(WebRequestUploadDataPresenterTest, RawData);
 class UploadDataPresenter {
  public:
   virtual ~UploadDataPresenter();
-  virtual void FeedNext(const net::UploadElementReader& reader) = 0;
+  virtual void FeedBytes(base::StringPiece bytes) = 0;
+  virtual void FeedFile(const base::FilePath& path) = 0;
   virtual bool Succeeded() = 0;
   virtual std::unique_ptr<base::Value> Result() = 0;
 
@@ -74,7 +76,8 @@ class RawDataPresenter : public UploadDataPresenter {
   ~RawDataPresenter() override;
 
   // Implementation of UploadDataPresenter.
-  void FeedNext(const net::UploadElementReader& reader) override;
+  void FeedBytes(base::StringPiece bytes) override;
+  void FeedFile(const base::FilePath& path) override;
   bool Succeeded() override;
   std::unique_ptr<base::Value> Result() override;
 
@@ -100,15 +103,16 @@ class RawDataPresenter : public UploadDataPresenter {
 // DictionaryValue, not as a JSON string).
 class ParsedDataPresenter : public UploadDataPresenter {
  public:
-  explicit ParsedDataPresenter(const net::URLRequest& request);
+  explicit ParsedDataPresenter(const net::HttpRequestHeaders& request_headers);
   ~ParsedDataPresenter() override;
 
   // Implementation of UploadDataPresenter.
-  void FeedNext(const net::UploadElementReader& reader) override;
+  void FeedBytes(base::StringPiece bytes) override;
+  void FeedFile(const base::FilePath& path) override;
   bool Succeeded() override;
   std::unique_ptr<base::Value> Result() override;
 
-  // Allows to create ParsedDataPresenter without the URLRequest. Uses the
+  // Allows to create ParsedDataPresenter without request headers. Uses the
   // parser for "application/x-www-form-urlencoded" form encoding. Only use this
   // in tests.
   static std::unique_ptr<ParsedDataPresenter> CreateForTests();
