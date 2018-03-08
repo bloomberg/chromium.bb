@@ -128,6 +128,20 @@ class UkmRecorderImpl : public UkmRecorder {
   // Aggregate information for collected event metrics.
   std::map<uint64_t, EventAggregate> event_aggregations_;
 
+  // Aggregated counters about Sources recorded in the current log.
+  struct SourceCounts {
+    // Count of URLs recorded for all sources.
+    size_t observed = 0;
+    // Count of URLs recorded for all SourceIdType::NAVIGATION_ID Sources.
+    size_t navigation_sources = 0;
+    // Sources carried over (not recorded) from a previous logging rotation.
+    size_t carryover_sources = 0;
+
+    // Resets all of the data.
+    void Reset();
+  };
+  SourceCounts source_counts_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 };
 

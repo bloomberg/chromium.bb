@@ -737,8 +737,20 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
     auto proto_report = GetPersistedReport();
 
     if (restrict_to_whitelisted_source_ids) {
+      EXPECT_EQ(1, proto_report.source_counts().observed());
+      EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(0, proto_report.source_counts().deferred_sources());
+      EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
+
       ASSERT_EQ(1, proto_report.sources_size());
     } else {
+      EXPECT_EQ(7, proto_report.source_counts().observed());
+      EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(4, proto_report.source_counts().deferred_sources());
+      EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
+
       ASSERT_EQ(3, proto_report.sources_size());
       EXPECT_EQ(ids[0], proto_report.sources(0).id());
       EXPECT_EQ(kURL.spec(), proto_report.sources(0).url());
@@ -762,8 +774,20 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
     proto_report = GetPersistedReport();
 
     if (restrict_to_whitelisted_source_ids) {
+      EXPECT_EQ(0, proto_report.source_counts().observed());
+      EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(0, proto_report.source_counts().deferred_sources());
+      EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
+
       ASSERT_EQ(0, proto_report.sources_size());
     } else {
+      EXPECT_EQ(0, proto_report.source_counts().observed());
+      EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(1, proto_report.source_counts().deferred_sources());
+      EXPECT_EQ(3, proto_report.source_counts().carryover_sources());
+
       ASSERT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(ids[3], proto_report.sources(0).id());
       EXPECT_EQ(kURL.spec(), proto_report.sources(0).url());
@@ -813,13 +837,17 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
     EXPECT_EQ(1, GetPersistedLogCount());
     auto proto_report = GetPersistedReport();
 
+    EXPECT_EQ(2, proto_report.source_counts().observed());
+    EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
     if (test.expected_kept) {
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
       EXPECT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
       EXPECT_EQ(kURL, proto_report.sources(0).url());
       EXPECT_EQ(nonwhitelist_id, proto_report.sources(1).id());
       EXPECT_EQ(test.url, proto_report.sources(1).url());
     } else {
+      EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
       EXPECT_EQ(1, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
       EXPECT_EQ(kURL, proto_report.sources(0).url());
@@ -892,6 +920,16 @@ TEST_F(UkmServiceTest, NonWhitelistedCarryoverUrls) {
     EXPECT_EQ(1, GetPersistedLogCount());
     auto proto_report = GetPersistedReport();
 
+    EXPECT_EQ(2, proto_report.source_counts().observed());
+    EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
+    EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
+    if (test.expect_source1) {
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(1, proto_report.source_counts().deferred_sources());
+    } else {
+      EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(0, proto_report.source_counts().deferred_sources());
+    }
     EXPECT_EQ(1, proto_report.sources_size());
     EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
     EXPECT_EQ(kURL, proto_report.sources(0).url());
@@ -906,14 +944,23 @@ TEST_F(UkmServiceTest, NonWhitelistedCarryoverUrls) {
     EXPECT_EQ(2, GetPersistedLogCount());
     proto_report = GetPersistedReport();
 
+    EXPECT_EQ(1, proto_report.source_counts().observed());
+    EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
+    EXPECT_EQ(0, proto_report.source_counts().deferred_sources());
     if (!test.expect_source1) {
       EXPECT_FALSE(test.expect_source2);
+      EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
       EXPECT_EQ(0, proto_report.sources_size());
     } else if (!test.expect_source2) {
+      EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(1, proto_report.source_counts().carryover_sources());
       EXPECT_EQ(1, proto_report.sources_size());
       EXPECT_EQ(nonwhitelist_id1, proto_report.sources(0).id());
       EXPECT_EQ(test.source1_url, proto_report.sources(0).url());
     } else {
+      EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+      EXPECT_EQ(1, proto_report.source_counts().carryover_sources());
       EXPECT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(nonwhitelist_id1, proto_report.sources(0).id());
       EXPECT_EQ(test.source1_url, proto_report.sources(0).url());
