@@ -80,13 +80,13 @@ class CountingPolicyTest : public testing::Test {
 
   // A wrapper function for CheckReadFilteredData, so that we don't need to
   // enter empty string values for parameters we don't care about.
-  void CheckReadData(ActivityLogDatabasePolicy* policy,
-                     const std::string& extension_id,
-                     int day,
-                     const base::Callback<void(
-                         std::unique_ptr<Action::ActionVector>)>& checker) {
-    CheckReadFilteredData(
-        policy, extension_id, Action::ACTION_ANY, "", "", "", day, checker);
+  void CheckReadData(
+      ActivityLogDatabasePolicy* policy,
+      const std::string& extension_id,
+      int day,
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> checker) {
+    CheckReadFilteredData(policy, extension_id, Action::ACTION_ANY, "", "", "",
+                          day, std::move(checker));
   }
 
   // A helper function to call ReadFilteredData on a policy object and wait for
@@ -99,15 +99,14 @@ class CountingPolicyTest : public testing::Test {
       const std::string& page_url,
       const std::string& arg_url,
       int day,
-      const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
-          checker) {
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> checker) {
     // Submit a request to the policy to read back some data, and call the
     // checker function when results are available.  This will happen on the
     // database thread.
     policy->ReadFilteredData(
         extension_id, type, api_name, page_url, arg_url, day,
-        base::Bind(&CountingPolicyTest::CheckWrapper, checker,
-                   base::MessageLoop::current()->QuitWhenIdleClosure()));
+        base::BindOnce(&CountingPolicyTest::CheckWrapper, std::move(checker),
+                       base::MessageLoop::current()->QuitWhenIdleClosure()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
@@ -148,12 +147,12 @@ class CountingPolicyTest : public testing::Test {
     ASSERT_LE(policy->queued_actions_.size(), 200U);
   }
 
-  static void CheckWrapper(const base::Callback<void(
-                               std::unique_ptr<Action::ActionVector>)>& checker,
-                           const base::Closure& done,
-                           std::unique_ptr<Action::ActionVector> results) {
-    checker.Run(std::move(results));
-    done.Run();
+  static void CheckWrapper(
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> checker,
+      base::OnceClosure done,
+      std::unique_ptr<Action::ActionVector> results) {
+    std::move(checker).Run(std::move(results));
+    std::move(done).Run();
   }
 
   static void TimeoutCallback() {
@@ -302,8 +301,7 @@ class CountingPolicyTest : public testing::Test {
   void CheckRemoveActions(
       ActivityLogDatabasePolicy* policy,
       const std::vector<int64_t>& action_ids,
-      const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
-          checker) {
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> checker) {
     // Use a mock clock to ensure that events are not recorded on the wrong day
     // when the test is run close to local midnight.
     base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
@@ -344,7 +342,7 @@ class CountingPolicyTest : public testing::Test {
 
     // Check the result of the deletion. The checker function gets all
     // activities in the database.
-    CheckReadData(policy, "", -1, checker);
+    CheckReadData(policy, "", -1, std::move(checker));
 
     // Clean database.
     policy->DeleteDatabase();
@@ -442,10 +440,8 @@ TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
   action->set_args(std::move(args));
 
   policy->ProcessAction(action);
-  CheckReadData(policy,
-                extension->id(),
-                0,
-                base::Bind(&CountingPolicyTest::Arguments_Stripped));
+  CheckReadData(policy, extension->id(), 0,
+                base::BindOnce(&CountingPolicyTest::Arguments_Stripped));
   policy->Close();
 }
 
@@ -503,10 +499,8 @@ TEST_F(CountingPolicyTest, GetTodaysActions) {
   policy->ProcessAction(action);
 
   CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(&CountingPolicyTest::Arguments_GetTodaysActions));
+      policy, "punky", 0,
+      base::BindOnce(&CountingPolicyTest::Arguments_GetTodaysActions));
   policy->Close();
 }
 
@@ -557,11 +551,8 @@ TEST_F(CountingPolicyTest, GetOlderActions) {
   action->set_page_url(GURL("http://www.google.com"));
   policy->ProcessAction(action);
 
-  CheckReadData(
-      policy,
-      "punky",
-      3,
-      base::Bind(&CountingPolicyTest::Arguments_GetOlderActions));
+  CheckReadData(policy, "punky", 3,
+                base::BindOnce(&CountingPolicyTest::Arguments_GetOlderActions));
 
   policy->Close();
 }
@@ -597,69 +588,36 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
   policy->ProcessAction(action_dom);
 
   CheckReadFilteredData(
-      policy,
-      extension->id(),
-      Action::ACTION_API_CALL,
-      "tabs.testMethod",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, extension->id(), Action::ACTION_API_CALL, "tabs.testMethod", "",
+      "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_DOM_ACCESS,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "", Action::ACTION_DOM_ACCESS, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_DOM_ACCESS,
-      "",
-      "http://www.google.com/",
-      "",
+      policy, "", Action::ACTION_DOM_ACCESS, "", "http://www.google.com/", "",
       -1,
-      base::Bind(
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_DOM_ACCESS,
-      "",
-      "http://www.google.com",
-      "",
+      policy, "", Action::ACTION_DOM_ACCESS, "", "http://www.google.com", "",
       -1,
-      base::Bind(
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_DOM_ACCESS,
-      "",
-      "http://www.goo",
-      "",
-      -1,
-      base::Bind(
+      policy, "", Action::ACTION_DOM_ACCESS, "", "http://www.goo", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
   CheckReadFilteredData(
-      policy,
-      extension->id(),
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, extension->id(), Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions2));
 
   policy->Close();
@@ -705,14 +663,12 @@ TEST_F(CountingPolicyTest, MergingAndExpiring) {
                       "brewster");
   policy->ProcessAction(action);
 
-  CheckReadData(policy,
-                "punky",
-                3,
-                base::Bind(&CountingPolicyTest::Arguments_CheckMergeCount, 2));
-  CheckReadData(policy,
-                "punky",
-                2,
-                base::Bind(&CountingPolicyTest::Arguments_CheckMergeCount, 1));
+  CheckReadData(
+      policy, "punky", 3,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCount, 2));
+  CheckReadData(
+      policy, "punky", 2,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCount, 1));
 
   // Clean actions before midnight two days ago.  Force expiration to run by
   // clearing last_database_cleaning_time_ and submitting a new action.
@@ -724,14 +680,12 @@ TEST_F(CountingPolicyTest, MergingAndExpiring) {
                       "brewster");
   policy->ProcessAction(action);
 
-  CheckReadData(policy,
-                "punky",
-                3,
-                base::Bind(&CountingPolicyTest::Arguments_CheckMergeCount, 0));
-  CheckReadData(policy,
-                "punky",
-                2,
-                base::Bind(&CountingPolicyTest::Arguments_CheckMergeCount, 1));
+  CheckReadData(
+      policy, "punky", 3,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCount, 0));
+  CheckReadData(
+      policy, "punky", 2,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCount, 1));
 
   policy->Close();
 }
@@ -829,17 +783,13 @@ TEST_F(CountingPolicyTest, MoreMerging) {
   policy->ProcessAction(action);
 
   CheckReadData(
-      policy,
-      "punky",
-      2,
-      base::Bind(
-          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 2, time3));
+      policy, "punky", 2,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCountAndTime, 2,
+                     time3));
   CheckReadData(
-      policy,
-      "punky",
-      1,
-      base::Bind(
-          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 1, time2));
+      policy, "punky", 1,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCountAndTime, 1,
+                     time2));
 
   // Create three actions today, where the merges should happen in memory.
   // Again these are not chronological; timestamp time5 should win out since it
@@ -858,11 +808,9 @@ TEST_F(CountingPolicyTest, MoreMerging) {
   policy->ProcessAction(action);
 
   CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(
-          &CountingPolicyTest::Arguments_CheckMergeCountAndTime, 3, time5));
+      policy, "punky", 0,
+      base::BindOnce(&CountingPolicyTest::Arguments_CheckMergeCountAndTime, 3,
+                     time5));
   policy->Close();
 }
 
@@ -904,14 +852,8 @@ TEST_F(CountingPolicyTest, CapReturns) {
   WaitOnActivityLogSequence();
 
   CheckReadFilteredData(
-      policy,
-      "punky",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "punky", Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions300));
   policy->Close();
 }
@@ -951,11 +893,8 @@ TEST_F(CountingPolicyTest, RemoveAllURLs) {
   std::vector<GURL> no_url_restrictions;
   policy->RemoveURLs(no_url_restrictions);
 
-  CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(&CountingPolicyTest::AllURLsRemoved));
+  CheckReadData(policy, "punky", 0,
+                base::BindOnce(&CountingPolicyTest::AllURLsRemoved));
   policy->Close();
 }
 
@@ -1028,11 +967,8 @@ TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
   urls.push_back(GURL("http://www.url_not_in_db.com"));
   policy->RemoveURLs(urls);
 
-  CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(&CountingPolicyTest::SomeURLsRemoved));
+  CheckReadData(policy, "punky", 0,
+                base::BindOnce(&CountingPolicyTest::SomeURLsRemoved));
   policy->Close();
 }
 
@@ -1072,25 +1008,13 @@ TEST_F(CountingPolicyTest, RemoveExtensionData) {
   policy->RemoveExtensionData("deleteextensiondata");
 
   CheckReadFilteredData(
-      policy,
-      "deleteextensiondata",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "deleteextensiondata", Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
 
   CheckReadFilteredData(
-      policy,
-      "dontdelete",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "dontdelete", Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
   policy->Close();
 }
@@ -1149,22 +1073,14 @@ TEST_F(CountingPolicyTest, DeleteDatabase) {
   policy->ProcessAction(action);
 
   CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(&CountingPolicyTest::Arguments_GetTodaysActions));
+      policy, "punky", 0,
+      base::BindOnce(&CountingPolicyTest::Arguments_GetTodaysActions));
 
   policy->DeleteDatabase();
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "", Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
 
   // The following code tests that the caches of url and string tables were
@@ -1177,22 +1093,14 @@ TEST_F(CountingPolicyTest, DeleteDatabase) {
   policy->ProcessAction(action);
 
   CheckReadData(
-      policy,
-      "",
-      -1,
-      base::Bind(&CountingPolicyTest::Arguments_GetSinglesAction));
+      policy, "", -1,
+      base::BindOnce(&CountingPolicyTest::Arguments_GetSinglesAction));
 
   policy->DeleteDatabase();
 
   CheckReadFilteredData(
-      policy,
-      "",
-      Action::ACTION_ANY,
-      "",
-      "",
-      "",
-      -1,
-      base::Bind(
+      policy, "", Action::ACTION_ANY, "", "", "", -1,
+      base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions0));
 
   policy->Close();
@@ -1231,11 +1139,8 @@ TEST_F(CountingPolicyTest, DuplicateRows) {
       "punky", mock_clock->Now(), Action::ACTION_API_CALL, "brewster");
   policy->ProcessAction(action);
 
-  CheckReadData(
-      policy,
-      "punky",
-      0,
-      base::Bind(&CountingPolicyTest::CheckDuplicates));
+  CheckReadData(policy, "punky", 0,
+                base::BindOnce(&CountingPolicyTest::CheckDuplicates));
   policy->Close();
 }
 
@@ -1245,41 +1150,41 @@ TEST_F(CountingPolicyTest, RemoveActions) {
 
   std::vector<int64_t> action_ids;
 
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::NoActionsDeleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::NoActionsDeleted));
 
   action_ids.push_back(-1);
   action_ids.push_back(-10);
   action_ids.push_back(0);
   action_ids.push_back(5);
   action_ids.push_back(10);
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::NoActionsDeleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::NoActionsDeleted));
   action_ids.clear();
 
   for (int i = 0; i < 50; i++) {
     action_ids.push_back(i + 3);
   }
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::NoActionsDeleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::NoActionsDeleted));
   action_ids.clear();
 
   // CheckRemoveActions pushes two actions to the Activity Log database with IDs
   // 1 and 2.
   action_ids.push_back(1);
   action_ids.push_back(2);
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::AllActionsDeleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::AllActionsDeleted));
   action_ids.clear();
 
   action_ids.push_back(1);
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::Action1Deleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::Action1Deleted));
   action_ids.clear();
 
   action_ids.push_back(2);
-  CheckRemoveActions(
-      policy, action_ids, base::Bind(&CountingPolicyTest::Action2Deleted));
+  CheckRemoveActions(policy, action_ids,
+                     base::BindOnce(&CountingPolicyTest::Action2Deleted));
   action_ids.clear();
 
   policy->Close();

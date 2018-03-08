@@ -37,8 +37,8 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
-          callback) override;
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> callback)
+      override;
 
   void Close() override;
 

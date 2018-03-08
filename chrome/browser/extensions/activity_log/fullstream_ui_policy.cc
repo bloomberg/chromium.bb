@@ -29,7 +29,6 @@
 #include "sql/transaction.h"
 #include "url/gurl.h"
 
-using base::Callback;
 using base::FilePath;
 using base::Time;
 using base::Unretained;
@@ -395,14 +394,13 @@ void FullStreamUIPolicy::ReadFilteredData(
     const std::string& page_url,
     const std::string& arg_url,
     const int days_ago,
-    const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
-        callback) {
+    base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> callback) {
   base::PostTaskAndReplyWithResult(
       GetActivityLogTaskRunner().get(), FROM_HERE,
-      base::Bind(&FullStreamUIPolicy::DoReadFilteredData,
-                 base::Unretained(this), extension_id, type, api_name, page_url,
-                 arg_url, days_ago),
-      callback);
+      base::BindOnce(&FullStreamUIPolicy::DoReadFilteredData,
+                     base::Unretained(this), extension_id, type, api_name,
+                     page_url, arg_url, days_ago),
+      std::move(callback));
 }
 
 void FullStreamUIPolicy::RemoveActions(const std::vector<int64_t>& action_ids) {
