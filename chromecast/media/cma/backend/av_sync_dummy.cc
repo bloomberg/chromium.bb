@@ -17,6 +17,10 @@ class AvSyncDummy : public AvSync {
   void NotifyAudioBufferPushed(
       int64_t buffer_timestamp,
       MediaPipelineBackend::AudioDecoder::RenderingDelay delay) override;
+  void NotifyStart() override;
+  void NotifyStop() override;
+  void NotifyPause() override;
+  void NotifyResume() override;
 };
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -30,6 +34,14 @@ AvSyncDummy::AvSyncDummy() {}
 void AvSyncDummy::NotifyAudioBufferPushed(
     int64_t buffer_timestamp,
     MediaPipelineBackend::AudioDecoder::RenderingDelay delay) {}
+
+void AvSyncDummy::NotifyStart() {}
+
+void AvSyncDummy::NotifyStop() {}
+
+void AvSyncDummy::NotifyPause() {}
+
+void AvSyncDummy::NotifyResume() {}
 
 }  // namespace media
 }  // namespace chromecast

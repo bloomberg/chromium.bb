@@ -32,9 +32,14 @@ class AvSyncVideo : public AvSync {
   void NotifyAudioBufferPushed(
       int64_t buffer_timestamp,
       MediaPipelineBackend::AudioDecoder::RenderingDelay delay) override;
+  void NotifyStart() override;
+  void NotifyStop() override;
+  void NotifyPause() override;
+  void NotifyResume() override;
 
  private:
   void UpkeepAvSync();
+  void StopAvSync();
 
   base::RepeatingTimer timer_;
   bool setup_video_clock_ = false;

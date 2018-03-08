@@ -58,10 +58,8 @@ bool MediaPipelineBackendForMixer::Initialize() {
 
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
-
   if (audio_decoder_ && !audio_decoder_->Start(start_pts))
     return false;
-
   if (video_decoder_ && !video_decoder_->Start(start_pts, true))
     return false;
 
@@ -84,7 +82,8 @@ bool MediaPipelineBackendForMixer::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
   if (audio_decoder_ && !audio_decoder_->Pause())
     return false;
-  // TODO(almasrymina): Implement pause/resume.
+  if (video_decoder_ && !video_decoder_->Pause())
+    return false;
 
   state_ = kStatePaused;
   return true;
@@ -94,7 +93,8 @@ bool MediaPipelineBackendForMixer::Resume() {
   DCHECK_EQ(kStatePaused, state_);
   if (audio_decoder_ && !audio_decoder_->Resume())
     return false;
-  // TODO(almasrymina): Implement pause/resume.
+  if (video_decoder_ && !video_decoder_->Resume())
+    return false;
 
   state_ = kStatePlaying;
   return true;
