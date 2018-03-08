@@ -117,6 +117,9 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     // First time syncing; initialize metadata.
     model_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));
+    // For commit-only types, no updates are expected and hence we can consider
+    // initial_sync_done().
+    model_type_state_.set_initial_sync_done(commit_only_);
   }
 
   ConnectIfReady();
