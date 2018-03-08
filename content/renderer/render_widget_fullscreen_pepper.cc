@@ -337,7 +337,9 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   }
   if (!compositor())
     InitializeLayerTreeView();
-  layer_->SetBounds(blink::WebSize(size()));
+  // Note that root cc::Layers' bounds are specified in pixels (in contrast with
+  // non-root cc::Layers' bounds, which are specified in DIPs).
+  layer_->SetBounds(blink::WebSize(compositor_viewport_pixel_size()));
   layer_->SetDrawsContent(true);
   compositor_->SetRootLayer(*layer_);
 }
@@ -375,8 +377,10 @@ void RenderWidgetFullscreenPepper::Close() {
 }
 
 void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
+  // Note that root cc::Layers' bounds are specified in pixels (in contrast with
+  // non-root cc::Layers' bounds, which are specified in DIPs).
   if (layer_)
-    layer_->SetBounds(blink::WebSize(params.new_size));
+    layer_->SetBounds(blink::WebSize(params.physical_backing_size));
   RenderWidget::OnResize(params);
 }
 
