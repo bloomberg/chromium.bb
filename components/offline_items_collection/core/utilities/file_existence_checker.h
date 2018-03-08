@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_FILE_EXISTENCE_CHECKER_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_FILE_EXISTENCE_CHECKER_H_
+#ifndef COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_UTILITIES_FILE_EXISTENCE_CHECKER_H_
+#define COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_UTILITIES_FILE_EXISTENCE_CHECKER_H_
 
 #include <utility>
 #include <vector>
@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 
-namespace offline_pages {
+namespace offline_items_collection {
 
 // Class that checks in bulk, which of the provided set of file paths are not
 // pointing to an existing file.
@@ -62,6 +62,6 @@ class FileExistenceChecker {
   DISALLOW_COPY_AND_ASSIGN(FileExistenceChecker);
 };
 
-}  // namespace offline_pages
+}  // namespace offline_items_collection
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_FILE_EXISTENCE_CHECKER_H_
+#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_UTILITIES_FILE_EXISTENCE_CHECKER_H_
