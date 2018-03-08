@@ -104,6 +104,7 @@ vs-chromium-project.txt
 /chrome/browser/resources/software_rendering_list
 # Asset files downloaded by gclient runhooks.
 /chrome/browser/resources/vr/assets/google_chrome/*.png
+/chrome/browser/resources/vr/assets/google_chrome/*.wav
 /chrome/browser/spellchecker/internal
 /chrome/browser_tests_run.xml
 /chrome/chrome_run.xml
