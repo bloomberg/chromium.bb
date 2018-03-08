@@ -220,6 +220,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
@@ -2173,7 +2174,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
 
     UILayoutGuide* guide =
-        AddNamedGuide(kSecondaryToolbarNoFullscreen, self.view);
+        [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreen];
+    [self.view addLayoutGuide:guide];
     self.secondaryToolbarNoFullscreenHeightConstraint = [guide.heightAnchor
         constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
     self.secondaryToolbarNoFullscreenHeightConstraint.active = YES;
@@ -2300,12 +2302,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           insertSubview:self.secondaryToolbarCoordinator.viewController.view
            aboveSubview:self.primaryToolbarCoordinator.viewController.view];
     }
-    AddNamedGuide(kOmniboxGuide, self.view);
-    AddNamedGuide(kBackButtonGuide, self.view);
-    AddNamedGuide(kForwardButtonGuide, self.view);
-    AddNamedGuide(kToolsMenuGuide, self.view);
-    AddNamedGuide(kTabSwitcherGuide, self.view);
-    AddNamedGuide(kSecondaryToolbar, self.view);
+    NSArray<GuideName*>* guideNames = @[
+      kOmniboxGuide,
+      kBackButtonGuide,
+      kForwardButtonGuide,
+      kToolsMenuGuide,
+      kTabSwitcherGuide,
+      kSecondaryToolbar,
+    ];
+    AddNamedGuidesToView(guideNames, self.view);
   }
   if (initialLayout) {
     [self.primaryToolbarCoordinator.viewController
@@ -2626,7 +2631,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     tabSwitcherAnchor = [self.tabStripCoordinator
         anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
   } else {
-    UILayoutGuide* guide = FindNamedGuide(kTabSwitcherGuide, self.view);
+    UILayoutGuide* guide =
+        [NamedGuide guideWithName:kTabSwitcherGuide view:self.view];
     DCHECK(guide);
     CGPoint anchorPoint =
         bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
@@ -2688,7 +2694,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
   CGPoint toolsButtonAnchor;
-  UILayoutGuide* guide = FindNamedGuide(kToolsMenuGuide, self.view);
+  UILayoutGuide* guide =
+      [NamedGuide guideWithName:kToolsMenuGuide view:self.view];
   DCHECK(guide);
   CGPoint anchorPoint =
       bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
@@ -2738,8 +2745,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     referenceFrame = _contentArea.frame;
   }
 
-  CGRect omniboxFrame;
-  omniboxFrame = FindNamedGuide(kOmniboxGuide, self.view).layoutFrame;
+  CGRect omniboxFrame =
+      [NamedGuide guideWithName:kOmniboxGuide view:self.view].layoutFrame;
   [_findBarController addFindBarView:animate
                             intoView:self.view
                            withFrame:referenceFrame

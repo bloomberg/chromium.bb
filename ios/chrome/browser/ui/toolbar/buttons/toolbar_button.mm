@@ -113,7 +113,7 @@
   if (!self.hidden && previouslyHidden != self.hidden && self.guideName) {
     // The button is appearing. At this point, if it has a layout guide
     // associated, it should constraint it to itself.
-    UILayoutGuide* guide = FindNamedGuide(self.guideName, self);
+    UILayoutGuide* guide = [NamedGuide guideWithName:self.guideName view:self];
     if (!guide)
       return;
 

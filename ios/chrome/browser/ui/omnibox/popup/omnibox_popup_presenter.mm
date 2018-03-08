@@ -166,7 +166,8 @@ NS_INLINE CGFloat BottomPadding() {
 
   // Position the top anchor of the popup relatively to the layout guide
   // positioned on the omnibox.
-  UILayoutGuide* topLayout = FindNamedGuide(kOmniboxGuide, popup);
+  UILayoutGuide* topLayout =
+      [NamedGuide guideWithName:kOmniboxGuide view:popup];
   NSLayoutConstraint* topConstraint =
       [popup.topAnchor constraintEqualToAnchor:topLayout.bottomAnchor];
   if (IsIPadIdiom()) {

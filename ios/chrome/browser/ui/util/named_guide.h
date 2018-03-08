@@ -5,45 +5,32 @@
 #ifndef IOS_CHROME_BROWSER_UI_UTIL_NAMED_GUIDE_H_
 #define IOS_CHROME_BROWSER_UI_UTIL_NAMED_GUIDE_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
-typedef NSString GuideName;
+// A UILayoutGuide subclass that represents the layout of a well-known piece of
+// UI.  See layout_guide_names.h for a list of the UI components for which named
+// guides are created.
+@interface NamedGuide : UILayoutGuide
 
-//////////////////////////////////////////
-// The list of well-known UILayoutGuides.  When adding a new guide to the app,
-// create a constant for it below.
+// Designated initializer for a guide with |name|.
+- (instancetype)initWithName:(GuideName*)name NS_DESIGNATED_INITIALIZER;
 
-// A guide that is constrained to match the frame of the secondary toolbar.
-extern GuideName* const kSecondaryToolbar;
-// A guide that is constrained to match the frame the secondary toolbar would
-// have if fullscreen was disabled.
-extern GuideName* const kSecondaryToolbarNoFullscreen;
-// A guide that is constrained to match the frame of the omnibox.
-extern GuideName* const kOmniboxGuide;
-// A guide that is constrained to match the frame of the back button's image.
-extern GuideName* const kBackButtonGuide;
-// A guide that is constrained to match the frame of the forward button's image.
-extern GuideName* const kForwardButtonGuide;
-// A guide that is constrained to match the frame of the TabSwitcher button's
-// image.
-extern GuideName* const kTabSwitcherGuide;
-// A guide that is constrained to match the frame of the ToolsMenu button.
-extern GuideName* const kToolsMenuGuide;
+// NamedGuides must be created using |-initWithName:|.
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-//
-//////////////////////////////////////////
-
-// Returns the UILayoutGuide with the given |name|, if one is attached to |view|
+// Returns the NamedGuide with the given |name|, if one is attached to |view|
 // or one of |view|'s ancestors.  If no guide is found, returns nil.
-UILayoutGuide* FindNamedGuide(GuideName* name, UIView* view);
++ (instancetype)guideWithName:(GuideName*)name view:(UIView*)view;
 
-// Creates and attaches a new UILayoutGuide to the given |view| and makes it
-// globally accessible under the given |name|.  It is an error to add a guide
-// with the same name as an existing guide.  Returns the newly-created guide.
-UILayoutGuide* AddNamedGuide(GuideName* name, UIView* view);
+// The GuideName passed on initialization.
+@property(nonatomic, readonly) GuideName* name;
 
-// Adds constraints such as the layoutGuide with |guideName| matches the |view|.
-// The layout guide has to be owned by |view| or one of its superview.
-void ConstrainNamedGuideToView(GuideName* guideName, UIView* view);
+// The view to which this guide should be constrained.  Setting this property
+// to a new value will update the guide's constraints to match the new view.
+// Setting to nil removes constraints.
+@property(nonatomic, weak) UIView* constrainedView;
+
+@end
 
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_NAMED_GUIDE_H_

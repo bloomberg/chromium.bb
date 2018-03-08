@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/ios/uikit_util.h"
 
@@ -65,11 +66,14 @@ const CGFloat kSearchIconLeftMargin = 9;
   [self addSubview:self.toolBarView];
   // TODO(crbug.com/808431) This logic is duplicated in various places and
   // should be refactored away for content suggestions.
-  AddNamedGuide(kOmniboxGuide, self);
-  AddNamedGuide(kBackButtonGuide, self);
-  AddNamedGuide(kForwardButtonGuide, self);
-  AddNamedGuide(kToolsMenuGuide, self);
-  AddNamedGuide(kTabSwitcherGuide, self);
+  NSArray<GuideName*>* guideNames = @[
+    kOmniboxGuide,
+    kBackButtonGuide,
+    kForwardButtonGuide,
+    kToolsMenuGuide,
+    kTabSwitcherGuide,
+  ];
+  AddNamedGuidesToView(guideNames, self);
   [NSLayoutConstraint activateConstraints:@[
     [self.toolBarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [self.toolBarView.topAnchor constraintEqualToAnchor:self.topAnchor],

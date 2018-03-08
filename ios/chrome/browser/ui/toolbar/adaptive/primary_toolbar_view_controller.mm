@@ -106,7 +106,9 @@
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
-  ConstrainNamedGuideToView(kOmniboxGuide, self.view.locationBarContainer);
+  UIView* omniboxView = self.view.locationBarContainer;
+  [NamedGuide guideWithName:kOmniboxGuide view:omniboxView].constrainedView =
+      omniboxView;
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {

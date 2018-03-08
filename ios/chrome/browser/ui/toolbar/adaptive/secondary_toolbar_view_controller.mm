@@ -35,7 +35,8 @@
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
-  ConstrainNamedGuideToView(kSecondaryToolbar, self.view);
+  [NamedGuide guideWithName:kSecondaryToolbar view:self.view].constrainedView =
+      self.view;
 }
 
 @end

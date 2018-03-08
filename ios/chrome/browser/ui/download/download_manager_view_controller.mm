@@ -109,8 +109,10 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.installDriveControlsRow addSubview:self.installDriveButton];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
 
-  AddNamedGuide(kActionButtonGuide, self.view);
-  ConstrainNamedGuideToView(kActionButtonGuide, self.actionButton);
+  NamedGuide* actionButtonGuide =
+      [[NamedGuide alloc] initWithName:kActionButtonGuide];
+  [self.view addLayoutGuide:actionButtonGuide];
+  actionButtonGuide.constrainedView = self.actionButton;
 }
 
 - (void)updateViewConstraints {
@@ -446,7 +448,8 @@ NSString* GetSizeString(long long size_in_bytes) {
       SEL selector = @selector
           (downloadManagerViewController:presentOpenInMenuWithLayoutGuide:);
       if ([_delegate respondsToSelector:selector]) {
-        UILayoutGuide* guide = FindNamedGuide(kActionButtonGuide, self.view);
+        UILayoutGuide* guide =
+            [NamedGuide guideWithName:kActionButtonGuide view:self.view];
         [_delegate downloadManagerViewController:self
                 presentOpenInMenuWithLayoutGuide:guide];
       }
