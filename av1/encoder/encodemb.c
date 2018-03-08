@@ -102,11 +102,14 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   const int eob = p->eobs[block];
-  if (eob == 0 || !mb->optimize || xd->lossless[xd->mi[0]->mbmi.segment_id])
-    return eob;
-
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
+
+  if (eob == 0 || !mb->optimize || xd->lossless[xd->mi[0]->mbmi.segment_id]) {
+    *rate_cost = av1_cost_skip_txb(mb, &txb_ctx, plane, tx_size);
+    return eob;
+  }
+
   return av1_optimize_txb(cpi, mb, plane, blk_row, blk_col, block, tx_size,
                           &txb_ctx, fast_mode, rate_cost);
 }

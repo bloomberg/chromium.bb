@@ -1966,14 +1966,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                       tx_size, AV1_XFORM_QUANT_FP);
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &rate_cost);
-      const int eob = x->plane[plane].eobs[block];
-      if (eob)
-        rate_cost +=
-            av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
-      else
-        rate_cost =
-            av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
-                            scan_order, a, l, use_fast_coef_costing);
     }
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,

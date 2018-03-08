@@ -906,6 +906,11 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   *rate_cost = zero_blk_rd_cost <= prev_eob_rd_cost
                    ? zero_blk_rate
                    : accu_rate + non_zero_blk_rate;
+
+  if (txb_info->eob > 0) {
+    *rate_cost += txb_info->tx_type_cost;
+  }
+
   return update;
 }
 
@@ -1224,11 +1229,13 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
   assert(width == (1 << bwl));
+  const int tx_type_cost =
+      av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
   TxbInfo txb_info = {
-    qcoeff,   levels,  dqcoeff,    tcoeff,  dequant, shift,
-    tx_size,  txs_ctx, tx_type,    bwl,     width,   height,
-    eob,      seg_eob, scan_order, txb_ctx, rdmult,  &cm->coeff_ctx_table,
-    iqmatrix,
+    qcoeff,   levels,       dqcoeff,    tcoeff,  dequant, shift,
+    tx_size,  txs_ctx,      tx_type,    bwl,     width,   height,
+    eob,      seg_eob,      scan_order, txb_ctx, rdmult,  &cm->coeff_ctx_table,
+    iqmatrix, tx_type_cost,
   };
 
   // Hash based trellis (hbt) speed feature: avoid expensive optimize_txb calls

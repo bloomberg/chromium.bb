@@ -43,6 +43,7 @@ typedef struct TxbInfo {
   int64_t rdmult;
   const LV_MAP_CTX_TABLE *coeff_ctx_table;
   const qm_val_t *iqmatrix;
+  int tx_type_cost;
 } TxbInfo;
 
 void av1_alloc_txb_buf(AV1_COMP *cpi);
