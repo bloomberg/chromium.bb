@@ -32,7 +32,6 @@ PictureInPictureWindowController::PictureInPictureWindowController(
     : initiator_(initiator) {
   DCHECK(initiator_);
   window_ = OverlayWindow::Create();
-  window_->Init();
 }
 
 void PictureInPictureWindowController::Show() {
