@@ -47,6 +47,19 @@ source_set("unit_tests") {
   ]
 }
 
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "test_infobar_delegate.h",
+    "test_infobar_delegate.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/infobars/core",
+  ]
+}
+
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -54,6 +67,7 @@ source_set("eg_tests") {
     "infobar_egtest.mm",
   ]
   deps = [
+    ":test_support",
     "//base",
     "//components/infobars/core",
     "//ios/chrome/app:app_internal",

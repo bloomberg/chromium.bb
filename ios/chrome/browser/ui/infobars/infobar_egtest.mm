@@ -6,14 +6,13 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -30,35 +29,8 @@
 
 namespace {
 
-// The title of the test infobar.
-const char kTestInfoBarTitle[] = "TestInfoBar";
-
 // Timeout for how long to wait for an infobar to appear or disapper.
 const CFTimeInterval kTimeout = 4.0;
-
-// An infobar that displays a single line of text and no buttons.
-class TestInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  static bool Create(infobars::InfoBarManager* infobar_manager);
-
-  // InfoBarDelegate implementation.
-  InfoBarIdentifier GetIdentifier() const override { return TEST_INFOBAR; }
-
-  // ConfirmInfoBarDelegate implementation.
-  base::string16 GetMessageText() const override {
-    return base::ASCIIToUTF16(kTestInfoBarTitle);
-  }
-
-  int GetButtons() const override {
-    return ConfirmInfoBarDelegate::BUTTON_NONE;
-  }
-};
-
-bool TestInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager) {
-  DCHECK(infobar_manager);
-  return !!infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(new TestInfoBarDelegate)));
-}
 
 // Returns the InfoBarManager for the current tab.  Only works in normal
 // (non-incognito) mode.

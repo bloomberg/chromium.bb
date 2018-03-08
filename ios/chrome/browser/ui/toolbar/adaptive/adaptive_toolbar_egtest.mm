@@ -5,12 +5,16 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/bookmarks_test_util.h"
@@ -35,6 +39,7 @@ const char kPageURL[] = "/test-page.html";
 const char kPageURL2[] = "/test-page-2.html";
 const char kPageURL3[] = "/test-page-3.html";
 const char kLinkID[] = "linkID";
+const char kTextID[] = "textID";
 const char kPageLoadedString[] = "Page loaded!";
 
 // Provides responses for redirect and changed window location URLs.
@@ -46,6 +51,18 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   http_response->set_content(
       "<html><body><p>" + std::string(kPageLoadedString) + "</p><a href=\"" +
       kPageURL3 + "\" id=\"" + kLinkID + "\">link!</a></body></html>");
+  return std::move(http_response);
+}
+
+// Provides response for a very tall page.
+std::unique_ptr<net::test_server::HttpResponse> TallPageResponse(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(
+      "<html><body><p style=\"height:2000pt\"></p><p id=\"" +
+      std::string(kTextID) + "\">" + kPageLoadedString + "</p></body></html>");
   return std::move(http_response);
 }
 
@@ -88,6 +105,12 @@ id<GREYMatcher> VisibleInSecondaryToolbar() {
   return grey_allOf(
       grey_ancestor(grey_kindOfClass([SecondaryToolbarView class])),
       grey_sufficientlyVisible(), nil);
+}
+
+bool AddInfobar() {
+  infobars::InfoBarManager* manager =
+      InfoBarManagerImpl::FromWebState(chrome_test_util::GetCurrentWebState());
+  return TestInfoBarDelegate::Create(manager);
 }
 
 // Rotate the device if it is an iPhone or change the trait collection to
@@ -373,6 +396,94 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
   }
+}
+
+// Tests the interactions between the infobars and the bottom toolbar during
+// fullscreen.
+- (void)testInfobarFullscreen {
+  if (!IsSplitToolbarMode()) {
+    // The interaction between the infobar and fullscreen only happens in split
+    // toolbar mode.
+    return;
+  }
+
+  // Setup the server.
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&TallPageResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+
+  // Navigate to a page and check the bookmark button is not selected.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
+
+  GREYAssert(AddInfobar(), @"Failed to add infobar.");
+
+  [[GREYCondition
+      conditionWithName:@"Waiting for infobar to show"
+                  block:^BOOL {
+                    NSError* error = nil;
+                    [[EarlGrey
+                        selectElementWithMatcher:
+                            chrome_test_util::StaticTextWithAccessibilityLabel(
+                                base::SysUTF8ToNSString(kTestInfoBarTitle))]
+                        assertWithMatcher:grey_sufficientlyVisible()
+                                    error:&error];
+                    return error == nil;
+                  }] waitWithTimeout:4];
+
+  // Check that the button is visible.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  UIWindow* window = [[UIApplication sharedApplication] keyWindow];
+
+  GREYElementMatcherBlock* positionMatcher = [GREYElementMatcherBlock
+      matcherWithMatchesBlock:^BOOL(UIView* element) {
+        UILayoutGuide* guide =
+            [NamedGuide guideWithName:kSecondaryToolbar view:element];
+        CGFloat toolbarTopPoint = CGRectGetMinY(
+            [window convertRect:guide.layoutFrame fromView:guide.owningView]);
+        CGFloat buttonBottomPoint = CGRectGetMaxY(
+            [window convertRect:element.frame fromView:element.superview]);
+
+        CGFloat bottomSafeArea = CGFLOAT_MAX;
+        if (@available(iOS 11, *)) {
+          bottomSafeArea =
+              CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
+        }
+        CGFloat infobarContentBottomPoint =
+            MIN(bottomSafeArea, toolbarTopPoint);
+        BOOL buttonIsAbove = buttonBottomPoint < infobarContentBottomPoint - 10;
+        BOOL buttonIsNear = buttonBottomPoint > infobarContentBottomPoint - 30;
+        return buttonIsAbove && buttonIsNear;
+      }
+      descriptionBlock:^void(id<GREYDescription> description) {
+        [description
+            appendText:@"Infobar is position on top of the bottom toolbar."];
+      }];
+
+  // Check that the button is positionned above the bottom toolbar.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:positionMatcher];
+
+  // Scroll down
+  [[EarlGrey
+      selectElementWithMatcher:web::WebViewScrollView(
+                                   chrome_test_util::GetCurrentWebState())]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+
+  // Check that the button is visible.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Check that the secondary toolbar is not visible.
+  [[EarlGrey
+      selectElementWithMatcher:grey_kindOfClass([SecondaryToolbarView class])]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Check that the button is positionned above the bottom toolbar (i.e. at the
+  // bottom).
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
+      assertWithMatcher:positionMatcher];
 }
 
 // Verifies that the back/forward buttons are working and are correctly enabled
