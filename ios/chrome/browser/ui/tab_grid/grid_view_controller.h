@@ -29,6 +29,8 @@
 @interface GridViewController : UIViewController<GridConsumer>
 // The gridView is accessible to manage the content inset behavior.
 @property(nonatomic, readonly) UIScrollView* gridView;
+// The view that is shown when there are no items.
+@property(nonatomic, strong) UIView* emptyStateView;
 // The visual look of the grid.
 @property(nonatomic, assign) GridTheme theme;
 // Delegate is informed of user interactions in the grid UI.

@@ -75,6 +75,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.collectionView reloadData];
+  self.collectionView.backgroundView.hidden = (self.items.count > 0);
   // Selection is invalid if there are no items.
   if (self.items.count == 0)
     return;
@@ -87,6 +88,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (UIScrollView*)gridView {
   return self.collectionView;
+}
+
+- (void)setEmptyStateView:(UIView*)emptyStateView {
+  self.collectionView.backgroundView = emptyStateView;
+  // The emptyStateView is hidden when there are items, and shown when the
+  // collectionView is empty.
+  self.collectionView.backgroundView.hidden = (self.items.count > 0);
+}
+
+- (UIView*)emptyStateView {
+  return self.collectionView.backgroundView;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -167,6 +179,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
   ProceduralBlock performAllUpdates = ^{
     performDataSourceUpdates();
+    self.collectionView.backgroundView.hidden = YES;
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(selectedIndex)
@@ -196,7 +209,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                  scrollPosition:UICollectionViewScrollPositionNone];
     }
   };
-  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
+  [self.collectionView performBatchUpdates:performAllUpdates
+                                completion:^(BOOL finished) {
+                                  self.collectionView.backgroundView.hidden =
+                                      (self.items.count > 0);
+                                }];
 }
 
 - (void)selectItemAtIndex:(NSUInteger)selectedIndex {
