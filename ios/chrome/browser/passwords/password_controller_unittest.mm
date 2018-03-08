@@ -1712,3 +1712,31 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
 
   EXPECT_FALSE(completion_handler_success);
 }
+
+// Tests that when there are no password forms on a page and the user clicks on
+// a text field the completion callback is called with no suggestions result.
+TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
+  LoadHtml(kHtmlWithoutPasswordForm);
+
+  __block BOOL completion_handler_success = NO;
+  __block BOOL completion_handler_called = NO;
+
+  EXPECT_CALL(*store_, GetLogins(_, _)).Times(0);
+  [passwordController_ checkIfSuggestionsAvailableForForm:@"form"
+                                                    field:@"address"
+                                                fieldType:@"text"
+                                                     type:@"focus"
+                                               typedValue:@""
+                                              isMainFrame:YES
+                                                 webState:web_state()
+                                        completionHandler:^(BOOL success) {
+                                          completion_handler_success = success;
+                                          completion_handler_called = YES;
+                                        }];
+  // Wait until the expected handler is called.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+    return completion_handler_called;
+  }));
+
+  EXPECT_FALSE(completion_handler_success);
+}
