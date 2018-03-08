@@ -70,6 +70,7 @@ CONTENT_EXPORT extern const base::Feature kPassiveEventListenersDueToFling;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPurgeAndSuspend;
 CONTENT_EXPORT extern const base::Feature kPWAFullCodeCache;
+CONTENT_EXPORT extern const base::Feature kRasterInducingScroll;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
 CONTENT_EXPORT extern const base::Feature kRequireCSSExtensionForFile;

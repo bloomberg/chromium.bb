@@ -260,6 +260,10 @@ void WebRuntimeFeatures::EnablePreloadDefaultIsMetadata(bool enable) {
   RuntimeEnabledFeatures::SetPreloadDefaultIsMetadataEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableRasterInducingScroll(bool enable) {
+  RuntimeEnabledFeatures::SetRasterInducingScrollEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
 }

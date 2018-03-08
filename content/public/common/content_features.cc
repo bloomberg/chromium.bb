@@ -286,6 +286,10 @@ const base::Feature kPurgeAndSuspend {
 const base::Feature kPWAFullCodeCache{"PWAFullCodeCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable raster-inducing scroll.
+const base::Feature kRasterInducingScroll{"RasterInducingScroll",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
