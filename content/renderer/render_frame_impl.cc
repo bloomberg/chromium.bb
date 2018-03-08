@@ -4778,6 +4778,10 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
+  if (render_view_->renderer_preferences_.enable_do_not_track)
+    request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
+                               "1");
+
   WebDocumentLoader* provisional_document_loader =
       frame_->GetProvisionalDocumentLoader();
   WebDocumentLoader* document_loader = provisional_document_loader

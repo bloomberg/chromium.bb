@@ -83,10 +83,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // the header file. Here we just forward-declare it.
   void set_cookie_settings(content_settings::CookieSettings* cookie_settings);
 
-  void set_enable_do_not_track(BooleanPrefMember* enable_do_not_track) {
-    enable_do_not_track_ = enable_do_not_track;
-  }
-
   void set_force_google_safe_search(
       BooleanPrefMember* force_google_safe_search) {
     force_google_safe_search_ = force_google_safe_search;
@@ -130,7 +126,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // This method should be called on the UI thread.
   static void InitializePrefsOnUIThread(
       BooleanPrefMember* enable_referrers,
-      BooleanPrefMember* enable_do_not_track,
       BooleanPrefMember* force_google_safe_search,
       IntegerPrefMember* force_youtube_restrict,
       StringPrefMember* allowed_domains_for_apps,
@@ -223,7 +218,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
-  BooleanPrefMember* enable_do_not_track_;
   BooleanPrefMember* force_google_safe_search_;
   IntegerPrefMember* force_youtube_restrict_;
   StringPrefMember* allowed_domains_for_apps_;

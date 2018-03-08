@@ -31,4 +31,6 @@ const int kTraceEventGpuProcessSortIndex = -1;
 
 const int kTraceEventRendererMainThreadSortIndex = -1;
 
+const char kDoNotTrackHeader[] = "DNT";
+
 } // namespace content

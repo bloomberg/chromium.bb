@@ -506,7 +506,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &enable_referrers_,
-      &enable_do_not_track_,
       &force_google_safesearch_,
       &force_youtube_restrict_,
       &allowed_domains_for_apps_,
@@ -1090,7 +1089,6 @@ void ProfileIOData::Init(
   chrome_network_delegate->set_profile_path(profile_params_->path);
   chrome_network_delegate->set_cookie_settings(
       profile_params_->cookie_settings.get());
-  chrome_network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   chrome_network_delegate->set_force_google_safe_search(
       &force_google_safesearch_);
   chrome_network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
@@ -1431,7 +1429,6 @@ void ProfileIOData::ShutdownOnUIThread(
   if (dice_enabled_)
     dice_enabled_->Destroy();
   enable_referrers_.Destroy();
-  enable_do_not_track_.Destroy();
   force_google_safesearch_.Destroy();
   force_youtube_restrict_.Destroy();
   allowed_domains_for_apps_.Destroy();

@@ -80,11 +80,6 @@
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
 
-# Need support for DoNotTrack:
-# https://crbug.com/808948
--DoNotTrackTest.Redirect
--DoNotTrackTest.Simple
-
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions

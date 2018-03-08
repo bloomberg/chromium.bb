@@ -80,8 +80,6 @@ namespace {
 
 bool g_access_to_all_files_enabled = false;
 
-const char kDNTHeader[] = "DNT";
-
 // Gets called when the extensions finish work on the URL. If the extensions
 // did not do a redirect (so |new_url| is empty) then we enforce the
 // SafeSearch parameters. Otherwise we will get called again after the
@@ -200,7 +198,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     BooleanPrefMember* enable_referrers)
     : profile_(nullptr),
       enable_referrers_(enable_referrers),
-      enable_do_not_track_(nullptr),
       force_google_safe_search_(nullptr),
       force_youtube_restrict_(nullptr),
       allowed_domains_for_apps_(nullptr),
@@ -241,7 +238,6 @@ void ChromeNetworkDelegate::set_data_use_aggregator(
 // static
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
-    BooleanPrefMember* enable_do_not_track,
     BooleanPrefMember* force_google_safe_search,
     IntegerPrefMember* force_youtube_restrict,
     StringPrefMember* allowed_domains_for_apps,
@@ -250,11 +246,6 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
   enable_referrers->Init(prefs::kEnableReferrers, pref_service);
   enable_referrers->MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  if (enable_do_not_track) {
-    enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
-    enable_do_not_track->MoveToThread(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  }
   if (force_google_safe_search) {
     force_google_safe_search->Init(prefs::kForceGoogleSafeSearch, pref_service);
     force_google_safe_search->MoveToThread(
@@ -281,8 +272,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
   if (!enable_referrers_->GetValue())
     request->SetReferrer(std::string());
-  if (enable_do_not_track_ && enable_do_not_track_->GetValue())
-    request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
 
   bool force_safe_search =
       (force_google_safe_search_ && force_google_safe_search_->GetValue());

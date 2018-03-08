@@ -26,10 +26,12 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -46,6 +48,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -449,6 +452,16 @@ NavigationRequest::NavigationRequest(
                         &request_params_.post_content_type);
     }
   }
+
+  BrowserContext* browser_context =
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+  RendererPreferences render_prefs = frame_tree_node_->render_manager()
+                                         ->current_host()
+                                         ->GetDelegate()
+                                         ->GetRendererPrefs(browser_context);
+  if (render_prefs.enable_do_not_track)
+    headers.SetHeader(kDoNotTrackHeader, "1");
+
   begin_params_->headers = headers.ToString();
 }
 
