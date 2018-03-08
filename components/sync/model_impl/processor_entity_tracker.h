@@ -19,9 +19,9 @@ struct CommitRequestData;
 struct CommitResponseData;
 struct UpdateResponseData;
 
-// This class is used by the SharedModelTypeProcessor to track the state of each
-// entity with its type. It can be considered a helper class internal to the
-// processor. It manages the metadata for its entity and caches entity data
+// This class is used by the ClientTagBasedModelTypeProcessor to track the state
+// of each entity with its type. It can be considered a helper class internal to
+// the processor. It manages the metadata for its entity and caches entity data
 // upon a local change until commit confirmation is received.
 class ProcessorEntityTracker {
  public:

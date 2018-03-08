@@ -95,8 +95,9 @@ class ModelTypeController : public DataTypeController {
   // Callbacks for use when starting the datatype.
   ModelLoadCallback model_load_callback_;
 
-  // Controller receives |activation_context_| from SharedModelTypeProcessor
-  // callback and must temporarily own it until ActivateDataType is called.
+  // Controller receives |activation_context_| from
+  // ClientTagBasedModelTypeProcessor callback and must temporarily own it until
+  // ActivateDataType is called.
   std::unique_ptr<ActivationContext> activation_context_;
 
   // This is a hack to prevent reconfigurations from crashing, because USS
