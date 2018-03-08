@@ -304,9 +304,6 @@
 -ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToLargeSniffedDownloads
 -ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToTinySniffedDownloads
 -ChromeResourceDispatcherHostDelegateBrowserTest.MirrorRequestHeader
-# These tests rely on using a delegate to ResourceDispatcherHost.
--ContentFaviconDriverTest.ReloadBypassingCache
--ContentFaviconDriverTest.MixedContentSecureFaviconAllowed
 
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702
