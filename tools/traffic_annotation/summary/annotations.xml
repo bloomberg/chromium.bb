@@ -156,6 +156,7 @@ Refer to README.md for content description and update process.
  <item id="omnibox_zerosuggest_experimental" hash_code="3813491" type="0" content_hash_code="22929259" os_list="linux,windows" file_path="components/omnibox/browser/contextual_suggestions_service.cc"/>
  <item id="one_google_bar_service" hash_code="78917933" type="0" content_hash_code="46527252" os_list="linux,windows" file_path="chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.cc"/>
  <item id="open_search" hash_code="107267424" type="0" content_hash_code="25715812" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
+ <item id="p2p_invalidator" hash_code="84201371" type="0" content_hash_code="117416248" os_list="linux,windows" file_path="components/invalidation/impl/p2p_invalidator.cc"/>
  <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="content/browser/download/parallel_download_job.cc"/>
  <item id="password_protection_request" hash_code="66322287" type="0" content_hash_code="21270837" os_list="linux,windows" file_path="components/safe_browsing/password_protection/password_protection_request.cc"/>
  <item id="payment_instrument_icon_fetcher" hash_code="73309970" type="0" deprecated="2017-09-16" content_hash_code="84709873" file_path=""/>
@@ -176,6 +177,7 @@ Refer to README.md for content description and update process.
  <item id="profile_avatar" hash_code="51164680" type="0" content_hash_code="113550845" os_list="linux,windows" file_path="chrome/browser/profiles/profile_avatar_downloader.cc"/>
  <item id="profile_resetter_upload" hash_code="105330607" type="0" content_hash_code="129329171" os_list="linux,windows" file_path="chrome/browser/profile_resetter/reset_report_uploader.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" content_hash_code="31866133" os_list="linux,windows" file_path="net/proxy_resolution/pac_file_fetcher_impl.cc"/>
+ <item id="puch_client_channel" hash_code="34459548" type="0" content_hash_code="92475475" os_list="linux,windows" file_path="components/invalidation/impl/push_client_channel.cc"/>
  <item id="quic_chromium_incoming_session" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/chromium/quic_chromium_client_session.cc"/>
  <item id="quic_chromium_packet_writer" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/chromium/quic_chromium_packet_writer.cc"/>
  <item id="ranker_url_fetcher" hash_code="95682324" type="0" content_hash_code="45958626" os_list="linux,windows" file_path="components/assist_ranker/ranker_url_fetcher.cc"/>

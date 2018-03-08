@@ -43,9 +43,41 @@ PushClientChannel::~PushClientChannel() {
 
 void PushClientChannel::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  // TODO(https://crbug.com/656607): Add proper annotation.
-  push_client_->UpdateCredentials(email, token,
-                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("puch_client_channel", R"(
+        semantics {
+          sender: "Push Client Channel"
+          description:
+            "Chromium uses cacheinvalidation library to receive push "
+            "notifications from the server about sync items (bookmarks, "
+            "passwords, preferences, etc.) modified on other clients. It uses "
+            "XMPP PushClient to communicate with server."
+          trigger:
+            "Initial communication happens after browser startup to register "
+            "client device with server and update online status. Consecutive "
+            "communications are triggered by heartbeat timer and push "
+            "notifications from server."
+          data:
+            "Protocol buffers including server generated client_token, "
+            "ObjectIds identifying subscriptions, and versions for these "
+            "subscriptions. ObjectId is not unique to user. Version is not "
+            "related to sync data, it is an internal concept of invalidations "
+            "protocol."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature is disabled by default and cannot be enabled by "
+            "settings. It is controlled by sync server experiments."
+          chrome_policy {
+            SyncDisabled {
+              SyncDisabled: true
+            }
+          }
+        }
+    )");
+  push_client_->UpdateCredentials(email, token, traffic_annotation);
 }
 
 int PushClientChannel::GetInvalidationClientType() {

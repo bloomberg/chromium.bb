@@ -203,9 +203,41 @@ void P2PInvalidator::UpdateCredentials(
       notifier::SubscriptionList(1, subscription));
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
-  // TODO(https://crbug.com/656607): Add proper annotation here.
-  push_client_->UpdateCredentials(email, token,
-                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("p2p_invalidator", R"(
+        semantics {
+          sender: "P2P Invalidator"
+          description:
+            "Chromium uses cacheinvalidation library to receive push "
+            "notifications from the server about sync items (bookmarks, "
+            "passwords, preferences, etc.) modified on other clients. It uses "
+            "XMPP PushClient to communicate with server."
+          trigger:
+            "Initial communication happens after browser startup to register "
+            "client device with server and update online status. Consecutive "
+            "communications are triggered by heartbeat timer and push "
+            "notifications from server."
+          data:
+            "Protocol buffers including server generated client_token, "
+            "ObjectIds identifying subscriptions, and versions for these "
+            "subscriptions. ObjectId is not unique to user. Version is not "
+            "related to sync data, it is an internal concept of invalidations "
+            "protocol."
+          destination: OTHER
+          destination_other:
+            "The P2P client that user is connected to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature is only used for integration testing, never used in "
+            "released Chrome."
+          policy_exception_justification:
+            "This feature is only used for integration testing, never used in "
+            "released Chrome."
+        }
+    )");
+  push_client_->UpdateCredentials(email, token, traffic_annotation);
   logged_in_ = true;
 }
 
