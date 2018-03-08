@@ -182,8 +182,8 @@ size_t TriggerThrottler::GetDailyQuotaForTrigger(
     case TriggerType::GAIA_PASSWORD_REUSE:
       return kUnlimitedTriggerQuota;
     case TriggerType::AD_SAMPLE:
-      // These triggers have quota configured via Finch, lookup the value in
-      // |trigger_quota_list|. If it's not found, return the default quota.
+      // Ad Samples have a non-zero default quota, but it can be overwritten
+      // through Finch.
       if (TryFindQuotaForTrigger(trigger_type, trigger_type_and_quota_list_,
                                  &quota_from_finch)) {
         return quota_from_finch;
@@ -191,6 +191,13 @@ size_t TriggerThrottler::GetDailyQuotaForTrigger(
         return kAdSamplerTriggerDefaultQuota;
       }
 
+      break;
+    case TriggerType::SUSPICIOUS_SITE:
+      // Suspicious Sites are disabled unless they are configured through Finch.
+      if (TryFindQuotaForTrigger(trigger_type, trigger_type_and_quota_list_,
+                                 &quota_from_finch)) {
+        return quota_from_finch;
+      }
       break;
   }
   // By default, unhandled or unconfigured trigger types have no quota.

@@ -27,11 +27,14 @@ bool TriggerNeedsScout(const TriggerType trigger_type) {
       // Security interstitials only need legacy SBER opt-in.
       return false;
     case TriggerType::AD_SAMPLE:
-      // Ad samples need Scout-level opt-in.
+      // Ad samples need Scout-level opt-in (background data collection).
       return true;
     case TriggerType::GAIA_PASSWORD_REUSE:
       // Gaia password reuses only need legacy SBER opt-in.
       return false;
+    case TriggerType::SUSPICIOUS_SITE:
+      // Suspicious sites need Scout-level opt-in (background data collection).
+      return true;
   }
   // By default, require Scout so we are more restrictive on data collection.
   return true;
@@ -52,6 +55,10 @@ bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
       // while the trigger runs, so we require opt-in for collection to avoid
       // overheads.
       return true;
+    case TriggerType::SUSPICIOUS_SITE:
+      // Suspicious site collection happens in the background so the user must
+      // already be opted in before the trigger is allowed to run.
+      return true;
   }
   // By default, require opt-in for all triggers.
   return true;
@@ -62,7 +69,7 @@ bool CanSendReport(const SBErrorOptions& error_display_options,
   // If the |kAdSamplerCollectButDontSendFeature| feature is enabled then we
   // will overlook other checks to force the report to be created (which is safe
   // because we ensure it will be discarded downstream).
-  // TODO(crbug.com/776893): Remote the feature and this logic.
+  // TODO(crbug.com/776893): Remove the feature and this logic.
   if (trigger_type == TriggerType::AD_SAMPLE &&
       base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature)) {
     return true;

@@ -47,6 +47,8 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
     // Ad sampling happens in the background.
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+    // Suspicious site collection happens in the background
+    case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
       return false;
 
     default:
