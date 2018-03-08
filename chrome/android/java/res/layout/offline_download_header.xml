@@ -52,7 +52,7 @@
                     android:layout_gravity="center_vertical|end"
                     android:paddingEnd="16dp"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_expanded" />
+                    android:src="@drawable/ic_expand_more_black_24dp" />
             </LinearLayout>
 
             <TextView
