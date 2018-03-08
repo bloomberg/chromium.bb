@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/system/accessibility_observer.h"
 #include "base/macros.h"
 
 namespace aura {

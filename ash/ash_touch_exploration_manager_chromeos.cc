@@ -14,7 +14,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chromeos/audio/chromeos_sounds.h"
@@ -41,17 +40,16 @@ AshTouchExplorationManager::AshTouchExplorationManager(
       audio_handler_(chromeos::CrasAudioHandler::Get()),
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
 }
 
 AshTouchExplorationManager::~AshTouchExplorationManager() {
-  SystemTrayNotifier* system_tray_notifier =
-      Shell::Get()->system_tray_notifier();
-  if (system_tray_notifier)
-    system_tray_notifier->RemoveAccessibilityObserver(this);
+  // TODO(jamescook): Clean up shutdown order so this check isn't needed.
+  if (Shell::Get()->accessibility_controller())
+    Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);

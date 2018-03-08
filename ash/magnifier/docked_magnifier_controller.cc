@@ -16,7 +16,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/numerics/ranges.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -524,7 +523,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
 
   // Update the green checkmark status in the accessibility menu in the system
   // tray.
-  shell->system_tray_notifier()->NotifyAccessibilityStatusChanged(
+  shell->accessibility_controller()->NotifyAccessibilityStatusChanged(
       A11Y_NOTIFICATION_NONE);
 
   // We use software composited mouse cursor so that it can be mirrored into the

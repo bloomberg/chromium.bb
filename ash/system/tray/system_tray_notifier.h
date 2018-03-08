@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -17,7 +16,6 @@
 
 namespace ash {
 
-class AccessibilityObserver;
 class BluetoothObserver;
 class ClockObserver;
 class IMEObserver;
@@ -38,12 +36,6 @@ class ASH_EXPORT SystemTrayNotifier {
  public:
   SystemTrayNotifier();
   ~SystemTrayNotifier();
-
-  // Accessibility.
-  void AddAccessibilityObserver(AccessibilityObserver* observer);
-  void RemoveAccessibilityObserver(AccessibilityObserver* observer);
-  void NotifyAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify);
 
   // Bluetooth.
   void AddBluetoothObserver(BluetoothObserver* observer);
@@ -107,7 +99,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyVirtualKeyboardSuppressionChanged(bool suppressed);
 
  private:
-  base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;

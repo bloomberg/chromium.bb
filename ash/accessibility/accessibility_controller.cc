@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_highlight_controller.h"
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
@@ -22,7 +23,6 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -41,12 +41,6 @@ using session_manager::SessionState;
 
 namespace ash {
 namespace {
-
-void NotifyAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notification_visibility) {
-  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-      notification_visibility);
-}
 
 PrefService* GetActivePrefService() {
   return Shell::Get()->session_controller()->GetActivePrefService();
@@ -120,6 +114,14 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
+}
+
+void AccessibilityController::AddObserver(AccessibilityObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AccessibilityController::RemoveObserver(AccessibilityObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AccessibilityController::BindRequest(
@@ -315,6 +317,12 @@ void AccessibilityController::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
   if (client_)
     client_->PlaySpokenFeedbackToggleCountdown(tick_count);
+}
+
+void AccessibilityController::NotifyAccessibilityStatusChanged(
+    AccessibilityNotificationVisibility notify) {
+  for (auto& observer : observers_)
+    observer.OnAccessibilityStatusChanged(notify);
 }
 
 void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {

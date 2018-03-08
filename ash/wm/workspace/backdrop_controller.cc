@@ -11,7 +11,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/auto_reset.h"
@@ -68,11 +67,11 @@ BackdropController::BackdropController(aura::Window* container)
     : container_(container), in_restacking_(false) {
   DCHECK(container_);
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
+  Shell::Get()->accessibility_controller()->AddObserver(this);
 }
 
 BackdropController::~BackdropController() {
-  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   // TODO: animations won't work right with mus: http://crbug.com/548396.
   Hide();
