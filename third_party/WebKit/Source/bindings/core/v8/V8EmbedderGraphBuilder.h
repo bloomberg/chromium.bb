@@ -36,19 +36,22 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
  private:
   class EmbedderNode : public Graph::Node {
    public:
-    explicit EmbedderNode(const char* name) : name_(name) {}
+    EmbedderNode(const char* name, Graph::Node* wrapper)
+        : name_(name), wrapper_(wrapper) {}
 
     // Graph::Node overrides.
     const char* Name() override { return name_; }
     size_t SizeInBytes() override { return 0; }
+    Graph::Node* WrapperNode() override { return wrapper_; }
 
    private:
     const char* name_;
+    Graph::Node* wrapper_;
   };
 
   class EmbedderRootNode : public EmbedderNode {
    public:
-    explicit EmbedderRootNode(const char* name) : EmbedderNode(name) {}
+    explicit EmbedderRootNode(const char* name) : EmbedderNode(name, nullptr) {}
     // Graph::Node override.
     bool IsRootNode() { return true; }
   };
@@ -78,7 +81,9 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
                               const TraceWrapperDescriptor&) const;
 
   Graph::Node* GraphNode(const v8::Local<v8::Value>&) const;
-  Graph::Node* GraphNode(Traceable, const char* name) const;
+  Graph::Node* GraphNode(Traceable,
+                         const char* name,
+                         Graph::Node* wrapper) const;
 
   void VisitPendingActivities();
   void VisitTransitiveClosure();
