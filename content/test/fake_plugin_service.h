@@ -53,6 +53,9 @@ class FakePluginService : public PluginService {
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
   bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                 const GURL& document_url) override;
+  int CountPpapiPluginProcessesForProfile(
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePluginService);

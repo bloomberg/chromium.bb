@@ -88,6 +88,9 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
   bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                 const GURL& document_url) override;
+  int CountPpapiPluginProcessesForProfile(
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory) override;
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
@@ -149,10 +152,6 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
       const base::Optional<url::Origin>& origin_lock);
   PpapiPluginProcessHost* FindPpapiBrokerProcess(
       const base::FilePath& broker_path);
-
-  int CountPpapiPluginProcessesForProfile(
-      const base::FilePath& plugin_path,
-      const base::FilePath& profile_data_directory);
 
   void RegisterPepperPlugins();
 

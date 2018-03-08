@@ -314,6 +314,25 @@ class PDFExtensionTest : public ExtensionApiTest,
   WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
+
+  int CountPDFProcesses() {
+    int result = -1;
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&PDFExtensionTest::CountPDFProcessesOnIOThread,
+                       base::Unretained(this), base::Unretained(&result)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    return result;
+  }
+
+  void CountPDFProcessesOnIOThread(int* result) {
+    auto* service = content::PluginService::GetInstance();
+    *result = service->CountPpapiPluginProcessesForProfile(
+        base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath),
+        browser()->profile()->GetPath());
+  }
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, Load) {
@@ -372,6 +391,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DisablePlugin) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(url, helper.GetLastUrl());
 
+  // Didn't launch a PPAPI process.
+  EXPECT_EQ(0, CountPDFProcesses());
+
   // Cancel the download to shutdown cleanly.
   download_manager->RemoveObserver(&helper);
   std::vector<download::DownloadItem*> downloads;
@@ -387,6 +409,9 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", "test.pdf");
+
+  // Ensure it loaded in a PPAPI process.
+  EXPECT_EQ(1, CountPDFProcesses());
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
@@ -504,6 +529,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
   ui_test_utils::NavigateToURL(browser(), forbiddenUrl);
 
   console_delegate->Wait();
+
+  // Didn't launch a PPAPI process.
+  EXPECT_EQ(0, CountPDFProcesses());
 }
 
 // This test ensures that PDF can be loaded from local file
@@ -520,6 +548,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   }
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
+
+  // Did launch a PPAPI process.
+  EXPECT_EQ(1, CountPDFProcesses());
 }
 
 // This test ensures that link permissions are enforced properly in PDFs.

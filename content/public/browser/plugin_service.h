@@ -35,22 +35,21 @@ struct WebPluginInfo;
 // thread. This is an asynchronous wrapper around the PluginList interface for
 // querying plugin information. This must be used instead of that to avoid
 // doing expensive disk operations on the IO/UI threads.
-class PluginService {
+class CONTENT_EXPORT PluginService {
  public:
   using GetPluginsCallback =
       base::OnceCallback<void(const std::vector<WebPluginInfo>&)>;
 
   // Returns the PluginService singleton.
-  CONTENT_EXPORT static PluginService* GetInstance();
+  static PluginService* GetInstance();
 
   // Tells all the renderer processes associated with the given browser context
   // to throw away their cache of the plugin list, and optionally also reload
   // all the pages with plugins. If |browser_context| is nullptr, purges the
   // cache in all renderers.
   // NOTE: can only be called on the UI thread.
-  CONTENT_EXPORT static void PurgePluginListCache(
-      BrowserContext* browser_context,
-      bool reload_pages);
+  static void PurgePluginListCache(BrowserContext* browser_context,
+                                   bool reload_pages);
 
   virtual ~PluginService() {}
 
@@ -132,6 +131,12 @@ class PluginService {
   // Returns true iff PPAPI "dev channel" methods are supported.
   virtual bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                         const GURL& document_url) = 0;
+
+  // Determine the number of PPAPI processes currently tracked by the service.
+  // Exposed primarily for testing purposes.
+  virtual int CountPpapiPluginProcessesForProfile(
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory) = 0;
 };
 
 }  // namespace content
