@@ -28,7 +28,7 @@
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsPreferred_">
         <div class="list-item">
-          <div actionable class="flex layout horizontal"
+          <div actionable class="flex layout horizontal center"
               on-click="fireShowDetails_">
             <div class="flex">[[item.Name]]</div>
             <template is="dom-if" if="[[isPolicySource(item.Source))]]">
@@ -58,7 +58,7 @@
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsNotPreferred_">
         <div class="list-item">
-          <div actionable class="flex layout horizontal"
+          <div actionable class="flex layout horizontal center"
               on-click="fireShowDetails_">
             <div class="flex">[[item.Name]]</div>
             <template is="dom-if" if="[[isPolicySource(item.Source))]]">
