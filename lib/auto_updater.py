@@ -766,6 +766,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           os.path.join(self.tempdir, os.path.basename(
               self.REMOTE_QUICK_PROVISION_LOGFILE_PATH)),
           follow_symlinks=True,
+          ignore_failures=True,
           **self._cmd_kwargs_omit_error)
       self._CopyHostLogFromDevice('rootfs')
       self._StopPerformanceMonitoringForAUTest()
