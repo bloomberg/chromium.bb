@@ -69,7 +69,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final int DRAG_DIRECTION_HORIZONTAL = 1;
     private static final int DRAG_DIRECTION_VERTICAL = 2;
 
-    private enum SwipeMode { NONE, SEND_TO_STACK, SWITCH_STACK }
+    @IntDef({SWIPE_MODE_NONE, SWIPE_MODE_SEND_TO_STACK, SWIPE_MODE_SWITCH_STACK})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SwipeMode {}
+    private static final int SWIPE_MODE_NONE = 0;
+    private static final int SWIPE_MODE_SEND_TO_STACK = 1;
+    private static final int SWIPE_MODE_SWITCH_STACK = 2;
 
     public static final int NORMAL_STACK_INDEX = 0;
     public static final int INCOGNITO_STACK_INDEX = 1;
@@ -128,7 +133,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @DragDirection
     private int mDragDirection = DRAG_DIRECTION_NONE;
 
-    private SwipeMode mInputMode = SwipeMode.NONE;
+    @SwipeMode
+    private int mInputMode = SWIPE_MODE_NONE;
     private float mLastOnDownX;
     private float mLastOnDownY;
     private long mLastOnDownTimeStamp;
@@ -188,7 +194,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         @Override
         public void drag(float x, float y, float dx, float dy, float tx, float ty) {
-            SwipeMode oldInputMode = mInputMode;
+            @SwipeMode
+            int oldInputMode = mInputMode;
             long time = time();
             float amountX = dx;
             float amountY = dy;
@@ -197,16 +204,16 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             if (mDragDirection == DRAG_DIRECTION_HORIZONTAL) amountY = 0;
             if (mDragDirection == DRAG_DIRECTION_VERTICAL) amountX = 0;
 
-            if (oldInputMode == SwipeMode.SEND_TO_STACK && mInputMode == SwipeMode.SWITCH_STACK) {
+            if (oldInputMode == SWIPE_MODE_SEND_TO_STACK && mInputMode == SWIPE_MODE_SWITCH_STACK) {
                 mStacks.get(getTabStackIndex()).onUpOrCancel(time);
-            } else if (oldInputMode == SwipeMode.SWITCH_STACK
-                    && mInputMode == SwipeMode.SEND_TO_STACK) {
+            } else if (oldInputMode == SWIPE_MODE_SWITCH_STACK
+                    && mInputMode == SWIPE_MODE_SEND_TO_STACK) {
                 onUpOrCancel(time);
             }
 
-            if (mInputMode == SwipeMode.SEND_TO_STACK) {
+            if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).drag(time, x, y, amountX, amountY);
-            } else if (mInputMode == SwipeMode.SWITCH_STACK) {
+            } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
                 scrollStacks(getOrientation() == Orientation.PORTRAIT ? amountX : amountY);
             }
         }
@@ -231,14 +238,14 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             float vx = velocityX;
             float vy = velocityY;
 
-            if (mInputMode == SwipeMode.NONE) {
+            if (mInputMode == SWIPE_MODE_NONE) {
                 mInputMode = computeInputMode(
                         time, x, y, vx * SWITCH_STACK_FLING_DT, vy * SWITCH_STACK_FLING_DT);
             }
 
-            if (mInputMode == SwipeMode.SEND_TO_STACK) {
+            if (mInputMode == SWIPE_MODE_SEND_TO_STACK) {
                 mStacks.get(getTabStackIndex()).fling(time, x, y, vx, vy);
-            } else if (mInputMode == SwipeMode.SWITCH_STACK) {
+            } else if (mInputMode == SWIPE_MODE_SWITCH_STACK) {
                 final float velocity = getOrientation() == Orientation.PORTRAIT ? vx : vy;
                 final float origin = getOrientation() == Orientation.PORTRAIT ? x : y;
                 final float max =
@@ -271,7 +278,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             mClicked = false;
             finishScrollStacks();
             mStacks.get(getTabStackIndex()).onUpOrCancel(time);
-            mInputMode = SwipeMode.NONE;
+            mInputMode = SWIPE_MODE_NONE;
         }
 
         private long time() {
@@ -795,8 +802,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @param dy   The y displacement happening this frame.
      * @return     The input mode to select.
      */
-    private SwipeMode computeInputMode(long time, float x, float y, float dx, float dy) {
-        if (!mStacks.get(1).isDisplayable()) return SwipeMode.SEND_TO_STACK;
+    private @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
+        if (!mStacks.get(1).isDisplayable()) return SWIPE_MODE_SEND_TO_STACK;
         int currentIndex = getTabStackIndex();
 
         // When a drag starts, lock the drag into being either horizontal or vertical until the
@@ -813,7 +820,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         if ((mDragDirection == DRAG_DIRECTION_VERTICAL)
                 ^ (getOrientation() == Orientation.LANDSCAPE)) {
-            return SwipeMode.SEND_TO_STACK;
+            return SWIPE_MODE_SEND_TO_STACK;
         }
 
         float relativeX = mLastOnDownX - (x + dx);
@@ -832,10 +839,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         if ((currentIndex == 0) ^ (switchDelta > 0) ^ isRtlPortraitMode) {
             // Dragging in a direction the stack cannot switch. Pass the drag to the Stack, which
             // will treat it as intending to discard a tab.
-            return SwipeMode.SEND_TO_STACK;
+            return SWIPE_MODE_SEND_TO_STACK;
         } else {
             // Interpret the drag as intending to switch between tab stacks.
-            return SwipeMode.SWITCH_STACK;
+            return SWIPE_MODE_SWITCH_STACK;
         }
     }
 
