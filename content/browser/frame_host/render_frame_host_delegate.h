@@ -20,7 +20,6 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/subresource_load_info.mojom.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -345,8 +344,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool IsBeingDestroyed() const;
 
   // Notifies that the render frame started loading a subresource.
-  virtual void SubresourceResponseStarted(
-      mojom::SubresourceLoadInfoPtr subresource_load_info) {}
+  virtual void SubresourceResponseStarted(const GURL& url,
+                                          const GURL& referrer,
+                                          const std::string& method,
+                                          ResourceType resource_type,
+                                          const std::string& ip,
+                                          net::CertStatus cert_status) {}
 
   // Request to print a frame that is in a different process than its parent.
   virtual void PrintCrossProcessSubframe(const gfx::Rect& rect,

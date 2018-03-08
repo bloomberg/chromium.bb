@@ -84,8 +84,12 @@ class MockFrameHost : public mojom::FrameHost {
   void BeginNavigation(const CommonNavigationParams& common_params,
                        mojom::BeginNavigationParamsPtr begin_params) override {}
 
-  void SubresourceResponseStarted(
-      mojom::SubresourceLoadInfoPtr subresource_load_info) override {}
+  void SubresourceResponseStarted(const GURL& url,
+                                  const GURL& referrer,
+                                  const std::string& method,
+                                  ResourceType resource_type,
+                                  const std::string& ip,
+                                  uint32_t cert_status) override {}
 
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override {}
