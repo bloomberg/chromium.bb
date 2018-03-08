@@ -78,13 +78,13 @@ void GetImeTextSpans(HIMC imm_context,
         ime_text_span.start_offset = clause_data[i];
         ime_text_span.end_offset = clause_data[i + 1];
         ime_text_span.underline_color = SK_ColorBLACK;
-        ime_text_span.thick = false;
+        ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThin;
         ime_text_span.background_color = SK_ColorTRANSPARENT;
 
         // Use thick underline for the target clause.
         if (ime_text_span.start_offset >= static_cast<uint32_t>(target_start) &&
             ime_text_span.end_offset <= static_cast<uint32_t>(target_end)) {
-          ime_text_span.thick = true;
+          ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
         }
         ime_text_spans->push_back(ime_text_span);
       }
@@ -335,19 +335,19 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context,
   if (target_start > 0) {
     ime_text_span.start_offset = 0U;
     ime_text_span.end_offset = static_cast<uint32_t>(target_start);
-    ime_text_span.thick = false;
+    ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThin;
     composition->ime_text_spans.push_back(ime_text_span);
   }
   if (target_end > target_start) {
     ime_text_span.start_offset = static_cast<uint32_t>(target_start);
     ime_text_span.end_offset = static_cast<uint32_t>(target_end);
-    ime_text_span.thick = true;
+    ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
     composition->ime_text_spans.push_back(ime_text_span);
   }
   if (target_end < length) {
     ime_text_span.start_offset = static_cast<uint32_t>(target_end);
     ime_text_span.end_offset = static_cast<uint32_t>(length);
-    ime_text_span.thick = false;
+    ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThin;
     composition->ime_text_spans.push_back(ime_text_span);
   }
 }

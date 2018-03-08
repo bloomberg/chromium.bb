@@ -65,6 +65,18 @@ enum ImeTextSpanType {
   kMisspellingSuggestion,
 };
 
+// This enum represents the thickness of an underline segment of text,
+// the thickness of a ui::ImeTextSpan element.
+// The possible values are:
+// * kNone: When you don't want to paint the underline.
+// * kThin: For regular size.
+// * kThick: For thick underlines.
+enum ImeTextSpanThickness {
+  kNone,
+  kThin,
+  kThick,
+};
+
 // Represents an underlined segment of text currently composed by IME.
 // Corresponds to ui::ImeTextSpan.
 struct ImeTextSpan {
@@ -72,7 +84,7 @@ struct ImeTextSpan {
   uint32 start_offset;
   uint32 end_offset;
   uint32 underline_color;
-  bool thick;
+  ImeTextSpanThickness thickness;
   uint32 background_color;
   uint32 suggestion_highlight_color;
   array<string> suggestions;

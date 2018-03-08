@@ -71,7 +71,8 @@ std::vector<ui::ImeTextSpan> ConvertToUiImeTextSpan(
     ui_ime_text_spans.emplace_back(ui::ImeTextSpan(
         ConvertWebImeTextSpanTypeToUiType(ime_text_span.type),
         ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color, ime_text_span.thick,
+        ime_text_span.underline_color,
+        ConvertUiImeTextSpanThicknessToUiThickness(ime_text_span.thickness),
         ime_text_span.background_color,
         ime_text_span.suggestion_highlight_color, ime_text_span.suggestions));
   }

@@ -27,6 +27,7 @@ type_mappings = [
   "ui.mojom.CandidateWindowProperties=ui::CandidateWindow::CandidateWindowProperty",
   "ui.mojom.CompositionText=ui::CompositionText",
   "ui.mojom.ImeTextSpan=ui::ImeTextSpan",
+  "ui.mojom.ImeTextSpanThickness=ui::ImeTextSpan::Thickness",
   "ui.mojom.TextInputMode=ui::TextInputMode",
   "ui.mojom.TextInputType=ui::TextInputType",
 ]

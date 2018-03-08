@@ -45,13 +45,15 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PageVisibilityState,
                           blink::mojom::PageVisibilityState::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,
+                          ui::mojom::ImeTextSpanThickness::kThick)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
   IPC_STRUCT_TRAITS_MEMBER(end_offset)
   IPC_STRUCT_TRAITS_MEMBER(underline_color)
-  IPC_STRUCT_TRAITS_MEMBER(thick)
+  IPC_STRUCT_TRAITS_MEMBER(thickness)
   IPC_STRUCT_TRAITS_MEMBER(background_color)
   IPC_STRUCT_TRAITS_MEMBER(suggestion_highlight_color)
   IPC_STRUCT_TRAITS_MEMBER(suggestions)

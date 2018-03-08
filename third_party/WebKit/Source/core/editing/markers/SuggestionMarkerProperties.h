@@ -9,6 +9,8 @@
 #include "core/editing/markers/StyleableMarker.h"
 #include "core/editing/markers/SuggestionMarker.h"
 
+using ui::mojom::ImeTextSpanThickness;
+
 namespace blink {
 
 // This class is used to pass parameters to
@@ -27,7 +29,7 @@ class CORE_EXPORT SuggestionMarkerProperties final {
   Color HighlightColor() const { return highlight_color_; }
   Color UnderlineColor() const { return underline_color_; }
   Color BackgroundColor() const { return background_color_; }
-  StyleableMarker::Thickness Thickness() const { return thickness_; }
+  ImeTextSpanThickness Thickness() const { return thickness_; }
 
  private:
   SuggestionMarker::SuggestionType type_ =
@@ -36,7 +38,7 @@ class CORE_EXPORT SuggestionMarkerProperties final {
   Color highlight_color_ = Color::kTransparent;
   Color underline_color_ = Color::kTransparent;
   Color background_color_ = Color::kTransparent;
-  StyleableMarker::Thickness thickness_ = StyleableMarker::Thickness::kThin;
+  ImeTextSpanThickness thickness_ = ImeTextSpanThickness::kThin;
 };
 
 // This class is used for building SuggestionMarkerProperties objects.
@@ -54,7 +56,7 @@ class CORE_EXPORT SuggestionMarkerProperties::Builder final {
   Builder& SetHighlightColor(Color);
   Builder& SetUnderlineColor(Color);
   Builder& SetBackgroundColor(Color);
-  Builder& SetThickness(StyleableMarker::Thickness);
+  Builder& SetThickness(ImeTextSpanThickness);
 
  private:
   SuggestionMarkerProperties data_;

@@ -258,7 +258,7 @@ namespace {
 gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
   for (size_t i = 0; i < composition.ime_text_spans.size(); ++i) {
     const ui::ImeTextSpan& underline = composition.ime_text_spans[i];
-    if (underline.thick)
+    if (underline.thickness == ui::ImeTextSpan::Thickness::kThick)
       return gfx::Range(underline.start_offset, underline.end_offset);
   }
   return gfx::Range::InvalidRange();

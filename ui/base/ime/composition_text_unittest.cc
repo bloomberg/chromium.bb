@@ -13,15 +13,17 @@ namespace ui {
 
 TEST(CompositionTextTest, CopyTest) {
   const base::string16 kSampleText = base::UTF8ToUTF16("Sample Text");
-  const ImeTextSpan kSampleUnderline1(ImeTextSpan::Type::kComposition, 10, 20,
-                                      SK_ColorBLACK, false,
-                                      SK_ColorTRANSPARENT);
+  const ImeTextSpan kSampleUnderline1(
+      ImeTextSpan::Type::kComposition, 10, 20, SK_ColorBLACK,
+      ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
 
-  const ImeTextSpan kSampleUnderline2(ImeTextSpan::Type::kComposition, 11, 21,
-                                      SK_ColorBLACK, true, SK_ColorTRANSPARENT);
+  const ImeTextSpan kSampleUnderline2(
+      ImeTextSpan::Type::kComposition, 11, 21, SK_ColorBLACK,
+      ImeTextSpan::Thickness::kThick, SK_ColorTRANSPARENT);
 
-  const ImeTextSpan kSampleUnderline3(ImeTextSpan::Type::kComposition, 12, 22,
-                                      SK_ColorRED, false, SK_ColorTRANSPARENT);
+  const ImeTextSpan kSampleUnderline3(
+      ImeTextSpan::Type::kComposition, 12, 22, SK_ColorRED,
+      ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
 
   // Make CompositionText
   CompositionText text;
@@ -43,7 +45,8 @@ TEST(CompositionTextTest, CopyTest) {
               text2.ime_text_spans[i].end_offset);
     EXPECT_EQ(text.ime_text_spans[i].underline_color,
               text2.ime_text_spans[i].underline_color);
-    EXPECT_EQ(text.ime_text_spans[i].thick, text2.ime_text_spans[i].thick);
+    EXPECT_EQ(text.ime_text_spans[i].thickness,
+              text2.ime_text_spans[i].thickness);
     EXPECT_EQ(text.ime_text_spans[i].background_color,
               text2.ime_text_spans[i].background_color);
   }

@@ -11,7 +11,9 @@ namespace {
 
 ImeTextSpan CreateImeTextSpan(unsigned start_offset, unsigned end_offset) {
   return ImeTextSpan(ImeTextSpan::Type::kComposition, start_offset, end_offset,
-                     Color::kTransparent, false, Color::kTransparent);
+                     Color::kTransparent,
+                     ui::mojom::ImeTextSpanThickness::kNone,
+                     Color::kTransparent);
 }
 
 TEST(ImeTextSpanTest, OneChar) {

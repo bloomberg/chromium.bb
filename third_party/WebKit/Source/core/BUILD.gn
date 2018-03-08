@@ -109,6 +109,7 @@ source_set("prerequisites") {
   public_deps = [
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
+    "//services/ui/public/interfaces/ime",
     "//skia",
     "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/WebKit/Source/core/probe:generated",

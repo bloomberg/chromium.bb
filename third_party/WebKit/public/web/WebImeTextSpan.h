@@ -34,6 +34,7 @@
 #include <string>
 #include <vector>
 #include "public/platform/WebColor.h"
+#include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ struct WebImeTextSpan {
         start_offset(0),
         end_offset(0),
         underline_color(0),
-        thick(false),
+        thickness(ui::mojom::ImeTextSpanThickness::kThin),
         background_color(0),
         suggestion_highlight_color(0),
         suggestions(std::vector<std::string>()) {}
@@ -67,7 +68,7 @@ struct WebImeTextSpan {
       unsigned s,
       unsigned e,
       WebColor uc,
-      bool th,
+      ui::mojom::ImeTextSpanThickness th,
       WebColor bc,
       WebColor shc = 0,
       const std::vector<std::string>& su = std::vector<std::string>())
@@ -75,7 +76,7 @@ struct WebImeTextSpan {
         start_offset(s),
         end_offset(e),
         underline_color(uc),
-        thick(th),
+        thickness(th),
         background_color(bc),
         suggestion_highlight_color(shc),
         suggestions(su) {}
@@ -92,7 +93,7 @@ struct WebImeTextSpan {
   unsigned start_offset;
   unsigned end_offset;
   WebColor underline_color;
-  bool thick;
+  ui::mojom::ImeTextSpanThickness thickness;
   WebColor background_color;
   WebColor suggestion_highlight_color;
   std::vector<std::string> suggestions;

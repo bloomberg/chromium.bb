@@ -27,7 +27,8 @@ void LegacyIPCFrameInputHandler::SetCompositionFromExistingText(
     blink::WebImeTextSpan blink_ime_text_span(
         ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
         ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color, ime_text_span.thick,
+        ime_text_span.underline_color,
+        ConvertUiThicknessToUiImeTextSpanThickness(ime_text_span.thickness),
         ime_text_span.background_color,
         ime_text_span.suggestion_highlight_color, ime_text_span.suggestions);
     ime_text_spans.push_back(blink_ime_text_span);

@@ -14,6 +14,10 @@ blink::WebImeTextSpan::Type ConvertUiImeTextSpanTypeToWebType(
     ui::ImeTextSpan::Type type);
 ui::ImeTextSpan::Type ConvertWebImeTextSpanTypeToUiType(
     blink::WebImeTextSpan::Type type);
+ui::mojom::ImeTextSpanThickness ConvertUiThicknessToUiImeTextSpanThickness(
+    ui::ImeTextSpan::Thickness thickness);
+ui::ImeTextSpan::Thickness ConvertUiImeTextSpanThicknessToUiThickness(
+    ui::mojom::ImeTextSpanThickness thickness);
 
 }  // namespace content
 

@@ -55,7 +55,7 @@ SuggestionMarkerProperties::Builder::SetBackgroundColor(
 
 SuggestionMarkerProperties::Builder&
 SuggestionMarkerProperties::Builder::SetThickness(
-    StyleableMarker::Thickness thickness) {
+    ui::mojom::ImeTextSpanThickness thickness) {
   data_.thickness_ = thickness;
   return *this;
 }
