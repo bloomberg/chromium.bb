@@ -328,4 +328,33 @@ TEST_F(PlatformSensorFusionTest,
   EXPECT_FALSE(fusion_sensor_);
 }
 
+TEST_F(PlatformSensorFusionTest,
+       FusionSensorMaximumSupportedFrequencyIsTheMaximumOfItsSourceSensors) {
+  EXPECT_FALSE(provider_->GetSensor(SensorType::ACCELEROMETER));
+  CreateAccelerometer();
+  scoped_refptr<PlatformSensor> accelerometer =
+      provider_->GetSensor(SensorType::ACCELEROMETER);
+  EXPECT_TRUE(accelerometer);
+  static_cast<FakePlatformSensor*>(accelerometer.get())
+      ->set_maximum_supported_frequency(30.0);
+
+  EXPECT_FALSE(provider_->GetSensor(SensorType::MAGNETOMETER));
+  CreateMagnetometer();
+  scoped_refptr<PlatformSensor> magnetometer =
+      provider_->GetSensor(SensorType::MAGNETOMETER);
+  EXPECT_TRUE(magnetometer);
+  static_cast<FakePlatformSensor*>(magnetometer.get())
+      ->set_maximum_supported_frequency(20.0);
+
+  CreateAbsoluteOrientationEulerAnglesFusionSensor();
+  EXPECT_TRUE(fusion_sensor_);
+  EXPECT_EQ(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
+            fusion_sensor_->GetType());
+  EXPECT_EQ(30.0, fusion_sensor_->GetMaximumSupportedFrequency());
+  auto client = std::make_unique<testing::NiceMock<MockPlatformSensorClient>>(
+      fusion_sensor_);
+  EXPECT_TRUE(fusion_sensor_->StartListening(
+      client.get(), PlatformSensorConfiguration(30.0)));
+}
+
 }  //  namespace device

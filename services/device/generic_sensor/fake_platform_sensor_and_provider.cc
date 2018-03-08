@@ -51,7 +51,7 @@ mojom::ReportingMode FakePlatformSensor::GetReportingMode() {
 }
 
 double FakePlatformSensor::GetMaximumSupportedFrequency() {
-  return 50.0;
+  return maximum_supported_frequency_;
 }
 
 double FakePlatformSensor::GetMinimumSupportedFrequency() {

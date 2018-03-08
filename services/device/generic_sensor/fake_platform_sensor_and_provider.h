@@ -22,6 +22,10 @@ class FakePlatformSensor : public PlatformSensor {
   MOCK_METHOD1(StartSensor,
                bool(const PlatformSensorConfiguration& configuration));
 
+  void set_maximum_supported_frequency(double maximum_supported_frequency) {
+    maximum_supported_frequency_ = maximum_supported_frequency;
+  }
+
  protected:
   void StopSensor() override {}
 
@@ -34,6 +38,8 @@ class FakePlatformSensor : public PlatformSensor {
 
   double GetMaximumSupportedFrequency() override;
   double GetMinimumSupportedFrequency() override;
+
+  double maximum_supported_frequency_ = 50.0;
 
   ~FakePlatformSensor() override;
 
