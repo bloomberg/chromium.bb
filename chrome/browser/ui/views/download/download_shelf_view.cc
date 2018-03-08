@@ -117,6 +117,9 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
+  accessible_alert_ = new views::View();
+  AddChildView(accessible_alert_);
+
   new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);
   shelf_animation_.SetSlideDuration(kShelfAnimationDurationMs);
 
@@ -147,7 +150,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 }
 
 void DownloadShelfView::DoAddDownload(DownloadItem* download) {
-  AddDownloadView(new DownloadItemView(download, this));
+  AddDownloadView(new DownloadItemView(download, this, accessible_alert_));
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {

@@ -1646,6 +1646,32 @@ are declared in build/common.gypi.
         Downloaded in Incognito
       </message>
 
+      <!-- Download Alerts for Accessibility -->
+      <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is in progress. This message is for screen reader users.">
+               Downloading <ph name="SIZE">$1<ex>52.7 MB</ex></ph>, <ph name="FILE_NAME">$2<ex>somedocument.pdf</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_PERCENT_COMPLETE_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is in progress and time remaining is known. This message is for screen reader users.">
+               Downloading, <ph name="PERCENT_REMAINING">$1<ex>33</ex>% remaining</ph>
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_TIME_REMAINING_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is in progress and time remaining is known. This message is for screen reader users.">
+               Downloading, <ph name="STATUS">$1<ex>42 mins left</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_FAILED_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is failed. This message is for screen reader users.">
+               Download unsuccessful: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_CANCELLED_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is cancelled. This message is for screen reader users.">
+               Download cancelled: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>.</ph>
+      </message>
+      <message name="IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT"
+               desc="The title of a download notification: the current download status is finished successufully. This message is for screen reader users.">
+               Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>. Press Shift+F6 to cycle to the downloads bar area.</ph>
+      </message>
+
       <!-- Download Notification Labels -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD"
                desc="In the download notification, the text of 'Copy to clipboard' button, which is to copy the file content (eg. an image for image files) to the clipboard">

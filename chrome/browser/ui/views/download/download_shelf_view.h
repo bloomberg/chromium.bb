@@ -154,6 +154,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // deleted by View.
   views::ImageButton* close_button_;
 
+  // Hidden view that will contain status text for immediate output by
+  // screen readers.
+  views::View* accessible_alert_;
+
   // The window this shelf belongs to.
   BrowserView* parent_;
 
