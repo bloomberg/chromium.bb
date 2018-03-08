@@ -1159,10 +1159,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   CompositingState GetCompositingState() const;
   virtual CompositingReasons AdditionalCompositingReasons() const;
 
-  bool HitTest(HitTestResult&,
-               const HitTestLocation& location_in_container,
-               const LayoutPoint& accumulated_offset,
-               HitTestFilter = kHitTestAll);
+  virtual bool HitTestAllPhases(HitTestResult&,
+                                const HitTestLocation& location_in_container,
+                                const LayoutPoint& accumulated_offset,
+                                HitTestFilter = kHitTestAll);
   // Returns the node that is ultimately added to the hit test result. Some
   // objects report a hit testing node that is not their own (such as
   // continuations and some psuedo elements) and it is important that the
