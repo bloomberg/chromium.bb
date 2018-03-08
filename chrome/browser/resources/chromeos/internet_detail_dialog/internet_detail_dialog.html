@@ -19,6 +19,8 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -34,6 +36,10 @@
 <dom-module id="internet-detail-dialog">
   <template>
     <style include="network-shared iron-flex">
+      cr-policy-network-indicator {
+        -webkit-margin-end: 10px;
+      }
+
       .section {
         @apply(--cr-section);
         margin-bottom: 10px;
@@ -122,6 +128,15 @@
 
     <!-- Proxy -->
     <div class="section single-column">
+      <template is="dom-if"
+          if="[[shouldShowProxyPolicyIndicator_(networkProperties)]]">
+        <div class="property-box">
+          <cr-policy-network-indicator
+              property="[[networkProperties.ProxySettings.Type]]">
+          </cr-policy-network-indicator>
+          <div>$i18n{networkProxyEnforcedPolicy}</div>
+        </div>
+      </template>
       <network-proxy editable use-shared-proxies
           on-proxy-change="onProxyChange_"
           network-properties="[[networkProperties]]">
