@@ -54,8 +54,6 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkSerialProcs.h"
-#include "third_party/skia/include/core/SkStream.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
@@ -108,20 +106,7 @@ class SkPictureSerializer {
       SkFILEWStream file(filepath.c_str());
       DCHECK(file.isValid());
 
-      SkSerialProcs procs;
-      procs.fImageProc = [](SkImage* image, void*) {
-        auto data = image->refEncodedData();
-        if (!data) {
-          const base::CommandLine& commandLine =
-              *base::CommandLine::ForCurrentProcess();
-          if (commandLine.HasSwitch(switches::kSkipReencodingOnSKPCapture)) {
-            data = SkData::MakeEmpty();
-          }
-          // else data is null, which triggers skia's default PNG encode
-        }
-        return data;
-      };
-      auto data = picture->serialize(&procs);
+      auto data = picture->serialize();
       file.write(data->data(), data->size());
       file.fsync();
     }
