@@ -10,9 +10,9 @@ all required functions are annotated.
 
 import os
 import argparse
-import subprocess
 import sys
 
+from annotation_tools import NetworkTrafficAnnotationTools
 
 # If this test starts failing, please set TEST_IS_ENABLED to "False" and file a
 # bug to get this reenabled, and cc the people listed in
@@ -22,10 +22,6 @@ TEST_IS_ENABLED = True
 
 class NetworkTrafficAnnotationChecker():
   EXTENSIONS = ['.cc', '.mm',]
-  COULD_NOT_RUN_MESSAGE = \
-      'Network traffic annotation presubmit check was not performed. To run ' \
-      'it, a compiled build directory and traffic_annotation_auditor binary ' \
-      'are required.'
 
   def __init__(self, build_path=None):
     """Initializes a NetworkTrafficAnnotationChecker object.
@@ -35,133 +31,61 @@ class NetworkTrafficAnnotationChecker():
           directory. If not specified, the script tries to find it based on
           relative position of this file (src/tools/traffic_annotation).
     """
-    self.this_dir = os.path.dirname(os.path.abspath(__file__))
-
-    if not build_path:
-      build_path = self._FindPossibleBuildPath()
-    if build_path:
-      self.build_path = os.path.abspath(build_path)
-
-    self.auditor_path = None
-    platform = {
-      'linux2': 'linux64',
-      'darwin': 'mac',
-      'win32': 'win32',
-    }[sys.platform]
-    path = os.path.join(self.this_dir, '..', 'bin', platform,
-                        'traffic_annotation_auditor')
-    if sys.platform == 'win32':
-      path += '.exe'
-    if os.path.exists(path):
-      self.auditor_path = path
-
-  def _FindPossibleBuildPath(self):
-    """Returns the first folder in //out that looks like a build dir."""
-    # Assuming this file is in 'tools/traffic_annotation/scripts', three
-    # directories deeper is 'src' and hopefully there is an 'out' in it.
-    out = os.path.abspath(os.path.join(self.this_dir, '..', '..', '..', 'out'))
-    if os.path.exists(out):
-      for folder in os.listdir(out):
-        candidate = os.path.join(out, folder)
-        if (os.path.isdir(candidate) and
-            self._CheckIfDirectorySeemsAsBuild(candidate)):
-          return candidate
-    return None
-
-  def _CheckIfDirectorySeemsAsBuild(self, path):
-    """Checks to see if a directory seems to be a compiled build directory by
-    searching for 'gen' folder and 'build.ninja' file in it.
-    """
-    return all(os.path.exists(
-        os.path.join(path, item)) for item in ('gen', 'build.ninja'))
-
-  def _AllArgsValid(self):
-    return self.auditor_path and self.build_path
+    self.tools = NetworkTrafficAnnotationTools(build_path)
 
   def ShouldCheckFile(self, file_path):
     """Returns true if the input file has an extension relevant to network
     traffic annotations."""
     return os.path.splitext(file_path)[1] in self.EXTENSIONS
 
-  def CheckFiles(self, file_paths=None, limit=0):
+  def CheckFiles(self, complete_run, limit):
     """Passes all given files to traffic_annotation_auditor to be checked for
     possible violations of network traffic annotation rules.
 
     Args:
-      file_paths: list of str List of files to check. If empty, the whole
-          repository will be checked.
-      limit: int Sets the upper threshold for number of errors and warnings,
-          use 0 for unlimited.
+      complete_run: bool Flag requesting to run test on all relevant files.
+      limit: int The upper threshold for number of errors and warnings. Use 0
+          for unlimited.
 
     Returns:
       int Exit code of the network traffic annotation auditor.
     """
-
-    if not TEST_IS_ENABLED:
+    if not self.tools.CanRunAuditor():
+      print("Network traffic annotation presubmit check was not performed. A "
+            "compiled build directory and traffic_annotation_auditor binary "
+            "are required to do it.")
       return 0
 
-    if not self.build_path:
-      return [self.COULD_NOT_RUN_MESSAGE], []
-
-    if file_paths:
+    if complete_run:
+      file_paths = []
+    else:
+      # Get list of modified files. If failed, silently ignore as the test is
+      # run in error resilient mode.
+      file_paths = self.tools.GetModifiedFiles() or []
       file_paths = [
           file_path for file_path in file_paths if self.ShouldCheckFile(
               file_path)]
-
       if not file_paths:
         return 0
-    else:
-      file_paths = []
 
-    args = [self.auditor_path, "--test-only", "--limit=%i" % limit,
-            "--build-path=" + self.build_path, "--error-resilient"] + file_paths
+    args = ["--test-only", "--limit=%i" % limit, "--error-resilient"] + \
+           file_paths
 
-    command = subprocess.Popen(args, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout_text, stderr_text = command.communicate()
+    stdout_text, stderr_text, return_code = self.tools.RunAuditor(args)
 
     if stdout_text:
       print(stdout_text)
     if stderr_text:
       print("\n[Runtime Messages]:\n%s" % stderr_text)
-    return command.returncode
-
-
-  def GetModifiedFiles(self):
-    """Gets the list of modified files from git. Returns None if any error
-    happens."""
-
-    # List of files is extracted almost the same way as the following test
-    # recipe: https://cs.chromium.org/chromium/tools/depot_tools/recipes/
-    # recipe_modules/tryserver/api.py
-    # '--no-renames' switch is added so that if a file is renamed, both old and
-    # new name would be given. Old name is needed to discard its data in
-    # annotations.xml and new name is needed for updating the XML and checking
-    # its content for possible changes.
-    args = ["git.bat"] if sys.platform == "win32" else ["git"]
-    args += ["diff", "--cached", "--name-only", "--no-renames"]
-
-    original_path = os.getcwd()
-
-    # Change directory to src (two levels upper than build path).
-    os.chdir(os.path.join(self.build_path, "..", ".."))
-    command = subprocess.Popen(args, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout_text, stderr_text = command.communicate()
-
-    if stderr_text:
-      print("Could not run '%s' to get the list of changed files "
-            "beacuse: %s" % (" ".join(args), stderr_text))
-      os.chdir(original_path)
-      return None
-
-    os.chdir(original_path)
-    return stdout_text.splitlines()
+    return return_code
 
 
 def main():
+  if not TEST_IS_ENABLED:
+    return 0
+
   parser = argparse.ArgumentParser(
-      description="Traffic Annotation Auditor Presubmit checker.")
+      description="Network Traffic Annotation Presubmit checker.")
   parser.add_argument(
       '--build-path',
       help='Specifies a compiled build directory, e.g. out/Debug. If not '
@@ -177,18 +101,8 @@ def main():
            'modified files are tested.')
 
   args = parser.parse_args()
-
   checker = NetworkTrafficAnnotationChecker(args.build_path)
-  if args.complete:
-    file_paths = None
-  else:
-    file_paths = checker.GetModifiedFiles()
-    if file_paths is None:
-      return -1
-    if len(file_paths) == 0:
-      return 0
-
-  return checker.CheckFiles(file_paths=file_paths, limit=args.limit)
+  return checker.CheckFiles(args.complete, args.limit)
 
 
 if '__main__' == __name__:
