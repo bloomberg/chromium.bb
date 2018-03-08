@@ -482,7 +482,13 @@ void TabManager::PurgeBackgroundedTabsIfNeeded() {
     DCHECK(tab_lifecycle_unit_external);
     content::WebContents* content =
         tab_lifecycle_unit_external->GetWebContents();
-    DCHECK(content);
+    // TODO(fdoray): Check if TabLifecycleUnitSource should override
+    // WebContentsObserver::WebContentsDestroyed() as in some situations a
+    // WebContents might get destroyed without a call to
+    // TabStripModelObserver::TabClosingAt, in this case we'll have a
+    // TabLifecycleUnitExternal that points to a null WebContents.
+    if (content == nullptr)
+      return;
 
     content::RenderProcessHost* render_process_host =
         content->GetMainFrame()->GetProcess();

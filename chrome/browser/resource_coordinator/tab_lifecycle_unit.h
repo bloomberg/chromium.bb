@@ -12,6 +12,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class TabStripModel;
 
@@ -35,7 +36,8 @@ static constexpr base::TimeDelta kTabFocusedProtectionTime =
 // Represents a tab.
 class TabLifecycleUnitSource::TabLifecycleUnit
     : public LifecycleUnitBase,
-      public TabLifecycleUnitExternal {
+      public TabLifecycleUnitExternal,
+      public content::WebContentsObserver {
  public:
   // |observers| is a list of observers to notify when the discarded state or
   // the auto-discardable state of this tab changes. It can be modified outside
@@ -67,10 +69,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // "recently audible" state of the tab changes.
   void SetRecentlyAudible(bool recently_audible);
 
-  // Invoked when we receive a DidStartLoading notification for the WebContents
-  // used by this tab.
-  void OnDidStartLoading();
-
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
@@ -98,12 +96,12 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Returns the RenderProcessHost associated with this tab.
   content::RenderProcessHost* GetRenderProcessHost() const;
 
+  // content::WebContentsObserver:
+  void DidStartLoading() override;
+
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.
   base::ObserverList<TabLifecycleObserver>* observers_;
-
-  // The WebContents for this tab.
-  content::WebContents* web_contents_;
 
   // TabStripModel to which this tab belongs.
   TabStripModel* tab_strip_model_;
