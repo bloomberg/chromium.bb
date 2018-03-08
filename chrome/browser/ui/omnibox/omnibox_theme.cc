@@ -24,7 +24,7 @@ constexpr ui::NativeTheme::ColorId kInvalidColorId =
     ui::NativeTheme::kColorId_NumColors;
 
 template <class T>
-constexpr T NormalHoveredSelectedOrBoth(OmniboxPartState state,
+constexpr T NormalHoveredSelectedOrBoth(OmniboxState state,
                                         T normal,
                                         T hovered,
                                         T selected,
@@ -34,7 +34,7 @@ constexpr T NormalHoveredSelectedOrBoth(OmniboxPartState state,
 }
 
 template <class T>
-constexpr T NormalHoveredSelected(OmniboxPartState state,
+constexpr T NormalHoveredSelected(OmniboxState state,
                                   T normal,
                                   T hovered,
                                   T selected) {
@@ -44,7 +44,7 @@ constexpr T NormalHoveredSelected(OmniboxPartState state,
 }
 
 ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
-                                          OmniboxPartState state) {
+                                          OmniboxState state) {
   using NativeId = ui::NativeTheme::ColorId;
   switch (part) {
     case OmniboxPart::RESULTS_BACKGROUND:
@@ -56,9 +56,7 @@ ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
   return kInvalidColorId;
 }
 
-SkColor GetLegacyColor(OmniboxPart part,
-                       OmniboxTint tint,
-                       OmniboxPartState state) {
+SkColor GetLegacyColor(OmniboxPart part, OmniboxTint tint, OmniboxState state) {
   ui::NativeTheme* native_theme = nullptr;
 #if defined(USE_AURA)
   if (tint == OmniboxTint::DARK)
@@ -81,7 +79,7 @@ SkColor GetLegacyColor(OmniboxPart part,
 
 SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxTint tint,
-                        OmniboxPartState state) {
+                        OmniboxState state) {
   if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return GetLegacyColor(part, tint, state);
 
