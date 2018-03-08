@@ -166,7 +166,7 @@ public class PermissionDialogController
         // whereby the tab is obscured so modals don't pop up on top of (e.g.) the tab switcher or
         // the three-dot menu.
         final BottomSheet bottomSheet = activity.getBottomSheet();
-        if (bottomSheet == null || !bottomSheet.isVisible()) {
+        if (bottomSheet == null || !bottomSheet.isSheetOpen()) {
             showDialog();
         } else {
             bottomSheet.addObserver(new EmptyBottomSheetObserver() {
