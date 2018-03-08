@@ -231,7 +231,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, HostPermission) {
   ASSERT_TRUE(RunExtensionTest("tabs/host_permission")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, UpdateWindowResize) {
+// Flaky on Windows and Linux. http://crbug.com/820110.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
+#else
+#define MAYBE_UpdateWindowResize UpdateWindowResize
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_UpdateWindowResize) {
   ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }
 
