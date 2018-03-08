@@ -239,7 +239,7 @@ public class UiUtils {
                 // keyboard height. In certain cases this also means including the height of the
                 // Android navigation.
                 final float density = context.getResources().getDisplayMetrics().density;
-                bottomMargin -= KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP * density;
+                bottomMargin = (int) (bottomMargin - KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP * density);
             }
         }
 

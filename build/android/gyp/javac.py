@@ -23,8 +23,6 @@ import colorama
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   # TODO(crbug.com/801210): Follow steps in bug.
   'SynchronizeOnNonFinalField',
-  # TODO(crbug.com/801268): Follow steps in bug.
-  'NarrowingCompoundAssignment',
   # TODO(crbug.com/802073): Follow steps in bug.
   'TypeParameterUnusedInFormals',
   # TODO(crbug.com/802075): Follow steps in bug.
@@ -98,6 +96,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'FloatingPointLiteralPrecision',
   'JavaLangClash',
   'MissingOverride',
+  'NarrowingCompoundAssignment',
   'ParameterName',
   'StaticQualifiedUsingExpression',
   'UseCorrectAssertInTests',
