@@ -122,6 +122,8 @@ android_library("feed_all_java") {
     "src/src/main/java/com/google/android/libraries/feed/host/storage/StorageMutation.java",
     "src/src/main/java/com/google/android/libraries/feed/host/storage/StorageOperation.java",
     "src/src/main/java/com/google/android/libraries/feed/host/storage/StorageOperationListSimplifier.java",
+    "src/src/main/java/com/google/android/libraries/feed/hostimpl/logging/LoggingApiImpl.java",
+    "src/src/main/java/com/google/android/libraries/feed/hostimpl/scheduler/SchedulerApiImpl.java",
     "src/src/main/java/com/google/android/libraries/feed/mocknetworkclient/MockServerNetworkClient.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/AdapterFactory.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/AdapterParameters.java",
