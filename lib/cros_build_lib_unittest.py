@@ -167,7 +167,8 @@ class RunCommandTestCase(cros_test_lib.MockTestCase):
 
   def tearDown(self):
     # Restore hidden ENVs.
-    os.environ.update(self._old_envs)
+    if hasattr(self, '_old_envs'):
+      os.environ.update(self._old_envs)
 
 
 class RunCommandTempDirTestCase(RunCommandTestCase,
