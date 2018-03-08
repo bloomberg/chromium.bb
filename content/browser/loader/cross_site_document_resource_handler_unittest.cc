@@ -45,6 +45,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using MimeType = network::CrossOriginReadBlocking::MimeType;
+
 namespace content {
 
 namespace {
@@ -81,7 +83,7 @@ struct TestScenario {
 
   // Attributes of the HTTP response.
   const char* response_mime_type;
-  CrossSiteDocumentMimeType canonical_mime_type;
+  MimeType canonical_mime_type;
   bool include_no_sniff_header;
   AccessControlAllowOriginHeader cors_response;
   // |packets| specifies the response data which may arrive over the course of
@@ -204,7 +206,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -219,7 +221,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {")]}',\n[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -234,7 +236,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,     // canonical_mime_type
+        MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {")]}'\n[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -249,7 +251,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"var x=3;"},                           // packets
@@ -259,13 +261,13 @@ const TestScenario kScenarios[] = {
     {
         "Allowed: Cross-site XHR to HTML with CORS for origin",
         __LINE__,
-        "http://www.b.com/resource.html",    // target_url
-        RESOURCE_TYPE_XHR,                   // resource_type
-        "http://www.a.com/",                 // initiator_origin
-        OriginHeader::kInclude,              // cors_request
-        "text/html",                         // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
-        false,                               // include_no_sniff_header
+        "http://www.b.com/resource.html",  // target_url
+        RESOURCE_TYPE_XHR,                 // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kInclude,            // cors_request
+        "text/html",                       // response_mime_type
+        MimeType::kHtml,                   // canonical_mime_type
+        false,                             // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowInitiatorOrigin,  // cors_response
         {"<html><head>this should sniff as HTML"},              // packets
         Verdict::kAllow,                                        // verdict
@@ -279,7 +281,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "application/rss+xml",                      // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_XML,          // canonical_mime_type
+        MimeType::kXml,                             // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowAny,  // cors_response
         {"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"},  // packets
@@ -294,7 +296,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                         // initiator_origin
         OriginHeader::kInclude,                      // cors_request
         "text/json",                                 // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,          // canonical_mime_type
+        MimeType::kJson,                             // canonical_mime_type
         false,                                       // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowNull,  // cors_response
         {"{\"x\" : 3}"},                             // packets
@@ -309,7 +311,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -324,7 +326,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -339,7 +341,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -349,13 +351,13 @@ const TestScenario kScenarios[] = {
     {
         "Allowed: Cross-site fetch HTML from NaCl with CORS response",
         __LINE__,
-        "http://www.b.com/plugin.html",      // target_url
-        RESOURCE_TYPE_PLUGIN_RESOURCE,       // resource_type
-        "http://www.a.com/",                 // initiator_origin
-        OriginHeader::kInclude,              // cors_request
-        "text/html",                         // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
-        false,                               // include_no_sniff_header
+        "http://www.b.com/plugin.html",  // target_url
+        RESOURCE_TYPE_PLUGIN_RESOURCE,   // resource_type
+        "http://www.a.com/",             // initiator_origin
+        OriginHeader::kInclude,          // cors_request
+        "text/html",                     // response_mime_type
+        MimeType::kHtml,                 // canonical_mime_type
+        false,                           // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowInitiatorOrigin,  // cors_response
         {"<html><head>this should sniff as HTML"},              // first_chunk
         Verdict::kAllow,                                        // verdict
@@ -369,7 +371,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "application/javascript",                   // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,       // canonical_mime_type
+        MimeType::kOthers,                          // canonical_mime_type
         true,                                       // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowAny,  // cors_response
         {")]}'\n[true, false]"},                    // packets
@@ -384,7 +386,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"{ \"key\"", ": true }"},              // packets
@@ -399,7 +401,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "image/png",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {},                                     // packets
@@ -414,7 +416,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "image/png",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {},                                     // packets
@@ -431,7 +433,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"foo({\"x\" : 3})"},                   // packets
@@ -446,7 +448,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"var x = 3;"},                         // packets
@@ -461,7 +463,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"{", "    \n", "var x = 3;\n", "console.log('hello');"},  // packets
@@ -477,7 +479,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,     // canonical_mime_type
+        MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"invoke({ \"key\": true });"},         // packets
@@ -492,7 +494,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"[1, 2, {}, true, false, \"yay\"]"},   // packets
@@ -507,7 +509,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"[1, 2, {}, true, false, \"yay\"]", ".map(x => console.log(x))",
@@ -523,7 +525,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/xml",                      // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_XML,      // canonical_mime_type
+        MimeType::kXml,                         // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"Won't sniff as XML"},                 // packets
@@ -538,7 +540,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/x-json",                          // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,     // canonical_mime_type
+        MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"Won't sniff as JSON"},                // packets
@@ -553,7 +555,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"<htm"},                               // packets
@@ -568,7 +570,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {kHTMLWithTooLongComment},              // packets
@@ -583,7 +585,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {},                                     // packets
@@ -598,7 +600,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -613,7 +615,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -630,7 +632,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -645,7 +647,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html; charset=utf-8",                 // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -660,7 +662,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"Wouldn't sniff as HTML"},             // packets
@@ -675,7 +677,7 @@ const TestScenario kScenarios[] = {
         "https://bar.site.com/",                    // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -687,13 +689,13 @@ const TestScenario kScenarios[] = {
         // Note that initiator_origin is cross-origin, but same-site in relation
         // to the CORS response.
         __LINE__,
-        "http://www.b.com/resource.html",    // target_url
-        RESOURCE_TYPE_XHR,                   // resource_type
-        "http://foo.example.com/",           // initiator_origin
-        OriginHeader::kInclude,              // cors_request
-        "text/html",                         // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
-        false,                               // include_no_sniff_header
+        "http://www.b.com/resource.html",  // target_url
+        RESOURCE_TYPE_XHR,                 // resource_type
+        "http://foo.example.com/",         // initiator_origin
+        OriginHeader::kInclude,            // cors_request
+        "text/html",                       // response_mime_type
+        MimeType::kHtml,                   // canonical_mime_type
+        false,                             // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowExampleDotCom,  // cors_response
         {"<hTmL><head>this should sniff as HTML"},            // packets
         Verdict::kBlock,                                      // verdict
@@ -711,7 +713,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kInclude,                 // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {},                                     // packets
@@ -728,7 +730,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -743,7 +745,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/xml",                      // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_XML,      // canonical_mime_type
+        MimeType::kXml,                         // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"},  // packets
@@ -758,7 +760,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/json",                     // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,     // canonical_mime_type
+        MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"{\"x\" : 3}"},                        // packets
@@ -773,7 +775,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                          // initiator_origin
         OriginHeader::kOmit,                          // cors_request
         "text/plain",                                 // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,          // canonical_mime_type
+        MimeType::kPlain,                             // canonical_mime_type
         false,                                        // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,        // cors_response
         {"    ", "\t", "{", "\"x\" ", "  ", ": 3}"},  // packets
@@ -788,7 +790,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"    ", "\t", "<", "?", "x", "m", "l", ">"},  // packets
@@ -803,7 +805,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"    <!--", "\t -", "-", "->", "<", "s", "c", "r", "i", "p",
@@ -819,7 +821,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/plain",                           // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,    // canonical_mime_type
+        MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"    <!--", " <?xml ", "-->", "<", "h", "e", "a", "d"},  // packets
@@ -834,7 +836,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/plain",                               // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN,        // canonical_mime_type
+        MimeType::kPlain,                           // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -849,7 +851,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"<!doc", "type html><html itemscope=\"\" ",
@@ -861,13 +863,13 @@ const TestScenario kScenarios[] = {
     {
         "Blocked: Cross-site XHR to HTML with wrong CORS",
         __LINE__,
-        "http://www.b.com/resource.html",    // target_url
-        RESOURCE_TYPE_XHR,                   // resource_type
-        "http://www.a.com/",                 // initiator_origin
-        OriginHeader::kInclude,              // cors_request
-        "text/html",                         // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
-        false,                               // include_no_sniff_header
+        "http://www.b.com/resource.html",  // target_url
+        RESOURCE_TYPE_XHR,                 // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kInclude,            // cors_request
+        "text/html",                       // response_mime_type
+        MimeType::kHtml,                   // canonical_mime_type
+        false,                             // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowExampleDotCom,  // cors_response
         {"<hTmL><head>this should sniff as HTML"},            // packets
         Verdict::kBlock,                                      // verdict
@@ -881,7 +883,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // first_chunk
@@ -896,7 +898,7 @@ const TestScenario kScenarios[] = {
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/json",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_JSON,     // canonical_mime_type
+        MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {")]", "}'\n[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -911,7 +913,7 @@ const TestScenario kScenarios[] = {
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "audio/x-wav",                          // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {")]", "}'\n[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -926,7 +928,7 @@ const TestScenario kScenarios[] = {
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "application/javascript",               // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,   // canonical_mime_type
+        MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {"for(;;)", ";[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -941,7 +943,7 @@ const TestScenario kScenarios[] = {
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
+        MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,  // cors_response
         {")]", "}'\n[true, true, false, \"user@chromium.org\"]"},  // packets
@@ -952,13 +954,13 @@ const TestScenario kScenarios[] = {
         "Blocked: JSON object + mismatching CORS with parser-breaker labeled "
         "as JavaScript",
         __LINE__,
-        "http://www.b.com/resource.html",      // target_url
-        RESOURCE_TYPE_SCRIPT,                  // resource_type
-        "http://www.a.com/",                   // initiator_origin
-        OriginHeader::kInclude,                // cors_request
-        "application/javascript",              // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS,  // canonical_mime_type
-        true,                                  // include_no_sniff_header
+        "http://www.b.com/resource.html",  // target_url
+        RESOURCE_TYPE_SCRIPT,              // resource_type
+        "http://www.a.com/",               // initiator_origin
+        OriginHeader::kInclude,            // cors_request
+        "application/javascript",          // response_mime_type
+        MimeType::kOthers,                 // canonical_mime_type
+        true,                              // include_no_sniff_header
         AccessControlAllowOriginHeader::kAllowExampleDotCom,  // cors_response
         {")]}'\n[true, false]"},                              // packets
         Verdict::kBlock,                                      // verdict
@@ -972,7 +974,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -987,7 +989,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
         "text/html",                                // response_mime_type
-        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
@@ -1406,19 +1408,19 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   std::string histogram_base = "SiteIsolation.XSD.Browser";
   std::string bucket;
   switch (scenario.canonical_mime_type) {
-    case CROSS_SITE_DOCUMENT_MIME_TYPE_HTML:
+    case MimeType::kHtml:
       bucket = "HTML";
       break;
-    case CROSS_SITE_DOCUMENT_MIME_TYPE_XML:
+    case MimeType::kXml:
       bucket = "XML";
       break;
-    case CROSS_SITE_DOCUMENT_MIME_TYPE_JSON:
+    case MimeType::kJson:
       bucket = "JSON";
       break;
-    case CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN:
+    case MimeType::kPlain:
       bucket = "Plain";
       break;
-    case CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS:
+    case MimeType::kOthers:
       bucket = "Others";
       break;
     default:
@@ -1446,13 +1448,13 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   // The parser-breaker detection only on responses that are not blocked by
   // normal mime-sniffing.
   bool scenario_requires_parser_breaker_detection =
-      (CrossSiteDocumentClassifier::kYes ==
-       CrossSiteDocumentClassifier::SniffForFetchOnlyResource(
+      (network::CrossOriginReadBlocking::kYes ==
+       network::CrossOriginReadBlocking::SniffForFetchOnlyResource(
            scenario.data())) &&
-      !((CrossSiteDocumentClassifier::kYes ==
-         CrossSiteDocumentClassifier::SniffForJSON(scenario.data())) &&
-        (scenario.canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_JSON ||
-         scenario.canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN));
+      !((network::CrossOriginReadBlocking::kYes ==
+         network::CrossOriginReadBlocking::SniffForJSON(scenario.data())) &&
+        (scenario.canonical_mime_type == MimeType::kJson ||
+         scenario.canonical_mime_type == MimeType::kPlain));
   if (should_be_blocked && expected_to_sniff &&
       scenario_requires_parser_breaker_detection) {
     expected_counts[histogram_base + ".BlockedForParserBreaker"] = 1;

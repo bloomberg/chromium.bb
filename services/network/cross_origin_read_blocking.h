@@ -1,37 +1,38 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CROSS_SITE_DOCUMENT_CLASSIFIER_H_
-#define CONTENT_COMMON_CROSS_SITE_DOCUMENT_CLASSIFIER_H_
+#ifndef SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_
+#define SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
-#include "content/common/content_export.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace content {
+namespace network {
 
-// CrossSiteDocumentClassifier implements the cross-site document blocking
-// policy (XSDP) for Site Isolation. XSDP will monitor network responses to a
+// CrossOriginReadBlocking (CORB) implements response blocking
+// policy for Site Isolation.  CORB will monitor network responses to a
 // renderer and block illegal responses so that a compromised renderer cannot
-// steal private information from other sites.
+// steal private information from other sites.  For more details see
+// services/network/cross_origin_read_blocking_explainer.md
 
-enum CrossSiteDocumentMimeType {
-  // Note that these values are used in histograms, and must not change.
-  CROSS_SITE_DOCUMENT_MIME_TYPE_HTML = 0,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_XML = 1,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_JSON = 2,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN = 3,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS = 4,
-  CROSS_SITE_DOCUMENT_MIME_TYPE_MAX,
-};
-
-class CONTENT_EXPORT CrossSiteDocumentClassifier {
+class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
  public:
+  enum class MimeType {
+    // Note that these values are used in histograms, and must not change.
+    kHtml = 0,
+    kXml = 1,
+    kJson = 2,
+    kPlain = 3,
+    kOthers = 4,
+    kMax,
+  };
+
   // Three conclusions are possible from sniffing a byte sequence:
   //  - No: meaning that the data definitively doesn't match the indicated type.
   //  - Yes: meaning that the data definitive does match the indicated type.
@@ -48,11 +49,10 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // Returns the representative mime type enum value of the mime type of
   // response. For example, this returns the same value for all text/xml mime
   // type families such as application/xml, application/rss+xml.
-  static CrossSiteDocumentMimeType GetCanonicalMimeType(
-      base::StringPiece mime_type);
+  static MimeType GetCanonicalMimeType(base::StringPiece mime_type);
 
-  // Returns whether this scheme is a target of cross-site document
-  // policy(XSDP). This returns true only for http://* and https://* urls.
+  // Returns whether this scheme is a target of the cross-origin read blocking
+  // (CORB) policy.  This returns true only for http://* and https://* urls.
   static bool IsBlockableScheme(const GURL& frame_origin);
 
   // Returns whether there's a valid CORS header for frame_origin.  This is
@@ -62,7 +62,7 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // specification. For now, this works conservatively, allowing XSDs that are
   // not allowed by actual CORS rules by ignoring 1) credentials and 2)
   // methods. Preflight requests don't matter here since they are not used to
-  // decide whether to block a document or not on the client side.
+  // decide whether to block a response or not on the client side.
   static bool IsValidCorsHeaderSet(const url::Origin& frame_origin,
                                    const std::string& access_control_origin);
 
@@ -77,11 +77,18 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   static Result SniffForFetchOnlyResource(base::StringPiece data);
 
  private:
-  CrossSiteDocumentClassifier();  // Not instantiable.
+  CrossOriginReadBlocking();  // Not instantiable.
 
-  DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentClassifier);
+  DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlocking);
 };
 
-}  // namespace content
+inline std::ostream& operator<<(
+    std::ostream& out,
+    const CrossOriginReadBlocking::MimeType& value) {
+  out << static_cast<int>(value);
+  return out;
+}
 
-#endif  // CONTENT_COMMON_CROSS_SITE_DOCUMENT_CLASSIFIER_H_
+}  // namespace network
+
+#endif  // SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_

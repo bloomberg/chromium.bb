@@ -96,8 +96,6 @@ source_set("common") {
     "content_security_policy_header.h",
     "content_switches_internal.cc",
     "content_switches_internal.h",
-    "cross_site_document_classifier.cc",
-    "cross_site_document_classifier.h",
     "cursors/webcursor.cc",
     "cursors/webcursor.h",
     "cursors/webcursor_android.cc",
