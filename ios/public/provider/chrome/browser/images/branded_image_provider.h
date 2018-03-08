@@ -5,10 +5,10 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_IMAGES_BRANDED_IMAGE_PROVIDER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_IMAGES_BRANDED_IMAGE_PROVIDER_H_
 
+#import <UIKit/UIKit.h>
+
 #include "base/macros.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_icon_types.h"
-
-@class UIImage;
 
 // BrandedImageProvider vends images that contain embedder-specific branding.
 // When adding method to this class, do not forget to add Chromium specific
@@ -43,7 +43,12 @@ class BrandedImageProvider {
   // image for the toolbar voice search button.  If this method returns false,
   // |image_id| is invalid and callers should fall back to a default image.  The
   // returned image should be used for all toolbar styles and all button states.
+  // Deprecated, use GetToolbarVoiceSearchButtonImages(bool) instead.
   virtual bool GetToolbarVoiceSearchButtonImageId(int* image_id);
+
+  // Returns two 24pt x 24pt images to use for toolbar voice search button. The
+  // images corresponds to the normal and pressed state.
+  virtual NSArray<UIImage*>* GetToolbarVoiceSearchButtonImages(bool incognito);
 
   // Returns the 24pt x 24pt image corresponding to the given icon |type|.
   virtual UIImage* GetWhatsNewIconImage(WhatsNewIcon type);
