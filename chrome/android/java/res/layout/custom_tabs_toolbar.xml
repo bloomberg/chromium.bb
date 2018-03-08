@@ -66,6 +66,7 @@
         android:layout_height="match_parent"
         android:layout_marginEnd="42dp"
         android:layout_gravity="center_vertical|end"
+        android:gravity="center_vertical"
         android:orientation="horizontal" />
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/menu_button"
