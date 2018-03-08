@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-Found 101 tests; 98 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 102 tests; 99 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Test driver
 PASS URL interface: existence and properties of interface object
 PASS URL interface object length
 PASS URL interface object name
