@@ -19,7 +19,7 @@ namespace bubble_anchor_util {
 // Used as a parameter of GetPageInfoAnchorView().
 enum Anchor {
   kLocationBar,
-  kHostedAppMenu,
+  kAppMenuButton,
 };
 
 // Offset from the window edge to show bubbles when there is no location bar.
