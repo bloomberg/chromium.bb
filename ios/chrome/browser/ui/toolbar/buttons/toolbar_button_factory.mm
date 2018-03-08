@@ -469,19 +469,9 @@ const int styleCount = 2;
 
 - (NSArray<UIImage*>*)voiceSearchImages {
   // The voice search images can be overridden by the branded image provider.
-  int imageID;
-  if (ios::GetChromeBrowserProvider()
-          ->GetBrandedImageProvider()
-          ->GetToolbarVoiceSearchButtonImageId(&imageID)) {
-    return [NSArray
-        arrayWithObjects:NativeImage(imageID), NativeImage(imageID), nil];
-  }
-  int voiceSearchImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_TWO_STATE(VOICE);
-  return [NSArray
-      arrayWithObjects:NativeImage(voiceSearchImages[self.style][DEFAULT]),
-                       NativeImage(voiceSearchImages[self.style][PRESSED]),
-                       nil];
+  return ios::GetChromeBrowserProvider()
+      ->GetBrandedImageProvider()
+      ->GetToolbarVoiceSearchButtonImages(self.style == INCOGNITO);
 }
 
 - (NSArray<UIImage*>*)TTSImages {
