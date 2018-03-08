@@ -7,6 +7,7 @@
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
+#include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
@@ -101,6 +102,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self.collectionView.backgroundView;
 }
 
+- (BOOL)isGridEmpty {
+  return self.items.count == 0;
+}
+
 #pragma mark - UICollectionViewDataSource
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
@@ -186,7 +191,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
   };
-  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
+  ProceduralBlockWithBool completion = ^(BOOL finished) {
+    if (self.items.count == 1) {
+      [self.delegate firstItemWasAddedInGridViewController:self];
+    }
+  };
+  [self.collectionView performBatchUpdates:performAllUpdates
+                                completion:completion];
 }
 
 - (void)removeItemAtIndex:(NSUInteger)index
@@ -209,11 +220,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                  scrollPosition:UICollectionViewScrollPositionNone];
     }
   };
+  ProceduralBlockWithBool completion = ^(BOOL finished) {
+    if (self.items.count == 0) {
+      self.collectionView.backgroundView.hidden = NO;
+      [self.delegate lastItemWasClosedInGridViewController:self];
+    }
+  };
   [self.collectionView performBatchUpdates:performAllUpdates
-                                completion:^(BOOL finished) {
-                                  self.collectionView.backgroundView.hidden =
-                                      (self.items.count > 0);
-                                }];
+                                completion:completion];
 }
 
 - (void)selectItemAtIndex:(NSUInteger)selectedIndex {

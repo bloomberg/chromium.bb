@@ -98,11 +98,10 @@ UIAlertController* NotImplementedAlert() {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
-
+  [self updateDoneAndCloseAllButtons];
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForAppearance];
   }
-
   [super viewWillAppear:animated];
 }
 
@@ -139,6 +138,7 @@ UIAlertController* NotImplementedAlert() {
   float fractionalPage = scrollView.contentOffset.x / pageWidth;
   NSUInteger page = lround(fractionalPage);
   _currentPage = static_cast<TabGridPage>(page);
+  [self updateDoneAndCloseAllButtons];
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -497,6 +497,24 @@ UIAlertController* NotImplementedAlert() {
                                               completion:nil];
 }
 
+// Update |enabled| property of the done and close all buttons.
+- (void)updateDoneAndCloseAllButtons {
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = self.doneButton.enabled;
+      break;
+    case TabGridPageRegularTabs:
+      self.doneButton.enabled = !self.regularTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = self.doneButton.enabled;
+      break;
+    case TabGridPageRemoteTabs:
+      self.doneButton.enabled = YES;
+      self.closeAllButton.enabled = NO;
+      break;
+  }
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -516,6 +534,16 @@ UIAlertController* NotImplementedAlert() {
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate closeItemAtIndex:index];
   }
+}
+
+- (void)lastItemWasClosedInGridViewController:
+    (GridViewController*)gridViewController {
+  [self updateDoneAndCloseAllButtons];
+}
+
+- (void)firstItemWasAddedInGridViewController:
+    (GridViewController*)gridViewController {
+  [self updateDoneAndCloseAllButtons];
 }
 
 #pragma mark - Button actions
