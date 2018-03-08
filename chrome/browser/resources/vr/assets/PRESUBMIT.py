@@ -25,6 +25,7 @@ def CheckVersionAndAssetParity(input_api, output_api):
   new_version = None
   changed_assets = False
   changed_version = False
+  changed_component_list = False
   changed_asset_files = {'google_chrome': [], 'chromium': []}
   for file in input_api.AffectedFiles():
     basename = input_api.os_path.basename(file.LocalPath())
@@ -37,12 +38,14 @@ def CheckVersionAndAssetParity(input_api, output_api):
     dirname = input_api.os_path.basename(
         input_api.os_path.dirname(file.LocalPath()))
     action = file.Action()
-    if (dirname in changed_asset_files and extension in {'sha1', 'png'} and
-        action in {'A', 'D'}):
+    if (dirname in changed_asset_files and
+        extension in {'sha1', 'png', 'wav'} and action in {'A', 'D'}):
       changed_asset_files[dirname].append((action, basename_without_extension))
     if (extension == 'sha1' or basename == 'vr_assets_component_files.json'):
       changed_assets = True
-    if (basename == 'VERSION'):
+    if basename == 'vr_assets_component_files.json':
+      changed_component_list = True
+    if basename == 'VERSION':
       changed_version = True
       old_version = parse_version.ParseVersion(file.OldContents())
       new_version = parse_version.ParseVersion(file.NewContents())
@@ -50,6 +53,9 @@ def CheckVersionAndAssetParity(input_api, output_api):
   local_version_filename = input_api.os_path.join(
       input_api.os_path.dirname(input_api.AffectedFiles()[0].LocalPath()),
       'VERSION')
+  local_component_list_filename = input_api.os_path.join(
+      input_api.os_path.dirname(input_api.AffectedFiles()[0].LocalPath()),
+      'vr_assets_component_files.json')
 
   if changed_asset_files['google_chrome'] != changed_asset_files['chromium']:
     return [
@@ -58,6 +64,13 @@ def CheckVersionAndAssetParity(input_api, output_api):
             (changed_asset_files.keys(),
              input_api.os_path.dirname(
                  input_api.AffectedFiles()[0].LocalPath())))
+    ]
+
+  if changed_asset_files['google_chrome'] and not changed_component_list:
+    return [
+        output_api.PresubmitError(
+            'Must update \'%s\' if adding/removing assets.' %
+            local_component_list_filename)
     ]
 
   if changed_version and (not old_version or not new_version):
