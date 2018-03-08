@@ -10,6 +10,7 @@
 namespace ui {
 namespace ws {
 
+class Display;
 class WindowServer;
 
 class RemoteEventDispatcherImpl : public mojom::RemoteEventDispatcher {
@@ -18,6 +19,11 @@ class RemoteEventDispatcherImpl : public mojom::RemoteEventDispatcher {
   ~RemoteEventDispatcherImpl() override;
 
  private:
+  // Adjusts the location as necessary of |event|. |display| is the display
+  // the event is targetted at.
+  void AdjustEventLocationForPixelLayout(Display* display,
+                                         ui::LocatedEvent* event);
+
   // mojom::RemoteEventDispatcher:
   void DispatchEvent(int64_t display_id,
                      std::unique_ptr<ui::Event> event,

@@ -110,6 +110,10 @@ class WindowManagerState : public EventDispatcherDelegate,
   // notifies |closure| immediately if IsProcessingEvent() returns false.
   void ScheduleCallbackWhenDoneProcessingEvents(base::OnceClosure closure);
 
+  PlatformDisplay* platform_display_with_capture() {
+    return platform_display_with_capture_;
+  }
+
  private:
   class ProcessedEventTarget;
   friend class Display;
