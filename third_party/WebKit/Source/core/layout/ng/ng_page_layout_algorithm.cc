@@ -25,7 +25,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize(MinMaxSizeInput());
   NGBoxStrut border_scrollbar_padding =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Style(), min_max_size);
   NGLogicalSize content_box_size =

@@ -96,7 +96,7 @@ void UpdateLegacyMultiColumnFlowThread(
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
     NGFragment logical_fragment(writing_mode, fragment);
     auto border_scrollbar_padding =
-        CalculateBorderScrollbarPadding(constraint_space, node.Style(), node);
+        CalculateBorderScrollbarPadding(constraint_space, node);
 
     column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
     column_set->SetLogicalTop(border_scrollbar_padding.block_start);
