@@ -71,6 +71,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   const bool is_hdr_;
   const bool has_alpha_;
   const bool enable_dc_layers_;
+  const bool disable_vsync_;
   gfx::Rect swap_rect_;
   gfx::Vector2d draw_offset_;
 
