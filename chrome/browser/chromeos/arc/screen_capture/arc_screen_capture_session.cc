@@ -77,12 +77,13 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Create(
     mojom::ScreenCaptureSessionNotifierPtr notifier,
     const std::string& display_name,
     content::DesktopMediaID desktop_id,
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    bool enable_notification) {
   // This will get cleaned up when the connection error handler is called.
   ArcScreenCaptureSession* session =
       new ArcScreenCaptureSession(std::move(notifier), size);
   mojo::InterfacePtr<mojom::ScreenCaptureSession> result =
-      session->Initialize(desktop_id, display_name);
+      session->Initialize(desktop_id, display_name, enable_notification);
   if (!result)
     delete session;
   return result;
@@ -99,7 +100,8 @@ ArcScreenCaptureSession::ArcScreenCaptureSession(
 
 mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
     content::DesktopMediaID desktop_id,
-    const std::string& display_name) {
+    const std::string& display_name,
+    bool enable_notification) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   desktop_window_ = content::DesktopMediaID::GetAuraWindowById(desktop_id);
   if (!desktop_window_) {
@@ -126,14 +128,16 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
 
   desktop_window_->GetHost()->compositor()->AddAnimationObserver(this);
 
-  // Show the tray notification icon now.
-  base::string16 notification_text =
-      l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT,
-                                 base::UTF8ToUTF16(display_name));
-  notification_ui_ = ScreenCaptureNotificationUI::Create(notification_text);
-  notification_ui_->OnStarted(
-      base::BindRepeating(&ArcScreenCaptureSession::NotificationStop,
-                          weak_ptr_factory_.GetWeakPtr()));
+  if (enable_notification) {
+    // Show the tray notification icon now.
+    base::string16 notification_text =
+        l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT,
+                                   base::UTF8ToUTF16(display_name));
+    notification_ui_ = ScreenCaptureNotificationUI::Create(notification_text);
+    notification_ui_->OnStarted(
+        base::BindRepeating(&ArcScreenCaptureSession::NotificationStop,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
 
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();
   ash::Shell::Get()->UpdateCursorCompositingEnabled();

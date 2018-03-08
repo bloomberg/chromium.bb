@@ -10,6 +10,8 @@
 // The original version of this file lives in the Chromium repository at:
 // src/components/arc/common/screen_capture.mojom
 
+// Next MinVersion: 2
+
 module arc.mojom;
 
 // For gfx::Size.
@@ -24,6 +26,12 @@ interface ScreenCaptureHost {
   // package_name is what should be used as the permission token
   // returns true if the user accepts, false otherwise
   RequestPermission@0(string display_name, string package_name) => (bool granted);
+
+  // Requests that a corresponding active permission dialog from a prior call to
+  // RequestPermission be accepted. This will only be allowed under test
+  // conditions.
+  // package_name should match what was passed into RequestPermission
+  [MinVersion=1] TestModeAcceptPermission@2(string package_name);
 
   // Starts a new capture session, binding the session interface to the passed
   // in session request.
