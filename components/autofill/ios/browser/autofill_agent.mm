@@ -925,24 +925,21 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)renderAutofillTypePredictions:
-    (const std::vector<autofill::FormStructure*>&)structure {
+    (const std::vector<autofill::FormDataPredictions>&)forms {
   if (!base::FeatureList::IsEnabled(
           autofill::features::kAutofillShowTypePredictions)) {
     return;
   }
 
   base::DictionaryValue predictionData;
-  for (autofill::FormStructure* form : structure) {
+  for (const auto& form : forms) {
     auto formJSONData = std::make_unique<base::DictionaryValue>();
-    autofill::FormData formData = form->ToFormData();
-    for (const auto& field : *form) {
-      autofill::AutofillType type(field->Type());
-      if (type.IsUnknown())
-        continue;
-      formJSONData->SetKey(base::UTF16ToUTF8(field->name),
-                           base::Value(type.ToString()));
+    DCHECK(form.fields.size() == form.data.fields.size());
+    for (size_t i = 0; i < form.fields.size(); i++) {
+      formJSONData->SetKey(base::UTF16ToUTF8(form.data.fields[i].name),
+                           base::Value(form.fields[i].overall_type));
     }
-    predictionData.SetWithoutPathExpansion(base::UTF16ToUTF8(formData.name),
+    predictionData.SetWithoutPathExpansion(base::UTF16ToUTF8(form.data.name),
                                            std::move(formJSONData));
   }
   std::string dataString;

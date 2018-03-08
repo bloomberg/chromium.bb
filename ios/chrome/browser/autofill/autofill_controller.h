@@ -7,12 +7,10 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
+#include "components/autofill/core/common/form_data_predictions.h"
+
 @class AutofillAgent;
 @protocol FormSuggestionProvider;
-
-namespace autofill {
-class FormStructure;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -61,7 +59,7 @@ passwordGenerationManager:
 // Sends the field type predictions specified in |forms| to the renderer. This
 // method is a no-op if the appropriate experiment is not set.
 - (void)sendAutofillTypePredictionsToRenderer:
-    (const std::vector<autofill::FormStructure*>&)forms;
+    (const std::vector<autofill::FormDataPredictions>&)forms;
 
 // Sets a weak reference to the view controller used to present UI.
 - (void)setBaseViewController:(UIViewController*)baseViewController;

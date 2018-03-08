@@ -260,7 +260,7 @@
 }
 
 - (void)sendAutofillTypePredictionsToRenderer:
-    (const std::vector<autofill::FormStructure*>&)forms {
+    (const std::vector<autofill::FormDataPredictions>&)forms {
   // Not supported.
 }
 

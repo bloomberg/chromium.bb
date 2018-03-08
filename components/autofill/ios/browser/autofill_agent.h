@@ -9,13 +9,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 namespace autofill {
 class AutofillPopupDelegate;
 struct FormData;
-class FormStructure;
 }
 
 class PrefService;
@@ -53,7 +53,7 @@ class WebState;
 // Renders the field type predictions specified in |forms|. This method is a
 // no-op if the relevant experiment is not enabled.
 - (void)renderAutofillTypePredictions:
-    (const std::vector<autofill::FormStructure*>&)forms;
+    (const std::vector<autofill::FormDataPredictions>&)forms;
 
 @end
 
