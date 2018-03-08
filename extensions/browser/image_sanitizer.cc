@@ -90,6 +90,9 @@ void ImageSanitizer::Start(service_manager::Connector* connector,
   }
 
   connector->BindInterface(identity, &image_decoder_ptr_);
+  image_decoder_ptr_.set_connection_error_handler(
+      base::BindOnce(&ImageSanitizer::ReportError, weak_factory_.GetWeakPtr(),
+                     Status::kServiceError, base::FilePath()));
 
   std::set<base::FilePath> normalized_image_paths;
   for (const base::FilePath& path : image_paths_) {

@@ -39,6 +39,7 @@ class ImageSanitizer {
     kDecodingError,
     kEncodingError,
     kFileWriteError,
+    kServiceError,  // The data-decoder service crashed.
   };
 
   // Callback invoked when the image sanitization is is done. If status is an
