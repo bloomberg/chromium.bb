@@ -602,7 +602,7 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
               base::TestMockTimeTaskRunner::Type::kStandalone);
 
           capture_device_->SetMockTimeForTesting(
-              task_runner, task_runner->GetMockTickClock());
+              task_runner, task_runner->DeprecatedGetMockTickClock());
         }));
 
     EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))

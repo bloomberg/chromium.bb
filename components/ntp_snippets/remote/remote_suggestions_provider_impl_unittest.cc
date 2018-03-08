@@ -344,7 +344,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
-    tick_clock_ = timer_mock_task_runner_->GetMockTickClock();
 
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
@@ -422,8 +421,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         std::make_unique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
     database_ = database.get();
 
-    auto fetch_timeout_timer =
-        std::make_unique<base::OneShotTimer>(tick_clock_.get());
+    auto fetch_timeout_timer = std::make_unique<base::OneShotTimer>(
+        timer_mock_task_runner_->GetMockTickClock());
     fetch_timeout_timer->SetTaskRunner(timer_mock_task_runner_);
 
     return std::make_unique<RemoteSuggestionsProviderImpl>(
@@ -719,11 +718,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   RemoteSuggestionsDatabase* database_;
 
   Logger debug_logger_;
-
-  // TODO(tzik): Remove |mock_tick_clock_| after updating GetMockTickClock to
-  // own the instance. http://crbug.com/789079
-  std::unique_ptr<base::TickClock> tick_clock_;
-
   scoped_refptr<TestMockTimeTaskRunner> timer_mock_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderImplTest);

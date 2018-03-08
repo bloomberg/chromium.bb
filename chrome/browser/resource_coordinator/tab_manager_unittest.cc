@@ -134,7 +134,8 @@ enum TestIndicies {
 
 class TabManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabManagerTest() : scoped_set_tick_clock_for_testing_(tick_clock_.get()) {
+  TabManagerTest()
+      : scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
     base::MessageLoop::current()->SetTaskRunner(task_runner_);
   }
 
@@ -252,8 +253,6 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   TabManager* tab_manager_ = nullptr;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
       base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  std::unique_ptr<base::TickClock> tick_clock_ =
-      task_runner_->GetMockTickClock();
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle1_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle2_;

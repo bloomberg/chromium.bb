@@ -171,7 +171,7 @@ class SuggestionsServiceTest : public testing::Test {
         request_context_.get(), base::WrapUnique(test_suggestions_store_),
         base::WrapUnique(mock_thumbnail_manager_),
         base::WrapUnique(mock_blacklist_store_),
-        task_runner_->GetMockTickClock());
+        task_runner_->DeprecatedGetMockTickClock());
   }
 
   GURL GetCurrentlyQueriedUrl() {

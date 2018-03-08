@@ -67,7 +67,7 @@ class HttpServerPropertiesImplTest : public testing::Test {
   HttpServerPropertiesImplTest()
       : test_task_runner_(new base::TestMockTimeTaskRunner()),
         test_tick_clock_(test_task_runner_->GetMockTickClock()),
-        impl_(test_tick_clock_.get(), &test_clock_) {
+        impl_(test_tick_clock_, &test_clock_) {
     // Set |test_clock_| to some random time.
     test_clock_.Advance(base::TimeDelta::FromSeconds(12345));
   }
@@ -98,7 +98,7 @@ class HttpServerPropertiesImplTest : public testing::Test {
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
-  std::unique_ptr<base::TickClock> test_tick_clock_;
+  base::TickClock* test_tick_clock_;
   base::SimpleTestClock test_clock_;
 
   HttpServerPropertiesImpl impl_;

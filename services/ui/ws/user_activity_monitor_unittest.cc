@@ -92,7 +92,7 @@ class UserActivityMonitorTest : public TaskRunnerTestBase {
   void SetUp() override {
     TaskRunnerTestBase::SetUp();
     monitor_ = std::make_unique<UserActivityMonitor>(
-        task_runner()->GetMockTickClock());
+        task_runner()->DeprecatedGetMockTickClock());
   }
 
   std::unique_ptr<UserActivityMonitor> monitor_;

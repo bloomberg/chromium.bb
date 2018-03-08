@@ -65,13 +65,12 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   AffiliationFetchThrottlerTest()
       : network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         task_runner_(new base::TestMockTimeTaskRunner),
-        mock_tick_clock_(task_runner_->GetMockTickClock()),
-        mock_delegate_(mock_tick_clock_.get()) {}
+        mock_delegate_(task_runner_->GetMockTickClock()) {}
   ~AffiliationFetchThrottlerTest() override {}
 
   std::unique_ptr<AffiliationFetchThrottler> CreateThrottler() {
     return std::make_unique<AffiliationFetchThrottler>(
-        &mock_delegate_, task_runner_, mock_tick_clock_.get());
+        &mock_delegate_, task_runner_, task_runner_->GetMockTickClock());
   }
 
   void SimulateHasNetworkConnectivity(bool has_connectivity) {
@@ -126,9 +125,6 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  // TODO(tzik): Remove |mock_tick_clock_| after updating TestMockTimeTaskRunner
-  // to own the clock instances.
-  std::unique_ptr<base::TickClock> mock_tick_clock_;
   MockAffiliationFetchThrottlerDelegate mock_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationFetchThrottlerTest);

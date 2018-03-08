@@ -435,11 +435,10 @@ TEST(TimerTest, OneShotTimer_CustomTaskRunner) {
 TEST(TimerTest, OneShotTimerWithTickClock) {
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(Time::Now(), TimeTicks::Now()));
-  std::unique_ptr<TickClock> tick_clock(task_runner->GetMockTickClock());
   MessageLoop message_loop;
   message_loop.SetTaskRunner(task_runner);
   Receiver receiver;
-  OneShotTimer timer(tick_clock.get());
+  OneShotTimer timer(task_runner->GetMockTickClock());
   timer.Start(FROM_HERE, TimeDelta::FromSeconds(1),
               Bind(&Receiver::OnCalled, Unretained(&receiver)));
   task_runner->FastForwardBy(TimeDelta::FromSeconds(1));
@@ -477,12 +476,11 @@ TEST(TimerTest, RepeatingTimerZeroDelay_Cancel) {
 TEST(TimerTest, RepeatingTimerWithTickClock) {
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(Time::Now(), TimeTicks::Now()));
-  std::unique_ptr<TickClock> tick_clock(task_runner->GetMockTickClock());
   MessageLoop message_loop;
   message_loop.SetTaskRunner(task_runner);
   Receiver receiver;
   const int expected_times_called = 10;
-  RepeatingTimer timer(tick_clock.get());
+  RepeatingTimer timer(task_runner->GetMockTickClock());
   timer.Start(FROM_HERE, TimeDelta::FromSeconds(1),
               Bind(&Receiver::OnCalled, Unretained(&receiver)));
   task_runner->FastForwardBy(TimeDelta::FromSeconds(expected_times_called));
@@ -518,12 +516,11 @@ TEST(TimerTest, DelayTimer_Deleted) {
 TEST(TimerTest, DelayTimerWithTickClock) {
   scoped_refptr<TestMockTimeTaskRunner> task_runner(
       new TestMockTimeTaskRunner(Time::Now(), TimeTicks::Now()));
-  std::unique_ptr<TickClock> tick_clock(task_runner->GetMockTickClock());
   MessageLoop message_loop;
   message_loop.SetTaskRunner(task_runner);
   Receiver receiver;
   DelayTimer timer(FROM_HERE, TimeDelta::FromSeconds(1), &receiver,
-                   &Receiver::OnCalled, tick_clock.get());
+                   &Receiver::OnCalled, task_runner->GetMockTickClock());
   task_runner->FastForwardBy(TimeDelta::FromMilliseconds(999));
   EXPECT_FALSE(receiver.WasCalled());
   timer.Reset();

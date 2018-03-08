@@ -107,11 +107,9 @@ RemoteCommandsQueueTest::RemoteCommandsQueueTest()
 }
 
 void RemoteCommandsQueueTest::SetUp() {
-  std::unique_ptr<base::TickClock> clock(task_runner_->GetMockTickClock());
-  test_start_time_ = clock->NowTicks();
-
-  clock_ = clock.get();
-  queue_.SetClockForTesting(std::move(clock));
+  clock_ = task_runner_->GetMockTickClock();
+  test_start_time_ = clock_->NowTicks();
+  queue_.SetClockForTesting(task_runner_->DeprecatedGetMockTickClock());
   queue_.AddObserver(&observer_);
 }
 

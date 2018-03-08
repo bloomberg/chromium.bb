@@ -20,12 +20,12 @@
 #include "base/synchronization/lock.h"
 #include "base/test/test_pending_task.h"
 #include "base/threading/thread_checker_impl.h"
+#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 namespace base {
 
-class Clock;
-class TickClock;
 class ThreadTaskRunnerHandle;
 
 // Runs pending tasks in the order of the tasks' post time + delay, and keeps
@@ -159,11 +159,17 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
 
   // Returns a Clock that uses the virtual time of |this| as its time source.
   // The returned Clock will hold a reference to |this|.
-  std::unique_ptr<Clock> GetMockClock() const;
+  // TODO(tzik): Remove DeprecatedGetMockClock() after updating all callers to
+  // use non-owning Clock.
+  std::unique_ptr<Clock> DeprecatedGetMockClock() const;
+  Clock* GetMockClock() const;
 
   // Returns a TickClock that uses the virtual time ticks of |this| as its tick
   // source. The returned TickClock will hold a reference to |this|.
-  std::unique_ptr<TickClock> GetMockTickClock() const;
+  // TODO(tzik): Replace Remove DeprecatedGetMockTickClock() after updating all
+  // callers to use non-owning TickClock.
+  std::unique_ptr<TickClock> DeprecatedGetMockTickClock() const;
+  TickClock* GetMockTickClock() const;
 
   base::circular_deque<TestPendingTask> TakePendingTasks();
   bool HasPendingTask() const;
@@ -195,6 +201,25 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   virtual void OnAfterTaskRun();
 
  private:
+  // MockClock implements TickClock and Clock. Always returns the then-current
+  // mock time of |task_runner| as the current time or time ticks.
+  class MockClock : public TickClock, public Clock {
+   public:
+    explicit MockClock(TestMockTimeTaskRunner* task_runner)
+        : task_runner_(task_runner) {}
+
+    // TickClock:
+    TimeTicks NowTicks() override;
+
+    // Clock:
+    Time Now() override;
+
+   private:
+    TestMockTimeTaskRunner* task_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(MockClock);
+  };
+
   struct TestOrderedPendingTask;
 
   // Predicate that defines a strict weak temporal ordering of tasks.
@@ -253,6 +278,8 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   // Set to true in RunLoop::Delegate::Quit() to signal the topmost
   // RunLoop::Delegate::Run() instance to stop, reset to false when it does.
   bool quit_run_loop_ = false;
+
+  mutable MockClock mock_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMockTimeTaskRunner);
 };
