@@ -25,7 +25,7 @@ class WebIDLParser(unittest.TestCase):
         os.path.join(os.path.dirname(__file__), 'test_parser'))
     self.filenames = glob.glob('%s/*_web.idl' % test_dir)
 
-  def _TestNode(self, node):
+  def _TestNode(self, node, filepath):
     comments = node.GetListOf('SpecialComment')
     for comment in comments:
       check, value = ParseCommentTest(comment.GetName())
@@ -37,7 +37,7 @@ class WebIDLParser(unittest.TestCase):
       if check == 'TREE':
         quick = '\n'.join(node.Tree())
         lineno = node.GetProperty('LINENO')
-        msg = 'Mismatched tree at line %d:' % lineno
+        msg = 'Mismatched tree at line %d in %s:' % (lineno, filepath)
         msg += '\n\n[EXPECTED]\n%s\n\n[ACTUAL]\n%s\n' % (value, quick)
         self.assertEqual(value, quick, msg)
 
@@ -49,7 +49,7 @@ class WebIDLParser(unittest.TestCase):
           filename)
 
       for node in filenode.GetChildren():
-        self._TestNode(node)
+        self._TestNode(node, filename)
 
 
 class TestImplements(unittest.TestCase):

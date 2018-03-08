@@ -23,6 +23,7 @@ ITERABLE iterable
 LEGACYCALLER legacycaller
 LONG long
 MAPLIKE maplike
+MIXIN mixin
 NAN Nan
 NULL null
 OBJECT object
