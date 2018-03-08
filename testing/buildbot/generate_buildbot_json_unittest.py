@@ -5,6 +5,8 @@
 
 """Tests for generate_buildbot_json.py."""
 
+import argparse
+import os
 import unittest
 
 import generate_buildbot_json
@@ -1109,6 +1111,18 @@ class UnitTest(unittest.TestCase):
                     FOO_TEST_SUITE,
                     EMPTY_EXCEPTIONS)
     fbb.files['chromium.test.json'] = MULTI_DIMENSION_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+
+  def test_relative_pyl_file_dir(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    REUSING_TEST_WITH_DIFFERENT_NAME,
+                    EMPTY_EXCEPTIONS)
+    fbb.args = argparse.Namespace(pyl_files_dir='relative/path/')
+    for file_name in list(fbb.files):
+      fbb.files[os.path.join('relative/path/', file_name)] = (
+          fbb.files.pop(file_name))
+    fbb.check_input_file_consistency()
+    fbb.files['relative/path/chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
 
