@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/translate/core/browser/translate_manager.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
@@ -146,12 +145,12 @@ const NSInteger CWVTranslationErrorScriptLoadError =
       base::SysNSStringToUTF8(sourceLanguage.languageCode);
   std::string targetLanguageCode =
       base::SysNSStringToUTF8(targetLanguage.languageCode);
-  _translateClient->translate_manager()->TranslatePage(
-      sourceLanguageCode, targetLanguageCode, userInitiated);
+  _translateClient->TranslatePage(sourceLanguageCode, targetLanguageCode,
+                                  userInitiated);
 }
 
 - (void)revertTranslation {
-  _translateClient->translate_manager()->RevertTranslation();
+  _translateClient->RevertTranslation();
 }
 
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy

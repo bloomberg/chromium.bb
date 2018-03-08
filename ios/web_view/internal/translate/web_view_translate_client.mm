@@ -55,6 +55,19 @@ WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
 
 WebViewTranslateClient::~WebViewTranslateClient() = default;
 
+void WebViewTranslateClient::TranslatePage(const std::string& source_lang,
+                                           const std::string& target_lang,
+                                           bool triggered_from_menu) {
+  DCHECK(translate_manager_);
+  translate_manager_->TranslatePage(source_lang, target_lang,
+                                    triggered_from_menu);
+}
+
+void WebViewTranslateClient::RevertTranslation() {
+  DCHECK(translate_manager_);
+  translate_manager_->RevertTranslation();
+}
+
 // TranslateClient implementation:
 
 std::unique_ptr<infobars::InfoBar> WebViewTranslateClient::CreateInfoBar(
@@ -123,6 +136,8 @@ void WebViewTranslateClient::ShowReportLanguageDetectionErrorUI(
     const GURL& report_url) {
   NOTREACHED();
 }
+
+// web::WebStateObserver implementation
 
 void WebViewTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
