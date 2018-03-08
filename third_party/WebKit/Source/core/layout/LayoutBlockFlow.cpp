@@ -4166,7 +4166,7 @@ bool LayoutBlockFlow::HitTestFloats(
                             floating_object.GetLayoutObject()->Location().Y();
       LayoutPoint child_point = FlipFloatForWritingModeForChild(
           floating_object, adjusted_location + LayoutSize(x_offset, y_offset));
-      if (floating_object.GetLayoutObject()->HitTest(
+      if (floating_object.GetLayoutObject()->HitTestAllPhases(
               result, location_in_container, child_point)) {
         UpdateHitTestResult(
             result, location_in_container.Point() - ToLayoutSize(child_point));

@@ -252,8 +252,8 @@ bool InlineBox::NodeAtPoint(HitTestResult& result,
         GetLineLayoutItem().ContainingBlock().FlipForWritingModeForChild(
             LineLayoutBox(GetLineLayoutItem()), child_point);
 
-  return GetLineLayoutItem().HitTest(result, location_in_container,
-                                     child_point);
+  return GetLineLayoutItem().HitTestAllPhases(result, location_in_container,
+                                              child_point);
 }
 
 const RootInlineBox& InlineBox::Root() const {

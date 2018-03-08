@@ -677,6 +677,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return hit_test_action == kHitTestForeground;
   }
 
+  bool HitTestAllPhases(HitTestResult&,
+                        const HitTestLocation& location_in_container,
+                        const LayoutPoint& accumulated_offset,
+                        HitTestFilter = kHitTestAll) final;
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,

@@ -3230,10 +3230,11 @@ CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
   return CompositingReason::kNone;
 }
 
-bool LayoutObject::HitTest(HitTestResult& result,
-                           const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
-                           HitTestFilter hit_test_filter) {
+bool LayoutObject::HitTestAllPhases(
+    HitTestResult& result,
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& accumulated_offset,
+    HitTestFilter hit_test_filter) {
   bool inside = false;
   if (hit_test_filter != kHitTestSelf) {
     // First test the foreground layer (lines and inlines).

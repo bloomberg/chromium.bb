@@ -1552,22 +1552,31 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
 }
 
 // Hit Testing
+bool LayoutBox::HitTestAllPhases(HitTestResult& result,
+                                 const HitTestLocation& location_in_container,
+                                 const LayoutPoint& accumulated_offset,
+                                 HitTestFilter hit_test_filter) {
+  // Check if we need to do anything at all.
+  // If we have clipping, then we can't have any spillout.
+  // TODO(pdr): Why is this optimization not valid for the effective root?
+  if (!RootScrollerUtil::IsEffective(*this)) {
+    LayoutRect overflow_box =
+        HasOverflowClip() ? BorderBoxRect() : VisualOverflowRect();
+    FlipForWritingMode(overflow_box);
+    LayoutPoint adjusted_location = accumulated_offset + Location();
+    overflow_box.MoveBy(adjusted_location);
+    if (!location_in_container.Intersects(overflow_box))
+      return false;
+  }
+  return LayoutObject::HitTestAllPhases(result, location_in_container,
+                                        accumulated_offset, hit_test_filter);
+}
+
 bool LayoutBox::NodeAtPoint(HitTestResult& result,
                             const HitTestLocation& location_in_container,
                             const LayoutPoint& accumulated_offset,
                             HitTestAction action) {
   LayoutPoint adjusted_location = accumulated_offset + Location();
-
-  if (!RootScrollerUtil::IsEffective(*this)) {
-    // Check if we need to do anything at all.
-    // If we have clipping, then we can't have any spillout.
-    LayoutRect overflow_box =
-        HasOverflowClip() ? BorderBoxRect() : VisualOverflowRect();
-    FlipForWritingMode(overflow_box);
-    overflow_box.MoveBy(adjusted_location);
-    if (!location_in_container.Intersects(overflow_box))
-      return false;
-  }
 
   bool should_hit_test_self = IsInSelfHitTestingPhase(action);
 

@@ -239,12 +239,11 @@ class LineLayoutItem {
     return layout_object_->VisibleToHitTestRequest(request);
   }
 
-  bool HitTest(HitTestResult& result,
-               const HitTestLocation& location_in_container,
-               const LayoutPoint& accumulated_offset,
-               HitTestFilter filter = kHitTestAll) {
-    return layout_object_->HitTest(result, location_in_container,
-                                   accumulated_offset, filter);
+  bool HitTestAllPhases(HitTestResult& result,
+                        const HitTestLocation& location_in_container,
+                        const LayoutPoint& accumulated_offset) {
+    return layout_object_->HitTestAllPhases(result, location_in_container,
+                                            accumulated_offset);
   }
 
   SelectionState GetSelectionState() const {
