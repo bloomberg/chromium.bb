@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"

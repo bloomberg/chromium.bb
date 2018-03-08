@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 
 #include <utility>
 
+#include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
@@ -13,7 +14,6 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"

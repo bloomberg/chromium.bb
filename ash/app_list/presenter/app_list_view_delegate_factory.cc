@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
+#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 
 namespace app_list {
 

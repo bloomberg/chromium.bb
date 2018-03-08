@@ -4,10 +4,10 @@
 
 #include "ash/system/tray_drag_controller.h"
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 

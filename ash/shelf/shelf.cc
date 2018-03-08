@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -19,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/logging.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"

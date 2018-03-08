@@ -2121,6 +2121,8 @@ split_static_library("ui") {
     deps += [
       "//ash",
       "//ash:ash_with_content",
+      "//ash/app_list/presenter",
+      "//ash/app_list/presenter:mojom",
       "//ash/components/shortcut_viewer:ksv",
       "//ash/public/cpp",
       "//ash/public/cpp/vector_icons",
@@ -2143,8 +2145,6 @@ split_static_library("ui") {
       "//services/device/public/mojom",
       "//services/ui/public/cpp",
       "//services/ui/public/interfaces",
-      "//ui/app_list/presenter",
-      "//ui/app_list/presenter:mojom",
       "//ui/base/ime",
       "//ui/chromeos",
       "//ui/chromeos/events",

@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
 

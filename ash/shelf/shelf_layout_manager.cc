@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/animation/animation_change_type.h"
+#include "ash/app_list/presenter/app_list.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -32,7 +33,6 @@
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"

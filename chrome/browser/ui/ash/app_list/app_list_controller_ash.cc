@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

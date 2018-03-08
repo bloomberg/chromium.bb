@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_presenter_delegate.h"
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
+#include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 
 namespace ash {
 
