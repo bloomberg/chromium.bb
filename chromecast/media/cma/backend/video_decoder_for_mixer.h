@@ -44,10 +44,12 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // Stop playback.
   virtual void Stop() = 0;
 
-  // Pause playback.
+  // Pause playback. The video decoder must retain its playback rate after
+  // resume.
   virtual bool Pause() = 0;
 
-  // Resume playback.
+  // Resume playback. The video decoder must resume playback at the same
+  // playback rate prior to pausing.
   virtual bool Resume() = 0;
 
   // Get the current video PTS. This will typically be the pts of the last

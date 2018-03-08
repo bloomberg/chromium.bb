@@ -132,6 +132,7 @@ bool AudioDecoderForMixer::Start(int64_t start_pts) {
   if (!rate_shifter_) {
     CreateRateShifter(config_.samples_per_second);
   }
+  av_sync_->NotifyStart();
   return true;
 }
 
@@ -141,6 +142,7 @@ void AudioDecoderForMixer::Stop() {
   mixer_input_.reset();
   rate_shifter_.reset();
   weak_factory_.InvalidateWeakPtrs();
+  av_sync_->NotifyStop();
 
   Initialize();
 }
@@ -150,6 +152,7 @@ bool AudioDecoderForMixer::Pause() {
   DCHECK(mixer_input_);
   mixer_input_->SetPaused(true);
   paused_pts_ = GetCurrentPts();
+  av_sync_->NotifyPause();
   return true;
 }
 
@@ -158,6 +161,7 @@ bool AudioDecoderForMixer::Resume() {
   DCHECK(mixer_input_);
   paused_pts_ = kInvalidTimestamp;
   mixer_input_->SetPaused(false);
+  av_sync_->NotifyResume();
   return true;
 }
 

@@ -66,27 +66,8 @@ void AvSyncVideo::NotifyAudioBufferPushed(
       buffer_timestamp == INT64_MAX)
     return;
 
-  int64_t absolute_ts = delay.delay_microseconds + delay.timestamp_microseconds;
-
   audio_pts_->AddSample(delay.timestamp_microseconds,
                         buffer_timestamp - (delay.delay_microseconds), 1.0);
-
-  if (!setup_video_clock_ && backend_->video_decoder()) {
-    // TODO(almasrymina): If we don't have a valid delay at the start of
-    // playback, we should push silence to the mixer to get a valid delay
-    // before we start content playback.
-    LOG(INFO) << "Got valid delay. buffer_timestamp=" << buffer_timestamp
-              << " delay.delay_microseconds=" << delay.delay_microseconds
-              << " delay.timestamp_microseconds="
-              << delay.timestamp_microseconds;
-
-    backend_->video_decoder()->SetCurrentPts(
-        ((int64_t)buffer_timestamp) -
-        (absolute_ts - backend_->MonotonicClockNow()));
-    setup_video_clock_ = true;
-    timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
-                 &AvSyncVideo::UpkeepAvSync);
-  }
 }
 
 // TODO(almasrymina): this code is the core of the av sync logic, and the
@@ -99,13 +80,29 @@ void AvSyncVideo::NotifyAudioBufferPushed(
 // - Current requirements for number of samples in the linear regression is
 // arbitrary.
 void AvSyncVideo::UpkeepAvSync() {
-  DCHECK(setup_video_clock_);
   if (!backend_->video_decoder()) {
     VLOG(4) << "No video decoder available.";
     return;
   }
 
   int64_t now = backend_->MonotonicClockNow();  // 'now'...
+  int64_t current_apts;
+  double error;
+
+  if (!setup_video_clock_) {
+    // TODO(almasrymina): If we don't have a valid delay at the start of
+    // playback, we should push silence to the mixer to get a valid delay
+    // before we start content playback.
+    if (audio_pts_->num_samples() > 1) {
+      audio_pts_->EstimateY(now, &current_apts, &error);
+
+      LOG(INFO) << "Setting up video clock. current_apts=" << current_apts;
+
+      backend_->video_decoder()->SetCurrentPts(current_apts);
+      setup_video_clock_ = true;
+    }
+    return;
+  }
 
   video_pts_->AddSample(now, backend_->video_decoder()->GetCurrentPts(), 1.0);
 
@@ -117,8 +114,6 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   int64_t current_vpts;
-  int64_t current_apts;
-  double error;
   double vpts_slope;
   double apts_slope;
   video_pts_->EstimateY(now, &current_vpts, &error);
@@ -185,6 +180,35 @@ void AvSyncVideo::UpkeepAvSync() {
     backend_->video_decoder()->SetPlaybackRate(apts_slope);
     current_video_playback_rate_ = apts_slope;
   }
+}
+
+void AvSyncVideo::StopAvSync() {
+  audio_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  video_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  error_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  timer_.Stop();
+}
+
+void AvSyncVideo::NotifyStart() {
+  timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
+               &AvSyncVideo::UpkeepAvSync);
+}
+
+void AvSyncVideo::NotifyStop() {
+  StopAvSync();
+  setup_video_clock_ = false;
+}
+
+void AvSyncVideo::NotifyPause() {
+  StopAvSync();
+}
+
+void AvSyncVideo::NotifyResume() {
+  timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
+               &AvSyncVideo::UpkeepAvSync);
 }
 
 AvSyncVideo::~AvSyncVideo() = default;
