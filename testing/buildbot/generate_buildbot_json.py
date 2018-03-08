@@ -201,9 +201,15 @@ class BBJSONGenerator(object):
         relative_path), 'wb') as fp: # pragma: no cover
       fp.write(contents) # pragma: no cover
 
+  def pyl_file_path(self, filename):
+    if self.args and self.args.pyl_files_dir:
+      return os.path.join(self.args.pyl_files_dir, filename)
+    return filename
+
   def load_pyl_file(self, filename):
     try:
-      return ast.literal_eval(self.read_file(filename))
+      return ast.literal_eval(self.read_file(
+          self.pyl_file_path(filename)))
     except (SyntaxError, ValueError) as e: # pragma: no cover
       raise BBGenErr('Failed to parse pyl file "%s": %s' %
                      (filename, e)) # pragma: no cover
@@ -598,7 +604,8 @@ class BBJSONGenerator(object):
     for waterfall in self.waterfalls:
       should_gen = not filters or waterfall['name'] in filters
       if should_gen:
-        self.write_file(waterfall['name'] + suffix,
+        file_path = waterfall['name'] + suffix
+        self.write_file(self.pyl_file_path(file_path),
                         self.generate_waterfall_json(waterfall))
 
   def check_input_file_consistency(self):
@@ -660,7 +667,8 @@ class BBJSONGenerator(object):
     ungenerated_waterfalls = set()
     for waterfall in self.waterfalls:
       expected = self.generate_waterfall_json(waterfall)
-      current = self.read_file(waterfall['name'] + '.json')
+      file_path = waterfall['name'] + '.json'
+      current = self.read_file(self.pyl_file_path(file_path))
       if expected != current:
         ungenerated_waterfalls.add(waterfall['name'])
         if verbose: # pragma: no cover
@@ -693,6 +701,9 @@ class BBJSONGenerator(object):
     parser.add_argument(
       'waterfall_filters', metavar='waterfalls', type=str, nargs='*',
       help='Optional list of waterfalls to generate.')
+    parser.add_argument(
+      '--pyl-files-dir', type=os.path.realpath,
+      help='Path to the directory containing the input .pyl files.')
     self.args = parser.parse_args(argv)
 
   def main(self, argv): # pragma: no cover
