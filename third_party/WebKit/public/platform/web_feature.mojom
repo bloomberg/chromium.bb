@@ -1468,7 +1468,6 @@ enum WebFeature {
   kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting = 1963,
   kGamepadAxes = 1964,
   kGamepadButtons = 1965,
-  kVibrateWithoutUserGesture = 1966,
   kDispatchMouseEventOnDisabledFormControl = 1967,
   kElementNameDOMInvalidHTMLParserValid = 1968,
   kElementNameDOMValidHTMLParserInvalid = 1969,

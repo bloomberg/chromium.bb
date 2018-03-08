@@ -1136,10 +1136,6 @@
       name: "V8IdleTasks",
     },
     {
-      name: "VibrateRequiresUserGesture",
-      status: "stable",
-    },
-    {
       name: "VideoFullscreenDetection",
     },
     {

@@ -14,7 +14,6 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
       const base::flat_set<WebFeature>, opt_in_features,
       ({
           WebFeature::kNavigatorVibrate, WebFeature::kNavigatorVibrateSubFrame,
-          WebFeature::kVibrateWithoutUserGesture,
           WebFeature::kTouchEventPreventedNoTouchAction,
           WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction,
           // kDataUriHasOctothorpe may not be recorded correctly for iframes.
