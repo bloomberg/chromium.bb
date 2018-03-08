@@ -114,6 +114,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
     manually_expanded_or_collapsed_ = true;
   }
 
+  type_ = data->type;
   expand_state_ = data->expand_state;
   shown_contents_ = data->shown_contents;
   swipe_input_rect_ =
@@ -208,6 +209,11 @@ void ArcNotificationItemImpl::DecrementWindowRefCount() {
 
 const gfx::ImageSkia& ArcNotificationItemImpl::GetSnapshot() const {
   return snapshot_;
+}
+
+mojom::ArcNotificationType ArcNotificationItemImpl::GetNotificationType()
+    const {
+  return type_;
 }
 
 mojom::ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState()

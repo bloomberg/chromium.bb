@@ -44,6 +44,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   void IncrementWindowRefCount() override;
   void DecrementWindowRefCount() override;
   const gfx::ImageSkia& GetSnapshot() const override;
+  mojom::ArcNotificationType GetNotificationType() const override;
   mojom::ArcNotificationExpandState GetExpandState() const override;
   bool IsManuallyExpandedOrCollapsed() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
@@ -61,6 +62,8 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
 
   // The snapshot of the latest notification.
   gfx::ImageSkia snapshot_;
+  // The type of the latest notification.
+  mojom::ArcNotificationType type_ = mojom::ArcNotificationType::SIMPLE;
   // The expand state of the latest notification.
   mojom::ArcNotificationExpandState expand_state_ =
       mojom::ArcNotificationExpandState::FIXED_SIZE;

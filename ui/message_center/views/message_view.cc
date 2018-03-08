@@ -133,6 +133,11 @@ bool MessageView::IsExpanded() const {
   return false;
 }
 
+bool MessageView::IsAutoExpandingAllowed() const {
+  // Allowed by default.
+  return true;
+}
+
 bool MessageView::IsManuallyExpandedOrCollapsed() const {
   // Not implemented by default.
   return false;

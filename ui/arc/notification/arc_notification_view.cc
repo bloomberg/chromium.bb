@@ -120,6 +120,16 @@ bool ArcNotificationView::IsExpanded() const {
          item_->GetExpandState() == mojom::ArcNotificationExpandState::EXPANDED;
 }
 
+bool ArcNotificationView::IsAutoExpandingAllowed() const {
+  if (!item_)
+    return false;
+
+  // Disallow auto-expanding if the notificaiton is bundled. This is consistent
+  // behavior with Android since expanded height of bundle notification might be
+  // too long vertically.
+  return item_->GetNotificationType() != mojom::ArcNotificationType::BUNDLED;
+}
+
 void ArcNotificationView::SetExpanded(bool expanded) {
   if (!item_)
     return;

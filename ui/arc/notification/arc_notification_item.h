@@ -69,6 +69,8 @@ class ArcNotificationItem {
   // Returns the current snapshot.
   virtual const gfx::ImageSkia& GetSnapshot() const = 0;
   // Returns the current expand state.
+  virtual mojom::ArcNotificationType GetNotificationType() const = 0;
+  // Returns the current expand state.
   virtual mojom::ArcNotificationExpandState GetExpandState() const = 0;
 
   virtual bool IsManuallyExpandedOrCollapsed() const = 0;

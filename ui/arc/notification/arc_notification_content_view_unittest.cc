@@ -102,6 +102,9 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
   bool IsOpeningSettingsSupported() const override { return true; }
+  mojom::ArcNotificationType GetNotificationType() const override {
+    return mojom::ArcNotificationType::SIMPLE;
+  }
   mojom::ArcNotificationExpandState GetExpandState() const override {
     return mojom::ArcNotificationExpandState::FIXED_SIZE;
   }
