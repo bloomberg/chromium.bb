@@ -29,9 +29,6 @@
 #include "modules/webdatabase/SQLTransaction.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8VoidCallback.h"
-#include "bindings/modules/v8/V8SQLTransactionCallback.h"
-#include "bindings/modules/v8/V8SQLTransactionErrorCallback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/Database.h"

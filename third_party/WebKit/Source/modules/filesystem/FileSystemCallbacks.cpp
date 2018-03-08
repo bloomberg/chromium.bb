@@ -33,13 +33,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/V8VoidCallback.h"
-#include "bindings/modules/v8/V8EntryCallback.h"
-#include "bindings/modules/v8/V8ErrorCallback.h"
-#include "bindings/modules/v8/V8FileCallback.h"
-#include "bindings/modules/v8/V8FileSystemCallback.h"
-#include "bindings/modules/v8/V8FileWriterCallback.h"
-#include "bindings/modules/v8/V8MetadataCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -131,7 +124,7 @@ void ScriptErrorCallback::Invoke(FileError::ErrorCode error) {
 };
 
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
-    : callback_(callback) {}
+    : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
 // EntryCallbacks -------------------------------------------------------------
 

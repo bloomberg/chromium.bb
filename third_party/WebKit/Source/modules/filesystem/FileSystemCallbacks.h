@@ -33,6 +33,13 @@
 
 #include <memory>
 
+#include "bindings/core/v8/V8VoidCallback.h"
+#include "bindings/modules/v8/V8EntryCallback.h"
+#include "bindings/modules/v8/V8ErrorCallback.h"
+#include "bindings/modules/v8/V8FileCallback.h"
+#include "bindings/modules/v8/V8FileSystemCallback.h"
+#include "bindings/modules/v8/V8FileWriterCallback.h"
+#include "bindings/modules/v8/V8MetadataCallback.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/EntryHeapVector.h"
 #include "platform/AsyncFileSystemCallbacks.h"
@@ -52,13 +59,6 @@ class File;
 class FileMetadata;
 class FileWriterBase;
 class Metadata;
-class V8EntryCallback;
-class V8ErrorCallback;
-class V8FileCallback;
-class V8FileSystemCallback;
-class V8FileWriterCallback;
-class V8MetadataCallback;
-class V8VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
 // may capture the error for throwing on return to script (for synchronous APIs)
@@ -114,7 +114,7 @@ class ScriptErrorCallback final : public ErrorCallbackBase {
 
  private:
   explicit ScriptErrorCallback(V8ErrorCallback*);
-  Member<V8ErrorCallback> callback_;
+  Member<V8PersistentCallbackInterface<V8ErrorCallback>> callback_;
 };
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
@@ -139,9 +139,10 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
     void OnSuccess(Entry*) override;
 
    private:
-    OnDidGetEntryV8Impl(V8EntryCallback* callback) : callback_(callback) {}
+    OnDidGetEntryV8Impl(V8EntryCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8EntryCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8EntryCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
@@ -222,9 +223,9 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
 
    private:
     OnDidOpenFileSystemV8Impl(V8FileSystemCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8FileSystemCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8FileSystemCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
@@ -286,9 +287,9 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
 
    private:
     OnDidReadMetadataV8Impl(V8MetadataCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8MetadataCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8MetadataCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
@@ -329,9 +330,9 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
 
    private:
     OnDidCreateFileWriterV8Impl(V8FileWriterCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8FileWriterCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8FileWriterCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
@@ -374,9 +375,9 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
 
    private:
     OnDidCreateSnapshotFileV8Impl(V8FileCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8FileCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8FileCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
@@ -423,9 +424,10 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
     void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) override;
 
    private:
-    OnDidSucceedV8Impl(V8VoidCallback* callback) : callback_(callback) {}
+    OnDidSucceedV8Impl(V8VoidCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8VoidCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(OnDidSucceedCallback*,
