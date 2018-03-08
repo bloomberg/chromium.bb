@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/named_guide_util.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -120,11 +121,11 @@ class OmniboxPerfTest : public PerfTest {
     toolbarView.frame = toolbarFrame;
     // Add toolbar to window.
     [window_ addSubview:toolbarView];
-    AddNamedGuide(kOmniboxGuide, window_);
-    AddNamedGuide(kBackButtonGuide, window_);
-    AddNamedGuide(kForwardButtonGuide, window_);
-    AddNamedGuide(kToolsMenuGuide, window_);
-    AddNamedGuide(kTabSwitcherGuide, window_);
+    NSArray* guides = @[
+      kOmniboxGuide, kBackButtonGuide, kForwardButtonGuide, kToolsMenuGuide,
+      kTabSwitcherGuide
+    ];
+    AddNamedGuidesToView(guides, window_);
     [coordinator_.viewController didMoveToParentViewController:nil];
     base::test::ios::WaitUntilCondition(^bool() {
       return IsToolbarLoaded(window_);

@@ -621,9 +621,9 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
   requiredHeight += bottomSafeAreaInset;
 
-  UILayoutGuide* guide = FindNamedGuide(kSecondaryToolbar, self);
+  UILayoutGuide* guide = [NamedGuide guideWithName:kSecondaryToolbar view:self];
   UILayoutGuide* guideNoFullscreen =
-      FindNamedGuide(kSecondaryToolbarNoFullscreen, self);
+      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreen view:self];
   if (guide && guideNoFullscreen) {
     CGFloat toolbarHeightCurrent = guide.layoutFrame.size.height;
     CGFloat toolbarHeightMax = guideNoFullscreen.layoutFrame.size.height;

@@ -124,8 +124,10 @@ using base::UserMetricsAction;
 
 // Returns the origin point of the popup for the |guideName|.
 - (CGPoint)popupOriginForNamedGuide:(GuideName*)guideName {
-  UILayoutGuide* guide = FindNamedGuide(
-      guideName, [self.presentationProvider viewForTabHistoryPresentation]);
+  UIView* presentationView =
+      [self.presentationProvider viewForTabHistoryPresentation];
+  UILayoutGuide* guide =
+      [NamedGuide guideWithName:guideName view:presentationView];
   DCHECK(guide);
   CGPoint leadingBottomCorner =
       CGPointMake(CGRectGetLeadingEdge(guide.layoutFrame),

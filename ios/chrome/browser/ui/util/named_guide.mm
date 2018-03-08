@@ -5,43 +5,78 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-// Named guide constants.
-GuideName* const kSecondaryToolbar = @"kSecondaryToolbar";
-GuideName* const kSecondaryToolbarNoFullscreen =
-    @"kSecondaryToolbarNoFullscreen";
-GuideName* const kOmniboxGuide = @"kOmniboxGuide";
-GuideName* const kBackButtonGuide = @"kBackButtonGuide";
-GuideName* const kForwardButtonGuide = @"kForwardButtonGuide";
-GuideName* const kTabSwitcherGuide = @"kTabSwitcherGuide";
-GuideName* const kToolsMenuGuide = @"kToolsMenuGuide";
+@interface NamedGuide ()
 
-UILayoutGuide* FindNamedGuide(GuideName* name, UIView* view) {
+// The constraints used to connect the guide to |constrainedView|.
+@property(nonatomic, strong) NSArray* constrainedViewConstraints;
+
+@end
+
+@implementation NamedGuide
+@synthesize name = _name;
+@synthesize constrainedView = _constrainedView;
+@synthesize constrainedViewConstraints = _constrainedViewConstraints;
+
+- (instancetype)initWithName:(GuideName*)name {
+  if (self = [super init]) {
+    _name = name;
+  }
+  return self;
+}
+
+- (void)dealloc {
+  self.constrainedView = nil;
+}
+
+#pragma mark - Accessors
+
+- (void)setConstrainedView:(UIView*)constrainedView {
+  if (_constrainedView == constrainedView)
+    return;
+  _constrainedView = constrainedView;
+  if (_constrainedView) {
+    self.constrainedViewConstraints = @[
+      [self.leadingAnchor
+          constraintEqualToAnchor:_constrainedView.leadingAnchor],
+      [self.trailingAnchor
+          constraintEqualToAnchor:_constrainedView.trailingAnchor],
+      [self.topAnchor constraintEqualToAnchor:_constrainedView.topAnchor],
+      [self.bottomAnchor constraintEqualToAnchor:_constrainedView.bottomAnchor]
+    ];
+  } else {
+    self.constrainedViewConstraints = nil;
+  }
+}
+
+- (void)setConstrainedViewConstraints:(NSArray*)constrainedViewConstraints {
+  if (_constrainedViewConstraints == constrainedViewConstraints)
+    return;
+  if (_constrainedViewConstraints.count)
+    [NSLayoutConstraint deactivateConstraints:_constrainedViewConstraints];
+  _constrainedViewConstraints = constrainedViewConstraints;
+  if (_constrainedViewConstraints.count)
+    [NSLayoutConstraint activateConstraints:_constrainedViewConstraints];
+}
+
+#pragma mark - Public
+
++ (instancetype)guideWithName:(GuideName*)name view:(UIView*)view {
   while (view) {
     for (UILayoutGuide* guide in view.layoutGuides) {
-      if ([guide.identifier isEqualToString:name])
-        return guide;
+      NamedGuide* namedGuide = base::mac::ObjCCast<NamedGuide>(guide);
+      if ([namedGuide.name isEqualToString:name])
+        return namedGuide;
     }
     view = view.superview;
   }
   return nil;
 }
 
-UILayoutGuide* AddNamedGuide(GuideName* name, UIView* view) {
-  DCHECK(!FindNamedGuide(name, view));
-  UILayoutGuide* guide = [[UILayoutGuide alloc] init];
-  guide.identifier = name;
-  [view addLayoutGuide:guide];
-  return guide;
-}
-
-void ConstrainNamedGuideToView(GuideName* guideName, UIView* view) {
-  UILayoutGuide* layoutGuide = FindNamedGuide(guideName, view);
-  DCHECK(layoutGuide);
-  AddSameConstraints(view, layoutGuide);
-}
+@end

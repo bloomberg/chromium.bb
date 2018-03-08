@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
@@ -434,14 +435,16 @@ const CGFloat kScrollFadeDistance = 30;
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
-  ConstrainNamedGuideToView(kOmniboxGuide, self.view.locationBarContainer);
-  ConstrainNamedGuideToView(kBackButtonGuide, self.view.backButton.imageView);
-  ConstrainNamedGuideToView(kForwardButtonGuide,
-                            self.view.forwardButton.imageView);
-  ConstrainNamedGuideToView(kToolsMenuGuide, self.view.toolsMenuButton);
+  SetNamedGuideConstrainedViews(@{
+    kOmniboxGuide : self.view.locationBarContainer,
+    kBackButtonGuide : self.view.backButton.imageView,
+    kForwardButtonGuide : self.view.forwardButton.imageView,
+    kToolsMenuGuide : self.view.toolsMenuButton,
+  });
   if (!IsIPadIdiom()) {
-    ConstrainNamedGuideToView(kTabSwitcherGuide,
-                              self.view.tabSwitchStripButton.imageView);
+    UIView* tabSwitcherButton = self.view.tabSwitchStripButton.imageView;
+    [NamedGuide guideWithName:kTabSwitcherGuide view:tabSwitcherButton]
+        .constrainedView = tabSwitcherButton;
   }
 }
 
