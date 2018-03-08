@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -32,6 +34,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
 #include "content/common/page_state_serialization.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -49,9 +52,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_provisional_load_interceptor.h"
@@ -8031,12 +8036,29 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, HideDownloadFromUnmodifiedNewTab) {
       static_cast<const NavigationControllerImpl&>(
           shell()->web_contents()->GetController());
 
-  OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-                       ui::PAGE_TRANSITION_LINK, true);
-  params.suggested_filename = std::string("foo");
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ScopedTempDir downloads_directory;
+    ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
+    DownloadManager* download_manager = BrowserContext::GetDownloadManager(
+        shell()->web_contents()->GetBrowserContext());
+    ShellDownloadManagerDelegate* download_delegate =
+        static_cast<ShellDownloadManagerDelegate*>(
+            download_manager->GetDelegate());
+    download_delegate->SetDownloadBehaviorForTesting(
+        downloads_directory.GetPath());
 
-  shell()->web_contents()->OpenURL(params);
-  WaitForLoadStop(shell()->web_contents());
+    DownloadTestObserverTerminal observer(
+        download_manager, 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+
+    OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                         ui::PAGE_TRANSITION_LINK, true);
+    params.suggested_filename = std::string("foo");
+
+    shell()->web_contents()->OpenURL(params);
+    WaitForLoadStop(shell()->web_contents());
+    observer.WaitForFinished();
+  }
 
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_FALSE(controller.GetVisibleEntry());
