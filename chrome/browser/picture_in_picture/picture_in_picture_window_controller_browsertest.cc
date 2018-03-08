@@ -44,8 +44,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   SetUpWindowController(active_web_contents);
   ASSERT_TRUE(window_controller() != nullptr);
 
-  ASSERT_TRUE(window_controller()->GetWindowForTesting() == nullptr);
-  window_controller()->Init();
+  ASSERT_TRUE(window_controller()->GetWindowForTesting() != nullptr);
   ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
   window_controller()->Show();
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());

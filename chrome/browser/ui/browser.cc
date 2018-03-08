@@ -1411,10 +1411,10 @@ void Browser::UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {
   if (!surface_id.is_valid())
     return;
 
-  pip_window_controller_.reset(
-      PictureInPictureWindowController::GetOrCreateForWebContents(
-          tab_strip_model_->GetActiveWebContents()));
-  pip_window_controller_->Init();
+  if (!pip_window_controller_)
+    pip_window_controller_.reset(
+        PictureInPictureWindowController::GetOrCreateForWebContents(
+            tab_strip_model_->GetActiveWebContents()));
   pip_window_controller_->EmbedSurface(surface_id);
   pip_window_controller_->Show();
 }
