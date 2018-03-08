@@ -600,7 +600,7 @@ mojom("mojo_bindings") {
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",
-    "//third_party/WebKit/public/mojom",
+    "//third_party/WebKit/public/mojom:mojom_core",
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
@@ -608,7 +608,7 @@ mojom("mojo_bindings") {
     "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/public/mojom" ]
+  overridden_deps = [ "//third_party/WebKit/public/mojom:mojom_core" ]
   component_deps = [ "//third_party/WebKit/public/common" ]
 
   component_output_prefix = "content_common_mojo_bindings"

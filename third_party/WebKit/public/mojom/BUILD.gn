@@ -57,7 +57,7 @@ mojom("mojom_platform") {
 # This target can include mojom interfaces which do use types that are
 # typemapped to a type in Source/core. This also means these interfaces are not
 # available from Source/platform.
-mojom("mojom") {
+mojom("mojom_core") {
   sources = [
     "message_port/message_port.mojom",
   ]

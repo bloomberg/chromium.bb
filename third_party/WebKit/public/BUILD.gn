@@ -901,11 +901,11 @@ mojom("core_mojo_bindings") {
     "platform/modules/broadcastchannel/broadcast_channel.mojom",
   ]
   public_deps = [
-    "//third_party/WebKit/public/mojom",
+    "//third_party/WebKit/public/mojom:mojom_core",
     "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/public/mojom" ]
+  overridden_deps = [ "//third_party/WebKit/public/mojom:mojom_core" ]
   component_deps = [ "//third_party/WebKit/public/common" ]
 
   component_output_prefix = "blink_core_mojo_bindings"
