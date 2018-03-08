@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "printing/features/features.h"
 
 #if !defined(OS_ANDROID)

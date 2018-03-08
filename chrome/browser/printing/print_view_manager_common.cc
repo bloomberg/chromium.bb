@@ -5,7 +5,7 @@
 #include "chrome/browser/printing/print_view_manager_common.h"
 
 #include "content/public/browser/render_frame_host.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

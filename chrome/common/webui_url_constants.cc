@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/safe_browsing/web_ui/constants.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace chrome {
 

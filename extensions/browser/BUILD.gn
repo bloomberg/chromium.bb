@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions)
 
@@ -380,9 +380,9 @@ jumbo_source_set("browser_sources") {
     "//crypto:platform",
     "//extensions:extensions_browser_resources",
     "//extensions/browser/guest_view/web_view/web_ui",
+    "//extensions/buildflags",
     "//extensions/common",
     "//extensions/common/api",
-    "//extensions/features",
     "//extensions/strings",
     "//google_apis",
     "//ppapi/features",
@@ -623,9 +623,9 @@ source_set("unit_tests") {
     "//device/bluetooth:mocks",
     "//extensions:extensions_browser_resources",
     "//extensions:test_support",
+    "//extensions/buildflags",
     "//extensions/common",
     "//extensions/common/api",
-    "//extensions/features",
     "//extensions/strings",
     "//ipc:test_support",
     "//net:test_support",

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 #
 
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
 static_library("router") {

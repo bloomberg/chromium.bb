@@ -4,7 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 # This args block should contain arguments used within the //chromecast
 # directory. Arguments which are used in other Chrome components should

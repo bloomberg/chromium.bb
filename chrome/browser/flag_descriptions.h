@@ -11,7 +11,7 @@
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "media/media_features.h"
 
 // This file declares strings used in chrome://flags. These messages are not

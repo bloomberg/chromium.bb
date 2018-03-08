@@ -26,7 +26,7 @@
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"

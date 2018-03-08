@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//extensions/common/api/schema.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
@@ -21,7 +21,7 @@ json_schema_api("generated_api") {
       extensions_api_uncompiled_bundle_schema_sources
   deps = [
     "//base",
-    "//extensions/features",
+    "//extensions/buildflags",
   ]
 }
 
@@ -35,6 +35,6 @@ group("api") {
   public_deps = [
     ":generated_api",
     ":mojom",
-    "//extensions/features",
+    "//extensions/buildflags",
   ]
 }

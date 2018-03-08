@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 assert(!is_android && !is_ios)
 assert(enable_extensions,

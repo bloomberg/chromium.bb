@@ -16,7 +16,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/previews_state.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 class DownloadRequestLimiter;
 

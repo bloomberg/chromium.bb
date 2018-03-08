@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//extensions/common/api/schema.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions,

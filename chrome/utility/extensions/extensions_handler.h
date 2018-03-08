@@ -6,7 +6,7 @@
 #define CHROME_UTILITY_EXTENSIONS_EXTENSIONS_HANDLER_H_
 
 #include "build/build_config.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"

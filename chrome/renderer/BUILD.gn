@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//tools/grit/grit_rule.gni")
@@ -140,7 +140,7 @@ static_library("renderer") {
     "//content/app/strings",
     "//content/public/common",
     "//content/public/renderer",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//media",
     "//media:media_features",
     "//media/capture",
@@ -432,7 +432,7 @@ static_library("test_support") {
     ":renderer",
     "//chrome/common:search_mojom",
     "//content/test:test_support",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//testing/gmock",
     "//testing/gtest",
   ]

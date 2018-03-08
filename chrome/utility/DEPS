@@ -28,7 +28,7 @@ include_rules = [
   "+content/public/child",
   "+content/public/utility",
   "+extensions/common",
-  "+extensions/features",
+  "+extensions/buildflags",
   "+extensions/utility",
   "+media",
   "+services/network/public",

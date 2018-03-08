@@ -58,7 +58,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "ppapi/features/features.h"

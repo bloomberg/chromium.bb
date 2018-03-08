@@ -42,7 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_zoom.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "printing/features/features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"

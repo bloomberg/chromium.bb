@@ -14,9 +14,9 @@
 #include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/features/features.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"

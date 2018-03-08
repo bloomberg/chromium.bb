@@ -31,7 +31,7 @@
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/webusb_descriptors.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "jni/UsbChooserDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"

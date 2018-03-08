@@ -10,7 +10,7 @@
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 // This class keeps the extension API's windowID up to date with the current
 // window of the tab and observes navigation events.

@@ -9,7 +9,7 @@ include_rules = [
   "+components/toolbar",
   "+components/viz/common/gpu/context_provider.h",
   "+components/web_contents_delegate_android",
-  "+device/vr/features/features.h",
+  "+device/vr/buildflags/buildflags.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sandbox/linux/seccomp-bpf-helpers",
   "+sandbox/sandbox_features.h",

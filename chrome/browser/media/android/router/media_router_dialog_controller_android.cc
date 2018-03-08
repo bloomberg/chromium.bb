@@ -21,7 +21,7 @@
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "jni/ChromeMediaRouterDialogController_jni.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(

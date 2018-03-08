@@ -22,7 +22,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"

@@ -59,7 +59,7 @@
 #include "components/sync/driver/sync_policy_handler.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/variations/pref_names.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 

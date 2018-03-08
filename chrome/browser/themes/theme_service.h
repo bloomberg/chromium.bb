@@ -22,8 +22,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
-#include "extensions/features/features.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserThemePack;

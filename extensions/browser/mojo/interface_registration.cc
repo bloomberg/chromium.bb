@@ -15,10 +15,10 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/mojo/keep_alive_impl.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/switches.h"
-#include "extensions/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if BUILDFLAG(ENABLE_WIFI_DISPLAY)

@@ -30,7 +30,7 @@
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/ssl/channel_id_store.h"
 #include "ui/base/models/tree_node_model.h"
 

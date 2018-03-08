@@ -6,7 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//chrome/common/features.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//printing/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -39,7 +39,7 @@ static_library("utility") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/utility",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//ipc",
     "//media",
     "//net:net_with_v8",

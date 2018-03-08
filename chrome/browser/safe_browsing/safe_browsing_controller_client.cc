@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_controller_client.h"
 
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/ui/browser.h"

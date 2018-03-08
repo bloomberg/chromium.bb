@@ -29,7 +29,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

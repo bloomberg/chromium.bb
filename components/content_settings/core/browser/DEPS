@@ -5,7 +5,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/sync_preferences",
   "+components/url_formatter",
-  "+extensions/features",
+  "+extensions/buildflags",
   "+net/base",
   "+net/cookies",
   "+services/preferences/public",

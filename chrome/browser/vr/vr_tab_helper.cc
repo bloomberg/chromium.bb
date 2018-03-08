@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 
 using content::WebContents;
 using content::WebPreferences;

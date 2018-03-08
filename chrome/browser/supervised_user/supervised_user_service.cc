@@ -54,7 +54,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 
