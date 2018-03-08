@@ -15,7 +15,7 @@ namespace {
 
 static bool g_load_succeeded = false;
 
-void* LoadComBaseFunction(const char* function_name) {
+FARPROC LoadComBaseFunction(const char* function_name) {
   static HMODULE const handle = ::LoadLibrary(L"combase.dll");
   return handle ? ::GetProcAddress(handle, function_name) : nullptr;
 }
