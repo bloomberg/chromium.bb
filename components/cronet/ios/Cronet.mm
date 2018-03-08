@@ -17,6 +17,7 @@
 #include "components/cronet/ios/accept_languages_table.h"
 #include "components/cronet/ios/cronet_environment.h"
 #include "components/cronet/ios/cronet_metrics.h"
+#include "components/cronet/native/url_request.h"
 #include "components/cronet/url_request_context_config.h"
 #include "ios/net/crn_http_protocol_handler.h"
 #include "ios/net/empty_nsurlcache.h"
@@ -480,10 +481,16 @@ class CronetHttpProtocolHandlerDelegate
       base::SysNSStringToUTF8(hostResolverRulesForTesting));
 }
 
-// This is a non-public dummy method that prevents the linker from stripping out
-// the otherwise non-referenced methods from 'bidirectional_stream.cc'.
+// This is a private dummy method that prevents the linker from stripping out
+// the otherwise unreferenced methods from 'bidirectional_stream.cc'.
 + (void)preventStrippingCronetBidirectionalStream {
   bidirectional_stream_create(NULL, 0, 0);
+}
+
+// This is a private dummy method that prevents the linker from stripping out
+// the otherwise unreferenced methods from 'native/url_request.cc'.
++ (void)preventStrippingNativeCronetUrlRequest {
+  Cronet_UrlRequest_Create();
 }
 
 + (NSError*)createIllegalArgumentErrorWithArgument:(NSString*)argumentName
