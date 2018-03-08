@@ -74,8 +74,6 @@ extern "C" {
 /*!\brief The input frame should be passed to the decoder one fragment at a
  * time */
 #define AOM_CODEC_USE_INPUT_FRAGMENTS 0x40000
-/*!\brief Enable frame-based multi-threading */
-#define AOM_CODEC_USE_FRAME_THREADING 0x80000
 
 /*!\brief Stream properties
  *

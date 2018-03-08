@@ -81,7 +81,7 @@ aomdec_av1_webm() {
   fi
 }
 
-aomdec_av1_webm_frame_parallel() {
+aomdec_av1_webm_error_resilient() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     local file
@@ -92,8 +92,7 @@ aomdec_av1_webm_frame_parallel() {
       file="${AV1_FPM_WEBM_FILE}"
     fi
     for threads in 2 3 4 5 6 7 8; do
-      aomdec "${file}" --summary --noblit --threads=$threads \
-        --frame-parallel
+      aomdec "${file}" --summary --noblit --threads=$threads
     done
   fi
 }
