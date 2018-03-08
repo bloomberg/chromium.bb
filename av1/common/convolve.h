@@ -17,18 +17,11 @@
 extern "C" {
 #endif
 
-typedef enum CONVOLVE_OPT {
-  // indicate the results in dst buf is rounded by FILTER_BITS or not
-  CONVOLVE_OPT_ROUND,
-  CONVOLVE_OPT_NO_ROUND,
-} CONVOLVE_OPT;
-
 typedef int32_t CONV_BUF_TYPE;
 
 typedef struct ConvolveParams {
   int ref;
   int do_average;
-  CONVOLVE_OPT round;
   CONV_BUF_TYPE *dst;
   int dst_stride;
   int round_0;
@@ -99,7 +92,6 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   conv_params.ref = ref;
   conv_params.do_average = do_average;
   assert(IMPLIES(do_average, is_compound));
-  conv_params.round = CONVOLVE_OPT_NO_ROUND;
   conv_params.is_compound = is_compound;
   conv_params.round_0 = ROUND0_BITS;
 #if CONFIG_LOWPRECISION_BLEND

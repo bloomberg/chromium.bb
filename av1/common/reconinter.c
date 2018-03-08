@@ -726,6 +726,8 @@ void av1_make_masked_inter_predictor(
     int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
     int p_row, int ref, MACROBLOCKD *xd) {
   const MODE_INFO *mi = xd->mi[0];
+  (void)dst;
+  (void)dst_stride;
 
   const INTERINTER_COMPOUND_DATA comp_data = {
     mi->mbmi.wedge_index, mi->mbmi.wedge_sign, mi->mbmi.mask_type, xd->seg_mask,
@@ -736,8 +738,7 @@ void av1_make_masked_inter_predictor(
 // a temporary buffer, then will blend that temporary buffer with that from
 // the other reference.
 //
-// If the rounding mode is CONVOLVE_OPT_NO_ROUND
-// then the predictions are at 32-bits, so we'll need 32 bits per
+// The predictions are at 32-bits, so we'll need 32 bits per
 // pixel. Otherwise, we'll need up to 16 bits per pixel if
 // CONFIG_HIGHBITDEPTH or just 8 otherwise.
 #define INTER_PRED_BYTES_PER_PIXEL 4
@@ -751,15 +752,12 @@ void av1_make_masked_inter_predictor(
                          : tmp_buf;
 
   const int tmp_buf_stride = MAX_SB_SIZE;
-  const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
   CONV_BUF_TYPE *tmp_buf32 = (CONV_BUF_TYPE *)tmp_buf;
-  if (is_conv_no_round) {
-    conv_params->dst = tmp_buf32;
-    conv_params->dst_stride = tmp_buf_stride;
-    assert(conv_params->do_average == 0);
-  }
+  conv_params->dst = tmp_buf32;
+  conv_params->dst_stride = tmp_buf_stride;
+  assert(conv_params->do_average == 0);
 
   // This will generate a prediction in tmp_buf for the second reference
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
@@ -768,38 +766,14 @@ void av1_make_masked_inter_predictor(
                            xd);
 
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
-    if (is_conv_no_round) {
-      build_compound_seg_mask_d32(comp_data.seg_mask, comp_data.mask_type,
-                                  org_dst, org_dst_stride, tmp_buf32,
-                                  tmp_buf_stride, mi->mbmi.sb_type, h, w,
-                                  conv_params, xd->bd);
-    } else {
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        build_compound_seg_mask_highbd(comp_data.seg_mask, comp_data.mask_type,
-                                       dst, dst_stride, tmp_dst, MAX_SB_SIZE,
-                                       mi->mbmi.sb_type, h, w, xd->bd);
-      } else {
-        build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
-                                dst_stride, tmp_dst, MAX_SB_SIZE,
-                                mi->mbmi.sb_type, h, w);
-      }
-    }
+    build_compound_seg_mask_d32(
+        comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
+        tmp_buf32, tmp_buf_stride, mi->mbmi.sb_type, h, w, conv_params, xd->bd);
   }
 
-  if (is_conv_no_round) {
-    build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
-                                   org_dst_stride, tmp_buf32, tmp_buf_stride,
-                                   &comp_data, mi->mbmi.sb_type, h, w);
-
-  } else {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      build_masked_compound_highbd(dst, dst_stride, dst, dst_stride, tmp_dst,
-                                   MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h,
-                                   w, xd->bd);
-    else
-      build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst,
-                            MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h, w);
-  }
+  build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
+                                 org_dst_stride, tmp_buf32, tmp_buf_stride,
+                                 &comp_data, mi->mbmi.sb_type, h, w);
 }
 
 // TODO(sarahparker) av1_highbd_build_inter_predictor and
