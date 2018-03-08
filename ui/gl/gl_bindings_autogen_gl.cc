@@ -8646,7 +8646,7 @@ void DebugGLApi::glCullFaceFn(GLenum mode) {
 void DebugGLApi::glDebugMessageCallbackFn(GLDEBUGPROC callback,
                                           const void* userParam) {
   GL_SERVICE_LOG("glDebugMessageCallback"
-                 << "(" << callback << ", "
+                 << "(" << reinterpret_cast<void*>(callback) << ", "
                  << static_cast<const void*>(userParam) << ")");
   gl_api_->glDebugMessageCallbackFn(callback, userParam);
 }

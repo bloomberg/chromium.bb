@@ -1766,7 +1766,9 @@ __eglMustCastToProperFunctionPointerType DebugEGLApi::eglGetProcAddressFn(
                  << "(" << procname << ")");
   __eglMustCastToProperFunctionPointerType result =
       egl_api_->eglGetProcAddressFn(procname);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
+
+  GL_SERVICE_LOG("GL_RESULT: " << reinterpret_cast<void*>(result));
+
   return result;
 }
 

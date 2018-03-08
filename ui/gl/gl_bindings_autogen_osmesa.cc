@@ -289,7 +289,9 @@ OSMESAproc DebugOSMESAApi::OSMesaGetProcAddressFn(const char* funcName) {
   GL_SERVICE_LOG("OSMesaGetProcAddress"
                  << "(" << funcName << ")");
   OSMESAproc result = osmesa_api_->OSMesaGetProcAddressFn(funcName);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
+
+  GL_SERVICE_LOG("GL_RESULT: " << reinterpret_cast<void*>(result));
+
   return result;
 }
 

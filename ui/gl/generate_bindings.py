@@ -1834,7 +1834,10 @@ OSMESA_FUNCTIONS = [
   'arguments': 'GLint pname, GLint* value', },
 { 'return_type': 'OSMESAproc',
   'names': ['OSMesaGetProcAddress'],
-  'arguments': 'const char* funcName', },
+  'arguments': 'const char* funcName',
+  'logging_code': """
+  GL_SERVICE_LOG("GL_RESULT: " << reinterpret_cast<void*>(result));
+""", },
 { 'return_type': 'GLboolean',
   'names': ['OSMesaMakeCurrent'],
   'arguments': 'OSMesaContext ctx, void* buffer, GLenum type, GLsizei width, '
@@ -2019,7 +2022,10 @@ EGL_FUNCTIONS = [
                'const EGLint* attrib_list', },
 { 'return_type': '__eglMustCastToProperFunctionPointerType',
   'names': ['eglGetProcAddress'],
-  'arguments': 'const char* procname', },
+  'arguments': 'const char* procname',
+  'logging_code': """
+  GL_SERVICE_LOG("GL_RESULT: " << reinterpret_cast<void*>(result));
+""", },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglGetSyncAttribKHR',
                  'extensions': [
@@ -2895,35 +2901,46 @@ void DriverEGL::InitializeExtensionBindings() {
     file.write('\n')
     file.write('%s Debug%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), func['known_as'], arguments))
+    # Strip pointer types.
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
+    # Replace certain `Type varname` combinations with TYPE_varname.
     log_argument_names = re.sub(
         r'const char\* ([a-zA-Z0-9_]+)', r'CONSTCHAR_\1', arguments)
     log_argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\* ([a-zA-Z0-9_]+)',
         r'CONSTVOID_\2', log_argument_names)
     log_argument_names = re.sub(
-        r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
-    log_argument_names = re.sub(
         r'(?<!E)GLboolean ([a-zA-Z0-9_]+)', r'GLboolean_\1', log_argument_names)
     log_argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
-        log_argument_names)
+        r'GLDEBUGPROC ([a-zA-Z0-9_]+)',
+        r'GLDEBUGPROC_\1', log_argument_names)
+    log_argument_names = re.sub(
+        r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
+    # Strip remaining types.
     log_argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
         log_argument_names)
+    # One more round of stripping to remove both type parts in `unsigned long`.
+    log_argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
+        log_argument_names)
+    # Convert TYPE_varname log arguments to the corresponding log expression.
     log_argument_names = re.sub(
         r'CONSTVOID_([a-zA-Z0-9_]+)',
         r'static_cast<const void*>(\1)', log_argument_names)
     log_argument_names = re.sub(
         r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names)
     log_argument_names = re.sub(
-        r'GLenum_([a-zA-Z0-9_]+)', r'GLEnums::GetStringEnum(\1)',
+        r'GLboolean_([a-zA-Z0-9_]+)', r'GLEnums::GetStringBool(\1)',
         log_argument_names)
     log_argument_names = re.sub(
-        r'GLboolean_([a-zA-Z0-9_]+)', r'GLEnums::GetStringBool(\1)',
+        r'GLDEBUGPROC_([a-zA-Z0-9_]+)',
+        r'reinterpret_cast<void*>(\1)', log_argument_names)
+    log_argument_names = re.sub(
+        r'GLenum_([a-zA-Z0-9_]+)', r'GLEnums::GetStringEnum(\1)',
         log_argument_names)
     log_argument_names = log_argument_names.replace(',', ' << ", " <<')
     if argument_names == 'void' or argument_names == '':
