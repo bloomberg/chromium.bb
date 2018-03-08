@@ -238,6 +238,13 @@ sync_sessions::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
 }
 
+void TabAndroid::DeleteFrozenNavigationEntries(
+    const WebContentsState::DeletionPredicate& predicate) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_deleteNavigationEntriesFromFrozenState(
+      env, weak_java_tab_.get(env), reinterpret_cast<intptr_t>(&predicate));
+}
+
 void TabAndroid::SetWindowSessionID(SessionID::id_type window_id) {
   session_window_id_.set_id(window_id);
 
