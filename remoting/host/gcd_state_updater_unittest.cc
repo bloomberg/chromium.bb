@@ -31,7 +31,6 @@ class GcdStateUpdaterTest : public testing::Test {
   GcdStateUpdaterTest()
       : task_runner_(new base::TestMockTimeTaskRunner()),
         runner_handler_(task_runner_),
-        clock_(task_runner_->GetMockClock()),
         token_getter_(OAuthTokenGetter::SUCCESS,
                       "<fake_user_email>",
                       "<fake_access_token>"),
@@ -50,9 +49,6 @@ class GcdStateUpdaterTest : public testing::Test {
  protected:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle runner_handler_;
-  // TODO(tzik): Remove |clock_| after updating TestMockTimeTaskRunner to own
-  // the clock instances.
-  std::unique_ptr<base::Clock> clock_;
   base::SimpleTestClock test_clock_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter token_getter_;
@@ -143,7 +139,7 @@ TEST_F(GcdStateUpdaterTest, Retry) {
   fetcher->set_response_code(0);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1.0, clock_->Now().ToDoubleT());
+  EXPECT_EQ(1.0, task_runner_->Now().ToDoubleT());
   fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(200);

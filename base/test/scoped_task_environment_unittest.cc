@@ -248,8 +248,7 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTickClock) {
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
                                                  kLongTaskDelay);
 
-  std::unique_ptr<base::TickClock> tick_clock =
-      scoped_task_environment.GetMockTickClock();
+  base::TickClock* tick_clock = scoped_task_environment.GetMockTickClock();
   base::TimeTicks tick_clock_ref = tick_clock->NowTicks();
 
   // Make sure that |FastForwardBy| advances the clock.

@@ -233,9 +233,14 @@ void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
 
-std::unique_ptr<TickClock> ScopedTaskEnvironment::GetMockTickClock() {
+TickClock* ScopedTaskEnvironment::GetMockTickClock() {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->GetMockTickClock();
+}
+
+std::unique_ptr<TickClock> ScopedTaskEnvironment::DeprecatedGetMockTickClock() {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->DeprecatedGetMockTickClock();
 }
 
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()

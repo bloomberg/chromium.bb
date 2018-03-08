@@ -138,7 +138,6 @@ class AppInstallEventLogManagerTest : public testing::Test {
     scoped_main_task_runner_ =
         std::make_unique<base::ScopedMockTimeMessageLoopTaskRunner>();
     main_task_runner_ = scoped_main_task_runner_->task_runner();
-    clock_ = main_task_runner_->GetMockTickClock();
   }
 
   // testing::Test:
@@ -149,7 +148,6 @@ class AppInstallEventLogManagerTest : public testing::Test {
     manager_.reset();
     FastForwardUntilNoTasksRemain();
 
-    clock_.reset();
     main_task_runner_ = nullptr;
     scoped_main_task_runner_.reset();
   }
@@ -211,8 +209,8 @@ class AppInstallEventLogManagerTest : public testing::Test {
   }
 
   void FastForwardTo(const base::TimeDelta& offset) {
-    main_task_runner_->FastForwardBy(offset -
-                                     (clock_->NowTicks() - base::TimeTicks()));
+    main_task_runner_->FastForwardBy(
+        offset - (main_task_runner_->NowTicks() - base::TimeTicks()));
     FlushNonDelayedTasks();
   }
 
@@ -249,7 +247,6 @@ class AppInstallEventLogManagerTest : public testing::Test {
 
   base::TestSimpleTaskRunner* log_task_runner_ = nullptr;
   base::TestMockTimeTaskRunner* main_task_runner_ = nullptr;
-  std::unique_ptr<base::TickClock> clock_;
 
   const base::FilePath log_file_path_;
   const std::set<std::string> packages_;

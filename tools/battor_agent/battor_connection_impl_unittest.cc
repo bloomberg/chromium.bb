@@ -73,8 +73,8 @@ class BattOrConnectionImplTest : public testing::Test,
 
  protected:
   void SetUp() override {
-    tick_clock_ = task_runner_->GetMockTickClock();
-    connection_.reset(new TestableBattOrConnection(this, tick_clock_.get()));
+    connection_.reset(
+        new TestableBattOrConnection(this, task_runner_->GetMockTickClock()));
     task_runner_->ClearPendingTasks();
   }
 
@@ -149,10 +149,6 @@ class BattOrConnectionImplTest : public testing::Test,
   std::vector<char>* GetReadMessage() { return read_bytes_.get(); }
 
  private:
-  // TODO(tzik): Remove |tick_clock_| after updating GetMockTickClock to own the
-  // instance.
-  std::unique_ptr<base::TickClock> tick_clock_;
-
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 

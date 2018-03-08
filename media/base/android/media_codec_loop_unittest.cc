@@ -95,7 +95,7 @@ class MediaCodecLoopTest : public testing::Test {
     EXPECT_CALL(*client_, OnCodecLoopError()).Times(0);
     codec_loop_.reset(new MediaCodecLoop(sdk_int, client_.get(),
                                          std::move(codec), mock_task_runner_));
-    codec_loop_->SetTestTickClock(clock_.get());
+    codec_loop_->SetTestTickClock(mock_task_runner_->GetMockTickClock());
     Mock::VerifyAndClearExpectations(client_.get());
   }
 
@@ -189,10 +189,6 @@ class MediaCodecLoopTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_ =
       new base::TestMockTimeTaskRunner;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-
-  // A reference to |mock_task_runner_|'s TickClock handed to |codec_loop_|.
-  std::unique_ptr<base::TickClock> clock_ =
-      mock_task_runner_->GetMockTickClock();
 
   std::unique_ptr<MediaCodecLoop> codec_loop_;
   std::unique_ptr<MockMediaCodecLoopClient> client_;

@@ -12,64 +12,43 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
-#include "base/time/tick_clock.h"
 
 namespace base {
-
 namespace {
 
-// MockTickClock --------------------------------------------------------------
-
-// TickClock that always returns the then-current mock time ticks of
-// |task_runner| as the current time ticks.
-class MockTickClock : public TickClock {
+// LegacyMockTickClock and LegacyMockClock are used by deprecated APIs of
+// TestMockTimeTaskRunner. They will be removed after updating callers of
+// GetMockClock() and GetMockTickClock() to GetMockClockPtr() and
+// GetMockTickClockPtr().
+class LegacyMockTickClock : public TickClock {
  public:
-  explicit MockTickClock(
-      scoped_refptr<const TestMockTimeTaskRunner> task_runner);
+  explicit LegacyMockTickClock(
+      scoped_refptr<const TestMockTimeTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {}
 
   // TickClock:
-  TimeTicks NowTicks() override;
+  TimeTicks NowTicks() override { return task_runner_->NowTicks(); }
 
  private:
   scoped_refptr<const TestMockTimeTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTickClock);
+  DISALLOW_COPY_AND_ASSIGN(LegacyMockTickClock);
 };
 
-MockTickClock::MockTickClock(
-    scoped_refptr<const TestMockTimeTaskRunner> task_runner)
-    : task_runner_(task_runner) {
-}
-
-TimeTicks MockTickClock::NowTicks() {
-  return task_runner_->NowTicks();
-}
-
-// MockClock ------------------------------------------------------------------
-
-// Clock that always returns the then-current mock time of |task_runner| as the
-// current time.
-class MockClock : public Clock {
+class LegacyMockClock : public Clock {
  public:
-  explicit MockClock(scoped_refptr<const TestMockTimeTaskRunner> task_runner);
+  explicit LegacyMockClock(
+      scoped_refptr<const TestMockTimeTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {}
 
   // Clock:
-  Time Now() override;
+  Time Now() override { return task_runner_->Now(); }
 
  private:
   scoped_refptr<const TestMockTimeTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockClock);
+  DISALLOW_COPY_AND_ASSIGN(LegacyMockClock);
 };
-
-MockClock::MockClock(scoped_refptr<const TestMockTimeTaskRunner> task_runner)
-    : task_runner_(task_runner) {
-}
-
-Time MockClock::Now() {
-  return task_runner_->Now();
-}
 
 // A SingleThreadTaskRunner which forwards everything to its |target_|. This is
 // useful to break ownership chains when it is known that |target_| will outlive
@@ -195,7 +174,10 @@ TestMockTimeTaskRunner::TestMockTimeTaskRunner(Type type)
 TestMockTimeTaskRunner::TestMockTimeTaskRunner(Time start_time,
                                                TimeTicks start_ticks,
                                                Type type)
-    : now_(start_time), now_ticks_(start_ticks), tasks_lock_cv_(&tasks_lock_) {
+    : now_(start_time),
+      now_ticks_(start_ticks),
+      tasks_lock_cv_(&tasks_lock_),
+      mock_clock_(this) {
   if (type == Type::kBoundToThread) {
     RunLoop::RegisterDelegateForCurrentThread(this);
     thread_task_runner_handle_ = std::make_unique<ThreadTaskRunnerHandle>(
@@ -241,14 +223,25 @@ TimeTicks TestMockTimeTaskRunner::NowTicks() const {
   return now_ticks_;
 }
 
-std::unique_ptr<Clock> TestMockTimeTaskRunner::GetMockClock() const {
+std::unique_ptr<Clock> TestMockTimeTaskRunner::DeprecatedGetMockClock() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return std::make_unique<MockClock>(this);
+  return std::make_unique<LegacyMockClock>(this);
 }
 
-std::unique_ptr<TickClock> TestMockTimeTaskRunner::GetMockTickClock() const {
+Clock* TestMockTimeTaskRunner::GetMockClock() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return std::make_unique<MockTickClock>(this);
+  return &mock_clock_;
+}
+
+std::unique_ptr<TickClock> TestMockTimeTaskRunner::DeprecatedGetMockTickClock()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return std::make_unique<LegacyMockTickClock>(this);
+}
+
+TickClock* TestMockTimeTaskRunner::GetMockTickClock() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return &mock_clock_;
 }
 
 base::circular_deque<TestPendingTask>
@@ -418,6 +411,14 @@ void TestMockTimeTaskRunner::Quit() {
 void TestMockTimeTaskRunner::EnsureWorkScheduled() {
   // Nothing to do: TestMockTimeTaskRunner::Run() will always process tasks and
   // doesn't need an extra kick on nested runs.
+}
+
+TimeTicks TestMockTimeTaskRunner::MockClock::NowTicks() {
+  return task_runner_->NowTicks();
+}
+
+Time TestMockTimeTaskRunner::MockClock::Now() {
+  return task_runner_->Now();
 }
 
 }  // namespace base

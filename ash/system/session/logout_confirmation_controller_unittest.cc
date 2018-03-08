@@ -33,10 +33,6 @@ class LogoutConfirmationControllerTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> runner_;
   base::ThreadTaskRunnerHandle runner_handle_;
 
-  // TODO(tzik): Remove |tick_clock_| after updating GetMockTickClock to own the
-  // instance.
-  std::unique_ptr<base::TickClock> tick_clock_;
-
   LogoutConfirmationController controller_;
 
  private:
@@ -46,9 +42,8 @@ class LogoutConfirmationControllerTest : public testing::Test {
 LogoutConfirmationControllerTest::LogoutConfirmationControllerTest()
     : log_out_called_(false),
       runner_(new base::TestMockTimeTaskRunner),
-      runner_handle_(runner_),
-      tick_clock_(runner_->GetMockTickClock()) {
-  controller_.SetClockForTesting(tick_clock_.get());
+      runner_handle_(runner_) {
+  controller_.SetClockForTesting(runner_->GetMockTickClock());
   controller_.SetLogoutClosureForTesting(base::Bind(
       &LogoutConfirmationControllerTest::LogOut, base::Unretained(this)));
 }

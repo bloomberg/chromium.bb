@@ -114,8 +114,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
     advertised_versions_ = HttpNetworkSession::Params().quic_supported_versions;
     pref_delegate_ = new MockPrefDelegate;
 
-    clock_ = test_task_runner_->GetMockTickClock();
-    net_test_task_runner_clock_ = clock_.get();
+    net_test_task_runner_clock_ = test_task_runner_->GetMockTickClock();
     http_server_props_manager_ = std::make_unique<HttpServerPropertiesManager>(
         base::WrapUnique(pref_delegate_), /*net_log=*/nullptr,
         net_test_task_runner_clock_);
@@ -150,10 +149,6 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
 
   // Overrides the main thread's message loop with a mock tick clock.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner_;
-
-  // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
-  // instance.
-  std::unique_ptr<base::TickClock> clock_;
 
   base::TickClock* net_test_task_runner_clock_;
 
