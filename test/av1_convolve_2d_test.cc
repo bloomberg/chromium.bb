@@ -220,6 +220,12 @@ INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1HighbdConvolve2DSrTest,
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_sr_ssse3, 1, 1, 0));
+INSTANTIATE_TEST_CASE_P(SSSE3_X, AV1HighbdConvolve2DSrTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_convolve_x_sr_ssse3, 1, 0, 0));
+INSTANTIATE_TEST_CASE_P(SSSE3_Y, AV1HighbdConvolve2DSrTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_convolve_y_sr_ssse3, 0, 1, 0));
 #endif
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdConvolve2DSrTest,

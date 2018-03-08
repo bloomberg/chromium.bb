@@ -489,8 +489,8 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
     highbd_convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int bd = GET_PARAM(0);
-  // const int has_subx = GET_PARAM(2);
-  // const int has_suby = GET_PARAM(3);
+  const int has_subx = GET_PARAM(2);
+  const int has_suby = GET_PARAM(3);
   const int is_compound = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
@@ -500,42 +500,48 @@ void AV1HighbdConvolve2DSrTest::RunSpeedTest(
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j)
       input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
-  for (int i = 0; i < MAX_SB_SQUARE; ++i) output[i] = rnd_.Rand31();
 
   hfilter = EIGHTTAP_REGULAR;
   vfilter = EIGHTTAP_REGULAR;
   int do_average = 0;
 
+  const int offset_r = 3;
+  const int offset_c = 3;
+  subx = 0;
+  suby = 0;
+
+  InterpFilterParams filter_params_x =
+      av1_get_interp_filter_params((InterpFilter)hfilter);
+  InterpFilterParams filter_params_y =
+      av1_get_interp_filter_params((InterpFilter)vfilter);
+
+  ConvolveParams conv_params =
+      get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
+
   for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
     // Make sure that sizes 2xN and Nx2 are also tested for chroma.
+    const int num_sizes =
+        (block_size_wide[block_idx] == 4 || block_size_high[block_idx] == 4)
+            ? 2
+            : 1;
 
-    const int out_w = block_size_wide[block_idx];
-    const int out_h = block_size_high[block_idx];
+    for (int shift = 0; shift < num_sizes; ++shift) {  // luma and chroma
+      const int out_w = block_size_wide[block_idx] >> shift;
+      const int out_h = block_size_high[block_idx] >> shift;
+      const int num_loops = 1000000000 / (out_w + out_h);
 
-    InterpFilterParams filter_params_x =
-        av1_get_interp_filter_params((InterpFilter)hfilter);
-    InterpFilterParams filter_params_y =
-        av1_get_interp_filter_params((InterpFilter)vfilter);
+      aom_usec_timer timer;
+      aom_usec_timer_start(&timer);
+      for (int i = 0; i < num_loops; ++i)
+        test_impl(input + offset_r * w + offset_c, w, output, MAX_SB_SIZE,
+                  out_w, out_h, &filter_params_x, &filter_params_y, subx, suby,
+                  &conv_params, bd);
 
-    ConvolveParams conv_params =
-        get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
-
-    const int offset_r = 3;
-    const int offset_c = 3;
-    subx = 0;
-    suby = 0;
-    const int num_loops = 1000000000 / (out_w + out_h);
-    aom_usec_timer timer;
-    aom_usec_timer_start(&timer);
-    for (int i = 0; i < num_loops; ++i)
-      test_impl(input + offset_r * w + offset_c, w, output, MAX_SB_SIZE, out_w,
-                out_h, &filter_params_x, &filter_params_y, subx, suby,
-                &conv_params, bd);
-
-    aom_usec_timer_mark(&timer);
-    const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-    printf("convolve %3dx%-3d: %7.2f ns\n", out_w, out_h,
-           1000.0 * elapsed_time / num_loops);
+      aom_usec_timer_mark(&timer);
+      const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+      printf("%d,%d convolve %3dx%-3d: %7.2f ns\n", has_subx, has_suby, out_w,
+             out_h, 1000.0 * elapsed_time / num_loops);
+    }
   }
 }
 

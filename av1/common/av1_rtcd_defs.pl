@@ -524,12 +524,12 @@ specialize qw/av1_highbd_convolve_2d_sr c ssse3 avx2/;
 add_proto qw/void av1_highbd_convolve_x/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
 
 add_proto qw/void av1_highbd_convolve_x_sr/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
-specialize qw/av1_highbd_convolve_x_sr c avx2/;
+specialize qw/av1_highbd_convolve_x_sr c ssse3 avx2/;
 
 add_proto qw/void av1_highbd_convolve_y/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
 
 add_proto qw/void av1_highbd_convolve_y_sr/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
-specialize qw/av1_highbd_convolve_y_sr c avx2/;
+specialize qw/av1_highbd_convolve_y_sr c ssse3 avx2/;
 
 add_proto qw/void av1_highbd_convolve_rounding/, "const int32_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, int bits, int bd";
 specialize qw/av1_highbd_convolve_rounding avx2/;
