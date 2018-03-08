@@ -229,6 +229,8 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
        FormFieldData::LabelSource::P_TAG},
       {"PLACE_HOLDER", "<input id='target' placeholder='label'/>",
        FormFieldData::LabelSource::PLACE_HOLDER},
+      {"ARIA_LABEL", "<input id='target' aria-label='label'/>",
+       FormFieldData::LabelSource::ARIA_LABEL},
       {"VALUE", "<input id='target' value='label'/>",
        FormFieldData::LabelSource::VALUE},
       {"LI_TAG", "<li>label<div><input id='target'/></div></li>",
