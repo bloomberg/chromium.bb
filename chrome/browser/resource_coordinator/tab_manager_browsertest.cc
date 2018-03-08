@@ -47,16 +47,11 @@ namespace resource_coordinator {
 
 namespace {
 
-constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
 static constexpr char kBlinkPageLifecycleFeature[] = "PageLifecycle";
 
 class TabManagerTest : public InProcessBrowserTest {
  public:
-  TabManagerTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
-    // Start with a non-null TimeTicks, as there is no discard protection for
-    // a tab with a null focused timestamp.
-    test_clock_.Advance(kShortDelay);
-  }
+  TabManagerTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -110,8 +105,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
 
   // Get three tabs open.
-
-  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -121,7 +114,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   browser()->OpenURL(open1);
   load1.Wait();
 
-  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -131,7 +123,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   browser()->OpenURL(open2);
   load2.Wait();
 
-  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load3(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -193,11 +184,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 
   // Kill the third tab after making second tab active.
   tsm->ActivateTabAt(1, true);
-
   EXPECT_EQ(1, tsm->active_index());
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  FastForwardAfterDiscardProtectionTime();
-  tab_manager->DiscardTabImpl(DiscardReason::kProactive);
+  tab_manager->DiscardWebContentsAt(2, tsm, DiscardReason::kProactive);
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.
@@ -819,10 +808,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerWasDiscarded) {
   EXPECT_FALSE(not_discarded_result);
 
   // Discard the tab. This simulates a tab discard.
-  content::WebContents* content =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  auto* lifecycle_unit = TabLifecycleUnitExternal::FromWebContents(content);
-  lifecycle_unit->DiscardTab();
+  g_browser_process->GetTabManager()->DiscardWebContentsAt(
+      0, browser()->tab_strip_model(), DiscardReason::kProactive);
 
   // Here we simulate re-focussing the tab causing reload with navigation,
   // the navigation will reload the tab.

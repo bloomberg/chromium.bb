@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 
-#include "base/logging.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 
 namespace resource_coordinator {
@@ -13,24 +12,9 @@ namespace resource_coordinator {
 TabLifecycleUnitExternal* TabLifecycleUnitExternal::FromWebContents(
     content::WebContents* web_contents) {
   TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
+  if (!source)
+    return nullptr;
   return source->GetTabLifecycleUnitExternal(web_contents);
-}
-
-// static
-void TabLifecycleUnitExternal::AddTabLifecycleObserver(
-    TabLifecycleObserver* observer) {
-  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
-  source->AddTabLifecycleObserver(observer);
-}
-
-// static
-void TabLifecycleUnitExternal::RemoveTabLifecycleObserver(
-    TabLifecycleObserver* observer) {
-  TabLifecycleUnitSource* source = TabLifecycleUnitSource::GetInstance();
-  DCHECK(source);
-  source->RemoveTabLifecycleObserver(observer);
 }
 
 }  // namespace resource_coordinator
