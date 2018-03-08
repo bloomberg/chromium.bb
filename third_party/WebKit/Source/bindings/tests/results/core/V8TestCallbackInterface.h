@@ -112,11 +112,7 @@ class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackInterface<V8TestCallbackInt
 // |WrapPersistent| for callback interfaces is likely (if not always) misuse.
 // Thus, this code prohibits such a use case. The call sites should explicitly
 // use WrapPersistent(V8PersistentCallbackInterface<T>*).
-#if 0
-// TODO(yukishiino): Enable this deletion once CallbackInterfaceBase transitions
-// to wrapper-tracing.
 Persistent<V8TestCallbackInterface> WrapPersistent(V8TestCallbackInterface*) = delete;
-#endif
 
 }  // namespace blink
 
