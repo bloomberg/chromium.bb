@@ -9086,7 +9086,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--debug"
+          "--debug",
+          "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarking"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
