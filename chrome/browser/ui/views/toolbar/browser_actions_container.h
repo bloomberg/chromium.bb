@@ -279,9 +279,6 @@ class BrowserActionsContainer : public views::View,
   // The resize area for the container.
   views::ResizeArea* resize_area_ = nullptr;
 
-  // The painter used when we are highlighting a subset of extensions.
-  std::unique_ptr<views::Painter> warning_highlight_painter_;
-
   // The animation that happens when the container snaps to place.
   std::unique_ptr<gfx::SlideAnimation> resize_animation_;
 

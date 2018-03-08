@@ -20,6 +20,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -102,8 +103,13 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
   }
 
-  return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const ui::ThemeProvider* provider = GetThemeProvider();
+
+  // There may not be a Widget available in the unit tests, thus there will be
+  // no ThemeProvider.
+  return provider
+             ? provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
+             : gfx::kChromeIconGrey;
 }
 
 bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
