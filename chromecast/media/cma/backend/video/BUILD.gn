@@ -13,6 +13,7 @@ cast_shared_library("libcast_media_1.0_avsync") {
   ]
 
   deps = [
+    "//chromecast/base:base",
     "//chromecast/media/cma/backend:for_mixer_audio",
     "//chromecast/media/cma/backend/alsa:cma_backend_support",
     "//chromecast/public",
