@@ -427,27 +427,6 @@ about it with this command: Windows: `git config --global core.excludesfile
 %USERPROFILE%\.gitignore` Mac, Linux: `git config --global core.excludesfile
 ~/.gitignore`
 
-### Build a single file
-Copy the file `compile_current_file.py` to your Packages directory:
-
-```shell
-cd /path/to/chromium/src
-cp tools/sublime/compile_current_file.py ~/.config/sublime-text-3/Packages/User
-```
-
-This will give you access to a command `"compile_current_file"`, which you can
-then add to your `Preferences > Keybindings - User` file:
-
-```json
-[
-  { "keys": ["ctrl+f7"], "command": "compile_current_file", "args": {"target_build": "Debug"} },
-  { "keys": ["ctrl+shift+f7"], "command": "compile_current_file", "args": {"target_build": "Release"} },
-]
-```
-
-You can then press those key combinations to compile the current file in the
-given target build.
-
 ## Building inside Sublime
 
 To build inside Sublime Text, we first have to create a new build system.
@@ -522,6 +501,10 @@ build targets with `Ctrl + Shift + B`:
     {
       "name": "Browser Tests",
       "cmd": ["ninja", "-j", "1000", "-C", "out/Debug", "browser_tests"],
+    },
+    {
+      "name": "Current file",
+      "cmd": ["compile_single_file", "--build-dir", "out/Debug", "--file-path", "$file"],
     },
   ]
 ```
