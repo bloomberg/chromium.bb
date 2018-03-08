@@ -31,8 +31,8 @@ cr.define('settings_people_page_manage_profile', function() {
       this.methodCalled('getAvailableIcons');
       return Promise.resolve([
         {url: 'fake-icon-1.png', label: 'fake-icon-1'},
-        {url: 'fake-icon-2.png', label: 'fake-icon-2'},
-        {url: 'gaia-icon.png', label: 'gaia-icon', isGaiaAvatar: true}
+        {url: 'fake-icon-2.png', label: 'fake-icon-2', selected: true},
+        {url: 'gaia-icon.png', label: 'gaia-icon', isGaiaAvatar: true},
       ]);
     }
 
@@ -97,11 +97,10 @@ cr.define('settings_people_page_manage_profile', function() {
             items = manageProfile.$.selector.$['avatar-grid'].
                 querySelectorAll('.avatar');
 
-            // Initially no item is selected, because of crbug.com/710660.
             assertFalse(!!manageProfile.profileAvatar);
             assertEquals(3, items.length);
             assertFalse(items[0].classList.contains('iron-selected'));
-            assertFalse(items[1].classList.contains('iron-selected'));
+            assertTrue(items[1].classList.contains('iron-selected'));
             assertFalse(items[2].classList.contains('iron-selected'));
 
             MockInteractions.tap(items[1]);

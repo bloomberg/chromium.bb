@@ -36,7 +36,7 @@ Polymer({
 
     /**
      * The available icons for selection.
-     * @type {!Array<string>}
+     * @type {!Array<!AvatarIcon>}
      */
     availableIcons: {
       type: Array,

@@ -32,6 +32,10 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   // ProfileAttributesStorage::Observer:
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
+  // ProfileAttributesStorage::Observer:
+  void OnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
                            HandleSetProfileIconToGaiaAvatar);
@@ -39,6 +43,8 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
                            HandleSetProfileIconToDefaultAvatar);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileName);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleGetAvailableIcons);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
+                           HandleGetAvailableIconsGaiaAvatarSelected);
 
   // Callback for the "getAvailableIcons" message.
   // Sends the array of default profile icon URLs and profile names to WebUI.
