@@ -190,6 +190,9 @@ class CONTENT_EXPORT RenderWidget
   blink::WebInputMethodController* GetInputMethodController() const;
 
   const gfx::Size& size() const { return size_; }
+  const gfx::Size& compositor_viewport_pixel_size() const {
+    return physical_backing_size_;
+  }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
