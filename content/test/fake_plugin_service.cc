@@ -88,4 +88,10 @@ bool FakePluginService::PpapiDevChannelSupported(
   return false;
 }
 
+int FakePluginService::CountPpapiPluginProcessesForProfile(
+    const base::FilePath& plugin_path,
+    const base::FilePath& profile_data_directory) {
+  return 0;
+}
+
 }  // namespace content
