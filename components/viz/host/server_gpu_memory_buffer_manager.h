@@ -16,6 +16,10 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 
+namespace gpu {
+class GpuMemoryBufferSupport;
+}
+
 namespace viz {
 
 namespace mojom {
@@ -30,7 +34,10 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
-  ServerGpuMemoryBufferManager(mojom::GpuService* gpu_service, int client_id);
+  ServerGpuMemoryBufferManager(
+      mojom::GpuService* gpu_service,
+      int client_id,
+      std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support);
   ~ServerGpuMemoryBufferManager() override;
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -87,6 +94,8 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
                          BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
   std::unordered_map<int, AllocatedBuffers> allocated_buffers_;
   std::unordered_set<int> pending_buffers_;
+
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

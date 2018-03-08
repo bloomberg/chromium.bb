@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl_dxgi.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_dxgi.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -28,11 +28,6 @@ GpuMemoryBufferImplDXGI::CreateFromHandle(
   DCHECK(base::SharedMemory::IsHandleValid(handle.handle));
   return base::WrapUnique(new GpuMemoryBufferImplDXGI(handle.id, size, format,
                                                       callback, handle.handle));
-}
-
-bool GpuMemoryBufferImplDXGI::IsConfigurationSupported(gfx::BufferFormat format,
-                                                       gfx::BufferUsage usage) {
-  return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 
 base::Closure GpuMemoryBufferImplDXGI::AllocateForTesting(

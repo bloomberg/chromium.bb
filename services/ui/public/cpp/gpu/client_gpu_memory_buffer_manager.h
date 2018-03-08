@@ -20,6 +20,10 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gpu {
+class GpuMemoryBufferSupport;
+}
+
 namespace ui {
 
 class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
@@ -58,6 +62,7 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   mojom::GpuPtr gpu_;
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
   std::set<base::WaitableEvent*> pending_allocation_waiters_;
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
   base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientGpuMemoryBufferManager);

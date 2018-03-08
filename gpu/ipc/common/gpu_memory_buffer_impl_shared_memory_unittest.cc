@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl_test_template.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_test_template.h"
 
 namespace gpu {
 namespace {

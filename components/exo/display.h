@@ -21,6 +21,10 @@
 #include "ui/gfx/native_pixmap_handle.h"
 #endif
 
+namespace gfx {
+class ClientNativePixmapFactory;
+};
+
 namespace exo {
 class ClientControlledShellSurface;
 class DataDevice;
@@ -102,6 +106,7 @@ class Display {
 
 #if defined(USE_OZONE)
   std::vector<gfx::BufferFormat> overlay_formats_;
+  std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Display);

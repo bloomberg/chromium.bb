@@ -23,10 +23,6 @@ class Size;
 // provide a client pixmap for non-GPU processes.
 class GFX_EXPORT ClientNativePixmapFactory {
  public:
-  static ClientNativePixmapFactory* GetInstance();
-  static void SetInstance(ClientNativePixmapFactory* instance);
-  static void ResetInstance();
-
   virtual ~ClientNativePixmapFactory();
 
   // Returns true if format/usage configuration is supported.

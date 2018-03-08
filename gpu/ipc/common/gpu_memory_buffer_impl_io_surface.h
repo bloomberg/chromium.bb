@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
-#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#ifndef GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#define GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
 
 #include <IOSurface/IOSurface.h>
 #include <stddef.h>
@@ -14,7 +14,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "ui/gfx/color_space.h"
 
 namespace gpu {
@@ -24,15 +24,15 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplIOSurface() override;
 
+  static constexpr gfx::GpuMemoryBufferType kBufferType =
+      gfx::IO_SURFACE_BUFFER;
+
   static std::unique_ptr<GpuMemoryBufferImplIOSurface> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       const DestructionCallback& callback);
-
-  static bool IsConfigurationSupported(gfx::BufferFormat format,
-                                       gfx::BufferUsage usage);
 
   static base::Closure AllocateForTesting(const gfx::Size& size,
                                           gfx::BufferFormat format,
@@ -66,4 +66,4 @@ class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#endif  // GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_

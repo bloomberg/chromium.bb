@@ -48,6 +48,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   const int kClientId = 1;
 
   gfx::Size buffer_size(2, 2);
+  GpuMemoryBufferSupport support;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     gfx::BufferUsage usages[] = {
@@ -59,7 +60,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto usage : usages) {
-      if (!IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
+      if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
         continue;
 
       gfx::GpuMemoryBufferHandle handle =

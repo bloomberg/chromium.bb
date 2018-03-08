@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
-#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
+#ifndef GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
+#define GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
 
 #include "base/memory/shared_memory.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 
@@ -18,6 +18,9 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
     : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplAndroidHardwareBuffer() override;
+
+  static constexpr gfx::GpuMemoryBufferType kBufferType =
+      gfx::ANDROID_HARDWARE_BUFFER;
 
   static std::unique_ptr<GpuMemoryBufferImplAndroidHardwareBuffer> Create(
       gfx::GpuMemoryBufferId id,
@@ -32,9 +35,6 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
                    gfx::BufferFormat format,
                    gfx::BufferUsage usage,
                    const DestructionCallback& callback);
-
-  static bool IsConfigurationSupported(gfx::BufferFormat format,
-                                       gfx::BufferUsage usage);
 
   static base::Closure AllocateForTesting(const gfx::Size& size,
                                           gfx::BufferFormat format,
@@ -63,4 +63,4 @@ class GPU_EXPORT GpuMemoryBufferImplAndroidHardwareBuffer
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_
+#endif  // GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_ANDROID_HARDWARE_BUFFER_H_

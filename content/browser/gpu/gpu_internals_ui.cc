@@ -40,6 +40,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_lists_version.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "skia/ext/skia_commit_hash.h"
 #include "third_party/angle/src/common/version.h"
@@ -307,8 +308,10 @@ std::unique_ptr<base::ListValue> CompositorInfo() {
 std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
   auto gpu_memory_buffer_info = std::make_unique<base::ListValue>();
 
+  gpu::GpuMemoryBufferSupport gpu_memory_buffer_support;
+
   const auto native_configurations =
-      gpu::GetNativeGpuMemoryBufferConfigurations();
+      gpu::GetNativeGpuMemoryBufferConfigurations(&gpu_memory_buffer_support);
   for (size_t format = 0;
        format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
     std::string native_usage_support;

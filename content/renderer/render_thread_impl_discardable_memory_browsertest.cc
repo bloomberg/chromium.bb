@@ -25,7 +25,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "url/gurl.h"
 

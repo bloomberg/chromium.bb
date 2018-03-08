@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
-#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
+#ifndef GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_H_
+#define GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_H_
 
 #include <memory>
 
@@ -17,22 +17,13 @@
 namespace gpu {
 
 // Provides common implementation of a GPU memory buffer.
+//
+// TODO(reveman): Rename to GpuMemoryBufferBase.
 class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   typedef base::Callback<void(const gpu::SyncToken& sync)> DestructionCallback;
 
   ~GpuMemoryBufferImpl() override;
-
-  // Creates an instance from the given |handle|. |size| and |internalformat|
-  // should match what was used to allocate the |handle|. |callback|, if
-  // non-null, is called when instance is deleted, which is not necessarily on
-  // the same thread as this function was called on and instance was created on.
-  static std::unique_ptr<GpuMemoryBufferImpl> CreateFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:
   gfx::Size GetSize() const override;
@@ -63,4 +54,4 @@ class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
+#endif  // GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_H_

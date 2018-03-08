@@ -67,10 +67,6 @@
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
-#endif
-
 namespace content {
 namespace {
 // This function provides some ways to test crash and assertion handling
@@ -146,10 +142,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   size_t font_cache_limit =
       base::SysInfo::IsLowEndDevice() ? kMB : 8 * kMB;
   SkGraphics::SetFontCacheLimit(font_cache_limit);
-#endif
-
-#if defined(USE_OZONE)
-  ui::CreateClientNativePixmapFactoryOzone();
 #endif
 
   // This function allows pausing execution using the --renderer-startup-dialog

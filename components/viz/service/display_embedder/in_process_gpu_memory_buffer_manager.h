@@ -10,6 +10,7 @@
 
 namespace gpu {
 class GpuChannelManager;
+class GpuMemoryBufferSupport;
 }
 
 namespace viz {
@@ -34,6 +35,7 @@ class InProcessGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const gpu::SyncToken& sync_token);
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
   const int client_id_;
   int next_gpu_memory_id_ = 1;
   gpu::GpuChannelManager* channel_manager_;
