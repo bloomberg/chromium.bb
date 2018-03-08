@@ -957,8 +957,7 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
   }
 
 #if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNotificationLaunchId) &&
-      NotificationPlatformBridgeWin::NativeNotificationEnabled()) {
+  if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
     std::string profile_id =
         NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
             command_line.GetSwitchValueASCII(switches::kNotificationLaunchId));

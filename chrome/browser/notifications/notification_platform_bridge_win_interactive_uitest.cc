@@ -189,6 +189,54 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
   EXPECT_EQ(base::nullopt, last_by_user_);
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleSettings) {
+  // This test exercises a feature that is not enabled in older versions of
+  // Windows.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  const wchar_t kXmlDoc[] =
+      LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
+ <actions>
+   <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
+ </actions>
+</toast>
+)";
+
+  MockIToastNotification toast(kXmlDoc, L"tag");
+  MockIToastActivatedEventArgs args(
+      L"2|0|Default|0|https://example.com/|notification_id");
+
+  base::RunLoop run_loop;
+  display_service_tester_->SetProcessNotificationOperationDelegate(
+      base::BindRepeating(&NotificationPlatformBridgeWinUITest::HandleOperation,
+                          base::Unretained(this), run_loop.QuitClosure()));
+
+  // Simulate clicks on the toast.
+  NotificationPlatformBridgeWin* bridge =
+      static_cast<NotificationPlatformBridgeWin*>(
+          g_browser_process->notification_platform_bridge());
+  ASSERT_TRUE(bridge);
+  bridge->ForwardHandleEventForTesting(NotificationCommon::SETTINGS, &toast,
+                                       &args, base::nullopt);
+  run_loop.Run();
+
+  // Validate the click values.
+  EXPECT_EQ(NotificationCommon::SETTINGS, last_operation_);
+  EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
+  EXPECT_EQ(GURL("https://example.com/"), last_origin_);
+  EXPECT_EQ("notification_id", last_notification_id_);
+  EXPECT_EQ(base::nullopt, last_action_index_);
+  EXPECT_EQ(base::nullopt, last_reply_);
+  EXPECT_EQ(base::nullopt, last_by_user_);
+}
+
 IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.

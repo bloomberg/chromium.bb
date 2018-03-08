@@ -13,6 +13,7 @@
 enum LaunchIdComponents {
   NORMAL = 0,
   BUTTON_INDEX = 1,
+  CONTEXT_MENU = 2,
 };
 
 NotificationLaunchId::NotificationLaunchId() = default;
@@ -47,13 +48,21 @@ NotificationLaunchId::NotificationLaunchId(const std::string& input) {
     return;
   LaunchIdComponents components = static_cast<LaunchIdComponents>(number);
 
+  // The final token may contain the separation character.
   size_t min_num_tokens;
   switch (components) {
     case NORMAL:
+      // type|notification_type|profile_id|incognito|origin|notification_id
       min_num_tokens = 6;
       break;
     case BUTTON_INDEX:
+      // type|button_index|notification_type|profile_id|incognito|origin|notification_id
       min_num_tokens = 7;
+      break;
+    case CONTEXT_MENU:
+      // type|notification_type|profile_id|incognito|origin|notification_id
+      min_num_tokens = 6;
+      is_for_context_menu_ = true;
       break;
     default:
       // |components| has an invalid value.
@@ -97,11 +106,13 @@ std::string NotificationLaunchId::Serialize() const {
   // and unsafe for origins -- and should therefore be encoded (as per
   // http://www.ietf.org/rfc/rfc1738.txt).
   std::string prefix;
-  if (button_index_ > -1) {
+  LaunchIdComponents type = is_for_context_menu_
+                                ? CONTEXT_MENU
+                                : (button_index_ > -1 ? BUTTON_INDEX : NORMAL);
+  if (button_index_ > -1)
     prefix = base::StringPrintf("|%d", button_index_);
-  }
   return base::StringPrintf(
-      "%d%s|%d|%s|%d|%s|%s", button_index_ > -1 ? 1 : 0, prefix.c_str(),
+      "%d%s|%d|%s|%d|%s|%s", type, prefix.c_str(),
       static_cast<int>(notification_type_), profile_id_.c_str(), incognito_,
       origin_url_.spec().c_str(), notification_id_.c_str());
 }

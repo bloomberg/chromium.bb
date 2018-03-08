@@ -48,7 +48,6 @@ const char kInputElement[] = "input";
 const char kInputId[] = "id";
 const char kInputType[] = "type";
 const char kStatus[] = "status";
-const char kNotificationSettings[] = "notificationSettings";
 const char kPlaceholderContent[] = "placeHolderContent";
 const char kPlacement[] = "placement";
 const char kPlacementAppLogoOverride[] = "appLogoOverride";
@@ -130,7 +129,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   builder->StartActionsElement();
   if (!notification.buttons().empty())
     builder->AddActions(notification, launch_id);
-  builder->AddContextMenu();
+  builder->AddContextMenu(launch_id);
   builder->EndActionsElement();
 
   if (notification.silent())
@@ -317,12 +316,16 @@ void NotificationTemplateBuilder::AddActions(
     WriteActionElement(buttons[i], i, notification.origin_url(), launch_id);
 }
 
-void NotificationTemplateBuilder::AddContextMenu() {
+void NotificationTemplateBuilder::AddContextMenu(
+    NotificationLaunchId copied_launch_id) {
   std::string notification_settings_msg = l10n_util::GetStringUTF8(
       IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME);
   if (context_menu_label_override_)
     notification_settings_msg = context_menu_label_override_;
-  WriteContextMenuElement(notification_settings_msg, kNotificationSettings);
+
+  copied_launch_id.set_is_for_context_menu();
+  WriteContextMenuElement(notification_settings_msg,
+                          copied_launch_id.Serialize());
 }
 
 void NotificationTemplateBuilder::StartActionsElement() {
@@ -343,12 +346,12 @@ void NotificationTemplateBuilder::WriteActionElement(
     const message_center::ButtonInfo& button,
     int index,
     const GURL& origin,
-    NotificationLaunchId launch_id) {
+    NotificationLaunchId copied_launch_id) {
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
   xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
-  launch_id.set_button_index(index);
-  xml_writer_->AddAttribute(kArguments, launch_id.Serialize());
+  copied_launch_id.set_button_index(index);
+  xml_writer_->AddAttribute(kArguments, copied_launch_id.Serialize());
 
   if (!button.icon.IsEmpty()) {
     base::FilePath path = image_retainer_->RegisterTemporaryImage(
