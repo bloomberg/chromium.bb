@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -318,10 +319,14 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
     // progress.
     // TODO(https://crbug.com/811211): Remove this handle.
     sync_blocker_ = sync_service->GetSetupInProgressHandle();
-
-    if (SyncStartupTracker::GetSyncServiceState(profile_) ==
-        SyncStartupTracker::SYNC_STARTUP_PENDING) {
-      // Wait until sync is initialized so that the confirmation UI can be
+    bool is_enterprise_user =
+        !policy::BrowserPolicyConnector::IsNonEnterpriseUser(
+            account_info_.email);
+    if (is_enterprise_user &&
+        SyncStartupTracker::GetSyncServiceState(profile_) ==
+            SyncStartupTracker::SYNC_STARTUP_PENDING) {
+      // For enterprise users it is important to wait until sync is initialized
+      // so that the confirmation UI can be
       // aware of startup errors. This is needed to make sure that the sync
       // confirmation dialog is shown only after the sync service had a chance
       // to check whether sync was disabled by admin.
