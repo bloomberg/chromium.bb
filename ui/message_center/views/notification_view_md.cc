@@ -776,6 +776,14 @@ void NotificationViewMD::OnMouseEvent(ui::MouseEvent* event) {
   View::OnMouseEvent(event);
 }
 
+void NotificationViewMD::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_LONG_TAP) {
+    ToggleInlineSettings(*event->AsLocatedEvent());
+    return;
+  }
+  MessageView::OnGestureEvent(event);
+}
+
 void NotificationViewMD::UpdateWithNotification(
     const Notification& notification) {
   MessageView::UpdateWithNotification(notification);
@@ -1353,7 +1361,7 @@ void NotificationViewMD::Activate() {
 void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
   header_row_->SetSubpixelRenderingEnabled(false);
 
-  SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
   // Convert the point of |event| from the coordinate system of
   // |control_buttons_view_| to that of NotificationViewMD, create a new
