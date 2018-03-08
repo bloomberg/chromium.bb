@@ -77,7 +77,7 @@ gpu::CommandBufferStub* GetCommandBufferStub(
 
   return channel->LookupCommandBuffer(route_id);
 }
-#endif  // OS_ANDROID || BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_D3D11)
+#endif  // OS_ANDROID || (OS_WIN && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER))
 
 }  // namespace
 
@@ -131,7 +131,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                           command_buffer_id->route_id));
 #else
   return nullptr;
-#endif  // BUILDFLAG(ENABLE_{MEDIA_CODEC | D3D11}_VIDEO_DECODER)
+#endif  // defined(OS_ANDROID)
 }
 
 std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
