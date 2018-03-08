@@ -39,7 +39,7 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class MODULES_EXPORT MediaDeviceInfo final : public ScriptWrappable {
+class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,12 +58,13 @@ class MODULES_EXPORT MediaDeviceInfo final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*);
 
- private:
+ protected:
   MediaDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,
                   MediaDeviceType);
 
+ private:
   String device_id_;
   String label_;
   String group_id_;

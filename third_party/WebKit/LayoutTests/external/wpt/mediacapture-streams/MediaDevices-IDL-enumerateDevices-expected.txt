@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 133 tests; 118 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 134 tests; 126 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test MediaDevices.enumerateDevices call and result. Types only.
 PASS Navigator interface: attribute mediaDevices
 PASS Unscopable handled correctly for mediaDevices property on Navigator
@@ -117,21 +117,22 @@ PASS MediaDeviceInfo interface: attribute groupId
 PASS Unscopable handled correctly for groupId property on MediaDeviceInfo
 PASS MediaDeviceInfo interface: operation toJSON()
 PASS Unscopable handled correctly for toJSON() on MediaDeviceInfo
-PASS MediaDeviceInfo must be primary interface of _mediaInfo
-PASS Stringification of _mediaInfo
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "groupId" with the proper type
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "toJSON()" with the proper type
-PASS Test default toJSON operation of MediaDeviceInfo
-FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: operation getCapabilities() assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+PASS InputDeviceInfo interface: existence and properties of interface object
+PASS InputDeviceInfo interface object length
+PASS InputDeviceInfo interface object name
+PASS InputDeviceInfo interface: existence and properties of interface prototype object
+PASS InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" property
+PASS InputDeviceInfo interface: existence and properties of interface prototype object's @@unscopables property
+PASS InputDeviceInfo interface: operation getCapabilities()
 PASS Unscopable handled correctly for getCapabilities() on InputDeviceInfo
+PASS InputDeviceInfo must be primary interface of [object InputDeviceInfo]
+PASS Stringification of [object InputDeviceInfo]
+PASS InputDeviceInfo interface: [object InputDeviceInfo] must inherit property "getCapabilities()" with the proper type
+PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "deviceId" with the proper type
+PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "kind" with the proper type
+PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "label" with the proper type
+PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "groupId" with the proper type
+PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "toJSON()" with the proper type
+PASS Test default toJSON operation of MediaDeviceInfo
 Harness: the test ran to completion.
 

@@ -3511,6 +3511,10 @@ interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents
     method constructor
+interface InputDeviceInfo : MediaDeviceInfo
+    attribute @@toStringTag
+    method constructor
+    method getCapabilities
 interface InputEvent : UIEvent
     attribute @@toStringTag
     getter data
