@@ -26,19 +26,14 @@ void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
     client_->DidInitializeCompositor(this, process_id_, routing_id_);
 }
 
-SynchronousCompositor::Frame TestSynchronousCompositor::DemandDrawHw(
-    const gfx::Size& viewport_size,
-    const gfx::Rect& viewport_rect_for_tile_priority,
-    const gfx::Transform& transform_for_tile_priority) {
-  return std::move(hardware_frame_);
-}
-
 scoped_refptr<SynchronousCompositor::FrameFuture>
 TestSynchronousCompositor::DemandDrawHwAsync(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  return nullptr;
+  auto future = base::MakeRefCounted<FrameFuture>();
+  future->SetFrame(std::move(hardware_frame_));
+  return future;
 }
 
 void TestSynchronousCompositor::ReturnResources(
@@ -63,8 +58,9 @@ bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
 void TestSynchronousCompositor::SetHardwareFrame(
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<viz::CompositorFrame> frame) {
-  hardware_frame_.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
-  hardware_frame_.frame = std::move(frame);
+  hardware_frame_ = std::make_unique<Frame>();
+  hardware_frame_->layer_tree_frame_sink_id = layer_tree_frame_sink_id;
+  hardware_frame_->frame = std::move(frame);
 }
 
 TestSynchronousCompositor::ReturnedResources::ReturnedResources()

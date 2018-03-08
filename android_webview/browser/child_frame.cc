@@ -13,16 +13,12 @@ namespace android_webview {
 
 ChildFrame::ChildFrame(
     scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
-    uint32_t layer_tree_frame_sink_id,
-    std::unique_ptr<viz::CompositorFrame> frame,
     const CompositorID& compositor_id,
     bool viewport_rect_for_tile_priority_empty,
     const gfx::Transform& transform_for_tile_priority,
     bool offscreen_pre_raster,
     bool is_layer)
     : frame_future(std::move(frame_future)),
-      layer_tree_frame_sink_id(layer_tree_frame_sink_id),
-      frame(std::move(frame)),
       compositor_id(compositor_id),
       viewport_rect_for_tile_priority_empty(
           viewport_rect_for_tile_priority_empty),

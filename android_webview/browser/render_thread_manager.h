@@ -55,7 +55,6 @@ class RenderThreadManager : public CompositorFrameConsumer {
       ReturnedResourcesMap* returned_resource_map) override;
   bool ReturnedResourcesEmptyOnUI() const override;
   ChildFrameQueue PassUncommittedFrameOnUI() override;
-  bool HasFrameOnUI() const override;
   void DeleteHardwareRendererOnUI() override;
 
   // Render thread methods.

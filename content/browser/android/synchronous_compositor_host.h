@@ -51,10 +51,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   ~SynchronousCompositorHost() override;
 
   // SynchronousCompositor overrides.
-  SynchronousCompositor::Frame DemandDrawHw(
-      const gfx::Size& viewport_size,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority) override;
   scoped_refptr<FrameFuture> DemandDrawHwAsync(
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
@@ -100,6 +96,10 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             bool use_in_proc_software_draw);
+  SynchronousCompositor::Frame DemandDrawHw(
+      const gfx::Size& viewport_size,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority);
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
