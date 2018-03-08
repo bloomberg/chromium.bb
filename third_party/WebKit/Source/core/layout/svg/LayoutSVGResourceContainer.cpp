@@ -68,6 +68,8 @@ SVGElementProxySet* LayoutSVGResourceContainer::ElementProxySet() {
 }
 
 void LayoutSVGResourceContainer::NotifyContentChanged() {
+  if (SVGResource* resource = ResourceForContainer(*this))
+    resource->NotifyContentChanged();
   if (SVGElementProxySet* proxy_set = ElementProxySet())
     proxy_set->NotifyContentChanged(GetElement()->GetTreeScope());
 }
@@ -89,7 +91,7 @@ void LayoutSVGResourceContainer::StyleDidChange(
   // resource.
   if (SVGResource* resource = ResourceForContainer(*this)) {
     if (resource->Target() == GetElement())
-      resource->NotifyResourceClients();
+      resource->NotifyPendingClients();
   }
 }
 
@@ -113,8 +115,10 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     InvalidationModeMask invalidation_mask) {
   if (is_invalidating_)
     return;
+  SVGResource* resource = ResourceForContainer(*this);
   SVGElementProxySet* proxy_set = ElementProxySet();
-  if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()))
+  if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()) &&
+      (!resource || !resource->HasClients()))
     return;
   // Remove modes for which invalidations have already been
   // performed. If no modes remain we are done.
@@ -142,7 +146,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     MarkForLayoutAndParentResourceInvalidation(*client, needs_layout);
   }
 
-  // Invalidate clients registered via an SVGElementProxy.
+  // Invalidate clients registered via an SVGElementProxy/SVGResource.
   NotifyContentChanged();
 
   is_invalidating_ = false;

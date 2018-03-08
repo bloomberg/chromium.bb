@@ -135,10 +135,11 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
     return ShapeClipPathOperation::Create(BasicShapeForValue(state, value));
   if (value.IsURIValue()) {
     const CSSURIValue& url_value = ToCSSURIValue(value);
-    SVGElementProxy& element_proxy =
-        state.GetElementStyleResources().CachedOrPendingFromValue(url_value);
+    SVGResource* resource =
+        state.GetElementStyleResources().GetSVGResourceFromValue(
+            state.GetTreeScope(), url_value);
     // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-    return ReferenceClipPathOperation::Create(url_value.Value(), element_proxy);
+    return ReferenceClipPathOperation::Create(url_value.Value(), resource);
   }
   DCHECK(value.IsIdentifierValue() &&
          ToCSSIdentifierValue(value).GetValueID() == CSSValueNone);

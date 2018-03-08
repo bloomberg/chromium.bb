@@ -44,8 +44,10 @@ class CSSValue;
 class ComputedStyle;
 class Document;
 class SVGElementProxy;
+class SVGResource;
 class StyleImage;
 class StylePendingImage;
+class TreeScope;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.
@@ -59,6 +61,7 @@ class ElementStyleResources {
   StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
   StyleImage* SetOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
   SVGElementProxy& CachedOrPendingFromValue(const CSSURIValue&);
+  SVGResource* GetSVGResourceFromValue(TreeScope&, const CSSURIValue&) const;
 
   void LoadPendingResources(ComputedStyle*);
 

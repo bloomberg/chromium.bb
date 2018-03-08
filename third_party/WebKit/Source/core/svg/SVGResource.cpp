@@ -11,6 +11,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGResourceClient.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace blink {
@@ -27,7 +28,16 @@ void SVGResource::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(target_);
   visitor->Trace(id_observer_);
+  visitor->Trace(clients_);
   visitor->Trace(pending_clients_);
+}
+
+void SVGResource::AddClient(SVGResourceClient& client) {
+  clients_.insert(&client);
+}
+
+void SVGResource::RemoveClient(SVGResourceClient& client) {
+  clients_.erase(&client);
 }
 
 void SVGResource::AddWatch(SVGElement& element) {
@@ -41,14 +51,15 @@ void SVGResource::RemoveWatch(SVGElement& element) {
 
 bool SVGResource::IsEmpty() const {
   LayoutSVGResourceContainer* container = ResourceContainer();
-  return (!container || !container->HasClients()) && pending_clients_.IsEmpty();
+  return !HasClients() && (!container || !container->HasClients()) &&
+         pending_clients_.IsEmpty();
 }
 
 void SVGResource::Unregister() {
   SVGURIReference::UnobserveTarget(id_observer_);
 }
 
-void SVGResource::NotifyResourceClients() {
+void SVGResource::NotifyPendingClients() {
   HeapHashSet<Member<SVGElement>> pending_clients;
   pending_clients.swap(pending_clients_);
 
@@ -56,6 +67,22 @@ void SVGResource::NotifyResourceClients() {
     if (LayoutObject* layout_object = client_element->GetLayoutObject())
       SVGResourcesCache::ResourceReferenceChanged(*layout_object);
   }
+}
+
+void SVGResource::NotifyContentChanged() {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceContentChanged();
+}
+
+void SVGResource::NotifyElementChanged() {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceElementChanged();
 }
 
 LayoutSVGResourceContainer* SVGResource::ResourceContainer() const {
@@ -76,7 +103,8 @@ void SVGResource::TargetChanged(const AtomicString& id) {
   if (LayoutSVGResourceContainer* old_resource = ResourceContainer())
     old_resource->MakeClientsPending(*this);
   target_ = new_target;
-  NotifyResourceClients();
+  NotifyElementChanged();
+  NotifyPendingClients();
 }
 
 }  // namespace blink

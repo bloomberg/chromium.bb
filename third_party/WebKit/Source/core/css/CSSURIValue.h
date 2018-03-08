@@ -32,6 +32,8 @@ class CSSURIValue : public CSSValue {
   String CustomCSSText() const;
 
   bool IsLocal(const Document&) const;
+  AtomicString FragmentIdentifier() const;
+
   bool Equals(const CSSURIValue&) const;
 
   void TraceAfterDispatch(blink::Visitor*);
@@ -42,7 +44,6 @@ class CSSURIValue : public CSSValue {
               const AtomicString& absolute_url);
 
   KURL AbsoluteUrl() const;
-  AtomicString FragmentIdentifier() const;
 
   AtomicString relative_url_;
   bool is_local_;
