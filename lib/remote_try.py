@@ -219,36 +219,37 @@ class RemoteTryJob(object):
     else:
       bucket = constants.TRYSERVER_BUILDBUCKET_BUCKET
 
-    # TODO: Find a way to unify these tags with
-    #       ScheduleSlavesStage.PostSlaveBuildToBuildbucket
-    tags = ['cbb_display_label:%s' % self.display_label,
-            'cbb_branch:%s' % self.branch,
-            'cbb_config:%s' % bot,
-            'cbb_master_build_id:%s' % self.master_buildbucket_id,
-            'cbb_email:%s' % self.user_email,]
+    tags = {
+        'cbb_display_label': self.display_label,
+        'cbb_branch': self.branch,
+        'cbb_config': bot,
+        'cbb_email': self.user_email,
+        'cbb_master_build_id': self.master_buildbucket_id,
+    }
 
-    # Add build_type tag for Pre-CQ builds.
-    if (bot in site_config and
-        site_config[bot]['build_type'] == constants.PRE_CQ_TYPE):
-      tags.append('build_type:%s' % constants.PRE_CQ_TYPE)
+    # Don't include tags with no value, there is no point.
+    tags = {k: v for k, v in tags.iteritems() if v}
+
+    # All tags should also be listed as properties.
+    properties = tags.copy()
+    properties.update({
+        'bot' : self.build_configs,
+        'cbb_extra_args': self.extra_args,
+        'email': [self.user_email],
+        'extra_args' : self.extra_args,
+        'name' : self.name,
+        'owners': [self.user_email],
+        'user' : self.user,
+    })
 
     return {
         'bucket': bucket,
         'parameters_json': json.dumps({
             'builder_name': 'Generic',
-            'properties': {
-                'bot' : self.build_configs,
-                'email' : [self.user_email],
-                'extra_args' : self.extra_args,
-                'name' : self.name,
-                'user' : self.user,
-                'cbb_config': bot,
-                'cbb_extra_args': self.extra_args,
-                'owners': [self.user_email],
-            },
-        }),
+            'properties': properties,
+        }, sort_keys=True),
         # These tags are indexed and searchable in buildbucket.
-        'tags': tags,
+        'tags': ['%s:%s' % (k, tags[k]) for k in sorted(tags.keys())],
     }
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
