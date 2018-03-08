@@ -45,6 +45,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
 
  protected:
   // InProcessBrowserTest:
+  void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:

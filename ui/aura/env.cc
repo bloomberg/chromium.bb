@@ -152,6 +152,9 @@ void Env::ScheduleEmbed(
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 
+// static
+bool Env::initial_throttle_input_on_resize_ = true;
+
 Env::Env(Mode mode)
     : mode_(mode),
       env_controller_(new EnvInputStateController),

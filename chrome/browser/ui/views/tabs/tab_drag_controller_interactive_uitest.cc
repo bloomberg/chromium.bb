@@ -52,6 +52,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_targeter.h"
@@ -212,6 +213,16 @@ void TabDragControllerTest::SetWindowFinderForTabStrip(
     std::unique_ptr<WindowFinder> window_finder) {
   ASSERT_TRUE(tab_strip->drag_controller_.get());
   tab_strip->drag_controller_->window_finder_ = std::move(window_finder);
+}
+
+void TabDragControllerTest::SetUp() {
+#if defined(USE_AURA)
+  // This needs to be disabled as it can interfere with when events are
+  // processed. In particular if input throttling is turned on, then when an
+  // event ack runs the event may not have been processed.
+  aura::Env::set_initial_throttle_input_on_resize_for_testing(false);
+#endif
+  InProcessBrowserTest::SetUp();
 }
 
 void TabDragControllerTest::SetUpCommandLine(base::CommandLine* command_line) {
