@@ -17,6 +17,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
@@ -84,10 +85,15 @@ class CONTENT_EXPORT LevelDBDatabase
                               bool* found,
                               const LevelDBSnapshot* = 0);
   leveldb::Status Write(const LevelDBWriteBatch& write_batch);
-  std::unique_ptr<LevelDBIterator> CreateIterator(const LevelDBSnapshot* = 0);
+  // Note: Use DefaultReadOptions() and then adjust any values afterwards.
+  std::unique_ptr<LevelDBIterator> CreateIterator(
+      const leveldb::ReadOptions& options);
   const LevelDBComparator* Comparator() const;
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);
   void CompactAll();
+
+  leveldb::ReadOptions DefaultReadOptions();
+  leveldb::ReadOptions DefaultReadOptions(const LevelDBSnapshot* snapshot);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

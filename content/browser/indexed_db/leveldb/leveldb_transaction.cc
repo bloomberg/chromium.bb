@@ -240,8 +240,8 @@ LevelDBTransaction::TransactionIterator::TransactionIterator(
     : transaction_(transaction),
       comparator_(transaction_->comparator_),
       data_iterator_(DataIterator::Create(transaction_.get())),
-      db_iterator_(
-          transaction_->db_->CreateIterator(&transaction_->snapshot_)) {
+      db_iterator_(transaction_->db_->CreateIterator(
+          transaction_->db_->DefaultReadOptions(&transaction_->snapshot_))) {
   transaction_->RegisterIterator(this);
 }
 
