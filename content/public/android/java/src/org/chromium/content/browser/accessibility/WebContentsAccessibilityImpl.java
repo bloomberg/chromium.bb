@@ -432,9 +432,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
+                if (!mView.hasFocus()) mView.requestFocus();
                 nativeClick(mNativeObj, virtualViewId);
                 return true;
             case AccessibilityNodeInfo.ACTION_FOCUS:
+                if (!mView.hasFocus()) mView.requestFocus();
                 nativeFocus(mNativeObj, virtualViewId);
                 return true;
             case AccessibilityNodeInfo.ACTION_CLEAR_FOCUS:
