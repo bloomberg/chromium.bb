@@ -364,8 +364,8 @@ public class OverlayPanelContent {
                 mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, panelWebContents);
 
         mContentDelegate.onContentViewCreated();
-        onPhysicalBackingSizeChanged(mContentViewWidth, mContentViewHeight);
         int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
+        onPhysicalBackingSizeChanged(mContentViewWidth, viewHeight);
         panelWebContents.setSize(mContentViewWidth, viewHeight);
     }
 
@@ -507,7 +507,7 @@ public class OverlayPanelContent {
     }
 
     void onSizeChanged(int width, int height) {
-        if (mContentViewCore == null || getWebContents() == null) return;
+        if (getWebContents() == null) return;
         getWebContents().setSize(width, height);
     }
 
