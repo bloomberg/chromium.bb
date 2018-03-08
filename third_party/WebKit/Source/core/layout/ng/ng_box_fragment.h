@@ -26,6 +26,13 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   //
   // Baseline requests must be added to constraint space when this fragment was
   // laid out.
+  //
+  // The "WithoutSynthesize" version returns an empty metrics if this box does
+  // not have any baselines, while the other version synthesize the baseline
+  // from the box.
+  NGLineHeightMetrics BaselineMetricsWithoutSynthesize(
+      const NGBaselineRequest&,
+      const NGConstraintSpace&) const;
   NGLineHeightMetrics BaselineMetrics(const NGBaselineRequest&,
                                       const NGConstraintSpace&) const;
 };

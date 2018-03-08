@@ -191,6 +191,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Positions a list marker for the specified block content.
   void PositionListMarker(const NGLayoutResult&, const NGLogicalOffset&);
 
+  // Positions a list marker when the block does not have any line boxes.
+  void PositionListMarkerWithoutLineBoxes();
+
   // Calculates logical offset for the current fragment using either {@code
   // intrinsic_block_size_} when the fragment doesn't know it's offset or
   // {@code known_fragment_offset} if the fragment knows it's offset
