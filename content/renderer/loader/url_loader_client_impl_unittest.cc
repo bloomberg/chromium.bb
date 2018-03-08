@@ -33,7 +33,8 @@ class URLLoaderClientImplTest : public ::testing::Test,
                                           &request_peer_context_),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        network::mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr(),
+        nullptr /* continue_navigation_function */);
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();

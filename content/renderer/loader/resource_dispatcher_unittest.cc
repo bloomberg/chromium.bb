@@ -120,7 +120,8 @@ class ResourceDispatcherTest : public testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        network::mojom::URLLoaderClientEndpointsPtr());
+        network::mojom::URLLoaderClientEndpointsPtr(),
+        nullptr /* continue_navigation_function */);
     peer_context->request_id = request_id;
     return request_id;
   }

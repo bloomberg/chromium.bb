@@ -412,7 +412,8 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    base::OnceClosure* continue_navigation_function) {
   CheckSchemeForReferrerPolicy(*request);
 
   // Compute a unique request_id for this renderer process.
@@ -427,10 +428,10 @@ int ResourceDispatcher::StartAsync(
         std::make_unique<URLLoaderClientImpl>(request_id, this,
                                               loading_task_runner);
 
-    loading_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                                  weak_factory_.GetWeakPtr(), request_id,
-                                  std::move(url_loader_client_endpoints)));
+    DCHECK(continue_navigation_function);
+    *continue_navigation_function = base::BindOnce(
+        &ResourceDispatcher::ContinueForNavigation, weak_factory_.GetWeakPtr(),
+        request_id, std::move(url_loader_client_endpoints));
 
     return request_id;
   }
