@@ -341,7 +341,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsWaitingForResponse() const override;
   const net::LoadStateWithParam& GetLoadState() const override;
   const base::string16& GetLoadStateHost() const override;
-  void RequestAXTreeSnapshot(const AXTreeSnapshotCallback& callback) override;
+  void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) override;
   uint64_t GetUploadSize() const override;
   uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;

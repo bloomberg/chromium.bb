@@ -318,9 +318,8 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
                        ->GetHost()
                        ->GetRootTransform();
   float scale_factor = ash::GetScaleFactorForTransform(transform);
-  web_contents->RequestAXTreeSnapshot(base::Bind(
-      &RequestVoiceInteractionStructureCallback,
-      base::Passed(std::move(callback)),
+  web_contents->RequestAXTreeSnapshot(base::BindOnce(
+      &RequestVoiceInteractionStructureCallback, std::move(callback),
       gfx::ConvertRectToPixel(scale_factor, browser->window()->GetBounds()),
       web_contents->GetLastCommittedURL().spec(), web_contents->GetTitle()));
 }

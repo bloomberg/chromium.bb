@@ -158,8 +158,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public CSPContext {
  public:
   using AXTreeSnapshotCallback =
-      base::Callback<void(
-          const ui::AXTreeUpdate&)>;
+      base::OnceCallback<void(const ui::AXTreeUpdate&)>;
 
   // An accessibility reset is only allowed to prevent very rare corner cases
   // or race conditions where the browser and renderer get out of sync. If

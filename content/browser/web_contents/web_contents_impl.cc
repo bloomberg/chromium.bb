@@ -219,8 +219,7 @@ void ResetAccessibility(RenderFrameHost* rfh) {
   static_cast<RenderFrameHostImpl*>(rfh)->AccessibilityReset();
 }
 
-using AXTreeSnapshotCallback =
-      base::Callback<void(const ui::AXTreeUpdate&)>;
+using AXTreeSnapshotCallback = WebContents::AXTreeSnapshotCallback;
 
 // Helper class used by WebContentsImpl::RequestAXTreeSnapshot.
 // Handles the callbacks from parallel snapshot requests to each frame,
@@ -229,14 +228,12 @@ using AXTreeSnapshotCallback =
 class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
  public:
   explicit AXTreeSnapshotCombiner(AXTreeSnapshotCallback callback)
-      : callback_(callback) {
-  }
+      : callback_(std::move(callback)) {}
 
   AXTreeSnapshotCallback AddFrame(bool is_root) {
     // Adds a reference to |this|.
-    return base::Bind(&AXTreeSnapshotCombiner::ReceiveSnapshot,
-                      this,
-                      is_root);
+    return base::BindOnce(&AXTreeSnapshotCombiner::ReceiveSnapshot, this,
+                          is_root);
   }
 
   void ReceiveSnapshot(bool is_root, const ui::AXTreeUpdate& snapshot) {
@@ -250,7 +247,7 @@ class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
   // when there are no more references to this object.
   ~AXTreeSnapshotCombiner() {
     combiner_.Combine();
-    callback_.Run(combiner_.combined());
+    std::move(callback_).Run(combiner_.combined());
   }
 
   ui::AXTreeCombiner combiner_;
@@ -1072,13 +1069,13 @@ void WebContentsImpl::AddAccessibilityMode(ui::AXMode mode) {
   SetAccessibilityMode(new_mode);
 }
 
-void WebContentsImpl::RequestAXTreeSnapshot(
-    const AXTreeSnapshotCallback& callback) {
+void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
   // Send a request to each of the frames in parallel. Each one will return
   // an accessibility tree snapshot, and AXTreeSnapshotCombiner will combine
   // them into a single tree and call |callback| with that result, then
   // delete |combiner|.
-  AXTreeSnapshotCombiner* combiner = new AXTreeSnapshotCombiner(callback);
+  AXTreeSnapshotCombiner* combiner =
+      new AXTreeSnapshotCombiner(std::move(callback));
   for (FrameTreeNode* frame_tree_node : frame_tree_.Nodes()) {
     bool is_root = frame_tree_node->parent() == nullptr;
     frame_tree_node->current_frame_host()->RequestAXTreeSnapshot(
