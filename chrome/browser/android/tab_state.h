@@ -9,9 +9,8 @@
 
 #include "base/android/scoped_java_ref.h"
 
-namespace content {
-class NavigationEntry;
-class WebContents;
+namespace sessions {
+class SerializedNavigationEntry;
 }
 
 class TabAndroid;
@@ -19,18 +18,20 @@ class TabAndroid;
 // Stores state for a WebContents, including its navigation history.
 class WebContentsState {
  public:
+  using DeletionPredicate = base::RepeatingCallback<bool(
+      const sessions::SerializedNavigationEntry& entry)>;
+
   static base::android::ScopedJavaLocalRef<jobject>
       GetContentsStateAsByteBuffer(JNIEnv* env, TabAndroid* tab);
 
-  // Common implementation for GetContentsStateAsByteBuffer() and
-  // CreateContentsStateAsByteBuffer(). Does not assume ownership of the
-  // navigations.
+  // Returns a new buffer without the navigations matching |predicate|.
+  // Returns null if no deletions happened.
   static base::android::ScopedJavaLocalRef<jobject>
-      WriteNavigationsAsByteBuffer(
-          JNIEnv* env,
-          bool is_off_the_record,
-          const std::vector<content::NavigationEntry*>& navigations,
-          int current_entry);
+  DeleteNavigationEntriesFromByteBuffer(JNIEnv* env,
+                                        void* data,
+                                        int size,
+                                        int saved_state_version,
+                                        const DeletionPredicate& predicate);
 
   // Extracts display title from serialized tab data on restore
   static base::android::ScopedJavaLocalRef<jstring>
@@ -41,13 +42,6 @@ class WebContentsState {
   static base::android::ScopedJavaLocalRef<jstring>
       GetVirtualUrlFromByteBuffer(JNIEnv* env, void* data,
                                   int size, int saved_state_version);
-
-  // Restores a WebContents from the passed in state.
-  static content::WebContents* RestoreContentsFromByteBuffer(
-      void* data,
-      int size,
-      int saved_state_version,
-      bool initially_hidden);
 
   // Restores a WebContents from the passed in state.
   static base::android::ScopedJavaLocalRef<jobject>

@@ -596,6 +596,7 @@ android_library("chrome_test_java") {
   data = [
     "//chrome/test/data/android/",
     "//chrome/test/data/banners/",
+    "//chrome/test/data/browsing_data/",
     "//chrome/test/data/encoding_tests/auto_detect/Big5_with_no_encoding_specified.html",
     "//chrome/test/data/geolocation/",
     "//chrome/test/data/google/",

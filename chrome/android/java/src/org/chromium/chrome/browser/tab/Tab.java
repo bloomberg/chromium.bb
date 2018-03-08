@@ -2738,6 +2738,21 @@ public class Tab
     }
 
     /**
+     * Delete navigation entries from frozen state matching the predicate.
+     * @param predicate Handle for a deletion predicate interpreted by native code.
+     *                  Only valid during this call frame.
+     */
+    @CalledByNative
+    private void deleteNavigationEntriesFromFrozenState(long predicate) {
+        if (mFrozenContentsState == null) return;
+        WebContentsState newState = mFrozenContentsState.deleteNavigationEntries(predicate);
+        if (newState != null) {
+            mFrozenContentsState = newState;
+            notifyNavigationEntriesDeleted();
+        }
+    }
+
+    /**
      * @return The reason the Tab was launched.
      */
     public TabLaunchType getLaunchType() {

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/favicon/core/favicon_driver_observer.h"
@@ -113,6 +114,10 @@ class TabAndroid : public CoreTabHelperDelegate,
   // WebContents.  Can return NULL.
   Profile* GetProfile() const;
   sync_sessions::SyncedTabDelegate* GetSyncedTabDelegate() const;
+
+  // Delete navigation entries matching predicate from frozen state.
+  void DeleteFrozenNavigationEntries(
+      const WebContentsState::DeletionPredicate& predicate);
 
   void SetWindowSessionID(SessionID::id_type window_id);
   void SetSyncId(int sync_id);

@@ -60,33 +60,20 @@ bool UrlMatcherForSession(const base::flat_set<GURL>& urls,
 
 base::flat_set<GURL> CreateUrlSet(const history::URLRows& deleted_rows) {
   std::vector<GURL> urls;
-  for (const history::URLRow& row : deleted_rows) {
+  for (const history::URLRow& row : deleted_rows)
     urls.push_back(row.url());
-  }
   return base::flat_set<GURL>(std::move(urls));
 }
 
-// Desktop is using |TabStripModel|, Android |TabModel|. They don't have a
-// common base class but both have a |GetWebContentsAt()| method.
-// TODO(dullweber): Add a common base class?
-template <typename TabList>
 void DeleteNavigationEntries(
-    TabList* tab_list,
-    int tab_count,
+    content::WebContents* web_contents,
     const content::NavigationController::DeletionPredicate& predicate) {
-  for (int i = 0; i < tab_count; i++) {
-    content::WebContents* web_contents = tab_list->GetWebContentsAt(i);
-    // TODO(dullweber): Non-loaded tabs on Android don't have a WebContents.
-    // We need to cleanup their TabState instead.
-    if (!web_contents)
-      continue;
-    content::NavigationController* controller = &web_contents->GetController();
-    controller->DiscardNonCommittedEntries();
-    // We discarded pending and transient entries but there could still be
-    // no last_committed_entry, which would prevent deletion.
-    if (controller->CanPruneAllButLastCommitted())
-      controller->DeleteNavigationEntries(predicate);
-  }
+  content::NavigationController* controller = &web_contents->GetController();
+  controller->DiscardNonCommittedEntries();
+  // We discarded pending and transient entries but there could still be
+  // no last_committed_entry, which would prevent deletion.
+  if (controller->CanPruneAllButLastCommitted())
+    controller->DeleteNavigationEntries(predicate);
 }
 
 void DeleteTabNavigationEntries(Profile* profile,
@@ -99,17 +86,30 @@ void DeleteTabNavigationEntries(Profile* profile,
           : base::BindRepeating(&UrlMatcher, base::ConstRef(url_set));
 
 #if defined(OS_ANDROID)
+  auto session_predicate =
+      time_range.IsValid()
+          ? base::BindRepeating(&TimeRangeMatcherForSession, time_range.begin(),
+                                time_range.end())
+          : base::BindRepeating(&UrlMatcherForSession, base::ConstRef(url_set));
+
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     TabModel* tab_model = *it;
     if (tab_model->GetProfile() == profile) {
-      DeleteNavigationEntries(tab_model, tab_model->GetTabCount(), predicate);
+      for (int i = 0; i < tab_model->GetTabCount(); i++) {
+        TabAndroid* tab = tab_model->GetTabAt(i);
+        tab->DeleteFrozenNavigationEntries(session_predicate);
+        content::WebContents* web_contents = tab->web_contents();
+        if (web_contents)
+          DeleteNavigationEntries(web_contents, predicate);
+      }
     }
   }
 #else
   for (Browser* browser : *BrowserList::GetInstance()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (browser->profile() == profile) {
-      DeleteNavigationEntries(tab_strip, tab_strip->count(), predicate);
+      for (int i = 0; i < tab_strip->count(); i++)
+        DeleteNavigationEntries(tab_strip->GetWebContentsAt(i), predicate);
     }
   }
 #endif
@@ -160,18 +160,19 @@ void DeleteTabRestoreEntries(Profile* profile,
                              const base::flat_set<GURL>& url_set) {
   sessions::TabRestoreService* tab_service =
       TabRestoreServiceFactory::GetForProfile(profile);
-  if (tab_service) {
-    auto predicate =
-        time_range.IsValid()
-            ? base::BindRepeating(&TimeRangeMatcherForSession,
-                                  time_range.begin(), time_range.end())
-            : base::BindRepeating(&UrlMatcherForSession, url_set);
-    if (tab_service->IsLoaded()) {
-      PerformTabRestoreDeletion(tab_service, predicate);
-    } else {
-      // The helper deletes itself when the tab entry deletion is finished.
-      new TabRestoreDeletionHelper(tab_service, predicate);
-    }
+  if (!tab_service)
+    return;
+
+  auto predicate =
+      time_range.IsValid()
+          ? base::BindRepeating(&TimeRangeMatcherForSession, time_range.begin(),
+                                time_range.end())
+          : base::BindRepeating(&UrlMatcherForSession, url_set);
+  if (tab_service->IsLoaded()) {
+    PerformTabRestoreDeletion(tab_service, predicate);
+  } else {
+    // The helper deletes itself when the tab entry deletion is finished.
+    new TabRestoreDeletionHelper(tab_service, predicate);
   }
 }
 

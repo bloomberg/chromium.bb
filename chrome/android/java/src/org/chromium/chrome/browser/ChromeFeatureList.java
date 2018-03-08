@@ -242,6 +242,7 @@ public abstract class ChromeFeatureList {
     public static final String PROGRESS_BAR_THROTTLE = "ProgressBarThrottle";
     public static final String PWA_PERSISTENT_NOTIFICATION = "PwaPersistentNotification";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
+    public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
     public static final String SOLE_INTEGRATION = "SoleIntegration";

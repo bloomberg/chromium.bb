@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
@@ -90,6 +91,21 @@ public class TabState {
          */
         public WebContents restoreContentsFromByteBuffer(boolean isHidden) {
             return nativeRestoreContentsFromByteBuffer(mBuffer, mVersion, isHidden);
+        }
+
+        /**
+         * Deletes navigation entries from this buffer matching predicate.
+         * @param predicate Handle for a deletion predicate interpreted by native code.
+                            Only valid during this call frame.
+         * @return WebContentsState A new state or null if nothing changed.
+         */
+        @Nullable
+        public WebContentsState deleteNavigationEntries(long predicate) {
+            ByteBuffer newBuffer = nativeDeleteNavigationEntries(mBuffer, mVersion, predicate);
+            if (newBuffer == null) return null;
+            WebContentsState newState = new TabState.WebContentsStateNative(newBuffer);
+            newState.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
+            return newState;
         }
 
         /**
@@ -469,6 +485,9 @@ public class TabState {
             ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
 
     private static native ByteBuffer nativeGetContentsStateAsByteBuffer(Tab tab);
+
+    private static native ByteBuffer nativeDeleteNavigationEntries(
+            ByteBuffer state, int saveStateVersion, long predicate);
 
     private static native ByteBuffer nativeCreateSingleNavigationStateAsByteBuffer(
             String url, String referrerUrl, int referrerPolicy, boolean isIncognito);
