@@ -15,6 +15,11 @@ namespace blink {
 class WebGestureEvent;
 }
 
+namespace gfx {
+class SizeF;
+class Vector2dF;
+}  // namespace gfx
+
 namespace content {
 
 class WebContentsImpl;
@@ -32,6 +37,18 @@ class GestureListenerManager : public RenderWidgetHostConnector {
                        InputEventAckState ack_result);
   void DidStopFlinging();
   bool FilterInputEvent(const blink::WebInputEvent& event);
+
+  // All sizes and offsets are in CSS pixels (except |top_show_pix|)
+  // as cached by the renderer.
+  void UpdateScrollInfo(const gfx::Vector2dF& scroll_offset,
+                        float page_scale_factor,
+                        const float min_page_scale,
+                        const float max_page_scale,
+                        const gfx::SizeF& content,
+                        const gfx::SizeF& viewport,
+                        const float content_offset,
+                        const float top_shown_pix,
+                        bool top_changed);
 
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(

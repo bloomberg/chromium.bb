@@ -8,11 +8,13 @@ import android.view.View;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
+import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
@@ -36,6 +38,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
     private View mContainerView;
+    private InternalAccessDelegate mScrollDelegate;
 
     // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
     // onFlingEnd() is called asynchronously.
@@ -69,6 +72,10 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     public void setContainerView(View containerView) {
         mContainerView = containerView;
+    }
+
+    public void setScrollDelegate(InternalAccessDelegate scrollDelegate) {
+        mScrollDelegate = scrollDelegate;
     }
 
     @Override
@@ -213,6 +220,52 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         if (!tapDisambiguator.isShowing()) tapDisambiguator.setLastTouch(x, y);
 
         return false;
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void updateScrollInfo(float scrollOffsetX, float scrollOffsetY, float pageScaleFactor,
+            float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
+            float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
+            boolean topBarChanged) {
+        TraceEvent.begin("GestureListenerManagerImpl:updateScrollInfo");
+        RenderCoordinates rc = mWebContents.getRenderCoordinates();
+
+        // Adjust contentWidth/Height to be always at least as big as
+        // the actual viewport (as set by onSizeChanged).
+        final float deviceScale = rc.getDeviceScaleFactor();
+        contentWidth =
+                Math.max(contentWidth, mContainerView.getWidth() / (deviceScale * pageScaleFactor));
+        contentHeight = Math.max(
+                contentHeight, mContainerView.getHeight() / (deviceScale * pageScaleFactor));
+
+        final boolean contentSizeChanged = contentWidth != rc.getContentWidthCss()
+                || contentHeight != rc.getContentHeightCss();
+        final boolean scaleLimitsChanged = minPageScaleFactor != rc.getMinPageScaleFactor()
+                || maxPageScaleFactor != rc.getMaxPageScaleFactor();
+        final boolean pageScaleChanged = pageScaleFactor != rc.getPageScaleFactor();
+        final boolean scrollChanged = pageScaleChanged || scrollOffsetX != rc.getScrollX()
+                || scrollOffsetY != rc.getScrollY();
+
+        if (contentSizeChanged || scrollChanged)
+            TapDisambiguator.fromWebContents(mWebContents).hidePopup(true);
+
+        if (scrollChanged) {
+            mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),
+                    (int) rc.fromLocalCssToPix(scrollOffsetY), (int) rc.getScrollXPix(),
+                    (int) rc.getScrollYPix());
+        }
+
+        // TODO(jinsukkim): Consider updating the info directly through RenderCoordinates.
+        rc.updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth, contentHeight, viewportWidth,
+                viewportHeight, pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
+                topBarShownPix);
+
+        if (scrollChanged || topBarChanged) {
+            updateOnScrollChanged(verticalScrollOffset(), verticalScrollExtent());
+        }
+        if (scaleLimitsChanged) updateOnScaleLimitsChanged(minPageScaleFactor, maxPageScaleFactor);
+        TraceEvent.end("GestureListenerManagerImpl:updateScrollInfo");
     }
 
     /**
