@@ -13,4 +13,7 @@
 // index].
 extern NSString* const kGridCellIdentifierPrefix;
 
+// Accessibility identifier for the close button in a grid cell.
+extern NSString* const kGridCellCloseButtonIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSTANTS_H_
