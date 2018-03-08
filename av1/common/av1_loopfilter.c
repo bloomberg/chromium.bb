@@ -717,9 +717,13 @@ static void check_mask_y(const FilterMaskY *lfm) {
     assert(!(lfm[TX_4X4].bits[i] & lfm[TX_8X8].bits[i]));
     assert(!(lfm[TX_4X4].bits[i] & lfm[TX_16X16].bits[i]));
     assert(!(lfm[TX_4X4].bits[i] & lfm[TX_32X32].bits[i]));
+    assert(!(lfm[TX_4X4].bits[i] & lfm[TX_64X64].bits[i]));
     assert(!(lfm[TX_8X8].bits[i] & lfm[TX_16X16].bits[i]));
     assert(!(lfm[TX_8X8].bits[i] & lfm[TX_32X32].bits[i]));
+    assert(!(lfm[TX_8X8].bits[i] & lfm[TX_64X64].bits[i]));
     assert(!(lfm[TX_16X16].bits[i] & lfm[TX_32X32].bits[i]));
+    assert(!(lfm[TX_16X16].bits[i] & lfm[TX_64X64].bits[i]));
+    assert(!(lfm[TX_32X32].bits[i] & lfm[TX_64X64].bits[i]));
   }
 #else
   (void)lfm;
@@ -742,11 +746,153 @@ static void check_mask_uv(const FilterMaskUV *lfm) {
 #endif
 }
 
+static void check_loop_filter_masks(const LoopFilterMask *lfm) {
+  int i;
+  for (i = 0; i < LOOP_FILTER_MASK_NUM; ++i) {
+    // Assert if we try to apply 2 different loop filters at the same position.
+    check_mask_y(lfm->lfm_info[i].left_y);
+    check_mask_y(lfm->lfm_info[i].above_y);
+    check_mask_uv(lfm->lfm_info[i].left_u);
+    check_mask_uv(lfm->lfm_info[i].above_u);
+    check_mask_uv(lfm->lfm_info[i].left_v);
+    check_mask_uv(lfm->lfm_info[i].above_v);
+  }
+}
+
 // mi_row, mi_col represent the starting postion of the coding block for
 // which the mask is built. idx, idy represet the offset from the startint
 // point, in the unit of actual distance. For example (idx >> MI_SIZE_LOG2)
 // is in the unit of MI.
 // static void setup_masks()
+
+static void setup_tx_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
+                                int mi_block_wide, int mi_block_high, int plane,
+                                int subsampling_x, int subsampling_y,
+                                LoopFilterMask *lfm) {
+  // place hoder: build bitmask for a coding block.
+  (void)cm;
+  (void)mi_row;
+  (void)mi_col;
+  (void)mi_block_wide;
+  (void)mi_block_high;
+  (void)plane;
+  (void)subsampling_x;
+  (void)subsampling_y;
+  (void)lfm;
+}
+
+static void setup_block_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
+                             BLOCK_SIZE bsize, int plane, int subsampling_x,
+                             int subsampling_y, LoopFilterMask *lfm) {
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+
+  const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
+  const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+  const int hbs = mi_size_wide[bsize] / 2;
+  const int quarter_step = mi_size_wide[bsize] / 4;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  int i;
+
+  switch (partition) {
+    case PARTITION_NONE:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw, bh, plane, subsampling_x,
+                          subsampling_y, lfm);
+      break;
+    case PARTITION_HORZ:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw, bh >> 1, plane, subsampling_x,
+                          subsampling_y, lfm);
+      if (mi_row + hbs < cm->mi_rows)
+        setup_tx_block_mask(cm, mi_row + hbs, mi_col, bw, bh >> 1, plane,
+                            subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_VERT:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw >> 1, bh, plane, subsampling_x,
+                          subsampling_y, lfm);
+      if (mi_col + hbs < cm->mi_cols)
+        setup_tx_block_mask(cm, mi_row, mi_col + hbs, bw >> 1, bh, plane,
+                            subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_SPLIT:
+      setup_block_mask(cm, mi_row, mi_col, subsize, plane, subsampling_x,
+                       subsampling_y, lfm);
+      setup_block_mask(cm, mi_row, mi_col + hbs, subsize, plane, subsampling_x,
+                       subsampling_y, lfm);
+      setup_block_mask(cm, mi_row + hbs, mi_col, subsize, plane, subsampling_x,
+                       subsampling_y, lfm);
+      setup_block_mask(cm, mi_row + hbs, mi_col + hbs, subsize, plane,
+                       subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_HORZ_A:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row, mi_col + hbs, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row + hbs, mi_col, bw, bh, plane,
+                          subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_HORZ_B:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw, bh >> 1, plane, subsampling_x,
+                          subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row + hbs, mi_col, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row + hbs, mi_col + hbs, bw >> 1, bh >> 1,
+                          plane, subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_VERT_A:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row + hbs, mi_col, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row, mi_col + hbs, bw >> 1, bh, plane,
+                          subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_VERT_B:
+      setup_tx_block_mask(cm, mi_row, mi_col, bw >> 1, bh, plane, subsampling_x,
+                          subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row, mi_col + hbs, bw >> 1, bh >> 1, plane,
+                          subsampling_x, subsampling_y, lfm);
+      setup_tx_block_mask(cm, mi_row + hbs, mi_col + hbs, bw >> 1, bh >> 1,
+                          plane, subsampling_x, subsampling_y, lfm);
+      break;
+    case PARTITION_HORZ_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_row = mi_row + i * quarter_step;
+        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+        setup_tx_block_mask(cm, this_mi_row, mi_col, bw, bh >> 2, plane,
+                            subsampling_x, subsampling_y, lfm);
+      }
+      break;
+    case PARTITION_VERT_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_col = mi_col + i * quarter_step;
+        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+        setup_tx_block_mask(cm, mi_row, this_mi_col, bw >> 2, bh, plane,
+                            subsampling_x, subsampling_y, lfm);
+      }
+      break;
+    default: assert(0);
+  }
+}
+
+void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
+                       int subsampling_x, int subsampling_y,
+                       LoopFilterMask *lfm) {
+  assert(lfm != NULL);
+
+  // set up bitmask for each superblock
+  setup_block_mask(cm, mi_row, mi_col, cm->seq_params.sb_size, plane,
+                   subsampling_x, subsampling_y, lfm);
+
+  {
+    // place hoder: for potential special case handling.
+  }
+
+  // check if the mask is valid
+  check_loop_filter_masks(lfm);
+}
 #endif  // LOOP_FILTER_BITMASK
 
 static void filter_selectively_vert_row2(int subsampling_factor, uint8_t *s,

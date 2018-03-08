@@ -199,6 +199,9 @@ static int alloc_loop_filter(AV1_COMMON *cm) {
       (LoopFilterMask *)aom_calloc(cm->lf.lfm_num, sizeof(*cm->lf.lfm));
   if (!cm->lf.lfm) return 1;
 
+  unsigned int i;
+  for (i = 0; i < cm->lf.lfm_num; ++i) av1_zero(cm->lf.lfm[i]);
+
   return 0;
 }
 #endif  // LOOP_FILTER_BITMASK
@@ -304,7 +307,9 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
     cm->above_context_alloc_cols = aligned_mi_cols;
   }
 
+#if LOOP_FILTER_BITMASK
   if (alloc_loop_filter(cm)) goto fail;
+#endif  // LOOP_FILTER_BITMASK
 
   return 0;
 
