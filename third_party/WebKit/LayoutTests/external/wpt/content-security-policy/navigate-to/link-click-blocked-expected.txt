@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test that the child iframe navigation is blocked assert_equals: expected "fail" but got "success"
+Harness: the test ran to completion.
+
