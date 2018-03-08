@@ -73,11 +73,8 @@ question hinges on the nature and location of the code that you are converting:
 - If you are looking to convert all or part of a component (i.e., a feature in
   //components) into a service, the question arises of whether your new service
   is worthy of being in //services (i.e., is it a foundational service?). If
-  not, then it can be placed in an appropriate subdirectory of the component
-  itself. See this [email
-  thread](https://groups.google.com/a/chromium.org/forum/#!topic/services-dev/3AJx3gjHbZE) and its [resulting CL](https://codereview.chromium.org/2832633002)
-  for discussion of this point, and if in doubt, start a similar email thread
-  discussing your feature.
+  not, then it can be placed in //components/services. See this
+  [document](https://docs.google.com/document/d/1Zati5ZohwjUM0vz5qj6sWg5r-_I0iisUoSoAMNdd7C8/edit#) for discussion of this point.
 
 ### If your service is embedded in the browser process, what is its threading model?
 
