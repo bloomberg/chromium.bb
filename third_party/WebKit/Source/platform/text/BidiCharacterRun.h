@@ -28,6 +28,9 @@
 namespace blink {
 
 struct BidiCharacterRun {
+  USING_FAST_MALLOC(BidiCharacterRun);
+
+ public:
   BidiCharacterRun(bool override,
                    unsigned char level,
                    int start,
@@ -66,10 +69,6 @@ struct BidiCharacterRun {
         next_(nullptr),
         start_(start),
         stop_(stop) {}
-
-  // BidiCharacterRun are allocated out of the rendering partition.
-  PLATFORM_EXPORT void* operator new(size_t);
-  PLATFORM_EXPORT void operator delete(void*);
 
   int Start() const { return start_; }
   int Stop() const { return stop_; }
