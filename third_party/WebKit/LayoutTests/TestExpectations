@@ -3406,3 +3406,4 @@ crbug.com/819591 virtual/threaded/animations/hit-testing/composited-with-hit-tes
 crbug.com/819683 [ Linux ] paint/invalidation/background/obscured-background-no-repaint.html [ Crash ]
 crbug.com/819851 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-keydown.html [ Skip ]
 crbug.com/819851 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Skip ]
+crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Timeout ]
