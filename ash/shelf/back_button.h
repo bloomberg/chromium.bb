@@ -27,8 +27,6 @@ class ASH_EXPORT BackButton : public views::ImageButton {
 
  protected:
   // views::ImageButton:
-  // TODO(sammiequon): Consider using NotifyClick instead of OnGesture and
-  // OnMouse.
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
