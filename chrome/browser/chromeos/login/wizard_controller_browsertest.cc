@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/mock_demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
@@ -434,6 +435,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     MOCK(mock_enable_debugging_screen_,
          OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING, MockEnableDebuggingScreen,
          MockEnableDebuggingScreenView);
+    MOCK(mock_demo_setup_screen_, OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+         MockDemoSetupScreen, MockDemoSetupScreenView);
     device_disabled_screen_view_.reset(new MockDeviceDisabledScreenView);
     wizard_controller->screen_manager()
         ->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
@@ -572,6 +575,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
       mock_wrong_hwid_screen_;
   MockOutShowHide<MockEnableDebuggingScreen, MockEnableDebuggingScreenView>*
       mock_enable_debugging_screen_;
+  MockOutShowHide<MockDemoSetupScreen, MockDemoSetupScreenView>*
+      mock_demo_setup_screen_;
   std::unique_ptr<MockDeviceDisabledScreenView> device_disabled_screen_view_;
 
  private:
@@ -1245,6 +1250,32 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
 
+class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
+ protected:
+  WizardControllerDemoSetupTest() = default;
+
+  // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerFlowTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
+                       CloseDemoSetupShouldShowSignIn) {
+  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
+  EXPECT_NE(nullptr, ExistingUserController::current_controller());
+
+  ExistingUserController::current_controller()->OnStartDemoModeSetupScreen();
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_CLOSED);
+  EXPECT_NE(nullptr, ExistingUserController::current_controller());
+}
+
 class WizardControllerOobeResumeTest : public WizardControllerTest {
  protected:
   WizardControllerOobeResumeTest() {}
@@ -1343,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
 // TODO(updowndota): Add tests for Voice Interaction OptIn flow.
 
 // TODO(alemate): Add tests for Sync Consent UI.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 33,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 34,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

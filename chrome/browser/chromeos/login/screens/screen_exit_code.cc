@@ -72,6 +72,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "WAIT_FOR_CONTAINER_READY_ERROR";
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       return "SYNC_CONSENT_FINISHED";
+    case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
+      return "DEMO_MODE_SETUP_CLOSED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

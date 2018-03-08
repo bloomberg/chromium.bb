@@ -323,6 +323,10 @@ void WebUIScreenLocker::OnStartEnableDebuggingScreen() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnStartDemoModeSetupScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::OnStartKioskEnableScreen() {
   NOTREACHED();
 }

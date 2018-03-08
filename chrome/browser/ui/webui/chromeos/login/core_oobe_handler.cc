@@ -195,7 +195,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
-  AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -576,15 +575,6 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
 
   AllowJavascript();
   ResolveJavascriptCallback(*callback_id, base::Value(display_name));
-}
-
-void CoreOobeHandler::HandleSetupDemoMode() {
-  const bool is_demo_mode_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableDemoMode);
-  if (is_demo_mode_enabled) {
-    NOTIMPLEMENTED();
-  }
 }
 
 void CoreOobeHandler::InitDemoModeDetection() {

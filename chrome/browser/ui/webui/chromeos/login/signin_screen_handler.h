@@ -153,6 +153,9 @@ class SigninScreenHandlerDelegate {
   // Shows Enable Developer Features screen.
   virtual void ShowEnableDebuggingScreen() = 0;
 
+  // Shows Demo Mode Setup screen.
+  virtual void ShowDemoModeSetupScreen() = 0;
+
   // Shows Kiosk Enable screen.
   virtual void ShowKioskEnableScreen() = 0;
 
@@ -374,6 +377,7 @@ class SigninScreenHandler
   void HandleToggleEnrollmentScreen();
   void HandleToggleEnrollmentAd();
   void HandleToggleEnableDebuggingScreen();
+  void HandleSetupDemoMode();
   void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();

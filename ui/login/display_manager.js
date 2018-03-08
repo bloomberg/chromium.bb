@@ -14,6 +14,7 @@
 /** @const */ var SCREEN_OOBE_UPDATE = 'update';
 /** @const */ var SCREEN_OOBE_RESET = 'reset';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
+/** @const */ var SCREEN_OOBE_DEMO_SETUP = 'demo-setup';
 /** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_OOBE_AUTO_ENROLLMENT_CHECK = 'auto-enrollment-check';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';

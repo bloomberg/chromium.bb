@@ -99,6 +99,7 @@ class ExistingUserController
   void OnSigninScreenReady() override;
   void OnStartEnterpriseEnrollment() override;
   void OnStartEnableDebuggingScreen() override;
+  void OnStartDemoModeSetupScreen() override;
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
@@ -207,6 +208,9 @@ class ExistingUserController
 
   // Shows "enable developer features" screen.
   void ShowEnableDebuggingScreen();
+
+  // Shows demo mode setup screen.
+  void ShowDemoModeSetupScreen();
 
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();

@@ -68,6 +68,9 @@ class LoginDisplay {
     // Called when the user requests enable developer features screen.
     virtual void OnStartEnableDebuggingScreen() = 0;
 
+    // Called when the user requests demo mode setup screen.
+    virtual void OnStartDemoModeSetupScreen() = 0;
+
     // Called when the user requests kiosk enable screen.
     virtual void OnStartKioskEnableScreen() = 0;
 

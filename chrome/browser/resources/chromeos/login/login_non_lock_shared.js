@@ -19,6 +19,7 @@
 // <include src="oobe_screen_voice_interaction_value_prop.js">
 // <include src="oobe_screen_wait_for_container_ready.js">
 // <include src="oobe_select.js">
+// <include src="oobe_screen_demo_setup.js">
 
 // <include src="screen_app_launch_splash.js">
 // <include src="screen_arc_kiosk_splash.js">

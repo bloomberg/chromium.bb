@@ -192,6 +192,11 @@ bool CanShowDebuggingFeatures() {
          !session_manager::SessionManager::Get()->IsSessionStarted();
 }
 
+bool DemoModeEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableDemoMode);
+}
+
 void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
   UMA_HISTOGRAM_ENUMERATION("Login.PasswordChangeFlow", flow,
                             LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
@@ -688,6 +693,11 @@ void ExistingUserController::OnStartEnableDebuggingScreen() {
     ShowEnableDebuggingScreen();
 }
 
+void ExistingUserController::OnStartDemoModeSetupScreen() {
+  if (DemoModeEnabled())
+    ShowDemoModeSetupScreen();
+}
+
 void ExistingUserController::OnStartKioskEnableScreen() {
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::Bind(
       &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
@@ -771,6 +781,10 @@ void ExistingUserController::ShowEnrollmentScreen() {
 
 void ExistingUserController::ShowEnableDebuggingScreen() {
   host_->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+}
+
+void ExistingUserController::ShowDemoModeSetupScreen() {
+  host_->StartWizard(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
