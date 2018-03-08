@@ -247,6 +247,8 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
     return;
 
   if (ShouldDetectInRenderer()) {
+    if (binding_.is_bound())
+      return;
     StartDetectionInRenderer();
   } else {
     subscription_ = NearOomMonitor::GetInstance()->RegisterCallback(
@@ -277,6 +279,7 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   DCHECK(render_process_host);
   content::BindInterface(render_process_host,
                          mojo::MakeRequest(&intervention_));
+  DCHECK(!binding_.is_bound());
   blink::mojom::OomInterventionHostPtr host;
   binding_.Bind(mojo::MakeRequest(&host));
   intervention_->StartDetection(std::move(host), trigger_intervention);
