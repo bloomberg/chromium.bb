@@ -22,6 +22,7 @@
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/display/win/dpi.h"
@@ -31,6 +32,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
@@ -119,10 +121,14 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  minimize_button_ = CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
-  maximize_button_ = CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON);
-  restore_button_ = CreateCaptionButton(VIEW_ID_RESTORE_BUTTON);
-  close_button_ = CreateCaptionButton(VIEW_ID_CLOSE_BUTTON);
+  minimize_button_ =
+      CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON, IDS_APP_ACCNAME_MINIMIZE);
+  maximize_button_ =
+      CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON, IDS_APP_ACCNAME_MAXIMIZE);
+  restore_button_ =
+      CreateCaptionButton(VIEW_ID_RESTORE_BUTTON, IDS_APP_ACCNAME_RESTORE);
+  close_button_ =
+      CreateCaptionButton(VIEW_ID_CLOSE_BUTTON, IDS_APP_ACCNAME_CLOSE);
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() {
@@ -586,9 +592,11 @@ SkColor GlassBrowserFrameView::GetTitlebarColor() const {
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
-    ViewID button_type) {
-  Windows10CaptionButton* button =
-      new Windows10CaptionButton(this, button_type);
+    ViewID button_type,
+    int accessible_name_resource_id) {
+  Windows10CaptionButton* button = new Windows10CaptionButton(
+      this, button_type,
+      l10n_util::GetStringUTF16(accessible_name_resource_id));
   AddChildView(button);
   return button;
 }
