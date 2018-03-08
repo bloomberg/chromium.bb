@@ -25,6 +25,8 @@ source_set("util") {
     "named_guide.mm",
     "named_guide_util.h",
     "named_guide_util.mm",
+    "optional_property_animator.h",
+    "optional_property_animator.mm",
     "pasteboard_util.h",
     "pasteboard_util.mm",
     "relaxed_bounds_constraints_hittest.h",
@@ -63,6 +65,7 @@ source_set("unit_tests") {
     "label_observer_unittest.mm",
     "manual_text_framer_unittest.mm",
     "named_guide_unittest.mm",
+    "optional_property_animator_unittest.mm",
     "text_region_mapper_unittest.mm",
   ]
   deps = [

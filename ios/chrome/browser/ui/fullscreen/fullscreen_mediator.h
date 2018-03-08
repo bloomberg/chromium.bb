@@ -56,6 +56,11 @@ class FullscreenMediator : public FullscreenModelObserver {
   // completion block.
   void SetUpAnimator(__strong FullscreenAnimator** animator);
 
+  // Starts |animator| if it has animations to run.  |animator| is expected to
+  // be a pointer to a data member of this object, and will be reset when
+  // attempting to start an animator without any animation blocks.
+  void StartAnimator(__strong FullscreenAnimator** animator);
+
   // Stops the current scroll end animation if one is in progress.  If
   // |update_model| is true, the FullscreenModel will be updated with the active
   // animator's current progress value.
@@ -66,6 +71,10 @@ class FullscreenMediator : public FullscreenModelObserver {
   // true, the FullscreenModel will be updated with the current progress of the
   // animator before deallocation.
   void StopAnimator(__strong FullscreenAnimator** animator, bool update_model);
+
+  // Checks whether |animator| is a valid pointer to one of the three animator
+  // data members of this class.  No-op for non-debug builds.
+  void VerifyAnimatorPointer(__strong FullscreenAnimator** animator) const;
 
   // The controller.
   FullscreenController* controller_ = nullptr;
