@@ -9,9 +9,6 @@
 #include "base/macros.h"
 
 @class ChromeIdentity;
-namespace ios {
-class ChromeIdentityService;
-}  // namespace ios
 
 typedef ChromeIdentity* (^SignedInIdentityBlock)(void);
 typedef NSArray<ChromeIdentity*>* (^SignedInIdentitiesBlock)(void);
@@ -26,16 +23,6 @@ class MailtoHandlerProvider {
   // The Signed-In Identity Block should return the primary signed in user.
   // The Signed-In Identities Block should return all users signed in to Chrome.
   virtual void PrepareMailtoHandling(
-      SignedInIdentityBlock signed_in_identity_block,
-      SignedInIdentitiesBlock signed_in_identities_block);
-
-  // Set up mailto handling for the currently signed in users.
-  // The Signed-In Identity Block should return the primary signed in user.
-  // The Signed-In Identities Block should return all users signed in to Chrome.
-  // DEPRECATED: Use the above overloaded PrepareMailtoHandling() method
-  // without |identity_service| parameter instead.
-  virtual void PrepareMailtoHandling(
-      ios::ChromeIdentityService* identity_service,
       SignedInIdentityBlock signed_in_identity_block,
       SignedInIdentitiesBlock signed_in_identities_block);
 
