@@ -32,6 +32,11 @@ static INLINE void vsth_s16(int16_t *ptr, int16x4_t val) {
   *((uint32_t *)ptr) = vreinterpret_u32_s16(val)[0];
 }
 
+// Store half of a vector.
+static INLINE void vsth_u8(uint8_t *ptr, uint8x8_t val) {
+  *((uint32_t *)ptr) = vreinterpret_u32_u8(val)[0];
+}
+
 static void cfl_luma_subsampling_420_lbd_neon(const uint8_t *input,
                                               int input_stride,
                                               int16_t *pred_buf_q3, int width,
@@ -240,3 +245,160 @@ static INLINE void subtract_average_neon(int16_t *pred_buf, int width,
 }
 
 CFL_SUB_AVG_FN(neon)
+
+// Saturating negate 16-bit integers in a when the corresponding signed 16-bit
+// integer in b is negative.
+// Notes:
+//   * Negating INT16_MIN results in INT16_MIN. However, this cannot occur in
+//   practice, as scaled_luma is the multiplication of two absolute values.
+//   * In the Intel equivalent, elements in a are zeroed out when the
+//   corresponding elements in b are zero. Because vsign is used twice in a
+//   row, with b in the first call becoming a in the second call, there's no
+//   impact from not zeroing out.
+static int16x4_t vsign_s16(int16x4_t a, int16x4_t b) {
+  const int16x4_t mask = vshr_n_s16(b, 15);
+  return veor_s16(vadd_s16(a, mask), mask);
+}
+
+// Saturating negate 16-bit integers in a when the corresponding signed 16-bit
+// integer in b is negative.
+// Notes:
+//   * Negating INT16_MIN results in INT16_MIN. However, this cannot occur in
+//   practice, as scaled_luma is the multiplication of two absolute values.
+//   * In the Intel equivalent, elements in a are zeroed out when the
+//   corresponding elements in b are zero. Because vsignq is used twice in a
+//   row, with b in the first call becoming a in the second call, there's no
+//   impact from not zeroing out.
+static int16x8_t vsignq_s16(int16x8_t a, int16x8_t b) {
+  const int16x8_t mask = vshrq_n_s16(b, 15);
+  return veorq_s16(vaddq_s16(a, mask), mask);
+}
+
+static INLINE int16x4_t predict_w4(const int16_t *pred_buf_q3,
+                                   int16x4_t alpha_sign, int abs_alpha_q12,
+                                   int16x4_t dc) {
+  const int16x4_t ac_q3 = vld1_s16(pred_buf_q3);
+  const int16x4_t ac_sign = veor_s16(alpha_sign, ac_q3);
+  int16x4_t scaled_luma = vqrdmulh_n_s16(vabs_s16(ac_q3), abs_alpha_q12);
+  return vadd_s16(vsign_s16(scaled_luma, ac_sign), dc);
+}
+
+static INLINE int16x8_t predict_w8(const int16_t *pred_buf_q3,
+                                   int16x8_t alpha_sign, int abs_alpha_q12,
+                                   int16x8_t dc) {
+  const int16x8_t ac_q3 = vld1q_s16(pred_buf_q3);
+  const int16x8_t ac_sign = veorq_s16(alpha_sign, ac_q3);
+  int16x8_t scaled_luma = vqrdmulhq_n_s16(vabsq_s16(ac_q3), abs_alpha_q12);
+  return vaddq_s16(vsignq_s16(scaled_luma, ac_sign), dc);
+}
+
+// Vector signed->unsigned narrowing half store
+static void vsthun_s16(uint8_t *dst, int16x4_t scaled_luma) {
+  vsth_u8(dst, vqmovun_s16(vcombine_s16(scaled_luma, scaled_luma)));
+}
+
+// Vector signed->unsigned narrowing store
+static void vst1un_s16(uint8_t *dst, int16x8_t scaled_luma) {
+  vst1_u8(dst, vqmovun_s16(scaled_luma));
+}
+
+// Vector signed->unsigned narrowing store
+static void vst1unq_s16(uint8_t *dst, int16x8_t scaled_luma,
+                        int16x8_t scaled_luma_next) {
+  vst1q_u8(dst, vcombine_u8(vqmovun_s16(scaled_luma),
+                            vqmovun_s16(scaled_luma_next)));
+}
+
+static INLINE void cfl_predict_lbd_neon(const int16_t *pred_buf_q3,
+                                        uint8_t *dst, int dst_stride,
+                                        int alpha_q3, int width, int height) {
+  const int16_t abs_alpha_q12 = abs(alpha_q3) << 9;
+  const int16_t *const end = pred_buf_q3 + height * CFL_BUF_LINE;
+  if (width == 4) {
+    const int16x4_t alpha_sign = vdup_n_s16(alpha_q3);
+    const int16x4_t dc = vdup_n_s16(*dst);
+    do {
+      const int16x4_t scaled_luma =
+          predict_w4(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+      vsthun_s16(dst, scaled_luma);
+      dst += dst_stride;
+    } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+  } else {
+    const int16x8_t alpha_sign = vdupq_n_s16(alpha_q3);
+    const int16x8_t dc = vdupq_n_s16(*dst);
+    do {
+      const int16x8_t scaled_luma =
+          predict_w8(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+      if (width == 8) {
+        vst1un_s16(dst, scaled_luma);
+      } else {
+        const int16x8_t scaled_luma_1 =
+            predict_w8(pred_buf_q3 + 8, alpha_sign, abs_alpha_q12, dc);
+        vst1unq_s16(dst, scaled_luma, scaled_luma_1);
+        if (width == 32) {
+          const int16x8_t scaled_luma_2 =
+              predict_w8(pred_buf_q3 + 16, alpha_sign, abs_alpha_q12, dc);
+          const int16x8_t scaled_luma_3 =
+              predict_w8(pred_buf_q3 + 24, alpha_sign, abs_alpha_q12, dc);
+          vst1unq_s16(dst + 16, scaled_luma_2, scaled_luma_3);
+        }
+      }
+      dst += dst_stride;
+    } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+  }
+}
+
+CFL_PREDICT_FN(neon, lbd)
+
+static INLINE uint16x4_t clamp_s16(int16x4_t a, int16x4_t max) {
+  return vreinterpret_u16_s16(vmax_s16(vmin_s16(a, max), vdup_n_s16(0)));
+}
+
+static INLINE uint16x8_t clampq_s16(int16x8_t a, int16x8_t max) {
+  return vreinterpretq_u16_s16(vmaxq_s16(vminq_s16(a, max), vdupq_n_s16(0)));
+}
+
+static INLINE void cfl_predict_hbd_neon(const int16_t *pred_buf_q3,
+                                        uint16_t *dst, int dst_stride,
+                                        int alpha_q3, int bd, int width,
+                                        int height) {
+  const int max = (1 << bd) - 1;
+  const int16_t abs_alpha_q12 = abs(alpha_q3) << 9;
+  const int16_t *const end = pred_buf_q3 + height * CFL_BUF_LINE;
+  if (width == 4) {
+    const int16x4_t alpha_sign = vdup_n_s16(alpha_q3);
+    const int16x4_t dc = vdup_n_s16(*dst);
+    const int16x4_t max_16x4 = vdup_n_s16(max);
+    do {
+      const int16x4_t scaled_luma =
+          predict_w4(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+      vst1_u16(dst, clamp_s16(scaled_luma, max_16x4));
+      dst += dst_stride;
+    } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+  } else {
+    const int16x8_t alpha_sign = vdupq_n_s16(alpha_q3);
+    const int16x8_t dc = vdupq_n_s16(*dst);
+    const int16x8_t max_16x8 = vdupq_n_s16(max);
+    do {
+      const int16x8_t scaled_luma =
+          predict_w8(pred_buf_q3, alpha_sign, abs_alpha_q12, dc);
+      vst1q_u16(dst, clampq_s16(scaled_luma, max_16x8));
+      if (width >= 16) {
+        const int16x8_t scaled_luma_1 =
+            predict_w8(pred_buf_q3 + 8, alpha_sign, abs_alpha_q12, dc);
+        vst1q_u16(dst + 8, clampq_s16(scaled_luma_1, max_16x8));
+        if (width == 32) {
+          const int16x8_t scaled_luma_2 =
+              predict_w8(pred_buf_q3 + 16, alpha_sign, abs_alpha_q12, dc);
+          vst1q_u16(dst + 16, clampq_s16(scaled_luma_2, max_16x8));
+          const int16x8_t scaled_luma_3 =
+              predict_w8(pred_buf_q3 + 24, alpha_sign, abs_alpha_q12, dc);
+          vst1q_u16(dst + 24, clampq_s16(scaled_luma_3, max_16x8));
+        }
+      }
+      dst += dst_stride;
+    } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+  }
+}
+
+CFL_PREDICT_FN(neon, hbd)
