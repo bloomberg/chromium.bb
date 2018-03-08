@@ -813,7 +813,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)URL;
 // Returns context for pending navigation that has |URL|. null if there is no
 // matching pending navigation.
-- (web::NavigationContextImpl*)contextForPendingNavigationWithURL:
+- (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL;
 // Loads request for the URL of the current navigation item. Subclasses may
 // choose to build a new NSURLRequest and call |loadRequest| on the underlying
@@ -4325,15 +4325,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     int64_t contentLength = navigationResponse.response.expectedContentLength;
     web::BrowserState* browserState = self.webState->GetBrowserState();
-    web::NavigationContextImpl* context =
-        [self contextForPendingNavigationWithURL:responseURL];
-    context->SetIsDownload(true);
-    _webStateImpl->OnNavigationFinished(context);
+    ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    if (navigationResponse.forMainFrame) {
+      web::NavigationContextImpl* context =
+          [self contextForPendingMainFrameNavigationWithURL:responseURL];
+      context->SetIsDownload(true);
+      // Navigation callbacks can only be called for the main frame.
+      _webStateImpl->OnNavigationFinished(context);
+      transition = context->GetPageTransition();
+    }
     web::DownloadController::FromBrowserState(browserState)
         ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
                              responseURL, contentDisposition, contentLength,
-                             base::SysNSStringToUTF8(MIMEType),
-                             context->GetPageTransition());
+                             base::SysNSStringToUTF8(MIMEType), transition);
     BOOL isPassKit = [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
     if (!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) &&
         isPassKit) {
@@ -4986,7 +4990,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self setDocumentURL:webViewURL];
 
     web::NavigationContextImpl* existingContext =
-        [self contextForPendingNavigationWithURL:webViewURL];
+        [self contextForPendingMainFrameNavigationWithURL:webViewURL];
     if (!existingContext) {
       // This URL was not seen before, so register new load request.
       std::unique_ptr<web::NavigationContextImpl> newContext =
@@ -5196,7 +5200,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // context object.
   std::unique_ptr<web::NavigationContextImpl> newNavigationContext;
   if (!_changingHistoryState) {
-    if ([self contextForPendingNavigationWithURL:newURL]) {
+    if ([self contextForPendingMainFrameNavigationWithURL:newURL]) {
       // NavigationManager::LoadURLWithParams() was called with URL that has
       // different fragment comparing to the previous URL.
     } else {
@@ -5221,8 +5225,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // Pass either newly created context (if it exists) or context that already
     // existed before.
     web::NavigationContextImpl* navigationContext = newNavigationContext.get();
-    if (!navigationContext)
-      navigationContext = [self contextForPendingNavigationWithURL:newURL];
+    if (!navigationContext) {
+      navigationContext =
+          [self contextForPendingMainFrameNavigationWithURL:newURL];
+    }
     DCHECK(navigationContext->IsSameDocument());
     _webStateImpl->OnNavigationStarted(navigationContext);
     [self didStartLoading];
@@ -5234,7 +5240,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (web::NavigationContextImpl*)contextForPendingNavigationWithURL:
+- (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL {
   // Here the enumeration variable |navigation| is __strong to allow setting it
   // to nil.
