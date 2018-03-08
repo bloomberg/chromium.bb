@@ -17940,6 +17940,9 @@ Called by update_net_error_codes.py.-->
   <int value="2382" label="RTCConstraintEnableDtlsSrtpTrue"/>
   <int value="2383" label="RTCConstraintEnableDtlsSrtpFalse"/>
   <int value="2384" label="RtcPeerConnectionId"/>
+  <int value="2385" label="V8PaintWorkletGlobalScope_RegisterPaint_Method"/>
+  <int value="2386"
+      label="V8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -1874,6 +1874,8 @@ enum WebFeature {
   kRTCConstraintEnableDtlsSrtpTrue = 2382,
   kRTCConstraintEnableDtlsSrtpFalse = 2383,
   kRtcPeerConnectionId = 2384,
+  kV8PaintWorkletGlobalScope_RegisterPaint_Method = 2385,
+  kV8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter = 2386,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
