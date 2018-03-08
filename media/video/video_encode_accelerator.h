@@ -161,7 +161,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // handed back to the client, and afterwards the |flush_callback| will be
   // called. The FlushCallback takes a boolean argument: |true| indicates the
   // flush is complete; |false| indicates the flush is cancelled due to errors
-  // or destruction. The client should not invoke Flush() or Encode() while the\
+  // or destruction. The client should not invoke Flush() or Encode() while the
   // previous Flush() is not finished yet.
   virtual void Flush(FlushCallback flush_callback);
 
