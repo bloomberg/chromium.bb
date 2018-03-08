@@ -117,6 +117,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -2713,10 +2714,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
 
-#if defined(OS_ANDROID)
   content::WebContents* contents =
       content::WebContents::FromRenderViewHost(rvh);
   if (contents) {
+#if defined(OS_ANDROID)
     TabAndroid* tab_android = TabAndroid::FromWebContents(contents);
     if (tab_android) {
       web_prefs->embedded_media_experience_enabled =
@@ -2734,8 +2735,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             tab_android->IsPictureInPictureEnabled();
       }
     }
+#endif  // defined(OS_ANDROID)
+    web_prefs->immersive_mode_enabled = vr::VrTabHelper::IsInVr(contents);
   }
 
+#if defined(OS_ANDROID)
   web_prefs->video_fullscreen_detection_enabled =
       chrome::android::AppHooks::ShouldDetectVideoFullscreen();
 
