@@ -32,7 +32,7 @@ class TaskUpdate : public Task {
   // |crx_data_callback| is called to get update data for the these CRXs.
   // |callback| is called to return the execution flow back to creator of
   //    this task when the task is done.
-  TaskUpdate(UpdateEngine* update_engine,
+  TaskUpdate(scoped_refptr<UpdateEngine> update_engine,
              bool is_foreground,
              const std::vector<std::string>& ids,
              UpdateClient::CrxDataCallback crx_data_callback,
@@ -52,9 +52,7 @@ class TaskUpdate : public Task {
   void TaskComplete(Error error);
 
   base::ThreadChecker thread_checker_;
-
-  UpdateEngine* update_engine_;  // Not owned by this class.
-
+  scoped_refptr<UpdateEngine> update_engine_;
   const bool is_foreground_;
   const std::vector<std::string> ids_;
   UpdateClient::CrxDataCallback crx_data_callback_;

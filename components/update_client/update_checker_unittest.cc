@@ -136,10 +136,10 @@ class UpdateCheckerTest : public testing::Test,
   int error_ = 0;
   int retry_after_sec_ = 0;
 
-  std::unique_ptr<UpdateContext> update_context_;
+  scoped_refptr<UpdateContext> update_context_;
 
  private:
-  std::unique_ptr<UpdateContext> MakeFakeUpdateContext() const;
+  scoped_refptr<UpdateContext> MakeFakeUpdateContext() const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::OnceClosure quit_closure_;
@@ -205,9 +205,8 @@ void UpdateCheckerTest::UpdateCheckComplete(int error, int retry_after_sec) {
   Quit();
 }
 
-std::unique_ptr<UpdateContext> UpdateCheckerTest::MakeFakeUpdateContext()
-    const {
-  return std::make_unique<UpdateContext>(
+scoped_refptr<UpdateContext> UpdateCheckerTest::MakeFakeUpdateContext() const {
+  return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
       UpdateEngine::Callback(), nullptr);

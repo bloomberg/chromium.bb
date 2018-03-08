@@ -14,7 +14,7 @@
 
 namespace update_client {
 
-TaskUpdate::TaskUpdate(UpdateEngine* update_engine,
+TaskUpdate::TaskUpdate(scoped_refptr<UpdateEngine> update_engine,
                        bool is_foreground,
                        const std::vector<std::string>& ids,
                        UpdateClient::CrxDataCallback crx_data_callback,

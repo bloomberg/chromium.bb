@@ -67,7 +67,7 @@ UpdateClientImpl::UpdateClientImpl(
     : is_stopped_(false),
       config_(config),
       ping_manager_(ping_manager),
-      update_engine_(std::make_unique<UpdateEngine>(
+      update_engine_(base::MakeRefCounted<UpdateEngine>(
           config,
           update_checker_factory,
           crx_downloader_factory,

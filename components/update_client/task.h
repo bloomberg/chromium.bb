@@ -13,8 +13,6 @@
 
 namespace update_client {
 
-class Task;
-
 // Defines an abstraction for a unit of work done by the update client.
 // Each invocation of the update client API results in a task being created and
 // run. In most cases, a task corresponds to a set of CRXs, which are updated

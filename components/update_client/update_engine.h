@@ -38,7 +38,7 @@ struct UpdateContext;
 // Handles updates for a group of components. Updates for different groups
 // are run concurrently but within the same group of components, updates are
 // applied one at a time.
-class UpdateEngine {
+class UpdateEngine : public base::RefCounted<UpdateEngine> {
  public:
   using Callback = base::OnceCallback<void(Error error)>;
   using NotifyObserversCallback =
@@ -51,7 +51,6 @@ class UpdateEngine {
                CrxDownloader::Factory crx_downloader_factory,
                scoped_refptr<PingManager> ping_manager,
                const NotifyObserversCallback& notify_observers_callback);
-  ~UpdateEngine();
 
   bool GetUpdateState(const std::string& id, CrxUpdateItem* update_state);
 
@@ -66,7 +65,10 @@ class UpdateEngine {
                          Callback update_callback);
 
  private:
-  using UpdateContexts = std::set<std::unique_ptr<UpdateContext>>;
+  friend class base::RefCounted<UpdateEngine>;
+  ~UpdateEngine();
+
+  using UpdateContexts = std::set<scoped_refptr<UpdateContext>>;
   using UpdateContextIterator = UpdateContexts::iterator;
 
   void UpdateComplete(UpdateContextIterator it, Error error);
@@ -110,9 +112,8 @@ class UpdateEngine {
   DISALLOW_COPY_AND_ASSIGN(UpdateEngine);
 };
 
-// TODO(sorin): consider making this a ref counted type.
 // Describes a group of components which are installed or updated together.
-struct UpdateContext {
+struct UpdateContext : public base::RefCounted<UpdateContext> {
   UpdateContext(
       scoped_refptr<Configurator> config,
       bool is_foreground,
@@ -121,8 +122,6 @@ struct UpdateContext {
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
       UpdateEngine::Callback callback,
       CrxDownloader::Factory crx_downloader_factory);
-
-  ~UpdateContext();
 
   scoped_refptr<Configurator> config;
 
@@ -173,6 +172,9 @@ struct UpdateContext {
   const std::string session_id;
 
  private:
+  friend class base::RefCounted<UpdateContext>;
+  ~UpdateContext();
+
   DISALLOW_COPY_AND_ASSIGN(UpdateContext);
 };
 
