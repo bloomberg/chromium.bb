@@ -59,8 +59,6 @@
 #include "services/ui/display/screen_manager_forwarding.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-#include "ui/gfx/client_native_pixmap_factory.h"
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif
@@ -237,9 +235,6 @@ void Service::OnStart() {
   // Assume a client will change the layout to an appropriate configuration.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
-
-  ui::CreateClientNativePixmapFactoryOzone();
-  DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
 #endif
 
 #if defined(OS_CHROMEOS)

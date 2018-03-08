@@ -33,7 +33,8 @@ bool AreNativeGpuMemoryBuffersEnabled() {
 #endif
 }
 
-GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
+GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
+    GpuMemoryBufferSupport* support) {
   GpuMemoryBufferConfigurationSet configurations;
 
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
@@ -62,7 +63,8 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto format : kNativeFormats) {
       for (auto usage : kNativeUsages) {
-        if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
+        if (support->IsNativeGpuMemoryBufferConfigurationSupported(format,
+                                                                   usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }
@@ -86,7 +88,8 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferUsage::SCANOUT_VDA_WRITE};
     for (auto format : kGPUReadWriteFormats) {
       for (auto usage : kGPUReadWriteUsages) {
-        if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
+        if (support->IsNativeGpuMemoryBufferConfigurationSupported(format,
+                                                                   usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }
@@ -100,8 +103,9 @@ bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
                                                 gfx::BufferUsage usage) {
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_ANDROID)
+  GpuMemoryBufferSupport support;
   GpuMemoryBufferConfigurationSet native_configurations =
-      GetNativeGpuMemoryBufferConfigurations();
+      GetNativeGpuMemoryBufferConfigurations(&support);
   return native_configurations.find(std::make_pair(format, usage)) !=
          native_configurations.end();
 #else  // defined(USE_OZONE) || defined(OS_MACOSX)

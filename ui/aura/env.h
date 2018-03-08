@@ -18,10 +18,6 @@
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/geometry/point.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
-#endif
-
 namespace base {
 class UnguessableToken;
 }

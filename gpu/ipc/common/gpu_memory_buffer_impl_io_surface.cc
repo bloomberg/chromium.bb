@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -79,13 +79,6 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
   return base::WrapUnique(
       new GpuMemoryBufferImplIOSurface(handle.id, size, format, callback,
                                        io_surface.release(), LockFlags(usage)));
-}
-
-// static
-bool GpuMemoryBufferImplIOSurface::IsConfigurationSupported(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
-  return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 
 // static

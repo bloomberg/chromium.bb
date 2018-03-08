@@ -6,30 +6,6 @@
 
 namespace gfx {
 
-namespace {
-
-ClientNativePixmapFactory* g_instance = nullptr;
-
-}  // namespace
-
-// static
-ClientNativePixmapFactory* ClientNativePixmapFactory::GetInstance() {
-  return g_instance;
-}
-
-// static
-void ClientNativePixmapFactory::ResetInstance() {
-  g_instance = nullptr;
-}
-
-// static
-void ClientNativePixmapFactory::SetInstance(
-    ClientNativePixmapFactory* instance) {
-  DCHECK(!g_instance);
-  DCHECK(instance);
-  g_instance = instance;
-}
-
 ClientNativePixmapFactory::ClientNativePixmapFactory() {}
 
 ClientNativePixmapFactory::~ClientNativePixmapFactory() {}

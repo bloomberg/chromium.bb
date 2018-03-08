@@ -20,8 +20,9 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
-#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_switches.h"
 
@@ -66,7 +67,9 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferRequest {
 BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
     int gpu_client_id,
     uint64_t gpu_client_tracing_id)
-    : native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations()),
+    : gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()),
+      native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations(
+          gpu_memory_buffer_support_.get())),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id) {
   DCHECK(!g_gpu_memory_buffer_manager);
@@ -318,13 +321,15 @@ void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = gpu::GpuMemoryBufferImpl::CreateFromHandle(
-      handle, request->size, request->format, request->usage,
-      base::Bind(
-          &GpuMemoryBufferDeleted,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
-                     base::Unretained(this), handle.id, request->client_id)));
+  request->result =
+      gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
+          handle, request->size, request->format, request->usage,
+          base::Bind(
+              &GpuMemoryBufferDeleted,
+              BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+              base::Bind(
+                  &BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
+                  base::Unretained(this), handle.id, request->client_id)));
   request->event.Signal();
 }
 

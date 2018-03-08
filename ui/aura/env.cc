@@ -25,8 +25,6 @@
 #include "ui/events/platform/platform_event_source.h"
 
 #if defined(USE_OZONE)
-#include "ui/gfx/client_native_pixmap_factory.h"
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif
@@ -49,10 +47,6 @@ Env::~Env() {
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   if (is_override_input_injector_factory_)
     ui::SetSystemInputInjectorFactory(nullptr);
-
-#if defined(USE_OZONE)
-  gfx::ClientNativePixmapFactory::ResetInstance();
-#endif
 
   for (EnvObserver& observer : observers_)
     observer.OnWillDestroyEnv();
@@ -172,10 +166,6 @@ Env::Env(Mode mode)
 }
 
 void Env::Init() {
-#if defined(USE_OZONE)
-  ui::CreateClientNativePixmapFactoryOzone();
-  DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
-#endif
   if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
     EnableMusOverrideInputInjector();
