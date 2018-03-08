@@ -2363,7 +2363,10 @@ void read_sequence_header(SequenceHeader *seq_params,
 
   seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
-  seq_params->enable_jnt_comp = aom_rb_read_bit(rb);
+  seq_params->enable_order_hint = aom_rb_read_bit(rb);
+
+  seq_params->enable_jnt_comp =
+      seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
 
   if (aom_rb_read_bit(rb)) {
     seq_params->force_screen_content_tools = 2;
@@ -2966,7 +2969,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
       cm->interp_filter = read_frame_interp_filter(rb);
       cm->switchable_motion_mode = aom_rb_read_bit(rb);
-      if (frame_might_use_prev_frame_mvs(cm))
+      if (frame_might_use_prev_frame_mvs(cm) &&
+          cm->seq_params.enable_order_hint)
         cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else
         cm->use_ref_frame_mvs = 0;

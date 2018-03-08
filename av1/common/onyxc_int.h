@@ -231,6 +231,9 @@ typedef struct SequenceHeader {
   int monochrome;
   int enable_dual_filter;  // 0 - disable dual interpolation filter
                            // 1 - enable vertical and horiz filter selection
+  int enable_order_hint;   // 0 - disable order hint, and related tools:
+                           // jnt_comp, ref_frame_mvs, frame_sign_bias
+                           // if 0, enable_jnt_comp must be set zs 0.
   int enable_jnt_comp;     // 0 - disable joint compound modes
                            // 1 - enable it
 } SequenceHeader;

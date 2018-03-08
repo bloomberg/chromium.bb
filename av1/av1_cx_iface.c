@@ -105,6 +105,7 @@ struct av1_extracfg {
 #if CONFIG_CDF_UPDATE_MODE
   unsigned int cdf_update_mode;
 #endif  // CONFIG_CDF_UPDATE_MODE
+  int enable_order_hint;
   int use_jnt_comp;
 };
 
@@ -182,7 +183,8 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_CDF_UPDATE_MODE
   1,    // CDF update mode
 #endif  // CONFIG_CDF_UPDATE_MODE
-  1,
+  1,    // frame order hint
+  1,    // jnt_comp
 };
 
 struct aom_codec_alg_priv {
@@ -670,7 +672,9 @@ static aom_codec_err_t set_encoder_config(
   }
   oxcf->monochrome = cfg->monochrome;
   oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
-  oxcf->enable_jnt_comp = extra_cfg->use_jnt_comp;
+  oxcf->enable_order_hint = extra_cfg->enable_order_hint;
+  oxcf->enable_jnt_comp =
+      extra_cfg->use_jnt_comp & extra_cfg->enable_order_hint;
 
 #if CONFIG_MAX_TILE
   oxcf->tile_width_count = AOMMIN(cfg->tile_width_count, MAX_TILE_COLS);
@@ -1017,6 +1021,13 @@ static aom_codec_err_t ctrl_set_enable_df(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.use_dual_filter = CAST(AV1E_SET_ENABLE_DF, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_order_hint(aom_codec_alg_priv_t *ctx,
+                                                  va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_order_hint = CAST(AV1E_SET_ENABLE_ORDER_HINT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1689,6 +1700,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_DISABLE_TEMPMV, ctrl_set_disable_tempmv },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },
+  { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_JNT_COMP, ctrl_set_enable_jnt_comp },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
 #if CONFIG_EXT_DELTA_Q

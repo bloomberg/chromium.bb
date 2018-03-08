@@ -698,10 +698,23 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_DF,
 
+  /*!\brief Codec control function to turn on / off frame order hint for a
+   * few tools:
+   *
+   * joint compound mode
+   * motion field motion vector
+   * ref frame sign bias
+   *
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_ORDER_HINT,
+
   /*!\brief Codec control function to turn on / off joint compound mode
    * enabling/disabling.
    *
    * This will enable or disable joint compound mode. The default value is 1
+   * If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced to 0.
    *
    */
   AV1E_SET_ENABLE_JNT_COMP,
@@ -979,6 +992,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TEMPMV, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DF
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_ORDER_HINT
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_JNT_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_JNT_COMP

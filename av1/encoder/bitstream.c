@@ -2841,7 +2841,10 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
-  aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
+  aom_wb_write_bit(wb, seq_params->enable_order_hint);
+
+  if (seq_params->enable_order_hint)
+    aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
 
   if (seq_params->force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, 1);
@@ -3256,7 +3259,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     fix_interp_filter(cm, cpi->td.counts);
     write_frame_interp_filter(cm->interp_filter, wb);
     aom_wb_write_bit(wb, cm->switchable_motion_mode);
-    if (frame_might_use_prev_frame_mvs(cm)) {
+    if (frame_might_use_prev_frame_mvs(cm) &&
+        cm->seq_params.enable_order_hint) {
       aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
     }
   }

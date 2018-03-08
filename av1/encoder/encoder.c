@@ -1042,7 +1042,9 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
   cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
+  cm->seq_params.enable_order_hint = oxcf->enable_order_hint;
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
+  cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
   // disable jnt_comp at sequence header for error resilient mode
   cm->seq_params.enable_jnt_comp &= !oxcf->error_resilient_mode;
   cm->width = oxcf->width;
@@ -4932,8 +4934,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // frame type has been decided outside of this function call
   cm->cur_frame->intra_only = frame_is_intra_only(cm);
   cm->cur_frame->frame_type = cm->frame_type;
-  cm->use_ref_frame_mvs =
-      !cpi->oxcf.disable_tempmv && frame_might_use_prev_frame_mvs(cm);
+  cm->use_ref_frame_mvs = !cpi->oxcf.disable_tempmv &&
+                          frame_might_use_prev_frame_mvs(cm) &&
+                          cm->seq_params.enable_order_hint;
   cm->use_prev_frame_mvs = cm->use_ref_frame_mvs;
 
   // Reset the frame packet stamp index.

@@ -1316,7 +1316,7 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
-    if (buf_idx != INVALID_IDX) {
+    if (cm->seq_params.enable_order_hint && buf_idx != INVALID_IDX) {
       const int ref_frame_offset =
           cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
       cm->ref_frame_sign_bias[ref_frame] =
