@@ -199,10 +199,23 @@ TEST_P(MerkleIntegritySourceStreamTest, RecordSizeOnlyWrongHash) {
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
 }
 
-TEST_P(MerkleIntegritySourceStreamTest, RecordSizeTooBig) {
+TEST_P(MerkleIntegritySourceStreamTest, RecordSizeHuge) {
   Init(kMIEmptyBody);
+  // 2^64 - 1 is far too large.
   const uint8_t record_size[] = {0xff, 0xff, 0xff, 0xff,
                                  0xff, 0xff, 0xff, 0xff};
+  source()->AddReadResult(reinterpret_cast<const char*>(record_size),
+                          sizeof(record_size), net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, RecordSizeTooBig) {
+  Init(kMIEmptyBody);
+  // 2^16 + 1 just exceeds the limit.
+  const uint8_t record_size[] = {0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x40, 0x01};
   source()->AddReadResult(reinterpret_cast<const char*>(record_size),
                           sizeof(record_size), net::OK, GetParam().mode);
   std::string actual_output;

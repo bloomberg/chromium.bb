@@ -13,8 +13,9 @@ namespace content {
 
 namespace {
 
-// Limit the record size to 5MiB to prevent browser OOM.
-constexpr uint64_t kMaxRecordSize = 5 * 1024 * 1024;
+// Limit the record size to 16KiB to prevent browser OOM. This matches the
+// maximum record size in TLS and the default maximum frame size in HTTP/2.
+constexpr uint64_t kMaxRecordSize = 16 * 1024;
 
 constexpr char kMiSha256Header[] = "mi-sha256=";
 constexpr size_t kMiSha256HeaderLength = sizeof(kMiSha256Header) - 1;
