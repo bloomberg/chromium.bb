@@ -47,7 +47,8 @@ base::string16 ChromeToolbarModelDelegate::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
-      url, formatted_url, ChromeAutocompleteSchemeClassifier(GetProfile()));
+      url, formatted_url, ChromeAutocompleteSchemeClassifier(GetProfile()),
+      nullptr);
 }
 
 bool ChromeToolbarModelDelegate::GetURL(GURL* url) const {

@@ -248,7 +248,8 @@ void PhysicalWebProvider::ConstructZeroSuggestMatches(
 
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
-            url, url_formatter::FormatUrl(url), client_->GetSchemeClassifier());
+            url, url_formatter::FormatUrl(url), client_->GetSchemeClassifier(),
+            nullptr);
 
     match.description = title;
     match.description_class.push_back(
@@ -318,7 +319,7 @@ void PhysicalWebProvider::AppendOverflowItem(int additional_url_count,
 
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, match.contents, client_->GetSchemeClassifier());
+          url, match.contents, client_->GetSchemeClassifier(), nullptr);
 
   match.description =
       l10n_util::GetStringUTF16(IDS_PHYSICAL_WEB_OVERFLOW_DESCRIPTION);

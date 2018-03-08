@@ -255,7 +255,8 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
                                    nullptr,
                                    nullptr,
                                    nullptr),
-          scheme_classifier)),
+          scheme_classifier,
+          nullptr)),
       description_(description) {
   DCHECK(url_.is_valid());
   CalculateAndClassifyMatchContents(true, input_text);
