@@ -144,11 +144,7 @@ const base::Feature kUIExperimentVerticalMargin{
 // query.
 const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
   "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
-#if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
 };
 
 // Feature used to allow breaking words at underscores in building
