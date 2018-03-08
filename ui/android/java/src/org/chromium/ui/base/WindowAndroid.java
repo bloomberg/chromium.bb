@@ -138,6 +138,13 @@ public class WindowAndroid {
         void onContextMenuClosed();
     }
 
+    /**
+     * Gets the view for readback.
+     */
+    public View getReadbackView() {
+        return null;
+    }
+
     private final ObserverList<OnCloseContextMenuListener> mContextMenuCloseListeners =
             new ObserverList<>();
 

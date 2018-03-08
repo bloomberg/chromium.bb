@@ -150,6 +150,13 @@ public class CompositorView
     }
 
     /**
+     * @return The active {@link SurfaceView} of this compositor.
+     */
+    public View getActiveSurfaceView() {
+        return mCompositorSurfaceManager.getActiveSurfaceView();
+    }
+
+    /**
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
     public void shutDown() {
