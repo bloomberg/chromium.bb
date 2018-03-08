@@ -5,7 +5,6 @@
 #include "components/component_updater/timer.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/location.h"
 
 namespace component_updater {
