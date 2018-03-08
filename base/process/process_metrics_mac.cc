@@ -132,13 +132,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process, port_provider));
 }
 
-size_t ProcessMetrics::GetWorkingSetSize() const {
-  size_t resident_bytes = 0;
-  if (!GetMemoryBytes(nullptr, nullptr, &resident_bytes, nullptr))
-    return 0;
-  return resident_bytes;
-}
-
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
                                     size_t* shared_bytes) const {
   return GetMemoryBytes(private_bytes, shared_bytes, nullptr, nullptr);

@@ -2240,7 +2240,6 @@ test("base_unittests") {
     "process/memory_unittest_mac.mm",
     "process/process_info_unittest.cc",
     "process/process_metrics_unittest.cc",
-    "process/process_metrics_unittest_ios.cc",
     "process/process_unittest.cc",
     "process/process_util_unittest.cc",
     "profiler/stack_sampling_profiler_unittest.cc",

@@ -135,9 +135,6 @@ class BASE_EXPORT ProcessMetrics {
   // convenience wrapper for CreateProcessMetrics().
   static std::unique_ptr<ProcessMetrics> CreateCurrentProcessMetrics();
 
-  // Returns the current working set size, in bytes.  On Linux, this returns
-  // the resident set size.
-  size_t GetWorkingSetSize() const;
   // Returns private and sharedusage, in bytes. Private bytes is the amount of
   // memory currently allocated to a process that cannot be shared. Returns
   // false on platform specific error conditions.  Note: |private_bytes|
@@ -153,6 +150,12 @@ class BASE_EXPORT ProcessMetrics {
   // Computes pss (proportional set size) of a process. Note that this
   // function is somewhat expensive on Windows (a few ms per process).
   bool GetProportionalSetSizeBytes(uint64_t* pss_bytes) const;
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Resident Set Size is a Linux/Android specific memory concept. Do not
+  // attempt to extend this to other platforms.
+  BASE_EXPORT size_t GetRSS() const;
+#endif
 
 #if defined(OS_MACOSX)
   // Fills both CommitedKBytes and WorkingSetKBytes in a single operation. This

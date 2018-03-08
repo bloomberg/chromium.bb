@@ -46,15 +46,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-// Returns the current working set size, in bytes.
-size_t ProcessMetrics::GetWorkingSetSize() const {
-  PROCESS_MEMORY_COUNTERS pmc;
-  if (GetProcessMemoryInfo(process_.Get(), &pmc, sizeof(pmc))) {
-    return pmc.WorkingSetSize;
-  }
-  return 0;
-}
-
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
                                     size_t* shared_bytes) const {
   // PROCESS_MEMORY_COUNTERS_EX is not supported until XP SP2.

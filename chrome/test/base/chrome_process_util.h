@@ -37,8 +37,6 @@ class ChromeTestProcessMetrics {
     return new ChromeTestProcessMetrics(process);
   }
 
-  size_t GetWorkingSetSize();
-
   bool GetIOCounters(base::IoCounters* io_counters);
 
   base::ProcessHandle process_handle_;
