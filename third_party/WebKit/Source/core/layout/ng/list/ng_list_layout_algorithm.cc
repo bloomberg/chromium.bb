@@ -18,38 +18,42 @@ namespace blink {
 namespace {
 
 std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
-    const NGFragment& list_marker,
-    const NGConstraintSpace& constraint_space) {
-  DCHECK(&list_marker);
+    const ComputedStyle& style,
+    LayoutUnit list_marker_inline_size) {
   bool is_image = false;  // TODO(kojii): implement
-  return LayoutListMarker::InlineMarginsForOutside(
-      list_marker.Style(), is_image, list_marker.InlineSize());
+  return LayoutListMarker::InlineMarginsForOutside(style, is_image,
+                                                   list_marker_inline_size);
 }
 
 }  // namespace
 
-void NGListLayoutAlgorithm::SetListMarkerPosition(
-    const NGConstraintSpace& constraint_space,
-    const NGLineInfo& line_info,
-    LayoutUnit line_width,
-    NGLineBoxFragmentBuilder::Child* list_marker_child) {
-  DCHECK(list_marker_child->PhysicalFragment());
-  NGFragment list_marker_fragment(constraint_space.GetWritingMode(),
-                                  *list_marker_child->PhysicalFragment());
-  auto margins =
-      InlineMarginsForOutside(list_marker_fragment, constraint_space);
-  LayoutUnit line_offset = IsLtr(line_info.BaseDirection())
-                               ? margins.first
-                               : line_width + margins.second;
-  list_marker_child->offset.inline_offset = line_offset;
-}
-
-void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
+bool NGListLayoutAlgorithm::AddListMarkerForBlockContent(
     NGBlockNode list_marker_node,
     const NGConstraintSpace& constraint_space,
     const NGPhysicalFragment& content,
     NGLogicalOffset offset,
     NGFragmentBuilder* container_builder) {
+  // Compute the baseline of the child content.
+  FontBaseline baseline_type =
+      IsHorizontalWritingMode(constraint_space.GetWritingMode())
+          ? kAlphabeticBaseline
+          : kIdeographicBaseline;
+  NGLineHeightMetrics content_metrics;
+  if (content.IsLineBox()) {
+    content_metrics = ToNGPhysicalLineBoxFragment(content).Metrics();
+  } else {
+    NGBoxFragment content_fragment(constraint_space.GetWritingMode(),
+                                   ToNGPhysicalBoxFragment(content));
+    content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
+        {NGBaselineAlgorithmType::kFirstLine, baseline_type}, constraint_space);
+
+    // If this child content does not have any line boxes, the list marker
+    // should be aligned to the first line box of next child.
+    // https://github.com/w3c/csswg-drafts/issues/2417
+    if (content_metrics.IsEmpty())
+      return false;
+  }
+
   // Layout the list marker.
   scoped_refptr<NGLayoutResult> list_marker_layout_result =
       list_marker_node.LayoutAtomicInline(constraint_space,
@@ -62,29 +66,16 @@ void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
   // Compute the inline offset of the marker from its margins.
   // The marker is relative to the border box of the list item and has nothing
   // to do with the content offset.
-  auto margins =
-      InlineMarginsForOutside(list_marker_fragment, constraint_space);
+  auto margins = InlineMarginsForOutside(list_marker_fragment.Style(),
+                                         list_marker_fragment.InlineSize());
   offset.inline_offset = margins.first;
 
   // Compute the block offset of the marker by aligning the baseline of the
   // marker to the first baseline of the content.
-  FontBaseline baseline_type =
-      IsHorizontalWritingMode(constraint_space.GetWritingMode())
-          ? kAlphabeticBaseline
-          : kIdeographicBaseline;
   NGLineHeightMetrics list_marker_metrics =
       list_marker_fragment.BaselineMetrics(
           {NGBaselineAlgorithmType::kAtomicInline, baseline_type},
           constraint_space);
-  NGLineHeightMetrics content_metrics;
-  if (content.IsLineBox()) {
-    content_metrics = ToNGPhysicalLineBoxFragment(content).Metrics();
-  } else {
-    NGBoxFragment content_fragment(constraint_space.GetWritingMode(),
-                                   ToNGPhysicalBoxFragment(content));
-    content_metrics = content_fragment.BaselineMetrics(
-        {NGBaselineAlgorithmType::kFirstLine, baseline_type}, constraint_space);
-  }
 
   // |offset.block_offset| is at the top of the content. Adjust it to the top of
   // the list marker by adding the differences of the ascent between content's
@@ -93,6 +84,35 @@ void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
 
   DCHECK(container_builder);
   container_builder->AddChild(std::move(list_marker_layout_result), offset);
+  return true;
+}
+
+LayoutUnit NGListLayoutAlgorithm::AddListMarkerWithoutLineBoxes(
+    NGBlockNode list_marker_node,
+    const NGConstraintSpace& constraint_space,
+    NGFragmentBuilder* container_builder) {
+  // Layout the list marker.
+  scoped_refptr<NGLayoutResult> list_marker_layout_result =
+      list_marker_node.LayoutAtomicInline(constraint_space,
+                                          constraint_space.UseFirstLineStyle());
+  DCHECK(list_marker_layout_result->PhysicalFragment());
+  const NGPhysicalBoxFragment& list_marker_physical_fragment =
+      ToNGPhysicalBoxFragment(*list_marker_layout_result->PhysicalFragment());
+  NGLogicalSize size = list_marker_physical_fragment.Size().ConvertToLogical(
+      constraint_space.GetWritingMode());
+
+  // Compute the inline offset of the marker from its margins.
+  auto margins = InlineMarginsForOutside(list_marker_physical_fragment.Style(),
+                                         size.inline_size);
+
+  // When there are no line boxes, marker is top-aligned to the list item.
+  // https://github.com/w3c/csswg-drafts/issues/2417
+  NGLogicalOffset offset(margins.first, LayoutUnit());
+
+  DCHECK(container_builder);
+  container_builder->AddChild(std::move(list_marker_layout_result), offset);
+
+  return size.block_size;
 }
 
 }  // namespace blink

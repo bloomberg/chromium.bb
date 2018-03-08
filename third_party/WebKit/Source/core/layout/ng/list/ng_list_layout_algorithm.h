@@ -11,29 +11,29 @@
 
 namespace blink {
 
-class LayoutUnit;
 class NGConstraintSpace;
-class NGLineBoxFragmentBuilder;
-class NGLineInfo;
 
 // Algorithm to layout lists and list-items.
 // TODO(kojii): This isn't a real NGLayoutAlgorithm yet. Consider restructuring
 // or renaming.
 class CORE_EXPORT NGListLayoutAlgorithm final {
  public:
-  // Compute and set the inline position to an outside list marker for a line
-  // box.
-  static void SetListMarkerPosition(const NGConstraintSpace&,
-                                    const NGLineInfo&,
-                                    LayoutUnit line_width,
-                                    NGLineBoxFragmentBuilder::Child*);
-
   // Add a fragment for an outside list marker for a block content.
-  static void AddListMarkerForBlockContent(NGBlockNode,
+  // Returns true if the list marker was successfully added. False indicates
+  // that the child content does not have a baseline to align to, and that
+  // caller should try next child, or "WithoutLineBoxes" version.
+  static bool AddListMarkerForBlockContent(NGBlockNode,
                                            const NGConstraintSpace&,
                                            const NGPhysicalFragment&,
                                            NGLogicalOffset,
                                            NGFragmentBuilder*);
+
+  // Add a fragment for an outside list marker when the list item has no line
+  // boxes.
+  // Returns the block size of the list marker.
+  static LayoutUnit AddListMarkerWithoutLineBoxes(NGBlockNode,
+                                                  const NGConstraintSpace&,
+                                                  NGFragmentBuilder*);
 };
 
 }  // namespace blink

@@ -529,6 +529,12 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     }
   }
 
+  // List markers should have been positioned if we had line boxes, or boxes
+  // that have line boxes. If there were no line boxes, position without line
+  // boxes.
+  if (container_builder_.UnpositionedListMarker() && node_.IsListItem())
+    PositionListMarkerWithoutLineBoxes();
+
   container_builder_.SetEndMarginStrut(end_margin_strut);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
   container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
@@ -1830,9 +1836,43 @@ void NGBlockLayoutAlgorithm::PositionListMarker(
       return;
     container_builder_.SetUnpositionedListMarker(NGBlockNode(nullptr));
   }
-  NGListLayoutAlgorithm::AddListMarkerForBlockContent(
-      list_marker_node, constraint_space_, *layout_result.PhysicalFragment(),
-      content_offset, &container_builder_);
+  if (NGListLayoutAlgorithm::AddListMarkerForBlockContent(
+          list_marker_node, constraint_space_,
+          *layout_result.PhysicalFragment(), content_offset,
+          &container_builder_))
+    return;
+
+  // If the list marker could not be positioned against this child because it
+  // does not have the baseline to align to, keep it as unpositioned and try
+  // the next child.
+  container_builder_.SetUnpositionedListMarker(list_marker_node);
+}
+
+void NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes() {
+  DCHECK(node_.IsListItem());
+  DCHECK(container_builder_.UnpositionedListMarker());
+
+  // Position the list marker without aligning to line boxes.
+  LayoutUnit marker_block_size =
+      NGListLayoutAlgorithm::AddListMarkerWithoutLineBoxes(
+          container_builder_.UnpositionedListMarker(), constraint_space_,
+          &container_builder_);
+  container_builder_.SetUnpositionedListMarker(NGBlockNode(nullptr));
+
+  // Whether the list marker should affect the block size or not is not
+  // well-defined, but 3 out of 4 impls do.
+  // https://github.com/w3c/csswg-drafts/issues/2418
+  //
+  // TODO(kojii): Since this makes this block non-empty, it's probably better to
+  // resolve BFC offset if not done yet, but that involves additional complexity
+  // without knowing how much this is needed. For now, include the marker into
+  // the block size only if BFC was resolved.
+  if (container_builder_.BfcOffset()) {
+    intrinsic_block_size_ = std::max(marker_block_size, intrinsic_block_size_);
+    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+    container_builder_.SetBlockSize(
+        std::max(marker_block_size, container_builder_.Size().block_size));
+  }
 }
 
 }  // namespace blink
