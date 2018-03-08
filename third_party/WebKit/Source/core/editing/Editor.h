@@ -38,7 +38,6 @@
 #include "core/editing/WritingDirection.h"
 #include "core/editing/finder/FindOptions.h"
 #include "core/events/InputEvent.h"
-#include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAlignment.h"
 
