@@ -4,6 +4,8 @@
 
 #include "services/device/generic_sensor/platform_sensor_fusion.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
@@ -144,7 +146,10 @@ bool PlatformSensorFusion::StartSensor(
   // Remove all the previously added source configs.
   StopSensor();
   for (const auto& pair : source_sensors_) {
-    if (!pair.second->StartListening(this, configuration)) {
+    if (!pair.second->StartListening(
+            this, PlatformSensorConfiguration(
+                      std::min(configuration.frequency(),
+                               pair.second->GetMaximumSupportedFrequency())))) {
       StopSensor();
       return false;
     }
@@ -164,10 +169,21 @@ void PlatformSensorFusion::StopSensor() {
 bool PlatformSensorFusion::CheckSensorConfiguration(
     const PlatformSensorConfiguration& configuration) {
   for (const auto& pair : source_sensors_) {
-    if (!pair.second->CheckSensorConfiguration(configuration))
+    if (!pair.second->CheckSensorConfiguration(PlatformSensorConfiguration(
+            std::min(configuration.frequency(),
+                     pair.second->GetMaximumSupportedFrequency()))))
       return false;
   }
   return true;
+}
+
+double PlatformSensorFusion::GetMaximumSupportedFrequency() {
+  double maximum_frequency = 0.0;
+  for (const auto& pair : source_sensors_) {
+    maximum_frequency = std::max(maximum_frequency,
+                                 pair.second->GetMaximumSupportedFrequency());
+  }
+  return maximum_frequency;
 }
 
 void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {

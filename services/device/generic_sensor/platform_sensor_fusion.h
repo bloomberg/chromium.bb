@@ -48,6 +48,7 @@ class PlatformSensorFusion : public PlatformSensor,
   PlatformSensorConfiguration GetDefaultConfiguration() override;
   bool CheckSensorConfiguration(
       const PlatformSensorConfiguration& configuration) override;
+  double GetMaximumSupportedFrequency() override;
 
   // PlatformSensor::Client:
   void OnSensorReadingChanged(mojom::SensorType type) override;
