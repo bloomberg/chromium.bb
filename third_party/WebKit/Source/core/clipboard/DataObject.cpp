@@ -32,6 +32,7 @@
 
 #include "core/clipboard/DraggedIsolatedFileSystem.h"
 #include "core/clipboard/Pasteboard.h"
+#include "platform/PasteMode.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/wtf/HashSet.h"
@@ -53,7 +54,7 @@ DataObject* DataObject::CreateFromPasteboard(PasteMode paste_mode) {
   WebVector<WebString> web_types =
       Platform::Current()->Clipboard()->ReadAvailableTypes(buffer, &ignored);
   for (const WebString& type : web_types) {
-    if (paste_mode == kPlainTextOnly && type != kMimeTypeTextPlain)
+    if (paste_mode == PasteMode::kPlainTextOnly && type != kMimeTypeTextPlain)
       continue;
     data_object->item_list_.push_back(
         DataObjectItem::CreateFromPasteboard(type, sequence_number));

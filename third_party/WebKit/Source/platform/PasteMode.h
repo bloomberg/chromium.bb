@@ -33,7 +33,7 @@
 
 namespace blink {
 
-enum PasteMode {
+enum class PasteMode {
   kAllMimeTypes,
   kPlainTextOnly,
 };

@@ -34,7 +34,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/clipboard/DataObjectItem.h"
-#include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -46,6 +45,8 @@ namespace blink {
 class KURL;
 class SharedBuffer;
 class WebDragData;
+
+enum class PasteMode;
 
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware

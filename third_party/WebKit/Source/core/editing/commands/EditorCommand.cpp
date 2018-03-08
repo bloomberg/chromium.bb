@@ -78,6 +78,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
+#include "platform/PasteMode.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/wtf/StringExtras.h"
@@ -804,7 +805,7 @@ static bool DispatchCopyOrCutEvent(LocalFrame& frame,
     return true;
 
   return DispatchClipboardEvent(frame, event_type, kDataTransferWritable,
-                                source, kAllMimeTypes);
+                                source, PasteMode::kAllMimeTypes);
 }
 
 static bool CanSmartCopyOrDelete(LocalFrame& frame) {
@@ -2121,7 +2122,7 @@ static void PasteWithPasteboard(LocalFrame& frame,
 
 static void Paste(LocalFrame& frame, EditorCommandSource source) {
   DCHECK(frame.GetDocument());
-  if (!DispatchPasteEvent(frame, kAllMimeTypes, source))
+  if (!DispatchPasteEvent(frame, PasteMode::kAllMimeTypes, source))
     return;
   if (!frame.GetEditor().CanPaste())
     return;
@@ -2139,8 +2140,9 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
   ResourceFetcher* const loader = frame.GetDocument()->Fetcher();
   ResourceCacheValidationSuppressor validation_suppressor(loader);
 
-  const PasteMode paste_mode =
-      frame.GetEditor().CanEditRichly() ? kAllMimeTypes : kPlainTextOnly;
+  const PasteMode paste_mode = frame.GetEditor().CanEditRichly()
+                                   ? PasteMode::kAllMimeTypes
+                                   : PasteMode::kPlainTextOnly;
 
   if (source == EditorCommandSource::kMenuOrKeyBinding) {
     DataTransfer* data_transfer =
@@ -2157,7 +2159,7 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
       return;
   }
 
-  if (paste_mode == kAllMimeTypes) {
+  if (paste_mode == PasteMode::kAllMimeTypes) {
     PasteWithPasteboard(frame, Pasteboard::GeneralPasteboard(), source);
     return;
   }
@@ -2206,7 +2208,7 @@ static bool ExecutePasteAndMatchStyle(LocalFrame& frame,
                                       Event*,
                                       EditorCommandSource source,
                                       const String&) {
-  if (!DispatchPasteEvent(frame, kPlainTextOnly, source))
+  if (!DispatchPasteEvent(frame, PasteMode::kPlainTextOnly, source))
     return false;
   if (!frame.GetEditor().CanPaste())
     return false;
