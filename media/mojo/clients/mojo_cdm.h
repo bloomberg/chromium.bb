@@ -129,10 +129,11 @@ class MojoCdm : public ContentDecryptionModule,
                                     mojom::CdmPromiseResultPtr result,
                                     const std::string& session_id);
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   mojom::ContentDecryptionModulePtr remote_cdm_;
-  mojo::Binding<ContentDecryptionModuleClient> binding_;
+  mojo::Binding<ContentDecryptionModuleClient> client_binding_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
   // |decryptor_task_runner_| which could be accessed from other threads.

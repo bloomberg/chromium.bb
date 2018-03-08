@@ -64,7 +64,8 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(std::move(remote_cdm)),
-      binding_(this),
+      client_binding_(this),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
@@ -78,13 +79,18 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
   DCHECK(!session_expiration_update_cb_.is_null());
 
   mojom::ContentDecryptionModuleClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
+  client_binding_.Bind(mojo::MakeRequest(&client));
   remote_cdm_->SetClient(std::move(client));
 }
 
 MojoCdm::~MojoCdm() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(crbug.com/819269): It seems possible that |this| is destructed on the
+  // wrong thread. Add this check to help investigation. We cannot CHECK on the
+  // |thread_checker_| because it will not check anything in release builds.
+  CHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
 
@@ -110,7 +116,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
                             const CdmConfig& cdm_config,
                             std::unique_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __func__ << ": " << key_system;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If connection error has happened, fail immediately.
   if (remote_cdm_.encountered_error()) {
@@ -138,7 +144,7 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
                                 const std::string& description) {
   LOG(ERROR) << "Remote CDM connection error: custom_reason=" << custom_reason
              << ", description=\"" << description << "\"";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   RecordConnectionError(true);
 
@@ -163,7 +169,7 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
                                    std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -180,7 +186,7 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
 void MojoCdm::GetStatusForPolicy(HdcpVersion min_hdcp_version,
                                  std::unique_ptr<KeyStatusCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -200,7 +206,7 @@ void MojoCdm::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -219,7 +225,7 @@ void MojoCdm::LoadSession(CdmSessionType session_type,
                           const std::string& session_id,
                           std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -237,7 +243,7 @@ void MojoCdm::UpdateSession(const std::string& session_id,
                             const std::vector<uint8_t>& response,
                             std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -254,7 +260,7 @@ void MojoCdm::UpdateSession(const std::string& session_id,
 void MojoCdm::CloseSession(const std::string& session_id,
                            std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -271,7 +277,7 @@ void MojoCdm::CloseSession(const std::string& session_id,
 void MojoCdm::RemoveSession(const std::string& session_id,
                             std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
     promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
@@ -319,14 +325,14 @@ void MojoCdm::OnSessionMessage(const std::string& session_id,
                                MessageType message_type,
                                const std::vector<uint8_t>& message) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   session_message_cb_.Run(session_id, message_type, message);
 }
 
 void MojoCdm::OnSessionClosed(const std::string& session_id) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   cdm_session_tracker_.RemoveSession(session_id);
   session_closed_cb_.Run(session_id);
@@ -337,7 +343,7 @@ void MojoCdm::OnSessionKeysChange(
     bool has_additional_usable_key,
     std::vector<mojom::CdmKeyInformationPtr> keys_info) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // TODO(jrummell): Handling resume playback should be done in the media
   // player, not in the Decryptors. http://crbug.com/413413.
@@ -363,7 +369,7 @@ void MojoCdm::OnSessionKeysChange(
 void MojoCdm::OnSessionExpirationUpdate(const std::string& session_id,
                                         double new_expiry_time_sec) {
   DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   session_expiration_update_cb_.Run(
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
@@ -373,7 +379,7 @@ void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                                int cdm_id,
                                mojom::DecryptorPtr decryptor) {
   DVLOG(2) << __func__ << " cdm_id: " << cdm_id;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(pending_init_promise_);
 
   if (!result->success) {
