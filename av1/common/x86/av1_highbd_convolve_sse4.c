@@ -150,24 +150,6 @@ void trans_accum_save_4x4(int width, int pixelsNum, uint32_t *src,
   writePixel(u, width, pixelsNum, dst, dst_stride);
 }
 
-void av1_highbd_convolve_horiz_sse4_1(const uint16_t *src, int src_stride,
-                                      uint16_t *dst, int dst_stride, int w,
-                                      int h,
-                                      const InterpFilterParams filter_params,
-                                      const int subpel_x_q4, int x_step_q4,
-                                      int avg, int bd) {
-  (void)x_step_q4;
-
-  if (0 == subpel_x_q4 || 16 != x_step_q4) {
-    av1_highbd_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h,
-                                filter_params, subpel_x_q4, x_step_q4, avg, bd);
-    return;
-  }
-
-  av1_highbd_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h,
-                              filter_params, subpel_x_q4, x_step_q4, avg, bd);
-}
-
 // Vertical convolutional filter
 
 typedef void (*WritePixels)(__m128i *u, int bd, uint16_t *dst);
@@ -220,19 +202,3 @@ static void write4pixelsAccum(__m128i *u, int bd, uint16_t *dst) {
 }
 
 WritePixels write4pixelsTab[2] = { write4pixelsOnly, write4pixelsAccum };
-
-void av1_highbd_convolve_vert_sse4_1(const uint16_t *src, int src_stride,
-                                     uint16_t *dst, int dst_stride, int w,
-                                     int h,
-                                     const InterpFilterParams filter_params,
-                                     const int subpel_y_q4, int y_step_q4,
-                                     int avg, int bd) {
-  if (0 == subpel_y_q4 || 16 != y_step_q4) {
-    av1_highbd_convolve_vert_c(src, src_stride, dst, dst_stride, w, h,
-                               filter_params, subpel_y_q4, y_step_q4, avg, bd);
-    return;
-  }
-
-  av1_highbd_convolve_vert_c(src, src_stride, dst, dst_stride, w, h,
-                             filter_params, subpel_y_q4, y_step_q4, avg, bd);
-}

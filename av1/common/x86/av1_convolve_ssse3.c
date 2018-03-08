@@ -24,41 +24,6 @@
 // (1) 10/12-taps filters
 // (2) x_step_q4 = 16 then filter is fixed at the call
 
-void av1_convolve_horiz_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
-                              int dst_stride, int w, int h,
-                              const InterpFilterParams filter_params,
-                              const int subpel_x_q4, int x_step_q4,
-                              ConvolveParams *conv_params) {
-  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
-  (void)x_step_q4;
-
-  if (0 == subpel_x_q4 || 16 != x_step_q4) {
-    av1_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                         subpel_x_q4, x_step_q4, conv_params);
-    return;
-  }
-
-  av1_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                       subpel_x_q4, x_step_q4, conv_params);
-}
-
-void av1_convolve_vert_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
-                             int dst_stride, int w, int h,
-                             const InterpFilterParams filter_params,
-                             const int subpel_y_q4, int y_step_q4,
-                             ConvolveParams *conv_params) {
-  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
-
-  if (0 == subpel_y_q4 || 16 != y_step_q4) {
-    av1_convolve_vert_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                        subpel_y_q4, y_step_q4, conv_params);
-    return;
-  }
-
-  av1_convolve_vert_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                      subpel_y_q4, y_step_q4, conv_params);
-}
-
 typedef struct SimdFilter {
   InterpFilter interp_filter;
   int8_t (*simd_horiz_filter)[2][16];

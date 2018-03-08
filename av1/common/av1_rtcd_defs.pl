@@ -66,25 +66,11 @@ if ($opts{arch} eq "x86_64") {
   $avx2_x86_64 = 'avx2';
 }
 
-#
-# 10/12-tap convolution filters
-#
-add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
-specialize qw/av1_convolve_horiz ssse3/;
-
-add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
-specialize qw/av1_convolve_vert ssse3/;
-
 add_proto qw/void av1_convolve_horiz_rs/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const int16_t *x_filters, const int x0_qn, const int x_step_qn";
 specialize qw/av1_convolve_horiz_rs sse4_1/;
 
 add_proto qw/void av1_highbd_convolve_horiz_rs/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const int16_t *x_filters, const int x0_qn, const int x_step_qn, int bd";
 specialize qw/av1_highbd_convolve_horiz_rs sse4_1/;
-
-add_proto qw/void av1_highbd_convolve_horiz/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";
-specialize qw/av1_highbd_convolve_horiz sse4_1/;
-add_proto qw/void av1_highbd_convolve_vert/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg, int bd";
-specialize qw/av1_highbd_convolve_vert sse4_1/;
 
 #
 # txb

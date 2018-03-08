@@ -128,8 +128,6 @@ if (NOT BUILD_SHARED_LIBS)
   if (CONFIG_AV1_DECODER OR CONFIG_AV1_ENCODER)
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
-        "${AOM_ROOT}/test/av1_convolve_test.cc"
         "${AOM_ROOT}/test/cdef_test.cc"
         "${AOM_ROOT}/test/intrabc_test.cc"
         "${AOM_ROOT}/test/intrapred_test.cc"
