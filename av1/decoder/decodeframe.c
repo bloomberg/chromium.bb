@@ -2241,8 +2241,7 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   pars->clip_to_restricted_range = aom_rb_read_bit(rb);
 }
 
-static void av1_read_film_grain(AV1_COMMON *cm,
-                                struct aom_read_bit_buffer *rb) {
+static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->film_grain_params_present) {
     av1_read_film_grain_params(cm, rb);
   } else {
@@ -2688,7 +2687,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_FILM_GRAIN_SHOWEX
     cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
 #else
-    av1_read_film_grain(cm, rb);
+    read_film_grain(cm, rb);
 #endif
 #endif
 
@@ -3218,11 +3217,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
 #if CONFIG_FILM_GRAIN_SHOWEX
   if (cm->show_frame || cm->showable_frame) {
-    av1_read_film_grain(cm, rb);
+    read_film_grain(cm, rb);
   }
 #else
   if (cm->show_frame) {
-    av1_read_film_grain(cm, rb);
+    read_film_grain(cm, rb);
   }
 #endif
 #endif

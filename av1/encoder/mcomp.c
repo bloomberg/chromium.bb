@@ -54,10 +54,9 @@ void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv) {
   if (mv_limits->row_max > row_max) mv_limits->row_max = row_max;
 }
 
-static void av1_set_subpel_mv_search_range(const MvLimits *mv_limits,
-                                           int *col_min, int *col_max,
-                                           int *row_min, int *row_max,
-                                           const MV *ref_mv) {
+static void set_subpel_mv_search_range(const MvLimits *mv_limits, int *col_min,
+                                       int *col_max, int *row_min, int *row_max,
+                                       const MV *ref_mv) {
   const int max_mv = MAX_FULL_PEL_VAL * 8;
   const int minc = AOMMAX(mv_limits->col_min * 8, ref_mv->col - max_mv);
   const int maxc = AOMMIN(mv_limits->col_max * 8, ref_mv->col + max_mv);
@@ -300,33 +299,33 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
     }                                              \
   }
 
-#define SETUP_SUBPEL_SEARCH                                                 \
-  const uint8_t *const src_address = x->plane[0].src.buf;                   \
-  const int src_stride = x->plane[0].src.stride;                            \
-  const MACROBLOCKD *xd = &x->e_mbd;                                        \
-  unsigned int besterr = INT_MAX;                                           \
-  unsigned int sse;                                                         \
-  unsigned int whichdir;                                                    \
-  int thismse;                                                              \
-  MV *bestmv = &x->best_mv.as_mv;                                           \
-  const unsigned int halfiters = iters_per_step;                            \
-  const unsigned int quarteriters = iters_per_step;                         \
-  const unsigned int eighthiters = iters_per_step;                          \
-  const int y_stride = xd->plane[0].pre[0].stride;                          \
-  const int offset = bestmv->row * y_stride + bestmv->col;                  \
-  const uint8_t *const y = xd->plane[0].pre[0].buf;                         \
-                                                                            \
-  int br = bestmv->row * 8;                                                 \
-  int bc = bestmv->col * 8;                                                 \
-  int hstep = 4;                                                            \
-  int minc, maxc, minr, maxr;                                               \
-  int tr = br;                                                              \
-  int tc = bc;                                                              \
-                                                                            \
-  av1_set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, \
-                                 ref_mv);                                   \
-                                                                            \
-  bestmv->row *= 8;                                                         \
+#define SETUP_SUBPEL_SEARCH                                             \
+  const uint8_t *const src_address = x->plane[0].src.buf;               \
+  const int src_stride = x->plane[0].src.stride;                        \
+  const MACROBLOCKD *xd = &x->e_mbd;                                    \
+  unsigned int besterr = INT_MAX;                                       \
+  unsigned int sse;                                                     \
+  unsigned int whichdir;                                                \
+  int thismse;                                                          \
+  MV *bestmv = &x->best_mv.as_mv;                                       \
+  const unsigned int halfiters = iters_per_step;                        \
+  const unsigned int quarteriters = iters_per_step;                     \
+  const unsigned int eighthiters = iters_per_step;                      \
+  const int y_stride = xd->plane[0].pre[0].stride;                      \
+  const int offset = bestmv->row * y_stride + bestmv->col;              \
+  const uint8_t *const y = xd->plane[0].pre[0].buf;                     \
+                                                                        \
+  int br = bestmv->row * 8;                                             \
+  int bc = bestmv->col * 8;                                             \
+  int hstep = 4;                                                        \
+  int minc, maxc, minr, maxr;                                           \
+  int tr = br;                                                          \
+  int tc = bc;                                                          \
+                                                                        \
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, \
+                             ref_mv);                                   \
+                                                                        \
+  bestmv->row *= 8;                                                     \
   bestmv->col *= 8;
 
 static unsigned int setup_center_error(
@@ -728,8 +727,7 @@ int av1_find_best_sub_pixel_tree(
   int kr, kc;
   int minc, maxc, minr, maxr;
 
-  av1_set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
-                                 ref_mv);
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, ref_mv);
 
   if (!allow_hp)
     if (round == 3) round = 2;
@@ -935,8 +933,8 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
   const int start = cm->allow_high_precision_mv ? 0 : 4;
   int ite;
 
-  av1_set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
-                                 &ref_mv);
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
+                             &ref_mv);
 
   // Calculate the center position's error
   assert(bc >= minc && bc <= maxc && br >= minr && br <= maxr);
@@ -2795,8 +2793,7 @@ int av1_find_best_obmc_sub_pixel_tree_up(
 
   int minc, maxc, minr, maxr;
 
-  av1_set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
-                                 ref_mv);
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, ref_mv);
 
   y = pd->pre[is_second].buf;
   y_stride = pd->pre[is_second].stride;

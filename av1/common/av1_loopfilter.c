@@ -2537,10 +2537,10 @@ static TX_SIZE set_lpf_parameters(
   return ts;
 }
 
-static void av1_filter_block_plane_vert(
-    const AV1_COMMON *const cm, const int plane,
-    const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
-    const uint32_t mi_col) {
+static void filter_block_plane_vert(const AV1_COMMON *const cm, const int plane,
+                                    const MACROBLOCKD_PLANE *const plane_ptr,
+                                    const uint32_t mi_row,
+                                    const uint32_t mi_col) {
   const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
@@ -2617,10 +2617,10 @@ static void av1_filter_block_plane_vert(
   }
 }
 
-static void av1_filter_block_plane_horz(
-    const AV1_COMMON *const cm, const int plane,
-    const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
-    const uint32_t mi_col) {
+static void filter_block_plane_horz(const AV1_COMMON *const cm, const int plane,
+                                    const MACROBLOCKD_PLANE *const plane_ptr,
+                                    const uint32_t mi_row,
+                                    const uint32_t mi_col) {
   const int col_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
@@ -2720,7 +2720,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer, mi_row,
                            mi_col, num_planes);
       for (plane = plane_start; plane < plane_end; ++plane) {
-        av1_filter_block_plane_vert(cm, plane, &planes[plane], mi_row, mi_col);
+        filter_block_plane_vert(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }
@@ -2731,7 +2731,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer, mi_row,
                            mi_col, num_planes);
       for (plane = plane_start; plane < plane_end; ++plane) {
-        av1_filter_block_plane_horz(cm, plane, &planes[plane], mi_row, mi_col);
+        filter_block_plane_horz(cm, plane, &planes[plane], mi_row, mi_col);
       }
     }
   }

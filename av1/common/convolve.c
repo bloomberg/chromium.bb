@@ -670,7 +670,7 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
   }
 }
 
-static void av1_convolve_2d_scale_wrapper(
+static void convolve_2d_scale_wrapper(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w,
     int h, InterpFilterParams *filter_params_x,
     InterpFilterParams *filter_params_y, const int subpel_x_qn,
@@ -716,10 +716,9 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 #endif
 
   if (scaled)
-    av1_convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
-                                  &filter_params_x, &filter_params_y,
-                                  subpel_x_q4, x_step_q4, subpel_y_q4,
-                                  y_step_q4, conv_params);
+    convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
+                              &filter_params_x, &filter_params_y, subpel_x_q4,
+                              x_step_q4, subpel_y_q4, y_step_q4, conv_params);
   else
     sf->convolve[subpel_x_q4 != 0][subpel_y_q4 != 0][conv_params->is_compound](
         src, src_stride, dst, dst_stride, w, h, &filter_params_x,

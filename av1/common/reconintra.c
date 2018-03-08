@@ -467,7 +467,7 @@ typedef void (*intra_high_pred_fn)(uint16_t *dst, ptrdiff_t stride,
 static intra_high_pred_fn pred_high[INTRA_MODES][TX_SIZES_ALL];
 static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES_ALL];
 
-static void av1_init_intra_predictors_internal(void) {
+static void init_intra_predictors_internal(void) {
   assert(NELEMENTS(mode_to_angle_map) == INTRA_MODES);
 
 #define INIT_RECTANGULAR(p, type)             \
@@ -1165,7 +1165,7 @@ void av1_filter_intra_edge_c(uint8_t *p, int sz, int strength) {
   }
 }
 
-static void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
+static void filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
 
   int s = (p_left[0] * kernel[0]) + (p_above[-1] * kernel[1]) +
@@ -1198,8 +1198,7 @@ void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   }
 }
 
-static void av1_filter_intra_edge_corner_high(uint16_t *p_above,
-                                              uint16_t *p_left) {
+static void filter_intra_edge_corner_high(uint16_t *p_above, uint16_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
 
   int s = (p_left[0] * kernel[0]) + (p_above[-1] * kernel[1]) +
@@ -1406,7 +1405,7 @@ static void build_intra_predictors_high(
       if (p_angle != 90 && p_angle != 180) {
         const int ab_le = need_above_left ? 1 : 0;
         if (need_above && need_left && (txwpx + txhpx >= 24)) {
-          av1_filter_intra_edge_corner_high(above_row, left_col);
+          filter_intra_edge_corner_high(above_row, left_col);
         }
         if (need_above && n_top_px > 0) {
           const int strength =
@@ -1589,7 +1588,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (p_angle != 90 && p_angle != 180) {
         const int ab_le = need_above_left ? 1 : 0;
         if (need_above && need_left && (txwpx + txhpx >= 24)) {
-          av1_filter_intra_edge_corner(above_row, left_col);
+          filter_intra_edge_corner(above_row, left_col);
         }
         if (need_above && n_top_px > 0) {
           const int strength =
@@ -1781,6 +1780,4 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 }
 
-void av1_init_intra_predictors(void) {
-  once(av1_init_intra_predictors_internal);
-}
+void av1_init_intra_predictors(void) { once(init_intra_predictors_internal); }

@@ -580,8 +580,8 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
   av1_copy(cm->fc->eob_flag_cdf1024, av1_default_eob_multi1024_cdfs[index]);
 }
 
-static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
-                            int cdf_size, const int num_tiles) {
+static void average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
+                        int cdf_size, const int num_tiles) {
   int i;
   for (i = 0; i < cdf_size;) {
     do {
@@ -600,13 +600,13 @@ static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
   }
 }
 
-#define AVERAGE_TILE_CDFS(cname)                               \
-  do {                                                         \
-    for (i = 0; i < num_tiles; ++i)                            \
-      cdf_ptr[i] = (aom_cdf_prob *)&ec_ctxs[i]->cname;         \
-    fc_cdf_ptr = (aom_cdf_prob *)&fc->cname;                   \
-    cdf_size = (int)sizeof(fc->cname) / sizeof(aom_cdf_prob);  \
-    av1_average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles); \
+#define AVERAGE_TILE_CDFS(cname)                              \
+  do {                                                        \
+    for (i = 0; i < num_tiles; ++i)                           \
+      cdf_ptr[i] = (aom_cdf_prob *)&ec_ctxs[i]->cname;        \
+    fc_cdf_ptr = (aom_cdf_prob *)&fc->cname;                  \
+    cdf_size = (int)sizeof(fc->cname) / sizeof(aom_cdf_prob); \
+    average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles);    \
   } while (0);
 
 void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],

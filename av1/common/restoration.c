@@ -769,7 +769,7 @@ void decode_xq(const int *xqd, int *xq) {
 
 const int32_t x_by_xplus1[256] = {
   // Special case: Map 0 -> 1 (corresponding to a value of 1/256)
-  // instead of 0. See comments in av1_selfguided_restoration_internal() for why
+  // instead of 0. See comments in selfguided_restoration_internal() for why
   1,   128, 171, 192, 205, 213, 219, 224, 228, 230, 233, 235, 236, 238, 239,
   240, 241, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247, 247, 247, 247,
   248, 248, 248, 248, 249, 249, 249, 249, 249, 250, 250, 250, 250, 250, 250,
@@ -796,9 +796,11 @@ const int32_t one_by_x[MAX_NELEM] = {
 };
 
 #if CONFIG_FAST_SGR
-static void av1_selfguided_restoration_fast_internal(
-    int32_t *dgd, int width, int height, int dgd_stride, int32_t *dst,
-    int dst_stride, int bit_depth, int r, int eps) {
+static void selfguided_restoration_fast_internal(int32_t *dgd, int width,
+                                                 int height, int dgd_stride,
+                                                 int32_t *dst, int dst_stride,
+                                                 int bit_depth, int r,
+                                                 int eps) {
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
@@ -929,10 +931,10 @@ static void av1_selfguided_restoration_fast_internal(
 }
 #endif  // CONFIG_FAST_SGR
 
-static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
-                                                int height, int dgd_stride,
-                                                int32_t *dst, int dst_stride,
-                                                int bit_depth, int r, int eps) {
+static void selfguided_restoration_internal(int32_t *dgd, int width, int height,
+                                            int dgd_stride, int32_t *dst,
+                                            int dst_stride, int bit_depth,
+                                            int r, int eps) {
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
@@ -1082,41 +1084,41 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
 
 #if CONFIG_FAST_SGR
   if (params->r0 > 0)
-    av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
-                                             flt0, flt_stride, bit_depth,
-                                             params->r0, params->e0);
+    selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
+                                         flt0, flt_stride, bit_depth,
+                                         params->r0, params->e0);
   if (params->r1 > 0)
-    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
-                                        flt1, flt_stride, bit_depth, params->r1,
-                                        params->e1);
+    selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
+                                    flt_stride, bit_depth, params->r1,
+                                    params->e1);
 #else
   if (params->r0 > 0)
-    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
-                                        flt0, flt_stride, bit_depth, params->r0,
-                                        params->e0);
+    selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt0,
+                                    flt_stride, bit_depth, params->r0,
+                                    params->e0);
 
   if (params->r1 > 0)
-    av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride,
-                                        flt1, flt_stride, bit_depth, params->r1,
-                                        params->e1);
+    selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
+                                    flt_stride, bit_depth, params->r1,
+                                    params->e1);
 #endif  // CONFIG_FAST_SGR
 #else   // CONFIG_SKIP_SGR
 #if CONFIG_FAST_SGR
   // r == 2 filter
-  av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
-                                           flt0, flt_stride, bit_depth,
-                                           params->r0, params->e0);
+  selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride, flt0,
+                                       flt_stride, bit_depth, params->r0,
+                                       params->e0);
   // r == 1 filter
-  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
-                                      flt_stride, bit_depth, params->r1,
-                                      params->e1);
+  selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
+                                  flt_stride, bit_depth, params->r1,
+                                  params->e1);
 #else
-  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt0,
-                                      flt_stride, bit_depth, params->r0,
-                                      params->e0);
-  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
-                                      flt_stride, bit_depth, params->r1,
-                                      params->e1);
+  selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt0,
+                                  flt_stride, bit_depth, params->r0,
+                                  params->e0);
+  selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
+                                  flt_stride, bit_depth, params->r1,
+                                  params->e1);
 #endif  // CONFIG_FAST_SGR
 #endif  // CONFIG_SKIP_SGR
 }
