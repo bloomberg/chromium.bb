@@ -154,6 +154,10 @@ void AppendWhitelistedUrls(
 UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 
+void UkmRecorderImpl::SourceCounts::Reset() {
+  *this = SourceCounts();
+}
+
 void UkmRecorderImpl::EnableRecording(bool extensions) {
   DVLOG(1) << "UkmRecorderImpl::EnableRecording, extensions=" << extensions;
   recording_enabled_ = true;
@@ -169,6 +173,7 @@ void UkmRecorderImpl::DisableRecording() {
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sources_.clear();
+  source_counts_.Reset();
   carryover_urls_whitelist_.clear();
   entries_.clear();
   event_aggregations_.clear();
@@ -194,6 +199,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   AppendWhitelistedUrls(sources_, &url_whitelist);
 
   std::vector<std::unique_ptr<UkmSource>> unsent_sources;
+  int unmatched_sources = 0;
   for (auto& kv : sources_) {
     // If the source id is not whitelisted, don't send it unless it has
     // associated entries and the URL matches a URL of a whitelisted source.
@@ -205,6 +211,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       DCHECK(kv.second->initial_url().is_empty());
       if (!url_whitelist.count(kv.second->url().spec())) {
         RecordDroppedSource(DroppedDataReason::NOT_MATCHED);
+        unmatched_sources++;
         continue;
       }
       if (!base::ContainsKey(ids_seen, kv.first)) {
@@ -256,7 +263,17 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCount2", entries_.size());
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnsentSourcesCount",
                             unsent_sources.size());
+
+  Report::SourceCounts* source_counts_proto = report->mutable_source_counts();
+  source_counts_proto->set_observed(source_counts_.observed);
+  source_counts_proto->set_navigation_sources(
+      source_counts_.navigation_sources);
+  source_counts_proto->set_unmatched_sources(unmatched_sources);
+  source_counts_proto->set_deferred_sources(unsent_sources.size());
+  source_counts_proto->set_carryover_sources(source_counts_.carryover_sources);
+
   sources_.clear();
+  source_counts_.Reset();
   entries_.clear();
   event_aggregations_.clear();
 
@@ -281,6 +298,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     sources_.emplace(source->id(), std::move(source));
   }
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount", sources_.size());
+  source_counts_.carryover_sources = sources_.size();
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -305,6 +323,10 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
     RecordDroppedSource(DroppedDataReason::NOT_WHITELISTED);
     return;
   }
+
+  source_counts_.observed++;
+  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID)
+    source_counts_.navigation_sources++;
 
   GURL url = SanitizeURL(unsanitized_url);
 
