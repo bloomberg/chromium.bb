@@ -44,3 +44,4 @@
 // <include src="oobe_wait_for_container_ready.js">
 // <include src="enrollment_license_card.js">
 // <include src="sync_consent.js">
+// <include src="demo_setup.js">

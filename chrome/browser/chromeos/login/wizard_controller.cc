@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
@@ -393,6 +394,9 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
     return new EnrollmentScreen(this, oobe_ui_->GetEnrollmentScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_RESET) {
     return new chromeos::ResetScreen(this, oobe_ui_->GetResetView());
+  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP) {
+    return new chromeos::DemoSetupScreen(this,
+                                         oobe_ui_->GetDemoSetupScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING) {
     return new EnableDebuggingScreen(this,
                                      oobe_ui_->GetEnableDebuggingScreenView());
@@ -531,6 +535,12 @@ void WizardController::ShowEnrollmentScreen() {
                                       ->browser_policy_connector_chromeos()
                                       ->GetPrescribedEnrollmentConfig();
   StartEnrollmentScreen(false);
+}
+
+void WizardController::ShowDemoModeSetupScreen() {
+  VLOG(1) << "Showing demo mode setup screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
 }
 
 void WizardController::ShowResetScreen() {
@@ -941,6 +951,10 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
                      weak_factory_.GetWeakPtr()));
 }
 
+void WizardController::OnDemoSetupClosed() {
+  ShowLoginScreen(LoginScreenContext());
+}
+
 void WizardController::OnOobeFlowFinished() {
   if (is_in_session_oobe_) {
     host_->SetStatusAreaVisible(true);
@@ -1085,7 +1099,7 @@ void WizardController::ShowCurrentScreen() {
 
 void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
                                               bool use_smoothing) {
-  VLOG(1) << "SetCurrentScreenrSmooth: "
+  VLOG(1) << "SetCurrentScreenSmooth: "
           << GetOobeScreenName(new_current->screen_id());
   if (current_screen_ == new_current || new_current == nullptr ||
       oobe_ui_ == nullptr) {
@@ -1171,6 +1185,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowEnableDebuggingScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_ENROLLMENT) {
     ShowEnrollmentScreen();
+  } else if (screen == OobeScreen::SCREEN_OOBE_DEMO_SETUP) {
+    ShowDemoModeSetupScreen();
   } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
     ShowTermsOfServiceScreen();
   } else if (screen == OobeScreen::SCREEN_SYNC_CONSENT) {
@@ -1328,6 +1344,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       ShowArcTermsOfServiceScreen();
+      break;
+    case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
+      OnDemoSetupClosed();
       break;
     default:
       NOTREACHED();

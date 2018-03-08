@@ -58,6 +58,7 @@ enum class OobeScreen : unsigned int {
   SCREEN_TEST_NO_WINDOW,
 
   SCREEN_SYNC_CONSENT,
+  SCREEN_OOBE_DEMO_SETUP,
 
   SCREEN_UNKNOWN  // This must always be the last element.
 };

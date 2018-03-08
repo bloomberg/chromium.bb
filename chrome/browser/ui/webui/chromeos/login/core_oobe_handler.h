@@ -130,7 +130,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleHeaderBarVisible();
   void HandleSetOobeBootstrappingSlave();
   void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
-  void HandleSetupDemoMode();
 
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.

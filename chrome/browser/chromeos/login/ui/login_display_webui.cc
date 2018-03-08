@@ -241,6 +241,11 @@ void LoginDisplayWebUI::ShowEnableDebuggingScreen() {
     delegate_->OnStartEnableDebuggingScreen();
 }
 
+void LoginDisplayWebUI::ShowDemoModeSetupScreen() {
+  if (delegate_)
+    delegate_->OnStartDemoModeSetupScreen();
+}
+
 void LoginDisplayWebUI::ShowKioskEnableScreen() {
   if (delegate_)
     delegate_->OnStartKioskEnableScreen();

@@ -108,6 +108,10 @@ void AppLaunchSigninScreen::ShowEnableDebuggingScreen() {
   NOTREACHED();
 }
 
+void AppLaunchSigninScreen::ShowDemoModeSetupScreen() {
+  NOTREACHED();
+}
+
 void AppLaunchSigninScreen::ShowKioskEnableScreen() {
   NOTREACHED();
 }

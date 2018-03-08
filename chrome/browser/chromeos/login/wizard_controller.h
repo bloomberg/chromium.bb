@@ -141,6 +141,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
+  void ShowDemoModeSetupScreen();
   void ShowResetScreen();
   void ShowKioskAutolaunchScreen();
   void ShowEnableDebuggingScreen();
@@ -188,6 +189,7 @@ class WizardController : public BaseScreenDelegate,
   void OnVoiceInteractionValuePropAccepted();
   void OnControllerPairingFinished();
   void OnAutoEnrollmentCheckCompleted();
+  void OnDemoSetupClosed();
   void OnWaitForContainerReadyFinished();
   void OnOobeFlowFinished();
 
