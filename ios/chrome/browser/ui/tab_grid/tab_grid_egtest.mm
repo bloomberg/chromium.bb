@@ -15,15 +15,32 @@
 #endif
 
 namespace {
+
+// Identifer for cell at given |index|.
+NSString* IdentifierForCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
+
+// Matcher for cell at |index|.
+id<GREYMatcher> CellAtIndex(unsigned int index) {
+  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
+                    grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for close button for cell at |index|.
+id<GREYMatcher> CloseButtonForCellAtIndex(unsigned int index) {
+  return grey_allOf(
+      grey_ancestor(grey_accessibilityID(IdentifierForCellAtIndex(index))),
+      grey_accessibilityID(kGridCellCloseButtonIdentifier),
+      grey_sufficientlyVisible(), nil);
+}
+
 // Matcher for done button in tab grid.
 id<GREYMatcher> TabGridDoneButton() {
   return grey_allOf(grey_accessibilityID(kTabGridDoneButtonAccessibilityID),
                     grey_sufficientlyVisible(), nil);
 }
-// Identifer for cell at given |index|.
-NSString* IdentifierForCellAtIndex(unsigned int index) {
-  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
-}
+
 }  // namespace
 
 @interface TabGridTestCase : ChromeTestCase
@@ -43,11 +60,19 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 - (void)testTappingOnFirstCell {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          IdentifierForCellAtIndex(0))]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that closing the cell shows no tabs.
+- (void)testClosingFirstCell {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CloseButtonForCellAtIndex(0)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)]
+      assertWithMatcher:grey_nil()];
 }
 
 @end

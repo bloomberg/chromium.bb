@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/top_aligned_image_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -12,9 +13,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kGridCellCloseButtonAccessibilityID =
-    @"GridCellCloseButtonAccessibilityID";
 
 namespace {
 // Height of the top bar containing the icon, title, and close button.
@@ -205,7 +203,7 @@ const CGFloat kBorderWidth = 6.0f;
   [closeButton addTarget:self
                   action:@selector(closeButtonTapped:)
         forControlEvents:UIControlEventTouchUpInside];
-  closeButton.accessibilityIdentifier = kGridCellCloseButtonAccessibilityID;
+  closeButton.accessibilityIdentifier = kGridCellCloseButtonIdentifier;
 
   [topBar addSubview:iconView];
   [topBar addSubview:titleLabel];
