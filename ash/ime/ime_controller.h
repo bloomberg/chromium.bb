@@ -66,7 +66,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   void SwitchToPreviousIme();
   void SwitchImeById(const std::string& ime_id, bool show_message);
   void ActivateImeMenuItem(const std::string& key);
-  void SetCapsLockFromTray(bool caps_enabled);
+  void SetCapsLockEnabled(bool caps_enabled);
 
   // Returns true if the switch is allowed and the keystroke should be
   // consumed.
@@ -81,7 +81,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
                   std::vector<mojom::ImeMenuItemPtr> menu_items) override;
   void SetImesManagedByPolicy(bool managed) override;
   void ShowImeMenuOnShelf(bool show) override;
-  void SetCapsLockState(bool caps_enabled) override;
+  void UpdateCapsLockState(bool caps_enabled) override;
 
   void SetExtraInputOptionsEnabledState(bool is_extra_input_options_enabled,
                                         bool is_emoji_enabled,

@@ -71,8 +71,6 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/compositor/layer.h"
@@ -95,7 +93,6 @@ const char kHighContrastToggleAccelNotificationId[] =
 namespace {
 
 using base::UserMetricsAction;
-using chromeos::input_method::InputMethodManager;
 using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
 
@@ -599,18 +596,12 @@ bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
     // and released, then ignore the release of the Shift key.
     return false;
   }
-  chromeos::input_method::InputMethodManager* ime =
-      chromeos::input_method::InputMethodManager::Get();
-  chromeos::input_method::ImeKeyboard* keyboard =
-      ime ? ime->GetImeKeyboard() : NULL;
-  return (keyboard && keyboard->CapsLockIsEnabled());
+  return Shell::Get()->ime_controller()->IsCapsLockEnabled();
 }
 
 void HandleDisableCapsLock() {
   base::RecordAction(UserMetricsAction("Accel_Disable_Caps_Lock"));
-  chromeos::input_method::InputMethodManager* ime =
-      chromeos::input_method::InputMethodManager::Get();
-  ime->GetImeKeyboard()->SetCapsLockEnabled(false);
+  Shell::Get()->ime_controller()->SetCapsLockEnabled(false);
 }
 
 void HandleFileManager() {
@@ -727,11 +718,6 @@ void HandleCycleUser(CycleUserDirection direction) {
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
                              const ui::Accelerator& previous_accelerator) {
-  chromeos::input_method::InputMethodManager* ime =
-      chromeos::input_method::InputMethodManager::Get();
-  if (!ime || !ime->GetImeKeyboard())
-    return false;
-
   // This shortcust is set to be trigger on release. Either the current
   // accelerator is a Search release or Alt release.
   if (accelerator.key_code() == ui::VKEY_LWIN &&
@@ -766,10 +752,8 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
 
 void HandleToggleCapsLock() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Caps_Lock"));
-  chromeos::input_method::InputMethodManager* ime =
-      chromeos::input_method::InputMethodManager::Get();
-  chromeos::input_method::ImeKeyboard* keyboard = ime->GetImeKeyboard();
-  keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
+  ImeController* ime_controller = Shell::Get()->ime_controller();
+  ime_controller->SetCapsLockEnabled(!ime_controller->IsCapsLockEnabled());
 }
 
 bool CanHandleToggleDictation() {

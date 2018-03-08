@@ -1831,6 +1831,8 @@ static_library("test_support_common") {
     "highlighter/highlighter_controller_test_api.h",
     "ime/test_ime_controller.cc",
     "ime/test_ime_controller.h",
+    "ime/test_ime_controller_client.cc",
+    "ime/test_ime_controller_client.h",
     "keyboard/test_keyboard_ui.cc",
     "keyboard/test_keyboard_ui.h",
     "laser/laser_pointer_controller_test_api.cc",

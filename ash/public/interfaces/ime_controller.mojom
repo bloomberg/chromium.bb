@@ -29,7 +29,7 @@ interface ImeController {
 
   // Report caps lock state changes from chrome (which is the source of truth)
   // to the tray.
-  SetCapsLockState(bool enabled);
+  UpdateCapsLockState(bool enabled);
 
   // Report the enabled state of the various extra input options (currently
   // emoji, handwriting, and voice input). |is_extra_input_options_enabled| set
@@ -63,10 +63,11 @@ interface ImeControllerClient {
   ActivateImeMenuItem(string key);
 
   // When the caps lock state change originates from the tray (i.e. clicking the
-  // caps lock toggle from the settings menu from the caps lock icon), propagate
-  // the change to the client without sending a change notification back to the
-  // tray.
+  // caps lock toggle from the settings menu from the caps lock icon), from an
+  // accelerator (e.g. pressing Alt + Search), or from the debug UI (i.e.
+  // toggling the caps lock button), propagate the change to the client without
+  // sending a change notification back.
   // TODO(crbug/759435): Ideally this interaction should only be to disable the
   // caps lock.
-  SetCapsLockFromTray(bool enabled);
+  SetCapsLockEnabled(bool enabled);
 };

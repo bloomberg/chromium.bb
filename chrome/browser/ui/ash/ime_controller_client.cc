@@ -105,7 +105,7 @@ void ImeControllerClient::ActivateImeMenuItem(const std::string& key) {
   input_method_manager_->ActivateInputMethodMenuItem(key);
 }
 
-void ImeControllerClient::SetCapsLockFromTray(bool caps_enabled) {
+void ImeControllerClient::SetCapsLockEnabled(bool caps_enabled) {
   chromeos::input_method::ImeKeyboard* keyboard =
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
@@ -140,7 +140,7 @@ void ImeControllerClient::InputMethodMenuItemChanged(
 
 // chromeos::input_method::ImeKeyboard::Observer:
 void ImeControllerClient::OnCapsLockChanged(bool enabled) {
-  ime_controller_ptr_->SetCapsLockState(enabled);
+  ime_controller_ptr_->UpdateCapsLockState(enabled);
 }
 
 void ImeControllerClient::OnLayoutChanging(const std::string& layout_name) {}
