@@ -253,6 +253,11 @@ void ChromeAutofillClient::ShowAutofillPopup(
     base::i18n::TextDirection text_direction,
     const std::vector<autofill::Suggestion>& suggestions,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
+  // TODO(https://crbug.com/779126): We currently don't support rendering popups
+  // while in VR, so we just don't show it.
+  if (!IsAutofillSupported())
+    return;
+
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
