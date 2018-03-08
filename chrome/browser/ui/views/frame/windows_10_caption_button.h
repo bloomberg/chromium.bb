@@ -13,7 +13,9 @@ class GlassBrowserFrameView;
 
 class Windows10CaptionButton : public views::Button {
  public:
-  Windows10CaptionButton(GlassBrowserFrameView* frame_view, ViewID button_type);
+  Windows10CaptionButton(GlassBrowserFrameView* frame_view,
+                         ViewID button_type,
+                         const base::string16& accessible_name);
 
   // views::Button:
   gfx::Size CalculatePreferredSize() const override;

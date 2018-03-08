@@ -16,11 +16,13 @@
 
 Windows10CaptionButton::Windows10CaptionButton(
     GlassBrowserFrameView* frame_view,
-    ViewID button_type)
+    ViewID button_type,
+    const base::string16& accessible_name)
     : views::Button(frame_view),
       frame_view_(frame_view),
       button_type_(button_type) {
   set_animate_on_state_change(true);
+  SetAccessibleName(accessible_name);
 }
 
 gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {

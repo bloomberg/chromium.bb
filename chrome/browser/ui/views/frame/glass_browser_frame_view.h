@@ -131,7 +131,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool ShowCustomTitle() const;
   bool ShowSystemIcon() const;
 
-  Windows10CaptionButton* CreateCaptionButton(ViewID button_type);
+  Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
+                                              int accessible_name_resource_id);
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
