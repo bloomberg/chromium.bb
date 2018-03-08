@@ -729,7 +729,8 @@ bool PaintLayerPainter::NeedsToClip(
   // the embedded content itself. Doing so would clip out the
   // border because LayoutEmbeddedObject does not obey the painting phases
   // of a normal box object.
-  if (layout_object.IsLayoutEmbeddedContent())
+  if (layout_object.IsLayoutEmbeddedContent() &&
+      layout_object.GetCompositingState() == kPaintsIntoOwnBacking)
     return paint_flags & kPaintLayerPaintingChildClippingMaskPhase;
 
   return clip_rect.Rect() != local_painting_info.paint_dirty_rect ||
