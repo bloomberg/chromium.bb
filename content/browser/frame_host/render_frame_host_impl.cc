@@ -1892,8 +1892,8 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
-  for (const auto& iter : ax_tree_snapshot_callbacks_)
-    iter.second.Run(ui::AXTreeUpdate());
+  for (auto& iter : ax_tree_snapshot_callbacks_)
+    std::move(iter.second).Run(ui::AXTreeUpdate());
 
 #if defined(OS_ANDROID)
   // Execute any pending Samsung smart clip callbacks.
@@ -2629,7 +2629,7 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
       AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
       dst_snapshot.has_tree_data = true;
     }
-    it->second.Run(dst_snapshot);
+    std::move(it->second).Run(dst_snapshot);
     ax_tree_snapshot_callbacks_.erase(it);
   } else {
     NOTREACHED() << "Received AX tree snapshot response for unknown id";
@@ -3952,7 +3952,8 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
   static int next_id = 1;
   int callback_id = next_id++;
   Send(new AccessibilityMsg_SnapshotTree(routing_id_, callback_id));
-  ax_tree_snapshot_callbacks_.insert(std::make_pair(callback_id, callback));
+  ax_tree_snapshot_callbacks_.insert(
+      std::make_pair(callback_id, std::move(callback)));
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(

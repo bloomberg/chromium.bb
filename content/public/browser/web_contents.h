@@ -300,9 +300,9 @@ class WebContents : public PageNavigator,
 
   // Request a one-time snapshot of the accessibility tree without changing
   // the accessibility mode.
-  using AXTreeSnapshotCallback = base::Callback<void(const ui::AXTreeUpdate&)>;
-  virtual void RequestAXTreeSnapshot(
-      const AXTreeSnapshotCallback& callback) = 0;
+  using AXTreeSnapshotCallback =
+      base::OnceCallback<void(const ui::AXTreeUpdate&)>;
+  virtual void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) = 0;
 
   // Causes the current page to be closed, including running its onunload event
   // handler.

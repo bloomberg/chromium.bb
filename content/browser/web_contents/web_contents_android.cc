@@ -561,10 +561,9 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
 
-  WebContentsImpl::AXTreeSnapshotCallback snapshot_callback =
-      base::Bind(&AXTreeSnapshotCallback, j_callback);
-  static_cast<WebContentsImpl*>(web_contents_)->RequestAXTreeSnapshot(
-      snapshot_callback);
+  static_cast<WebContentsImpl*>(web_contents_)
+      ->RequestAXTreeSnapshot(
+          base::BindOnce(&AXTreeSnapshotCallback, j_callback));
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(

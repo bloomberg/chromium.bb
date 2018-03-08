@@ -74,9 +74,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
   AXTreeSnapshotWaiter waiter;
-  web_contents->RequestAXTreeSnapshot(
-      base::Bind(&AXTreeSnapshotWaiter::ReceiveSnapshot,
-                 base::Unretained(&waiter)));
+  web_contents->RequestAXTreeSnapshot(base::BindOnce(
+      &AXTreeSnapshotWaiter::ReceiveSnapshot, base::Unretained(&waiter)));
   waiter.Wait();
 
   // Dump the whole tree if one of the assertions below fails
@@ -109,9 +108,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
       "/accessibility/snapshot/inner.html"));
 
   AXTreeSnapshotWaiter waiter;
-  web_contents->RequestAXTreeSnapshot(
-      base::Bind(&AXTreeSnapshotWaiter::ReceiveSnapshot,
-                 base::Unretained(&waiter)));
+  web_contents->RequestAXTreeSnapshot(base::BindOnce(
+      &AXTreeSnapshotWaiter::ReceiveSnapshot, base::Unretained(&waiter)));
   waiter.Wait();
 
   // Dump the whole tree if one of the assertions below fails
