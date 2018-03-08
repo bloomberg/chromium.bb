@@ -281,10 +281,12 @@ public class AccountSigninView extends FrameLayout {
         initAccessPoint(accessPoint);
         mIsChildAccount = arguments.getBoolean(ARGUMENT_IS_CHILD_ACCOUNT, false);
         mUndoBehavior = arguments.getInt(ARGUMENT_UNDO_BEHAVIOR, -1);
+        mSigninFlowType = arguments.getInt(ARGUMENT_SIGNIN_FLOW_TYPE, -1);
         mDelegate = delegate;
         mListener = listener;
 
-        mSigninFlowType = arguments.getInt(ARGUMENT_SIGNIN_FLOW_TYPE, -1);
+        updateConsentText();
+
         switch (mSigninFlowType) {
             case SIGNIN_FLOW_DEFAULT:
                 showSigninPage();
@@ -306,8 +308,6 @@ public class AccountSigninView extends FrameLayout {
                 assert false : "Unknown or missing signin flow type: " + mSigninFlowType;
                 return;
         }
-
-        updateConsentText();
     }
 
     public @SigninFlowType int getSigninFlowType() {
@@ -365,7 +365,7 @@ public class AccountSigninView extends FrameLayout {
                 mIsChildAccount ? R.string.sync_confirmation_personalize_services_body_child_account
                                 : R.string.sync_confirmation_personalize_services_body);
         setText(mSigninSettingsControl, R.string.signin_signed_in_settings_description);
-        setText(mNegativeButton, R.string.fre_skip_text);
+        setText(mNegativeButton, mCancelButtonTextId);
         setText(mPositiveButton, R.string.choose_account_sign_in);
         setText(mMoreButton, R.string.more);
 
