@@ -39,8 +39,8 @@ namespace {
 const char kProductName[] = "Eureka";
 
 const char kCrashServerStaging[] =
-    "http://clients2.google.com/cr/staging_report";
-const char kCrashServerProduction[] = "http://clients2.google.com/cr/report";
+    "https://clients2.google.com/cr/staging_report";
+const char kCrashServerProduction[] = "https://clients2.google.com/cr/report";
 
 typedef std::vector<std::unique_ptr<DumpInfo>> DumpList;
 
