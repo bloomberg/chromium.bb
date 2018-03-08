@@ -6,13 +6,20 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_session.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace {
+constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+constexpr char kTestImageRelease[] = "testimage";
+}  // namespace
 
 namespace arc {
 namespace {
@@ -44,6 +51,26 @@ ArcScreenCaptureBridge* ArcScreenCaptureBridge::GetForBrowserContext(
   return ArcScreenCaptureBridgeFactory::GetForBrowserContext(context);
 }
 
+ArcScreenCaptureBridge::PendingCaptureParams::PendingCaptureParams(
+    std::unique_ptr<DesktopMediaPicker> picker,
+    const std::string& display_name,
+    RequestPermissionCallback callback)
+    : picker(std::move(picker)),
+      display_name(display_name),
+      callback(std::move(callback)) {}
+
+ArcScreenCaptureBridge::PendingCaptureParams::~PendingCaptureParams() {}
+
+ArcScreenCaptureBridge::GrantedCaptureParams::GrantedCaptureParams(
+    const std::string& display_name,
+    content::DesktopMediaID desktop_id,
+    bool enable_notification)
+    : display_name(display_name),
+      desktop_id(desktop_id),
+      enable_notification(enable_notification) {}
+
+ArcScreenCaptureBridge::GrantedCaptureParams::~GrantedCaptureParams() {}
+
 ArcScreenCaptureBridge::ArcScreenCaptureBridge(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service), weak_factory_(this) {
@@ -70,29 +97,79 @@ void ArcScreenCaptureBridge::RequestPermission(
   picker_params.modality = ui::ModalType::MODAL_TYPE_SYSTEM;
   picker_params.app_name = display_name16;
   picker_params.target_name = display_name16;
-  picker->Show(
-      picker_params, std::move(source_lists),
-      base::BindRepeating(&ArcScreenCaptureBridge::PermissionPromptCallback,
-                          base::Unretained(this), base::Passed(&picker),
-                          display_name, package_name, base::Passed(&callback)));
-}
-
-void ArcScreenCaptureBridge::PermissionPromptCallback(
-    std::unique_ptr<DesktopMediaPicker> picker,
-    const std::string& display_name,
-    const std::string& package_name,
-    RequestPermissionCallback callback,
-    content::DesktopMediaID desktop_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (desktop_id.is_null()) {
+  if (pending_permissions_map_.find(package_name) !=
+      pending_permissions_map_.end()) {
+    LOG(ERROR) << "Screen capture permissions requested while pending request "
+                  "was active: "
+               << package_name;
     std::move(callback).Run(false);
     return;
   }
-  // This may overwrite an existing entry which is OK since these persist
-  // forever and this may be requested again with a different desktop.
-  permissions_map_[package_name] =
-      std::make_unique<GrantedCaptureParams>(display_name, desktop_id);
-  std::move(callback).Run(true);
+  pending_permissions_map_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(package_name),
+      std::forward_as_tuple(std::move(picker), display_name,
+                            std::move(callback)));
+  pending_permissions_map_.find(package_name)
+      ->second.picker->Show(
+          picker_params, std::move(source_lists),
+          base::BindRepeating(&ArcScreenCaptureBridge::PermissionPromptCallback,
+                              base::Unretained(this), package_name));
+}
+
+void ArcScreenCaptureBridge::PermissionPromptCallback(
+    const std::string& package_name,
+    content::DesktopMediaID desktop_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto found = pending_permissions_map_.find(package_name);
+  if (found == pending_permissions_map_.end()) {
+    // This is normal if the dialog was accepted from testing.
+    return;
+  }
+  if (desktop_id.is_null()) {
+    std::move(found->second.callback).Run(false);
+    pending_permissions_map_.erase(found);
+    return;
+  }
+  // Remove any existing entry since emplace will not overwrite it.
+  // This is OK since these persist forever and this may be requested again with
+  // a different desktop.
+  granted_permissions_map_.erase(package_name);
+  granted_permissions_map_.emplace(std::make_pair(
+      package_name, GrantedCaptureParams(found->second.display_name, desktop_id,
+                                         true /* enable notification */)));
+  std::move(found->second.callback).Run(true);
+  pending_permissions_map_.erase(found);
+}
+
+void ArcScreenCaptureBridge::TestModeAcceptPermission(
+    const std::string& package_name) {
+  std::string track;
+  if (!base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track))
+    return;
+  if (track.find(kTestImageRelease) == std::string::npos)
+    return;
+  // We are a testimage build, so this call is allowed. To do this, invoke the
+  // Mojo callback after taking it from our map. This will prevent it from
+  // getting called when we forcibly close the dialog.
+  auto found = pending_permissions_map_.find(package_name);
+  if (found == pending_permissions_map_.end()) {
+    LOG(ERROR) << "Requested to accept dialog for testing, but dialog not "
+                  "being shown for "
+               << package_name;
+    return;
+  }
+  granted_permissions_map_.erase(package_name);
+  granted_permissions_map_.emplace(std::make_pair(
+      package_name,
+      GrantedCaptureParams(found->second.display_name,
+                           content::DesktopMediaID::RegisterAuraWindow(
+                               content::DesktopMediaID::TYPE_SCREEN,
+                               ash::Shell::GetPrimaryRootWindow()),
+                           false /* enable notification */)));
+  std::move(found->second.callback).Run(true);
+  pending_permissions_map_.erase(found);
+  // The dialog will be closed when 'found' goes out of scope and is
+  // destructed and the dialog within it is destructed.
 }
 
 void ArcScreenCaptureBridge::OpenSession(
@@ -101,18 +178,17 @@ void ArcScreenCaptureBridge::OpenSession(
     const gfx::Size& size,
     OpenSessionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto found = permissions_map_.find(package_name);
-  if (found == permissions_map_.end()) {
+  auto found = granted_permissions_map_.find(package_name);
+  if (found == granted_permissions_map_.end()) {
     LOG(ERROR) << "Attempt to open screen capture session without granted "
                   "permissions for package "
                << package_name;
     std::move(callback).Run(nullptr);
     return;
   }
-  DCHECK(found->second) << package_name;
   std::move(callback).Run(ArcScreenCaptureSession::Create(
-      std::move(notifier), found->second->display_name,
-      found->second->desktop_id, size));
+      std::move(notifier), found->second.display_name, found->second.desktop_id,
+      size, found->second.enable_notification));
 }
 
 }  // namespace arc

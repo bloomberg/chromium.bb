@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_SCREEN_CAPTURE_ARC_SCREEN_CAPTURE_BRIDGE_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -42,30 +43,52 @@ class ArcScreenCaptureBridge : public KeyedService,
   void RequestPermission(const std::string& display_name,
                          const std::string& package_name,
                          RequestPermissionCallback callback) override;
+  void TestModeAcceptPermission(const std::string& package_name) override;
 
  private:
-  struct GrantedCaptureParams {
-    GrantedCaptureParams(const std::string display_name,
-                         content::DesktopMediaID desktop_id)
-        : display_name(display_name), desktop_id(desktop_id) {}
-    std::string display_name;
-    content::DesktopMediaID desktop_id;
+  struct PendingCaptureParams {
+    PendingCaptureParams(std::unique_ptr<DesktopMediaPicker> picker,
+                         const std::string& display_name,
+                         RequestPermissionCallback callback);
+    ~PendingCaptureParams();
+
+    std::unique_ptr<DesktopMediaPicker> picker;
+    const std::string display_name;
+    RequestPermissionCallback callback;
   };
 
-  void PermissionPromptCallback(std::unique_ptr<DesktopMediaPicker> picker,
-                                const std::string& display_name,
-                                const std::string& package_name,
-                                RequestPermissionCallback callback,
+  struct GrantedCaptureParams {
+    GrantedCaptureParams(const std::string& display_name,
+                         content::DesktopMediaID desktop_id,
+                         bool enable_notification);
+    ~GrantedCaptureParams();
+
+    const std::string display_name;
+    const content::DesktopMediaID desktop_id;
+    const bool enable_notification;
+  };
+
+  void PermissionPromptCallback(const std::string& package_name,
                                 content::DesktopMediaID desktop_id);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // The string in this map corresponds to the passed in package_name when
+  // RequestPermission is called. This map is used for when we get the callback
+  // from the permissions dialog or when we get a Mojo call to forcibly confirm
+  // the permissions. If not for the latter feature, we would not be using this
+  // map and instead would just Bind these parameters into the permissions
+  // dialog callback itself.
+  std::unordered_map<std::string, PendingCaptureParams>
+      pending_permissions_map_;
+
+  // The string in this map corresponds to the passed in package_name when
   // RequestPermission is called. That same string should then be passed into
   // OpenSession as a token that correlates the two calls. This map is used to
   // validate that.
-  std::unordered_map<std::string, std::unique_ptr<GrantedCaptureParams>>
-      permissions_map_;
+  std::unordered_map<std::string, GrantedCaptureParams>
+      granted_permissions_map_;
+
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcScreenCaptureBridge> weak_factory_;
 

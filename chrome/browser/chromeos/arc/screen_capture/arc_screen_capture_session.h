@@ -45,7 +45,8 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
       mojom::ScreenCaptureSessionNotifierPtr notifier,
       const std::string& display_name,
       content::DesktopMediaID desktop_id,
-      const gfx::Size& size);
+      const gfx::Size& size,
+      bool enable_notification);
 
   // Implements mojo::ScreenCaptureSession interface.
   void SetOutputBuffer(mojo::ScopedHandle graphics_buffer,
@@ -67,7 +68,8 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   // Does additional checks and upon success returns a valid InterfacePtr, null
   // otherwise.
   mojom::ScreenCaptureSessionPtr Initialize(content::DesktopMediaID desktop_id,
-                                            const std::string& display_name);
+                                            const std::string& display_name,
+                                            bool enable_notification);
   // Copies the GL texture from a desktop capture to the corresponding GL
   // texture for a GPU buffer.
   void CopyDesktopTextureToGpuBuffer(
