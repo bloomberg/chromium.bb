@@ -1739,11 +1739,32 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                  stream_id),
       base::TimeDelta::FromSeconds(kPushedStreamLifetimeSeconds));
 
-  // TODO(https://crbug.com/656607): Add proper annotation here.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("spdy_push_stream", R"(
+        semantics {
+          sender: "Spdy Session"
+          description:
+            "When a web server needs to push a response to a client, an "
+            "incoming stream is created to reply the client with pushed "
+            "message instead of a message from the network."
+          trigger:
+            "A request by a server to push a response to the client."
+          data: "None."
+          destination: OTHER
+          destination_other:
+            "This stream is not used for sending data."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled."
+          policy_exception_justification: "Essential for navigation."
+        }
+    )");
+
   auto stream = std::make_unique<SpdyStream>(
       SPDY_PUSH_STREAM, GetWeakPtr(), gurl, request_priority,
       stream_initial_send_window_size_, stream_max_recv_window_size_, net_log_,
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      traffic_annotation);
   stream->set_stream_id(stream_id);
 
   // Convert RequestPriority to a SpdyPriority to send in a PRIORITY frame.
