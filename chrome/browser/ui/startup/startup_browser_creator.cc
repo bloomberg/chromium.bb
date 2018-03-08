@@ -402,8 +402,11 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
       user_manager::UserManager::Get()->IsCurrentUserNew();
   // On ChromeOS restarts force the user to login again. The expectation is that
   // after a login the user gets clean state. For this reason we ignore
-  // StartupBrowserCreator::WasRestarted().
+  // StartupBrowserCreator::WasRestarted(). However
+  // StartupBrowserCreator::WasRestarted has to be called in order to correctly
+  // update pref values.
   const bool did_restart = false;
+  StartupBrowserCreator::WasRestarted();
 #else
   const bool is_first_run = first_run::IsChromeFirstRun();
   const bool did_restart = StartupBrowserCreator::WasRestarted();
