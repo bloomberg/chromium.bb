@@ -18,7 +18,7 @@ namespace blink {
 class CompositingReasonFinderTest : public RenderingTest {
  public:
   CompositingReasonFinderTest()
-      : RenderingTest(EmptyLocalFrameClient::Create()) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
  private:
   void SetUp() override {
@@ -384,6 +384,25 @@ TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
 
   EXPECT_EQ(kPaintsIntoOwnBacking, outer_sticky_layer->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, inner_sticky_layer->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <iframe style="width:0; height:0; border: 0;" srcdoc="<!DOCTYPE html>"></iframe>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  LocalFrame* child_frame =
+      ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild());
+  ASSERT_TRUE(child_frame);
+  LocalFrameView* child_frame_view = child_frame->View();
+  ASSERT_TRUE(child_frame_view);
+  EXPECT_EQ(kNotComposited,
+            child_frame_view->GetLayoutView()->Layer()->GetCompositingState());
 }
 
 }  // namespace blink

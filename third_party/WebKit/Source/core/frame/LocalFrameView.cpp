@@ -2765,8 +2765,8 @@ LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
     contents_size = ContentsSize();
 
   IntSize visible_content_size = VisibleContentRect().Size();
-  if ((contents_size.Height() <= visible_content_size.Height() &&
-       contents_size.Width() <= visible_content_size.Width()))
+  if (contents_size.Height() <= visible_content_size.Height() &&
+      contents_size.Width() <= visible_content_size.Width())
     return kNotScrollableNoOverflow;
 
   // Covers #2.
