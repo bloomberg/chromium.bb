@@ -15,7 +15,7 @@
 #include "ui/views/view.h"
 
 class Profile;
-class DiceSigninButton;
+class DiceSigninButtonView;
 
 // A personalized sync promo used when Desktop Identity Consistency is enabled.
 // Its display a message informing the user the benefits of enabling sync and
@@ -34,15 +34,15 @@ class DiceBubbleSyncPromoView : public views::View,
   // Chrome has no accounts.
   // The promo message is set to |accounts_promo_message_resource_id| when
   // Chrome has at least one account.
+  // If |signin_button_prominent| is false and a non-personalized signin button
+  // is shown, the button is set to non-prominent. Otherwise the button remains
+  // prominent.
   DiceBubbleSyncPromoView(Profile* profile,
                           BubbleSyncPromoDelegate* delegate,
                           int no_accounts_promo_message_resource_id,
-                          int accounts_promo_message_resource_id);
+                          int accounts_promo_message_resource_id,
+                          bool signin_button_prominent = true);
   ~DiceBubbleSyncPromoView() override;
-
-  // If a non-personalized signin button is shown in the promo, it is set to
-  // non-prominent. Otherwise, this function does nothing.
-  void SetSigninButtonNonProminent();
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -57,7 +57,7 @@ class DiceBubbleSyncPromoView : public views::View,
 
   // Delegate, to handle clicks on the sign-in buttons.
   BubbleSyncPromoDelegate* delegate_;
-  DiceSigninButton* signin_button_ = nullptr;
+  DiceSigninButtonView* signin_button_view_ = nullptr;
 
   // Accounts submenu that is shown when |signin_button_->drop_down_arrow()| is
   // pressed.

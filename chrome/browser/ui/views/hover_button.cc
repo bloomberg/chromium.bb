@@ -251,6 +251,10 @@ views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
   return LabelButton::GetKeyClickActionForEvent(event);
 }
 
+void HoverButton::SetHighlightingView(views::View* highlighting_view) {
+  highlighting_view_ = highlighting_view;
+}
+
 void HoverButton::StateChanged(ButtonState old_state) {
   LabelButton::StateChanged(old_state);
 
@@ -278,8 +282,9 @@ std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()
   // remove the rounded corners.
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(
-          size(), 0,
-          gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
+          highlighting_view_->size(), 0,
+          gfx::RectF(GetMirroredRect(highlighting_view_->GetContentsBounds()))
+              .CenterPoint(),
           GetInkDropBaseColor()));
   highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size())));
   return highlight;

@@ -76,6 +76,11 @@ class HoverButton : public views::LabelButton {
     auto_compute_tooltip_ = auto_compute_tooltip;
   }
 
+  // Sets the view to be highlighted when the button is hovered. If this
+  // function is not called, |this| will be used. This function can be used e.g.
+  // when siblings in the parent view have to be highlighted as well.
+  void SetHighlightingView(views::View* highlighting_view);
+
  protected:
   // views::LabelButton:
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override;
@@ -103,6 +108,9 @@ class HoverButton : public views::LabelButton {
   // Whether this |HoverButton|'s accessible name and tooltip should be computed
   // from the |title_| and |subtitle_| text.
   bool auto_compute_tooltip_ = true;
+
+  // View that gets highlighted when this button is hovered.
+  views::View* highlighting_view_ = this;
 
   DISALLOW_COPY_AND_ASSIGN(HoverButton);
 };

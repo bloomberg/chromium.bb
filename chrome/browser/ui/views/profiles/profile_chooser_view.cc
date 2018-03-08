@@ -49,7 +49,7 @@
 #include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
 #include "chrome/browser/ui/views/profiles/signin_view_controller_delegate_views.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
-#include "chrome/browser/ui/views/sync/dice_signin_button.h"
+#include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -392,6 +392,7 @@ void ProfileChooserView::ResetView() {
   remove_account_button_ = nullptr;
   account_removal_cancel_button_ = nullptr;
   sync_to_another_account_button_ = nullptr;
+  dice_signin_button_view_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -670,11 +671,10 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_current_profile_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == signin_with_gaia_account_button_) {
-    DCHECK(signin_with_gaia_account_button_->account());
+    DCHECK(dice_signin_button_view_->account());
     Hide();
     signin_ui_util::EnableSync(
-        browser_, signin_with_gaia_account_button_->account().value(),
-        access_point_);
+        browser_, dice_signin_button_view_->account().value(), access_point_);
   } else if (sender == sync_to_another_account_button_) {
     // Extract the promo accounts for the submenu, i.e. remove the first
     // one from the list because it is already shown in a separate button.
@@ -1079,19 +1079,13 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       promotext_top_spacing, kMenuEdgeMargin, 0, kMenuEdgeMargin));
   view->AddChildView(promo);
 
-  // Create a parent view with border for the sign-in button, because
-  // |DiceSigninButton| already has its own border and a second border can't be
-  // added.
-  views::View* signin_button_view = new views::View();
-  signin_button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  signin_button_view->SetBorder(
-      views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
-
   if (!show_personalized_promo) {
     // Create a sign-in button without account information.
-    signin_current_profile_button_ = new DiceSigninButton(this);
-    signin_button_view->AddChildView(signin_current_profile_button_);
-    view->AddChildView(signin_button_view);
+    dice_signin_button_view_ = new DiceSigninButtonView(this);
+    dice_signin_button_view_->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(kMenuEdgeMargin)));
+    view->AddChildView(dice_signin_button_view_);
+    signin_current_profile_button_ = dice_signin_button_view_->signin_button();
     return view;
   }
   // Create a button to sign in the first account of
@@ -1104,12 +1098,12 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
   }
-  signin_with_gaia_account_button_ =
-      new DiceSigninButton(dice_promo_default_account, account_icon, this,
-                           false /* show drop down arrow */);
-
-  signin_button_view->AddChildView(signin_with_gaia_account_button_);
-  view->AddChildView(signin_button_view);
+  dice_signin_button_view_ =
+      new DiceSigninButtonView(dice_promo_default_account, account_icon, this);
+  dice_signin_button_view_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kMenuEdgeMargin)));
+  view->AddChildView(dice_signin_button_view_);
+  signin_with_gaia_account_button_ = dice_signin_button_view_->signin_button();
 
   // Create a button to sync to another account.
   constexpr int kSmallMenuIconSize = 16;
