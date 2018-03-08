@@ -9,7 +9,7 @@
 #include <array>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -47,7 +47,7 @@ aura::Window* GetTargetWindow() {
 }  // namespace
 
 bool CanHandleMoveActiveWindowBetweenDisplays() {
-  if (!switches::IsDisplayMoveWindowAccelsEnabled())
+  if (!features::IsDisplayMoveWindowAccelsEnabled())
     return false;
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   // Accelerators to move window between displays on unified desktop mode and
@@ -76,7 +76,7 @@ void HandleMoveActiveWindowBetweenDisplays() {
       display::CreateDisplayIdList(displays);
   // Find target display id in sorted display id list in a cycling way.
   auto itr = std::upper_bound(display_id_list.begin(), display_id_list.end(),
-                              origin_display_id);
+                              origin_display_id, display::CompareDisplayIds);
   int64_t target_display_id =
       itr == display_id_list.end() ? display_id_list[0] : *itr;
   wm::MoveWindowToDisplay(window, target_display_id);

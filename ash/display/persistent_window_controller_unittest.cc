@@ -6,6 +6,7 @@
 
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -14,6 +15,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 
 using session_manager::SessionState;
 
@@ -26,14 +28,16 @@ class PersistentWindowControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableDisplayMoveWindowAccels);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDisplayMoveWindowAccels);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnablePersistentWindowBounds);
     AshTestBase::SetUp();
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PersistentWindowControllerTest);
 };
 

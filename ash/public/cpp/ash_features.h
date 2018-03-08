@@ -11,6 +11,11 @@
 namespace ash {
 namespace features {
 
+// Enables the keyboard shortcut to move active window between displays.
+// TODO(warx): Remove this after the feature is fully launched.
+// https://crbug.com/773749.
+ASH_PUBLIC_EXPORT extern const base::Feature kDisplayMoveWindowAccels;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -31,6 +36,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
+
+ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 

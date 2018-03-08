@@ -3582,7 +3582,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-display-move-window-accels",
      flag_descriptions::kAshEnableDisplayMoveWindowAccelsName,
      flag_descriptions::kAshEnableDisplayMoveWindowAccelsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableDisplayMoveWindowAccels)},
+     FEATURE_VALUE_TYPE(ash::features::kDisplayMoveWindowAccels)},
 
     {"ash-enable-keyboard-shortcut-viewer",
      flag_descriptions::kAshEnableKeyboardShortcutViewerName,

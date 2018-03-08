@@ -26497,7 +26497,6 @@ from previous Chrome versions.
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
-  <int value="28272521" label="ash-enable-display-move-window-accels"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
@@ -26529,6 +26528,7 @@ from previous Chrome versions.
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
+  <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
@@ -27283,6 +27283,7 @@ from previous Chrome versions.
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
   <int value="1971964569" label="NewEncodeCpuLoadEstimator:disabled"/>
+  <int value="1972232935" label="DisplayMoveWindowAccels:enabled"/>
   <int value="1980011075" label="debug-packed-apps"/>
   <int value="1980648371" label="PointerEventV1SpecCapturing:enabled"/>
   <int value="1988506961" label="EnableManualSaving:enabled"/>
