@@ -442,17 +442,21 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if (canonicalized_url->has_username() && desired_tld.empty())
     return metrics::OmniboxInputType::UNKNOWN;
 
-  // If the host has a known TLD or a port, it's probably a URL.  The .example,
-  // .test and .localhost TLDs are special-cased as known TLDs due to
-  // https://tools.ietf.org/html/rfc6761. Note that DomainIs also covers the
-  // host, e.g. just the word localhost, that is not desired for "example" or
-  // "test".
-  if (text != base::ASCIIToUTF16("example") &&
-      text != base::ASCIIToUTF16("test") &&
-      (has_known_tld || canonicalized_url->DomainIs("example") ||
-       canonicalized_url->DomainIs("localhost") ||
-       canonicalized_url->DomainIs("test") || canonicalized_url->has_port()))
+  // If the host has a known TLD or a port, it's probably a URL. Just localhost
+  // is considered a valid host name due to https://tools.ietf.org/html/rfc6761.
+  if (has_known_tld || canonicalized_url->DomainIs("localhost") ||
+      canonicalized_url->has_port())
     return metrics::OmniboxInputType::URL;
+
+  // The .example and .test TLDs are special-cased as known TLDs due to
+  // https://tools.ietf.org/html/rfc6761. Unlike localhost, these are not valid
+  // host names, so they must have at least one subdomain to be a URL.
+  for (const base::StringPiece domain : {"example", "test"}) {
+    // The +1 accounts for a possible trailing period.
+    if (canonicalized_url->DomainIs(domain) &&
+        (canonicalized_url->host().length() > (domain.length() + 1)))
+      return metrics::OmniboxInputType::URL;
+  }
 
   // No scheme, username, port, and no known TLD on the host.
   // This could be:
