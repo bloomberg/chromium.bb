@@ -6929,6 +6929,6 @@ const size_t %(p)sUtil::enum_to_string_table_len_ =
 def Format(generated_files):
   formatter = "third_party/depot_tools/clang-format"
   if platform.system() == "Windows":
-    formatter += ".bat"
+    formatter = "third_party\\depot_tools\\clang-format.bat"
   for filename in generated_files:
     call([formatter, "-i", "-style=chromium", filename])
