@@ -4,8 +4,8 @@ layer at (0,0) size 800x770 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutNGBlockFlow {HTML} at (0,0) size 800x769.88
     LayoutNGBlockFlow {BODY} at (8,21.44) size 784x732.44
       LayoutNGBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 377x36
-          text run at (0,0) width 377: "Shorthand border property"
+        LayoutText {#text} at (0,0) size 378x36
+          text run at (0,0) width 378: "Shorthand border property"
       LayoutNGBlockFlow {P} at (0,58.44) size 784x26 [color=#008000] [bgcolor=#FFFFFF] [border: (3px solid #008000)]
         LayoutText {#text} at (3,3) size 363x19
           text run at (3,3) width 363: "This paragraph should have a medium solid green border."

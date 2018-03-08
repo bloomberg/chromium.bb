@@ -4,8 +4,8 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutNGBlockFlow {HTML} at (0,0) size 785x1294.86
     LayoutNGBlockFlow {BODY} at (8,16) size 769x1270.86
       LayoutNGBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 161x19
-          text run at (0,0) width 161: "div, span, nested div/span"
+        LayoutText {#text} at (0,0) size 160x19
+          text run at (0,0) width 160: "div, span, nested div/span"
       LayoutNGBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 64x19
           text run at (0,0) width 64: "Single div"
@@ -180,7 +180,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 417: "The following 2 tables should be identical, ignorning whitespaces:"
       LayoutTable {TABLE} at (1.39,1000.69) size 82x72 [border: (1px solid #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 82x20
-          LayoutText {#text} at (0,0) size 83x19
+          LayoutText {#text} at (0,0) size 82x19
             text run at (0,0) width 82: "NormalTable"
         LayoutTableSection {TBODY} at (1,21) size 80x50
           LayoutTableRow {TR} at (0,2) size 80x22
@@ -199,7 +199,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (14,1) width 24: "opq"
       LayoutTable {DIV} at (1.39,1074.08) size 143x62 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (0,0) size 143x20
-          LayoutText {#text} at (0,0) size 144x19
+          LayoutText {#text} at (0,0) size 143x19
             text run at (0,0) width 143: "AnonymousTableRow"
         LayoutTableSection (anonymous) at (1,21) size 141x40
           LayoutTableRow {DIV} at (0,0) size 141x20
@@ -217,8 +217,8 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (50,0) size 24x19
                 text run at (50,0) width 24: "opq"
       LayoutNGBlockFlow {P} at (0,1152.08) size 769x20
-        LayoutText {#text} at (0,0) size 514x19
-          text run at (0,0) width 514: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
+        LayoutText {#text} at (0,0) size 511x19
+          text run at (0,0) width 511: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
       LayoutNGBlockFlow {DIV} at (0,1188.08) size 769x82.78 [border: (1.39px solid #000000)]
         LayoutTable (anonymous) at (1.39,1.39) size 24x80
           LayoutTableSection (anonymous) at (0,20) size 24x40

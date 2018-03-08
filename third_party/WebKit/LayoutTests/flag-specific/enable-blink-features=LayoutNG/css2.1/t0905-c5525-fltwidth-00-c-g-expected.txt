@@ -28,7 +28,7 @@ layer at (0,0) size 785x837 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,300) width 385: "float text ignore this float text ignore this float text"
           text run at (0,320) width 385: "ignore this float text ignore this float text ignore this"
           text run at (0,340) width 385: "float text ignore this float text ignore this float text"
-          text run at (0,360) width 257: "ignore this float text ignore this float"
+          text run at (0,360) width 255: "ignore this float text ignore this float"
       LayoutNGBlockFlow {DIV} at (0,145) size 769x520 [color=#C0C0C0]
         LayoutText {#text} at (384,0) size 769x519
           text run at (384,0) width 385: "this is some dummy text this is some dummy text this is"
