@@ -1019,3 +1019,83 @@ void aom_h_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   dst += stride << 2;
   h_prediction_32x8_2(&left_col_8p, dst, stride);
 }
+
+static INLINE void h_predictor_32xh(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *left, int height) {
+  int i = height >> 2;
+  do {
+    __m128i left4 = _mm_cvtsi32_si128(((uint32_t *)left)[0]);
+    left4 = _mm_unpacklo_epi8(left4, left4);
+    left4 = _mm_unpacklo_epi8(left4, left4);
+    const __m128i r0 = _mm_shuffle_epi32(left4, 0x0);
+    const __m128i r1 = _mm_shuffle_epi32(left4, 0x55);
+    _mm_store_si128((__m128i *)dst, r0);
+    _mm_store_si128((__m128i *)(dst + 16), r0);
+    _mm_store_si128((__m128i *)(dst + stride), r1);
+    _mm_store_si128((__m128i *)(dst + stride + 16), r1);
+    const __m128i r2 = _mm_shuffle_epi32(left4, 0xaa);
+    const __m128i r3 = _mm_shuffle_epi32(left4, 0xff);
+    _mm_store_si128((__m128i *)(dst + stride * 2), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 2 + 16), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 3), r3);
+    _mm_store_si128((__m128i *)(dst + stride * 3 + 16), r3);
+    left += 4;
+    dst += stride * 4;
+  } while (--i);
+}
+
+void aom_h_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  h_predictor_32xh(dst, stride, left, 64);
+}
+
+static INLINE void h_predictor_64xh(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *left, int height) {
+  int i = height >> 2;
+  do {
+    __m128i left4 = _mm_cvtsi32_si128(((uint32_t *)left)[0]);
+    left4 = _mm_unpacklo_epi8(left4, left4);
+    left4 = _mm_unpacklo_epi8(left4, left4);
+    const __m128i r0 = _mm_shuffle_epi32(left4, 0x0);
+    const __m128i r1 = _mm_shuffle_epi32(left4, 0x55);
+    _mm_store_si128((__m128i *)dst, r0);
+    _mm_store_si128((__m128i *)(dst + 16), r0);
+    _mm_store_si128((__m128i *)(dst + 32), r0);
+    _mm_store_si128((__m128i *)(dst + 48), r0);
+    _mm_store_si128((__m128i *)(dst + stride), r1);
+    _mm_store_si128((__m128i *)(dst + stride + 16), r1);
+    _mm_store_si128((__m128i *)(dst + stride + 32), r1);
+    _mm_store_si128((__m128i *)(dst + stride + 48), r1);
+    const __m128i r2 = _mm_shuffle_epi32(left4, 0xaa);
+    const __m128i r3 = _mm_shuffle_epi32(left4, 0xff);
+    _mm_store_si128((__m128i *)(dst + stride * 2), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 2 + 16), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 2 + 32), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 2 + 48), r2);
+    _mm_store_si128((__m128i *)(dst + stride * 3), r3);
+    _mm_store_si128((__m128i *)(dst + stride * 3 + 16), r3);
+    _mm_store_si128((__m128i *)(dst + stride * 3 + 32), r3);
+    _mm_store_si128((__m128i *)(dst + stride * 3 + 48), r3);
+    left += 4;
+    dst += stride * 4;
+  } while (--i);
+}
+
+void aom_h_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  h_predictor_64xh(dst, stride, left, 64);
+}
+
+void aom_h_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  h_predictor_64xh(dst, stride, left, 32);
+}
+
+void aom_h_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  (void)above;
+  h_predictor_64xh(dst, stride, left, 16);
+}
