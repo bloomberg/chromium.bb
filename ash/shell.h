@@ -93,6 +93,7 @@ class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class DetachableBaseHandler;
+class DetachableBaseNotificationController;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
@@ -667,6 +668,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
+  std::unique_ptr<DetachableBaseNotificationController>
+      detachable_base_notification_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImeController> ime_controller_;
