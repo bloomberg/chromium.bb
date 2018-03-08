@@ -35,6 +35,20 @@ camera.bg.DEFAULT_WIDTH = 640;
 camera.bg.DEFAULT_HEIGHT = 360;
 
 /**
+ * Minimum width of the window in pixels.
+ * @type {number}
+ * @const
+ */
+camera.bg.MIN_WIDTH = 360;
+
+/**
+ * Minimum height of the window in pixels.
+ * @type {number}
+ * @const
+ */
+camera.bg.MIN_HEIGHT = 200;
+
+/**
  * Top bar color of the window.
  * @type {string}
  * @const
@@ -64,6 +78,8 @@ camera.bg.create = function() {
     outerBounds: {
       width: camera.bg.DEFAULT_WIDTH,
       height: camera.bg.DEFAULT_HEIGHT,
+      minWidth: camera.bg.MIN_WIDTH,
+      minHeight: camera.bg.MIN_HEIGHT,
       left: Math.round(
           (window.screen.availWidth - camera.bg.DEFAULT_WIDTH) / 2),
       top: Math.round(
