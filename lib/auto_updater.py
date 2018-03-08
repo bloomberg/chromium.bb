@@ -441,10 +441,25 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     else:
       return True, stateful_update_path
 
+  def _StartUpdateEngineIfNotRunning(self, device):
+    """Starts update-engine service if it is not running.
+
+    Args:
+      device: a ChromiumOSDevice object, defines the target root device.
+    """
+    try:
+      result = device.RunCommand(['start', 'update-engine'],
+                                 capture_output=True, log_output=True).output
+      if 'start/running' in result:
+        logging.info('update engine was not running, so we started it.')
+    except cros_build_lib.RunCommandError as e:
+      if e.result.returncode != 1 or 'is already running' not in e.result.error:
+        raise e
 
   def SetupRootfsUpdate(self):
     """Makes sure |device| is ready for rootfs update."""
     logging.info('Checking if update engine is idle...')
+    self._StartUpdateEngineIfNotRunning(self.device)
     status, = self.GetUpdateStatus(self.device)
     if status == UPDATE_STATUS_UPDATED_NEED_REBOOT:
       logging.info('Device needs to reboot before updating...')

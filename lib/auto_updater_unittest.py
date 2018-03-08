@@ -286,6 +286,8 @@ class ChromiumOSFlashUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_AU = auto_updater.ChromiumOSFlashUpdater(device, self.payload_dir)
+      self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
+                       '_StartUpdateEngineIfNotRunning')
       self.PatchObject(auto_updater.ChromiumOSFlashUpdater, 'GetUpdateStatus',
                        return_value=('cannot_update', ))
       self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
