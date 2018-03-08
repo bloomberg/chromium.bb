@@ -10,7 +10,7 @@
 Polymer({
   is: 'internet-detail-dialog',
 
-  behaviors: [I18nBehavior],
+  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
 
   properties: {
     /** The network GUID to display details for. */
@@ -275,6 +275,18 @@ Polymer({
     return networkProperties.Type != CrOnc.Type.ETHERNET &&
         networkProperties.ConnectionState !=
         CrOnc.ConnectionState.NOT_CONNECTED;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  shouldShowProxyPolicyIndicator_: function(networkProperties) {
+    var property = this.get('ProxySettings.Type', networkProperties);
+    return !!property &&
+        this.isNetworkPolicyEnforced(
+            /** @type {!CrOnc.ManagedProperty} */ (property));
   },
 
   /**
