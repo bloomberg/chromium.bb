@@ -10,8 +10,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -1392,4 +1395,37 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
       StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
                    PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
   ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
+}
+
+// Validates that prefs::kWasRestarted is automatically reset after next browser
+// start.
+class StartupBrowserCreatorWasRestartedFlag : public InProcessBrowserTest {
+ public:
+  StartupBrowserCreatorWasRestartedFlag() = default;
+  ~StartupBrowserCreatorWasRestartedFlag() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    command_line->AppendSwitchPath(switches::kUserDataDir, temp_dir_.GetPath());
+    std::string json;
+    base::DictionaryValue local_state;
+    local_state.SetBoolean(prefs::kWasRestarted, true);
+    base::JSONWriter::Write(local_state, &json);
+    ASSERT_EQ(json.length(),
+              static_cast<size_t>(base::WriteFile(
+                  temp_dir_.GetPath().Append(chrome::kLocalStateFilename),
+                  json.c_str(), json.length())));
+  }
+
+ private:
+  base::ScopedTempDir temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorWasRestartedFlag);
+};
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWasRestartedFlag, Test) {
+  EXPECT_TRUE(StartupBrowserCreator::WasRestarted());
+  EXPECT_FALSE(
+      g_browser_process->local_state()->GetBoolean(prefs::kWasRestarted));
 }

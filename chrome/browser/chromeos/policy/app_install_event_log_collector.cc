@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/app_install_event_log_collector.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -11,6 +13,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
@@ -80,6 +83,10 @@ void AppInstallEventLogCollector::AddLoginEvent() {
 }
 
 void AppInstallEventLogCollector::AddLogoutEvent() {
+  // Don't log in case session is restared.
+  if (g_browser_process->local_state()->GetBoolean(prefs::kWasRestarted))
+    return;
+
   delegate_->AddForAllPackages(
       CreateSessionChangeEvent(em::AppInstallReportLogEvent::LOGOUT));
 }

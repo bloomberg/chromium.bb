@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -15,6 +19,8 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -71,6 +77,8 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   ~AppInstallEventLogCollectorTest() override = default;
 
   void SetUp() override {
+    RegisterLocalState(pref_service_.registry());
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
     std::unique_ptr<chromeos::FakePowerManagerClient> power_manager_client =
         std::make_unique<chromeos::FakePowerManagerClient>();
     power_manager_client_ = power_manager_client.get();
@@ -99,6 +107,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
     profile_.reset();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
   void SetNetworkState(const std::string& service_path,
@@ -140,6 +149,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   FakeAppInstallEventLogCollectorDelegate delegate_;
+  TestingPrefServiceSimple pref_service_;
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollectorTest);
@@ -202,9 +212,19 @@ TEST_F(AppInstallEventLogCollectorTest, LoginTypes) {
   }
 
   {
-    // Check restart. No log is expected.
+    // Check login after restart. No log is expected.
+    AppInstallEventLogCollector collector(delegate(), profile(), packages_);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kLoginUser);
+    collector.AddLoginEvent();
+    EXPECT_EQ(1, delegate()->add_for_all_count());
+  }
+
+  {
+    // Check logout on restart. No log is expected.
+    AppInstallEventLogCollector collector(delegate(), profile(), packages_);
+    g_browser_process->local_state()->SetBoolean(prefs::kWasRestarted, true);
+    collector.AddLogoutEvent();
     EXPECT_EQ(1, delegate()->add_for_all_count());
   }
 
