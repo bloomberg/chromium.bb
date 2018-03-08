@@ -85,7 +85,8 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
   settings.emplace();
   settings->images_to_skip = {skip_image.stable_id()};
 
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
+                                 std::move(settings));
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
@@ -99,7 +100,8 @@ TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
 
   base::Optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
+                                 std::move(settings));
 
   {
     SkRect rect = SkRect::MakeWH(10, 10);
@@ -127,7 +129,8 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
   settings.emplace();
   settings->image_to_current_frame_index = image_to_frame;
 
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
+                                 std::move(settings));
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
@@ -143,7 +146,8 @@ TEST(PlaybackImageProviderTest, BitmapImages) {
 
   base::Optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
+                                 std::move(settings));
 
   {
     SkIRect rect = SkIRect::MakeWH(10, 10);
@@ -174,7 +178,8 @@ TEST(PlaybackImageProviderTest, TextureImages) {
   MockDecodeCache cache;
   base::Optional<PlaybackImageProvider::Settings> settings;
   settings.emplace();
-  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(),
+                                 std::move(settings));
   {
     SkIRect rect = SkIRect::MakeWH(10, 10);
     SkMatrix matrix = SkMatrix::I();

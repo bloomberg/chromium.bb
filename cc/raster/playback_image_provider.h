@@ -20,8 +20,10 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
  public:
   struct CC_EXPORT Settings {
     Settings();
-    Settings(const Settings& other);
+    Settings(const Settings&) = delete;
+    Settings(Settings&&);
     ~Settings();
+    Settings& operator=(Settings&&);
 
     // The set of image ids to skip during raster.
     PaintImageIdFlatSet images_to_skip;
@@ -34,7 +36,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
   // If no settings are provided, all images are skipped during rasterization.
   PlaybackImageProvider(ImageDecodeCache* cache,
                         const gfx::ColorSpace& target_color_space,
-                        base::Optional<Settings> settings);
+                        base::Optional<Settings>&& settings);
   ~PlaybackImageProvider() override;
 
   PlaybackImageProvider(PlaybackImageProvider&& other);
