@@ -184,6 +184,7 @@ public class VrShellDelegate
     private boolean mAutopresentWebVr;
     // If set to true, we attempt to enter VR mode when the activity is resumed.
     private boolean mEnterVrOnStartup;
+    private boolean mExitCctOnStartup;
 
     private boolean mInternalIntentUsedToStartVr;
 
@@ -195,6 +196,9 @@ public class VrShellDelegate
 
     // Gets run when the user exits VR mode by clicking the 'x' button or system UI back button.
     private Runnable mCloseButtonListener;
+
+    // Gets run when the user exits VR mode by clicking the Gear button.
+    private Runnable mSettingsButtonListener;
 
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
 
@@ -437,6 +441,7 @@ public class VrShellDelegate
                         && activitySupportsVrBrowsing(activity)) {
                     registerDaydreamIntent(api, activity);
                 }
+                api.close();
             }
         }
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -456,6 +461,7 @@ public class VrShellDelegate
         VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
         if (api == null) return;
         unregisterDaydreamIntent(api);
+        api.close();
     }
 
     public static void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
@@ -1318,6 +1324,7 @@ public class VrShellDelegate
     protected void onResume() {
         if (DEBUG_LOGS) Log.i(TAG, "onResume");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
+        if (maybeCloseVrCct()) return;
         if (mNeedsAnimationCancel) {
             // At least on some devices, like the Samsung S8+, a Window animation is run after our
             // Activity is shown that fades between a stale screenshot from before pausing to the
@@ -1460,6 +1467,7 @@ public class VrShellDelegate
     }
 
     private void onStart() {
+        if (maybeCloseVrCct()) return;
         mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
         if (mInVr && !mVrDaydreamApi.isInVrSession()) shutdownVr(true, false);
@@ -1469,6 +1477,14 @@ public class VrShellDelegate
         if (DEBUG_LOGS) Log.i(TAG, "onStop");
         mStopped = true;
         assert !mCancellingEntryAnimation;
+    }
+
+    private boolean maybeCloseVrCct() {
+        if (!mExitCctOnStartup) return false;
+        mVrDaydreamApi.launchVrHomescreen();
+        assert mActivity instanceof CustomTabActivity;
+        ((CustomTabActivity) mActivity).finishAndClose(false);
+        return true;
     }
 
     private boolean onBackPressedInternal() {
@@ -1646,10 +1662,14 @@ public class VrShellDelegate
         mCloseButtonListener = new Runnable() {
             @Override
             public void run() {
-                if (!startedForAutopresentation) {
-                    shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
-                    return;
-                }
+                // Avoid launching DD home when we shutdown VR.
+                mAutopresentWebVr = false;
+
+                shutdownVr(true /* disableVrMode */,
+                        !startedForAutopresentation /* stayingInChrome */);
+
+                if (!startedForAutopresentation) return;
+
                 // We override the default behavior of the close button because we may stay in
                 // Chrome after exiting VR. This is not true for auto-presented content and we want
                 // to do what Daydream does for other VR apps by default (which is currently to open
@@ -1658,10 +1678,32 @@ public class VrShellDelegate
                 homeIntent.addCategory(Intent.CATEGORY_HOME);
                 homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mActivity.startActivity(homeIntent);
-                return;
+
+                ((CustomTabActivity) mActivity).finishAndClose(false);
             }
         };
         return mCloseButtonListener;
+    }
+
+    /**
+     * Returns the callback for the user-triggered close button to exit VR mode.
+     */
+    /* package */ Runnable getVrSettingsButtonListener() {
+        if (mSettingsButtonListener != null) return mSettingsButtonListener;
+        final boolean startedForAutopresentation = mAutopresentWebVr;
+        mSettingsButtonListener = new Runnable() {
+            @Override
+            public void run() {
+                // Avoid launching DD home when we shutdown VR.
+                mAutopresentWebVr = false;
+
+                shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
+
+                if (startedForAutopresentation) mExitCctOnStartup = true;
+                mVrDaydreamApi.launchGvrSettings();
+            }
+        };
+        return mSettingsButtonListener;
     }
 
     /**

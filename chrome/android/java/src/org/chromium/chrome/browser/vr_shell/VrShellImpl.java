@@ -166,6 +166,7 @@ public class VrShellImpl
         setPresentationView(mPresentationView);
 
         getUiLayout().setCloseButtonListener(mDelegate.getVrCloseButtonListener());
+        getUiLayout().setSettingsButtonListener(mDelegate.getVrSettingsButtonListener());
 
         if (mVrBrowsingEnabled) injectVrHostedUiView();
 

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr_shell.TestFramework;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
+import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrTestFramework;
@@ -215,7 +216,9 @@ public class TransitionUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                wrapper.createVrDaydreamApi(activity).launchInVr(intent);
+                VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
+                api.launchInVr(intent);
+                api.close();
             }
         });
     }

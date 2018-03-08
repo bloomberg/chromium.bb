@@ -13,6 +13,7 @@ import android.os.StrictMode;
 
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
+import com.google.vr.ndk.base.GvrUiLayout;
 
 import org.chromium.base.Log;
 import org.chromium.ui.base.WindowAndroid;
@@ -137,6 +138,15 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     @Override
     public boolean isInVrSession() {
         return DaydreamApi.isInVrSession(mContext);
+    }
+
+    @Override
+    public void launchGvrSettings() {
+        Activity activity = WindowAndroid.activityFromContext(mContext);
+        if (activity == null) {
+            throw new IllegalStateException("Activity is null");
+        }
+        GvrUiLayout.launchOrInstallGvrApp(activity);
     }
 
     @Override
