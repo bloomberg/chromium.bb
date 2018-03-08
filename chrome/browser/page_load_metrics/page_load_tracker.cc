@@ -593,12 +593,6 @@ void PageLoadTracker::MediaStartedPlaying(
     observer->MediaStartedPlaying(video_type, is_in_main_frame);
 }
 
-void PageLoadTracker::OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
-                                                base::TimeDelta actual_delay) {
-  for (const auto& observer : observers_)
-    observer->OnNavigationDelayComplete(scheduled_delay, actual_delay);
-}
-
 void PageLoadTracker::OnTimingChanged() {
   DCHECK(!last_dispatched_merged_page_timing_->Equals(
       metrics_update_dispatcher_.timing()));
