@@ -213,8 +213,10 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     // is not scaled for the (unexpected) smaller button size, and the button's
     // edges appear cut off.  To fix this, manually set the background to scale
     // to the button size when it would have clipped.
-    ApplyCssToContext(button_context,
-                      ".titlebutton { background-size: contain; }");
+    if (GtkVersionCheck(3, 20)) {
+      ApplyCssToContext(button_context,
+                        ".titlebutton { background-size: contain; }");
+    }
 
     // Gtk doesn't support fractional scale factors, but chrome does.
     // Rendering the button background and border at a fractional
