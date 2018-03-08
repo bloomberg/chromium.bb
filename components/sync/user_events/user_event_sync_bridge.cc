@@ -145,6 +145,7 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
 }
 
 void UserEventSyncBridge::DisableSync() {
+  ModelTypeSyncBridge::DisableSync();
   // No data should be retained through sign out.
   store_->ReadAllData(base::BindOnce(
       &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this)));
@@ -213,15 +214,6 @@ void UserEventSyncBridge::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError(*error);
   } else {
-    if (!metadata_batch->GetModelTypeState().initial_sync_done()) {
-      // We have never initialized before, force it to true. We are not going to
-      // ever have a GetUpdates because our type is commit only.
-      // TODO(skym): Do we need to worry about saving this back ourselves? Or
-      // does that get taken care for us?
-      ModelTypeState state = metadata_batch->GetModelTypeState();
-      state.set_initial_sync_done(true);
-      metadata_batch->SetModelTypeState(state);
-    }
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
   }
 }

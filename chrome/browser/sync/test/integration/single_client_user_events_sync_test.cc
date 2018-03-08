@@ -254,7 +254,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
 
   event_service->RecordUserEvent(testEvent1);
   event_service->RecordUserEvent(consent1);
+
+  // Wait until the first two events are committed before disabling sync,
+  // because disabled TYPED_URLS also disables user event sync, dropping all
+  // uncommitted consents.
+  EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1}));
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
+
   event_service->RecordUserEvent(testEvent2);
   event_service->RecordUserEvent(consent2);
   ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS));

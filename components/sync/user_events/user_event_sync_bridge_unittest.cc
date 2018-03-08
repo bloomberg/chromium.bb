@@ -13,50 +13,45 @@
 #include "base/run_loop.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/model/data_batch.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
-#include "components/sync/model/recording_model_type_change_processor.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_pb::UserEventSpecifics;
-
 namespace syncer {
-
 namespace {
 
-void VerifyEqual(const UserEventSpecifics& s1, const UserEventSpecifics& s2) {
-  EXPECT_EQ(s1.event_time_usec(), s2.event_time_usec());
-  EXPECT_EQ(s1.navigation_id(), s2.navigation_id());
-  EXPECT_EQ(s1.session_id(), s2.session_id());
-}
+using sync_pb::UserEventSpecifics;
+using testing::ElementsAre;
+using testing::Invoke;
+using testing::IsEmpty;
+using testing::IsNull;
+using testing::NotNull;
+using testing::Pair;
+using testing::Pointee;
+using testing::Return;
+using testing::SaveArg;
+using testing::SizeIs;
+using testing::UnorderedElementsAre;
+using testing::_;
 
-void VerifyDataBatchCount(int expected_count,
-                          std::unique_ptr<DataBatch> batch) {
-  int actual_count = 0;
-  while (batch->HasNext()) {
-    ++actual_count;
-    batch->Next();
+MATCHER_P(MatchesUserEvent, expected, "") {
+  if (!arg.has_user_event()) {
+    *result_listener << "which is not a user event";
+    return false;
   }
-  EXPECT_EQ(expected_count, actual_count);
-}
-
-void VerifyDataBatch(std::map<std::string, UserEventSpecifics> expected,
-                     std::unique_ptr<DataBatch> batch) {
-  while (batch->HasNext()) {
-    const KeyAndData& pair = batch->Next();
-    auto iter = expected.find(pair.first);
-    ASSERT_NE(iter, expected.end());
-    VerifyEqual(iter->second, pair.second->specifics.user_event());
-    // Removing allows us to verify we don't see the same item multiple times,
-    // and that we saw everything we expected.
-    expected.erase(iter);
+  const UserEventSpecifics& actual = arg.user_event();
+  if (actual.event_time_usec() != expected.event_time_usec()) {
+    return false;
   }
-  EXPECT_TRUE(expected.empty());
-}
-
-base::Callback<void(std::unique_ptr<DataBatch> batch)> VerifyCallback(
-    std::map<std::string, UserEventSpecifics> expected) {
-  return base::Bind(&VerifyDataBatch, expected);
+  if (actual.navigation_id() != expected.navigation_id()) {
+    return false;
+  }
+  if (actual.session_id() != expected.session_id()) {
+    return false;
+  }
+  return true;
 }
 
 UserEventSpecifics CreateSpecifics(int64_t event_time_usec,
@@ -102,14 +97,8 @@ class UserEventSyncBridgeTest : public testing::Test {
   UserEventSyncBridgeTest() {
     bridge_ = std::make_unique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_),
-        &test_global_id_mapper_);
-  }
-
-  ~UserEventSyncBridgeTest() override {
-    // Get[All]Data() calls are async, so this will run the verification they
-    // call in their callbacks.
-    base::RunLoop().RunUntilIdle();
+        mock_processor_.FactoryForBridgeTest(), &test_global_id_mapper_);
+    ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   }
 
   std::string GetStorageKey(const UserEventSpecifics& specifics) {
@@ -119,67 +108,135 @@ class UserEventSyncBridgeTest : public testing::Test {
   }
 
   UserEventSyncBridge* bridge() { return bridge_.get(); }
-  RecordingModelTypeChangeProcessor* processor() { return processor_; }
+  MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
   TestGlobalIdMapper* mapper() { return &test_global_id_mapper_; }
+
+  std::map<std::string, sync_pb::EntitySpecifics> GetAllData() {
+    base::RunLoop loop;
+    std::unique_ptr<DataBatch> batch;
+    bridge_->GetAllData(base::BindOnce(
+        [](base::RunLoop* loop, std::unique_ptr<DataBatch>* out_batch,
+           std::unique_ptr<DataBatch> batch) {
+          *out_batch = std::move(batch);
+          loop->Quit();
+        },
+        &loop, &batch));
+    loop.Run();
+    EXPECT_NE(nullptr, batch);
+
+    std::map<std::string, sync_pb::EntitySpecifics> storage_key_to_specifics;
+    if (batch != nullptr) {
+      while (batch->HasNext()) {
+        const syncer::KeyAndData& pair = batch->Next();
+        storage_key_to_specifics[pair.first] = pair.second->specifics;
+      }
+    }
+    return storage_key_to_specifics;
+  }
+
+  std::unique_ptr<sync_pb::EntitySpecifics> GetData(
+      const std::string& storage_key) {
+    base::RunLoop loop;
+    std::unique_ptr<DataBatch> batch;
+    bridge_->GetData(
+        {storage_key},
+        base::BindOnce(
+            [](base::RunLoop* loop, std::unique_ptr<DataBatch>* out_batch,
+               std::unique_ptr<DataBatch> batch) {
+              *out_batch = std::move(batch);
+              loop->Quit();
+            },
+            &loop, &batch));
+    loop.Run();
+    EXPECT_NE(nullptr, batch);
+
+    std::unique_ptr<sync_pb::EntitySpecifics> specifics;
+    if (batch != nullptr && batch->HasNext()) {
+      const syncer::KeyAndData& pair = batch->Next();
+      specifics =
+          std::make_unique<sync_pb::EntitySpecifics>(pair.second->specifics);
+      EXPECT_FALSE(batch->HasNext());
+    }
+    return specifics;
+  }
 
  private:
   std::unique_ptr<UserEventSyncBridge> bridge_;
-  RecordingModelTypeChangeProcessor* processor_;
+  testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper test_global_id_mapper_;
   base::MessageLoop message_loop_;
 };
 
 TEST_F(UserEventSyncBridgeTest, MetadataIsInitialized) {
+  EXPECT_CALL(*processor(), DoModelReadyToSync(NotNull()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(processor()->metadata()->GetModelTypeState().initial_sync_done());
 }
 
 TEST_F(UserEventSyncBridgeTest, SingleRecord) {
   const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
+  std::string storage_key;
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
-  EXPECT_EQ(1u, processor()->put_multimap().size());
 
-  const std::string storage_key = processor()->put_multimap().begin()->first;
-  bridge()->GetData({storage_key}, VerifyCallback({{storage_key, specifics}}));
-  bridge()->GetData({"bogus"}, base::Bind(&VerifyDataBatchCount, 0));
-  bridge()->GetAllData(VerifyCallback({{storage_key, specifics}}));
+  EXPECT_THAT(GetData(storage_key), Pointee(MatchesUserEvent(specifics)));
+  EXPECT_THAT(GetData("bogus"), IsNull());
+  EXPECT_THAT(GetAllData(),
+              ElementsAre(Pair(storage_key, MatchesUserEvent(specifics))));
+}
 
+TEST_F(UserEventSyncBridgeTest, DisableSync) {
+  const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
+  ASSERT_THAT(GetAllData(), SizeIs(1));
+
+  EXPECT_CALL(*processor(), DisableSync());
   bridge()->DisableSync();
 
   // Disabling deletes records through multiple round trips, if we quickly call
   // GetAllData() we're going to beat the deletions to the storage task.
   base::RunLoop().RunUntilIdle();
 
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
-  EXPECT_EQ(0u, processor()->delete_set().size());
+  EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
 TEST_F(UserEventSyncBridgeTest, MultipleRecords) {
+  std::set<std::string> unique_storage_keys;
+  EXPECT_CALL(*processor(), DoPut(_, _, _))
+      .Times(4)
+      .WillRepeatedly(
+          Invoke([&unique_storage_keys](
+                     const std::string& storage_key, EntityData* entity_data,
+                     MetadataChangeList* metadata_change_list) {
+            unique_storage_keys.insert(storage_key);
+          }));
+
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 1u, 1u));
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 1u, 2u));
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 2u));
   bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
 
-  EXPECT_EQ(4u, processor()->put_multimap().size());
-  std::set<std::string> unique_storage_keys;
-  for (const auto& kv : processor()->put_multimap()) {
-    unique_storage_keys.insert(kv.first);
-  }
   EXPECT_EQ(2u, unique_storage_keys.size());
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 2));
+  EXPECT_THAT(GetAllData(), SizeIs(2));
 }
 
 TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
+  std::string storage_key1;
+  std::string storage_key2;
+  EXPECT_CALL(*processor(), DoPut(_, _, _))
+      .WillOnce(SaveArg<0>(&storage_key1))
+      .WillOnce(SaveArg<0>(&storage_key2));
+
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 1u, 1u));
   bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 2));
+  EXPECT_THAT(GetAllData(), SizeIs(2));
 
-  const std::string storage_key = processor()->put_multimap().begin()->first;
   auto error_on_delete =
       bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                 {EntityChange::CreateDelete(storage_key)});
+                                 {EntityChange::CreateDelete(storage_key1)});
   EXPECT_FALSE(error_on_delete);
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 1));
+  EXPECT_THAT(GetAllData(), SizeIs(1));
+  EXPECT_THAT(GetData(storage_key1), IsNull());
+  EXPECT_THAT(GetData(storage_key2), NotNull());
 }
 
 TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
@@ -188,31 +245,34 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
   int64_t third_id = 13;
   int64_t fourth_id = 14;
 
+  std::string storage_key;
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
+
   // This id update should be applied to the event as it is initially recorded.
   mapper()->ChangeId(first_id, second_id);
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, first_id, 2u));
-  const std::string storage_key = processor()->put_multimap().begin()->first;
-  EXPECT_EQ(1u, processor()->put_multimap().size());
-  bridge()->GetAllData(
-      VerifyCallback({{storage_key, CreateSpecifics(1u, second_id, 2u)}}));
+  EXPECT_THAT(GetAllData(),
+              ElementsAre(Pair(storage_key, MatchesUserEvent(CreateSpecifics(
+                                                1u, second_id, 2u)))));
 
   // This id update is done while the event is "in flight", and should result in
   // it being updated and re-sent to sync.
+  EXPECT_CALL(*processor(), DoPut(storage_key, _, _));
   mapper()->ChangeId(second_id, third_id);
-  EXPECT_EQ(2u, processor()->put_multimap().size());
-  bridge()->GetAllData(
-      VerifyCallback({{storage_key, CreateSpecifics(1u, third_id, 2u)}}));
+  EXPECT_THAT(GetAllData(),
+              ElementsAre(Pair(storage_key, MatchesUserEvent(CreateSpecifics(
+                                                1u, third_id, 2u)))));
   auto error_on_delete =
       bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                                  {EntityChange::CreateDelete(storage_key)});
   EXPECT_FALSE(error_on_delete);
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
+  EXPECT_THAT(GetAllData(), IsEmpty());
 
   // This id update should be ignored, since we received commit confirmation
   // above.
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).Times(0);
   mapper()->ChangeId(third_id, fourth_id);
-  EXPECT_EQ(2u, processor()->put_multimap().size());
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
+  EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
 TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
@@ -220,37 +280,46 @@ TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
   int64_t second_id = 12;
   int64_t third_id = 13;
   int64_t fourth_id = 14;
-  const UserEventSpecifics specifics1 = CreateSpecifics(1u, first_id, 2u);
-  const UserEventSpecifics specifics2 = CreateSpecifics(1u, first_id, 2u);
-  const UserEventSpecifics specifics3 = CreateSpecifics(1u, first_id, 2u);
+  const UserEventSpecifics specifics1 = CreateSpecifics(101u, first_id, 2u);
+  const UserEventSpecifics specifics2 = CreateSpecifics(102u, second_id, 4u);
+  const UserEventSpecifics specifics3 = CreateSpecifics(103u, third_id, 6u);
   const std::string key1 = GetStorageKey(specifics1);
   const std::string key2 = GetStorageKey(specifics2);
   const std::string key3 = GetStorageKey(specifics3);
+  ASSERT_NE(key1, key2);
+  ASSERT_NE(key1, key3);
+  ASSERT_NE(key2, key3);
 
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics1));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics2));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics3));
-  bridge()->GetAllData(VerifyCallback(
-      {{key1, specifics1}, {key2, specifics2}, {key3, specifics3}}));
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(Pair(key1, MatchesUserEvent(specifics1)),
+                                   Pair(key2, MatchesUserEvent(specifics2)),
+                                   Pair(key3, MatchesUserEvent(specifics3))));
 
   mapper()->ChangeId(second_id, fourth_id);
-  bridge()->GetAllData(
-      VerifyCallback({{key1, specifics1},
-                      {key2, CreateSpecifics(3u, fourth_id, 4u)},
-                      {key3, specifics3}}));
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(key1, MatchesUserEvent(specifics1)),
+          Pair(key2, MatchesUserEvent(CreateSpecifics(102u, fourth_id, 4u))),
+          Pair(key3, MatchesUserEvent(specifics3))));
 
   mapper()->ChangeId(first_id, fourth_id);
   mapper()->ChangeId(third_id, fourth_id);
-  bridge()->GetAllData(
-      VerifyCallback({{key1, CreateSpecifics(1u, fourth_id, 2u)},
-                      {key2, CreateSpecifics(3u, fourth_id, 4u)},
-                      {key3, CreateSpecifics(5u, fourth_id, 6u)}}));
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(key1, MatchesUserEvent(CreateSpecifics(101u, fourth_id, 2u))),
+          Pair(key2, MatchesUserEvent(CreateSpecifics(102u, fourth_id, 4u))),
+          Pair(key3, MatchesUserEvent(CreateSpecifics(103u, fourth_id, 6u)))));
 }
 
 TEST_F(UserEventSyncBridgeTest, RecordBeforeMetadataLoads) {
-  processor()->SetIsTrackingMetadata(false);
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 3u));
-  bridge()->GetAllData(VerifyCallback({}));
+  EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
 }  // namespace

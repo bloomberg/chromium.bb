@@ -713,6 +713,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, LocalCreateItem) {
 TEST_F(ClientTagBasedModelTypeProcessorTest, CommitOnlySimple) {
   ResetState(false, true);
   InitializeToReadyState();
+  EXPECT_TRUE(db().model_type_state().initial_sync_done());
 
   bridge()->WriteItem(kKey1, kValue1);
   worker()->VerifyPendingCommits({kHash1});
