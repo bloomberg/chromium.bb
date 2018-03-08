@@ -25,6 +25,8 @@ source_set("lib") {
     "service.h",
     "service_factory.cc",
     "service_factory.h",
+    "stream_factory.cc",
+    "stream_factory.h",
     "system_info.cc",
     "system_info.h",
   ]
