@@ -1106,12 +1106,14 @@ int UDPSocketPosix::SetDiffServCodePoint(DiffServCodePoint dscp) {
   if (dscp == DSCP_NO_CHANGE) {
     return OK;
   }
-  int rv;
+
   int dscp_and_ecn = dscp << 2;
-  if (addr_family_ == AF_INET) {
-    rv = setsockopt(socket_, IPPROTO_IP, IP_TOS,
-                    &dscp_and_ecn, sizeof(dscp_and_ecn));
-  } else {
+  // Set the IPv4 option in all cases to support dual-stack sockets.
+  int rv = setsockopt(socket_, IPPROTO_IP, IP_TOS, &dscp_and_ecn,
+                      sizeof(dscp_and_ecn));
+  if (addr_family_ == AF_INET6) {
+    // In the IPv6 case, the previous socksetopt may fail because of a lack of
+    // dual-stack support. Therefore ignore the previous return value.
     rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_TCLASS,
                     &dscp_and_ecn, sizeof(dscp_and_ecn));
   }
