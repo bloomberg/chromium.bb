@@ -103,14 +103,15 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   const base::TimeTicks render_time =
       base::TimeTicks() + incoming_timestamp + time_diff_;
 
-  TRACE_EVENT1("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
-               "Ideal Render Instant", render_time.ToInternalValue());
-
   CHECK_NE(media::kNoTimestamp, incoming_timestamp);
   if (start_timestamp_ == media::kNoTimestamp)
     start_timestamp_ = incoming_timestamp;
   const base::TimeDelta elapsed_timestamp =
       incoming_timestamp - start_timestamp_;
+
+  TRACE_EVENT2("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
+               "Ideal Render Instant", render_time.ToInternalValue(),
+               "Timestamp", elapsed_timestamp.InMicroseconds());
 
   scoped_refptr<media::VideoFrame> video_frame;
   scoped_refptr<webrtc::VideoFrameBuffer> buffer(

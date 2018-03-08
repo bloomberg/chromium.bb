@@ -209,6 +209,9 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
     scoped_refptr<media::VideoFrame> frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(current_frame_lock_);
+  TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::EnqueueFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "Timestamp",
+                       frame->timestamp().InMicroseconds());
   ++total_frame_count_;
 
   // With algorithm off, just let |current_frame_| hold the incoming |frame|.
@@ -301,6 +304,9 @@ bool WebMediaPlayerMSCompositor::HasCurrentFrame() {
 scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   DVLOG(3) << __func__;
   base::AutoLock auto_lock(current_frame_lock_);
+  TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::GetCurrentFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "Timestamp",
+                       current_frame_->timestamp().InMicroseconds());
   current_frame_used_by_compositor_ = true;
   return current_frame_;
 }
@@ -396,6 +402,9 @@ void WebMediaPlayerMSCompositor::Render(base::TimeTicks deadline_min,
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   current_frame_lock_.AssertAcquired();
+  TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::SetCurrentFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "Timestamp",
+                       frame->timestamp().InMicroseconds());
 
   if (!current_frame_used_by_compositor_)
     ++dropped_frame_count_;
