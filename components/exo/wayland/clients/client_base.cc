@@ -108,7 +108,7 @@ void RegistryHandler(void* data,
         wl_registry_bind(registry, id, &zaura_shell_interface, 1)));
   } else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
     globals->linux_dmabuf.reset(static_cast<zwp_linux_dmabuf_v1*>(
-        wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 1)));
+        wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 2)));
   } else if (strcmp(interface, "wl_subcompositor") == 0) {
     globals->subcompositor.reset(static_cast<wl_subcompositor*>(
         wl_registry_bind(registry, id, &wl_subcompositor_interface, 1)));
