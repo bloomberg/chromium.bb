@@ -351,9 +351,11 @@ linked to multiple bugs, an entry for each bug is needed.
 
 A list of supported conditions can be found [here](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
 
-Multiple conditions when listed in a single expectation are treated as logical
-_AND_ so a platform must meet all conditions to be disabled. Each failing
-platform requires its own expectations entry.
+When multiple conditions are listed in a single expectation they are treated
+as a logical _AND_, so the platform must meet _all_ conditions to be disabled.
+
+If you need to disable a single story on multiple different platforms, you must
+list each platform separately on its own line as a separate entry.
 
 To determine which stories are failing in a given run, go to the buildbot page
 for that run and search for `Unexpected failures` in the failing test entry.
