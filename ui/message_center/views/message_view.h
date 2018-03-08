@@ -62,6 +62,7 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   virtual void SetExpanded(bool expanded);
   virtual bool IsExpanded() const;
+  virtual bool IsAutoExpandingAllowed() const;
   virtual bool IsManuallyExpandedOrCollapsed() const;
   virtual void SetManuallyExpandedOrCollapsed(bool value);
 

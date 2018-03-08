@@ -179,7 +179,8 @@ void MessagePopupCollection::UpdateWidgets() {
     // Create top-level notification.
     MessageView* view = MessageViewFactory::Create(notification, true);
     observed_views_.Add(view);
-    view->SetExpanded(true);
+    if (!view->IsManuallyExpandedOrCollapsed())
+      view->SetExpanded(view->IsAutoExpandingAllowed());
 
 #if !defined(OS_CHROMEOS)
     view->set_context_menu_controller(context_menu_controller_.get());

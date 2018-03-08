@@ -433,17 +433,23 @@ void MessageListView::ExpandTopNotification() {
     if (!IsValidChild(view))
       continue;
 
-    if (is_top) {
-      // Expands the notification at top if its expand status is never manually
-      // changed.
-      if (!view->IsManuallyExpandedOrCollapsed() && !view->IsExpanded())
-        view->SetExpanded(true);
-      is_top = false;
-    } else {
-      // Other notifications should be collapsed.
-      if (!view->IsManuallyExpandedOrCollapsed() && view->IsExpanded())
-        view->SetExpanded(false);
-    }
+    if (view->IsManuallyExpandedOrCollapsed())
+      continue;
+
+    // For top notification:
+    // - IsAutoExpandingAllowed() == true:
+    //   Expands the notification at top if its expand status is never manually
+    //   changed if it's allowed.
+    // - IsAutoExpandingAllowed() == false:
+    //   Collapse explicitly if the notification is not allowed to expand.
+    //   This is necessary for the case that the notification is promoted to
+    //   BUNDLED type and gets not-allowed to expand.
+    // For other notifications:
+    // - Should be collapsed.
+    view->SetExpanded(is_top && view->IsAutoExpandingAllowed());
+
+    // The non first notifications is not top.
+    is_top = false;
   }
 }
 
