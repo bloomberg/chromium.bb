@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (10,31) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
-    LayoutText {#text} at (0,0) size 73x16
-      text run at (0,0) width 73: "Test Passed"
+    LayoutText {#text} at (0,0) size 72x16
+      text run at (0,0) width 72: "Test Passed"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 2 {INPUT} of body

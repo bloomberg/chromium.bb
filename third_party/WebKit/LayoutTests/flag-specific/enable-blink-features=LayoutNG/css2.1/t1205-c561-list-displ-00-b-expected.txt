@@ -4,14 +4,14 @@ layer at (0,0) size 800x220
   LayoutNGBlockFlow {HTML} at (0,0) size 800x220
     LayoutNGBlockFlow {BODY} at (8,16) size 784x196
       LayoutNGBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 756x19
-          text run at (0,0) width 756: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
+        LayoutText {#text} at (0,0) size 755x19
+          text run at (0,0) width 755: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
       LayoutNGListItem {DIV} at (0,36) size 784x20 [color=#000080]
         LayoutInline (anonymous) at (0,0) size 16x19
           LayoutText (anonymous) at (0,0) size 16x19
             text run at (0,0) width 16: "1. "
-        LayoutText {#text} at (15,0) size 152x19
-          text run at (15,0) width 152: "This should be line one."
+        LayoutText {#text} at (16,0) size 151x19
+          text run at (16,0) width 151: "This should be line one."
       LayoutNGBlockFlow {DIV} at (0,56) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 168x19
           text run at (0,0) width 168: "2. This should be line two."
@@ -20,13 +20,13 @@ layer at (0,0) size 800x220
           LayoutText {#text} at (0,0) size 94x19
             text run at (0,0) width 94: "3. This should "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutInline {DIV} at (0,0) size 82x19 [color=#000080]
-          LayoutText {#text} at (93,0) size 82x19
-            text run at (93,0) width 82: "be line three."
+        LayoutInline {DIV} at (0,0) size 81x19 [color=#000080]
+          LayoutText {#text} at (94,0) size 81x19
+            text run at (94,0) width 81: "be line three."
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,96) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 169x19
-          text run at (0,0) width 169: "4. This should be line four."
+        LayoutText {#text} at (0,0) size 170x19
+          text run at (0,0) width 170: "4. This should be line four."
       LayoutNGBlockFlow {DIV} at (0,116) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 168x19
           text run at (0,0) width 168: "5. This should be line five."

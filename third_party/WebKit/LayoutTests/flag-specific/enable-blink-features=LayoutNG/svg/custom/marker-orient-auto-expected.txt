@@ -5,7 +5,7 @@ layer at (0,0) size 800x561
     LayoutNGBlockFlow {BODY} at (8,8) size 784x545
       LayoutText {#text} at (0,0) size 779x39
         text run at (0,0) width 779: "Test for wkbug.com/112054. This test passes if the green star has orange markers pointing outside only and the blue star has"
-        text run at (0,20) width 229: "orange markers pointing inside only."
+        text run at (0,20) width 228: "orange markers pointing inside only."
       LayoutBR {BR} at (228,20) size 0x0
       LayoutSVGRoot {svg} at (0,40) size 500x500
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=auto]

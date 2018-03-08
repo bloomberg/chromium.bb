@@ -4,12 +4,12 @@ layer at (0,0) size 800x380
   LayoutNGBlockFlow {HTML} at (0,0) size 800x380
     LayoutNGBlockFlow {BODY} at (8,16) size 784x348
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 307x19
-          text run at (0,0) width 307: "This test is a basic check for using text-overflow."
+        LayoutText {#text} at (0,0) size 306x19
+          text run at (0,0) width 306: "This test is a basic check for using text-overflow."
       LayoutNGBlockFlow {P} at (0,36) size 784x108
         LayoutText {#text} at (0,0) size 481x19
           text run at (0,0) width 481: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
-        LayoutBR {BR} at (480,0) size 0x0
+        LayoutBR {BR} at (481,0) size 0x0
         LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
@@ -47,7 +47,7 @@ layer at (0,0) size 800x380
       LayoutNGBlockFlow {P} at (0,160) size 784x108
         LayoutText {#text} at (0,0) size 536x19
           text run at (0,0) width 536: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
-        LayoutBR {BR} at (535,0) size 0x0
+        LayoutBR {BR} at (536,0) size 0x0
         LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
