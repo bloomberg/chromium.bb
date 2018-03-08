@@ -76,7 +76,7 @@ public class TouchEventData {
 
         // MotionEvent angle is measured in radians and our API expects a positive value in degrees.
         if (touchPointAngleInRadians < 0.0f) {
-            touchPointAngleInRadians += (2 * Math.PI);
+            touchPointAngleInRadians = (float) (touchPointAngleInRadians + (2 * Math.PI));
         }
         mTouchPointAngleInDegrees = (float) Math.toDegrees(touchPointAngleInRadians);
     }

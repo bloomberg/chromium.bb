@@ -662,8 +662,10 @@ public class BottomSheetContentController
         ViewUtils.getRelativeDrawPosition(rootView, selectedItemView, outPosition);
 
         // Center the star's start position over the icon in the middle of the button.
-        outPosition[0] += selectedItemView.getWidth() / 2.f - starFull.getIntrinsicWidth() / 2.f;
-        outPosition[1] += selectedItemView.getHeight() / 2.f - starFull.getIntrinsicHeight() / 2.f;
+        outPosition[0] = (int) (outPosition[0]
+                + (selectedItemView.getWidth() / 2.f - starFull.getIntrinsicWidth() / 2.f));
+        outPosition[1] = (int) (outPosition[1]
+                + (selectedItemView.getHeight() / 2.f - starFull.getIntrinsicHeight() / 2.f));
 
         for (int i = 0; i < 5; i++) {
             MagicStar star = new MagicStar(getContext(), outPosition[0], outPosition[1], 100 * i,

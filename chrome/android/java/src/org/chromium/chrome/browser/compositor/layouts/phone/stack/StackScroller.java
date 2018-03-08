@@ -252,8 +252,8 @@ public class StackScroller {
             float oldVelocityY = mScrollerY.mCurrVelocity;
             if (Math.signum(velocityX) == Math.signum(oldVelocityX)
                     && Math.signum(velocityY) == Math.signum(oldVelocityY)) {
-                velocityX += oldVelocityX;
-                velocityY += oldVelocityY;
+                velocityX = (int) (velocityX + oldVelocityX);
+                velocityY = (int) (velocityY + oldVelocityY);
             }
         }
 
@@ -411,7 +411,7 @@ public class StackScroller {
                 final float tInf = SPLINE_TIME[index];
                 final float tSup = SPLINE_TIME[index + 1];
                 final float timeCoef = tInf + (x - xInf) / (xSup - xInf) * (tSup - tInf);
-                mDuration *= timeCoef;
+                mDuration = (int) (mDuration * timeCoef);
             }
         }
 

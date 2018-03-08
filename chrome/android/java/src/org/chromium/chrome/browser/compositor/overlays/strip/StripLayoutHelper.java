@@ -393,7 +393,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 float delta = calculateOffsetToMakeTabVisible(tab, true, true, true);
                 // During this resize, mMinScrollOffset will be changing, so the scroll effect
                 // cannot be properly animated. Jump to the new scroll offset instead.
-                mScrollOffset += delta;
+                mScrollOffset = (int) (mScrollOffset + delta);
             }
 
             updateStrip();
@@ -1631,7 +1631,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (shouldAnimate && !mAnimationsDisabledForTesting) {
             mScroller.startScroll(mScrollOffset, 0, (int) delta, 0, time, EXPAND_DURATION_MS);
         } else {
-            mScrollOffset += delta;
+            mScrollOffset = (int) (mScrollOffset + delta);
         }
     }
 

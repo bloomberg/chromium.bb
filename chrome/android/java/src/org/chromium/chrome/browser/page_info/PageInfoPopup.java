@@ -771,8 +771,9 @@ public class PageInfoPopup implements OnClickListener {
                     if (mIsBottomPopup) {
                         // In Chrome Home, the full URL is showing at all times; give the scroll
                         // view a max height so long URLs don't consume the entire screen.
-                        dialogMaxHeight -=
-                                mContext.getResources().getDimension(R.dimen.min_touch_target_size);
+                        dialogMaxHeight = (int) (dialogMaxHeight
+                                - mContext.getResources().getDimension(
+                                          R.dimen.min_touch_target_size));
                     }
 
                     heightMeasureSpec =

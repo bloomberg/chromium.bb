@@ -74,7 +74,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         // factor to make the interaction more intuitive and useful for our scenario.
         ViewConfiguration config = ViewConfiguration.get(context);
         int scaledDoubleTapSlopInPx = config.getScaledDoubleTapSlop();
-        scaledDoubleTapSlopInPx *= DOUBLE_TAP_SLOP_SCALE_FACTOR;
+        scaledDoubleTapSlopInPx = (int) (scaledDoubleTapSlopInPx * DOUBLE_TAP_SLOP_SCALE_FACTOR);
         mDoubleTapSlopSquareInPx = scaledDoubleTapSlopInPx * scaledDoubleTapSlopInPx;
 
         mRenderData.drawCursor = false;

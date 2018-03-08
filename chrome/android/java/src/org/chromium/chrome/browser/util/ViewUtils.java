@@ -94,8 +94,8 @@ public class ViewUtils {
         outPosition[1] = 0;
         if (rootView == null || childView == rootView) return;
         while (childView != null) {
-            outPosition[0] += childView.getX();
-            outPosition[1] += childView.getY();
+            outPosition[0] = (int) (outPosition[0] + childView.getX());
+            outPosition[1] = (int) (outPosition[1] + childView.getY());
             if (childView.getParent() == rootView) break;
             childView = (View) childView.getParent();
         }
