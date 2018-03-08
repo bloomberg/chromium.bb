@@ -198,6 +198,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   }
   bool ShouldBeObservedWhenExiting() const;
 
+  void ResetAnimationStates();
+
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();
 

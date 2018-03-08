@@ -182,6 +182,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       WindowSelectorItem* selected_item,
       WindowSelector::OverviewTransition transition);
 
+  // Reset |selector_item|'s |should_animate_when_entering_|,
+  // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
+  void ResetWindowListAnimationStates();
+
  private:
   class ShieldView;
   friend class WindowSelectorTest;

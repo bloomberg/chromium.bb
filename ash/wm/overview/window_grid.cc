@@ -729,6 +729,11 @@ void WindowGrid::SetWindowListAnimationStates(
   }
 }
 
+void WindowGrid::ResetWindowListAnimationStates() {
+  for (const auto& selector_item : window_list_)
+    selector_item->ResetAnimationStates();
+}
+
 void WindowGrid::InitShieldWidget() {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that

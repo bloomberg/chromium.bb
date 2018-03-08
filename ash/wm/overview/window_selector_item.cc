@@ -1010,6 +1010,12 @@ bool WindowSelectorItem::ShouldBeObservedWhenExiting() const {
   return should_be_observed_when_exiting_;
 }
 
+void WindowSelectorItem::ResetAnimationStates() {
+  should_animate_when_entering_ = true;
+  should_animate_when_exiting_ = true;
+  should_be_observed_when_exiting_ = false;
+}
+
 OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
   return ShouldAnimateWhenExiting()
              ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
