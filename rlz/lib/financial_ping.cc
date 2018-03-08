@@ -288,7 +288,8 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
   // the shutdown condition?
   const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
   base::PostDelayedTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
-                                  base::Bind(&ShutdownCheck, event), kInterval);
+                                  base::BindOnce(&ShutdownCheck, event),
+                                  kInterval);
 }
 
 void PingRlzServer(std::string url,
@@ -417,7 +418,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   auto event = base::MakeRefCounted<RefCountedWaitableEvent>();
 
   base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
-                           base::Bind(&ShutdownCheck, event));
+                           base::BindOnce(&ShutdownCheck, event));
 
   // PingRlzServer must be run in a separate sequence so that the TimedWait()
   // call below does not block the URL fetch response from being handled by
@@ -427,7 +428,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
           {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::BACKGROUND}));
   background_runner->PostTask(FROM_HERE,
-                              base::Bind(&PingRlzServer, url, event));
+                              base::BindOnce(&PingRlzServer, url, event));
 
   bool is_signaled;
   {
