@@ -7,6 +7,7 @@
 #include "ash/ash_constants.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -125,6 +126,9 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
     return true;
   }
 
+  if (ash::Shell::Get()->magnification_controller()->IsEnabled())
+    return true;
+
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
   if (!prefs) {
@@ -133,7 +137,6 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   }
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled) ||
-         prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
          prefs->GetBoolean(prefs::kDockedMagnifierEnabled) ||
          prefs->GetBoolean(prefs::kNightLightEnabled);
 }
