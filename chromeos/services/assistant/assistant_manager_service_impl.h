@@ -25,6 +25,10 @@ class AssistantManagerInternal;
 namespace chromeos {
 namespace assistant {
 
+namespace action {
+class CrosActionModule;
+}  // namespace action
+
 // Implementation of AssistantManagerService based on libassistant.
 class AssistantManagerServiceImpl : public AssistantManagerService,
                                     public AssistantEventObserver {
@@ -49,6 +53,7 @@ class AssistantManagerServiceImpl : public AssistantManagerService,
  private:
   PlatformApiImpl platform_api_;
   CrosDisplayConnection display_connection_;
+  std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;

@@ -45,6 +45,7 @@ source_set("lib") {
 
     deps += [
       "//chromeos/assistant/internal",
+      "//chromeos/assistant/internal/action",
       "//libassistant/contrib/core",
       "//libassistant/contrib/platform/audio",
       "//libassistant/contrib/platform/auth",
