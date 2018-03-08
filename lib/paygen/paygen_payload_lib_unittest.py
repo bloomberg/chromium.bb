@@ -130,6 +130,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen.tgt_image_file, '/foo/tgt_image.bin')
     self.assertEqual(gen.payload_file, '/foo/delta.bin')
     self.assertEqual(gen.delta_log_file, '/foo/delta.log')
+    self.assertEqual(gen.metadata_size_file, '/foo/metadata_size.txt')
 
     # Siged image specific values.
     self.assertEqual(gen.signed_payload_file, '/foo/delta.bin.signed')
@@ -276,7 +277,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
-    self.mox.StubOutWithMock(gen, '_ReadMetadataSizeFile')
 
     # Record the expected function calls.
     cmd = ['cros_generate_update_payload',
@@ -287,14 +287,12 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '1620.0.0',
            '--kern_path', '/work/new_kernel.dat',
            '--root_path', '/work/new_rootfs.dat',
-           '--out_metadata_size_file', '/work/metadata_size.txt',
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
     gen._CheckPartitionFiles()
-    gen._ReadMetadataSizeFile()
 
     # Run the test.
     self.mox.ReplayAll()
@@ -308,7 +306,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
-    self.mox.StubOutWithMock(gen, '_ReadMetadataSizeFile')
 
     # Record the expected function calls.
     cmd = ['cros_generate_update_payload',
@@ -319,7 +316,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '4171.0.0',
            '--kern_path', '/work/new_kernel.dat',
            '--root_path', '/work/new_rootfs.dat',
-           '--out_metadata_size_file', '/work/metadata_size.txt',
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
            '--build_version', '4171.0.0',
@@ -335,7 +331,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
     gen._CheckPartitionFiles()
-    gen._ReadMetadataSizeFile()
 
     # Run the test.
     self.mox.ReplayAll()
@@ -350,7 +345,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
-    self.mox.StubOutWithMock(gen, '_ReadMetadataSizeFile')
 
     # Record the expected function calls.
     cmd = ['cros_generate_update_payload',
@@ -361,14 +355,12 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '1620.0.0',
            '--kern_path', '/work/new_kernel.dat',
            '--root_path', '/work/new_rootfs.dat',
-           '--out_metadata_size_file', '/work/metadata_size.txt',
            '--key', 'test',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
     gen._CheckPartitionFiles()
-    gen._ReadMetadataSizeFile()
 
     # Run the test.
     self.mox.ReplayAll()
@@ -383,7 +375,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
-    self.mox.StubOutWithMock(gen, '_ReadMetadataSizeFile')
 
     # Record the expected function calls.
     cmd = ['cros_generate_update_payload',
@@ -394,7 +385,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--version', '4171.0.0',
            '--kern_path', '/work/new_kernel.dat',
            '--root_path', '/work/new_rootfs.dat',
-           '--out_metadata_size_file', '/work/metadata_size.txt',
            '--key', 'test',
            '--build_channel', 'dev-channel',
            '--build_version', '4171.0.0',
@@ -410,7 +400,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
     gen._StoreDeltaLog('log contents')
     gen._CheckPartitionFiles()
-    gen._ReadMetadataSizeFile()
 
     # Run the test.
     self.mox.ReplayAll()
@@ -465,13 +454,17 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     self.mox.StubOutWithMock(paygen_payload_lib._PaygenPayload,
                              '_RunGeneratorCmd')
+    self.mox.StubOutWithMock(gen, '_ReadMetadataSizeFile')
+
 
     # Record the expected function calls.
     cmd = ['delta_generator',
            '-in_file=' + gen.payload_file,
            mox.IsA(str),
-           '-out_file=' + gen.signed_payload_file]
+           '-out_file=' + gen.signed_payload_file,
+           '-out_metadata_size_file=' + gen.metadata_size_file]
     gen._RunGeneratorCmd(cmd)
+    gen._ReadMetadataSizeFile()
 
     # Run the test.
     self.mox.ReplayAll()

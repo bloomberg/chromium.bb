@@ -293,9 +293,7 @@ class _PaygenPayload(object):
            '--kern_path',
            path_util.ToChrootPath(self.tgt_partitions[self._KERNEL]),
            '--root_path',
-           path_util.ToChrootPath(self.tgt_partitions[self._ROOTFS]),
-           '--out_metadata_size_file',
-           path_util.ToChrootPath(self.metadata_size_file)]
+           path_util.ToChrootPath(self.tgt_partitions[self._ROOTFS])]
     cmd += self._BuildArg('--key', tgt_image, 'key', default='test')
     cmd += self._BuildArg('--build_channel', tgt_image, 'image_channel',
                           default=tgt_image.channel)
@@ -321,7 +319,6 @@ class _PaygenPayload(object):
     delta_log = self._RunGeneratorCmd(cmd)
     self._StoreDeltaLog(delta_log)
     self._CheckPartitionFiles()
-    self._ReadMetadataSizeFile()
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.
@@ -441,9 +438,12 @@ class _PaygenPayload(object):
     cmd = ['delta_generator',
            '-in_file=' + path_util.ToChrootPath(self.payload_file),
            '-signature_file=' + ':'.join(signature_file_names),
-           '-out_file=' + path_util.ToChrootPath(self.signed_payload_file)]
+           '-out_file=' + path_util.ToChrootPath(self.signed_payload_file),
+           '-out_metadata_size_file=' +
+           path_util.ToChrootPath(self.metadata_size_file)]
 
     self._RunGeneratorCmd(cmd)
+    self._ReadMetadataSizeFile()
 
     for f in signature_files:
       f.close()
