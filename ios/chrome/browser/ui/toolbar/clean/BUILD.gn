@@ -53,10 +53,6 @@ source_set("toolbar") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
     "//ios/web",
-
-    # Remove this dependency when the code uses the method
-    # GetToolbarSearchButtonImage(SearchEngineIcon) overload.
-    "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
   ]
 
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/location_bar" ]

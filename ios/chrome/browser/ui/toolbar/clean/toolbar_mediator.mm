@@ -314,27 +314,18 @@
 #pragma mark - SearchEngineObserving
 
 - (void)searchEngineChanged {
-  BOOL showBrandedSearchIcon = NO;
-  if (self.templateURLService) {
-    const TemplateURL* defaultURL =
-        self.templateURLService->GetDefaultSearchProvider();
-    if (defaultURL) {
-      showBrandedSearchIcon =
-          defaultURL->GetEngineType(
-              self.templateURLService->search_terms_data()) ==
-          SEARCH_ENGINE_GOOGLE;
-    }
+  SearchEngineIcon searchEngineIcon = SEARCH_ENGINE_ICON_OTHER;
+  if (self.templateURLService &&
+      self.templateURLService->GetDefaultSearchProvider() &&
+      self.templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          self.templateURLService->search_terms_data()) ==
+          SEARCH_ENGINE_GOOGLE) {
+    searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
   }
 
-  UIImage* searchIcon = nil;
-  if (showBrandedSearchIcon) {
-    searchIcon = ios::GetChromeBrowserProvider()
-                     ->GetBrandedImageProvider()
-                     ->GetToolbarSearchButtonImage();
-  }
-  if (!searchIcon) {
-    searchIcon = [UIImage imageNamed:@"toolbar_search"];
-  }
+  UIImage* searchIcon = ios::GetChromeBrowserProvider()
+                            ->GetBrandedImageProvider()
+                            ->GetToolbarSearchButtonImage(searchEngineIcon);
   [self.consumer setSearchIcon:searchIcon];
 }
 
