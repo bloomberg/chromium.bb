@@ -27,6 +27,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,28 +43,33 @@
 #if defined(OS_ANDROID)
 // This class listens for notifications that crash dumps have been processed.
 // Notifications will come from all crashes, even if an associated crash dump
-// was not created. On destruction, waits for a crash dump message.
+// was not created.
 class CrashDumpWaiter : public breakpad::CrashDumpManager::Observer {
  public:
   CrashDumpWaiter() {
     breakpad::CrashDumpManager::GetInstance()->AddObserver(this);
   }
   ~CrashDumpWaiter() {
-    base::RunLoop run_loop;
-    wait_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
     breakpad::CrashDumpManager::GetInstance()->RemoveObserver(this);
+  }
+
+  // Waits for the crash dump notification and returns whether the crash was
+  // considered a foreground oom.
+  bool Wait() {
+    waiter_.Run();
+    return last_crash_was_oom_.value();
   }
 
  private:
   // CrashDumpManager::Observer:
   void OnCrashDumpProcessed(
       const breakpad::CrashDumpManager::CrashDumpDetails& details) override {
-    if (!wait_closure_.is_null())
-      std::move(wait_closure_).Run();
+    last_crash_was_oom_ = breakpad::CrashDumpManager::IsForegroundOom(details);
+    waiter_.Quit();
   }
 
-  base::OnceClosure wait_closure_;
+  base::RunLoop waiter_;
+  base::Optional<bool> last_crash_was_oom_;
   DISALLOW_COPY_AND_ASSIGN(CrashDumpWaiter);
 };
 #endif  // defined(OS_ANDROID)
@@ -111,8 +117,6 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   void OnForegroundOOMDetected(const GURL& url,
                                ukm::SourceId source_id) override {
     last_oom_url_ = url;
-    if (!oom_closure_.is_null())
-      std::move(oom_closure_).Run();
   }
 
   void SimulateOOM() {
@@ -128,27 +132,31 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
 #endif
   }
 
-  void RunClosureAndWaitForNotification(base::OnceClosure closure) {
+  // Runs a closure which should simulate some sort of crash, and waits until
+  // the OutOfMemoryReporter *should* have received a notification for it.
+  void RunCrashClosureAndWait(base::OnceClosure crash_closure,
+                              bool expect_oom) {
 #if defined(OS_ANDROID)
-    {
-      CrashDumpWaiter crash_waiter;
-      std::move(closure).Run();
-    }
+    CrashDumpWaiter crash_waiter;
+    std::move(crash_closure).Run();
+    bool was_oom = crash_waiter.Wait();
+    EXPECT_EQ(expect_oom, was_oom);
+
     // Since the observer list is not ordered, it isn't guaranteed that the
-    // OutOfMemoryReporter will be notified at this point. However, we do know
-    // the task to notify the reporter will be posted, so just pump the run loop
-    // here.
-    base::RunLoop().RunUntilIdle();
+    // OutOfMemoryReporter will be notified at this point. Flush the current
+    // message loop and task scheduler of tasks.
+    content::RunAllTasksUntilIdle();
 #else
     // No need to wait on non-android platforms. The message will be
     // synchronous.
-    std::move(closure).Run();
+    std::move(crash_closure).Run();
 #endif
   }
 
   void SimulateOOMAndWait() {
-    RunClosureAndWaitForNotification(base::BindOnce(
-        &OutOfMemoryReporterTest::SimulateOOM, base::Unretained(this)));
+    RunCrashClosureAndWait(base::BindOnce(&OutOfMemoryReporterTest::SimulateOOM,
+                                          base::Unretained(this)),
+                           true /* expect_oom */);
   }
 
   void CheckUkmMetricRecorded(const GURL& url, int64_t time_delta) {
@@ -167,7 +175,6 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   base::ShadowingAtExitManager at_exit_;
 
   base::Optional<GURL> last_oom_url_;
-  base::OnceClosure oom_closure_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
@@ -176,17 +183,12 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporterTest);
 };
 
-// Flaky on Android:  http://crbug.com/819592
-#if defined(OS_ANDROID)
-#define MAYBE_SimpleOOM DISABLED_SimpleOOM
-#else
-#define MAYBE_SimpleOOM SimpleOOM
-#endif
-TEST_F(OutOfMemoryReporterTest, MAYBE_SimpleOOM) {
+TEST_F(OutOfMemoryReporterTest, SimpleOOM) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
 
   SimulateOOMAndWait();
+  EXPECT_TRUE(last_oom_url_.has_value());
   EXPECT_EQ(url, last_oom_url_.value());
   CheckUkmMetricRecorded(url, 3000);
 }
@@ -194,24 +196,18 @@ TEST_F(OutOfMemoryReporterTest, MAYBE_SimpleOOM) {
 TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
-  RunClosureAndWaitForNotification(
+  RunCrashClosureAndWait(
       base::BindOnce(&content::MockRenderProcessHost::SimulateRenderProcessExit,
                      base::Unretained(process()),
-                     base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 0));
+                     base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 0),
+      false /* expect_oom */);
   EXPECT_FALSE(last_oom_url_.has_value());
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Tab_RendererOOM::kEntryName);
   EXPECT_EQ(0u, entries.size());
 }
 
-// Flaky on Android:  http://crbug.com/819592
-#if defined(OS_ANDROID)
-#define MAYBE_SubframeNavigation_IsNotLogged \
-  DISABLED_SubframeNavigation_IsNotLogged
-#else
-#define MAYBE_SubframeNavigation_IsNotLogged SubframeNavigation_IsNotLogged
-#endif
-TEST_F(OutOfMemoryReporterTest, MAYBE_SubframeNavigation_IsNotLogged) {
+TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
 
@@ -224,17 +220,12 @@ TEST_F(OutOfMemoryReporterTest, MAYBE_SubframeNavigation_IsNotLogged) {
   EXPECT_TRUE(subframe);
 
   SimulateOOMAndWait();
+  EXPECT_TRUE(last_oom_url_.has_value());
   EXPECT_EQ(url, last_oom_url_.value());
   CheckUkmMetricRecorded(url, 3000);
 }
 
-// Flaky on Android:  http://crbug.com/819592
-#if defined(OS_ANDROID)
-#define MAYBE_OOMOnPreviousPage DISABLED_OOMOnPreviousPage
-#else
-#define MAYBE_OOMOnPreviousPage OOMOnPreviousPage
-#endif
-TEST_F(OutOfMemoryReporterTest, MAYBE_OOMOnPreviousPage) {
+TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
   const GURL url1("https://example.test1/");
   const GURL url2("https://example.test2/");
   const GURL url3("https://example.test2/");
@@ -245,6 +236,7 @@ TEST_F(OutOfMemoryReporterTest, MAYBE_OOMOnPreviousPage) {
   content::NavigationSimulator::NavigateAndFailFromBrowser(web_contents(), url3,
                                                            net::ERR_ABORTED);
   SimulateOOMAndWait();
+  EXPECT_TRUE(last_oom_url_.has_value());
   EXPECT_EQ(url2, last_oom_url_.value());
   CheckUkmMetricRecorded(url2, 3000);
 
