@@ -1118,7 +1118,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                           ios::GetChromeBrowserProvider()
                               ->GetChromeIdentityService();
                       provider->PrepareMailtoHandling(
-                          identityService,
                           ^ChromeIdentity* {
                             // TODO:(crbug.com/810904) Replace with currently
                             // signed-in user.
