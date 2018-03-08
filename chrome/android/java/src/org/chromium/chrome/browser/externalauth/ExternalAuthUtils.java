@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -19,7 +18,6 @@ import android.text.TextUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -245,31 +243,6 @@ public class ExternalAuthUtils {
     public static boolean canUseFirstPartyGooglePlayServices() {
         return sInstance.canUseFirstPartyGooglePlayServices(
                 new UserRecoverableErrorHandler.Silent());
-    }
-
-    /**
-     * Same as {@link #canUseFirstPartyGooglePlayServices(UserRecoverableErrorHandler)},
-     * but completes the task in the background to avoid any potentially slow calls blocking the
-     * UI thread.
-     * @param userRecoverableErrorHandler How to handle user-recoverable errors from Google
-     * Play Services; must be non-null.
-     * @param callback Callback to receive whether or not first party Play Services are available.
-     */
-    public void canUseFirstPartyGooglePlayServices(
-            UserRecoverableErrorHandler userRecoverableErrorHandler, Callback<Boolean> callback) {
-        new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-                return canUseGooglePlayServices(userRecoverableErrorHandler)
-                        && isChromeGoogleSigned();
-            }
-
-            @Override
-            protected void onPostExecute(Boolean canUseFirstPartyGooglePlayServices) {
-                callback.onResult(canUseFirstPartyGooglePlayServices);
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
