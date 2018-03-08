@@ -59,6 +59,7 @@ const CGFloat kResizeFactor = 4;
 
 @implementation SwipeView {
   UIImageView* _image;
+  // TODO(crbug.com/800266): Remove the shadow.
   UIImageView* _shadowView;
 }
 
@@ -83,9 +84,11 @@ const CGFloat kResizeFactor = 4;
     _bottomToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
     [self addSubview:_bottomToolbarSnapshot];
 
-    _shadowView = [[UIImageView alloc] initWithFrame:self.bounds];
-    [_shadowView setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
-    [self addSubview:_shadowView];
+    if (!IsUIRefreshPhase1Enabled()) {
+      _shadowView = [[UIImageView alloc] initWithFrame:self.bounds];
+      [_shadowView setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
+      [self addSubview:_shadowView];
+    }
 
     // All subviews are as wide as the parent
     NSMutableArray* constraints = [NSMutableArray array];
@@ -106,15 +109,20 @@ const CGFloat kResizeFactor = 4;
                                          constant:topMargin],
       [[_image bottomAnchor] constraintEqualToAnchor:self.bottomAnchor],
       _toolbarTopConstraint,
-      [[_shadowView topAnchor] constraintEqualToAnchor:self.topAnchor
-                                              constant:topMargin],
-      [[_shadowView heightAnchor]
-          constraintEqualToConstant:kNewTabPageShadowHeight],
       [_bottomToolbarSnapshot.bottomAnchor
           constraintEqualToAnchor:self.bottomAnchor],
     ]];
 
     [NSLayoutConstraint activateConstraints:constraints];
+
+    if (!IsUIRefreshPhase1Enabled()) {
+      [NSLayoutConstraint activateConstraints:@[
+        [[_shadowView topAnchor] constraintEqualToAnchor:self.topAnchor
+                                                constant:topMargin],
+        [[_shadowView heightAnchor]
+            constraintEqualToConstant:kNewTabPageShadowHeight],
+      ]];
+    }
   }
   return self;
 }
