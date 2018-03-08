@@ -223,6 +223,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
       window_->layer()->SetMaskLayer(original_mask_layer_);
     }
   }
+
   for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
@@ -507,6 +508,11 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
           std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
     }
   }
+
+  // Apply rounded edge mask. Windows which are animated into overview mode
+  // will have their mask removed before the animation begins and reapplied
+  // after the animation ends.
+  CreateAndApplyMaskAndShadow();
 }
 
 void ScopedTransformOverviewWindow::CloseWidget() {
@@ -548,22 +554,8 @@ void ScopedTransformOverviewWindow::CancelAnimationsListener() {
 }
 
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
-  // Add the mask which gives the window selector items rounded corners, and add
-  // the shadow around the window.
   DCHECK(IsNewOverviewUi());
-
-  ui::Layer* layer = minimized_widget_
-                         ? minimized_widget_->GetContentsView()->layer()
-                         : window_->layer();
-  if (!minimized_widget_)
-    original_mask_layer_ = window_->layer()->layer_mask_layer();
-
-  mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
-  mask_->layer()->SetBounds(layer->bounds());
-  mask_->set_top_inset(GetTopInset());
-  layer->SetMaskLayer(mask_->layer());
-  selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
-  selector_item_->EnableBackdropIfNeeded();
+  CreateAndApplyMaskAndShadow();
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
@@ -595,6 +587,27 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   }
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
+}
+
+void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
+  // Add the mask which gives the window selector items rounded corners, and add
+  // the shadow around the window.
+  if (!IsNewOverviewUi())
+    return;
+
+  ui::Layer* layer = minimized_widget_
+                         ? minimized_widget_->GetContentsView()->layer()
+                         : window_->layer();
+
+  if (!minimized_widget_)
+    original_mask_layer_ = window_->layer()->layer_mask_layer();
+
+  mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
+  mask_->layer()->SetBounds(layer->bounds());
+  mask_->set_top_inset(GetTopInset());
+  layer->SetMaskLayer(mask_->layer());
+  selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
+  selector_item_->EnableBackdropIfNeeded();
 }
 
 }  // namespace ash

@@ -195,6 +195,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   void CreateMirrorWindowForMinimizedState();
 
+  // Creates and applys a mask which adds rounded edges to windows in overview
+  // mode.
+  void CreateAndApplyMaskAndShadow();
+
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
 

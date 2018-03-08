@@ -382,6 +382,10 @@ class WindowSelectorTest : public AshTestBase {
     return item->backdrop_widget_.get();
   }
 
+  bool HasMaskForItem(WindowSelectorItem* item) const {
+    return !!item->transform_window_.mask_;
+  }
+
  private:
   aura::test::TestWindowDelegate delegate_;
   NonActivatableActivationDelegate non_activatable_activation_delegate_;
@@ -2712,6 +2716,50 @@ TEST_F(WindowSelectorTest, Backdrop) {
   EXPECT_FALSE(backdrop_widget(wide_item));
   EXPECT_TRUE(backdrop_widget(tall_item));
   EXPECT_FALSE(backdrop_widget(normal_item));
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
+}
+
+// Verify that the mask that is applied to add rounded corners in overview mode
+// is removed during animations and drags.
+TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
+  UpdateDisplay("400x400");
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  // Dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  ToggleOverview();
+  RunAllPendingInMessageLoop();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_TRUE(HasMaskForItem(item2));
+
+  // Drag the first window. Verify that the mask disappears.
+  const gfx::Point start_drag = item1->target_bounds().CenterPoint();
+  GetEventGenerator().MoveMouseTo(start_drag);
+  GetEventGenerator().PressLeftButton();
+  EXPECT_FALSE(HasMaskForItem(item1));
+  EXPECT_TRUE(HasMaskForItem(item2));
+
+  // Drag to origin and then back to the start to avoid activating the window or
+  // entering splitview. Verify that the mask is visible on both items.
+  GetEventGenerator().MoveMouseTo(gfx::Point());
+  GetEventGenerator().MoveMouseTo(start_drag);
+  GetEventGenerator().ReleaseLeftButton();
+  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_TRUE(HasMaskForItem(item2));
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
