@@ -8,12 +8,14 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
 #include "ui/base/ime/input_method_win.h"
+#include "ui/base/ime/input_method_win_tsf.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/ime/input_method_mac.h"
 #elif defined(USE_AURA) && defined(USE_X11)
@@ -55,6 +57,8 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 #if defined(OS_CHROMEOS)
   return std::make_unique<InputMethodChromeOS>(delegate);
 #elif defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kTSFImeSupport))
+    return std::make_unique<InputMethodWinTSF>(delegate, widget);
   return std::make_unique<InputMethodWin>(delegate, widget);
 #elif defined(OS_MACOSX)
   return std::make_unique<InputMethodMac>(delegate);

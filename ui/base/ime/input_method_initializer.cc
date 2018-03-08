@@ -11,6 +11,9 @@
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "base/logging.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
+#elif defined(OS_WIN)
+#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #endif
 
 namespace {
@@ -27,12 +30,16 @@ namespace ui {
 void InitializeInputMethod() {
 #if defined(OS_CHROMEOS)
   IMEBridge::Initialize();
+#elif defined(OS_WIN)
+  TSFBridge::Initialize();
 #endif
 }
 
 void ShutdownInputMethod() {
 #if defined(OS_CHROMEOS)
   IMEBridge::Shutdown();
+#elif defined(OS_WIN)
+  TSFBridge::Shutdown();
 #endif
 }
 
@@ -50,6 +57,10 @@ void InitializeInputMethodForTesting() {
       << "else.";
   LinuxInputMethodContextFactory::SetInstance(
       g_linux_input_method_context_factory_for_testing);
+#elif defined(OS_WIN)
+  // Make sure COM is initialized because TSF depends on COM.
+  CoInitialize(nullptr);
+  TSFBridge::Initialize();
 #endif
 }
 
@@ -64,6 +75,9 @@ void ShutdownInputMethodForTesting() {
   LinuxInputMethodContextFactory::SetInstance(NULL);
   delete g_linux_input_method_context_factory_for_testing;
   g_linux_input_method_context_factory_for_testing = NULL;
+#elif defined(OS_WIN)
+  TSFBridge::Shutdown();
+  CoUninitialize();
 #endif
 }
 

@@ -22,9 +22,9 @@ ui::IMEEngineHandlerInterface* InputMethodBase::GetEngine() {
   return nullptr;
 }
 
-InputMethodBase::InputMethodBase()
+InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
     : sending_key_event_(false),
-      delegate_(nullptr),
+      delegate_(delegate),
       text_input_client_(nullptr) {}
 
 InputMethodBase::~InputMethodBase() {

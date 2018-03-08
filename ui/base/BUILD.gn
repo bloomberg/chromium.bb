@@ -735,6 +735,8 @@ static_library("test_support") {
       "ime/dummy_input_method.h",
       "ime/dummy_text_input_client.cc",
       "ime/dummy_text_input_client.h",
+      "ime/win/mock_tsf_bridge.cc",
+      "ime/win/mock_tsf_bridge.h",
     ]
 
     deps += [
@@ -883,6 +885,7 @@ test("ui_base_unittests") {
       "ime/input_method_chromeos_unittest.cc",
       "ime/win/imm32_manager_unittest.cc",
       "ime/win/tsf_input_scope_unittest.cc",
+      "ime/win/tsf_text_store_unittest.cc",
     ]
     if (is_linux && use_aura && !is_chromeos) {
       sources += [ "ime/input_method_auralinux_unittest.cc" ]
