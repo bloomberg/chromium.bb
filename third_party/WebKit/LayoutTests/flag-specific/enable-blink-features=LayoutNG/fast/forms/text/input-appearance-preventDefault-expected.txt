@@ -13,7 +13,7 @@ layer at (12,53) size 150x16
     LayoutText {#text} at (0,0) size 138x16
       text run at (0,0) width 138: "No caret should be here"
 layer at (10,70) size 323x40
-  LayoutNGBlockFlow (positioned) {DIV} at (10,70) size 322.72x40
+  LayoutNGBlockFlow (positioned) {DIV} at (10,70) size 323x40
     LayoutBR {BR} at (0,0) size 0x0
     LayoutText {#text} at (0,20) size 323x19
       text run at (0,20) width 323: "mousedown on target [object HTMLInputElement]"

@@ -4,8 +4,8 @@ layer at (0,0) size 800x431
   LayoutNGBlockFlow {HTML} at (0,0) size 800x431
     LayoutNGBlockFlow {BODY} at (8,16) size 784x405
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 325x19
-          text run at (0,0) width 325: "You should not see double text when the div scrolls"
+        LayoutText {#text} at (0,0) size 324x19
+          text run at (0,0) width 324: "You should not see double text when the div scrolls"
       LayoutNGBlockFlow {DIV} at (10,36) size 302x207 [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
 layer at (19,53) size 300x200

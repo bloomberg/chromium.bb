@@ -16,11 +16,11 @@ layer at (0,0) size 785x2982 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 396x22
           text run at (0,0) width 396: "Containing replaced content blocking the ellipsis"
       LayoutNGBlockFlow {H3} at (0,1486.88) size 769x23
-        LayoutText {#text} at (0,0) size 198x22
-          text run at (0,0) width 198: "Right-To-Left single line"
-      LayoutNGBlockFlow {H3} at (0,1858.59) size 769x23
         LayoutText {#text} at (0,0) size 197x22
-          text run at (0,0) width 197: "Right-To-Left Multi line"
+          text run at (0,0) width 197: "Right-To-Left single line"
+      LayoutNGBlockFlow {H3} at (0,1858.59) size 769x23
+        LayoutText {#text} at (0,0) size 196x22
+          text run at (0,0) width 196: "Right-To-Left Multi line"
       LayoutNGBlockFlow {H3} at (0,2230.31) size 769x23
         LayoutText {#text} at (0,0) size 343x22
           text run at (0,0) width 343: "Right-To-Left containing replaced content"

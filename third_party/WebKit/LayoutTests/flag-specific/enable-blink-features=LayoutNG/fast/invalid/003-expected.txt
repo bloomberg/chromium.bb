@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
         LayoutInline {I} at (0,0) size 67x19
           LayoutText {#text} at (0,0) size 67x19
             text run at (0,0) width 67: "Italic only."
-        LayoutText {#text} at (66,0) size 37x19
-          text run at (66,0) width 37: " Plain"
+        LayoutText {#text} at (67,0) size 36x19
+          text run at (67,0) width 36: " Plain"
       LayoutNGBlockFlow {P} at (0,108) size 784x20
         LayoutText {#text} at (0,0) size 126x19
           text run at (0,0) width 126: "I should not be red. "
@@ -40,10 +40,10 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 93x19
             LayoutText {#text} at (0,0) size 93x19
               text run at (0,0) width 93: "Italic and red. "
-          LayoutText {#text} at (92,0) size 31x19
-            text run at (92,0) width 31: "Red."
-        LayoutText {#text} at (122,0) size 127x19
-          text run at (122,0) width 127: " I should not be red."
+          LayoutText {#text} at (93,0) size 30x19
+            text run at (93,0) width 30: "Red."
+        LayoutText {#text} at (123,0) size 126x19
+          text run at (123,0) width 126: " I should not be red."
       LayoutNGBlockFlow (anonymous) at (0,180) size 784x20
         LayoutInline {B} at (0,0) size 131x19
           LayoutText {#text} at (0,0) size 36x19

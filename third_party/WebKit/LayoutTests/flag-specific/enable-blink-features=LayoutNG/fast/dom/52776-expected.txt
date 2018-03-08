@@ -5,12 +5,12 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     LayoutNGBlockFlow {BODY} at (8,16) size 769x1780
       LayoutNGBlockFlow {DIV} at (0,0) size 769x864
         LayoutNGBlockFlow {P} at (0,0) size 769x20
-          LayoutText {#text} at (683,0) size 86x19
-            text run at (683,0) width 86: "Right To Left"
+          LayoutText {#text} at (684,0) size 85x19
+            text run at (684,0) width 85: "Right To Left"
         LayoutNGBlockFlow {P} at (0,36) size 769x20
-          LayoutText {#text} at (444,0) size 325x19
-            text run at (444,0) width 5: "."
-            text run at (448,0) width 321: "Well-formed pair of unicode bidi control characters"
+          LayoutText {#text} at (445,0) size 324x19
+            text run at (445,0) width 4: "."
+            text run at (449,0) width 320: "Well-formed pair of unicode bidi control characters"
         LayoutNGBlockFlow {DIV} at (0,72) size 769x20
           LayoutText {#text} at (756,0) size 13x19
             text run at (756,0) width 0: "\x{202C}"
@@ -99,7 +99,7 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (762,0) width 7: "\x{202B}c"
         LayoutNGBlockFlow {P} at (0,688) size 769x20
           LayoutText {#text} at (494,0) size 275x19
-            text run at (494,0) width 5: "."
+            text run at (494,0) width 4: "."
             text run at (498,0) width 271: "Start with different directionality characters"
         LayoutNGBlockFlow {DIV} at (0,724) size 769x20
           LayoutText {#text} at (745,0) size 24x19
@@ -128,11 +128,11 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (754,0) width 15: "\x{5D0}\x{5D1}\x{202C}\x{202A}"
       LayoutNGBlockFlow {DIV} at (0,880) size 769x864
         LayoutNGBlockFlow {P} at (0,0) size 769x20
-          LayoutText {#text} at (0,0) size 86x19
-            text run at (0,0) width 86: "Left To Right"
+          LayoutText {#text} at (0,0) size 85x19
+            text run at (0,0) width 85: "Left To Right"
         LayoutNGBlockFlow {P} at (0,36) size 769x20
-          LayoutText {#text} at (0,0) size 325x19
-            text run at (0,0) width 325: "Well-formed pair of unicode bidi control characters."
+          LayoutText {#text} at (0,0) size 324x19
+            text run at (0,0) width 324: "Well-formed pair of unicode bidi control characters."
         LayoutNGBlockFlow {DIV} at (0,72) size 769x20
           LayoutText {#text} at (0,0) size 13x19
             text run at (0,0) width 5: "!"
@@ -240,7 +240,7 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
-          LayoutText {#text} at (0,0) size 704x19
-            text run at (0,0) width 704: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
+          LayoutText {#text} at (0,0) size 705x19
+            text run at (0,0) width 705: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
 selection start: position 3 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body
 selection end:   position 4 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body
