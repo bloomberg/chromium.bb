@@ -54,8 +54,12 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
   Vector<NGPositionedFloat> positioned_floats(positioned_floats_);
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats(
       unpositioned_floats_);
-  std::unique_ptr<const NGExclusionSpace> exclusion_space(
-      WTF::WrapUnique(new NGExclusionSpace(*exclusion_space_)));
+  std::unique_ptr<const NGExclusionSpace> exclusion_space;
+  // TODO(layoutng) Replace this with DCHECK(exclusion_space_) when
+  // callers guarantee exclusion_space_ != null.
+  if (exclusion_space_)
+    exclusion_space = WTF::WrapUnique(new NGExclusionSpace(*exclusion_space_));
+
   return base::AdoptRef(new NGLayoutResult(
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
       positioned_floats, unpositioned_floats, unpositioned_list_marker_,
