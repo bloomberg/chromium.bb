@@ -9,9 +9,10 @@
 
 #include <vector>
 
+#include "components/autofill/core/common/form_data_predictions.h"
+
 namespace autofill {
 struct FormData;
-class FormStructure;
 }
 
 // Interface used to pipe form data from AutofillDriverIOS to the embedder.
@@ -21,7 +22,7 @@ class FormStructure;
                   result:(const autofill::FormData&)result;
 
 - (void)sendAutofillTypePredictionsToRenderer:
-        (const std::vector<autofill::FormStructure*>&)forms;
+    (const std::vector<autofill::FormDataPredictions>&)forms;
 
 @end
 

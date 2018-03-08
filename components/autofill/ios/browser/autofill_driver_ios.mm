@@ -5,6 +5,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
@@ -76,7 +77,8 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
-  [bridge_ sendAutofillTypePredictionsToRenderer:forms];
+  [bridge_ sendAutofillTypePredictionsToRenderer:
+               FormStructure::GetFieldTypePredictions(forms)];
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
