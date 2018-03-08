@@ -1243,7 +1243,7 @@ void DownloadItemImpl::OnDownloadedFileRemoved() {
   UpdateObservers();
 }
 
-base::WeakPtr<DownloadDestinationObserver>
+base::WeakPtr<download::DownloadDestinationObserver>
 DownloadItemImpl::DestinationObserverAsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

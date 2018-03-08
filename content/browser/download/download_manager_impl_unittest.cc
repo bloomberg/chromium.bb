@@ -305,7 +305,7 @@ class MockDownloadFileFactory
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
-      base::WeakPtr<DownloadDestinationObserver> observer) override {
+      base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     return MockCreateFile(*save_info, stream.get());
   }
 };

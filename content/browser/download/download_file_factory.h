@@ -17,12 +17,12 @@
 #include "url/gurl.h"
 
 namespace download {
+class DownloadDestinationObserver;
 struct DownloadSaveInfo;
 }
 
 namespace content {
 
-class DownloadDestinationObserver;
 class DownloadFile;
 
 class CONTENT_EXPORT DownloadFileFactory {
@@ -34,7 +34,7 @@ class CONTENT_EXPORT DownloadFileFactory {
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
       uint32_t download_id,
-      base::WeakPtr<DownloadDestinationObserver> observer);
+      base::WeakPtr<download::DownloadDestinationObserver> observer);
 };
 
 }  // namespace content

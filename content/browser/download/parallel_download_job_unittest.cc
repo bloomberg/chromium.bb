@@ -11,8 +11,8 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_item_impl.h"
@@ -39,7 +39,8 @@ class MockDownloadRequestHandle
   MOCK_METHOD1(CancelRequest, void(bool));
 };
 
-class MockDownloadDestinationObserver : public DownloadDestinationObserver {
+class MockDownloadDestinationObserver
+    : public download::DownloadDestinationObserver {
  public:
   MOCK_METHOD3(DestinationUpdate,
                void(int64_t,
@@ -488,7 +489,7 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       new StrictMock<MockByteStreamReader>();
   auto observer =
       std::make_unique<StrictMock<MockDownloadDestinationObserver>>();
-  base::WeakPtrFactory<DownloadDestinationObserver> observer_factory(
+  base::WeakPtrFactory<download::DownloadDestinationObserver> observer_factory(
       observer.get());
   auto download_file = std::make_unique<DownloadFileImpl>(
       std::move(save_info), base::FilePath(),

@@ -32,9 +32,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
+namespace download {
+class DownloadDestinationObserver;
+}
+
 namespace content {
 class ByteStreamReader;
-class DownloadDestinationObserver;
 
 class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  public:
@@ -46,11 +49,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // |stream|, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   std::unique_ptr<DownloadManager::InputStream> stream,
-                   uint32_t download_id,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      std::unique_ptr<DownloadManager::InputStream> stream,
+      uint32_t download_id,
+      base::WeakPtr<download::DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
@@ -209,10 +213,11 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  private:
   friend class DownloadFileTest;
 
-  DownloadFileImpl(std::unique_ptr<download::DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   uint32_t download_id,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(
+      std::unique_ptr<download::DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      uint32_t download_id,
+      base::WeakPtr<download::DownloadDestinationObserver> observer);
 
   // Options for RenameWithRetryInternal.
   enum RenameOption {
@@ -366,7 +371,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtr<DownloadDestinationObserver> observer_;
+  base::WeakPtr<download::DownloadDestinationObserver> observer_;
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);

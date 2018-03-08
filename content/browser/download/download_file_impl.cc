@@ -16,10 +16,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/common/content_features.h"
@@ -204,7 +204,7 @@ DownloadFileImpl::DownloadFileImpl(
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
     uint32_t download_id,
-    base::WeakPtr<DownloadDestinationObserver> observer)
+    base::WeakPtr<download::DownloadDestinationObserver> observer)
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        download_id,
@@ -217,7 +217,7 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     uint32_t download_id,
-    base::WeakPtr<DownloadDestinationObserver> observer)
+    base::WeakPtr<download::DownloadDestinationObserver> observer)
     : file_(download_id),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
@@ -717,9 +717,9 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
       update_timer_.reset();
       main_task_runner_->PostTask(
           FROM_HERE,
-          base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
-                         observer_, TotalBytesReceived(),
-                         std::move(hash_state)));
+          base::BindOnce(
+              &download::DownloadDestinationObserver::DestinationCompleted,
+              observer_, TotalBytesReceived(), std::move(hash_state)));
     }
   }
 }
@@ -749,9 +749,9 @@ void DownloadFileImpl::SendUpdate() {
   // far along with received_slices_.
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DownloadDestinationObserver::DestinationUpdate, observer_,
-                     TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
-                     received_slices_));
+      base::BindOnce(&download::DownloadDestinationObserver::DestinationUpdate,
+                     observer_, TotalBytesReceived(),
+                     rate_estimator_.GetCountPerSecond(), received_slices_));
 }
 
 void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
@@ -853,7 +853,7 @@ void DownloadFileImpl::HandleStreamError(
     std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&DownloadDestinationObserver::DestinationError,
+        base::BindOnce(&download::DownloadDestinationObserver::DestinationError,
                        observer_, reason, TotalBytesReceived(),
                        std::move(hash_state)));
   }
