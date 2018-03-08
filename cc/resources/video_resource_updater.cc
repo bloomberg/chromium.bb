@@ -609,6 +609,9 @@ void VideoResourceUpdater::ObtainFrameResources(
       resource_ids.push_back(resource_id);
     }
   }
+  TRACE_EVENT_INSTANT1("media", "VideoResourceUpdater::ObtainFrameResources",
+                       TRACE_EVENT_SCOPE_THREAD, "Timestamp",
+                       video_frame->timestamp().InMicroseconds());
 }
 
 void VideoResourceUpdater::ReleaseFrameResources() {
