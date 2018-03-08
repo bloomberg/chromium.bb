@@ -415,6 +415,10 @@ void VrShell::OnTriggerEvent(JNIEnv* env,
   } else {
     pending_cardboard_trigger_ = touched;
   }
+
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::OnTriggerEvent,
+                                gl_thread_->GetVrShellGl(), touched));
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -82,7 +82,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void Initialize();
   void InitializeGl(gfx::AcceleratedWidget window);
 
-  void OnTriggerEvent();
+  void OnTriggerEvent(bool pressed);
   void OnPause();
   void OnResume();
   void OnExitPresent();
@@ -188,6 +188,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ClosePresentationBindings();
 
+  device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
+
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
@@ -256,6 +258,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool daydream_support_;
   bool is_exiting_ = false;
   bool content_paused_;
+  bool report_webxr_input_ = false;
+  bool cardboard_trigger_pressed_ = false;
+  bool cardboard_trigger_clicked_ = false;
 
   std::unique_ptr<VrController> controller_;
 
