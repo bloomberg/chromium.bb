@@ -164,7 +164,8 @@ void SelectionController::TrackMouseClicks(const ui::MouseEvent& event) {
     base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
     if (!last_click_time_.is_null() &&
         time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
-        !View::ExceededDragThreshold(event.location() - last_click_location_)) {
+        !View::ExceededDragThreshold(event.root_location() -
+                                     last_click_location_)) {
       // Upon clicking after a triple click, the count should go back to
       // double click and alternate between double and triple. This assignment
       // maps 0 to 1, 1 to 2, 2 to 1.
@@ -173,7 +174,7 @@ void SelectionController::TrackMouseClicks(const ui::MouseEvent& event) {
       aggregated_clicks_ = 0;
     }
     last_click_time_ = event.time_stamp();
-    last_click_location_ = event.location();
+    last_click_location_ = event.root_location();
   }
 }
 
