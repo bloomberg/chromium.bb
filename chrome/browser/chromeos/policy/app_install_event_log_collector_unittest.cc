@@ -50,6 +50,7 @@ class FakeAppInstallEventLogCollectorDelegate
   }
 
   void Add(const std::string& package,
+           bool add_disk_space_info,
            std::unique_ptr<em::AppInstallReportLogEvent> event) override {
     ++add_count_;
     last_event_ = *event;

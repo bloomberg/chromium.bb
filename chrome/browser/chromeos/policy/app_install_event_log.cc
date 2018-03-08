@@ -20,7 +20,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
-static const int64_t kLogFileVersion = 2;
+static const int64_t kLogFileVersion = 3;
 static const ssize_t kMaxLogs = 1024;
 }  // namespace
 

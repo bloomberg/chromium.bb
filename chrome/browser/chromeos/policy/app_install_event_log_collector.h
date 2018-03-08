@@ -37,9 +37,12 @@ class AppInstallEventLogCollector
             event) = 0;
 
     // Adds a log entry for |package|. The |event|'s timestamp is set to the
-    // current time if not set yet.
+    // current time if not set yet. If |gather_disk_space_info| is |true|,
+    // information about total and free disk space is gathered in the background
+    // and added to |event| before adding it to the log.
     virtual void Add(
         const std::string& package,
+        bool gather_disk_space_info,
         std::unique_ptr<enterprise_management::AppInstallReportLogEvent>
             event) = 0;
 
