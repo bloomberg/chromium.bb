@@ -487,7 +487,9 @@ void OmniboxViewMac::EmphasizeURLComponents() {
     // more. Calling -stringValue ensures that |field_| reflects the changes to
     // |storage|.
     [field_ stringValue];
-  } else {
+  } else if (!in_coalesced_update_block_) {
+    // Skip this if we're in a coalesced update block. Otherwise, the user text
+    // entered can get set in a new tab because we haven't yet set the URL text.
     SetText(GetText());
   }
 }
