@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "net/filter/filter_source_stream.h"
 
@@ -21,7 +22,7 @@ namespace content {
 class CONTENT_EXPORT MerkleIntegritySourceStream
     : public net::FilterSourceStream {
  public:
-  MerkleIntegritySourceStream(const std::string& mi_header_value,
+  MerkleIntegritySourceStream(base::StringPiece mi_header_value,
                               std::unique_ptr<SourceStream> upstream);
   ~MerkleIntegritySourceStream() override;
 

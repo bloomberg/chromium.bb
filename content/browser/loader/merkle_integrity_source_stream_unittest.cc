@@ -161,6 +161,14 @@ TEST_P(MerkleIntegritySourceStreamTest, EmptyStream) {
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
 }
 
+TEST_P(MerkleIntegritySourceStreamTest, TooShortMIHeader) {
+  Init("z");
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
+}
+
 TEST_P(MerkleIntegritySourceStreamTest, MalformedMIHeader) {
   Init("invalid-MI-header-value");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
