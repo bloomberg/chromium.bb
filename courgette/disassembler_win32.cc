@@ -421,8 +421,8 @@ void DisassemblerWin32::RemoveUnusedRel32Locations(
 
 InstructionGenerator DisassemblerWin32::GetInstructionGenerator(
     AssemblyProgram* program) {
-  return base::Bind(&DisassemblerWin32::ParseFile, base::Unretained(this),
-                    program);
+  return base::BindRepeating(&DisassemblerWin32::ParseFile,
+                             base::Unretained(this), program);
 }
 
 CheckBool DisassemblerWin32::ParseFile(AssemblyProgram* program,
