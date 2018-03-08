@@ -23,6 +23,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/detachable_base/detachable_base_handler.h"
+#include "ash/detachable_base/detachable_base_notification_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
@@ -860,6 +861,9 @@ Shell::~Shell() {
   // TouchDevicesController depends on the PrefService and must be destructed
   // before it.
   touch_devices_controller_ = nullptr;
+  // DetachableBaseNotificationController depends on DetachableBaseHandler, and
+  // has to be destructed before it.
+  detachable_base_notification_controller_.reset();
   // DetachableBaseHandler depends on the PrefService and must be destructed
   // before it.
   detachable_base_handler_.reset();
@@ -885,6 +889,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
   detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
+  detachable_base_notification_controller_ =
+      std::make_unique<DetachableBaseNotificationController>(
+          detachable_base_handler_.get());
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {
