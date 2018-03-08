@@ -4,16 +4,25 @@
 
 #include "chrome/browser/chromeos/policy/app_install_event_logger.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 
+#include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/location.h"
+#include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -87,6 +96,29 @@ std::set<std::string> GetDifference(const std::set<std::string>& first,
   return difference;
 }
 
+std::unique_ptr<em::AppInstallReportLogEvent> AddDiskSpaceInfoToEvent(
+    std::unique_ptr<em::AppInstallReportLogEvent> event) {
+  for (const auto& disk :
+       chromeos::disks::DiskMountManager::GetInstance()->disks()) {
+    if (!disk.second->IsStatefulPartition()) {
+      continue;
+    }
+    const base::FilePath stateful_path(disk.second->mount_path());
+    const int64_t stateful_total =
+        base::SysInfo::AmountOfTotalDiskSpace(stateful_path);
+    if (stateful_total >= 0) {
+      event->set_stateful_total(stateful_total);
+    }
+    const int64_t stateful_free =
+        base::SysInfo::AmountOfFreeDiskSpace(stateful_path);
+    if (stateful_free >= 0) {
+      event->set_stateful_free(stateful_free);
+    }
+    break;
+  }
+  return event;
+}
+
 void EnsureTimestampSet(em::AppInstallReportLogEvent* event) {
   if (!event->has_timestamp()) {
     event->set_timestamp(
@@ -94,11 +126,12 @@ void EnsureTimestampSet(em::AppInstallReportLogEvent* event) {
   }
 }
 
-em::AppInstallReportLogEvent CreateEvent(
+std::unique_ptr<em::AppInstallReportLogEvent> CreateEvent(
     em::AppInstallReportLogEvent::EventType type) {
-  em::AppInstallReportLogEvent event;
-  EnsureTimestampSet(&event);
-  event.set_event_type(type);
+  std::unique_ptr<em::AppInstallReportLogEvent> event =
+      std::make_unique<em::AppInstallReportLogEvent>();
+  EnsureTimestampSet(event.get());
+  event->set_event_type(type);
   return event;
 }
 
@@ -106,10 +139,11 @@ em::AppInstallReportLogEvent CreateEvent(
 
 AppInstallEventLogger::AppInstallEventLogger(Delegate* delegate,
                                              Profile* profile)
-    : delegate_(delegate), profile_(profile) {
+    : delegate_(delegate), profile_(profile), weak_factory_(this) {
   if (!arc::IsArcAllowedForProfile(profile_)) {
-    delegate_->Add(GetPackagesFromPref(arc::prefs::kArcPushInstallAppsPending),
-                   CreateEvent(em::AppInstallReportLogEvent::CANCELED));
+    AddForSetOfPackages(
+        GetPackagesFromPref(arc::prefs::kArcPushInstallAppsPending),
+        CreateEvent(em::AppInstallReportLogEvent::CANCELED));
     Clear(profile_);
     return;
   }
@@ -156,15 +190,21 @@ void AppInstallEventLogger::Clear(Profile* profile) {
 void AppInstallEventLogger::AddForAllPackages(
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
   EnsureTimestampSet(event.get());
-  delegate_->Add(GetPackagesFromPref(arc::prefs::kArcPushInstallAppsPending),
-                 *event);
+  AddForSetOfPackages(
+      GetPackagesFromPref(arc::prefs::kArcPushInstallAppsPending),
+      std::move(event));
 }
 
 void AppInstallEventLogger::Add(
     const std::string& package,
+    bool gather_disk_space_info,
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
   EnsureTimestampSet(event.get());
-  delegate_->Add({package}, *event);
+  if (gather_disk_space_info) {
+    AddForSetOfPackagesWithDiskSpaceInfo({package}, std::move(event));
+  } else {
+    AddForSetOfPackages({package}, std::move(event));
+  }
 }
 
 void AppInstallEventLogger::OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -206,8 +246,8 @@ void AppInstallEventLogger::OnComplianceReportReceived(
       previous_pending, GetDifference(requested_in_arc_, pending_in_arc));
   const std::set<std::string> removed =
       GetDifference(previous_pending, current_pending);
-  // TODO(bartfab): Add SystemState.
-  delegate_->Add(removed, CreateEvent(em::AppInstallReportLogEvent::SUCCESS));
+  AddForSetOfPackagesWithDiskSpaceInfo(
+      removed, CreateEvent(em::AppInstallReportLogEvent::SUCCESS));
 
   if (removed.empty()) {
     return;
@@ -274,10 +314,10 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
       GetDifference(current_requested, previous_requested);
   const std::set<std::string> removed =
       GetDifference(previous_pending, current_requested);
-  // TODO: Add SystemState.
-  delegate_->Add(added,
-                 CreateEvent(em::AppInstallReportLogEvent::SERVER_REQUEST));
-  delegate_->Add(removed, CreateEvent(em::AppInstallReportLogEvent::CANCELED));
+  AddForSetOfPackagesWithDiskSpaceInfo(
+      added, CreateEvent(em::AppInstallReportLogEvent::SERVER_REQUEST));
+  AddForSetOfPackages(removed,
+                      CreateEvent(em::AppInstallReportLogEvent::CANCELED));
 
   const std::set<std::string> current_pending = GetDifference(
       current_requested, GetDifference(previous_requested, previous_pending));
@@ -294,6 +334,22 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
   } else {
     StopCollector();
   }
+}
+
+void AppInstallEventLogger::AddForSetOfPackagesWithDiskSpaceInfo(
+    const std::set<std::string>& packages,
+    std::unique_ptr<em::AppInstallReportLogEvent> event) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&AddDiskSpaceInfoToEvent, std::move(event)),
+      base::BindOnce(&AppInstallEventLogger::AddForSetOfPackages,
+                     weak_factory_.GetWeakPtr(), packages));
+}
+
+void AppInstallEventLogger::AddForSetOfPackages(
+    const std::set<std::string>& packages,
+    std::unique_ptr<em::AppInstallReportLogEvent> event) {
+  delegate_->Add(packages, *event);
 }
 
 }  // namespace policy

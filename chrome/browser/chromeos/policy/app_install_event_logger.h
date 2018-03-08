@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_collector.h"
 #include "components/policy/core/common/policy_service.h"
@@ -78,6 +79,7 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
       std::unique_ptr<enterprise_management::AppInstallReportLogEvent> event)
       override;
   void Add(const std::string& package,
+           bool gather_disk_space_info,
            std::unique_ptr<enterprise_management::AppInstallReportLogEvent>
                event) override;
 
@@ -113,6 +115,17 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
   // and updates the |log_collector_|.
   void EvaluatePolicy(const policy::PolicyMap& policy, bool initial);
 
+  // Adds information about total and free disk space to |event|, then adds
+  // |event| to the log for every app in |packages|.
+  void AddForSetOfPackagesWithDiskSpaceInfo(
+      const std::set<std::string>& packages,
+      std::unique_ptr<enterprise_management::AppInstallReportLogEvent> event);
+
+  // Adds |event| to the log for every app in |packages|.
+  void AddForSetOfPackages(
+      const std::set<std::string>& packages,
+      std::unique_ptr<enterprise_management::AppInstallReportLogEvent> event);
+
   // The delegate that events are forwarded to for inclusion in the log.
   Delegate* const delegate_;
 
@@ -130,6 +143,9 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
   // push-install process. Non-|nullptr| whenever there are one or more pending
   // app push-install requests.
   std::unique_ptr<AppInstallEventLogCollector> log_collector_;
+
+  // Weak factory used to reference |this| from background tasks.
+  base::WeakPtrFactory<AppInstallEventLogger> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogger);
 };

@@ -1531,22 +1531,23 @@ message AppInstallReportLogEvent {
   // Event type. Set for all log events.
   optional EventType event_type = 2;
 
-  // System state. Set for event types SERVER_REQUEST,
-  // CLOUDDPS_RESPONSE and SUCCESS.
-  optional SystemState system_state = 3;
+  // Total and available space on the stateful partition, in bytes. Set for
+  // event types SERVER_REQUEST, CLOUDDPS_RESPONSE and SUCCESS.
+  optional int64 stateful_total = 3;
+  optional int64 stateful_free = 4;
 
   // CloudDPS response. Set for event type CLOUDDPS_RESPONSE.
-  optional int32 clouddps_response = 4;
+  optional int32 clouddps_response = 5;
 
   // Log line written by Phonesky. Set for event type PHONESKY_LOG.
-  optional string phonesky_log = 5;
+  optional string phonesky_log = 6;
 
   // Network state. Set for event type SESSION_STATE_CHANGE of type LOGIN and
   // CONNECTIVITY_CHANGE.
-  optional bool online = 6;
+  optional bool online = 7;
 
   // Type of session state change. Set for event type SESSION_STATE_CHANGE.
-  optional SessionStateChangeType session_state_change_type = 7;
+  optional SessionStateChangeType session_state_change_type = 8;
 }
 
 // Log bucket for an app.
