@@ -20,6 +20,6 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,133) size 784x20
         LayoutText {#text} at (0,0) size 553x19
           text run at (0,0) width 553: "The listing tag has a width in it. To test the JavaScript binding, this page gets the width, here: "
-        LayoutInline {A} at (0,0) size 25x19
-          LayoutText {#text} at (552,0) size 25x19
-            text run at (552,0) width 25: "100"
+        LayoutInline {A} at (0,0) size 24x19
+          LayoutText {#text} at (553,0) size 24x19
+            text run at (553,0) width 24: "100"

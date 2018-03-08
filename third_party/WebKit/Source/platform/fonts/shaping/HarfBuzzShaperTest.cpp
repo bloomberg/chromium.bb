@@ -7,6 +7,7 @@
 #include <unicode/uscript.h>
 
 #include "build/build_config.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontTestUtilities.h"
@@ -39,6 +40,57 @@ class HarfBuzzShaperTest : public ::testing::Test {
   unsigned num_characters = 0;
   unsigned num_glyphs = 0;
   hb_script_t script = HB_SCRIPT_INVALID;
+};
+
+class ScopedSubpixelOverride {
+ public:
+  ScopedSubpixelOverride(bool b) {
+    prev_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
+    prev_subpixel_allowed_ =
+        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
+    prev_antialias_ = LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+    prev_fd_subpixel_ = FontDescription::SubpixelPositioning();
+
+    // This is required for all LayoutTestSupport settings to have effects.
+    LayoutTestSupport::SetIsRunningLayoutTest(true);
+
+    if (b) {
+      // Allow subpixel positioning.
+      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(true);
+
+      // Now, enable subpixel positioning in platform-specific ways.
+
+      // Mac always enables subpixel positioning.
+
+      // On Windows, subpixel positioning also requires antialiasing.
+      LayoutTestSupport::SetFontAntialiasingEnabledForTest(true);
+
+      // On platforms other than Windows and Mac this needs to be set as
+      // well.
+      FontDescription::SetSubpixelPositioning(true);
+    } else {
+      // Explicitly disallow all subpixel positioning.
+      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(false);
+    }
+  }
+  ~ScopedSubpixelOverride() {
+    FontDescription::SetSubpixelPositioning(prev_fd_subpixel_);
+    LayoutTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
+    LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(
+        prev_subpixel_allowed_);
+    LayoutTestSupport::SetIsRunningLayoutTest(prev_layout_test_);
+
+    // Fonts cached with a different subpixel positioning state are not
+    // automatically invalidated and need to be cleared between test
+    // runs.
+    FontCache::GetFontCache()->Invalidate();
+  }
+
+ private:
+  bool prev_layout_test_;
+  bool prev_subpixel_allowed_;
+  bool prev_antialias_;
+  bool prev_fd_subpixel_;
 };
 
 class ShapeParameterTest : public HarfBuzzShaperTest,
@@ -998,6 +1050,168 @@ TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(7));
   EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(8));
   EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(9));
+}
+
+// Call this to ensure your test string has some kerning going on.
+static bool KerningIsHappening(const FontDescription& font_description,
+                               TextDirection direction,
+                               const String& str) {
+  FontDescription no_kern = font_description;
+  no_kern.SetKerning(FontDescription::kNoneKerning);
+
+  FontDescription kern = font_description;
+  kern.SetKerning(FontDescription::kAutoKerning);
+
+  Font font_no_kern(no_kern);
+  font_no_kern.Update(nullptr);
+
+  Font font_kern(kern);
+  font_kern.Update(nullptr);
+
+  HarfBuzzShaper shaper(str.Characters16(), str.length());
+
+  scoped_refptr<ShapeResult> result_no_kern =
+      shaper.Shape(&font_no_kern, direction);
+  scoped_refptr<ShapeResult> result_kern = shaper.Shape(&font_kern, direction);
+
+  for (unsigned i = 0; i < str.length(); i++) {
+    if (result_no_kern->PositionForOffset(i) !=
+        result_kern->PositionForOffset(i))
+      return true;
+  }
+  return false;
+}
+
+TEST_F(HarfBuzzShaperTest, KerningIsHappeningWorks) {
+  EXPECT_TRUE(
+      KerningIsHappening(font_description, TextDirection::kLtr, u"AVOID"));
+  EXPECT_FALSE(
+      KerningIsHappening(font_description, TextDirection::kLtr, u"NOID"));
+
+  // We won't kern vertically with the default font.
+  font_description.SetOrientation(FontOrientation::kVerticalUpright);
+
+  EXPECT_FALSE(
+      KerningIsHappening(font_description, TextDirection::kLtr, u"AVOID"));
+  EXPECT_FALSE(
+      KerningIsHappening(font_description, TextDirection::kLtr, u"NOID"));
+}
+
+TEST_F(HarfBuzzShaperTest,
+       ShapeHorizontalWithoutSubpixelPositionWithoutKerningIsRounded) {
+  ScopedSubpixelOverride subpixel_override(false);
+
+  String string(u"NOID");
+  TextDirection direction = TextDirection::kLtr;
+  ASSERT_FALSE(KerningIsHappening(font_description, direction, string));
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    EXPECT_EQ(round(position), position)
+        << "Position not rounded at offset " << i;
+  }
+}
+
+TEST_F(HarfBuzzShaperTest,
+       ShapeHorizontalWithSubpixelPositionWithoutKerningIsNotRounded) {
+  ScopedSubpixelOverride subpixel_override(true);
+
+  String string(u"NOID");
+  TextDirection direction = TextDirection::kLtr;
+  ASSERT_FALSE(KerningIsHappening(font_description, direction, string));
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    if (round(position) != position)
+      return;
+  }
+
+  EXPECT_TRUE(false) << "No unrounded positions found";
+}
+
+TEST_F(HarfBuzzShaperTest,
+       ShapeHorizontalWithoutSubpixelPositionWithKerningIsRounded) {
+  ScopedSubpixelOverride subpixel_override(false);
+
+  String string(u"AVOID");
+  TextDirection direction = TextDirection::kLtr;
+  ASSERT_TRUE(KerningIsHappening(font_description, direction, string));
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    EXPECT_EQ(round(position), position)
+        << "Position not rounded at offset " << i;
+  }
+}
+
+TEST_F(HarfBuzzShaperTest,
+       ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded) {
+  ScopedSubpixelOverride subpixel_override(true);
+
+  String string(u"AVOID");
+  TextDirection direction = TextDirection::kLtr;
+  ASSERT_TRUE(KerningIsHappening(font_description, direction, string));
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    if (round(position) != position)
+      return;
+  }
+
+  EXPECT_TRUE(false) << "No unrounded positions found";
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeVerticalWithoutSubpixelPositionIsRounded) {
+  ScopedSubpixelOverride subpixel_override(false);
+
+  font_description.SetOrientation(FontOrientation::kVerticalUpright);
+  font = Font(font_description);
+  font.Update(nullptr);
+
+  String string(u"\u65E5\u65E5\u65E5");
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    EXPECT_EQ(round(position), position)
+        << "Position not rounded at offset " << i;
+  }
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeVerticalWithSubpixelPositionIsRounded) {
+  ScopedSubpixelOverride subpixel_override(true);
+
+  font_description.SetOrientation(FontOrientation::kVerticalUpright);
+  font = Font(font_description);
+  font.Update(nullptr);
+
+  String string(u"\u65E5\u65E5\u65E5");
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Vertical text is never subpixel positioned.
+  for (unsigned i = 0; i < string.length(); i++) {
+    float position = result->PositionForOffset(i);
+    EXPECT_EQ(round(position), position)
+        << "Position not rounded at offset " << i;
+  }
 }
 
 }  // namespace blink

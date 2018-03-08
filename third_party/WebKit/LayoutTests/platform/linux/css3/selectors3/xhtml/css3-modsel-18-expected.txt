@@ -10,27 +10,27 @@ layer at (0,0) size 800x294
         LayoutInline {strong} at (0,0) size 30x19
           LayoutText {#text} at (674,0) size 30x19
             text run at (674,0) width 30: "here"
-        LayoutText {#text} at (703,0) size 744x39
-          text run at (703,0) width 41: ") or its"
+        LayoutText {#text} at (704,0) size 744x39
+          text run at (704,0) width 40: ") or its"
           text run at (0,20) width 157: "whitespace background, "
         LayoutInline {strong} at (0,0) size 30x19
           LayoutText {#text} at (157,20) size 30x19
             text run at (157,20) width 30: "here"
-        LayoutText {#text} at (186,20) size 5x19
-          text run at (186,20) width 5: ":"
+        LayoutText {#text} at (187,20) size 4x19
+          text run at (187,20) width 4: ":"
       LayoutBlockFlow {address} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 161x19
           text run at (0,0) width 161: "The background color of "
-        LayoutInline {a} at (0,0) size 115x19 [color=#0000EE]
-          LayoutText {#text} at (160,0) size 81x19
-            text run at (160,0) width 81: "this anchor ("
-          LayoutInline {strong} at (0,0) size 30x19
-            LayoutText {#text} at (240,0) size 30x19
-              text run at (240,0) width 30: "here"
-          LayoutText {#text} at (269,0) size 6x19
-            text run at (269,0) width 6: ")"
-        LayoutText {#text} at (274,0) size 387x19
-          text run at (274,0) width 387: " should turn to green when the pointing device hovers over it."
+        LayoutInline {a} at (0,0) size 114x19 [color=#0000EE]
+          LayoutText {#text} at (161,0) size 80x19
+            text run at (161,0) width 80: "this anchor ("
+          LayoutInline {strong} at (0,0) size 29x19
+            LayoutText {#text} at (241,0) size 29x19
+              text run at (241,0) width 29: "here"
+          LayoutText {#text} at (270,0) size 5x19
+            text run at (270,0) width 5: ")"
+        LayoutText {#text} at (275,0) size 387x19
+          text run at (275,0) width 387: " should turn to green when the pointing device hovers over it."
       LayoutTable {table} at (0,76) size 278x194
         LayoutTableSection {tbody} at (0,0) size 278x194
           LayoutTableRow {tr} at (0,5) size 278x22
@@ -63,8 +63,8 @@ layer at (0,0) size 800x294
               LayoutInline {strong} at (0,0) size 30x19
                 LayoutText {#text} at (41,1) size 30x19
                   text run at (41,1) width 30: "here"
-              LayoutText {#text} at (70,1) size 10x19
-                text run at (70,1) width 10: ")."
+              LayoutText {#text} at (71,1) size 9x19
+                text run at (71,1) width 9: ")."
             LayoutTableCell {td} at (174,69) size 99x2 [r=2 c=2 rs=1 cs=1]
           LayoutTableRow {tr} at (0,86) size 278x22
             LayoutTableCell {td} at (5,86) size 78x22 [r=3 c=0 rs=1 cs=1]
@@ -96,8 +96,8 @@ layer at (0,0) size 800x294
               LayoutInline {strong} at (0,0) size 35x19
                 LayoutText {#text} at (33,1) size 35x19
                   text run at (33,1) width 35: "there"
-              LayoutText {#text} at (67,1) size 5x19
-                text run at (67,1) width 5: ":"
+              LayoutText {#text} at (68,1) size 4x19
+                text run at (68,1) width 4: ":"
             LayoutTableCell {td} at (174,150) size 99x2 [r=5 c=2 rs=1 cs=1]
           LayoutTableRow {tr} at (0,167) size 278x22
             LayoutTableCell {td} at (5,167) size 78x22 [r=6 c=0 rs=1 cs=1]
@@ -106,8 +106,8 @@ layer at (0,0) size 800x294
               LayoutInline {strong} at (0,0) size 30x19
                 LayoutText {#text} at (33,1) size 30x19
                   text run at (33,1) width 30: "here"
-              LayoutText {#text} at (62,1) size 5x19
-                text run at (62,1) width 5: ":"
+              LayoutText {#text} at (63,1) size 4x19
+                text run at (63,1) width 4: ":"
             LayoutTableCell {td} at (88,177) size 81x2 [r=6 c=1 rs=1 cs=1]
             LayoutTableCell {td} at (174,167) size 99x22 [r=6 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 81x19

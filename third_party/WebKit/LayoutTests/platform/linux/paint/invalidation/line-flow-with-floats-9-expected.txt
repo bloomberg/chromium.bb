@@ -263,24 +263,9 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox ' was in a furious passion, and went\n'",
-          "rect": [14, 460, 355, 59],
-          "reason": "appeared"
-        },
-        {
           "object": "InlineTextBox 'about once in a minute.\n'",
           "rect": [14, 460, 355, 59],
           "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
-          "rect": [14, 460, 355, 59],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
-          "rect": [14, 460, 355, 59],
-          "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'her head!\u2019'",
@@ -296,11 +281,6 @@
           "object": "InlineTextBox 'stamping about, and'",
           "rect": [14, 460, 355, 59],
           "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'stamping'",
-          "rect": [14, 460, 355, 59],
-          "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'was in a furious passion, and went\n'",
@@ -338,6 +318,26 @@
           "reason": "disappeared"
         },
         {
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "rect": [14, 460, 354, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
+          "rect": [14, 460, 354, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+          "rect": [14, 460, 354, 59],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'stamping'",
+          "rect": [14, 460, 354, 59],
+          "reason": "appeared"
+        },
+        {
           "object": "InlineTextBox 'a very short time '",
           "rect": [65, 420, 304, 39],
           "reason": "appeared"
@@ -369,7 +369,7 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [65, 380, 141, 19],
+          "rect": [65, 380, 142, 19],
           "reason": "appeared"
         },
         {

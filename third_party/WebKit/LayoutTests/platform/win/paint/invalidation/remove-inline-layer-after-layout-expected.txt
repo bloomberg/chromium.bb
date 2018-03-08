@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 171, 19],
+          "rect": [112, 193, 170, 19],
           "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [282, 108, 101, 100],
+          "rect": [282, 108, 100, 100],
           "reason": "geometry"
         },
         {

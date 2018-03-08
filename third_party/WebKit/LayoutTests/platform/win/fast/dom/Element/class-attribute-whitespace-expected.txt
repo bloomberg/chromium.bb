@@ -6,14 +6,14 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 663x19
-          LayoutInline {A} at (0,0) size 351x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 351x19
-              text run at (49,0) width 351: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7761"
-          LayoutText {#text} at (399,0) size 313x19
-            text run at (399,0) width 313: " Tabs in class attribute not treated as whitespace"
-        LayoutText {#text} at (711,0) size 5x19
-          text run at (711,0) width 5: "."
+        LayoutInline {I} at (0,0) size 661x19
+          LayoutInline {A} at (0,0) size 349x19 [color=#0000EE]
+            LayoutText {#text} at (50,0) size 349x19
+              text run at (50,0) width 349: "http://bugzilla.opendarwin.org/show_bug.cgi?id=7761"
+          LayoutText {#text} at (399,0) size 312x19
+            text run at (399,0) width 312: " Tabs in class attribute not treated as whitespace"
+        LayoutText {#text} at (711,0) size 4x19
+          text run at (711,0) width 4: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 215x19
           text run at (0,0) width 215: "All of the following should be green:"

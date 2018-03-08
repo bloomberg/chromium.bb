@@ -293,7 +293,7 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'but generally, just as she had got its'",
+          "object": "InlineTextBox 'but generally, just as she had got its neck'",
           "rect": [14, 80, 355, 120],
           "reason": "geometry"
         },
@@ -323,7 +323,7 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "object": "InlineTextBox 'nicely straightened\n'",
           "rect": [14, 80, 355, 120],
           "reason": "appeared"
         },
@@ -338,7 +338,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "object": "InlineTextBox 'nicely straightened\n'",
           "rect": [14, 80, 355, 119],
           "reason": "disappeared"
         },
@@ -537,11 +537,11 @@
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'but generally, just as she had got its'",
+      "object": "InlineTextBox 'but generally, just as she had got its neck'",
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'neck nicely straightened\n'",
+      "object": "InlineTextBox 'nicely straightened\n'",
       "reason": "geometry"
     },
     {

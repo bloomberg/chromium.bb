@@ -9,8 +9,8 @@ layer at (0,0) size 800x88
         LayoutInline {<pseudo:after>} at (0,0) size 57x19 [bgcolor=#00FF00]
           LayoutTextFragment (anonymous) at (78,0) size 57x19
             text run at (78,0) width 57: "PASSED"
-      LayoutText {#text} at (134,0) size 5x19
-        text run at (134,0) width 5: "."
+      LayoutText {#text} at (135,0) size 4x19
+        text run at (135,0) width 4: "."
     LayoutBlockFlow {p} at (0,52) size 800x20
       LayoutText {#text} at (0,0) size 420x19
         text run at (0,0) width 420: "(If the previous line just reads \"This test has .\" then this test has failed.)"

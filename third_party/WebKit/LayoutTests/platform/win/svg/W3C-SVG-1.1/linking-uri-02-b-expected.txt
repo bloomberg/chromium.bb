@@ -65,9 +65,9 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (65,280.59) size 54x18.59
           chunk 1 text run 1 at (65.00,295.00) startOffset 0 endOffset 7 width 54.00: "Polygon"
       LayoutSVGRect {rect} at (36,208) size 100x89 [stroke={[type=SOLID] [color=#000000]}] [x=36.00] [y=208.00] [width=100.00] [height=89.00]
-      LayoutSVGText {text} at (46,188) size 75.31x11.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (46,188) size 75.31x11.39
-          chunk 1 text run 1 at (46.00,197.00) startOffset 0 endOffset 18 width 75.32: "viewTarget, should"
+      LayoutSVGText {text} at (46,188) size 75.59x11.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (46,188) size 75.59x11.39
+          chunk 1 text run 1 at (46.00,197.00) startOffset 0 endOffset 18 width 75.60: "viewTarget, should"
       LayoutSVGText {text} at (46,197) size 71.39x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (46,197) size 71.39x11.39
           chunk 1 text run 1 at (46.00,206.00) startOffset 0 endOffset 17 width 71.40: "highlight polygon"

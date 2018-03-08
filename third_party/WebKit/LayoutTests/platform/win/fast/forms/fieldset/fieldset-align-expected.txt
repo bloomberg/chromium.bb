@@ -35,8 +35,8 @@ layer at (0,0) size 785x1411 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,300.38) size 769x20
-        LayoutText {#text} at (0,0) size 137x19
-          text run at (0,0) width 137: "Legend align test, RTL"
+        LayoutText {#text} at (0,0) size 136x19
+          text run at (0,0) width 136: "Legend align test, RTL"
       LayoutBlockFlow (anonymous) at (0,336.38) size 769x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

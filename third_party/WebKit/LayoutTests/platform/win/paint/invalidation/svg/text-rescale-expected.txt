@@ -19,22 +19,22 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'PASS '",
-          "rect": [0, 114, 302, 46],
+          "rect": [0, 114, 301, 46],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [0, 14, 302, 46],
+          "rect": [0, 14, 301, 46],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 114, 92, 46],
+          "rect": [310, 114, 91, 46],
           "reason": "paint property change"
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [310, 14, 92, 46],
+          "rect": [310, 14, 91, 46],
           "reason": "appeared"
         },
         {

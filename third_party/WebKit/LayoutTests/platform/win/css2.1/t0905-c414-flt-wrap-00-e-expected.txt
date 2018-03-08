@@ -7,7 +7,7 @@ layer at (0,0) size 800x189
         LayoutText {#text} at (0,0) size 246x19
           text run at (0,0) width 246: "The word \"fail\" should not appear below."
       LayoutBlockFlow {DIV} at (16,36) size 240x120.63 [color=#FFFFFF] [bgcolor=#FFFFFF]
-        LayoutBlockFlow (floating) {P} at (0,0) size 38.52x20.31 [color=#000080]
+        LayoutBlockFlow (floating) {P} at (0,0) size 38.31x20.31 [color=#000080]
           LayoutText {#text} at (0,0) size 39x20
             text run at (0,0) width 39: "TEST:"
         LayoutBlockFlow (floating) {P} at (0.02,20.31) size 239.98x20.31 [color=#00FFFF] [bgcolor=#008080]

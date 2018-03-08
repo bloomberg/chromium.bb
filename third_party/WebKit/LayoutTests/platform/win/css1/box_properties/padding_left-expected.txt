@@ -50,9 +50,9 @@ layer at (0,0) size 785x1045 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 682: "The left padding on this unordered list has been set to 25 pixels, which will require some extra test in order to test."
         LayoutListItem {LI} at (25,20) size 744x60 [bgcolor=#FFFFFF]
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (25,0) size 709x59
-            text run at (25,0) width 684: "Another list item might not be such a bad idea, either, considering that such things do need to be double-checked. "
-            text run at (708,0) width 26: "This"
+          LayoutText {#text} at (25,0) size 708x59
+            text run at (25,0) width 683: "Another list item might not be such a bad idea, either, considering that such things do need to be double-checked. "
+            text run at (708,0) width 25: "This"
             text run at (25,20) width 683: "list item has its left padding also set to 25 pixels, which should combine with the list's padding to make 50 pixels of"
             text run at (25,40) width 44: "margin."
       LayoutBlockFlow {P} at (0,519) size 769x40 [bgcolor=#00FFFF]
@@ -104,7 +104,7 @@ layer at (0,0) size 785x1045 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutListItem {LI} at (25,20) size 722x60 [bgcolor=#FFFFFF]
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                   LayoutText {#text} at (25,0) size 696x59
-                    text run at (25,0) width 680: "Another list item might not be such a bad idea, either, considering that such things do need to be double-checked."
+                    text run at (25,0) width 679: "Another list item might not be such a bad idea, either, considering that such things do need to be double-checked."
                     text run at (25,20) width 696: "This list item has its left padding also set to 25 pixels, which should combine with the list's padding to make 50 pixels"
                     text run at (25,40) width 60: "of margin."
               LayoutBlockFlow {P} at (4,380) size 747x40 [bgcolor=#00FFFF]

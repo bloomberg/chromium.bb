@@ -22,6 +22,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 356x22
             text run at (0,0) width 356: "The quick brown fox jumps over the lazy dog"
       LayoutBlockFlow {DIV} at (0,158) size 784x23
-        LayoutInline {SPAN} at (0,0) size 362x22
-          LayoutText {#text} at (0,0) size 362x22
-            text run at (0,0) width 362: "The quick brown fox jumps over the lazy dog"
+        LayoutInline {SPAN} at (0,0) size 361x22
+          LayoutText {#text} at (0,0) size 361x22
+            text run at (0,0) width 361: "The quick brown fox jumps over the lazy dog"

@@ -29,11 +29,11 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (19,95) size 0x0
       LayoutBlockFlow (anonymous) at (0,256) size 769x120
         LayoutBlockFlow (floating) {P} at (0,0) size 384.50x120 [bgcolor=#FFFF00]
-          LayoutText {#text} at (0,0) size 385x119
+          LayoutText {#text} at (0,0) size 384x119
             text run at (0,0) width 384: "This paragraph is floated to the left and the orange square"
             text run at (0,20) width 384: "image should appear to the right of the paragraph. This"
             text run at (0,40) width 384: "paragraph has a yellow background and no padding, margin"
-            text run at (0,60) width 385: "or border. The right edge of this yellow box should be"
+            text run at (0,60) width 384: "or border. The right edge of this yellow box should be"
             text run at (0,80) width 384: "horizontally aligned with the left edge of the yellow box"
             text run at (0,100) width 79: "undernearth."
         LayoutImage {IMG} at (384.50,0) size 15x15
@@ -60,7 +60,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (48,0) size 769x59
           text run at (48,0) width 721: "he first letter (a \"T\") of this paragraph should float left and be twice the font-size of the rest of the paragraph, as"
           text run at (48,20) width 496: "well as bold, with a content width of 1.5em and a background-color of silver. "
-          text run at (543,20) width 226: "The top of the big letter \"T\" should"
+          text run at (544,20) width 225: "The top of the big letter \"T\" should"
           text run at (0,40) width 675: "be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-cap\"."
       LayoutBlockFlow (anonymous) at (0,592) size 769x20
         LayoutBR {BR} at (0,0) size 0x19
@@ -82,8 +82,8 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,20) width 413: "content of the paragraph should appear on the left side of the"
           text run at (0,40) width 193: "yellow \"sidebar\" on the right. "
           text run at (193,40) width 220: "The content of this element should"
-          text run at (0,60) width 220: "flow around the floated element. "
-          text run at (220,60) width 193: "However, the floated element"
+          text run at (0,60) width 219: "flow around the floated element. "
+          text run at (219,60) width 194: "However, the floated element"
           text run at (0,80) width 413: "may or may not be obscured by the blue background of this"
           text run at (0,100) width 413: "element, as the specification does not say which is drawn \"on"
           text run at (0,120) width 37: "top.\" "
@@ -145,7 +145,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,0) width 144: "See description in the"
                 text run at (0,20) width 124: "box on the left side."
           LayoutBlockFlow {P} at (0,0) size 576.75x140
-            LayoutText {#text} at (0,0) size 577x139
+            LayoutText {#text} at (0,0) size 576x139
               text run at (0,0) width 422: "This paragraph is inside a DIV which is floated left. The"
               text run at (0,20) width 422: "background of the DIV element is blue and its width is 75%. This"
               text run at (0,40) width 365: "text should all be inside the blue rectangle. The blue DIV "
@@ -154,9 +154,9 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (166,60) width 362: "background color and is floated to the right. Since it is a "
               text run at (528,60) width 48: "child of"
               text run at (0,80) width 373: "the blue DIV, the yellow DIV should appear inside the "
-              text run at (372,80) width 204: "blue rectangle. Due to it being"
+              text run at (373,80) width 203: "blue rectangle. Due to it being"
               text run at (0,100) width 193: "floated to the right and having "
-              text run at (193,100) width 384: "a 10px right margin, the yellow rectange should have a 10px"
+              text run at (193,100) width 383: "a 10px right margin, the yellow rectange should have a 10px"
               text run at (0,120) width 31: "blue "
               text run at (31,120) width 138: "stripe on its right side."
         LayoutBR {BR} at (576,0) size 1x19
@@ -164,9 +164,9 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x1492
           LayoutTableRow {TR} at (0,0) size 767x28
             LayoutTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 161x19
-                LayoutText {#text} at (4,4) size 161x19
-                  text run at (4,4) width 161: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 159x19
+                LayoutText {#text} at (4,4) size 159x19
+                  text run at (4,4) width 159: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 767x1464
             LayoutTableCell {TD} at (0,746) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -229,7 +229,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (48,0) size 747x59
                   text run at (48,0) width 699: "he first letter (a \"T\") of this paragraph should float left and be twice the font-size of the rest of the paragraph, as"
                   text run at (48,20) width 513: "well as bold, with a content width of 1.5em and a background-color of silver. "
-                  text run at (560,20) width 187: "The top of the big letter \"T\""
+                  text run at (561,20) width 186: "The top of the big letter \"T\""
                   text run at (0,40) width 721: "should be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-cap\"."
               LayoutBlockFlow (anonymous) at (4,596) size 747x20
                 LayoutBR {BR} at (0,0) size 0x19
@@ -326,7 +326,7 @@ layer at (0,0) size 785x2946 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (217,60) width 343: "background color and is floated to the right. Since it is"
                       text run at (0,80) width 11: "a "
                       text run at (11,80) width 408: "child of the blue DIV, the yellow DIV should appear inside the "
-                      text run at (418,80) width 142: "blue rectangle. Due to"
+                      text run at (419,80) width 141: "blue rectangle. Due to"
                       text run at (0,100) width 252: "it being floated to the right and having "
                       text run at (252,100) width 308: "a 10px right margin, the yellow rectange should"
                       text run at (0,120) width 112: "have a 10px blue "

@@ -199,27 +199,27 @@
         },
         {
           "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [14, 440, 355, 59],
+          "rect": [14, 440, 354, 59],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [14, 440, 355, 59],
+          "rect": [14, 440, 354, 59],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 440, 355, 59],
+          "rect": [14, 440, 354, 59],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'stamping about, and'",
-          "rect": [14, 440, 355, 59],
+          "rect": [14, 440, 354, 59],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [14, 440, 355, 59],
+          "rect": [14, 440, 354, 59],
           "reason": "disappeared"
         },
         {
@@ -284,12 +284,12 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "disappeared"
         },
         {

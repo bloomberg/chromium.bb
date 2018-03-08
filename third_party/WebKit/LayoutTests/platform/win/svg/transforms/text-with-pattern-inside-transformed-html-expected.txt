@@ -4,9 +4,9 @@ layer at (0,0) size 800x536
   LayoutBlockFlow {html} at (0,0) size 800x536
     LayoutBlockFlow {body} at (8,16) size 784x470
       LayoutBlockFlow {p} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 521x19
-          text run at (0,0) width 300: "CSS Transformed HTML div with SVG inside it. "
-          text run at (299,0) width 222: "objectBoundingBox patterns on text."
+        LayoutText {#text} at (0,0) size 520x19
+          text run at (0,0) width 299: "CSS Transformed HTML div with SVG inside it. "
+          text run at (299,0) width 221: "objectBoundingBox patterns on text."
 layer at (58,86) size 400x400
   LayoutBlockFlow {div} at (50,70) size 400x400
     LayoutSVGRoot {svg} at (0,0) size 400x300

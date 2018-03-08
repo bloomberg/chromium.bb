@@ -123,14 +123,14 @@ layer at (8,8) size 765x3840 backgroundClip at (0,0) size 781x600 clip at (0,0) 
               text run at (1,1) width 43: "3-10"
         LayoutTableRow {TR} at (0,1040) size 305x102
           LayoutTableCell {TD} at (2,1077) size 99x27 [r=10 c=0 rs=1 cs=1]
-            LayoutText {#text} at (1,1) size 42x24
-              text run at (1,1) width 42: "1-11"
+            LayoutText {#text} at (1,1) size 41x24
+              text run at (1,1) width 41: "1-11"
           LayoutTableCell {TD} at (103,1077) size 99x27 [r=10 c=1 rs=1 cs=1]
-            LayoutText {#text} at (1,1) size 42x24
-              text run at (1,1) width 42: "2-11"
+            LayoutText {#text} at (1,1) size 41x24
+              text run at (1,1) width 41: "2-11"
           LayoutTableCell {TD} at (204,1077) size 99x27 [r=10 c=2 rs=1 cs=1]
-            LayoutText {#text} at (1,1) size 42x24
-              text run at (1,1) width 42: "3-11"
+            LayoutText {#text} at (1,1) size 41x24
+              text run at (1,1) width 41: "3-11"
         LayoutTableRow {TR} at (0,1185) size 305x102
           LayoutTableCell {TD} at (2,1222) size 99x27 [r=11 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 43x24

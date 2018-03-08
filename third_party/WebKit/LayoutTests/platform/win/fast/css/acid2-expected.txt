@@ -76,13 +76,13 @@ layer at (48,84) size 704x84
       LayoutText {#text} at (0,0) size 253x29
         text run at (0,0) width 253: "Standards compliant?"
     LayoutBlockFlow {P} at (13,43) size 678x28
-      LayoutInline {A} at (0,0) size 214x27 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 214x27
-          text run at (0,0) width 214: "Take The Acid2 Test"
-      LayoutText {#text} at (213,0) size 202x27
-        text run at (213,0) width 202: " and compare it to "
-      LayoutInline {A} at (0,0) size 253x27 [color=#0000FF]
-        LayoutText {#text} at (414,0) size 253x27
-          text run at (414,0) width 253: "the reference rendering"
-      LayoutText {#text} at (666,0) size 8x27
-        text run at (666,0) width 8: "."
+      LayoutInline {A} at (0,0) size 213x27 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 213x27
+          text run at (0,0) width 213: "Take The Acid2 Test"
+      LayoutText {#text} at (213,0) size 201x27
+        text run at (213,0) width 201: " and compare it to "
+      LayoutInline {A} at (0,0) size 252x27 [color=#0000FF]
+        LayoutText {#text} at (414,0) size 252x27
+          text run at (414,0) width 252: "the reference rendering"
+      LayoutText {#text} at (666,0) size 7x27
+        text run at (666,0) width 7: "."

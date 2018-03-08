@@ -52,9 +52,9 @@ layer at (0,0) size 800x521
             LayoutSVGInlineText {#text} at (234.50,60) size 10x12
               chunk 1 (middle anchor) text run 1 at (234.50,70.00) startOffset 0 endOffset 2 width 10.00: "10"
           LayoutSVGRect {rect} at (252,-6) size 14x71 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=252.00] [y=-6.00] [width=14.00] [height=71.00]
-          LayoutSVGText {text} at (254.17,60) size 9.63x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (254.17,60) size 9.63x12
-              chunk 1 (middle anchor) text run 1 at (254.19,70.00) startOffset 0 endOffset 2 width 9.63: "11"
+          LayoutSVGText {text} at (254,60) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (254,60) size 10x12
+              chunk 1 (middle anchor) text run 1 at (254.00,70.00) startOffset 0 endOffset 2 width 10.00: "11"
           LayoutSVGRect {rect} at (266,-6) size 15x71 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=266.00] [y=-6.00] [width=15.00] [height=71.00]
           LayoutSVGText {text} at (268.50,60) size 10x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (268.50,60) size 10x12
@@ -156,65 +156,65 @@ layer at (0,0) size 800x521
             LayoutSVGInlineText {#text} at (210.50,157) size 10x12
               chunk 1 (middle anchor) text run 1 at (210.50,167.00) startOffset 0 endOffset 2 width 10.00: "10"
           LayoutSVGRect {rect} at (223,105) size 12x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=223.00] [y=105.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (224.17,157) size 9.63x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (224.17,157) size 9.63x12
-              chunk 1 (middle anchor) text run 1 at (224.19,167.00) startOffset 0 endOffset 2 width 9.63: "11"
+          LayoutSVGText {text} at (224,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (224,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (224.00,167.00) startOffset 0 endOffset 2 width 10.00: "11"
           LayoutSVGRect {rect} at (235,105) size 13x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=235.00] [y=105.00] [width=13.00] [height=57.00]
           LayoutSVGText {text} at (236.50,157) size 10x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (236.50,157) size 10x12
               chunk 1 (middle anchor) text run 1 at (236.50,167.00) startOffset 0 endOffset 2 width 10.00: "12"
-          LayoutSVGRect {rect} at (248,105) size 14.10x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=248.00] [y=105.00] [width=14.10] [height=57.00]
-          LayoutSVGText {text} at (250.05,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (250.05,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (250.05,167.00) startOffset 0 endOffset 2 width 10.00: "13"
-          LayoutSVGRect {rect} at (262.10,105) size 15x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=262.10] [y=105.00] [width=15.00] [height=57.00]
-          LayoutSVGText {text} at (264.59,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (264.59,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (264.60,167.00) startOffset 0 endOffset 2 width 10.00: "14"
-          LayoutSVGRect {rect} at (277.10,105) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=277.10] [y=105.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (278.09,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (278.09,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (278.10,167.00) startOffset 0 endOffset 2 width 10.00: "15"
-          LayoutSVGRect {rect} at (289.10,105) size 13x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=289.10] [y=105.00] [width=13.00] [height=57.00]
-          LayoutSVGText {text} at (290.59,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (290.59,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (290.60,167.00) startOffset 0 endOffset 2 width 10.00: "16"
-          LayoutSVGRect {rect} at (302.10,105) size 22x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=302.10] [y=105.00] [width=22.00] [height=57.00]
-          LayoutSVGText {text} at (308.09,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (308.09,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (308.10,167.00) startOffset 0 endOffset 2 width 10.00: "17"
-          LayoutSVGRect {rect} at (324.10,105) size 24x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=324.10] [y=105.00] [width=24.00] [height=57.00]
-          LayoutSVGText {text} at (331.09,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (331.09,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (331.10,167.00) startOffset 0 endOffset 2 width 10.00: "18"
-          LayoutSVGRect {rect} at (348.10,105) size 22x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=348.10] [y=105.00] [width=22.00] [height=57.00]
-          LayoutSVGText {text} at (354.09,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (354.09,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (354.10,167.00) startOffset 0 endOffset 2 width 10.00: "19"
-          LayoutSVGRect {rect} at (370.10,105) size 14.10x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=370.10] [y=105.00] [width=14.10] [height=57.00]
-          LayoutSVGText {text} at (372.14,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (372.14,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (372.15,167.00) startOffset 0 endOffset 2 width 10.00: "20"
-          LayoutSVGRect {rect} at (384.19,105) size 15x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=384.19] [y=105.00] [width=15.00] [height=57.00]
-          LayoutSVGText {text} at (386.69,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (386.69,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (386.69,167.00) startOffset 0 endOffset 2 width 10.00: "21"
-          LayoutSVGRect {rect} at (399.19,105) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=399.19] [y=105.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (400.19,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (400.19,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (400.19,167.00) startOffset 0 endOffset 2 width 10.00: "22"
-          LayoutSVGRect {rect} at (411.19,105) size 25x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=411.19] [y=105.00] [width=25.00] [height=57.00]
-          LayoutSVGText {text} at (418.69,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (418.69,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (418.69,167.00) startOffset 0 endOffset 2 width 10.00: "23"
-          LayoutSVGRect {rect} at (436.19,105) size 22x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=436.19] [y=105.00] [width=22.00] [height=57.00]
-          LayoutSVGText {text} at (442.19,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (442.19,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (442.19,167.00) startOffset 0 endOffset 2 width 10.00: "24"
-          LayoutSVGRect {rect} at (458.19,105) size 15x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=458.19] [y=105.00] [width=15.00] [height=57.00]
-          LayoutSVGText {text} at (460.69,157) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (460.69,157) size 10x12
-              chunk 1 (middle anchor) text run 1 at (460.69,167.00) startOffset 0 endOffset 2 width 10.00: "25"
+          LayoutSVGRect {rect} at (248,105) size 14x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=248.00] [y=105.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (250,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (250,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (250.00,167.00) startOffset 0 endOffset 2 width 10.00: "13"
+          LayoutSVGRect {rect} at (262,105) size 15x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=262.00] [y=105.00] [width=15.00] [height=57.00]
+          LayoutSVGText {text} at (264.50,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (264.50,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (264.50,167.00) startOffset 0 endOffset 2 width 10.00: "14"
+          LayoutSVGRect {rect} at (277,105) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=277.00] [y=105.00] [width=12.00] [height=57.00]
+          LayoutSVGText {text} at (278,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (278,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (278.00,167.00) startOffset 0 endOffset 2 width 10.00: "15"
+          LayoutSVGRect {rect} at (289,105) size 13x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=289.00] [y=105.00] [width=13.00] [height=57.00]
+          LayoutSVGText {text} at (290.50,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (290.50,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (290.50,167.00) startOffset 0 endOffset 2 width 10.00: "16"
+          LayoutSVGRect {rect} at (302,105) size 22x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=302.00] [y=105.00] [width=22.00] [height=57.00]
+          LayoutSVGText {text} at (308,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (308,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (308.00,167.00) startOffset 0 endOffset 2 width 10.00: "17"
+          LayoutSVGRect {rect} at (324,105) size 24x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=324.00] [y=105.00] [width=24.00] [height=57.00]
+          LayoutSVGText {text} at (331,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (331,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (331.00,167.00) startOffset 0 endOffset 2 width 10.00: "18"
+          LayoutSVGRect {rect} at (348,105) size 22x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=348.00] [y=105.00] [width=22.00] [height=57.00]
+          LayoutSVGText {text} at (354,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (354,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (354.00,167.00) startOffset 0 endOffset 2 width 10.00: "19"
+          LayoutSVGRect {rect} at (370,105) size 14x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=370.00] [y=105.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (372,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (372,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (372.00,167.00) startOffset 0 endOffset 2 width 10.00: "20"
+          LayoutSVGRect {rect} at (384,105) size 15x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=384.00] [y=105.00] [width=15.00] [height=57.00]
+          LayoutSVGText {text} at (386.50,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (386.50,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (386.50,167.00) startOffset 0 endOffset 2 width 10.00: "21"
+          LayoutSVGRect {rect} at (399,105) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=399.00] [y=105.00] [width=12.00] [height=57.00]
+          LayoutSVGText {text} at (400,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (400,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (400.00,167.00) startOffset 0 endOffset 2 width 10.00: "22"
+          LayoutSVGRect {rect} at (411,105) size 25x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=411.00] [y=105.00] [width=25.00] [height=57.00]
+          LayoutSVGText {text} at (418.50,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (418.50,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (418.50,167.00) startOffset 0 endOffset 2 width 10.00: "23"
+          LayoutSVGRect {rect} at (436,105) size 22x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=436.00] [y=105.00] [width=22.00] [height=57.00]
+          LayoutSVGText {text} at (442,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (442,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (442.00,167.00) startOffset 0 endOffset 2 width 10.00: "24"
+          LayoutSVGRect {rect} at (458,105) size 15x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=458.00] [y=105.00] [width=15.00] [height=57.00]
+          LayoutSVGText {text} at (460.50,157) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (460.50,157) size 10x12
+              chunk 1 (middle anchor) text run 1 at (460.50,167.00) startOffset 0 endOffset 2 width 10.00: "25"
           LayoutSVGRect {rect} at (25,204) size 28x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=25.00] [y=204.00] [width=28.00] [height=57.00]
           LayoutSVGText {text} at (36.50,256) size 5x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (36.50,256) size 5x12
@@ -260,65 +260,65 @@ layer at (0,0) size 800x521
             LayoutSVGInlineText {#text} at (236,256) size 10x12
               chunk 1 (middle anchor) text run 1 at (236.00,266.00) startOffset 0 endOffset 2 width 10.00: "10"
           LayoutSVGRect {rect} at (248,204) size 12x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=248.00] [y=204.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (249.17,256) size 9.63x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (249.17,256) size 9.63x12
-              chunk 1 (middle anchor) text run 1 at (249.19,266.00) startOffset 0 endOffset 2 width 9.63: "11"
+          LayoutSVGText {text} at (249,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (249,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (249.00,266.00) startOffset 0 endOffset 2 width 10.00: "11"
           LayoutSVGRect {rect} at (260,204) size 14x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=260.00] [y=204.00] [width=14.00] [height=57.00]
           LayoutSVGText {text} at (262,256) size 10x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (262,256) size 10x12
               chunk 1 (middle anchor) text run 1 at (262.00,266.00) startOffset 0 endOffset 2 width 10.00: "12"
-          LayoutSVGRect {rect} at (274,204) size 13.10x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=274.00] [y=204.00] [width=13.10] [height=57.00]
-          LayoutSVGText {text} at (275.55,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (275.55,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (275.55,266.00) startOffset 0 endOffset 2 width 10.00: "13"
-          LayoutSVGRect {rect} at (287.10,204) size 14x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=287.10] [y=204.00] [width=14.00] [height=57.00]
-          LayoutSVGText {text} at (289.09,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (289.09,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (289.10,266.00) startOffset 0 endOffset 2 width 10.00: "14"
-          LayoutSVGRect {rect} at (301.10,204) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=301.10] [y=204.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (302.09,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (302.09,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (302.10,266.00) startOffset 0 endOffset 2 width 10.00: "15"
-          LayoutSVGRect {rect} at (313.10,204) size 14x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=313.10] [y=204.00] [width=14.00] [height=57.00]
-          LayoutSVGText {text} at (315.09,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (315.09,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (315.10,266.00) startOffset 0 endOffset 2 width 10.00: "16"
-          LayoutSVGRect {rect} at (327.10,204) size 28x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=327.10] [y=204.00] [width=28.00] [height=57.00]
-          LayoutSVGText {text} at (336.09,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (336.09,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (336.10,266.00) startOffset 0 endOffset 2 width 10.00: "17"
-          LayoutSVGRect {rect} at (355.10,204) size 28x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=355.10] [y=204.00] [width=28.00] [height=57.00]
-          LayoutSVGText {text} at (364.09,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (364.09,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (364.10,266.00) startOffset 0 endOffset 2 width 10.00: "18"
-          LayoutSVGRect {rect} at (383.10,204) size 25x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=383.10] [y=204.00] [width=25.00] [height=57.00]
-          LayoutSVGText {text} at (390.59,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (390.59,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (390.60,266.00) startOffset 0 endOffset 2 width 10.00: "19"
-          LayoutSVGRect {rect} at (408.10,204) size 13.10x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=408.10] [y=204.00] [width=13.10] [height=57.00]
-          LayoutSVGText {text} at (409.64,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (409.64,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (409.65,266.00) startOffset 0 endOffset 2 width 10.00: "20"
-          LayoutSVGRect {rect} at (421.19,204) size 14x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=421.19] [y=204.00] [width=14.00] [height=57.00]
-          LayoutSVGText {text} at (423.19,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (423.19,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (423.19,266.00) startOffset 0 endOffset 2 width 10.00: "21"
-          LayoutSVGRect {rect} at (435.19,204) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=435.19] [y=204.00] [width=12.00] [height=57.00]
-          LayoutSVGText {text} at (436.19,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (436.19,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (436.19,266.00) startOffset 0 endOffset 2 width 10.00: "22"
-          LayoutSVGRect {rect} at (447.19,204) size 28x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=447.19] [y=204.00] [width=28.00] [height=57.00]
-          LayoutSVGText {text} at (456.19,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (456.19,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (456.19,266.00) startOffset 0 endOffset 2 width 10.00: "23"
-          LayoutSVGRect {rect} at (475.19,204) size 28x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=475.19] [y=204.00] [width=28.00] [height=57.00]
-          LayoutSVGText {text} at (484.19,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (484.19,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (484.19,266.00) startOffset 0 endOffset 2 width 10.00: "24"
-          LayoutSVGRect {rect} at (503.19,204) size 14x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=503.19] [y=204.00] [width=14.00] [height=57.00]
-          LayoutSVGText {text} at (505.19,256) size 10x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (505.19,256) size 10x12
-              chunk 1 (middle anchor) text run 1 at (505.19,266.00) startOffset 0 endOffset 2 width 10.00: "25"
+          LayoutSVGRect {rect} at (274,204) size 13x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=274.00] [y=204.00] [width=13.00] [height=57.00]
+          LayoutSVGText {text} at (275.50,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (275.50,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (275.50,266.00) startOffset 0 endOffset 2 width 10.00: "13"
+          LayoutSVGRect {rect} at (287,204) size 14x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=287.00] [y=204.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (289,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (289,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (289.00,266.00) startOffset 0 endOffset 2 width 10.00: "14"
+          LayoutSVGRect {rect} at (301,204) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=301.00] [y=204.00] [width=12.00] [height=57.00]
+          LayoutSVGText {text} at (302,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (302,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (302.00,266.00) startOffset 0 endOffset 2 width 10.00: "15"
+          LayoutSVGRect {rect} at (313,204) size 14x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=313.00] [y=204.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (315,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (315,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (315.00,266.00) startOffset 0 endOffset 2 width 10.00: "16"
+          LayoutSVGRect {rect} at (327,204) size 28x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=327.00] [y=204.00] [width=28.00] [height=57.00]
+          LayoutSVGText {text} at (336,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (336,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (336.00,266.00) startOffset 0 endOffset 2 width 10.00: "17"
+          LayoutSVGRect {rect} at (355,204) size 28x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=355.00] [y=204.00] [width=28.00] [height=57.00]
+          LayoutSVGText {text} at (364,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (364,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (364.00,266.00) startOffset 0 endOffset 2 width 10.00: "18"
+          LayoutSVGRect {rect} at (383,204) size 25x57 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=383.00] [y=204.00] [width=25.00] [height=57.00]
+          LayoutSVGText {text} at (390.50,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (390.50,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (390.50,266.00) startOffset 0 endOffset 2 width 10.00: "19"
+          LayoutSVGRect {rect} at (408,204) size 13x57 [fill={[type=SOLID] [color=#EE82EE] [opacity=0.50]}] [x=408.00] [y=204.00] [width=13.00] [height=57.00]
+          LayoutSVGText {text} at (409.50,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (409.50,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (409.50,266.00) startOffset 0 endOffset 2 width 10.00: "20"
+          LayoutSVGRect {rect} at (421,204) size 14x57 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=421.00] [y=204.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (423,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (423,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (423.00,266.00) startOffset 0 endOffset 2 width 10.00: "21"
+          LayoutSVGRect {rect} at (435,204) size 12x57 [fill={[type=SOLID] [color=#FFA500] [opacity=0.50]}] [x=435.00] [y=204.00] [width=12.00] [height=57.00]
+          LayoutSVGText {text} at (436,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (436,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (436.00,266.00) startOffset 0 endOffset 2 width 10.00: "22"
+          LayoutSVGRect {rect} at (447,204) size 28x57 [fill={[type=SOLID] [color=#FFFF00] [opacity=0.50]}] [x=447.00] [y=204.00] [width=28.00] [height=57.00]
+          LayoutSVGText {text} at (456,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (456,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (456.00,266.00) startOffset 0 endOffset 2 width 10.00: "23"
+          LayoutSVGRect {rect} at (475,204) size 28x57 [fill={[type=SOLID] [color=#008000] [opacity=0.50]}] [x=475.00] [y=204.00] [width=28.00] [height=57.00]
+          LayoutSVGText {text} at (484,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (484,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (484.00,266.00) startOffset 0 endOffset 2 width 10.00: "24"
+          LayoutSVGRect {rect} at (503,204) size 14x57 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=503.00] [y=204.00] [width=14.00] [height=57.00]
+          LayoutSVGText {text} at (505,256) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (505,256) size 10x12
+              chunk 1 (middle anchor) text run 1 at (505.00,266.00) startOffset 0 endOffset 2 width 10.00: "25"
           LayoutSVGRect {rect} at (46.06,341.87) size 30.23x72.67 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=46.06] [y=341.87] [width=30.23] [height=72.67]
           LayoutSVGText {text} at (58.67,409.53) size 5x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (58.67,409.53) size 5x12
@@ -364,9 +364,9 @@ layer at (0,0) size 800x521
             LayoutSVGInlineText {#text} at (254.81,339.94) size 10x12
               chunk 1 (middle anchor) text run 1 at (254.81,349.94) startOffset 0 endOffset 2 width 10.00: "10"
           LayoutSVGRect {rect} at (275.37,268.10) size 16.46x71.44 [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=275.37] [y=268.10] [width=16.46] [height=71.44]
-          LayoutSVGText {text} at (278.78,334.53) size 9.63x12 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (278.78,334.53) size 9.63x12
-              chunk 1 (middle anchor) text run 1 at (278.79,344.55) startOffset 0 endOffset 2 width 9.63: "11"
+          LayoutSVGText {text} at (278.59,334.53) size 10x12 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (278.59,334.53) size 10x12
+              chunk 1 (middle anchor) text run 1 at (278.60,344.55) startOffset 0 endOffset 2 width 10.00: "11"
           LayoutSVGRect {rect} at (288.77,268.43) size 37x74.27 [fill={[type=SOLID] [color=#4B0082] [opacity=0.50]}] [x=288.77] [y=268.43] [width=36.99] [height=74.27]
           LayoutSVGText {text} at (302.27,337.70) size 10x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (302.27,337.70) size 10x12
@@ -454,12 +454,12 @@ layer at (0,0) size 800x521
         LayoutSVGText {text} at (25,-6) size 562x71 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (25,-6) size 562x71
             chunk 1 text run 1 at (25.00,50.00) startOffset 0 endOffset 26 width 562.00: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
-        LayoutSVGText {text} at (25,105) size 454.19x57 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,105) size 454.19x57
-            chunk 1 text run 1 at (25.00,150.00) startOffset 0 endOffset 26 width 448.19: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
-        LayoutSVGText {text} at (25,204) size 493.19x57 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (25,204) size 493.19x57
-            chunk 1 text run 1 at (25.00,250.00) startOffset 0 endOffset 26 width 492.19: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
+        LayoutSVGText {text} at (25,105) size 454x57 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,105) size 454x57
+            chunk 1 text run 1 at (25.00,150.00) startOffset 0 endOffset 26 width 448.00: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
+        LayoutSVGText {text} at (25,204) size 493x57 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (25,204) size 493x57
+            chunk 1 text run 1 at (25.00,250.00) startOffset 0 endOffset 26 width 492.00: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
         LayoutSVGContainer {use} at (25,324.26) size 475x125.74
           LayoutSVGPath {path} at (25,324.26) size 475x125.74 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#00000000]}] [data="M 25 400 C 300 400 200 200 500 450"]
         LayoutSVGText {text} at (46.05,268.09) size 485.56x190.20 contains 1 chunk(s)

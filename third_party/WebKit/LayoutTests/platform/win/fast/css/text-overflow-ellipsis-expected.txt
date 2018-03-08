@@ -12,20 +12,20 @@ layer at (0,0) size 800x770 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,40) width 705: "Pass if the ellipsis do not overlap the text and the underlines for the links are placed under the text and not the ellipsis. "
         LayoutBR {BR} at (705,55) size 0x0
         LayoutBR {BR} at (0,60) size 0x19
-        LayoutText {#text} at (0,80) size 31x19
-          text run at (0,80) width 31: "RTL:"
+        LayoutText {#text} at (0,80) size 30x19
+          text run at (0,80) width 30: "RTL:"
       LayoutBlockFlow (anonymous) at (0,142) size 784x20
-        LayoutText {#text} at (0,0) size 89x19
-          text run at (0,0) width 89: "RTL Override:"
+        LayoutText {#text} at (0,0) size 88x19
+          text run at (0,0) width 88: "RTL Override:"
       LayoutBlockFlow (anonymous) at (0,204) size 784x20
-        LayoutText {#text} at (0,0) size 56x19
-          text run at (0,0) width 56: "RTL link:"
+        LayoutText {#text} at (0,0) size 55x19
+          text run at (0,0) width 55: "RTL link:"
       LayoutBlockFlow (anonymous) at (0,266) size 784x20
-        LayoutText {#text} at (0,0) size 124x19
-          text run at (0,0) width 124: "RTL with ltr content:"
+        LayoutText {#text} at (0,0) size 123x19
+          text run at (0,0) width 123: "RTL with ltr content:"
       LayoutBlockFlow (anonymous) at (0,328) size 784x20
-        LayoutText {#text} at (0,0) size 149x19
-          text run at (0,0) width 149: "RTL link with ltr content:"
+        LayoutText {#text} at (0,0) size 148x19
+          text run at (0,0) width 148: "RTL link with ltr content:"
       LayoutBlockFlow (anonymous) at (0,390) size 784x20
         LayoutText {#text} at (0,0) size 55x19
           text run at (0,0) width 55: "LTR link:"

@@ -26,9 +26,9 @@ layer at (0,0) size 800x600
                 text run at (31,10) width 13: "or"
             LayoutText {#text} at (44,10) size 43x19
               text run at (44,10) width 43: "d With"
-            LayoutImage {IMG} at (86.36,0) size 25x25
-            LayoutText {#text} at (111,10) size 64x19
-              text run at (111,10) width 64: "An Image"
+            LayoutImage {IMG} at (87,0) size 25x25
+            LayoutText {#text} at (112,10) size 63x19
+              text run at (112,10) width 63: "An Image"
           LayoutBlockFlow {DIV} at (0,30) size 694x0
           LayoutBlockFlow (anonymous) at (0,30) size 694x20
             LayoutText {#text} at (0,0) size 35x19

@@ -293,61 +293,6 @@
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox ' was in a'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'furious passion, and went\n'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about once in a'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'minute.\n'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and shouting'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox '\u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 420, 355, 79],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [14, 440, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [14, 440, 355, 59],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "disappeared"
-        },
-        {
           "object": "InlineTextBox 'a very short time '",
           "rect": [14, 380, 355, 59],
           "reason": "appeared"
@@ -403,6 +348,61 @@
           "reason": "disappeared"
         },
         {
+          "object": "InlineTextBox ' was in a'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'furious passion, and went\n'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about once in a'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'minute.\n'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and shouting'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 420, 354, 79],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "rect": [14, 440, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "rect": [14, 440, 354, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "disappeared"
+        },
+        {
           "object": "InlineTextBox 'a very short time '",
           "rect": [65, 380, 304, 59],
           "reason": "disappeared"
@@ -439,12 +439,12 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [65, 360, 131, 19],
+          "rect": [65, 360, 132, 19],
           "reason": "appeared"
         },
         {

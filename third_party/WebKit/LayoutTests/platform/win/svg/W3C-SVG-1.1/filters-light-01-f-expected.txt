@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (70,8) size 435.13x267
+    LayoutSVGContainer {g} at (70,8) size 435x267
       LayoutSVGText {text} at (112.50,8) size 255x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (112.50,8) size 255x15
           chunk 1 (middle anchor) text run 1 at (112.50,20.00) startOffset 0 endOffset 50 width 255.00: "Filters: feDistantLight, fePointLight, feSpotLight"
@@ -44,9 +44,9 @@ layer at (0,0) size 800x600
           [feDiffuseLighting surfaceScale="10.00" diffuseConstant="1.00"]
             [SourceGraphic]
       LayoutSVGContainer {g} at (70,-5) size 335x65 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,40.00)}]
-        LayoutSVGText {text} at (70,-5) size 326.22x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,-5) size 326.22x19
-            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 55 width 326.23: "Various values for feDistantLight azimuth and elevation"
+        LayoutSVGText {text} at (70,-5) size 326x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,-5) size 326x19
+            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 55 width 326.00: "Various values for feDistantLight azimuth and elevation"
         LayoutSVGText {text} at (70,10) size 34x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (70,10) size 34x19
             chunk 1 text run 1 at (70.00,25.00) startOffset 0 endOffset 6 width 34.00: "(0, 0)"
@@ -68,9 +68,9 @@ layer at (0,0) size 800x600
         LayoutSVGImage {image} at (355,30) size 50x30
           [filter="distantLightD"] LayoutSVGResourceFilter {filter} at (355,30) size 50x30
       LayoutSVGContainer {g} at (70,-5) size 359x34 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
-        LayoutSVGText {text} at (70,-5) size 254.22x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,-5) size 254.22x19
-            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 44 width 254.23: "Various values for fePointLight's x, y and z"
+        LayoutSVGText {text} at (70,-5) size 254x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,-5) size 254x19
+            chunk 1 text run 1 at (70.00,10.00) startOffset 0 endOffset 44 width 254.00: "Various values for fePointLight's x, y and z"
         LayoutSVGText {text} at (70,10) size 58x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (70,10) size 58x19
             chunk 1 text run 1 at (70.00,25.00) startOffset 0 endOffset 10 width 58.00: "(0, 0, 10)"
@@ -92,10 +92,10 @@ layer at (0,0) size 800x600
           [filter="pointLightC"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
         LayoutSVGImage {image} at (0,0) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
           [filter="pointLightD"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
-      LayoutSVGContainer {g} at (70,-15) size 435.13x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
-        LayoutSVGText {text} at (70,-15) size 435.13x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,-15) size 435.13x19
-            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 435.13: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
+      LayoutSVGContainer {g} at (70,-15) size 435x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
+        LayoutSVGText {text} at (70,-15) size 435x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,-15) size 435x19
+            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 435.00: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
         LayoutSVGText {text} at (70,0) size 66x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (70,0) size 66x19
             chunk 1 text run 1 at (70.00,15.00) startOffset 0 endOffset 11 width 66.00: "(25, 0, 25)"

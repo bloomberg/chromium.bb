@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (175,203) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [x=175.00] [y=203.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (213.97,270.50) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [x=213.97] [y=270.50] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (136.03,270.50) size 4x4 [fill={[type=SOLID] [color=#FF0000]}] [x=136.03] [y=270.50] [width=4.00] [height=4.00]
-    LayoutSVGText {text} at (10,304) size 284.70x45.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 284.70x45.59
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 284.72: "$Revision: 1.11 $"
+    LayoutSVGText {text} at (10,304) size 285x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 285x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 285.00: "$Revision: 1.11 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

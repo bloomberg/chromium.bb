@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,48.61) size 397.75x230.19
+    LayoutSVGContainer {g} at (10,48.61) size 398.19x230.19
       LayoutSVGHiddenContainer {defs} at (0,-16.80) size 70.80x21
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=1.00] [height=1.00]
         LayoutSVGImage {image} at (0,0) size 1x1
@@ -16,121 +16,121 @@ layer at (0,0) size 800x600
         LayoutSVGViewportContainer {svg} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="f"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         LayoutSVGPath {polygon} at (0,0) size 0x0 [fill={[type=SOLID] [color=#000000]}] [points=""]
-      LayoutSVGContainer {g} at (0,-1.39) size 135.36x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,50.00)}]
+      LayoutSVGContainer {g} at (0,-1.39) size 135.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,50.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 125.36x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 125.36x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 30 width 125.37: "r.x.baseVal.value == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 278.27x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,60.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 125.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 125.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 30 width 125.40: "r.x.baseVal.value == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 278.19x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,60.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 268.27x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 268.27x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 57 width 268.27: "r.x.baseVal.unitType == 1 (SVG_LENGTHTYPE_NUMBER): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 224.59x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,70.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 268.19x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 268.19x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 57 width 268.20: "r.x.baseVal.unitType == 1 (SVG_LENGTHTYPE_NUMBER): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 224.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,70.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 214.59x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 214.59x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 52 width 214.60: "v.width.baseVal.valueInSpecifiedUnits == 100: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 318.22x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,80.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 214.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 214.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 52 width 214.80: "v.width.baseVal.valueInSpecifiedUnits == 100: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 318.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,80.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 308.22x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 308.22x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 65 width 308.23: "v.width.baseVal.unitType == 2 (SVG_LENGTHTYPE_PERCENTAGE): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 277.06x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,90.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 308.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 308.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 65 width 308.40: "v.width.baseVal.unitType == 2 (SVG_LENGTHTYPE_PERCENTAGE): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 277x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,90.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 267.06x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 267.06x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 65 width 267.07: "tt.textLength.baseVal.value == tt.getComputedTextLength(): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 132.09x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,100.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 267x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 267x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 65 width 267.00: "tt.textLength.baseVal.value == tt.getComputedTextLength(): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 132.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,100.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 122.09x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 122.09x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 29 width 122.10: "s.offset.baseVal == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 180.25x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,110.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 122.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 122.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 29 width 122.40: "s.offset.baseVal == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 180.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,110.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 170.25x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 170.25x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 40 width 170.26: "c.preserveAlpha.baseVal == false: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 156.25x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 170.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 170.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 40 width 170.40: "c.preserveAlpha.baseVal == false: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 156.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,120.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 146.25x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 146.25x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 33 width 146.26: "c.className.baseVal == \"\": PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 123.86x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,130.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 146.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 146.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 33 width 146.40: "c.className.baseVal == \"\": PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 124x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,130.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 113.86x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 113.86x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 28 width 113.86: "i.href.baseVal == \"\": PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 213.33x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,140.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 114x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 114x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 28 width 114.00: "i.href.baseVal == \"\": PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 213.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,140.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 203.33x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 203.33x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 47 width 203.33: "i.requiredExtensions.numberOfItems == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 220.45x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,150.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 203.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 203.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 47 width 203.40: "i.requiredExtensions.numberOfItems == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 220.59x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,150.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 210.45x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 210.45x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 49 width 210.46: "c.kernelMatrix.baseVal.numberOfItems == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 176.06x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,160.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 210.59x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 210.59x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 49 width 210.60: "c.kernelMatrix.baseVal.numberOfItems == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 176.19x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,160.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 166.06x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 166.06x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 38 width 166.06: "t.x.baseVal.numberOfItems == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 164.72x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,170.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 166.19x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 166.19x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 38 width 166.20: "t.x.baseVal.numberOfItems == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 164.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,170.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 154.72x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 154.72x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 35 width 154.73: "p.points.numberOfItems == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 344.66x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,180.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 154.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 154.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 35 width 154.80: "p.points.numberOfItems == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 344.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,180.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 334.66x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 334.66x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 70 width 334.66: "g.gradientUnits.baseVal == 2 (SVG_UNIT_TYPE_OBJECTBOUNDINGBOX): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 138.25x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,190.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 334.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 334.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 70 width 334.80: "g.gradientUnits.baseVal == 2 (SVG_UNIT_TYPE_OBJECTBOUNDINGBOX): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 138.39x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,190.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 128.25x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 128.25x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 30 width 128.26: "c.targetX.baseVal == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 179.66x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,200.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 128.39x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 128.39x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 30 width 128.40: "c.targetX.baseVal == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 179.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,200.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 169.66x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 169.66x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 40 width 169.66: "m.orientAngle.baseVal.value == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 337.56x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,210.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 169.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 169.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 40 width 169.80: "m.orientAngle.baseVal.value == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 337.59x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,210.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 327.56x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 327.56x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 71 width 327.57: "m.orientAngle.baseVal.unitType == 1 (SVG_ANGLETYPE_UNSPECIFIED): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 207.72x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,220.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 327.59x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 327.59x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 71 width 327.60: "m.orientAngle.baseVal.unitType == 1 (SVG_ANGLETYPE_UNSPECIFIED): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 208x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,220.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 197.72x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 197.72x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 49 width 197.73: "v.viewBox.baseVal.[x,y,width,height] == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 209.66x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,230.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 198x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 198x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 49 width 198.00: "v.viewBox.baseVal.[x,y,width,height] == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 209.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,230.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 199.66x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 199.66x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 46 width 199.66: "t.transform.baseVal.numberOfItems == 0: PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 397.75x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,240.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 199.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 199.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 46 width 199.80: "t.transform.baseVal.numberOfItems == 0: PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 398.19x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,240.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 387.75x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 387.75x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 83 width 387.77: "v.preserveAspectRatio.baseVal.align == 6 (SVG_PRESERVEASPECTRATIO_XMIDYMID): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 365.42x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,250.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 388.19x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 388.19x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 83 width 388.20: "v.preserveAspectRatio.baseVal.align == 6 (SVG_PRESERVEASPECTRATIO_XMIDYMID): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 365.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,250.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 355.42x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 355.42x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 77 width 355.43: "v.preserveAspectRatio.baseVal.meetOrSlice == 1 (SVG_MEETORSLICE_MEET): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 262.98x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,260.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 355.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 355.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 77 width 355.80: "v.preserveAspectRatio.baseVal.meetOrSlice == 1 (SVG_MEETORSLICE_MEET): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 263.19x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,260.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 252.98x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 252.98x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 50 width 253.00: "v.zoomAndPan == 2 (SVG_ZOOMANDPAN_MAGNIFY): PASSED"
-      LayoutSVGContainer {g} at (0,-1.39) size 92.92x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,270.00)}]
+        LayoutSVGText {text} at (10,-1.39) size 253.19x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 253.19x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 50 width 253.20: "v.zoomAndPan == 2 (SVG_ZOOMANDPAN_MAGNIFY): PASSED"
+      LayoutSVGContainer {g} at (0,-1.39) size 92.80x10.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,270.00)}]
         LayoutSVGRect {rect} at (0,1) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
-        LayoutSVGText {text} at (10,-1.39) size 82.92x10.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-1.39) size 82.92x10.19
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 19 width 82.93: "Test status: PASSED"
+        LayoutSVGText {text} at (10,-1.39) size 82.80x10.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-1.39) size 82.80x10.19
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 19 width 82.80: "Test status: PASSED"
     LayoutSVGContainer {g} at (10,311.19) size 225.59x36
       LayoutSVGText {text} at (10,311.19) size 225.59x36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,311.19) size 225.59x36

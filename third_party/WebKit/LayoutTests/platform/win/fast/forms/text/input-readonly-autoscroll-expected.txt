@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "Test for "
-        LayoutInline {A} at (0,0) size 67x19 [color=#0000EE]
-          LayoutText {#text} at (49,0) size 67x19
-            text run at (49,0) width 67: "bug 11534"
-        LayoutText {#text} at (115,0) size 5x19
-          text run at (115,0) width 5: "."
+        LayoutInline {A} at (0,0) size 65x19 [color=#0000EE]
+          LayoutText {#text} at (50,0) size 65x19
+            text run at (50,0) width 65: "bug 11534"
+        LayoutText {#text} at (115,0) size 4x19
+          text run at (115,0) width 4: "."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 331x19
           text run at (0,0) width 331: "Readonly text fields don't scroll when selecting content."

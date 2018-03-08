@@ -15,10 +15,10 @@ layer at (0,0) size 800x420
       LayoutBlockFlow {P} at (0,108) size 784x280 [color=#000080]
         LayoutText {#text} at (0,0) size 496x19
           text run at (0,0) width 392: "This paragraph should be justified (the right and left margins "
-          text run at (391,0) width 105: "should line up). "
+          text run at (392,0) width 104: "should line up). "
         LayoutInline {SPAN} at (0,0) size 784x279 [color=#C0C0C0]
-          LayoutText {#text} at (495,0) size 784x279
-            text run at (495,0) width 289: "This is just lovely dummy text. Dummy text."
+          LayoutText {#text} at (496,0) size 784x279
+            text run at (496,0) width 288: "This is just lovely dummy text. Dummy text."
             text run at (0,20) width 56: "Dummy "
             text run at (56,20) width 529: "text. This is just lovely dummy text. This is just lovely dummy text. Dummy text. "
             text run at (585,20) width 199: "This is just lovely dummy text."

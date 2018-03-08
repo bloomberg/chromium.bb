@@ -40,9 +40,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,10) size 725x27
             text run at (0,10) width 725: "Line-Through Line-Through Line-Through Line "
           LayoutBR {BR} at (725,31) size 0x0
-          LayoutText {#text} at (0,48) size 375x19
-            text run at (0,48) width 375: "Line-Through Line-Through Line-Through Line-Through"
-          LayoutBR {BR} at (374,63) size 1x0
+          LayoutText {#text} at (0,48) size 376x19
+            text run at (0,48) width 376: "Line-Through Line-Through Line-Through Line-Through"
+          LayoutBR {BR} at (376,63) size 0x0
         LayoutBlockFlow (anonymous) at (0,84) size 784x20
           LayoutText {#text} at (0,0) size 340x19
             text run at (0,0) width 340: "Line-Through Line-Through Line-Through Line-Through"

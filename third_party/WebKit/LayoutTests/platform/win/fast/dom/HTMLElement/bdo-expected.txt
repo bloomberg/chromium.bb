@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 313x19
           text run at (0,0) width 313: "The bdo element overrides the default text direction."
       LayoutBlockFlow {P} at (0,72) size 784x40
-        LayoutText {#text} at (0,0) size 757x39
-          text run at (0,0) width 696: "If successful, the first sentence would be backward, and the second sentence regular. There should then be an extra "
-          text run at (695,0) width 62: "blank line,"
+        LayoutText {#text} at (0,0) size 756x39
+          text run at (0,0) width 695: "If successful, the first sentence would be backward, and the second sentence regular. There should then be an extra "
+          text run at (695,0) width 61: "blank line,"
           text run at (0,20) width 621: "followed by a line reading only \"A,\" and finally, a sentence where only the word \"umbrella\" is backward."
       LayoutBlockFlow (anonymous) at (0,138) size 784x120
         LayoutBR {BR} at (0,0) size 0x19

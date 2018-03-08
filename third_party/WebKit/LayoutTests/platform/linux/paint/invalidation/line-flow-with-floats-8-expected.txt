@@ -214,32 +214,32 @@
         },
         {
           "object": "InlineTextBox ' was in a furious'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'her head!\u2019 about once in a'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'minute.\n'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'passion, and went\n'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'stamping about, and shouting \u2018Off'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'with his head!\u2019 or \u2018Off with\n'",
-          "rect": [13, 440, 358, 79],
+          "rect": [13, 440, 357, 79],
           "reason": "appeared"
         },
         {
@@ -273,12 +273,12 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'but generally, just as she had got its'",
+          "object": "InlineTextBox 'but generally, just as she had got its neck'",
           "rect": [14, 80, 355, 119],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'but generally, just as she had got its'",
+          "object": "InlineTextBox 'but generally, just as she had got its neck'",
           "rect": [14, 80, 355, 119],
           "reason": "disappeared"
         },
@@ -333,12 +333,12 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "object": "InlineTextBox 'nicely straightened\n'",
           "rect": [14, 80, 355, 119],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'neck nicely straightened\n'",
+          "object": "InlineTextBox 'nicely straightened\n'",
           "rect": [14, 80, 355, 119],
           "reason": "disappeared"
         },
@@ -493,11 +493,11 @@
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'but generally, just as she had got its'",
+      "object": "InlineTextBox 'but generally, just as she had got its neck'",
       "reason": "geometry"
     },
     {
-      "object": "InlineTextBox 'neck nicely straightened\n'",
+      "object": "InlineTextBox 'nicely straightened\n'",
       "reason": "geometry"
     },
     {

@@ -35,9 +35,9 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (350,22.59) size 42.59x22.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (350,22.59) size 42.59x22.19
             chunk 1 text run 1 at (350.00,40.00) startOffset 0 endOffset 5 width 42.60: "never"
-    LayoutSVGText {text} at (15,149.80) size 289.13x31.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (15,149.80) size 289.13x31.80
-        chunk 1 text run 1 at (15.00,175.00) startOffset 0 endOffset 26 width 289.14: "Test of Eventbase targets."
+    LayoutSVGText {text} at (15,149.80) size 289.19x31.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (15,149.80) size 289.19x31.80
+        chunk 1 text run 1 at (15.00,175.00) startOffset 0 endOffset 26 width 289.20: "Test of Eventbase targets."
     LayoutSVGText {text} at (15,228.80) size 330x20.39 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (15,228.80) size 330x20.39
         chunk 1 text run 1 at (15.00,245.00) startOffset 0 endOffset 48 width 330.00: "Note that clicking rect D should give no result."

@@ -5,9 +5,9 @@ layer at (0,0) size 450x500
     LayoutSVGHiddenContainer {defs} at (20,11.72) size 320x36.57
       LayoutSVGPath {path} at (20,11.72) size 160x36.57 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 20 40 C 40 20 60 0 80 20 C 100 40 120 60 140 40 C 160 20 180 20 180 20"]
       LayoutSVGPath {path} at (20,11.72) size 320x36.57 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 20 40 c 40 -20 80 -40 120 -20 c 40 20 80 40 120 20 c 40 -20 80 -20 80 -20"]
-    LayoutSVGText {text} at (134.88,15) size 180.22x18 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (134.88,15) size 180.22x18
-        chunk 1 (middle anchor) text run 1 at (134.89,30.00) startOffset 0 endOffset 27 width 180.23: "Text Orientation Horizontal"
+    LayoutSVGText {text} at (135,15) size 180x18 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (135,15) size 180x18
+        chunk 1 (middle anchor) text run 1 at (135.00,30.00) startOffset 0 endOffset 27 width 180.00: "Text Orientation Horizontal"
     LayoutSVGContainer {g} at (40.70,45.66) size 359.30x342.63
       LayoutSVGPath {line} at (50,80) size 150x0 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=80.00] [x2=200.00] [y2=80.00]
       LayoutSVGText {text} at (50,59) size 143x27 contains 1 chunk(s)

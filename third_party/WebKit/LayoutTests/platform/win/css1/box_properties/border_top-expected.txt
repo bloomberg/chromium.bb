@@ -22,18 +22,18 @@ layer at (0,0) size 785x1023 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (606,0) width 161: "This border applies only to"
           text run at (0,20) width 254: "the cells, not the rows which contain them."
       LayoutBlockFlow {P} at (0,187) size 769x30 [border: (10px double #800080) none]
-        LayoutText {#text} at (0,10) size 398x19
-          text run at (0,10) width 398: "This paragraph should have a purple, double, 10-pixel top border."
+        LayoutText {#text} at (0,10) size 397x19
+          text run at (0,10) width 397: "This paragraph should have a purple, double, 10-pixel top border."
       LayoutBlockFlow {P} at (0,233) size 769x21 [border: (1px solid #800080) none]
-        LayoutText {#text} at (0,1) size 316x19
-          text run at (0,1) width 316: "This paragraph should have a thin purple top border."
+        LayoutText {#text} at (0,1) size 315x19
+          text run at (0,1) width 315: "This paragraph should have a thin purple top border."
       LayoutTable {TABLE} at (0,270) size 769x118 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x116
           LayoutTableRow {TR} at (0,5) size 767x45
             LayoutTableCell {TD} at (5,5) size 757x45 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,3) size 745x39
-                text run at (2,3) width 408: "Every cell in this table should have a 2-pixel solid green top border. "
-                text run at (409,3) width 338: "This is also true of the table-testing section in the second"
+              LayoutText {#text} at (2,3) size 744x39
+                text run at (2,3) width 407: "Every cell in this table should have a 2-pixel solid green top border. "
+                text run at (409,3) width 337: "This is also true of the table-testing section in the second"
                 text run at (2,23) width 121: "half of the test page."
           LayoutTableRow {TR} at (0,55) size 767x56
             LayoutTableCell {TD} at (5,70) size 190x25 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -94,25 +94,25 @@ layer at (0,0) size 785x1023 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (606,0) width 116: "This border applies"
                   text run at (0,20) width 299: "only to the cells, not the rows which contain them."
               LayoutBlockFlow {P} at (4,61) size 747x30 [border: (10px double #800080) none]
-                LayoutText {#text} at (0,10) size 398x19
-                  text run at (0,10) width 398: "This paragraph should have a purple, double, 10-pixel top border."
+                LayoutText {#text} at (0,10) size 397x19
+                  text run at (0,10) width 397: "This paragraph should have a purple, double, 10-pixel top border."
               LayoutBlockFlow {P} at (4,107) size 747x21 [border: (1px solid #800080) none]
-                LayoutText {#text} at (0,1) size 316x19
-                  text run at (0,1) width 316: "This paragraph should have a thin purple top border."
+                LayoutText {#text} at (0,1) size 315x19
+                  text run at (0,1) width 315: "This paragraph should have a thin purple top border."
               LayoutTable {TABLE} at (4,144) size 747x118 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 745x116
                   LayoutTableRow {TR} at (0,5) size 745x45
                     LayoutTableCell {TD} at (5,5) size 735x45 [border: (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-                      LayoutText {#text} at (2,3) size 698x39
-                        text run at (2,3) width 408: "Every cell in this table should have a 2-pixel solid green top border. "
-                        text run at (409,3) width 291: "This is also true of the table-testing section in the"
+                      LayoutText {#text} at (2,3) size 697x39
+                        text run at (2,3) width 407: "Every cell in this table should have a 2-pixel solid green top border. "
+                        text run at (409,3) width 290: "This is also true of the table-testing section in the"
                         text run at (2,23) width 168: "second half of the test page."
                   LayoutTableRow {TR} at (0,55) size 745x56
-                    LayoutTableCell {TD} at (5,70) size 184x25 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                    LayoutTableCell {TD} at (5,70) size 185x25 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
                       LayoutText {#text} at (2,3) size 50x19
                         text run at (2,3) width 50: "Cell one"
-                    LayoutTableCell {TD} at (194,55) size 546x56 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-                      LayoutBlockFlow (anonymous) at (2,3) size 542x20
+                    LayoutTableCell {TD} at (195,55) size 545x56 [border: (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+                      LayoutBlockFlow (anonymous) at (2,3) size 541x20
                         LayoutText {#text} at (0,0) size 51x19
                           text run at (0,0) width 51: "Cell two"
                       LayoutTable {TABLE} at (2,23) size 155x31 [border: (1px outset #808080)]

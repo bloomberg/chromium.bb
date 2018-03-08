@@ -83,6 +83,6 @@ layer at (0,0) size 785x687 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (5,6) width 29: "T"
         LayoutTextFragment {#text} at (43,0) size 488x19
           text run at (43,0) width 488: "he first letter of this paragraph should have a border and a nice shadow effect."
-        LayoutBR {BR} at (530,15) size 1x0
+        LayoutBR {BR} at (531,15) size 0x0
         LayoutText {#text} at (43,20) size 162x19
           text run at (43,20) width 162: "It should look pretty cool."

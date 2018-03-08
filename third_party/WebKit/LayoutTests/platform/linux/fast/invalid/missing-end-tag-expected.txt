@@ -14,10 +14,10 @@ layer at (0,0) size 800x192
         LayoutText {#text} at (0,0) size 427x22
           text run at (0,0) width 427: "Below is a rendering of the page up to the first error."
     LayoutBlockFlow (anonymous) at (0,171.88) size 800x20
-      LayoutInline {body} at (0,0) size 179x19
+      LayoutInline {body} at (0,0) size 178x19
         LayoutText {#text} at (0,0) size 0x0
-        LayoutInline {p} at (0,0) size 179x19
-          LayoutText {#text} at (0,0) size 179x19
-            text run at (0,0) width 179: "You should see errors above"
+        LayoutInline {p} at (0,0) size 178x19
+          LayoutText {#text} at (0,0) size 178x19
+            text run at (0,0) width 178: "You should see errors above"
         LayoutText {#text} at (0,0) size 0x0
         LayoutInline {p} at (0,0) size 0x0

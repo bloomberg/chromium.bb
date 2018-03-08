@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
-          "rect": [177, 1012, 203, 19],
+          "rect": [177, 1012, 202, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'pservers-pattern-01-b \u2190'",
-          "rect": [177, 1012, 203, 19],
+          "rect": [177, 1012, 202, 19],
           "reason": "disappeared"
         },
         {
@@ -39,37 +39,37 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [384, 1011, 47, 21],
+          "rect": [384, 1011, 46, 21],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'index'",
-          "rect": [385, 1012, 45, 19],
+          "rect": [385, 1012, 44, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'index'",
-          "rect": [385, 1012, 45, 19],
+          "rect": [385, 1012, 44, 19],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox '\n'",
-          "rect": [429, 1012, 7, 19],
+          "rect": [429, 1012, 6, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox '\n'",
-          "rect": [429, 1012, 7, 19],
+          "rect": [429, 1012, 6, 19],
           "reason": "disappeared"
         },
         {
           "object": "InlineTextBox '\n'",
-          "rect": [379, 1012, 7, 19],
+          "rect": [379, 1012, 6, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox '\n'",
-          "rect": [379, 1012, 7, 19],
+          "rect": [379, 1012, 6, 19],
           "reason": "disappeared"
         }
       ],

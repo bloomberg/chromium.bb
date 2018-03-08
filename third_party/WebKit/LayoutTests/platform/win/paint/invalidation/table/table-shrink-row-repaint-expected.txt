@@ -143,13 +143,13 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox '11'",
-          "rect": [13, 682, 16, 19],
+          "object": "InlineTextBox '10'",
+          "rect": [13, 622, 16, 19],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox '10'",
-          "rect": [13, 622, 16, 19],
+          "object": "InlineTextBox '11'",
+          "rect": [13, 682, 15, 19],
           "reason": "geometry"
         },
         {

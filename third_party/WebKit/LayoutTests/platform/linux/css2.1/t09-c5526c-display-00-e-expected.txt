@@ -53,17 +53,17 @@ layer at (0,0) size 800x420
           text run at (0,0) width 473: "This is a nonsensical document, but syntactically valid HTML 4.0. All 100%-conformant CSS1"
           text run at (0,13) width 480: "agents should be able to render the document elements above this paragraph indistinguishably"
           text run at (0,26) width 122: "(to the pixel) from this "
-        LayoutInline {A} at (0,0) size 103x12 [color=#999999]
-          LayoutText {#text} at (121,26) size 103x12
-            text run at (121,26) width 103: "reference rendering,"
-        LayoutText {#text} at (223,26) size 474x25
-          text run at (223,26) width 5: " "
-          text run at (227,26) width 247: "(except font rasterization and form widgets). All"
+        LayoutInline {A} at (0,0) size 102x12 [color=#999999]
+          LayoutText {#text} at (122,26) size 102x12
+            text run at (122,26) width 102: "reference rendering,"
+        LayoutText {#text} at (224,26) size 474x25
+          text run at (224,26) width 4: " "
+          text run at (228,26) width 246: "(except font rasterization and form widgets). All"
           text run at (0,39) width 374: "discrepancies should be traceable to CSS1 implementation shortcomings. "
-          text run at (373,39) width 37: "Please "
+          text run at (374,39) width 36: "Please "
         LayoutInline {A} at (0,0) size 462x25 [color=#CC0000]
-          LayoutText {#text} at (409,39) size 462x25
-            text run at (409,39) width 53: "report any"
+          LayoutText {#text} at (410,39) size 462x25
+            text run at (410,39) width 52: "report any"
             text run at (0,52) width 29: "errors"
         LayoutText {#text} at (29,52) size 284x12
           text run at (29,52) width 284: " you find between the CSS and the reference rendering."

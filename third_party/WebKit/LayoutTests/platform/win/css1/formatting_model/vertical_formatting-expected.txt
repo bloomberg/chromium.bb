@@ -96,7 +96,7 @@ layer at (0,0) size 785x2579 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,1302.22) size 769x77.78
         LayoutText {#text} at (0,0) size 765x39
           text run at (0,0) width 530: "There should be two centimeters of padding between this paragraph and the one below. "
-          text run at (529,0) width 236: "Padding does not collapse, and there is"
+          text run at (530,0) width 235: "Padding does not collapse, and there is"
           text run at (0,20) width 177: "1cm of padding on each side."
       LayoutBlockFlow {P} at (0,1380) size 769x57.78
         LayoutText {#text} at (0,37) size 158x20
@@ -163,7 +163,7 @@ layer at (0,0) size 785x2579 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,939.22) size 747x77.78
                 LayoutText {#text} at (0,0) size 718x39
                   text run at (0,0) width 530: "There should be two centimeters of padding between this paragraph and the one below. "
-                  text run at (529,0) width 189: "Padding does not collapse, and"
+                  text run at (530,0) width 188: "Padding does not collapse, and"
                   text run at (0,20) width 224: "there is 1cm of padding on each side."
               LayoutBlockFlow {P} at (4,1017) size 747x57.78
                 LayoutText {#text} at (0,37) size 158x20

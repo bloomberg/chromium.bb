@@ -9,8 +9,8 @@ layer at (0,0) size 800x100
         LayoutInline {EM} at (0,0) size 91x19
           LayoutText {#text} at (233,0) size 91x19
             text run at (233,0) width 91: "approximately"
-        LayoutText {#text} at (323,0) size 64x19
-          text run at (323,0) width 64: " the same:"
+        LayoutText {#text} at (324,0) size 63x19
+          text run at (324,0) width 63: " the same:"
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 6x19
           LayoutInline {<pseudo:before>} at (0,0) size 6x19

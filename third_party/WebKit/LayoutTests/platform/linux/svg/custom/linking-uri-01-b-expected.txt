@@ -64,9 +64,9 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (59.41,282.44) size 51.19x15.56
             chunk 1 (middle anchor) text run 1 at (59.41,295.00) startOffset 0 endOffset 7 width 51.19: "Polygon"
         LayoutSVGRect {rect} at (36,208) size 100x89 [stroke={[type=SOLID] [color=#000000]}] [x=36.00] [y=208.00] [width=100.00] [height=89.00]
-        LayoutSVGText {text} at (53.11,186) size 63.77x11.25 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (53.11,186) size 63.77x11.25
-            chunk 1 (middle anchor) text run 1 at (53.12,195.00) startOffset 0 endOffset 14 width 63.77: "viewTarget, no"
+        LayoutSVGText {text} at (53.13,186) size 63.75x11.25 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (53.13,186) size 63.75x11.25
+            chunk 1 (middle anchor) text run 1 at (53.13,195.00) startOffset 0 endOffset 14 width 63.75: "viewTarget, no"
         LayoutSVGText {text} at (40.94,195) size 88.13x11.25 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (40.94,195) size 88.13x11.25
             chunk 1 (middle anchor) text run 1 at (40.94,204.00) startOffset 0 endOffset 19 width 88.13: "changes to viewport"

@@ -289,6 +289,10 @@ unsigned HarfBuzzFace::UnitsPerEmFromHeadTable() {
   return hb_face_get_upem(face);
 }
 
+bool HarfBuzzFace::ShouldSubpixelPosition() {
+  return harf_buzz_font_data_->paint_.isSubpixelText();
+}
+
 static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
   hb_font_funcs_t* funcs = FontGlobalContext::GetHarfBuzzFontFuncs();
 

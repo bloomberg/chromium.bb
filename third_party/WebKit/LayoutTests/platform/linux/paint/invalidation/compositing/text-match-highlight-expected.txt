@@ -24,7 +24,7 @@
         },
         {
           "object": "InlineTextBox 'Findme on a path! Did you findme?'",
-          "rect": [20, 224, 206, 72],
+          "rect": [20, 224, 207, 72],
           "reason": "DocumentMarker change"
         },
         {

@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "Test for "
-        LayoutInline {A} at (0,0) size 111x19 [color=#0000EE]
-          LayoutText {#text} at (49,0) size 111x19
-            text run at (49,0) width 111: "Bugzilla Bug 9934"
-        LayoutText {#text} at (159,0) size 426x19
-          text run at (159,0) width 426: " Selecting text in text field with {line-height:100%} causes it to bounce."
+        LayoutInline {A} at (0,0) size 110x19 [color=#0000EE]
+          LayoutText {#text} at (50,0) size 110x19
+            text run at (50,0) width 110: "Bugzilla Bug 9934"
+        LayoutText {#text} at (160,0) size 425x19
+          text run at (160,0) width 425: " Selecting text in text field with {line-height:100%} causes it to bounce."
       LayoutBlockFlow {DIV} at (0,20) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,42) size 784x20

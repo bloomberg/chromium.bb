@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
             text run at (99,69) width 304: "Only selected content should get deleted. "
             text run at (403,69) width 341: "Surrounding content that is not selected should"
             text run at (0,90) width 206: "(obviously) not be affected. "
-          LayoutBR {BR} at (205,106) size 1x0
+          LayoutBR {BR} at (206,106) size 0x0
           LayoutInline {B} at (0,0) size 718x20
             LayoutText {#text} at (0,111) size 718x20
               text run at (0,111) width 718: "There is a bug: the caret ends up in the wrong position, it should be in the empty paragraph."

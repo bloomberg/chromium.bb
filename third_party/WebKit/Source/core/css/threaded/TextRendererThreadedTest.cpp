@@ -51,7 +51,7 @@ TSAN_TEST(TextRendererThreadedTest, MeasureText) {
         -1);
 
     // X direction.
-    EXPECT_FLOAT_EQ(77.7363, font.Width(text_run));
+    EXPECT_EQ(78, font.Width(text_run));
     EXPECT_EQ(0, text_bounds.X());
     EXPECT_EQ(78, text_bounds.MaxX());
 

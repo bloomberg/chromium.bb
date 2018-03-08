@@ -22,14 +22,14 @@ layer at (0,0) size 800x600
             LayoutRubyBase (anonymous) at (0,0) size 24x20
               LayoutText {#text} at (6,0) size 12x19
                 text run at (6,0) width 12: "H"
-          LayoutRubyRun (anonymous) at (187,14) size 17.38x20
-            LayoutRubyText {RT} at (0,-12) size 17.38x12
+          LayoutRubyRun (anonymous) at (187,14) size 18x20
+            LayoutRubyText {RT} at (0,-12) size 18x12
               LayoutText {#text} at (0,0) size 18x12
                 text run at (0,0) width 18: "Text"
-            LayoutRubyBase (anonymous) at (0,0) size 17.38x20
-              LayoutText {#text} at (3,0) size 11x19
-                text run at (3,0) width 11: "T"
-          LayoutRubyRun (anonymous) at (204.38,14) size 30x20
+            LayoutRubyBase (anonymous) at (0,0) size 18x20
+              LayoutText {#text} at (4,0) size 10x19
+                text run at (4,0) width 10: "T"
+          LayoutRubyRun (anonymous) at (205,14) size 30x20
             LayoutRubyText {RT} at (0,-12) size 30x12
               LayoutText {#text} at (0,0) size 30x12
                 text run at (0,0) width 30: "Markup"

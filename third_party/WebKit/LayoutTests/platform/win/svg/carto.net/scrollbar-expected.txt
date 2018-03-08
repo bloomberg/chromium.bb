@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
     LayoutSVGViewportContainer {svg} at (0,0) size 3607x420.50
       LayoutSVGContainer {g} at (0,0) size 3607x420.50
         LayoutSVGImage {image} at (0,0) size 3607x420.50
-        LayoutSVGContainer {g} at (410.38,64.80) size 2035.23x325.45
+        LayoutSVGContainer {g} at (410.38,64.80) size 2035.44x325.45
           LayoutSVGText {text} at (410.38,73.80) size 91.25x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (410.38,73.80) size 91.25x18.75
               chunk 1 (middle anchor) text run 1 at (410.38,88.80) startOffset 0 endOffset 13 width 91.25: "Furggeltihorn"
@@ -31,9 +31,9 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (2250.14,147.59) size 82.50x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (2250.14,147.59) size 82.50x18.75
               chunk 1 (middle anchor) text run 1 at (2250.15,162.60) startOffset 0 endOffset 11 width 82.50: "Crap Grisch"
-          LayoutSVGText {text} at (2379.78,134.59) size 65.83x18.75 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (2379.78,134.59) size 65.83x18.75
-              chunk 1 (middle anchor) text run 1 at (2379.78,149.60) startOffset 0 endOffset 9 width 65.84: "Piz Tom\x{FC}l"
+          LayoutSVGText {text} at (2379.56,134.59) size 66.25x18.75 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (2379.56,134.59) size 66.25x18.75
+              chunk 1 (middle anchor) text run 1 at (2379.57,149.60) startOffset 0 endOffset 9 width 66.25: "Piz Tom\x{FC}l"
           LayoutSVGText {text} at (1734.47,97.59) size 56.25x18.75 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (1734.47,97.59) size 56.25x18.75
               chunk 1 (middle anchor) text run 1 at (1734.47,112.60) startOffset 0 endOffset 8 width 56.25: "Fruntalp"
@@ -55,9 +55,9 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (950.50,234.50) size 15x15 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=234.50] [width=15.00] [height=15.00]
         LayoutSVGPath {path} at (954.50,54.50) size 8x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 54.5 L 962.5 62.5 L 954.5 62.5 Z"]
         LayoutSVGPath {path} at (954.50,238.50) size 8x8 [fill={[type=SOLID] [color=#696969]}] [data="M 958 246.5 L 954.5 238.5 L 962.5 238.5 Z"]
-    LayoutSVGText {text} at (393.39,267.50) size 556.61x16.25 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (393.39,267.50) size 556.61x16.25
-        chunk 1 (end anchor) text run 1 at (393.39,280.00) startOffset 0 endOffset 89 width 556.61: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
+    LayoutSVGText {text} at (393.75,267.50) size 556.25x16.25 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (393.75,267.50) size 556.25x16.25
+        chunk 1 (end anchor) text run 1 at (393.75,280.00) startOffset 0 endOffset 89 width 556.25: "Panorama Zervreilastausee, Vals, Graub\x{FC}nden, Switzerland, taken 2006-02-04 (\x{A9} A. Neumann)"
     LayoutSVGViewportContainer {svg} at (0,0) size 3560.75x689
       LayoutSVGContainer {g} at (0,0) size 3560.75x689
         LayoutSVGImage {image} at (0,0) size 3560.75x689
@@ -76,9 +76,9 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (950.50,539.50) size 10x10 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#D3D3D3]}] [x=950.50] [y=539.50] [width=10.00] [height=10.00]
         LayoutSVGPath {path} at (953.50,532.50) size 6x6 [fill={[type=SOLID] [color=#696969]}] [data="M 955.5 532.5 L 959.5 538.5 L 953.5 538.5 Z"]
         LayoutSVGPath {path} at (953.50,542.50) size 6x6 [fill={[type=SOLID] [color=#696969]}] [data="M 955.5 548.5 L 953.5 542.5 L 959.5 542.5 Z"]
-    LayoutSVGText {text} at (390.44,562.50) size 559.55x16.25 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (390.44,562.50) size 559.55x16.25
-        chunk 1 (end anchor) text run 1 at (390.45,575.00) startOffset 0 endOffset 94 width 559.55: "Panorama Chalchtrittli, Tierfed, Linthal, Glarus, Switzerland, taken 2005-09-03 (\x{A9} A. Neumann)"
+    LayoutSVGText {text} at (390,562.50) size 560x16.25 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (390,562.50) size 560x16.25
+        chunk 1 (end anchor) text run 1 at (390.00,575.00) startOffset 0 endOffset 94 width 560.00: "Panorama Chalchtrittli, Tierfed, Linthal, Glarus, Switzerland, taken 2005-09-03 (\x{A9} A. Neumann)"
     LayoutSVGContainer {g} at (49,579) size 232x22
       LayoutSVGContainer {g} at (49,579) size 112x22
         LayoutSVGRect {rect} at (49,579) size 110x20 [fill={[type=SOLID] [color=#FFFFFF]}] [x=49.00] [y=579.00] [width=110.00] [height=20.00]

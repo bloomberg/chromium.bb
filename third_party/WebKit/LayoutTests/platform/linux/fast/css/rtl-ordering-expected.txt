@@ -10,11 +10,11 @@ layer at (0,0) size 800x600
           LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
             LayoutText {#text} at (212,0) size 348x19
               text run at (212,0) width 348 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6334"
-          LayoutText {#text} at (559,0) size 712x39
-            text run at (559,0) width 153 LTR override: " REGRESSION: <input"
-            text run at (0,20) width 370 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
-        LayoutText {#text} at (369,20) size 5x19
-          text run at (369,20) width 5 LTR override: "."
+          LayoutText {#text} at (560,0) size 712x39
+            text run at (560,0) width 152 LTR override: " REGRESSION: <input"
+            text run at (0,20) width 371 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
+        LayoutText {#text} at (371,20) size 4x19
+          text run at (371,20) width 4 LTR override: "."
       LayoutBlockFlow {P} at (0,74) size 784x20
         LayoutText {#text} at (0,0) size 295x19
           text run at (0,0) width 295 LTR override: "The text on both buttons should like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"

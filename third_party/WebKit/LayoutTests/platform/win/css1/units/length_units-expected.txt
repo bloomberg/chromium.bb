@@ -91,7 +91,7 @@ layer at (0,0) size 785x1673 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (745,49) size 737x190
           text run at (745,49) width 10: "."
           text run at (18,97) width 663: "This should make the left border the same"
-          text run at (18,145) width 700: "number of pixels as the lower-case 'x' in this"
+          text run at (18,145) width 699: "number of pixels as the lower-case 'x' in this"
           text run at (18,193) width 603: "element's font, as well as solid purple."
       LayoutTable {TABLE} at (0,927) size 769x730 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x728
@@ -163,10 +163,10 @@ layer at (0,0) size 785x1673 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (429,54) size 627x90
                     text run at (429,54) width 216: "1ex solid"
                     text run at (18,102) width 144: "purple"
-                LayoutText {#text} at (162,97) size 698x190
+                LayoutText {#text} at (162,97) size 697x190
                   text run at (162,97) width 20: ". "
                   text run at (182,97) width 513: "This should make the left border"
-                  text run at (18,145) width 698: "the same number of pixels as the lower-case"
+                  text run at (18,145) width 697: "the same number of pixels as the lower-case"
                   text run at (18,193) width 634: "'x' in this element's font, as well as solid"
                   text run at (18,241) width 111: "purple."
 layer at (8,233) size 769x2 clip at (0,0) size 0x0

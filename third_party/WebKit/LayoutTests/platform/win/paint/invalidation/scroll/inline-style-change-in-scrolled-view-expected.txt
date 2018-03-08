@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
-          "rect": [0, 320, 385, 19],
+          "rect": [0, 320, 386, 19],
           "reason": "style change"
         }
       ],
