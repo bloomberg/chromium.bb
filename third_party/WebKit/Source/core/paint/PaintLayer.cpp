@@ -186,7 +186,7 @@ PaintLayer::~PaintLayer() {
       style.Filter().RemoveClient(rare_data_->resource_info);
     if (IsReferenceClipPath(style.ClipPath())) {
       ToReferenceClipPathOperation(style.ClipPath())
-          ->RemoveClient(rare_data_->resource_info);
+          ->RemoveClient(*rare_data_->resource_info);
     }
     rare_data_->resource_info->ClearLayer();
   }
@@ -2325,17 +2325,13 @@ bool PaintLayer::HitTestClippedOutByClipPath(
     return !clip_path->GetPath(float_reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
-  Node* target_node = GetLayoutObject().GetNode();
-  if (!target_node)
+  SVGResource* resource =
+      ToReferenceClipPathOperation(*clip_path_operation).Resource();
+  LayoutSVGResourceContainer* container =
+      resource ? resource->ResourceContainer() : nullptr;
+  if (!container || container->ResourceType() != kClipperResourceType)
     return false;
-  const ReferenceClipPathOperation& reference_clip_path_operation =
-      ToReferenceClipPathOperation(*clip_path_operation);
-  SVGElement* element =
-      reference_clip_path_operation.FindElement(target_node->GetTreeScope());
-  if (!IsSVGClipPathElement(element) || !element->GetLayoutObject())
-    return false;
-  LayoutSVGResourceClipper* clipper = ToLayoutSVGResourceClipper(
-      ToLayoutSVGResourceContainer(element->GetLayoutObject()));
+  auto* clipper = ToLayoutSVGResourceClipper(container);
   // If the clipPath is using "userspace on use" units, then the origin of
   // the coordinate system is the top-left of the reference box, so adjust
   // the point accordingly.
@@ -2931,15 +2927,11 @@ void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
   const bool had_resource_info = ResourceInfo();
   if (IsReferenceClipPath(new_clip_operation)) {
     ToReferenceClipPathOperation(new_clip_operation)
-        ->AddClient(&EnsureResourceInfo(),
-                    GetLayoutObject()
-                        .GetDocument()
-                        .GetTaskRunner(TaskType::kUnspecedLoading)
-                        .get());
+        ->AddClient(EnsureResourceInfo());
   }
   if (had_resource_info && IsReferenceClipPath(old_clip_operation)) {
     ToReferenceClipPathOperation(old_clip_operation)
-        ->RemoveClient(ResourceInfo());
+        ->RemoveClient(*ResourceInfo());
   }
 }
 

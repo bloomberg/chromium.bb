@@ -8,6 +8,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/MemoryCoordinator.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"

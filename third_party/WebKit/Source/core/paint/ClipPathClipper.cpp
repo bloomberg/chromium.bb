@@ -51,15 +51,12 @@ LayoutSVGResourceClipper* ResolveElementReference(
     return resources ? resources->Clipper() : nullptr;
   }
   // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-  Node* target_node = layout_object.GetNode();
-  if (!target_node)
+  SVGResource* resource = reference_clip_path_operation.Resource();
+  LayoutSVGResourceContainer* container =
+      resource ? resource->ResourceContainer() : nullptr;
+  if (!container || container->ResourceType() != kClipperResourceType)
     return nullptr;
-  SVGElement* element =
-      reference_clip_path_operation.FindElement(target_node->GetTreeScope());
-  if (!IsSVGClipPathElement(element) || !element->GetLayoutObject())
-    return nullptr;
-  return ToLayoutSVGResourceClipper(
-      ToLayoutSVGResourceContainer(element->GetLayoutObject()));
+  return ToLayoutSVGResourceClipper(container);
 }
 
 }  // namespace

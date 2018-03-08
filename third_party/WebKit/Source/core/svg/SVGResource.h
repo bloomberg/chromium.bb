@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
@@ -15,6 +16,7 @@ class Element;
 class IdTargetObserver;
 class LayoutSVGResourceContainer;
 class SVGElement;
+class SVGResourceClient;
 class TreeScope;
 
 // A class tracking a reference to an SVG resource (an element that constitutes
@@ -26,6 +28,11 @@ class SVGResource : public GarbageCollected<SVGResource> {
   Element* Target() const { return target_; }
   LayoutSVGResourceContainer* ResourceContainer() const;
 
+  void AddClient(SVGResourceClient&);
+  void RemoveClient(SVGResourceClient&);
+
+  bool HasClients() const { return !clients_.IsEmpty(); }
+
   void AddWatch(SVGElement&);
   void RemoveWatch(SVGElement&);
 
@@ -35,14 +42,17 @@ class SVGResource : public GarbageCollected<SVGResource> {
 
   void Trace(Visitor*);
 
-  void NotifyResourceClients();
+  void NotifyPendingClients();
+  void NotifyContentChanged();
 
  private:
   void TargetChanged(const AtomicString& id);
+  void NotifyElementChanged();
 
   Member<TreeScope> tree_scope_;
   Member<Element> target_;
   Member<IdTargetObserver> id_observer_;
+  HeapHashCountedSet<Member<SVGResourceClient>> clients_;
   HeapHashSet<Member<SVGElement>> pending_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(SVGResource);

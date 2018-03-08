@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "core/style/BasicShapes.h"
-#include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGResource.h"
 #include "platform/graphics/Path.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
@@ -40,9 +40,7 @@
 
 namespace blink {
 
-class SVGElement;
 class SVGResourceClient;
-class TreeScope;
 
 class ClipPathOperation : public RefCounted<ClipPathOperation> {
  public:
@@ -66,25 +64,24 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
  public:
   static scoped_refptr<ReferenceClipPathOperation> Create(
       const String& url,
-      SVGElementProxy& element_proxy) {
-    return base::AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
+      SVGResource* resource) {
+    return base::AdoptRef(new ReferenceClipPathOperation(url, resource));
   }
 
-  void AddClient(SVGResourceClient*, base::SingleThreadTaskRunner*);
-  void RemoveClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient&);
+  void RemoveClient(SVGResourceClient&);
 
-  SVGElement* FindElement(TreeScope&) const;
-
+  SVGResource* Resource() const;
   const String& Url() const { return url_; }
 
  private:
   bool operator==(const ClipPathOperation&) const override;
   OperationType GetType() const override { return REFERENCE; }
 
-  ReferenceClipPathOperation(const String& url, SVGElementProxy& element_proxy)
-      : element_proxy_(&element_proxy), url_(url) {}
+  ReferenceClipPathOperation(const String& url, SVGResource* resource)
+      : resource_(resource), url_(url) {}
 
-  Persistent<SVGElementProxy> element_proxy_;
+  Persistent<SVGResource> resource_;
   String url_;
 };
 

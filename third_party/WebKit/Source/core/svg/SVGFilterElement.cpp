@@ -23,8 +23,8 @@
 
 #include "core/svg/SVGFilterElement.h"
 
-#include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 

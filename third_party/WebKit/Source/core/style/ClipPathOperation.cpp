@@ -6,26 +6,25 @@
 
 namespace blink {
 
-void ReferenceClipPathOperation::AddClient(
-    SVGResourceClient* client,
-    base::SingleThreadTaskRunner* task_runner) {
-  element_proxy_->AddClient(client, task_runner);
+void ReferenceClipPathOperation::AddClient(SVGResourceClient& client) {
+  if (resource_)
+    resource_->AddClient(client);
 }
 
-void ReferenceClipPathOperation::RemoveClient(SVGResourceClient* client) {
-  element_proxy_->RemoveClient(client);
+void ReferenceClipPathOperation::RemoveClient(SVGResourceClient& client) {
+  if (resource_)
+    resource_->RemoveClient(client);
 }
 
-SVGElement* ReferenceClipPathOperation::FindElement(
-    TreeScope& tree_scope) const {
-  return element_proxy_->FindElement(tree_scope);
+SVGResource* ReferenceClipPathOperation::Resource() const {
+  return resource_;
 }
 
 bool ReferenceClipPathOperation::operator==(const ClipPathOperation& o) const {
   if (!IsSameType(o))
     return false;
   const ReferenceClipPathOperation& other = ToReferenceClipPathOperation(o);
-  return element_proxy_ == other.element_proxy_ && url_ == other.url_;
+  return resource_ == other.resource_ && url_ == other.url_;
 }
 
 }  // namespace blink

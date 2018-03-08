@@ -66,6 +66,7 @@ class CORE_EXPORT StyleResolverState {
   Document& GetDocument() const { return *document_; }
   // These are all just pass-through methods to ElementResolveContext.
   Element* GetElement() const { return element_context_.GetElement(); }
+  TreeScope& GetTreeScope() const;
   const ContainerNode* ParentNode() const {
     return element_context_.ParentNode();
   }

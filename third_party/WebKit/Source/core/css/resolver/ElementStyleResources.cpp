@@ -28,6 +28,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/dom/Document.h"
+#include "core/dom/TreeScope.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
@@ -39,6 +40,7 @@
 #include "core/style/StyleImage.h"
 #include "core/style/StylePendingImage.h"
 #include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "platform/Length.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -98,6 +100,16 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
 SVGElementProxy& ElementStyleResources::CachedOrPendingFromValue(
     const CSSURIValue& value) {
   return value.EnsureElementProxy(*document_);
+}
+
+SVGResource* ElementStyleResources::GetSVGResourceFromValue(
+    TreeScope& tree_scope,
+    const CSSURIValue& value) const {
+  if (!value.IsLocal(*document_))
+    return nullptr;
+  SVGTreeScopeResources& tree_scope_resources =
+      tree_scope.EnsureSVGTreeScopedResources();
+  return tree_scope_resources.ResourceForId(value.FragmentIdentifier());
 }
 
 void ElementStyleResources::LoadPendingSVGDocuments(
