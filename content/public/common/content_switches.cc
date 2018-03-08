@@ -772,12 +772,6 @@ const char kSingleProcess[]                 = "single-process";
 // process consolidation, not isolation). You probably want this one.
 const char kSitePerProcess[]                = "site-per-process";
 
-// Skips reencoding bitmaps as PNGs when the encoded data is unavailable
-// during SKP capture.  This allows for obtaining an accurate sample of
-// the types of images on the web, rather than being weighted towards PNGs
-// that we have encoded ourselves.
-const char kSkipReencodingOnSKPCapture[]    = "skip-reencoding-on-skp-capture";
-
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.
 const char kStartFullscreen[] = "start-fullscreen";
