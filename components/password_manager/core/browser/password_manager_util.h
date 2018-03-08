@@ -19,11 +19,14 @@ class AutofillClient;
 
 namespace password_manager {
 class PasswordManagerClient;
+class PasswordStore;
 }
 
 namespace syncer {
 class SyncService;
 }
+
+class PrefService;
 
 namespace password_manager_util {
 
@@ -70,6 +73,13 @@ void UserTriggeredShowAllSavedPasswordsFromContextMenu(
 // Triggers password generation flow and records the metrics.
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
+
+// Clean up the blacklisted entries in the password store. Those shouldn't
+// contain username/password pair. https://crbug.com/817754
+void CleanUserDataInBlacklistedCredentials(
+    password_manager::PasswordStore* store,
+    PrefService* prefs,
+    int delay_in_seconds);
 
 }  // namespace password_manager_util
 

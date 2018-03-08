@@ -26,6 +26,7 @@
 #include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/http_data_cleaner.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -263,6 +264,10 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   password_manager::DelayCleanObsoleteHttpDataForPasswordStoreAndPrefs(
       ps.get(), profile->GetPrefs(),
       base::WrapRefCounted(profile->GetRequestContext()));
+  // TODO(https://crbug.com/817754): remove the code once majority of the users
+  // executed it.
+  password_manager_util::CleanUserDataInBlacklistedCredentials(
+      ps.get(), profile->GetPrefs(), 60);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
