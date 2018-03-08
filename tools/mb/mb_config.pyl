@@ -233,7 +233,6 @@
       'Linux ARM (dbg)': 'debug_bot_arm',
       'Linux ARM64': 'release_bot_arm64',
       'Linux ARM64 (dbg)': 'debug_bot_arm64',
-      'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
       'Linux Clang Analyzer': 'linux_chromium_analysis',
       'Linux deterministic': 'release_bot',
       'Linux deterministic (dbg)': 'debug_bot',
@@ -242,6 +241,8 @@
       'Linux Viz': 'release_trybot',
       'Linux Xenial': 'release_bot',
       'linux-annotator-rel': 'release_bot',
+      'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
+      'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
@@ -1519,6 +1520,10 @@
       'release_bot', 'chrome_with_codecs',
     ],
 
+    'release_bot_enable_blink_heap_verification': [
+      'release_bot', 'enable_blink_heap_verification',
+    ],
+
     'release_bot_fuchsia': [
       'release_bot', 'fuchsia',
     ],
@@ -1914,6 +1919,10 @@
 
     'enable_blink_heap_incremental_marking': {
       'gn_args': 'enable_blink_heap_incremental_marking=true',
+    },
+
+    'enable_blink_heap_verification': {
+      'gn_args': 'enable_blink_heap_verification=true',
     },
 
     # This config enable compression on main waterfall win builder to reduce the
