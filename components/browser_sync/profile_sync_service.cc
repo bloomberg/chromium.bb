@@ -224,8 +224,6 @@ void ProfileSyncService::Initialize() {
       base::Bind(&ProfileSyncService::CanEngineStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowEngineComponents,
                  weak_factory_.GetWeakPtr()));
-  sync_sessions::LocalSessionEventRouter* router =
-      sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter();
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
@@ -233,7 +231,6 @@ void ProfileSyncService::Initialize() {
       url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
   sessions_sync_manager_ = std::make_unique<SessionsSyncManager>(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
-      router,
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
                  sync_enabled_weak_factory_.GetWeakPtr()));
 

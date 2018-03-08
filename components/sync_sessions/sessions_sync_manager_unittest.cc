@@ -141,7 +141,7 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
   }
 
   SyncDataList GetAllSyncData(syncer::ModelType type) const override {
-    return sync_data_to_return_;
+    return SyncDataList();
   }
 
   void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override {
@@ -160,14 +160,9 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
 
   void FailProcessSyncChangesWith(const SyncError& error) { error_ = error; }
 
-  void SetSyncDataToReturn(const SyncDataList& data) {
-    sync_data_to_return_ = data;
-  }
-
  private:
   SyncError error_;
   SyncChangeList* output_;
-  SyncDataList sync_data_to_return_;
   base::ObserverList<syncer::LocalChangeObserver> local_change_observers_;
 };
 
@@ -178,6 +173,8 @@ class SessionsSyncManagerTest : public testing::Test {
   void SetUp() override {
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
         .WillByDefault(testing::Return(&window_getter_));
+    ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
+        .WillByDefault(testing::Return(window_getter_.router()));
 
     local_device_ = std::make_unique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
@@ -187,7 +184,6 @@ class SessionsSyncManagerTest : public testing::Test {
         std::make_unique<syncer::SyncPrefs>(sync_client_->GetPrefService());
     manager_ = std::make_unique<SessionsSyncManager>(
         &mock_sync_sessions_client_, sync_prefs_.get(), local_device_.get(),
-        window_getter_.router(),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
                    base::Unretained(&observer_)));
   }
@@ -231,10 +227,6 @@ class SessionsSyncManagerTest : public testing::Test {
   void TriggerProcessSyncChangesError() {
     test_processor_->FailProcessSyncChangesWith(SyncError(
         FROM_HERE, SyncError::DATATYPE_ERROR, "Error", syncer::SESSIONS));
-  }
-
-  void SetSyncData(const SyncDataList& data) {
-    test_processor_->SetSyncDataToReturn(data);
   }
 
   void VerifyLocalHeaderChange(const SyncChange& change,

@@ -91,11 +91,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
-  bookmarks::BookmarkModel* GetBookmarkModel() override {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
-  }
-
   favicon::FaviconService* GetFaviconService() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::FaviconServiceFactory::GetForBrowserState(

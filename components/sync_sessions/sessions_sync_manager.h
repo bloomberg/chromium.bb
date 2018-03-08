@@ -26,7 +26,6 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_handler_impl.h"
-#include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
 #include "components/sync_sessions/sessions_global_id_mapper.h"
@@ -58,7 +57,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   SessionsSyncManager(SyncSessionsClient* sessions_client,
                       syncer::SyncPrefs* sync_prefs,
                       syncer::LocalDeviceInfoProvider* local_device,
-                      LocalSessionEventRouter* router,
                       const base::RepeatingClosure& sessions_updated_callback);
   ~SessionsSyncManager() override;
 
@@ -199,15 +197,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   // User-visible machine name to populate header.
   std::string current_session_name_;
 
-  // SyncID for the sync node containing all the window information for this
-  // client.
-  int local_session_header_node_id_;
-
   // Number of days without activity after which we consider a session to be
   // stale and a candidate for garbage collection.
   int stale_session_threshold_days_;
-
-  LocalSessionEventRouter* local_event_router_;
 
   std::unique_ptr<sync_sessions::LostNavigationsRecorder>
       lost_navigations_recorder_;
