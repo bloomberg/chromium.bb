@@ -173,20 +173,27 @@ class WindowGrid::ShieldView : public views::View {
     label_container_->SetVisible(visible);
   }
 
-  bool IsLabelVisible() const { return label_container_->visible(); }
+  gfx::Rect GetLabelBounds() const {
+    return label_container_->GetBoundsInScreen();
+  }
 
- protected:
-  // views::View:
-  void Layout() override {
-    background_view_->SetBoundsRect(GetLocalBounds());
-
+  // ShieldView takes up the whole workspace since it changes opacity of the
+  // whole wallpaper. The bounds of the grid may be smaller in some cases of
+  // splitview. The label should be centered in the bounds of the grid.
+  void SetGridBounds(const gfx::Rect& bounds) {
     const int label_width = label_->GetPreferredSize().width() +
                             2 * kNoItemsIndicatorHorizontalPaddingDp;
-    gfx::Rect label_container_bounds = GetLocalBounds();
+    gfx::Rect label_container_bounds = bounds;
     label_container_bounds.ClampToCenteredSize(
         gfx::Size(label_width, kNoItemsIndicatorHeightDp));
     label_container_->SetBoundsRect(label_container_bounds);
   }
+
+  bool IsLabelVisible() const { return label_container_->visible(); }
+
+ protected:
+  // views::View:
+  void Layout() override { background_view_->SetBoundsRect(GetLocalBounds()); }
 
  private:
   // Owned by views heirarchy.
@@ -509,6 +516,8 @@ void WindowGrid::AddItem(aura::Window* window) {
   window_list_.push_back(
       std::make_unique<WindowSelectorItem>(window, window_selector_, this));
   window_list_.back()->PrepareForOverview();
+  if (shield_view_)
+    shield_view_->SetLabelVisibility(false);
 
   PositionWindows(/*animate=*/true);
 }
@@ -524,6 +533,8 @@ void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
     window_state_observer_.Remove(
         wm::GetWindowState(selector_item->GetWindow()));
     window_list_.erase(iter);
+    if (shield_view_)
+      shield_view_->SetLabelVisibility(empty());
   }
 }
 
@@ -555,6 +566,8 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
 
 void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
   bounds_ = bounds;
+  if (shield_view_)
+    shield_view_->SetGridBounds(bounds_);
   PositionWindows(/*animate=*/true);
 }
 
@@ -562,6 +575,8 @@ void WindowGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
     const gfx::Rect& bounds,
     WindowSelectorItem* ignored_item) {
   bounds_ = bounds;
+  if (shield_view_)
+    shield_view_->SetGridBounds(bounds_);
   PositionWindows(/*animate=*/true, ignored_item);
 }
 
@@ -672,6 +687,13 @@ bool WindowGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
   return shield_view_ && shield_view_->IsLabelVisible();
 }
 
+gfx::Rect WindowGrid::GetNoItemsIndicatorLabelBoundsForTesting() const {
+  if (!shield_view_)
+    return gfx::Rect();
+
+  return shield_view_->GetLabelBounds();
+}
+
 void WindowGrid::SetWindowListAnimationStates(
     WindowSelectorItem* selected_item,
     WindowSelector::OverviewTransition transition) {
@@ -771,6 +793,7 @@ void WindowGrid::InitShieldWidget() {
     shield_view_ = new ShieldView();
     shield_view_->SetBackgroundColor(shield_color);
     shield_view_->SetLabelVisibility(empty());
+    shield_view_->SetGridBounds(bounds_);
     shield_widget_->SetContentsView(shield_view_);
     shield_widget_->SetOpacity(initial_opacity);
   }
