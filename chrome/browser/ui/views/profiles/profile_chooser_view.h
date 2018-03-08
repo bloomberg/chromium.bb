@@ -35,7 +35,7 @@ class LabelButton;
 }
 
 class Browser;
-class DiceSigninButton;
+class DiceSigninButtonView;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -202,7 +202,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* manage_accounts_button_;
   views::LabelButton* signin_current_profile_button_;
   views::LabelButton* sync_to_another_account_button_;
-  DiceSigninButton* signin_with_gaia_account_button_;
+  views::LabelButton* signin_with_gaia_account_button_;
 
   // For material design user menu, the active profile card owns the profile
   // name and photo.
@@ -223,6 +223,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Links and buttons displayed in the account removal view.
   views::LabelButton* remove_account_button_;
   views::ImageButton* account_removal_cancel_button_;
+
+  // View for the signin/turn-on-sync button in the dice promo.
+  DiceSigninButtonView* dice_signin_button_view_;
 
   // Records the account id to remove.
   std::string account_id_to_remove_;

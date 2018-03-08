@@ -2995,8 +2995,8 @@ split_static_library("ui") {
       sources += [
         "views/sync/dice_bubble_sync_promo_view.cc",
         "views/sync/dice_bubble_sync_promo_view.h",
-        "views/sync/dice_signin_button.cc",
-        "views/sync/dice_signin_button.h",
+        "views/sync/dice_signin_button_view.cc",
+        "views/sync/dice_signin_button_view.h",
       ]
     }
 

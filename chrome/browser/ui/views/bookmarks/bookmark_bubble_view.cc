@@ -197,12 +197,10 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
-    DiceBubbleSyncPromoView* dice_bubble_sync_promo_view =
-        new DiceBubbleSyncPromoView(profile_, delegate_.get(),
-                                    IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE,
-                                    IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE);
-    dice_bubble_sync_promo_view->SetSigninButtonNonProminent();
-    footnote_view_ = dice_bubble_sync_promo_view;
+    footnote_view_ = new DiceBubbleSyncPromoView(
+        profile_, delegate_.get(), IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE,
+        IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE,
+        false /* signin_button_prominent */);
   } else {
     footnote_view_ =
         new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
