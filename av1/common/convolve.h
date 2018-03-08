@@ -138,23 +138,11 @@ void av1_convolve_c(const uint8_t *src, int src_stride, uint8_t *dst,
                     const int subpel_x, int xstep, const int subpel_y,
                     int ystep, ConvolveParams *conv_params);
 
-void av1_convolve_scale(const uint8_t *src, int src_stride, uint8_t *dst,
-                        int dst_stride, int w, int h,
-                        InterpFilters interp_filters, const int subpel_x,
-                        int xstep, const int subpel_y, int ystep,
-                        ConvolveParams *conv_params);
-
 void av1_highbd_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                          int dst_stride, int w, int h,
                          InterpFilters interp_filters, const int subpel_x,
                          int xstep, const int subpel_y, int ystep, int avg,
                          int bd);
-
-void av1_highbd_convolve_scale(const uint8_t *src, int src_stride, uint8_t *dst,
-                               int dst_stride, int w, int h,
-                               InterpFilters interp_filters, const int subpel_x,
-                               int xstep, const int subpel_y, int ystep,
-                               int avg, int bd);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
