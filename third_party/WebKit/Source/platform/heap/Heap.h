@@ -99,7 +99,7 @@ class WeakMember;
 template <typename T>
 class UntracedMember;
 
-template <typename T, bool = NeedsAdjustAndMark<T>::value>
+template <typename T, bool = NeedsAdjustPointer<T>::value>
 class ObjectAliveTrait;
 
 template <typename T>

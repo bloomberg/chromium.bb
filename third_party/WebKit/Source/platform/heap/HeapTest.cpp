@@ -4837,23 +4837,23 @@ TEST(HeapTest, MixinInstanceWithoutTrace) {
   EXPECT_LE(saved_trace_count, MixinA::trace_count_);
 }
 
-TEST(HeapTest, NeedsAdjustAndMark) {
+TEST(HeapTest, NeedsAdjustPointer) {
   // class Mixin : public GarbageCollectedMixin {};
-  static_assert(NeedsAdjustAndMark<Mixin>::value,
+  static_assert(NeedsAdjustPointer<Mixin>::value,
                 "A Mixin pointer needs adjustment");
-  static_assert(NeedsAdjustAndMark<Mixin>::value,
+  static_assert(NeedsAdjustPointer<Mixin>::value,
                 "A const Mixin pointer needs adjustment");
 
   // class SimpleObject : public GarbageCollected<SimpleObject> {};
-  static_assert(!NeedsAdjustAndMark<SimpleObject>::value,
+  static_assert(!NeedsAdjustPointer<SimpleObject>::value,
                 "A SimpleObject pointer does not need adjustment");
-  static_assert(!NeedsAdjustAndMark<const SimpleObject>::value,
+  static_assert(!NeedsAdjustPointer<const SimpleObject>::value,
                 "A const SimpleObject pointer does not need adjustment");
 
   // class UseMixin : public SimpleObject, public Mixin {};
-  static_assert(!NeedsAdjustAndMark<UseMixin>::value,
+  static_assert(!NeedsAdjustPointer<UseMixin>::value,
                 "A UseMixin pointer does not need adjustment");
-  static_assert(!NeedsAdjustAndMark<const UseMixin>::value,
+  static_assert(!NeedsAdjustPointer<const UseMixin>::value,
                 "A const UseMixin pointer does not need adjustment");
 }
 
