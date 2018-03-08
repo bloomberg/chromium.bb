@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -56,6 +57,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
@@ -77,6 +79,9 @@ public class HistoryActivityTest {
     @Rule
     public IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
+
+    @Rule
+    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
             implements SelectionObserver<HistoryItem>, SignInStateObserver, PrefObserver {
@@ -411,6 +416,7 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
+    @ChromeModernDesign.Enable
     public void testSearchView() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         View toolbarShadow = mHistoryManager.getSelectableListLayout().getToolbarShadowForTests();
@@ -432,7 +438,7 @@ public class HistoryActivityTest {
         // The selection should be cleared when a search is started.
         mTestObserver.onSelectionCallback.waitForCallback(callCount, 1);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        Assert.assertEquals(View.GONE, toolbarShadow.getVisibility());
         Assert.assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
 
         // Select an item and assert that the search view is no longer showing.
@@ -444,7 +450,7 @@ public class HistoryActivityTest {
         // Clear the selection and assert that the search view is showing again.
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        Assert.assertEquals(View.GONE, toolbarShadow.getVisibility());
         Assert.assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
 
         // Close the search view.

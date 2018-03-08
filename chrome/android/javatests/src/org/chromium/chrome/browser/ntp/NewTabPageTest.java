@@ -19,10 +19,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.params.MethodParamAnnotationRule;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -45,12 +50,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -69,6 +75,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -79,7 +86,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the native android New Tab Page.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @DisableFeatures("NetworkPrediction")
 @RetryOnFailure
@@ -94,7 +102,18 @@ public class NewTabPageTest {
             new RenderTestRule("chrome/test/data/android/render_tests");
 
     @Rule
+    public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
+
+    @Rule
+    public ChromeModernDesign.Processor mChromeModernProcessor = new ChromeModernDesign.Processor();
+
+    @Rule
     public TestRule mFeatureRule = new Features.InstrumentationProcessor();
+
+    @ParameterAnnotations.MethodParameter("Modern")
+    private static List<ParameterSet> sMethodParamModern =
+            Arrays.asList(new ParameterSet().value(false).name("DisableChromeModern"),
+                    new ParameterSet().value(true).name("EnableChromeModern"));
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
@@ -105,6 +124,18 @@ public class NewTabPageTest {
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
+
+    @ParameterAnnotations.UseMethodParameterBefore("Modern")
+    public void setupModernDesign(boolean enabled) {
+        mChromeModernProcessor.setPrefs(enabled);
+
+        if (enabled) mRenderTestRule.setVariantPrefix("modern");
+    }
+
+    @ParameterAnnotations.UseMethodParameterAfter("Modern")
+    public void teardownModernDesign(boolean enabled) {
+        mChromeModernProcessor.clearTestState();
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -162,7 +193,8 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    public void testRender() throws IOException {
+    @ParameterAnnotations.UseMethodParameter("Modern")
+    public void testRender(boolean modern) throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mTileGridLayout, "most_visited");

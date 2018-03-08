@@ -872,6 +872,21 @@
             ]
         }
     ],
+    "ChromeModernDesign": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Modern",
+                    "enable_features": [
+                        "ChromeModernDesign"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeSmartSelection": [
         {
             "platforms": [

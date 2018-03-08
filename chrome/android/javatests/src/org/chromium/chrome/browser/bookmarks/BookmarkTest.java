@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
@@ -44,6 +45,7 @@ import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -68,6 +70,9 @@ public class BookmarkTest {
 
     @Rule
     public RenderTestRule mRenderTestRule = new RenderTestRule();
+
+    @Rule
+    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
 
     private static final String TEST_PAGE_URL_GOOGLE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_TITLE_GOOGLE = "The Google";
@@ -382,6 +387,7 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @ChromeModernDesign.Enable
     public void testBookmarkFolderIcon() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
         addFolder(TEST_FOLDER_TITLE);
