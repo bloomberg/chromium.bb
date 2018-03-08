@@ -186,8 +186,8 @@ const base::Feature kDesktopPWAWindowing{"DesktopPWAWindowing",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Desktop PWAs capturing links.
-const base::Feature kDesktopPWAsLinkCapturing{
-    "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDesktopPWAsLinkCapturing{"DesktopPWAsLinkCapturing",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
