@@ -149,10 +149,10 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       assertTrue(extensionOptions.disabled);
 
-      expectFalse(testIsVisible('#error-icon'));
+      expectFalse(testIsVisible('.warning-icon'));
       item.set('data.runtimeWarnings', ['Dummy warning']);
       Polymer.dom.flush();
-      expectTrue(testIsVisible('#error-icon'));
+      expectTrue(testIsVisible('.warning-icon'));
     });
 
     test(assert(TestNames.LayoutSource), function() {

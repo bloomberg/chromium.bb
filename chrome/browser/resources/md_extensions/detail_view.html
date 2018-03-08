@@ -110,11 +110,6 @@
         justify-content: space-between;
       }
 
-      .section.continuation.warning {
-        padding-left: 21px;
-        padding-right: 8px;
-      }
-
       .section:first-child {
         border: none;
       }
@@ -140,39 +135,23 @@
       .warning .action-button {
         background: white;
         color: var(--google-blue-500);
-        margin-left: 14px;
-        width: 78px;
       }
 
       #reload-button {
         color: var(--google-blue-500);
       }
 
-      .warning div {
-        display: flex;
-      }
-
       .warning span {
-        color: var(--paper-red-700);
-        width: 484px;
+        color: var(--google-red-700);
+        flex: 1;
       }
 
       .warning-icon {
-        --iron-icon-fill-color: var(--paper-red-700);
-        -webkit-margin-end: 16px;
-        height: 19px;
-        width: 19px;
-      }
-
-      #error-icon {
         --iron-icon-fill-color: var(--google-red-700);
-        -webkit-margin-end: 4px;
+        -webkit-margin-end: 8px;
+        flex-shrink: 0;
         height: 18px;
         width: 18px;
-      }
-
-      #runtime-warnings {
-        color: var(--google-red-700);
       }
 
       ul {
@@ -244,36 +223,34 @@
         <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
           <div id="runtime-warnings" aria-describedby="a11yAssociation"
               hidden$="[[!data.runtimeWarnings.length]]"
-              class="section continuation control-line">
-            <div>
-              <iron-icon id="error-icon" icon="error"></iron-icon>
+              class="section continuation warning control-line">
+            <iron-icon class="warning-icon" icon="error"></iron-icon>
+            <span>
               <template is="dom-repeat" items="[[data.runtimeWarnings]]">
                 [[item]]
               </template>
-            </div>
-            <paper-button id="reload-button" on-click="onReloadTap_">
+            </span>
+            <paper-button id="reload-button" class="action-button"
+                on-click="onReloadTap_">
               $i18n{itemReload}
             </paper-button>
           </div>
           <div class="section continuation warning" id="suspicious-warning"
               hidden$="[[!data.disableReasons.suspiciousInstall]]">
-            <div>
-              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
-              <span>
-                $i18n{itemSuspiciousInstall}
-                <a target="_blank" id="learn-more-link"
-                    href="$i18n{suspiciousInstallHelpUrl}">
-                  $i18n{learnMore}
-                </a>
-              </span>
-            </div>
+            <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+            <span>
+              $i18n{itemSuspiciousInstall}
+              <a target="_blank" id="learn-more-link"
+                  href="$i18n{suspiciousInstallHelpUrl}">
+                $i18n{learnMore}
+              </a>
+            </span>
           </div>
-          <div class="section continuation warning" id="corrupted-warning"
+          <div class="section continuation warning control-line"
+              id="corrupted-warning"
               hidden$="[[!data.disableReasons.corruptInstall]]">
-            <div>
-              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
-              <span>$i18n{itemCorruptInstall}</span>
-            </div>
+            <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+            <span>$i18n{itemCorruptInstall}</span>
             <paper-button id="repair-button" class="action-button"
                 on-click="onRepairTap_">
               $i18n{itemRepair}
@@ -281,17 +258,13 @@
           </div>
           <div class="section continuation warning" id="blacklisted-warning"
               hidden$="[[!data.blacklistText]]">
-            <div>
-              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
-              <span>[[data.blacklistText]]</span>
-            </div>
+            <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+            <span>[[data.blacklistText]]</span>
           </div>
           <div class="section continuation warning" id="update-required-warning"
               hidden$="[[!data.disableReasons.updateRequired]]">
-            <div>
-              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
-              <span>$i18n{updateRequiredByPolicy}</span>
-            </div>
+            <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+            <span>$i18n{updateRequiredByPolicy}</span>
           </div>
         </div>
         <div class="section continuation block">
