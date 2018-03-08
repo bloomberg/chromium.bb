@@ -104,6 +104,12 @@ crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
+# https://crbug.com/788390: Autoplay feature policy tests failing on the Windows FYI bot.
+crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
+crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
+crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
+crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
+
 # The tests below set document.domain.  Such tests are skipped, because they
 # cannot work when same-site WPT origins are isolated from each other via
 # --isolate-origins cmdline flag (which is how bots run the
