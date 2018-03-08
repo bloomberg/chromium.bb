@@ -69,34 +69,36 @@
     <div id="attribution"><div id="attribution-text"></div></div>
   </div>
 
-  <div id="voice-overlay" class="overlay-hidden" hidden>
-    <div id="voice-outer" class="outer">
-      <div class="inner-container">
-        <div id="voice-button-container" class="button-container">
-          <!-- The audio level animation. -->
-          <span id="voice-level" class="level"></span>
-          <!-- The microphone button. -->
-          <span id="voice-button" class="button">
-            <!-- The microphone icon (in CSS). -->
-            <div class="microphone">
-              <span class="receiver"></span>
-              <div class="wrapper">
-                <span class="stem"></span>
-                <span class="shell"></span>
+  <dialog id="voice-overlay-dialog" class="overlay-dialog">
+    <div id="voice-overlay" class="overlay-hidden">
+      <button id="voice-close-button" class="close-button">&times;</button>
+      <div id="voice-outer" class="outer">
+        <div class="inner-container">
+          <div id="voice-button-container" class="button-container">
+            <!-- The audio level animation. -->
+            <span id="voice-level" class="level"></span>
+            <!-- The microphone button. -->
+            <span id="voice-button" class="button">
+              <!-- The microphone icon (in CSS). -->
+              <div class="microphone">
+                <span class="receiver"></span>
+                <div class="wrapper">
+                  <span class="stem"></span>
+                  <span class="shell"></span>
+                </div>
               </div>
-            </div>
-          </span>
-        </div>
-        <div class="text-container">
-          <!-- Low confidence text underneath high confidence text. -->
-          <span id="voice-text-i" class="voice-text"></span>
-          <!-- High confidence text on top of low confidence text. -->
-          <span id="voice-text-f" class="voice-text"></span>
+            </span>
+          </div>
+          <div class="text-container">
+            <!-- Low confidence text underneath high confidence text. -->
+            <span id="voice-text-i" class="voice-text"></span>
+            <!-- High confidence text on top of low confidence text. -->
+            <span id="voice-text-f" class="voice-text"></span>
+          </div>
         </div>
       </div>
     </div>
-    <div id="voice-close-button" class="close-button">&times;</div>
-  </div>
+  </dialog>
 
   <div id="one-google-end-of-body"></div>
 </body>

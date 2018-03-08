@@ -37,6 +37,12 @@
   --text_link_color: rgb(17, 85, 204);
 }
 
+/* The dialog container for the background element. */
+.overlay-dialog {
+  background: transparent;
+  border: none;
+}
+
 /* The background element. */
 .overlay,
 .overlay-hidden {
@@ -48,8 +54,7 @@
   position: fixed;
   text-align: left;
   top: 0;
-  transition: visibility 0s linear 218ms, opacity 218ms,
-              background-color 218ms;
+  transition: visibility 0s linear 218ms, background-color 218ms;
   visibility: hidden;
   width: 100%;
   z-index: 10000;

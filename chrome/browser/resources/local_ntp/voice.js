@@ -82,7 +82,8 @@ const KEYCODE = {
   ESC: 'Escape',
   NUMPAD_ENTER: 'NumpadEnter',
   PERIOD: 'Period',
-  SPACE: 'Space'
+  SPACE: 'Space',
+  TAB: 'Tab'
 };
 
 
@@ -298,6 +299,13 @@ speech.recognition_;
 
 
 /**
+ * Indicates if the user is using keyboard navigation (i.e. tab).
+ * @private {boolean}
+ */
+speech.usingKeyboardNavigation_ = false;
+
+
+/**
  * Log an event from Voice Search.
  * @param {!number} eventType Event from |LOG_TYPE|.
  */
@@ -445,6 +453,7 @@ speech.reset_ = function() {
   speech.interimResult_ = '';
   speech.finalResult_ = '';
   speech.currentState_ = speech.State_.READY;
+  speech.usingKeyboardNavigation_ = false;
 };
 
 
@@ -674,10 +683,29 @@ speech.isSpaceOrEnter_ = function(code) {
 
 
 /**
+ * Determines if the given event's target id is for a button or navigation link.
+ * @param {!string} An event's target id.
+ * @return True, iff the id is for a button or link.
+ * @private
+ */
+speech.isButtonOrLink_ = function(id) {
+  switch (id) {
+    case text.RETRY_LINK_ID:
+    case text.SUPPORT_LINK_ID:
+    case view.CLOSE_BUTTON_ID:
+      return true;
+    default:
+      return false;
+  }
+};
+
+
+/**
  * Handles the following keyboard actions.
  * - <CTRL> + <SHIFT> + <.> starts voice input(<CMD> + <SHIFT> + <.> on mac).
  * - <ESC> aborts voice input when the recognition interface is active.
- * - <ENTER> submits the speech query if there is one.
+ * - <ENTER> or <SPACE> interprets as a click if the target is a button or
+ *   navigation link, otherwise it submits the speech query if there is one
  * @param {KeyboardEvent} event The keydown event.
  */
 speech.onKeyDown = function(event) {
@@ -692,10 +720,19 @@ speech.onKeyDown = function(event) {
   } else {
     // Ensures that keyboard events are not propagated during voice input.
     event.stopPropagation();
-    if (speech.isSpaceOrEnter_(event.code) && speech.finalResult_) {
-      speech.submitFinalResult_();
-    } else if (
-        speech.isSpaceOrEnter_(event.code) || event.code == KEYCODE.ESC) {
+
+    if (event.code == KEYCODE.TAB) {
+      speech.usingKeyboardNavigation_ = true;
+    } else if (speech.isSpaceOrEnter_(event.code)) {
+      if (event.target != null && speech.isButtonOrLink_(event.target.id)) {
+        view.onWindowClick_(event);
+      } else if (speech.finalResult_) {
+        speech.submitFinalResult_();
+      } else {
+        speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
+        speech.stop();
+      }
+    } else if (event.code == KEYCODE.ESC) {
       speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
       speech.stop();
     }
@@ -746,10 +783,11 @@ speech.onVisibilityChange_ = function() {
 
 
 /**
- * Aborts the speech session if the UI is showing and omnibox gets focused.
+ * Aborts the speech session if the UI is showing and omnibox gets focused. Does
+ * not abort if the user is using keyboard navigation (i.e. tab).
  */
 speech.onOmniboxFocused = function() {
-  if (!speech.isUiDefinitelyHidden_()) {
+  if (!speech.isUiDefinitelyHidden_() && !speech.usingKeyboardNavigation_) {
     speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
     speech.stop();
   }
@@ -1174,6 +1212,7 @@ text.getErrorLink_ = function(error) {
   switch (error) {
     case RecognitionError.NO_MATCH:
       linkElement.id = text.RETRY_LINK_ID;
+      linkElement.tabIndex = '0';
       linkElement.textContent = speech.messages.tryAgain;
       // When clicked, |view.onWindowClick_| gets called.
       return linkElement;
@@ -1410,6 +1449,13 @@ let view = {};
 
 
 /**
+ * ID for the close button in the speech output container.
+ * @const @private
+ */
+view.CLOSE_BUTTON_ID = 'voice-close-button';
+
+
+/**
  * Class name of the speech recognition interface on the homepage.
  * @const @private
  */
@@ -1422,6 +1468,13 @@ view.OVERLAY_CLASS_ = 'overlay';
  * @const @private
  */
 view.OVERLAY_HIDDEN_CLASS_ = 'overlay-hidden';
+
+
+/**
+ * ID for the dialog that contains the speech recognition interface.
+ * @const @private
+ */
+view.DIALOG_ID_ = 'voice-overlay-dialog';
 
 
 /**
@@ -1578,6 +1631,7 @@ view.hide = function() {
 view.init = function(onClick) {
   view.onClick_ = onClick;
 
+  view.dialog_ = $(view.DIALOG_ID_);
   view.background_ = $(view.BACKGROUND_ID_);
   view.container_ = $(view.CONTAINER_ID_);
 
@@ -1604,21 +1658,11 @@ view.showError = function(error) {
  */
 view.showView_ = function() {
   if (!view.isVisible_) {
-    view.background_.hidden = false;
-    view.showFullPage_();
+    view.dialog_.showModal();
+    view.background_.className = view.OVERLAY_HIDDEN_CLASS_;
+    view.background_.className = view.OVERLAY_CLASS_;
     view.isVisible_ = true;
   }
-};
-
-
-/**
- * Displays the full page view, animating from the hidden state to the visible
- * state.
- * @private
- */
-view.showFullPage_ = function() {
-  view.background_.className = view.OVERLAY_HIDDEN_CLASS_;
-  view.background_.className = view.OVERLAY_CLASS_;
 };
 
 
@@ -1627,10 +1671,10 @@ view.showFullPage_ = function() {
  * @private
  */
 view.hideView_ = function() {
+  view.dialog_.close();
   view.background_.className = view.OVERLAY_HIDDEN_CLASS_;
   view.container_.className = view.INACTIVE_CLASS_;
   view.background_.removeAttribute('style');
-  view.background_.hidden = true;
   view.isVisible_ = false;
 };
 
@@ -1661,6 +1705,8 @@ view.onWindowClick_ = function(event) {
   const shouldRetry =
       retryLinkClicked || (micIconClicked && view.isNoMatchShown_);
   const navigatingAway = supportLinkClicked;
+
+  speech.usingKeyboardNavigation_ = false;
 
   if (shouldRetry) {
     if (micIconClicked) {
