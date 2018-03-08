@@ -1116,7 +1116,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     if (icon && !icon->size().IsEmpty()) {
       image_view = new views::ImageView();
       image_view->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-          *icon, skia::ImageOperations::RESIZE_GOOD, kIconSize));
+          *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
       image_view->SetSize(kIconSize);
     }
   }
