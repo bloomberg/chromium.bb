@@ -12,6 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
+#include "modules/mediastream/InputDeviceInfo.h"
 #include "modules/mediastream/MediaErrorState.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -269,9 +270,17 @@ void MediaDevices::DevicesEnumerated(
   for (size_t i = 0;
        i < static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES); ++i) {
     for (const auto& device_info : enumeration[i]) {
-      media_devices.push_back(MediaDeviceInfo::Create(
-          device_info->device_id, device_info->label, device_info->group_id,
-          static_cast<MediaDeviceType>(i)));
+      MediaDeviceType device_type = static_cast<MediaDeviceType>(i);
+      if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT ||
+          device_type == MediaDeviceType::MEDIA_VIDEO_INPUT) {
+        media_devices.push_back(
+            InputDeviceInfo::Create(device_info->device_id, device_info->label,
+                                    device_info->group_id, device_type));
+      } else {
+        media_devices.push_back(
+            MediaDeviceInfo::Create(device_info->device_id, device_info->label,
+                                    device_info->group_id, device_type));
+      }
     }
   }
 
