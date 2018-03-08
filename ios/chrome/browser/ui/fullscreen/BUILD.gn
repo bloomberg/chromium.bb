@@ -99,6 +99,7 @@ source_set("ui") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common:timing",
     "//ui/gfx/geometry",
   ]

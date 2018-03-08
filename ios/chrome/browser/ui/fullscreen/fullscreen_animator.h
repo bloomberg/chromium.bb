@@ -5,12 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_ANIMATOR_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_ANIMATOR_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/util/optional_property_animator.h"
 
 // Helper object for animating changes to fullscreen progress.  Subclasses of
 // this object are provided to FullscreenControllerObservers to coordinate
 // animations across several different ojects.
-@interface FullscreenAnimator : UIViewPropertyAnimator
+@interface FullscreenAnimator : OptionalPropertyAnimator
 
 // The progress value at the start of the animation.
 @property(nonatomic, readonly) CGFloat startProgress;
