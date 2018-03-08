@@ -823,6 +823,22 @@ TEST_F(HistoryQuickProviderTest, DoTrimHttpsScheme) {
   EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
 }
 
+TEST_F(HistoryQuickProviderTest, CorrectAutocompleteWithTrailingSlash) {
+  provider().autocomplete_input_ = AutocompleteInput(
+      base::ASCIIToUTF16("cr/"), metrics::OmniboxEventProto::OTHER,
+      TestSchemeClassifier());
+  RowWordStarts word_starts;
+  word_starts.url_word_starts_ = {0};
+  ScoredHistoryMatch sh_match(history::URLRow(GURL("http://cr/")),
+                              VisitInfoVector(), ASCIIToUTF16("cr/"),
+                              {ASCIIToUTF16("cr")}, {0}, word_starts, false, 0,
+                              base::Time());
+  AutocompleteMatch ac_match(provider().QuickMatchToACMatch(sh_match, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("cr/"), ac_match.fill_into_edit);
+  EXPECT_EQ(base::ASCIIToUTF16(""), ac_match.inline_autocompletion);
+  EXPECT_TRUE(ac_match.allowed_to_be_default_match);
+}
+
 // HQPOrderingTest -------------------------------------------------------------
 
 class HQPOrderingTest : public HistoryQuickProviderTest {

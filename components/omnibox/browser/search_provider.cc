@@ -1473,7 +1473,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           url_formatter::FormatUrl(navigation.url(), format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
-          client()->GetSchemeClassifier());
+          client()->GetSchemeClassifier(), &inline_autocomplete_offset);
   if (inline_autocomplete_offset != base::string16::npos) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     match.inline_autocompletion =

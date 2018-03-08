@@ -229,18 +229,12 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
           url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
-          client()->GetSchemeClassifier());
+          client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   if (inline_autocomplete_offset != base::string16::npos) {
-    // |inline_autocomplete_offset| may be beyond the end of the
-    // |match.fill_into_edit| if the user has typed an URL with a scheme and the
-    // last character typed is a slash.  That slash is removed by the
-    // FormatUrlWithOffsets call above.
-    if (inline_autocomplete_offset < match.fill_into_edit.length()) {
-      match.inline_autocompletion =
-          match.fill_into_edit.substr(inline_autocomplete_offset);
-    }
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
     match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
         !PreventInlineAutocomplete(autocomplete_input_);
   }

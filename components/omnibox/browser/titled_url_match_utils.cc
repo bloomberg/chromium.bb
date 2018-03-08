@@ -105,16 +105,10 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
           url_formatter::FormatUrl(url, fill_into_edit_format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
-          scheme_classifier);
+          scheme_classifier, &inline_autocomplete_offset);
   if (inline_autocomplete_offset != base::string16::npos) {
-    // |inline_autocomplete_offset| may be beyond the end of the
-    // |fill_into_edit| if the user has typed an URL with a scheme and the
-    // last character typed is a slash.  That slash is removed by the
-    // FormatURLWithOffsets call above.
-    if (inline_autocomplete_offset < match.fill_into_edit.length()) {
-      match.inline_autocompletion =
-          match.fill_into_edit.substr(inline_autocomplete_offset);
-    }
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
     match.allowed_to_be_default_match =
         match.inline_autocompletion.empty() ||
         !HistoryProvider::PreventInlineAutocomplete(input);

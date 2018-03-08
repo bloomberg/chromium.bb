@@ -523,17 +523,21 @@ void AutocompleteInput::ParseForEmphasizeComponents(
 base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url,
-    const AutocompleteSchemeClassifier& scheme_classifier) {
+    const AutocompleteSchemeClassifier& scheme_classifier,
+    size_t* offset) {
   if (!url_formatter::CanStripTrailingSlash(url))
     return formatted_url;
   const base::string16 url_with_path(formatted_url + base::char16('/'));
-  return (AutocompleteInput::Parse(
-              formatted_url, std::string(), scheme_classifier, nullptr, nullptr,
-              nullptr) == AutocompleteInput::Parse(url_with_path, std::string(),
-                                                   scheme_classifier, nullptr,
-                                                   nullptr, nullptr))
-             ? formatted_url
-             : url_with_path;
+  if (AutocompleteInput::Parse(formatted_url, std::string(), scheme_classifier,
+                               nullptr, nullptr, nullptr) ==
+      AutocompleteInput::Parse(url_with_path, std::string(), scheme_classifier,
+                               nullptr, nullptr, nullptr)) {
+    return formatted_url;
+  }
+  // If offset is past the addition, shift it.
+  if (offset && *offset == formatted_url.size())
+    ++(*offset);
+  return url_with_path;
 }
 
 // static

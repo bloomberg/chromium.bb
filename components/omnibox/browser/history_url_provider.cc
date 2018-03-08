@@ -624,7 +624,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
-            destination_url, display_string, client()->GetSchemeClassifier());
+            destination_url, display_string, client()->GetSchemeClassifier(),
+            nullptr);
     // The what-you-typed match is generally only allowed to be default for
     // URL inputs or when there is no default search provider.  (It's also
     // allowed to be default for UNKNOWN inputs where the destination is a known
@@ -1240,7 +1241,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
-          client()->GetSchemeClassifier());
+          client()->GetSchemeClassifier(), &inline_autocomplete_offset);
   // |inline_autocomplete_offset| was guaranteed not to be npos before the call
   // to FormatUrl().  If it is npos now, that means the represented location no
   // longer exists as such in the formatted string, e.g. if the offset pointed

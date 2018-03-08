@@ -44,7 +44,7 @@ base::string16 ToolbarModelDelegateIOS::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
-      url, formatted_url, AutocompleteSchemeClassifierImpl());
+      url, formatted_url, AutocompleteSchemeClassifierImpl(), nullptr);
 }
 
 bool ToolbarModelDelegateIOS::GetURL(GURL* url) const {
