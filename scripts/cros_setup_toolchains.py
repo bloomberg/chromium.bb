@@ -51,6 +51,7 @@ CROSSDEV_OVERLAY = '/usr/local/portage/crossdev'
 # want crossdev managing /etc/portage config files for the sdk
 HOST_PACKAGES = (
     'dev-lang/go',
+    'dev-libs/elfutils',
     'sys-devel/binutils',
     'sys-devel/clang',
     'sys-devel/gcc',
