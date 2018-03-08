@@ -45,7 +45,30 @@ class ManageProfileHandlerTest : public testing::Test {
     web_ui()->ClearTrackedCalls();
   }
 
-  void VerifyIconList(const base::Value* value) {
+  void VerifyIconListWithNoneSelected(const base::Value* value) {
+    VerifyIconList(value, 0 /* ignored */, true);
+  }
+
+  void VerifyIconListWithSingleSelection(const base::Value* value,
+                                         size_t selected_index) {
+    VerifyIconList(value, selected_index, false);
+  }
+
+  content::TestWebUI* web_ui() { return &web_ui_; }
+  Profile* profile() const { return profile_; }
+  TestManageProfileHandler* handler() const { return handler_.get(); }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfileManager profile_manager_;
+  content::TestWebUI web_ui_;
+
+  Profile* profile_;
+  std::unique_ptr<TestManageProfileHandler> handler_;
+
+  void VerifyIconList(const base::Value* value,
+                      size_t selected_index,
+                      bool all_not_selected) {
     const base::ListValue* icons = nullptr;
     ASSERT_TRUE(value->GetAsList(&icons));
 
@@ -61,20 +84,16 @@ class ManageProfileHandlerTest : public testing::Test {
       std::string icon_label;
       EXPECT_TRUE(icon->GetString("label", &icon_label));
       EXPECT_FALSE(icon_label.empty());
+      bool icon_selected;
+      bool has_icon_selected = icon->GetBoolean("selected", &icon_selected);
+      if (all_not_selected) {
+        EXPECT_FALSE(has_icon_selected);
+      } else if (selected_index == i) {
+        EXPECT_TRUE(has_icon_selected);
+        EXPECT_TRUE(icon_selected);
+      }
     }
   }
-
-  content::TestWebUI* web_ui() { return &web_ui_; }
-  Profile* profile() const { return profile_; }
-  TestManageProfileHandler* handler() const { return handler_.get(); }
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfileManager profile_manager_;
-  content::TestWebUI web_ui_;
-
-  Profile* profile_;
-  std::unique_ptr<TestManageProfileHandler> handler_;
 };
 
 TEST_F(ManageProfileHandlerTest, HandleSetProfileIconToGaiaAvatar) {
@@ -106,6 +125,30 @@ TEST_F(ManageProfileHandlerTest, HandleSetProfileName) {
 }
 
 TEST_F(ManageProfileHandlerTest, HandleGetAvailableIcons) {
+  PrefService* pref_service = profile()->GetPrefs();
+  pref_service->SetInteger(prefs::kProfileAvatarIndex, 7);
+
+  base::ListValue list_args_1;
+  list_args_1.AppendString("get-icons-callback-id");
+  handler()->HandleGetAvailableIcons(&list_args_1);
+
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data_1 = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data_1.function_name());
+
+  std::string callback_id_1;
+  ASSERT_TRUE(data_1.arg1()->GetAsString(&callback_id_1));
+  EXPECT_EQ("get-icons-callback-id", callback_id_1);
+
+  VerifyIconListWithSingleSelection(data_1.arg3(), 7);
+}
+
+TEST_F(ManageProfileHandlerTest, HandleGetAvailableIconsGaiaAvatarSelected) {
+  PrefService* pref_service = profile()->GetPrefs();
+  pref_service->SetInteger(prefs::kProfileAvatarIndex, 7);
+  pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, true);
+
   base::ListValue list_args;
   list_args.AppendString("get-icons-callback-id");
   handler()->HandleGetAvailableIcons(&list_args);
@@ -119,10 +162,13 @@ TEST_F(ManageProfileHandlerTest, HandleGetAvailableIcons) {
   ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
   EXPECT_EQ("get-icons-callback-id", callback_id);
 
-  VerifyIconList(data.arg3());
+  VerifyIconListWithNoneSelected(data.arg3());
 }
 
 TEST_F(ManageProfileHandlerTest, ProfileAvatarChangedWebUIEvent) {
+  PrefService* pref_service = profile()->GetPrefs();
+  pref_service->SetInteger(prefs::kProfileAvatarIndex, 12);
+
   handler()->OnProfileAvatarChanged(base::FilePath());
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
@@ -133,8 +179,7 @@ TEST_F(ManageProfileHandlerTest, ProfileAvatarChangedWebUIEvent) {
   std::string event_id;
   ASSERT_TRUE(data.arg1()->GetAsString(&event_id));
   EXPECT_EQ("available-icons-changed", event_id);
-
-  VerifyIconList(data.arg2());
+  VerifyIconListWithSingleSelection(data.arg2(), 12);
 }
 
 }  // namespace settings

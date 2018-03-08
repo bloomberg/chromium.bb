@@ -94,6 +94,12 @@ void ManageProfileHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
 }
 
+void ManageProfileHandler::OnProfileHighResAvatarLoaded(
+    const base::FilePath& profile_path) {
+  // GAIA image is loaded asynchronously.
+  FireWebUIListener("available-icons-changed", *GetAvailableIcons());
+}
+
 void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   // This is necessary to send the potentially updated GAIA photo.
@@ -113,8 +119,19 @@ void ManageProfileHandler::HandleGetAvailableIcons(
 }
 
 std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
-  std::unique_ptr<base::ListValue> image_url_list(
+  std::unique_ptr<base::ListValue> avatars(
       profiles::GetDefaultProfileAvatarIconsAndLabels());
+
+  PrefService* pref_service = profile_->GetPrefs();
+  bool using_gaia = pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar);
+
+  // Select the avatar from the default set.
+  if (!using_gaia) {
+    size_t index = pref_service->GetInteger(prefs::kProfileAvatarIndex);
+    base::DictionaryValue* avatar = nullptr;
+    if (avatars->GetDictionary(index, &avatar))
+      avatar->SetBoolean("selected", true);
+  }
 
   // Add the GAIA picture to the beginning of the list if it is available.
   ProfileAttributesEntry* entry;
@@ -130,11 +147,13 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
           "label",
           l10n_util::GetStringUTF16(IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO));
       gaia_picture_info->SetBoolean("isGaiaAvatar", true);
-      image_url_list->Insert(0, std::move(gaia_picture_info));
+      if (using_gaia)
+        gaia_picture_info->SetBoolean("selected", true);
+      avatars->Insert(0, std::move(gaia_picture_info));
     }
   }
 
-  return image_url_list;
+  return avatars;
 }
 
 void ManageProfileHandler::HandleSetProfileIconToGaiaAvatar(
