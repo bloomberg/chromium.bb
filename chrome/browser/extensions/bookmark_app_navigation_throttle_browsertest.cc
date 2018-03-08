@@ -7,8 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/bookmark_app_experimental_navigation_throttle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/bookmark_app_navigation_throttle_utils.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -49,9 +49,6 @@
 using namespace net::test_server;
 
 namespace extensions {
-
-using ProcessNavigationResult =
-    BookmarkAppExperimentalNavigationThrottle::ProcessNavigationResult;
 
 enum class LinkTarget {
   SELF,
@@ -137,7 +134,7 @@ bool HasOpenedWindowAndOpener(content::WebContents* opener_contents,
 
 void ExpectNavigationResultHistogramEquals(
     const base::HistogramTester& histogram_tester,
-    const std::vector<std::pair<ProcessNavigationResult,
+    const std::vector<std::pair<BookmarkAppNavigationThrottleResult,
                                 base::HistogramBase::Count>>& expected_counts) {
   std::vector<base::Bucket> expected_bucket_counts;
   for (const auto& pair : expected_counts) {
@@ -153,9 +150,10 @@ void ExpectNavigationResultHistogramEquals(
 // When an app is launched, whether it's in response to a navigation or click
 // in a launch surface e.g. App Shelf, the first navigation in the app is
 // an AUTO_BOOKMARK navigation.
-std::pair<ProcessNavigationResult, base::HistogramBase::Count>
+std::pair<BookmarkAppNavigationThrottleResult, base::HistogramBase::Count>
 GetAppLaunchedEntry() {
-  return {ProcessNavigationResult::kProceedTransitionAutoBookmark, 1};
+  return {BookmarkAppNavigationThrottleResult::kProceedTransitionAutoBookmark,
+          1};
 }
 
 std::string CreateServerRedirect(const GURL& target_url) {
@@ -801,8 +799,7 @@ class BookmarkAppNavigationThrottleExperimentalLinkBrowserTest
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FeatureDisable_BeforeInstall) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({}, {features::kDesktopPWAWindowing,
-                                     features::kDesktopPWAsLinkCapturing});
+  feature_list.InitWithFeatures({}, {features::kDesktopPWAsLinkCapturing});
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
@@ -822,8 +819,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FeatureDisable_AfterInstall) {
   InstallTestBookmarkApp();
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({}, {features::kDesktopPWAWindowing,
-                                     features::kDesktopPWAsLinkCapturing});
+  feature_list.InitWithFeatures({}, {features::kDesktopPWAsLinkCapturing});
   NavigateToLaunchingPage();
 
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
@@ -968,7 +964,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kProceedTransitionFromAddressBar, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedTransitionFromAddressBar,
+        1}});
 }
 
 // Tests that going back to an in-scope URL does not open a new app window.
@@ -1011,7 +1008,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       scoped_histogram,
-      {{ProcessNavigationResult::kProceedTransitionForwardBack, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedTransitionForwardBack,
+        1}});
 }
 
 // Tests that clicking a link to an app that launches in a tab does not open a
@@ -1054,7 +1052,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" to the app's app_url opens
@@ -1073,7 +1072,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
+      {{BookmarkAppNavigationThrottleResult::kDeferMovingContentsToNewAppWindow,
+        1}});
 }
 
 // Tests that Ctrl + Clicking a link to the app's app_url opens a new background
@@ -1091,8 +1091,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                      app_url, LinkTarget::SELF, GetParam(), kCtrlOrMeta));
 
   ExpectNavigationResultHistogramEquals(
-      global_histogram(),
-      {{ProcessNavigationResult::kProceedDispositionNewBackgroundTab, 1}});
+      global_histogram(), {{BookmarkAppNavigationThrottleResult::
+                                kProceedDispositionNewBackgroundTab,
+                            1}});
 }
 
 // Tests that clicking a link with target="_self" and for which the server
@@ -1113,7 +1114,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" and for which the server
@@ -1134,7 +1136,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
+      {{BookmarkAppNavigationThrottleResult::kDeferMovingContentsToNewAppWindow,
+        1}});
 }
 
 // Tests that clicking a link with target="_self" and for which the client
@@ -1170,7 +1173,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_blank" and for which the client
@@ -1210,7 +1214,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_self" to a URL in the Web App's
@@ -1230,7 +1235,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a link with target="_self" to a URL out of the Web App's
@@ -1282,7 +1288,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelPrerenderContents, 1}});
+      {{BookmarkAppNavigationThrottleResult::kCancelPrerenderContents, 1}});
 }
 
 // Tests fetch calls don't open a new App window.
@@ -1328,7 +1334,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedStartedFromContextMenu,
+        1}});
 }
 
 // Tests that clicking "Open link in new window" to an in-scope URL opens a new
@@ -1347,7 +1354,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedStartedFromContextMenu,
+        1}});
 }
 
 // Tests that clicking "Open link in new tab" in an app to an in-scope URL opens
@@ -1367,7 +1375,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       scoped_histogram,
-      {{ProcessNavigationResult::kProceedStartedFromContextMenu, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedStartedFromContextMenu,
+        1}});
 }
 
 // Tests that clicking "Open link in incognito window" to an in-scope URL opens
@@ -1455,7 +1464,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
+      {{BookmarkAppNavigationThrottleResult::kCancelOpenedApp, 1},
+       GetAppLaunchedEntry()});
 }
 
 // Tests that clicking a target=_blank link from a URL out of the Web App's
@@ -1482,7 +1492,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
+      {{BookmarkAppNavigationThrottleResult::kDeferMovingContentsToNewAppWindow,
+        1}});
 }
 
 // Tests that clicking links inside a website for an installed app doesn't open
@@ -1503,7 +1514,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       scoped_histogram,
-      {{ProcessNavigationResult::kProceedInBrowserSameScope, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedInBrowserSameScope, 1}});
 }
 
 class BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest
@@ -1623,7 +1634,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   // one is the redirect.
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kProceedTransitionAutoBookmark, 2}});
+      {{BookmarkAppNavigationThrottleResult::kProceedTransitionAutoBookmark,
+        2}});
 }
 
 // Tests that in-browser navigations with all the following characteristics
@@ -1646,7 +1658,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kProceedTransitionAutoBookmark, 1}});
+      {{BookmarkAppNavigationThrottleResult::kProceedTransitionAutoBookmark,
+        1}});
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -1665,7 +1678,9 @@ class BookmarkAppNavigationThrottleBaseCommonBrowserTest
           {features::kDesktopPWAWindowing, features::kDesktopPWAsLinkCapturing},
           {});
     } else {
-      scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAWindowing},
+          {features::kDesktopPWAsLinkCapturing});
     }
   }
 
@@ -1716,10 +1731,20 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
   EXPECT_NE(initial_tab, new_tab);
   EXPECT_EQ(GetLaunchingPageURL(), new_tab->GetLastCommittedURL());
 
-  ExpectNavigationResultHistogramEquals(
-      global_histogram(),
-      {GetAppLaunchedEntry(),
-       {ProcessNavigationResult::kOpenInChromeProceedOutOfScopeLaunch, 1}});
+  // When kDesktopPWAsLinkCapturing is enabled, app launches get histogrammed,
+  // but when it's disabled, they don't.
+  if (GetParam()) {
+    ExpectNavigationResultHistogramEquals(
+        global_histogram(), {GetAppLaunchedEntry(),
+                             {BookmarkAppNavigationThrottleResult::
+                                  kOpenInChromeProceedOutOfScopeLaunch,
+                              1}});
+  } else {
+    ExpectNavigationResultHistogramEquals(
+        global_histogram(), {{BookmarkAppNavigationThrottleResult::
+                                  kOpenInChromeProceedOutOfScopeLaunch,
+                              1}});
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -1802,11 +1827,14 @@ IN_PROC_BROWSER_TEST_P(
             target_url, request_type));
 
     // Navigations to out-of-scope URLs are considered regular navigations and
-    // therefore not recorded.
-    if (target_url_path == kInScopeUrlPath) {
+    // therefore not recorded. Nothing gets histogrammed when
+    // kDesktopPWAsLinkCapturing is disabled, because the navigation is not
+    // happening in an app window.
+    if (target_url_path == kInScopeUrlPath && should_enable_link_capturing) {
       ExpectNavigationResultHistogramEquals(
-          scoped_histogram,
-          {{ProcessNavigationResult::kProceedInBrowserFormSubmission, 1}});
+          scoped_histogram, {{BookmarkAppNavigationThrottleResult::
+                                  kProceedInBrowserFormSubmission,
+                              1}});
     }
     return;
   }
@@ -1823,7 +1851,7 @@ IN_PROC_BROWSER_TEST_P(
 
     ExpectNavigationResultHistogramEquals(
         scoped_histogram,
-        {{ProcessNavigationResult::kProceedInAppSameScope, 1}});
+        {{BookmarkAppNavigationThrottleResult::kProceedInAppSameScope, 1}});
     return;
   }
 
@@ -1838,7 +1866,8 @@ IN_PROC_BROWSER_TEST_P(
 
   ExpectNavigationResultHistogramEquals(
       scoped_histogram,
-      {{ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope, 1}});
+      {{BookmarkAppNavigationThrottleResult::kDeferOpenNewTabInAppOutOfScope,
+        1}});
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -1890,7 +1919,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonLinkBrowserTest,
   EXPECT_EQ(in_scope_url, app_web_contents->GetLastCommittedURL());
 
   ExpectNavigationResultHistogramEquals(
-      scoped_histogram, {{ProcessNavigationResult::kProceedInAppSameScope, 1}});
+      scoped_histogram,
+      {{BookmarkAppNavigationThrottleResult::kProceedInAppSameScope, 1}});
 }
 
 // Tests that clicking links inside the app to out-of-scope URLs opens a new
@@ -1913,7 +1943,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       scoped_histogram,
-      {{ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope, 1}});
+      {{BookmarkAppNavigationThrottleResult::kDeferOpenNewTabInAppOutOfScope,
+        1}});
 }
 
 INSTANTIATE_TEST_CASE_P(

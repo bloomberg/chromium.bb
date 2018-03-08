@@ -25,36 +25,6 @@ class Extension;
 class BookmarkAppExperimentalNavigationThrottle
     : public content::NavigationThrottle {
  public:
-  // Used to record the result of a navigation.
-  enum class ProcessNavigationResult {
-    kProceedStartedFromContextMenu,
-    kProceedTransitionTyped,
-    kProceedTransitionAutoBookmark,
-    kProceedTransitionAutoSubframe,
-    kProceedTransitionManualSubframe,
-    kProceedTransitionGenerated,
-    kProceedTransitionAutoToplevel,
-    kProceedTransitionReload,
-    kProceedTransitionKeyword,
-    kProceedTransitionKeywordGenerated,
-    kProceedTransitionForwardBack,
-    kProceedTransitionFromAddressBar,
-    kOpenInChromeProceedOutOfScopeLaunch,
-    kProceedInAppSameScope,
-    kProceedInBrowserFormSubmission,
-    kProceedInBrowserSameScope,
-    kCancelPrerenderContents,
-    kDeferMovingContentsToNewAppWindow,
-    kCancelOpenedApp,
-    kDeferOpenNewTabInAppOutOfScope,
-    kProceedDispositionSingletonTab,
-    kProceedDispositionNewBackgroundTab,
-    kProceedDispositionNewPopup,
-    kProceedDispositionSwitchToTab,
-    // Add ProcessNavigation results immediately above this line. Also
-    // update the enum list in tools/metrics/enums.xml accordingly.
-    kCount,
-  };
 
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* navigation_handle);
@@ -84,16 +54,8 @@ class BookmarkAppExperimentalNavigationThrottle
 
   void OpenBookmarkApp(scoped_refptr<const Extension> bookmark_app);
   void CloseWebContents();
-  void OpenInNewTab();
+  void OpenInNewTabAndCancel();
   void ReparentWebContentsAndResume(scoped_refptr<const Extension> target_app);
-
-  // Retrieves the Bookmark App corresponding to the current window only
-  // if the app is for an installable website.
-  scoped_refptr<const Extension> GetAppForWindow();
-  // Retrieves the target Bookmark App for the current target URL.
-  scoped_refptr<const Extension> GetTargetApp();
-  // Retrieves the Bookmark App that has the current URL in its scope.
-  scoped_refptr<const Extension> GetAppForCurrentURL();
 
   base::WeakPtrFactory<BookmarkAppExperimentalNavigationThrottle>
       weak_ptr_factory_;
