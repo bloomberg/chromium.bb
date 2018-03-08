@@ -66,10 +66,22 @@ def ParseArgsAndAssertValid():
                       help='The value of the metric at the bad revision. If '
                            'not defined, an extra test iteration will be run '
                            'to determine the value')
-  parser.add_argument('--clank-revision',
-                      help='The Clank revision to sync to during the bisect. '
-                           'Only necessary if the revision on ToT is not '
-                           'compatible with the revision range of the bisect')
+  def comma_separated(arg):
+    split_arg = arg.split(',')
+    if len(split_arg) != 2:
+      raise argparse.ArgumentError(
+          'Expected two comma-separated strings but '
+          'received %d' % len(split_arg))
+    return {split_arg[0]: split_arg[1]}
+  parser.add_argument('--checkout-override', action='append',
+                      type=comma_separated, dest='checkout_overrides',
+                      help='A comma-separated path/revision key/value pair. '
+                           'Each git checkout at the specified path will be '
+                           'synced to the specified revision after the normal '
+                           'sync. For example, passing '
+                           'third_party/android_ndk,abcdefg would cause the '
+                           'checkout in //third_party/android_ndk to be synced '
+                           'to revision abcdefg.')
   parser.add_argument('--reset-before-sync', action='store_true',
                       default=False,
                       help='When set, runs "git reset --hard HEAD" before '
@@ -82,14 +94,7 @@ def ParseArgsAndAssertValid():
                       help='The swarming server to trigger the test on')
   parser.add_argument('--isolate-server', required=True,
                       help='The isolate server to upload the test to')
-  def dimension(arg):
-    split_arg = arg.split(',')
-    if len(split_arg) != 2:
-      raise argparse.ArgumentError(
-          'Expected two comma-separated strings for --dimension, '
-          'received %d' % len(split_arg))
-    return {split_arg[0]: split_arg[1]}
-  parser.add_argument('--dimension', action='append', type=dimension,
+  parser.add_argument('--dimension', action='append', type=comma_separated,
                       default=[], dest='dimensions',
                       help='A comma-separated swarming dimension key/value '
                            'pair. At least one must be provided.')
@@ -151,6 +156,10 @@ def VerifyInput(args, unknown_args):
   else:
     print 'Changing from %f at %s to %f at %s' % (args.good_value,
         args.good_revision, args.bad_value, args.bad_revision)
+  if args.checkout_overrides:
+    for pair in args.checkout_overrides:
+      for key, val in pair.iteritems():
+        print '%s will be synced to revision %s' % (key, val)
   print '======'
   print 'The test target %s will be built to %s' % (args.build_target,
                                                     args.build_output_dir)
@@ -363,10 +372,14 @@ def SyncAndBuild(args, unknown_args, revision):
         'If these changes are actually yours, please commit or stash them. If '
         'they are not, remove them and try again. If the issue persists, try '
         'running with --reset-before-sync')
-  if args.clank_revision:
-    os.chdir('clank')
-    subprocess.check_output(['git', 'checkout', args.clank_revision])
-    os.chdir('..')
+
+  # Checkout any specified revisions.
+  cwd = os.getcwd()
+  for override in args.checkout_overrides:
+    for repo, rev in override.iteritems():
+      os.chdir(repo)
+      subprocess.check_output(['git', 'checkout', rev])
+      os.chdir(cwd)
   print 'Building'
   subprocess.check_output(['ninja', '-C', args.build_output_dir,
                            '-j', str(args.parallel_jobs),
