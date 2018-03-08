@@ -65,7 +65,7 @@
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
                                             aom_reader *const r, int plane,
-                                            int rtile_idx);
+                                            int runit_idx);
 
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_fwd_ref[0] = LAST_FRAME;
@@ -685,8 +685,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       const int rstride = cm->rst_info[plane].horz_units_per_tile;
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
-          loop_restoration_read_sb_coeffs(cm, xd, r, plane, rtile_idx);
+          const int runit_idx = tile_tl_idx + rcol + rrow * rstride;
+          loop_restoration_read_sb_coeffs(cm, xd, r, plane, runit_idx);
         }
       }
     }
@@ -907,7 +907,7 @@ static void decode_restoration_mode(AV1_COMMON *cm,
       rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
     }
   } else {
-    const int size = RESTORATION_TILESIZE_MAX;
+    const int size = RESTORATION_UNITSIZE_MAX;
     for (int p = 0; p < num_planes; ++p)
       cm->rst_info[p].restoration_unit_size = size;
   }
@@ -1042,9 +1042,9 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
                                             aom_reader *const r, int plane,
-                                            int rtile_idx) {
+                                            int runit_idx) {
   const RestorationInfo *rsi = &cm->rst_info[plane];
-  RestorationUnitInfo *rui = &rsi->unit_info[rtile_idx];
+  RestorationUnitInfo *rui = &rsi->unit_info[runit_idx];
   if (rsi->frame_restoration_type == RESTORE_NONE) return;
 
   assert(!cm->all_lossless);

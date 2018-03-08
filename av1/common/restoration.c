@@ -299,11 +299,11 @@ static void get_stripe_boundary_info(const RestorationTileLimits *limits,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
     const int full_stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
-    const int rtile_offset = RESTORATION_TILE_OFFSET >> ss_y;
+    const int runit_offset = RESTORATION_UNIT_OFFSET >> ss_y;
 
     const int first_stripe_in_tile = (limits->v_start == tile_rect->top);
     const int this_stripe_height =
-        full_stripe_height - (first_stripe_in_tile ? rtile_offset : 0);
+        full_stripe_height - (first_stripe_in_tile ? runit_offset : 0);
     const int last_stripe_in_tile =
         (limits->v_start + this_stripe_height >= tile_rect->bottom);
 
@@ -1127,8 +1127,8 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
                                     int32_t *tmpbuf, int bit_depth,
                                     int highbd) {
   int32_t *flt0 = tmpbuf;
-  int32_t *flt1 = flt0 + RESTORATION_TILEPELS_MAX;
-  assert(width * height <= RESTORATION_TILEPELS_MAX);
+  int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
+  assert(width * height <= RESTORATION_UNITPELS_MAX);
 
 #if CONFIG_SKIP_SGR
   const sgr_params_type *params = &sgr_params[eps];
@@ -1291,12 +1291,12 @@ void av1_loop_restoration_filter_unit(
                              &copy_above, &copy_below);
 
     const int full_stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
-    const int rtile_offset = RESTORATION_TILE_OFFSET >> ss_y;
+    const int runit_offset = RESTORATION_UNIT_OFFSET >> ss_y;
 
     // Work out where this stripe's boundaries are within
     // rsb->stripe_boundary_{above,below}
     const int tile_stripe =
-        (remaining_stripes.v_start - tile_rect->top + rtile_offset) /
+        (remaining_stripes.v_start - tile_rect->top + runit_offset) /
         full_stripe_height;
     const int frame_stripe = tile_stripe0 + tile_stripe;
     const int rsb_row = RESTORATION_CTX_VERT * frame_stripe;
@@ -1305,7 +1305,7 @@ void av1_loop_restoration_filter_unit(
     // * The topmost stripe in each tile is 8 luma pixels shorter than usual.
     // * We can't extend past the end of the current restoration unit
     const int nominal_stripe_height =
-        full_stripe_height - ((tile_stripe == 0) ? rtile_offset : 0);
+        full_stripe_height - ((tile_stripe == 0) ? runit_offset : 0);
     const int h = AOMMIN(nominal_stripe_height,
                          remaining_stripes.v_end - remaining_stripes.v_start);
 
@@ -1466,7 +1466,7 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
     limits.v_end = tile_rect->top + y0 + h;
     assert(limits.v_end <= tile_rect->bottom);
     // Offset the tile upwards to align with the restoration processing stripe
-    const int voffset = RESTORATION_TILE_OFFSET >> ss_y;
+    const int voffset = RESTORATION_UNIT_OFFSET >> ss_y;
     limits.v_start = AOMMAX(tile_rect->top, limits.v_start - voffset);
     if (limits.v_end < tile_rect->bottom) limits.v_end -= voffset;
 
@@ -1617,7 +1617,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   // rcol0/rrow0 should be the first column/row of restoration units (relative
   // to the top-left of the tile) that doesn't start left/below of
   // mi_col/mi_row. For this calculation, we need to round up the division (if
-  // the sb starts at rtile column 10.1, the first matching rtile has column
+  // the sb starts at runit column 10.1, the first matching runit has column
   // index 11)
   *rcol0 = (mi_rel_col0 * mi_to_num_x + rnd_x) / denom_x;
   *rrow0 = (mi_rel_row0 * mi_to_num_y + rnd_y) / denom_y;
@@ -1749,7 +1749,7 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
   const int is_uv = plane > 0;
   const int ss_y = is_uv && cm->subsampling_y;
   const int stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
-  const int stripe_off = RESTORATION_TILE_OFFSET >> ss_y;
+  const int stripe_off = RESTORATION_UNIT_OFFSET >> ss_y;
 
   // Get the tile rectangle, with height rounded up to the next multiple of 8
   // luma pixels (only relevant for the bottom tile of the frame)

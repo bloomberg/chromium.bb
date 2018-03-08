@@ -114,7 +114,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   }
 
   // For striped loop restoration, we divide each row of tiles into "stripes",
-  // of height 64 luma pixels but with an offset by RESTORATION_TILE_OFFSET
+  // of height 64 luma pixels but with an offset by RESTORATION_UNIT_OFFSET
   // luma pixels to match the output from CDEF. We will need to store 2 *
   // RESTORATION_CTX_VERT lines of data for each stripe, and also need to be
   // able to quickly answer the question "Where is the <n>'th stripe for tile
@@ -130,7 +130,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
                          ? cm->tile_height
                          : (cm->mi_rows - i * cm->tile_height);
 #endif
-    const int ext_h = RESTORATION_TILE_OFFSET + (mi_h << MI_SIZE_LOG2);
+    const int ext_h = RESTORATION_UNIT_OFFSET + (mi_h << MI_SIZE_LOG2);
     const int tile_stripes = (ext_h + 63) / 64;
     num_stripes += tile_stripes;
     cm->rst_end_stripe[i] = num_stripes;

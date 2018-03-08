@@ -1731,9 +1731,9 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       const int rstride = cm->rst_info[plane].horz_units_per_tile;
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
+          const int runit_idx = tile_tl_idx + rcol + rrow * rstride;
           const RestorationUnitInfo *rui =
-              &cm->rst_info[plane].unit_info[rtile_idx];
+              &cm->rst_info[plane].unit_info[runit_idx];
           loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
         }
       }
@@ -1889,7 +1889,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     RestorationInfo *rsi = &cm->rst_info[0];
 
     assert(rsi->restoration_unit_size >= sb_size);
-    assert(RESTORATION_TILESIZE_MAX == 256);
+    assert(RESTORATION_UNITSIZE_MAX == 256);
 
     if (sb_size == 64) {
       aom_wb_write_bit(wb, rsi->restoration_unit_size > 64);

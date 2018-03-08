@@ -615,8 +615,8 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
                                          int dst_stride, int32_t *tmpbuf,
                                          int bit_depth, int highbd) {
   int32_t *flt0 = tmpbuf;
-  int32_t *flt1 = flt0 + RESTORATION_TILEPELS_MAX;
-  assert(width * height <= RESTORATION_TILEPELS_MAX);
+  int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
+  assert(width * height <= RESTORATION_UNITPELS_MAX);
 #if CONFIG_SKIP_SGR
   const sgr_params_type *params = &sgr_params[eps];
   av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt0, flt1,

@@ -28,7 +28,7 @@ extern "C" {
 #define RESTORATION_PROC_UNIT_SIZE 64
 
 // Filter tile grid offset upwards compared to the superblock grid
-#define RESTORATION_TILE_OFFSET 8
+#define RESTORATION_UNIT_OFFSET 8
 
 #define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
 #define SGRPROJ_BORDER_HORZ 3  // Horizontal border used for Sgr
@@ -71,19 +71,19 @@ extern "C" {
    (RESTORATION_PROC_UNIT_SIZE + RESTORATION_BORDER_VERT * 2 + \
     RESTORATION_PADDING))
 
-#define RESTORATION_TILESIZE_MAX 256
-#define RESTORATION_TILEPELS_HORZ_MAX \
-  (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16)
-#define RESTORATION_TILEPELS_VERT_MAX                                \
-  ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT + \
-    RESTORATION_TILE_OFFSET))
-#define RESTORATION_TILEPELS_MAX \
-  (RESTORATION_TILEPELS_HORZ_MAX * RESTORATION_TILEPELS_VERT_MAX)
+#define RESTORATION_UNITSIZE_MAX 256
+#define RESTORATION_UNITPELS_HORZ_MAX \
+  (RESTORATION_UNITSIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16)
+#define RESTORATION_UNITPELS_VERT_MAX                                \
+  ((RESTORATION_UNITSIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT + \
+    RESTORATION_UNIT_OFFSET))
+#define RESTORATION_UNITPELS_MAX \
+  (RESTORATION_UNITPELS_HORZ_MAX * RESTORATION_UNITPELS_VERT_MAX)
 
 // Two 32-bit buffers needed for the restored versions from two filters
 // TODO(debargha, rupert): Refactor to not need the large tilesize to be stored
 // on the decoder side.
-#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 2 * sizeof(int32_t))
+#define SGRPROJ_TMPBUF_SIZE (RESTORATION_UNITPELS_MAX * 2 * sizeof(int32_t))
 
 #define SGRPROJ_EXTBUF_SIZE (0)
 #define SGRPROJ_PARAMS_BITS 4
@@ -191,7 +191,7 @@ typedef struct {
 // A restoration line buffer needs space for two lines plus a horizontal filter
 // margin of RESTORATION_EXTRA_HORZ on each side.
 #define RESTORATION_LINEBUFFER_WIDTH \
-  (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_EXTRA_HORZ)
+  (RESTORATION_UNITSIZE_MAX * 3 / 2 + 2 * RESTORATION_EXTRA_HORZ)
 
 // Similarly, the column buffers (used when we're at a vertical tile edge
 // that we can't filter across) need space for one processing unit's worth
@@ -333,7 +333,7 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
 
 // Return 1 iff the block at mi_row, mi_col with size bsize is a
 // top-level superblock containing the top-left corner of at least one
-// loop restoration tile.
+// loop restoration unit.
 //
 // If the block is a top-level superblock, the function writes to
 // *rcol0, *rcol1, *rrow0, *rrow1. The rectangle of restoration unit

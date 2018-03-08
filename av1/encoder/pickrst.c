@@ -57,7 +57,7 @@ static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_highbd_get_u_sse_part, aom_highbd_get_v_sse_part,
 };
 
-static int64_t sse_restoration_tile(const RestorationTileLimits *limits,
+static int64_t sse_restoration_unit(const RestorationTileLimits *limits,
                                     const YV12_BUFFER_CONFIG *src,
                                     const YV12_BUFFER_CONFIG *dst, int plane,
                                     int highbd) {
@@ -144,7 +144,7 @@ static void init_rsc(const YV12_BUFFER_CONFIG *src, const AV1_COMMON *cm,
   assert(src->crop_heights[is_uv] == dgd->crop_heights[is_uv]);
 }
 
-static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
+static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
                                     const RestorationTileLimits *limits,
                                     const AV1PixelRect *tile_rect,
                                     const RestorationUnitInfo *rui) {
@@ -172,7 +172,7 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
       fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
       rsc->dst->strides[is_uv], cm->rst_tmpbuf);
 
-  return sse_restoration_tile(limits, rsc->src, rsc->dst, plane, highbd);
+  return sse_restoration_unit(limits, rsc->src, rsc->dst, plane, highbd);
 }
 
 static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
@@ -493,7 +493,7 @@ static SgrprojInfo search_selfguided_restoration(
     const uint8_t *src8, int src_stride, int use_highbitdepth, int bit_depth,
     int pu_width, int pu_height, int32_t *rstbuf) {
   int32_t *flt0 = rstbuf;
-  int32_t *flt1 = flt0 + RESTORATION_TILEPELS_MAX;
+  int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
   int ep, bestep = 0;
   int64_t besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
@@ -606,7 +606,7 @@ static void search_sgrproj(const RestorationTileLimits *limits,
   rui.restoration_type = RESTORE_SGRPROJ;
   rui.sgrproj_info = rusi->sgrproj;
 
-  rusi->sse[RESTORE_SGRPROJ] = try_restoration_tile(rsc, limits, tile, &rui);
+  rusi->sse[RESTORE_SGRPROJ] = try_restoration_unit(rsc, limits, tile, &rui);
 
   const int64_t bits_none = x->sgrproj_restore_cost[0];
   const int64_t bits_sgr = x->sgrproj_restore_cost[1] +
@@ -987,7 +987,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
                                         RestorationUnitInfo *rui,
                                         int wiener_win) {
   const int plane_off = (WIENER_WIN - wiener_win) >> 1;
-  int64_t err = try_restoration_tile(rsc, limits, tile, rui);
+  int64_t err = try_restoration_unit(rsc, limits, tile, rui);
 #if USE_WIENER_REFINEMENT_SEARCH
   int64_t err2;
   int tap_min[] = { WIENER_FILT_TAP0_MINV, WIENER_FILT_TAP1_MINV,
@@ -1007,7 +1007,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
           plane_wiener->hfilter[p] -= s;
           plane_wiener->hfilter[WIENER_WIN - p - 1] -= s;
           plane_wiener->hfilter[WIENER_HALFWIN] += 2 * s;
-          err2 = try_restoration_tile(rsc, limits, tile, rui);
+          err2 = try_restoration_unit(rsc, limits, tile, rui);
           if (err2 > err) {
             plane_wiener->hfilter[p] += s;
             plane_wiener->hfilter[WIENER_WIN - p - 1] += s;
@@ -1027,7 +1027,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
           plane_wiener->hfilter[p] += s;
           plane_wiener->hfilter[WIENER_WIN - p - 1] += s;
           plane_wiener->hfilter[WIENER_HALFWIN] -= 2 * s;
-          err2 = try_restoration_tile(rsc, limits, tile, rui);
+          err2 = try_restoration_unit(rsc, limits, tile, rui);
           if (err2 > err) {
             plane_wiener->hfilter[p] -= s;
             plane_wiener->hfilter[WIENER_WIN - p - 1] -= s;
@@ -1048,7 +1048,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
           plane_wiener->vfilter[p] -= s;
           plane_wiener->vfilter[WIENER_WIN - p - 1] -= s;
           plane_wiener->vfilter[WIENER_HALFWIN] += 2 * s;
-          err2 = try_restoration_tile(rsc, limits, tile, rui);
+          err2 = try_restoration_unit(rsc, limits, tile, rui);
           if (err2 > err) {
             plane_wiener->vfilter[p] += s;
             plane_wiener->vfilter[WIENER_WIN - p - 1] += s;
@@ -1068,7 +1068,7 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
           plane_wiener->vfilter[p] += s;
           plane_wiener->vfilter[WIENER_WIN - p - 1] += s;
           plane_wiener->vfilter[WIENER_HALFWIN] -= 2 * s;
-          err2 = try_restoration_tile(rsc, limits, tile, rui);
+          err2 = try_restoration_unit(rsc, limits, tile, rui);
           if (err2 > err) {
             plane_wiener->vfilter[p] -= s;
             plane_wiener->vfilter[WIENER_WIN - p - 1] -= s;
@@ -1181,7 +1181,7 @@ static void search_norestore(const RestorationTileLimits *limits,
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
   const int highbd = rsc->cm->use_highbitdepth;
-  rusi->sse[RESTORE_NONE] = sse_restoration_tile(
+  rusi->sse[RESTORE_NONE] = sse_restoration_unit(
       limits, rsc->src, rsc->cm->frame_to_show, rsc->plane, highbd);
 
   rsc->sse += rusi->sse[RESTORE_NONE];
