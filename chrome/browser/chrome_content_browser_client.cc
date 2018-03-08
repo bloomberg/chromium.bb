@@ -58,7 +58,6 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/page_load_metrics/experiments/delay_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -3490,11 +3489,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (supervised_user_nav_throttle)
     throttles.push_back(std::move(supervised_user_nav_throttle));
 #endif
-
-  std::unique_ptr<content::NavigationThrottle> delay_navigation_throttle =
-      DelayNavigationThrottle::MaybeCreateThrottleFor(handle);
-  if (delay_navigation_throttle)
-    throttles.push_back(std::move(delay_navigation_throttle));
 
   content::WebContents* web_contents = handle->GetWebContents();
   if (auto* subresource_filter_client =

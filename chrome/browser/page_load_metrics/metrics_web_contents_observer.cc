@@ -306,16 +306,6 @@ void MetricsWebContentsObserver::OnRequestComplete(
   }
 }
 
-void MetricsWebContentsObserver::OnNavigationDelayComplete(
-    content::NavigationHandle* navigation_handle,
-    base::TimeDelta scheduled_delay,
-    base::TimeDelta actual_delay) {
-  auto it = provisional_loads_.find(navigation_handle);
-  if (it == provisional_loads_.end())
-    return;
-  it->second->OnNavigationDelayComplete(scheduled_delay, actual_delay);
-}
-
 const PageLoadExtraInfo
 MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
   DCHECK(committed_load_);

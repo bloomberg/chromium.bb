@@ -271,12 +271,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       bool is_in_main_frame);
 
-  // Invoked on navigations where a navigation delay was added by the
-  // DelayNavigationThrottle. This is a temporary method that will be removed
-  // once the experiment is complete.
-  void OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
-                                 base::TimeDelta actual_delay);
-
   // Informs the observers that the event corresponding to |event_key| has
   // occurred.
   void BroadcastEventToObservers(const void* const event_key);

@@ -419,12 +419,6 @@ class PageLoadMetricsObserver {
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       bool is_in_main_frame) {}
 
-  // Invoked on navigations where a navigation delay was added by the
-  // DelayNavigationThrottle. This is a temporary method that will be removed
-  // once the experiment is complete.
-  virtual void OnNavigationDelayComplete(base::TimeDelta scheduled_delay,
-                                         base::TimeDelta actual_delay) {}
-
   // Invoked when the UMA metrics subsystem is persisting metrics as the
   // application goes into the background, on platforms where the browser
   // process may be killed after backgrounding (Android). Implementers should
