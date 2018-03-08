@@ -391,8 +391,8 @@ void DisassemblerElf32::RemoveUnusedRel32Locations(AssemblyProgram* program) {
 
 InstructionGenerator DisassemblerElf32::GetInstructionGenerator(
     AssemblyProgram* program) {
-  return base::Bind(&DisassemblerElf32::ParseFile, base::Unretained(this),
-                    program);
+  return base::BindRepeating(&DisassemblerElf32::ParseFile,
+                             base::Unretained(this), program);
 }
 
 CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program,

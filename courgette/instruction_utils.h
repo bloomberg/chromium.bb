@@ -59,7 +59,8 @@ class InstructionReceptor {
 
 // A rerunable callback that emit instructions to a provided receptor. Returns
 // true on success, and false otherwise.
-using InstructionGenerator = base::Callback<CheckBool(InstructionReceptor*)>;
+using InstructionGenerator =
+    base::RepeatingCallback<CheckBool(InstructionReceptor*)>;
 
 // A counter that increments via .push_back(), so it can be passed via template
 // to substitute std::vector<T>, to count elements instead of storing them.
