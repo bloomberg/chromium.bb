@@ -17,12 +17,12 @@ enum class OmniboxPart {
 enum class OmniboxTint { DARK, LIGHT, NATIVE };
 
 // An optional state for a given |OmniboxPart|.
-enum class OmniboxPartState { NORMAL, HOVERED, SELECTED, HOVERED_AND_SELECTED };
+enum class OmniboxState { NORMAL, HOVERED, SELECTED, HOVERED_AND_SELECTED };
 
 // Returns the color for the given |part| and |tint|. An optional |state| can be
 // provided for OmniboxParts that support stateful colors.
 SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxTint tint,
-                        OmniboxPartState state = OmniboxPartState::NORMAL);
+                        OmniboxState state = OmniboxState::NORMAL);
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
