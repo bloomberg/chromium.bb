@@ -3504,8 +3504,14 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
   // first bit is obu_forbidden_bit according to R19
   aom_wb_write_literal(&wb, 0, 1);
   aom_wb_write_literal(&wb, (int)obu_type, 4);
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+  aom_wb_write_literal(&wb, obu_extension ? 1 : 0, 1);
+  aom_wb_write_literal(&wb, 1, 1);  // obu_has_payload_length_field
+  aom_wb_write_literal(&wb, 0, 1);  // reserved
+#else
   aom_wb_write_literal(&wb, 0, 2);
   aom_wb_write_literal(&wb, obu_extension ? 1 : 0, 1);
+#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
   if (obu_extension) {
     aom_wb_write_literal(&wb, obu_extension & 0xFF, 8);
   }

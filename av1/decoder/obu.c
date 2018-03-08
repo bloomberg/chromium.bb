@@ -94,9 +94,18 @@ static int read_obu_header(struct aom_read_bit_buffer *rb, ObuHeader *header) {
 
   if (!valid_obu_type(header->type)) return AOM_CODEC_CORRUPT_FRAME;
 
-  aom_rb_read_literal(rb, 2);  // reserved
-
+#if CONFIG_OBU_SIZE_AFTER_HEADER
   header->has_extension = aom_rb_read_bit(rb);
+  // TODO(vigneshv): This field is ignored for now since the library always
+  // assumes that length is going to be present after the obu header when this
+  // experiment is on.
+  aom_rb_read_bit(rb);  // obu_has_payload_length_field
+  aom_rb_read_bit(rb);  // reserved
+#else
+  aom_rb_read_literal(rb, 2);  // reserved
+  header->has_extension = aom_rb_read_bit(rb);
+#endif
+
   if (header->has_extension) {
     header->size += 1;
     header->temporal_layer_id = aom_rb_read_literal(rb, 3);
