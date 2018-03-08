@@ -295,6 +295,7 @@ junit_binary("ui_junit_tests") {
 
 test("ui_android_unittests") {
   sources = [
+    "delegated_frame_host_android_unittest.cc",
     "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
@@ -308,10 +309,13 @@ test("ui_android_unittests") {
     "//base/test:test_support",
     "//cc",
     "//cc:test_support",
+    "//components/viz/host:host",
+    "//components/viz/service:service",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
+    "//ui/compositor",
     "//ui/events",
     "//ui/gfx",
     "//ui/resources:ui_test_pak",
