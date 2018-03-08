@@ -65,6 +65,7 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/frame_rate_counter.h"
+#include "cc/trees/frame_token_allocator.h"
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -1914,7 +1915,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       frame->use_default_lower_bound_deadline);
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
-  active_tree()->FinishSwapPromises(&metadata);
+  active_tree()->FinishSwapPromises(&metadata, &frame_token_allocator_);
 
   if (render_frame_metadata_observer_) {
     RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
@@ -1975,6 +1976,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         base::StringPrintf("Compositing.%s.CompositorFrame.Quads", client_name),
         total_quad_count);
   }
+
+  compositor_frame.metadata.frame_token =
+      frame_token_allocator_.GetFrameTokenForSubmission();
+
   layer_tree_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 
   // Clears the list of swap promises after calling DidSwap on each of them to
@@ -3741,7 +3746,7 @@ void LayerTreeHostImpl::UpdateImageDecodingHints(
 void LayerTreeHostImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   render_frame_metadata_observer_ = std::move(observer);
-  render_frame_metadata_observer_->BindToCurrentThread();
+  render_frame_metadata_observer_->BindToCurrentThread(&frame_token_allocator_);
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(

@@ -27,7 +27,8 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
   ~QueueMessageSwapPromise() override;
 
   void DidActivate() override;
-  void WillSwap(viz::CompositorFrameMetadata* metadata) override;
+  void WillSwap(viz::CompositorFrameMetadata* metadata,
+                cc::FrameTokenAllocator* frame_token_allocator) override;
   void DidSwap() override;
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override;
 

@@ -33,7 +33,9 @@ LatencyInfoSwapPromise::LatencyInfoSwapPromise(const ui::LatencyInfo& latency)
 
 LatencyInfoSwapPromise::~LatencyInfoSwapPromise() = default;
 
-void LatencyInfoSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
+void LatencyInfoSwapPromise::WillSwap(
+    viz::CompositorFrameMetadata* metadata,
+    FrameTokenAllocator* frame_token_allocator) {
   DCHECK(!latency_.terminated());
   metadata->latency_info.push_back(latency_);
 }

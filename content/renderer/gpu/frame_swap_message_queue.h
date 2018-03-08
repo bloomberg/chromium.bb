@@ -97,8 +97,6 @@ class CONTENT_EXPORT FrameSwapMessageQueue
       std::vector<std::unique_ptr<IPC::Message>>* source,
       std::vector<IPC::Message>* dest);
 
-  uint32_t AllocateFrameToken();
-
   int32_t routing_id() const { return routing_id_; }
 
   void NotifyFramesAreDiscarded(bool frames_are_discarded);
@@ -115,7 +113,6 @@ class CONTENT_EXPORT FrameSwapMessageQueue
   std::unique_ptr<FrameSwapMessageSubQueue> visual_state_queue_;
   std::unique_ptr<FrameSwapMessageSubQueue> swap_queue_;
   std::vector<std::unique_ptr<IPC::Message>> next_drain_messages_;
-  uint32_t last_used_frame_token_ = 0;
   int32_t routing_id_ = 0;
   bool frames_are_discarded_ = false;
   THREAD_CHECKER(impl_thread_checker_);

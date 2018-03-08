@@ -446,7 +446,8 @@ class CC_EXPORT LayerTreeImpl {
       std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
   void AppendSwapPromises(
       std::vector<std::unique_ptr<SwapPromise>> new_swap_promises);
-  void FinishSwapPromises(viz::CompositorFrameMetadata* metadata);
+  void FinishSwapPromises(viz::CompositorFrameMetadata* metadata,
+                          FrameTokenAllocator* frame_token_allocator);
   void ClearSwapPromises();
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 
