@@ -189,6 +189,20 @@ void av1_setup_mask(struct AV1Common *const cm, int mi_row, int mi_col,
                     MODE_INFO **mi_8x8, int mode_info_stride,
                     LOOP_FILTER_MASK *lfm);
 
+#if LOOP_FILTER_BITMASK
+void av1_filter_block_plane_ss00_ver(struct AV1Common *const cm,
+                                     struct macroblockd_plane *const plane,
+                                     int pl, int mi_row, LoopFilterMask *lfm);
+void av1_filter_block_plane_ss00_hor(struct AV1Common *const cm,
+                                     struct macroblockd_plane *const plane,
+                                     int pl, int mi_row, LoopFilterMask *lfm);
+void av1_filter_block_plane_ss11_ver(struct AV1Common *const cm,
+                                     struct macroblockd_plane *const plane,
+                                     int pl, int mi_row, LoopFilterMask *lfm);
+void av1_filter_block_plane_ss11_hor(struct AV1Common *const cm,
+                                     struct macroblockd_plane *const plane,
+                                     int pl, int mi_row, LoopFilterMask *lfm);
+#else
 void av1_filter_block_plane_ss00_ver(struct AV1Common *const cm,
                                      struct macroblockd_plane *const plane,
                                      int mi_row, LOOP_FILTER_MASK *lfm);
@@ -201,6 +215,7 @@ void av1_filter_block_plane_ss11_ver(struct AV1Common *const cm,
 void av1_filter_block_plane_ss11_hor(struct AV1Common *const cm,
                                      struct macroblockd_plane *const plane,
                                      int mi_row, LOOP_FILTER_MASK *lfm);
+#endif  // LOOP_FILTER_BITMASK
 
 void av1_filter_block_plane_non420_ver(struct AV1Common *const cm,
                                        struct macroblockd_plane *plane,
