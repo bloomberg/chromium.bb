@@ -66,8 +66,6 @@ do_package() {
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
   RECOMMENDS="${COMMON_RECOMMENDS}"
-  REPLACES=""
-  CONFLICTS=""
   PROVIDES=""
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
