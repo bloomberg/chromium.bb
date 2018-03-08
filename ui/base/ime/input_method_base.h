@@ -34,7 +34,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
       public base::SupportsWeakPtr<InputMethodBase>,
       public IMEInputContextHandlerInterface {
  public:
-  InputMethodBase();
+  explicit InputMethodBase(internal::InputMethodDelegate* delegate = nullptr);
   ~InputMethodBase() override;
 
   // Overriden from InputMethod.

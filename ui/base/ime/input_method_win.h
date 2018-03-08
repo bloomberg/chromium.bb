@@ -11,13 +11,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/base/ime/input_method_base.h"
+#include "ui/base/ime/input_method_win_base.h"
 #include "ui/base/ime/win/imm32_manager.h"
 
 namespace ui {
 
 // A common InputMethod implementation based on IMM32.
-class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
+class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodWinBase {
  public:
   InputMethodWin(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);
@@ -47,14 +47,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
                                 TextInputClient* focused) override;
 
  private:
-  // For both WM_CHAR and WM_SYSCHAR
-  LRESULT OnChar(HWND window_handle,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam,
-                 const base::NativeEvent& event,
-                 BOOL* handled);
-
   LRESULT OnImeSetContext(HWND window_handle,
                           UINT message,
                           WPARAM wparam,
@@ -80,22 +72,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
                       LPARAM lparam,
                       BOOL* handled);
 
-  // Some IMEs rely on WM_IME_REQUEST message even when TSF is enabled. So
-  // OnImeRequest (and its actual implementations as OnDocumentFeed,
-  // OnReconvertString, and OnQueryCharPosition) are placed in this base class.
-  LRESULT OnImeRequest(UINT message,
-                       WPARAM wparam,
-                       LPARAM lparam,
-                       BOOL* handled);
-  LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
-  LRESULT OnReconvertString(RECONVERTSTRING* reconv);
-  LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
-
   void RefreshInputLanguage();
-
-  // Returns true if the Win32 native window bound to |client| is considered
-  // to be ready for receiving keyboard input.
-  bool IsWindowFocused(const TextInputClient* client) const;
 
   ui::EventDispatchDetails DispatchFabricatedKeyEvent(ui::KeyEvent* event);
 
@@ -118,20 +95,10 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // (See "ui/base/ime/win/ime_input.h" for its details.)
   ui::IMM32Manager imm32_manager_;
 
-  // The toplevel window handle.
-  // On non-Aura environment, this value is not used and always NULL.
-  const HWND toplevel_window_handle_;
-
   // The new text direction and layout alignment requested by the user by
   // pressing ctrl-shift. It'll be sent to the text input client when the key
   // is released.
   base::i18n::TextDirection pending_requested_direction_;
-
-  // Represents if WM_CHAR[wparam=='\r'] should be dispatched to the focused
-  // text input client or ignored silently. This flag is introduced as a quick
-  // workaround against crbug.com/319100
-  // TODO(yukawa, IME): Figure out long-term solution.
-  bool accept_carriage_return_;
 
   // True when an IME should be allowed to process key events.
   bool enabled_;
