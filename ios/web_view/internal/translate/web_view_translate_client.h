@@ -51,9 +51,14 @@ class WebViewTranslateClient
     translation_controller_ = controller;
   }
 
-  translate::TranslateManager* translate_manager() {
-    return translate_manager_.get();
-  }
+  // Performs translation from |source_lang| to |target_lang|.
+  // |trigged_from_menu| indicates if a direct result of user interaction.
+  void TranslatePage(const std::string& source_lang,
+                     const std::string& target_lang,
+                     bool triggered_from_menu);
+
+  // Reverts previous translations back to original language.
+  void RevertTranslation();
 
   // TranslateClient implementation.
   translate::IOSTranslateDriver* GetTranslateDriver() override;
