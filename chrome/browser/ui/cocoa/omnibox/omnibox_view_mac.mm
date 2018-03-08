@@ -170,7 +170,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       saved_temporary_selection_(NSMakeRange(0, 0)),
       marked_range_before_change_(NSMakeRange(0, 0)),
       delete_was_pressed_(false),
-      delete_at_end_pressed_(false),
       in_coalesced_update_block_(false),
       do_coalesced_text_update_(false),
       do_coalesced_range_update_(false),
@@ -350,10 +349,6 @@ bool OmniboxViewMac::IsSelectAll() const {
   if (all_range.length == 0)
     return false;
   return NSEqualRanges(all_range, GetSelectedRange());
-}
-
-bool OmniboxViewMac::DeleteAtEndPressed() {
-  return delete_at_end_pressed_;
 }
 
 void OmniboxViewMac::GetSelectionBounds(base::string16::size_type* start,
@@ -666,15 +661,8 @@ bool OmniboxViewMac::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   OmniboxView::StateChanges state_changes =
       GetStateChanges(state_before_change_, new_state);
 
-  const bool at_end_of_edit = (new_state.text.length() == new_state.sel_end);
-
-  delete_at_end_pressed_ = false;
-
   const bool something_changed = model()->OnAfterPossibleChange(
       state_changes, allow_keyword_ui_change && !IsImeComposing());
-
-  if (delete_was_pressed_ && at_end_of_edit)
-    delete_at_end_pressed_ = true;
 
   // Restyle in case the user changed something.
   // TODO(shess): I believe there are multiple-redraw cases, here.

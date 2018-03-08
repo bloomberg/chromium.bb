@@ -112,9 +112,6 @@ class OmniboxView {
   // Returns true if all text is selected or there is no text at all.
   virtual bool IsSelectAll() const = 0;
 
-  // Returns true if the user deleted the suggested text.
-  virtual bool DeleteAtEndPressed() = 0;
-
   // Fills |start| and |end| with the indexes of the current selection's bounds.
   // It is not guaranteed that |*start < *end|, as the selection can be
   // directed.  If there is no selection, |start| and |end| will both be equal

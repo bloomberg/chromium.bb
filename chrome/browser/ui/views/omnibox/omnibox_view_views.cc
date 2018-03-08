@@ -124,7 +124,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       security_level_(security_state::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       ime_composing_before_change_(false),
-      delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       is_mouse_pressed_(false),
@@ -455,10 +454,6 @@ bool OmniboxViewViews::IsSelectAll() const {
   return !text().empty() && text() == GetSelectedText();
 }
 
-bool OmniboxViewViews::DeleteAtEndPressed() {
-  return delete_at_end_pressed_;
-}
-
 void OmniboxViewViews::UpdatePopup() {
   // Prevent inline autocomplete when the caret isn't at the end of the text.
   const gfx::Range sel = GetSelectedRange();
@@ -606,8 +601,6 @@ bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
     TextChanged();
   else if (state_changes.selection_differs)
     EmphasizeURLComponents();
-  else if (delete_at_end_pressed_)
-    model()->OnChanged();
 
   return something_changed;
 }
@@ -1076,8 +1069,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     return false;
   }
 
-  delete_at_end_pressed_ = false;
-
   // Skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
   // Otherwise, if num-lock is off, the events are handled as [Up], [Down], etc.
   if (event.IsUnicodeKeyCode())
@@ -1107,9 +1098,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_DELETE:
       if (shift && model()->popup_model()->IsOpen())
         model()->popup_model()->TryDeletingCurrentItem();
-
-      delete_at_end_pressed_ = (!event.IsAltDown() && !HasSelection() &&
-                                GetCursorPosition() == text().length());
       break;
 
     case ui::VKEY_UP:

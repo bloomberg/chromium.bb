@@ -156,7 +156,6 @@ class OmniboxViewViews : public OmniboxView,
                                 bool notify_text_changed) override;
   void SetCaretPos(size_t caret_pos) override;
   bool IsSelectAll() const override;
-  bool DeleteAtEndPressed() override;
   void UpdatePopup() override;
   void ApplyCaretVisibility() override;
   void OnTemporaryTextMaybeChanged(const base::string16& display_text,
@@ -250,9 +249,6 @@ class OmniboxViewViews : public OmniboxView,
   // Tracking state before and after a possible change.
   State state_before_change_;
   bool ime_composing_before_change_;
-
-  // Was the delete key pressed with an empty selection at the end of the edit?
-  bool delete_at_end_pressed_;
 
   // |location_bar_view_| can be NULL in tests.
   LocationBarView* location_bar_view_;

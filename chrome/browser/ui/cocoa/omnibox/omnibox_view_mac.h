@@ -69,7 +69,6 @@ class OmniboxViewMac : public OmniboxView,
   void SetCaretPos(size_t caret_pos) override;
   void EnterKeywordModeForDefaultSearchProvider() override;
   bool IsSelectAll() const override;
-  bool DeleteAtEndPressed() override;
   void GetSelectionBounds(base::string16::size_type* start,
                           base::string16::size_type* end) const override;
   void SelectAll(bool reversed) override;
@@ -220,9 +219,6 @@ class OmniboxViewMac : public OmniboxView,
 
   // Was delete pressed?
   bool delete_was_pressed_;
-
-  // Was the delete key pressed with an empty selection at the end of the edit?
-  bool delete_at_end_pressed_;
 
   // State used to coalesce changes to text and selection to avoid drawing
   // transient state.
