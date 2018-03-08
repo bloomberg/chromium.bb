@@ -19,6 +19,7 @@ const char kEnrollSessionInterface[] =
 const char kRecordInterface[] = "org.chromium.BiometricsDaemon.Record";
 
 // List of all BiometricsManagers
+const char kCrosFpBiometricsManagerName[] = "CrosFpBiometricsManager";
 const char kFakeBiometricsManagerName[] = "FakeBiometricsManager";
 const char kFpcBiometricsManagerName[] = "FpcBiometricsManager";
 
