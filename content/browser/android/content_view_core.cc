@@ -55,7 +55,6 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/geometry/size_f.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -283,55 +282,11 @@ jint ContentViewCore::GetBackgroundColor(JNIEnv* env, jobject obj) {
   return rwhva->GetCachedBackgroundColor();
 }
 
-// All positions and sizes (except |top_shown_pix|) are in CSS pixels.
-// Note that viewport_width/height is a best effort based.
-// ContentViewCore has the actual information about the physical viewport size.
-void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
-                                      float page_scale_factor,
-                                      const float min_page_scale,
-                                      const float max_page_scale,
-                                      const gfx::SizeF& content_size,
-                                      const gfx::SizeF& viewport_size,
-                                      const float content_offset,
-                                      const float top_shown_pix,
-                                      bool top_changed) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null() || !GetWindowAndroid())
-    return;
-
-  GetViewAndroid()->UpdateFrameInfo({viewport_size, content_offset});
-
-  // Current viewport size in css.
-  gfx::SizeF view_size = gfx::SizeF(gfx::ScaleToCeiledSize(
-      GetViewportSizePix(), 1.0f / (dpi_scale() * page_scale_factor)));
-
-  // Adjust content size to be always at least as big as the actual
-  // viewport (as set by onSizeChanged).
-  float content_width = std::max(content_size.width(), view_size.width());
-  float content_height = std::max(content_size.height(), view_size.height());
-
-  Java_ContentViewCoreImpl_updateFrameInfo(
-      env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
-      min_page_scale, max_page_scale, content_width, content_height,
-      viewport_size.width(), viewport_size.height(), top_shown_pix,
-      top_changed);
-}
-
 void ContentViewCore::RequestDisallowInterceptTouchEvent() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_ContentViewCoreImpl_requestDisallowInterceptTouchEvent(env, obj);
-}
-
-gfx::Size ContentViewCore::GetViewportSizePix() const {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return gfx::Size();
-  return gfx::Size(Java_ContentViewCoreImpl_getViewportWidthPix(env, j_obj),
-                   Java_ContentViewCoreImpl_getViewportHeightPix(env, j_obj));
 }
 
 void ContentViewCore::SendScreenRectsAndResizeWidget() {

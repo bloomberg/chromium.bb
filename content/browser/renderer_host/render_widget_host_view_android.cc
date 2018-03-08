@@ -1224,7 +1224,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (wcax)
     wcax->UpdateFrameInfo();
 
-  if (!content_view_core_)
+  if (!gesture_listener_manager_)
     return;
 
   if (overscroll_controller_)
@@ -1278,7 +1278,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   max_page_scale_ = frame_metadata.max_page_scale_factor;
 
   // All offsets and sizes except |top_shown_pix| are in CSS pixels.
-  content_view_core_->UpdateFrameInfo(
+  gesture_listener_manager_->UpdateScrollInfo(
       root_scroll_offset_dip, frame_metadata.page_scale_factor,
       frame_metadata.min_page_scale_factor,
       frame_metadata.max_page_scale_factor, root_layer_size_dip,

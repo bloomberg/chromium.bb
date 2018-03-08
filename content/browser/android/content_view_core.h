@@ -137,18 +137,6 @@ class ContentViewCore : public WebContentsObserver {
 
   void HidePopupsAndPreserveSelection();
 
-  // All sizes and offsets are in CSS pixels (except |top_show_pix|)
-  // as cached by the renderer.
-  void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
-                       float page_scale_factor,
-                       float min_page_scale,
-                       float max_page_scale,
-                       const gfx::SizeF& content_size,
-                       const gfx::SizeF& viewport_size,
-                       const float top_content_offset,
-                       const float top_shown_pix,
-                       bool top_changed);
-
   void RequestDisallowInterceptTouchEvent();
 
   // Returns the context with which the ContentViewCore was created, typically
@@ -184,8 +172,6 @@ class ContentViewCore : public WebContentsObserver {
   void SendScreenRectsAndResizeWidget();
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
-
-  gfx::Size GetViewportSizePix() const;
 
   // Update focus state of the RenderWidgetHostView.
   void SetFocusInternal(bool focused);

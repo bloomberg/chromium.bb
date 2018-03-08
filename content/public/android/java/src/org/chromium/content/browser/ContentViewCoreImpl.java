@@ -396,6 +396,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {
         mContainerViewInternals = internalDispatcher;
+        getGestureListenerManager().setScrollDelegate(internalDispatcher);
     }
 
     @Override
@@ -424,16 +425,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public boolean isAlive() {
         return mNativeContentViewCore != 0;
-    }
-
-    @CalledByNative
-    private int getViewportWidthPix() {
-        return mContainerView.getWidth();
-    }
-
-    @CalledByNative
-    private int getViewportHeightPix() {
-        return mContainerView.getHeight();
     }
 
     @VisibleForTesting
@@ -803,49 +794,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private void setTextHandlesTemporarilyHidden(boolean hide) {
         if (mNativeContentViewCore == 0) return;
         nativeSetTextHandlesTemporarilyHidden(mNativeContentViewCore, hide);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void updateFrameInfo(float scrollOffsetX, float scrollOffsetY, float pageScaleFactor,
-            float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
-            float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
-            boolean topBarChanged) {
-        TraceEvent.begin("ContentViewCore:updateFrameInfo");
-        final boolean contentSizeChanged = contentWidth != mRenderCoordinates.getContentWidthCss()
-                || contentHeight != mRenderCoordinates.getContentHeightCss();
-        final boolean scaleLimitsChanged =
-                minPageScaleFactor != mRenderCoordinates.getMinPageScaleFactor()
-                || maxPageScaleFactor != mRenderCoordinates.getMaxPageScaleFactor();
-        final boolean pageScaleChanged = pageScaleFactor != mRenderCoordinates.getPageScaleFactor();
-        final boolean scrollChanged = pageScaleChanged
-                || scrollOffsetX != mRenderCoordinates.getScrollX()
-                || scrollOffsetY != mRenderCoordinates.getScrollY();
-
-        if (contentSizeChanged || scrollChanged) getTapDisambiguator().hidePopup(true);
-
-        if (scrollChanged) {
-            mContainerViewInternals.onScrollChanged(
-                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetX),
-                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetY),
-                    (int) mRenderCoordinates.getScrollXPix(),
-                    (int) mRenderCoordinates.getScrollYPix());
-        }
-
-        mRenderCoordinates.updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth,
-                contentHeight, viewportWidth, viewportHeight, pageScaleFactor, minPageScaleFactor,
-                maxPageScaleFactor, topBarShownPix);
-
-        if (scrollChanged || topBarChanged) {
-            getGestureListenerManager().updateOnScrollChanged(
-                    computeVerticalScrollOffset(), computeVerticalScrollExtent());
-        }
-        if (scaleLimitsChanged) {
-            getGestureListenerManager().updateOnScaleLimitsChanged(
-                    minPageScaleFactor, maxPageScaleFactor);
-        }
-
-        TraceEvent.end("ContentViewCore:updateFrameInfo");
     }
 
     /**
