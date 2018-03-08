@@ -126,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, MAYBE_TestScriptInjected) {
   base::RunLoop run_loop;
   activity_log->GetFilteredActions(
       ext->id(), Action::ACTION_ANY, "", "", "", -1,
-      base::Bind(ActivityLogPrerenderTest::Prerender_Arguments, ext->id(), port,
-                 run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(ActivityLogPrerenderTest::Prerender_Arguments, ext->id(),
+                     port, run_loop.QuitWhenIdleClosure()));
 
   // Allow invocation of Prerender_Arguments
   run_loop.Run();

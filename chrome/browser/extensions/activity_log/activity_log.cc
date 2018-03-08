@@ -794,11 +794,11 @@ void ActivityLog::GetFilteredActions(
     const std::string& page_url,
     const std::string& arg_url,
     const int daysAgo,
-    const base::Callback<
-        void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)>& callback) {
+    base::OnceCallback<
+        void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)> callback) {
   if (database_policy_) {
-    database_policy_->ReadFilteredData(
-        extension_id, type, api_name, page_url, arg_url, daysAgo, callback);
+    database_policy_->ReadFilteredData(extension_id, type, api_name, page_url,
+                                       arg_url, daysAgo, std::move(callback));
   }
 }
 

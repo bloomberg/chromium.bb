@@ -723,13 +723,13 @@ void CountingPolicy::ReadFilteredData(
     const std::string& page_url,
     const std::string& arg_url,
     const int days_ago,
-    const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
-        callback) {
+    base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)> callback) {
   base::PostTaskAndReplyWithResult(
       GetActivityLogTaskRunner().get(), FROM_HERE,
-      base::Bind(&CountingPolicy::DoReadFilteredData, base::Unretained(this),
-                 extension_id, type, api_name, page_url, arg_url, days_ago),
-      callback);
+      base::BindOnce(&CountingPolicy::DoReadFilteredData,
+                     base::Unretained(this), extension_id, type, api_name,
+                     page_url, arg_url, days_ago),
+      std::move(callback));
 }
 
 void CountingPolicy::RemoveActions(const std::vector<int64_t>& action_ids) {

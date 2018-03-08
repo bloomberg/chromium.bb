@@ -172,7 +172,7 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
+      base::OnceCallback<void(std::unique_ptr<Action::ActionVector>)>
           callback) = 0;
 
   // Remove actions (rows) which IDs are in the action_ids array.

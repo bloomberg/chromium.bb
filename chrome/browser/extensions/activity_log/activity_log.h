@@ -88,8 +88,8 @@ class ActivityLog : public BrowserContextKeyedAPI,
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback<
-          void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)>& callback);
+      base::OnceCallback<
+          void(std::unique_ptr<std::vector<scoped_refptr<Action>>>)> callback);
 
   // ExtensionRegistryObserver.
   // We keep track of whether the whitelisted extension is installed; if it is,
