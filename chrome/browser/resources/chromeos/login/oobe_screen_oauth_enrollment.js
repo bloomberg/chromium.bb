@@ -24,8 +24,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_ACTIVE_DIRECTORY_JOIN_ERROR =
       'active-directory-join-error';
 
-  /** @const */ var HELP_TOPIC_ENROLLMENT = 4631259;
-
   return {
     EXTERNAL_API: [
       'showStep',
