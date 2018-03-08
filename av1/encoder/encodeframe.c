@@ -3473,6 +3473,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_zero(x->tx_size_rd_record_16X16);
     av1_zero(x->tx_size_rd_record_32X32);
     av1_zero(x->tx_size_rd_record_64X64);
+    av1_zero(x->tx_size_rd_record_intra);
 
     av1_zero(x->pred_mv);
     pc_root->index = 0;

@@ -549,6 +549,10 @@ typedef struct SPEED_FEATURES {
 
   // flag to allow skipping intra mode for inter frame prediction
   int skip_intra_in_interframe;
+
+  // Use hash table to store intra(keyframe only) txb transform search results
+  // to avoid repeated search on the same residue signal.
+  int use_intra_txb_hash;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

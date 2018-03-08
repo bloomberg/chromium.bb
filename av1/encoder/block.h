@@ -173,6 +173,8 @@ struct macroblock {
   TX_SIZE_RD_RECORD
   tx_size_rd_record_64X64[(MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)];
 
+  TX_SIZE_RD_RECORD tx_size_rd_record_intra;
+
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;
   int skip_block;
