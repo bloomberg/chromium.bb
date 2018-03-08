@@ -31,11 +31,7 @@ PictureInPictureWindowController::PictureInPictureWindowController(
     content::WebContents* initiator)
     : initiator_(initiator) {
   DCHECK(initiator_);
-}
-
-void PictureInPictureWindowController::Init() {
-  if (!window_)
-    window_ = OverlayWindow::Create();
+  window_ = OverlayWindow::Create();
   window_->Init();
 }
 
@@ -52,9 +48,10 @@ void PictureInPictureWindowController::Close() {
 void PictureInPictureWindowController::EmbedSurface(viz::SurfaceId surface_id) {
   DCHECK(window_);
   DCHECK(surface_id.is_valid());
-
-  embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));
   surface_id_ = surface_id;
+
+  if (!embedder_)
+    embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));
   embedder_->SetPrimarySurfaceId(surface_id_);
 }
 

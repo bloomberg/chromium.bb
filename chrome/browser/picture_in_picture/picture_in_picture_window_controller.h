@@ -36,7 +36,6 @@ class PictureInPictureWindowController
   static PictureInPictureWindowController* GetOrCreateForWebContents(
       content::WebContents* initiator);
 
-  void Init();
   void Show();
   void Close();
   void EmbedSurface(viz::SurfaceId);
