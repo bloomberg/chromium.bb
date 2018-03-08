@@ -452,6 +452,8 @@ void VrShellGl::ConnectPresentingService(
   // direct-draw-to-shared-buffer optimization.
   DVLOG(1) << "preserveDrawingBuffer="
            << present_options->preserve_drawing_buffer;
+
+  report_webxr_input_ = present_options->webxr_input;
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
@@ -1573,6 +1575,17 @@ void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
       device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat,
                                                      prediction_nanos);
 
+  if (report_webxr_input_) {
+    std::vector<device::mojom::XRInputSourceStatePtr> input_states;
+
+    device::mojom::XRInputSourceStatePtr input_state =
+        cardboard_ ? GetGazeInputSourceState()
+                   : controller_->GetInputSourceState();
+
+    input_states.push_back(std::move(input_state));
+    pose->input_state = std::move(input_states);
+  }
+
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
   webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = true;
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
@@ -1594,6 +1607,42 @@ void VrShellGl::ClosePresentationBindings() {
              device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
   }
   binding_.Close();
+}
+
+device::mojom::XRInputSourceStatePtr VrShellGl::GetGazeInputSourceState() {
+  device::mojom::XRInputSourceStatePtr state =
+      device::mojom::XRInputSourceState::New();
+
+  // Only one gaze input source to worry about, so it can have a static id.
+  state->source_id = 1;
+
+  // Report any trigger state changes made since the last call and reset the
+  // state here.
+  state->primary_input_pressed = cardboard_trigger_pressed_;
+  state->primary_input_clicked = cardboard_trigger_clicked_;
+  cardboard_trigger_clicked_ = false;
+
+  state->description = device::mojom::XRInputSourceDescription::New();
+
+  // It's a gaze-cursor-based device.
+  state->description->pointer_origin = device::mojom::XRPointerOrigin::HEAD;
+  state->description->emulated_position = true;
+
+  // No implicit handedness
+  state->description->handedness = device::mojom::XRHandedness::NONE;
+
+  // Pointer and grip transforms are omitted since this is a gaze-based source.
+
+  return state;
+}
+
+void VrShellGl::OnTriggerEvent(bool pressed) {
+  if (pressed) {
+    cardboard_trigger_pressed_ = true;
+  } else if (cardboard_trigger_pressed_) {
+    cardboard_trigger_pressed_ = false;
+    cardboard_trigger_clicked_ = true;
+  }
 }
 
 void VrShellGl::AcceptDoffPromptForTesting() {

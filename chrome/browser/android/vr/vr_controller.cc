@@ -145,6 +145,55 @@ device::GvrGamepadData VrController::GetGamepadData() {
   return pad;
 }
 
+device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
+  device::mojom::XRInputSourceStatePtr state =
+      device::mojom::XRInputSourceState::New();
+
+  // Only one controller is supported, so the source id can be static.
+  state->source_id = 1;
+
+  // Set the primary button state.
+  state->primary_input_pressed =
+      controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
+
+  if (ButtonUpHappened(GVR_CONTROLLER_BUTTON_CLICK)) {
+    state->primary_input_clicked = true;
+  }
+
+  state->description = device::mojom::XRInputSourceDescription::New();
+
+  // It's a handheld pointing device.
+  state->description->pointer_origin = device::mojom::XRPointerOrigin::HAND;
+
+  // Controller uses an arm model.
+  state->description->emulated_position = true;
+
+  // Set handedness.
+  switch (handedness_) {
+    case GVR_CONTROLLER_LEFT_HANDED:
+      state->description->handedness = device::mojom::XRHandedness::LEFT;
+      break;
+    case GVR_CONTROLLER_RIGHT_HANDED:
+      state->description->handedness = device::mojom::XRHandedness::RIGHT;
+      break;
+    default:
+      state->description->handedness = device::mojom::XRHandedness::NONE;
+      break;
+  }
+
+  // Get the grip transform
+  gfx::Transform grip;
+  GetTransform(&grip);
+  state->grip = grip;
+
+  // Set the pointer offset from the grip transform.
+  gfx::Transform pointer;
+  GetRelativePointerTransform(&pointer);
+  state->description->pointer_offset = pointer;
+
+  return state;
+}
+
 bool VrController::IsTouching() {
   return controller_state_->IsTouching();
 }
@@ -209,17 +258,31 @@ void VrController::GetTransform(gfx::Transform* out) const {
   out->matrix().postTranslate(position.x, position.y, position.z);
 }
 
+void VrController::GetRelativePointerTransform(gfx::Transform* out) const {
+  *out = gfx::Transform();
+  out->RotateAboutXAxis(-kErgoAngleOffset * 180.0f / base::kPiFloat);
+  out->Translate3d(0, 0, -kLaserStartDisplacement);
+}
+
+void VrController::GetPointerTransform(gfx::Transform* out) const {
+  gfx::Transform controller;
+  GetTransform(&controller);
+
+  GetRelativePointerTransform(out);
+  out->ConcatTransform(controller);
+}
+
 float VrController::GetOpacity() const {
   return alpha_value_;
 }
 
 gfx::Point3F VrController::GetPointerStart() const {
-  gfx::Vector3dF pointer_direction{0.0f, -sin(kErgoAngleOffset),
-                                   -cos(kErgoAngleOffset)};
-  gfx::Transform rotation_mat(Orientation());
-  rotation_mat.TransformVector(&pointer_direction);
-  return Position() +
-         gfx::ScaleVector3d(pointer_direction, kLaserStartDisplacement);
+  gfx::Transform pointer_transform;
+  GetPointerTransform(&pointer_transform);
+
+  gfx::Point3F pointer_position;
+  pointer_transform.TransformPoint(&pointer_position);
+  return pointer_position;
 }
 
 bool VrController::TouchDownHappened() {
