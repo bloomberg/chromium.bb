@@ -1293,6 +1293,13 @@ public class ContextualSearchManager
         }
 
         @Override
+        public void showUnhandledTapUIIfNeeded(final int x, final int y) {
+            if (!isOverlayVideoMode()) {
+                mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
+            }
+        }
+
+        @Override
         public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
             if (mSelectWordAroundCaretCounter > 0) mSelectWordAroundCaretCounter--;
             if (mSelectWordAroundCaretCounter > 0
@@ -1318,13 +1325,6 @@ public class ContextualSearchManager
 
         @Override
         public void cancelAllRequests() {}
-    }
-
-    /** Shows the Unhandled Tap UI.  Called by {@link ContextualSearchTabHelper}. */
-    void onShowUnhandledTapUIIfNeeded(int x, int y) {
-        if (!isOverlayVideoMode()) {
-            mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
-        }
     }
 
     /**

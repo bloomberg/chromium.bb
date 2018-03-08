@@ -162,6 +162,12 @@ public class SelectionClientManager {
         }
 
         @Override
+        public void showUnhandledTapUIIfNeeded(int x, int y) {
+            mSmartSelectionClient.showUnhandledTapUIIfNeeded(x, y);
+            mContextualSearchSelectionClient.showUnhandledTapUIIfNeeded(x, y);
+        }
+
+        @Override
         public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
             mSmartSelectionClient.selectWordAroundCaretAck(didSelect, startAdjust, endAdjust);
             mContextualSearchSelectionClient.selectWordAroundCaretAck(
