@@ -1358,9 +1358,13 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     if (lock_screen_apps::StateController::IsEnabled())
       lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
-    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-    // self-destructs on logout.
-    policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
+    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+      // App install logs are uploaded via the user's communication channel with
+      // the management server. This channel exists for regular users only.
+      // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
+      // self-destructs on logout.
+      policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
+    }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
