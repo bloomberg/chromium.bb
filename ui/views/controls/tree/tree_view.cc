@@ -427,8 +427,16 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
 void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTree;
   node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
-  if (!selected_node_)
+  // TODO(aleventhal): The tree view accessibility implementation is misusing
+  // the name field. It should really be using selection events for the
+  // currently selected item. The name field should be for for the label
+  // if there is one, otherwise something that would work in place of a label.
+  // See http://crbug.com/811277.
+
+  if (!selected_node_) {
+    node_data->SetNameExplicitlyEmpty();
     return;
+  }
 
   // Get selected item info.
   node_data->role = ax::mojom::Role::kTreeItem;
