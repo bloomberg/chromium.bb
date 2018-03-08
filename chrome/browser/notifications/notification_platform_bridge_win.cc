@@ -747,8 +747,7 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   ForwardNotificationOperationOnUiThread(
       operation, launch_id.notification_type(), launch_id.origin_url(),
       launch_id.notification_id(), launch_id.profile_id(),
-      launch_id.incognito(),
-      /*action_index=*/base::nullopt, /*by_user=*/true);
+      launch_id.incognito(), launch_id.button_index(), /*by_user=*/true);
 
   return true;
 }
