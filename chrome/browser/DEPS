@@ -26,11 +26,11 @@ include_rules = [
   "+device/geolocation",
   "+device/media_transfer_protocol",
   "+device/usb",
-  "+device/vr/features/features.h",
+  "+device/vr/buildflags/buildflags.h",
   "+extensions/browser",
   "+extensions/common",
   "+extensions/components/javascript_dialog_extensions_client",
-  "+extensions/features",
+  "+extensions/buildflags",
   "+extensions/grit",
   "+extensions/test",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.

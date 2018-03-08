@@ -9,7 +9,7 @@
 #include "base/android/jni_utils.h"
 #include "chrome/app/android/chrome_android_initializer.h"
 #include "content/public/app/content_jni_onload.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_VR)
 #include "third_party/gvr-android-sdk/display_synchronizer_jni.h"

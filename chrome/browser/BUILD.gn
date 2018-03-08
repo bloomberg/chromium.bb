@@ -15,8 +15,8 @@ import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
-import("//device/vr/features/features.gni")
-import("//extensions/features/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
@@ -1755,8 +1755,8 @@ jumbo_split_static_library("browser") {
     "//device/geolocation",
     "//device/usb/mojo",
     "//device/usb/public/mojom",
-    "//device/vr/features",
-    "//extensions/features",
+    "//device/vr/buildflags",
+    "//extensions/buildflags",
     "//google_apis",
     "//gpu/config",
     "//media",

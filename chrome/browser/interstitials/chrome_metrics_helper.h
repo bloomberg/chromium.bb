@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/common/buildflags.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 namespace content {

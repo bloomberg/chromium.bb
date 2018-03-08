@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

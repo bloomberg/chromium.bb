@@ -47,7 +47,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
-  "+extensions/features",
+  "+extensions/buildflags",
   "+extensions/renderer",
   "+gin",
   "+media/base",

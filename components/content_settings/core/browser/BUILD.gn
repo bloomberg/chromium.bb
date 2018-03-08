@@ -53,7 +53,7 @@ static_library("browser") {
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/url_formatter",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//net",
     "//services/preferences/public/cpp",
     "//url",
@@ -88,7 +88,7 @@ source_set("unit_tests") {
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/sync_preferences:test_support",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//testing/gtest",
     "//url",
   ]

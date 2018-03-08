@@ -11,7 +11,7 @@ import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -1051,7 +1051,7 @@ split_static_library("ui") {
     "//crypto",
     "//device/base",
     "//device/usb",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//media",
     "//net:net",
     "//ppapi/features",
@@ -1256,7 +1256,7 @@ split_static_library("ui") {
       "//device/usb/mojo",
       "//device/usb/public/cpp",
       "//device/usb/public/mojom",
-      "//device/vr/features",
+      "//device/vr/buildflags",
       "//ui/android",
     ]
   } else {

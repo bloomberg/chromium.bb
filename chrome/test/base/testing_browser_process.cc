@@ -29,7 +29,7 @@
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/network_connection_tracker.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "media/media_features.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/features/features.h"

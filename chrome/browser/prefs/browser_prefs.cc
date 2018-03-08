@@ -109,7 +109,7 @@
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/http/http_server_properties_manager.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"

@@ -18,7 +18,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 

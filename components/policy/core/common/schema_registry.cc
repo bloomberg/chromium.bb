@@ -5,7 +5,7 @@
 #include "components/policy/core/common/schema_registry.h"
 
 #include "base/logging.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace policy {
 

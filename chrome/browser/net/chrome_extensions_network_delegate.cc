@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/base/net_errors.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 using content::RenderProcessHost;
 using content::BrowserThread;

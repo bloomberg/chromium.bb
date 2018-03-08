@@ -37,9 +37,9 @@ include_rules = [
   "+components/translate/core/common",
   "+components/url_formatter",
   "+components/version_info",
-  "+device/vr/features/features.h",
+  "+device/vr/buildflags/buildflags.h",
+  "+extensions/buildflags",
   "+extensions/common",
-  "+extensions/features",
   "+gin/public",  # For profiling.cc
   "+google_apis/gaia",  # For gaia_switches.h
   "+media",

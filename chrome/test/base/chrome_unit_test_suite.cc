@@ -21,7 +21,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/common/content_paths.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -21,7 +21,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"

@@ -8,8 +8,8 @@ import("//components/feed/features.gni")
 # This file is in a separate target so all targets in the build can refer to the
 # buildflag header to get the necessary preprocessor defines without bringing in
 # any of the feed targets.
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_FEED_IN_CHROME=$enable_feed_in_chrome" ]
 }
 

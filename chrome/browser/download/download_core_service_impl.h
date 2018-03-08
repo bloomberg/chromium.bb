@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 class ChromeDownloadManagerDelegate;
 class DownloadHistory;

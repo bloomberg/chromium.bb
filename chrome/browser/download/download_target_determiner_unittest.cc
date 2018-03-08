@@ -48,7 +48,7 @@
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/base/mime_util.h"
 #include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"

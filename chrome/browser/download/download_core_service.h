@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 class ChromeDownloadManagerDelegate;
 class DownloadHistory;

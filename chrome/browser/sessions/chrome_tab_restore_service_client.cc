@@ -10,7 +10,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"

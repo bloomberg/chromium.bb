@@ -5,7 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//chrome/browser/vr/features.gni")
 import("//chrome/common/features.gni")
-import("//device/vr/features/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 

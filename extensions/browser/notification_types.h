@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/public/browser/notification_types.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"

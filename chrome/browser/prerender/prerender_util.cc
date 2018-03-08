@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/google/core/browser/google_util.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

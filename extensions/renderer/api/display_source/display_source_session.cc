@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/api/display_source/display_source_session.h"
 
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_WIFI_DISPLAY)
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_session.h"

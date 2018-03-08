@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "device/vr/features/features.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"

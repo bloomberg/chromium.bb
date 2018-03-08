@@ -8,7 +8,7 @@
 
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

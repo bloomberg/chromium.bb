@@ -20,7 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/common/content_features.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 bool FixupBrowserAboutURL(GURL* url,
                           content::BrowserContext* browser_context) {

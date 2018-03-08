@@ -15,7 +15,7 @@ import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
@@ -152,7 +152,7 @@ static_library("test_support") {
     "//content/public/renderer",
     "//content/public/utility",
     "//content/test:test_support",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//google_apis:test_support",
     "//gpu/ipc/service",
     "//ipc:test_support",
@@ -350,7 +350,7 @@ test("browser_tests") {
     "//components/nacl/common:buildflags",
     "//components/spellcheck:buildflags",
     "//components/sync:test_support_model",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//media:media_features",
     "//net:test_support",
     "//ppapi/features",
@@ -2728,7 +2728,7 @@ test("unit_tests") {
     "//device/base:mocks",
     "//device/bluetooth:mocks",
     "//device/usb:test_support",
-    "//extensions/features",
+    "//extensions/buildflags",
     "//google_apis",
     "//gpu:test_support",
     "//media:test_support",
@@ -4463,7 +4463,7 @@ if (!is_android) {
         "//content/test:test_support",
         "//crypto:platform",
         "//crypto:test_support",
-        "//extensions/features",
+        "//extensions/buildflags",
         "//google_apis:test_support",
         "//net",
         "//net:net_resources",
@@ -4641,7 +4641,7 @@ if (!is_android) {
       "//content/test:test_support",
       "//crypto:platform",
       "//crypto:test_support",
-      "//extensions/features",
+      "//extensions/buildflags",
       "//google_apis:test_support",
       "//mojo/edk/system",
       "//net",
@@ -4999,7 +4999,7 @@ if (!is_android && !is_chromecast) {
       "//components/autofill/content/renderer:test_support",
       "//components/spellcheck:buildflags",
       "//content/test:test_support",
-      "//extensions/features",
+      "//extensions/buildflags",
       "//media/cast:test_support",
       "//testing/gmock",
       "//testing/gtest",

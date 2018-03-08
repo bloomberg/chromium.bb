@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//components/nacl/features.gni")
-import("//extensions/features/features.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # TODO(crbug.com/731689): Assert that extensions are enabled.

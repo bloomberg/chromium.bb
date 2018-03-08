@@ -58,7 +58,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ppapi/features/features.h"

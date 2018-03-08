@@ -57,7 +57,7 @@
 #include "components/sync_preferences/pref_service_syncable_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "rlz/features/features.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"

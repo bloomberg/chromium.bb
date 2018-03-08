@@ -10,7 +10,7 @@ include_rules = [
   "+components/variations",
   "+components/version_info",
   "+content/public/test",
-  "+extensions/features",
+  "+extensions/buildflags",
   "+mojo/public/cpp",
   "+services/service_manager/public/cpp",
   "+third_party/metrics_proto",

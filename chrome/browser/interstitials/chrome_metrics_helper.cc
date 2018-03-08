@@ -10,7 +10,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/features/features.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/ssl/captive_portal_metrics_recorder.h"
