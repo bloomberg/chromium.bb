@@ -136,12 +136,8 @@ ToV8PersistentCallbackInterface(V8CallbackInterface* callback_interface) {
 // for callback interfaces is likely (if not always) misuse. Thus, this code
 // prohibits such a use case. The call sites should explicitly use
 // WrapPersistent(V8PersistentCallbackInterface<T>*).
-#if 0
-// TODO(yukishiino): Enable this deletion once CallbackInterfaceBase transitions
-// to wrapper-tracing.
 Persistent<CallbackInterfaceBase> WrapPersistent(CallbackInterfaceBase*) =
     delete;
-#endif
 
 }  // namespace blink
 
