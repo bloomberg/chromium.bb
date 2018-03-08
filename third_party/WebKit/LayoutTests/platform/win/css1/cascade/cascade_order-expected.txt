@@ -65,8 +65,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 91x19
             text run at (0,0) width 91: "...and this blue."
       LayoutBlockFlow {P} at (0,419) size 769x20 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 265x19
-          text run at (0,0) width 265: "This sentence should be blue (STYLE attr.)."
+        LayoutText {#text} at (0,0) size 264x19
+          text run at (0,0) width 264: "This sentence should be blue (STYLE attr.)."
       LayoutBlockFlow {P} at (0,455) size 769x20 [color=#800080]
         LayoutText {#text} at (0,0) size 194x19
           text run at (0,0) width 194: "This sentence should be purple ["
@@ -126,8 +126,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutText {#text} at (0,0) size 91x19
                     text run at (0,0) width 91: "...and this blue."
               LayoutBlockFlow {P} at (4,180) size 652x20 [color=#0000FF]
-                LayoutText {#text} at (0,0) size 265x19
-                  text run at (0,0) width 265: "This sentence should be blue (STYLE attr.)."
+                LayoutText {#text} at (0,0) size 264x19
+                  text run at (0,0) width 264: "This sentence should be blue (STYLE attr.)."
               LayoutBlockFlow {P} at (4,216) size 652x20 [color=#800080]
                 LayoutText {#text} at (0,0) size 194x19
                   text run at (0,0) width 194: "This sentence should be purple ["

@@ -6,15 +6,15 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 637x19
-          LayoutInline {A} at (0,0) size 306x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 306x19
-              text run at (49,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=15362"
-          LayoutText {#text} at (354,0) size 332x19
-            text run at (354,0) width 5: " "
-            text run at (358,0) width 328: "Safari Crashes when opening a JS TreeGrid widget"
-        LayoutText {#text} at (685,0) size 5x19
-          text run at (685,0) width 5: "."
+        LayoutInline {I} at (0,0) size 635x19
+          LayoutInline {A} at (0,0) size 304x19 [color=#0000EE]
+            LayoutText {#text} at (50,0) size 304x19
+              text run at (50,0) width 304: "http://bugs.webkit.org/show_bug.cgi?id=15362"
+          LayoutText {#text} at (354,0) size 331x19
+            text run at (354,0) width 4: " "
+            text run at (358,0) width 327: "Safari Crashes when opening a JS TreeGrid widget"
+        LayoutText {#text} at (685,0) size 4x19
+          text run at (685,0) width 4: "."
       LayoutBlockFlow {P} at (0,36) size 784x60
         LayoutText {#text} at (0,0) size 783x59
           text run at (0,0) width 739: "The test sets up an inline parent with a child that is some kind of table part. The child gets broken off into a continuation and"
@@ -24,9 +24,9 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 220x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutText {#text} at (37,0) size 85x19
-            text run at (37,0) width 85: "goes here and"
-          LayoutTable (anonymous) at (121.88,0) size 98x20
+          LayoutText {#text} at (38,0) size 84x19
+            text run at (38,0) width 84: "goes here and"
+          LayoutTable (anonymous) at (122,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell {DIV} at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]
@@ -36,7 +36,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,0) size 98x20
+          LayoutTable (anonymous) at (38,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
@@ -47,7 +47,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,15) size 98x20
+          LayoutTable (anonymous) at (38,15) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow {TR} at (0,0) size 98x0
               LayoutTableRow (anonymous) at (0,0) size 98x20
@@ -58,8 +58,8 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutInline {SPAN} at (0,0) size 1x19
-          LayoutTable (anonymous) at (37.88,0) size 98x20
+          LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutTable (anonymous) at (38,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell {DIV} at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]
@@ -84,9 +84,9 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 220x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutText {#text} at (37,0) size 85x19
-            text run at (37,0) width 85: "goes here and"
-          LayoutTable (anonymous) at (121.88,0) size 98x20
+          LayoutText {#text} at (38,0) size 84x19
+            text run at (38,0) width 84: "goes here and"
+          LayoutTable (anonymous) at (122,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow {DIV} at (0,0) size 98x20
                 LayoutTableCell (anonymous) at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]
@@ -96,7 +96,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,15) size 98x20
+          LayoutTable (anonymous) at (38,15) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x0
                 LayoutTableCell {TD} at (0,0) size 98x0 [r=0 c=0 rs=1 cs=1]
@@ -108,7 +108,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,15) size 98x20
+          LayoutTable (anonymous) at (38,15) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow {TR} at (0,0) size 98x0
               LayoutTableRow {DIV} at (0,0) size 98x20
@@ -119,8 +119,8 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutInline {SPAN} at (0,0) size 1x19
-          LayoutTable (anonymous) at (37.88,0) size 98x20
+          LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutTable (anonymous) at (38,0) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x20
               LayoutTableRow {DIV} at (0,0) size 98x20
                 LayoutTableCell (anonymous) at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]
@@ -145,9 +145,9 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 220x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutText {#text} at (37,0) size 85x19
-            text run at (37,0) width 85: "goes here and"
-          LayoutTable (anonymous) at (121.88,0) size 98x20
+          LayoutText {#text} at (38,0) size 84x19
+            text run at (38,0) width 84: "goes here and"
+          LayoutTable (anonymous) at (122,0) size 98x20
             LayoutTableSection {DIV} at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell (anonymous) at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]
@@ -157,7 +157,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,15) size 98x20
+          LayoutTable (anonymous) at (38,15) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x0
               LayoutTableRow (anonymous) at (0,0) size 98x0
                 LayoutTableCell {TD} at (0,0) size 98x0 [r=0 c=0 rs=1 cs=1]
@@ -170,7 +170,7 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutTable (anonymous) at (37.88,15) size 98x20
+          LayoutTable (anonymous) at (38,15) size 98x20
             LayoutTableSection (anonymous) at (0,0) size 98x0
               LayoutTableRow {TR} at (0,0) size 98x0
             LayoutTableSection {DIV} at (0,0) size 98x20
@@ -182,8 +182,8 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 136x19
           LayoutText {#text} at (0,0) size 38x19
             text run at (0,0) width 38: "Text..."
-          LayoutInline {SPAN} at (0,0) size 1x19
-          LayoutTable (anonymous) at (37.88,0) size 98x20
+          LayoutInline {SPAN} at (0,0) size 0x19
+          LayoutTable (anonymous) at (38,0) size 98x20
             LayoutTableSection {DIV} at (0,0) size 98x20
               LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell (anonymous) at (0,0) size 98x20 [r=0 c=0 rs=1 cs=1]

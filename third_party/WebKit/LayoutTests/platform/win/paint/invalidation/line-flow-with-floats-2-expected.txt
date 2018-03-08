@@ -283,56 +283,6 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [14, 441, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [14, 441, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 441, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [14, 441, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [14, 441, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'her head!\u2019 about'",
-          "rect": [14, 440, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'once in a minute.\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'stamping about, and'",
-          "rect": [14, 440, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'was in a furious passion, and went\n'",
-          "rect": [14, 440, 355, 59],
-          "reason": "geometry"
-        },
-        {
           "object": "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
           "rect": [14, 80, 354, 120],
           "reason": "geometry"
@@ -386,6 +336,56 @@
           "object": "InlineTextBox 'straightened\n'",
           "rect": [14, 80, 354, 119],
           "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "rect": [14, 441, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "rect": [14, 441, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 441, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "rect": [14, 441, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "rect": [14, 441, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about'",
+          "rect": [14, 440, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'once in a minute.\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "rect": [14, 440, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "rect": [14, 440, 354, 59],
+          "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'a very short time '",
@@ -449,12 +449,12 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 361, 131, 19],
+          "rect": [134, 361, 132, 19],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "geometry"
         },
         {

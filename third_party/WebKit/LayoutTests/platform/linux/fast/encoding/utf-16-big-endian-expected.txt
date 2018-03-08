@@ -46,8 +46,8 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,83.97) size 784x2
       LayoutBlockFlow (anonymous) at (0,92.63) size 784x58
-        LayoutInline {SPAN} at (0,0) size 587x56
-          LayoutInline {SPAN} at (0,0) size 587x56
+        LayoutInline {SPAN} at (0,0) size 586x56
+          LayoutInline {SPAN} at (0,0) size 586x56
             LayoutText {#text} at (0,0) size 0x0
             LayoutBlockFlow {IMG} at (0,4) size 78x16
               LayoutInline {SPAN} at (0,0) size 62x16
@@ -109,26 +109,26 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,301.25) size 784x63
-        LayoutTable {TABLE} at (0,0) size 596x63
-          LayoutTableSection {TBODY} at (0,0) size 596x63
-            LayoutTableRow {TR} at (0,2) size 596x59
+        LayoutTable {TABLE} at (0,0) size 595x63
+          LayoutTableSection {TBODY} at (0,0) size 595x63
+            LayoutTableRow {TR} at (0,2) size 595x59
               LayoutTableCell {TD} at (2,30) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
-              LayoutTableCell {TD} at (10,21) size 164x21 [r=0 c=2 rs=1 cs=1]
-                LayoutBlockFlow {IMG} at (1,1) size 161.23x19
-                  LayoutInline {SPAN} at (0,0) size 146x18
+              LayoutTableCell {TD} at (10,21) size 163x21 [r=0 c=2 rs=1 cs=1]
+                LayoutBlockFlow {IMG} at (1,1) size 161x19
+                  LayoutInline {SPAN} at (0,0) size 145x18
                     LayoutImage (floating) {IMG} at (0,0) size 16x16
-                    LayoutInline {SPAN} at (0,0) size 146x18
-                      LayoutText {#text} at (16,0) size 146x18
-                        text run at (16,0) width 146: "TUR - Tour Package"
+                    LayoutInline {SPAN} at (0,0) size 145x18
+                      LayoutText {#text} at (16,0) size 145x18
+                        text run at (16,0) width 145: "TUR - Tour Package"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (176,2) size 418x59 [r=0 c=3 rs=1 cs=1]
-                LayoutText {#text} at (1,1) size 146x18
-                  text run at (1,1) width 146: "TUR - Tour Package"
-                LayoutBR {BR} at (146,16) size 1x0
-                LayoutText {#text} at (1,20) size 227x18
-                  text run at (1,20) width 227: "Date: Sunday, January 12, 2003"
-                LayoutBR {BR} at (227,35) size 1x0
+              LayoutTableCell {TD} at (175,2) size 418x59 [r=0 c=3 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 145x18
+                  text run at (1,1) width 145: "TUR - Tour Package"
+                LayoutBR {BR} at (146,16) size 0x0
+                LayoutText {#text} at (1,20) size 226x18
+                  text run at (1,20) width 226: "Date: Sunday, January 12, 2003"
+                LayoutBR {BR} at (227,35) size 0x0
                 LayoutText {#text} at (1,39) size 416x18
                   text run at (1,39) width 416: "Comments: -** TICKETLESS CONF CODE IS WHGNSO**"
       LayoutBlockFlow (anonymous) at (0,364.25) size 784x0
@@ -163,19 +163,19 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 24x18
                     text run at (0,0) width 24: "Air "
                   LayoutBR {BR} at (0,0) size 0x0
-                  LayoutText {#text} at (0,19) size 484x18
+                  LayoutText {#text} at (0,19) size 482x18
                     text run at (0,19) width 51: "United "
-                    text run at (51,19) width 83: "Flight 1187 "
-                    text run at (133,19) width 124: "Booking Code:M "
-                    text run at (256,19) width 228: "Date: Sunday, January 12, 2003"
-                  LayoutBR {BR} at (483,34) size 1x0
+                    text run at (51,19) width 82: "Flight 1187 "
+                    text run at (133,19) width 123: "Booking Code:M "
+                    text run at (256,19) width 226: "Date: Sunday, January 12, 2003"
+                  LayoutBR {BR} at (482,34) size 0x0
                   LayoutText {#text} at (0,38) size 388x18
                     text run at (0,38) width 388: "From: San Francisco Intl Arpt, San Francisco CA - U.S."
                   LayoutBR {BR} at (388,53) size 0x0
-                  LayoutText {#text} at (0,57) size 404x18
-                    text run at (0,57) width 26: "To: "
-                    text run at (25,57) width 379: "Burbank Glendale Pasadena Arpt, Burbank CA - U.S."
-                  LayoutBR {BR} at (403,72) size 1x0
+                  LayoutText {#text} at (0,57) size 403x18
+                    text run at (0,57) width 25: "To: "
+                    text run at (25,57) width 378: "Burbank Glendale Pasadena Arpt, Burbank CA - U.S."
+                  LayoutBR {BR} at (403,72) size 0x0
                   LayoutText {#text} at (0,76) size 244x18
                     text run at (0,76) width 127: "Departs: 6:05 PM "
                     text run at (127,76) width 117: "Arrives: 7:10 PM"
@@ -263,19 +263,19 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 24x18
                     text run at (0,0) width 24: "Air "
                   LayoutBR {BR} at (0,0) size 0x0
-                  LayoutText {#text} at (0,19) size 465x18
+                  LayoutText {#text} at (0,19) size 464x18
                     text run at (0,19) width 51: "United "
                     text run at (51,19) width 75: "Flight 480 "
                     text run at (126,19) width 122: "Booking Code:Q "
-                    text run at (248,19) width 217: "Date: Friday, January 24, 2003"
-                  LayoutBR {BR} at (464,34) size 1x0
+                    text run at (248,19) width 216: "Date: Friday, January 24, 2003"
+                  LayoutBR {BR} at (464,34) size 0x0
                   LayoutText {#text} at (0,38) size 423x18
                     text run at (0,38) width 423: "From: Burbank Glendale Pasadena Arpt, Burbank CA - U.S."
                   LayoutBR {BR} at (423,53) size 0x0
-                  LayoutText {#text} at (0,57) size 369x18
-                    text run at (0,57) width 26: "To: "
-                    text run at (25,57) width 344: "San Francisco Intl Arpt, San Francisco CA - U.S."
-                  LayoutBR {BR} at (368,72) size 1x0
+                  LayoutText {#text} at (0,57) size 368x18
+                    text run at (0,57) width 25: "To: "
+                    text run at (25,57) width 343: "San Francisco Intl Arpt, San Francisco CA - U.S."
+                  LayoutBR {BR} at (368,72) size 0x0
                   LayoutText {#text} at (0,76) size 244x18
                     text run at (0,76) width 127: "Departs: 1:40 PM "
                     text run at (127,76) width 117: "Arrives: 2:50 PM"
@@ -345,9 +345,9 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,822.19) size 784x120
-        LayoutTable {TABLE} at (0,0) size 629x120
-          LayoutTableSection {TBODY} at (0,0) size 629x120
-            LayoutTableRow {TR} at (0,2) size 629x116
+        LayoutTable {TABLE} at (0,0) size 628x120
+          LayoutTableSection {TBODY} at (0,0) size 628x120
+            LayoutTableRow {TR} at (0,2) size 628x116
               LayoutTableCell {TD} at (2,59) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
               LayoutTableCell {TD} at (10,49) size 106x21 [r=0 c=2 rs=1 cs=1]
@@ -358,23 +358,23 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                       LayoutText {#text} at (16,0) size 88x18
                         text run at (16,0) width 88: "Air Segment"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (118,2) size 509x116 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (118,2) size 508x116 [r=0 c=3 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 24x18
                   text run at (1,1) width 24: "Air "
                 LayoutBR {BR} at (0,0) size 0x0
-                LayoutText {#text} at (1,20) size 507x18
+                LayoutText {#text} at (1,20) size 506x18
                   text run at (1,20) width 90: "UNKNOWN "
                   text run at (91,20) width 75: "Flight 123 "
                   text run at (166,20) width 121: "Booking Code:Y "
-                  text run at (287,20) width 221: "Date: Tuesday, March 25, 2003"
-                LayoutBR {BR} at (507,35) size 1x0
+                  text run at (287,20) width 220: "Date: Tuesday, March 25, 2003"
+                LayoutBR {BR} at (507,35) size 0x0
                 LayoutText {#text} at (1,39) size 388x18
                   text run at (1,39) width 388: "From: San Francisco Intl Arpt, San Francisco CA - U.S."
                 LayoutBR {BR} at (389,54) size 0x0
-                LayoutText {#text} at (1,58) size 369x18
-                  text run at (1,58) width 26: "To: "
-                  text run at (26,58) width 344: "San Francisco Intl Arpt, San Francisco CA - U.S."
-                LayoutBR {BR} at (369,73) size 1x0
+                LayoutText {#text} at (1,58) size 368x18
+                  text run at (1,58) width 25: "To: "
+                  text run at (26,58) width 343: "San Francisco Intl Arpt, San Francisco CA - U.S."
+                LayoutBR {BR} at (369,73) size 0x0
                 LayoutText {#text} at (1,77) size 170x18
                   text run at (1,77) width 90: "Departs: n/a "
                   text run at (91,77) width 80: "Arrives: n/a"
@@ -416,8 +416,8 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutInline {SPAN} at (0,0) size 196x16
             LayoutText {#text} at (0,36) size 196x16
               text run at (0,36) width 126: "SERVICE FEE MCO "
-              text run at (125,36) width 71: "8103220490"
-            LayoutBR {BR} at (195,49) size 1x0
+              text run at (126,36) width 70: "8103220490"
+            LayoutBR {BR} at (196,49) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,1016.16) size 784x2
       LayoutBlockFlow (anonymous) at (0,1024.81) size 784x21
@@ -435,10 +435,10 @@ layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutInline {B} at (0,0) size 112x19
               LayoutText {#text} at (82,0) size 112x19
                 text run at (82,0) width 112: "Web Bookings"
-            LayoutText {#text} at (193,0) size 5x19
-              text run at (193,0) width 5: " "
-            LayoutInline {SPAN} at (0,0) size 1x19
-              LayoutBR {BR} at (197,15) size 1x0
+            LayoutText {#text} at (194,0) size 4x19
+              text run at (194,0) width 4: " "
+            LayoutInline {SPAN} at (0,0) size 0x19
+              LayoutBR {BR} at (198,15) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
@@ -514,28 +514,28 @@ layer at (23,45) size 100x16
 layer at (48,45) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
-layer at (23,101) size 587x35
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 587x35
+layer at (23,101) size 586x35
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 586x35
     LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {IMG} at (0,20) size 16x16
       LayoutInline {SPAN} at (0,0) size 0x0
         LayoutImage (floating) {IMG} at (0,0) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (16,23) size 571x16
+    LayoutText {#text} at (16,23) size 570x16
       text run at (16,23) width 4: " "
       text run at (20,23) width 56: "Address: "
-      text run at (76,23) width 511: "ST. JUDE MEDICAL, 21700 OXNARD ST SUITE 800, WOODLAND HILLS CA Z/91367 "
-    LayoutBR {BR} at (586,36) size 1x0
+      text run at (76,23) width 510: "ST. JUDE MEDICAL, 21700 OXNARD ST SUITE 800, WOODLAND HILLS CA Z/91367 "
+    LayoutBR {BR} at (586,36) size 0x0
     LayoutBlockFlow {IMG} at (0,39) size 16x16
       LayoutInline {SPAN} at (0,0) size 0x0
         LayoutImage (floating) {IMG} at (0,0) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (16,42) size 406x16
+    LayoutText {#text} at (16,42) size 407x16
       text run at (16,42) width 4: " "
       text run at (20,42) width 48: "Deliver: "
-      text run at (68,42) width 103: "DEBI STANGEL, "
-      text run at (171,42) width 115: "119 GLEN COURT, "
-      text run at (285,42) width 137: "DANVILLE CA Z/94526"
+      text run at (68,42) width 104: "DEBI STANGEL, "
+      text run at (172,42) width 115: "119 GLEN COURT, "
+      text run at (287,42) width 136: "DANVILLE CA Z/94526"
 layer at (23,174) size 16x16
   LayoutInline (relative positioned) {SPAN} at (0,0) size 16x16
     LayoutText {#text} at (0,0) size 0x0
@@ -546,33 +546,33 @@ layer at (23,174) size 16x16
     LayoutText {#text} at (0,0) size 0x0
 layer at (23,211) size 784x62 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (anonymous) (relative positioned) at (0,202.94) size 784x62
-layer at (43,196) size 528x62
-  LayoutTable (relative positioned) {TABLE} at (0,0) size 528x62 [border: (1px outset #808080)]
-    LayoutTableSection {TBODY} at (1,1) size 526x60
-      LayoutTableRow {TR} at (0,2) size 526x23 [bgcolor=#E0E0E0]
+layer at (43,196) size 527x62
+  LayoutTable (relative positioned) {TABLE} at (0,0) size 527x62 [border: (1px outset #808080)]
+    LayoutTableSection {TBODY} at (1,1) size 525x60
+      LayoutTableRow {TR} at (0,2) size 525x23 [bgcolor=#E0E0E0]
         LayoutTableCell {TD} at (2,2) size 95x23 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
           LayoutText {#text} at (2,2) size 36x18
             text run at (2,2) width 36: "Type"
         LayoutTableCell {TD} at (99,2) size 45x23 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
           LayoutText {#text} at (2,2) size 28x18
             text run at (2,2) width 28: "City"
-        LayoutTableCell {TD} at (146,2) size 378x23 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+        LayoutTableCell {TD} at (146,2) size 377x23 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
           LayoutText {#text} at (2,2) size 47x18
             text run at (2,2) width 47: "Phone"
-      LayoutTableRow {TR} at (0,27) size 526x0
-      LayoutTableRow {TR} at (0,29) size 526x23
+      LayoutTableRow {TR} at (0,27) size 525x0
+      LayoutTableRow {TR} at (0,29) size 525x23
         LayoutTableCell {TD} at (2,29) size 95x23 [border: (1px inset #808080)] [r=2 c=0 rs=1 cs=1]
           LayoutText {#text} at (2,2) size 91x18
             text run at (2,2) width 91: "Travel Agent"
         LayoutTableCell {TD} at (99,29) size 45x23 [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
           LayoutText {#text} at (2,2) size 41x18
             text run at (2,2) width 41: "(LAX)"
-        LayoutTableCell {TD} at (146,29) size 378x23 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
-          LayoutText {#text} at (2,2) size 374x18
-            text run at (2,2) width 374: "RQ0/818 990-4053-PLAZA TRAVEL - 05838276-RC"
-      LayoutTableRow {TR} at (0,54) size 526x0
-      LayoutTableRow {TR} at (0,56) size 526x0
-      LayoutTableRow {TR} at (0,58) size 526x0
+        LayoutTableCell {TD} at (146,29) size 377x23 [border: (1px inset #808080)] [r=2 c=2 rs=1 cs=1]
+          LayoutText {#text} at (2,2) size 373x18
+            text run at (2,2) width 373: "RQ0/818 990-4053-PLAZA TRAVEL - 05838276-RC"
+      LayoutTableRow {TR} at (0,54) size 525x0
+      LayoutTableRow {TR} at (0,56) size 525x0
+      LayoutTableRow {TR} at (0,58) size 525x0
 layer at (23,273) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
 layer at (33,1069) size 0x0

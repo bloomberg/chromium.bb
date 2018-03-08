@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'PASS'",
-          "rect": [10, 11, 35, 16],
+          "rect": [10, 11, 36, 16],
           "reason": "appeared"
         },
         {

@@ -23,14 +23,14 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (221,25) size 162x19
           text run at (221,25) width 8: ". "
           text run at (229,25) width 154: "However, it contains an "
-        LayoutInline {SPAN} at (0,0) size 170x21 [border: (1px solid #000000)]
-          LayoutText {#text} at (383,25) size 144x19
-            text run at (383,25) width 144: "inline element of class "
-          LayoutInline {TT} at (0,0) size 25x16
-            LayoutText {#text} at (526,28) size 25x16
-              text run at (526,28) width 25: "two"
-        LayoutText {#text} at (551,25) size 713x39
-          text run at (551,25) width 187: ", which should result in a thin"
+        LayoutInline {SPAN} at (0,0) size 169x21 [border: (1px solid #000000)]
+          LayoutText {#text} at (384,25) size 143x19
+            text run at (384,25) width 143: "inline element of class "
+          LayoutInline {TT} at (0,0) size 24x16
+            LayoutText {#text} at (527,28) size 24x16
+              text run at (527,28) width 24: "two"
+        LayoutText {#text} at (552,25) size 713x39
+          text run at (552,25) width 186: ", which should result in a thin"
           text run at (25,45) width 374: "solid border on each side of each box in the inline element. "
           text run at (399,45) width 103: "There is also an "
         LayoutInline {SPAN} at (0,0) size 183x19
@@ -46,9 +46,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 782x146
           LayoutTableRow {TR} at (0,0) size 782x28
             LayoutTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 161x19
-                LayoutText {#text} at (4,4) size 161x19
-                  text run at (4,4) width 161: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 159x19
+                LayoutText {#text} at (4,4) size 159x19
+                  text run at (4,4) width 159: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 782x118
             LayoutTableCell {TD} at (0,73) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x19
@@ -63,14 +63,14 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (221,25) size 162x19
                   text run at (221,25) width 8: ". "
                   text run at (229,25) width 154: "However, it contains an "
-                LayoutInline {SPAN} at (0,0) size 170x21 [border: (1px solid #000000)]
-                  LayoutText {#text} at (383,25) size 144x19
-                    text run at (383,25) width 144: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 25x16
-                    LayoutText {#text} at (526,28) size 25x16
-                      text run at (526,28) width 25: "two"
-                LayoutText {#text} at (551,25) size 685x39
-                  text run at (551,25) width 159: ", which should result in a"
+                LayoutInline {SPAN} at (0,0) size 169x21 [border: (1px solid #000000)]
+                  LayoutText {#text} at (384,25) size 143x19
+                    text run at (384,25) width 143: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 24x16
+                    LayoutText {#text} at (527,28) size 24x16
+                      text run at (527,28) width 24: "two"
+                LayoutText {#text} at (552,25) size 685x39
+                  text run at (552,25) width 158: ", which should result in a"
                   text run at (25,45) width 402: "thin solid border on each side of each box in the inline element. "
                   text run at (427,45) width 103: "There is also an "
                 LayoutInline {SPAN} at (0,0) size 183x19

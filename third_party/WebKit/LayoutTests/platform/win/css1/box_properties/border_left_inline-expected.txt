@@ -19,16 +19,16 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 723x19
           text run at (0,0) width 723: "This paragraph has a background color of silver and a 20-pixel left margin, and it contains inline elements with classes of "
         LayoutInline {SPAN} at (0,0) size 762x39 [border: none (10px double #800080)]
-          LayoutText {#text} at (732,0) size 762x39
-            text run at (732,0) width 30: "class"
+          LayoutText {#text} at (733,0) size 762x39
+            text run at (733,0) width 29: "class"
             text run at (0,20) width 22: "one"
         LayoutText {#text} at (22,20) size 371x19
           text run at (22,20) width 371: ", which should have a 10-pixel purple double left border; and "
         LayoutInline {SPAN} at (0,0) size 57x19 [border: none (1px solid #800080)]
           LayoutText {#text} at (394,20) size 56x19
             text run at (394,20) width 56: "class two"
-        LayoutText {#text} at (450,20) size 749x39
-          text run at (450,20) width 299: ", which should have a thin solid purple left border."
+        LayoutText {#text} at (450,20) size 748x39
+          text run at (450,20) width 298: ", which should have a thin solid purple left border."
           text run at (0,40) width 402: "The line-height of the parent element should not change on any line."
       LayoutTable {TABLE} at (0,207) size 784x98 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x96
@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
                     text run at (437,20) width 56: "class two"
                 LayoutText {#text} at (493,20) size 721x39
                   text run at (493,20) width 228: ", which should have a thin solid purple"
-                  text run at (0,40) width 71: "left border. "
-                  text run at (70,40) width 403: "The line-height of the parent element should not change on any line."
+                  text run at (0,40) width 70: "left border. "
+                  text run at (70,40) width 402: "The line-height of the parent element should not change on any line."
 layer at (8,121) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,113) size 784x2 [border: (1px inset #EEEEEE)]

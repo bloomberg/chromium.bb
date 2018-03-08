@@ -7,5 +7,5 @@ layer at (0,0) size 800x36
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,-6) size 100x37 backgroundClip at (8,12) size 100x2 clip at (8,12) size 100x2
   LayoutBlockFlow {DIV} at (0,-17.50) size 100x37
-    LayoutText {#text} at (0,0) size 67x36
-      text run at (0,0) width 67: "FAIL"
+    LayoutText {#text} at (0,0) size 66x36
+      text run at (0,0) width 66: "FAIL"

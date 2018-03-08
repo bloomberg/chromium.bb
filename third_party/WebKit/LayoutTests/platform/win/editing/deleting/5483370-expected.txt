@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 784x39
           text run at (0,0) width 675: "This tests for a problem where empty table rows after the selection being deleted would be removed incorrectly. "
-          text run at (674,0) width 110: "Only the last letter"
+          text run at (675,0) width 109: "Only the last letter"
           text run at (0,20) width 268: "in 'foo' should be removed during this delete."
       LayoutBlockFlow {DIV} at (0,56) size 784x56
         LayoutTable {TABLE} at (0,0) size 28x56 [border: (1px outset #808080)]

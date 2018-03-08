@@ -6,8 +6,8 @@ layer at (50,50) size 700x156
       LayoutBlockFlow {P} at (1,17) size 596x20
         LayoutText {#text} at (0,0) size 345x19
           text run at (0,0) width 345: "There should be a yellow square in the top-left corner, "
-        LayoutInline {EM} at (0,0) size 38x19
-          LayoutText {#text} at (344,0) size 38x19
-            text run at (344,0) width 38: "inside"
-        LayoutText {#text} at (381,0) size 108x19
-          text run at (381,0) width 108: " the inner border."
+        LayoutInline {EM} at (0,0) size 37x19
+          LayoutText {#text} at (345,0) size 37x19
+            text run at (345,0) width 37: "inside"
+        LayoutText {#text} at (382,0) size 108x19
+          text run at (382,0) width 108: " the inner border."

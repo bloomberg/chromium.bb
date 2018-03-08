@@ -26,8 +26,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,128) width 0: " "
       LayoutBlockFlow (floating) {DIV} at (0,200) size 192x125.38 [color=#FFFFFF] [bgcolor=#008000]
         LayoutBlockFlow {H1} at (8,8) size 176x23
-          LayoutText {#text} at (0,0) size 81x22
-            text run at (0,0) width 81: "Top menu"
+          LayoutText {#text} at (0,0) size 80x22
+            text run at (0,0) width 80: "Top menu"
         LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutListItem {LI} at (0,0) size 155.20x20
             LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
@@ -68,8 +68,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               text run at (0,0) width 82: "0.5em margin"
       LayoutBlockFlow {DIV} at (224,200) size 528x235.88 [bgcolor=#FFFF00]
         LayoutBlockFlow {H1} at (8,29.44) size 512x37
-          LayoutText {#text} at (0,0) size 274x36
-            text run at (0,0) width 274: "The 'clear' property"
+          LayoutText {#text} at (0,0) size 273x36
+            text run at (0,0) width 273: "The 'clear' property"
         LayoutBlockFlow {P} at (8,87.88) size 512x100
           LayoutText {#text} at (0,0) size 512x99
             text run at (0,0) width 512: "This page has two floating \"menus\" on the side; one has a green background, and the"
@@ -96,8 +96,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell {TD} at (12,28) size 578x323.88 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (floating) {DIV} at (4,4) size 192x125.38 [color=#FFFFFF] [bgcolor=#008000]
                 LayoutBlockFlow {H1} at (8,8) size 176x23
-                  LayoutText {#text} at (0,0) size 81x22
-                    text run at (0,0) width 81: "Top menu"
+                  LayoutText {#text} at (0,0) size 80x22
+                    text run at (0,0) width 80: "Top menu"
                 LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutListItem {LI} at (0,0) size 155.20x20
                     LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
@@ -138,8 +138,8 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                       text run at (0,0) width 82: "0.5em margin"
               LayoutBlockFlow {DIV} at (228,4) size 314x315.88 [bgcolor=#FFFF00]
                 LayoutBlockFlow {H1} at (8,29.44) size 298x37
-                  LayoutText {#text} at (0,0) size 274x36
-                    text run at (0,0) width 274: "The 'clear' property"
+                  LayoutText {#text} at (0,0) size 273x36
+                    text run at (0,0) width 273: "The 'clear' property"
                 LayoutBlockFlow {P} at (8,87.88) size 298x160
                   LayoutText {#text} at (0,0) size 298x159
                     text run at (0,0) width 298: "This page has two floating \"menus\" on the side;"

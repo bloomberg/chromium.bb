@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 3, 46, 22],
+          "rect": [10, 3, 45, 22],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 3, 46, 22],
+          "rect": [10, 3, 45, 22],
           "reason": "appeared"
         },
         {

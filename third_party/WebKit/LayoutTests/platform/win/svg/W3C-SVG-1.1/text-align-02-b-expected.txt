@@ -2,10 +2,10 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (5,8.80) size 472.03x275.28
-      LayoutSVGText {text} at (5,8.80) size 472.03x39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (5,8.80) size 472.03x39
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 34 width 472.03: "Test 'baseline-shift' (horizontal)"
+    LayoutSVGContainer {g} at (5,8.80) size 472.19x275.28
+      LayoutSVGText {text} at (5,8.80) size 472.19x39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (5,8.80) size 472.19x39
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 34 width 472.20: "Test 'baseline-shift' (horizontal)"
       LayoutSVGContainer {g} at (0,-34.59) size 402.59x198.67 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,120.00)}]
         LayoutSVGText {text} at (0,-34.59) size 349.19x41.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,-27.59) size 96.59x34.19

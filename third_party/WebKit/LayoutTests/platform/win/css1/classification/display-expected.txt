@@ -25,11 +25,11 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {P} at (0,0) size 426x19
           LayoutText {#text} at (0,0) size 426x19
             text run at (0,0) width 426: "This sentence should be part of an inline element, as are the next three. "
-        LayoutInline {P} at (0,0) size 742x59
-          LayoutText {#text} at (426,0) size 742x59
+        LayoutInline {P} at (0,0) size 741x59
+          LayoutText {#text} at (426,0) size 741x59
             text run at (426,0) width 310: "This sentence and the next two are part of a second"
             text run at (0,20) width 88: "inline element. "
-            text run at (88,20) width 654: "They should therefore appear, along with the sentence above, to be all one paragraph which is four sentences"
+            text run at (88,20) width 653: "They should therefore appear, along with the sentence above, to be all one paragraph which is four sentences"
             text run at (0,40) width 33: "long. "
             text run at (33,40) width 239: "If this is not the case, then the keyword "
           LayoutInline {CODE} at (0,0) size 48x16
@@ -48,7 +48,7 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (120,20) size 692x39
           text run at (120,20) width 346: " is supported, there will be a square for the item marker). "
           text run at (466,20) width 226: "A 3em left margin has been applied in"
-          text run at (0,40) width 349: "order to ensure that there is space for the list-item marker."
+          text run at (0,40) width 348: "order to ensure that there is space for the list-item marker."
       LayoutBlockFlow {P} at (0,335) size 769x20
         LayoutText {#text} at (0,0) size 429x19
           text run at (0,0) width 429: "The next paragraph should be invisible (if it's visible, you'll see red text)."
@@ -84,11 +84,11 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {P} at (0,0) size 426x19
                   LayoutText {#text} at (0,0) size 426x19
                     text run at (0,0) width 426: "This sentence should be part of an inline element, as are the next three. "
-                LayoutInline {P} at (0,0) size 742x59
-                  LayoutText {#text} at (426,0) size 742x59
+                LayoutInline {P} at (0,0) size 741x59
+                  LayoutText {#text} at (426,0) size 741x59
                     text run at (426,0) width 310: "This sentence and the next two are part of a second"
                     text run at (0,20) width 88: "inline element. "
-                    text run at (88,20) width 654: "They should therefore appear, along with the sentence above, to be all one paragraph which is four sentences"
+                    text run at (88,20) width 653: "They should therefore appear, along with the sentence above, to be all one paragraph which is four sentences"
                     text run at (0,40) width 33: "long. "
                     text run at (33,40) width 239: "If this is not the case, then the keyword "
                   LayoutInline {CODE} at (0,0) size 48x16
@@ -108,7 +108,7 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (136,20) size 694x39
                   text run at (136,20) width 346: " is supported, there will be a square for the item marker). "
                   text run at (482,20) width 212: "A 3em left margin has been applied"
-                  text run at (0,40) width 363: "in order to ensure that there is space for the list-item marker."
+                  text run at (0,40) width 362: "in order to ensure that there is space for the list-item marker."
               LayoutBlockFlow {P} at (4,192) size 747x20
                 LayoutText {#text} at (0,0) size 429x19
                   text run at (0,0) width 429: "The next paragraph should be invisible (if it's visible, you'll see red text)."

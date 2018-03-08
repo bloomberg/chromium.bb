@@ -29,12 +29,12 @@
         },
         {
           "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
-          "rect": [8, 16, 341, 19],
+          "rect": [8, 16, 340, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'You should see both vertical and horizontal scrollbars.'",
-          "rect": [8, 16, 341, 19],
+          "rect": [8, 16, 340, 19],
           "reason": "disappeared"
         },
         {

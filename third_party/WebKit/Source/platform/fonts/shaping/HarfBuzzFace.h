@@ -68,6 +68,8 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   bool HasSpaceInLigaturesOrKerning(TypesettingFeatures);
   unsigned UnitsPerEmFromHeadTable();
 
+  bool ShouldSubpixelPosition();
+
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);
 

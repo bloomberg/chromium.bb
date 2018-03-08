@@ -44,9 +44,9 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (-71.39,45.59) size 142.80x18.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-71.39,45.59) size 142.80x18.59
             chunk 1 (middle anchor) text run 1 at (-71.40,60.00) startOffset 0 endOffset 21 width 142.80: "#4: from-to animation"
-        LayoutSVGText {text} at (-68.17,60.59) size 136.36x18.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-68.17,60.59) size 136.36x18.59
-            chunk 1 (middle anchor) text run 1 at (-68.18,75.00) startOffset 0 endOffset 20 width 136.36: "compatible H/h, V/v,"
+        LayoutSVGText {text} at (-68.09,60.59) size 136.19x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-68.09,60.59) size 136.19x18.59
+            chunk 1 (middle anchor) text run 1 at (-68.10,75.00) startOffset 0 endOffset 20 width 136.20: "compatible H/h, V/v,"
         LayoutSVGText {text} at (-41.09,75.59) size 82.19x18.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-41.09,75.59) size 82.19x18.59
             chunk 1 (middle anchor) text run 1 at (-41.10,90.00) startOffset 0 endOffset 12 width 82.20: "L/l segments"

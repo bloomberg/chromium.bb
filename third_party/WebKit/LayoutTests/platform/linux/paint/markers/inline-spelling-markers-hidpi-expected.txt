@@ -7,14 +7,14 @@ layer at (0,0) size 1600x356
         LayoutText {#text} at (0,0) size 59x36
           text run at (0,0) width 59: "LTR"
       LayoutBlockFlow (anonymous) at (0,81) size 1568x37
-        LayoutText {#text} at (0,0) size 60x36
-          text run at (0,0) width 60: "RTL"
+        LayoutText {#text} at (0,0) size 59x36
+          text run at (0,0) width 59: "RTL"
       LayoutBlockFlow (anonymous) at (0,162) size 1568x37
         LayoutText {#text} at (0,0) size 368x36
           text run at (0,0) width 368: "LTR (text-overflow:ellipses)"
       LayoutBlockFlow (anonymous) at (0,243) size 1568x37
-        LayoutText {#text} at (0,0) size 369x36
-          text run at (0,0) width 369: "RTL (text-overflow:ellipses)"
+        LayoutText {#text} at (0,0) size 368x36
+          text run at (0,0) width 368: "RTL (text-overflow:ellipses)"
 layer at (16,53) size 404x44 clip at (18,55) size 400x40 scrollWidth 452
   LayoutBlockFlow {DIV} at (0,37) size 404x44 [border: (2px solid #000000)]
     LayoutText {#text} at (2,2) size 451x36

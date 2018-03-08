@@ -191,6 +191,28 @@ static inline hb_script_t ICUScriptToHBScript(UScriptCode script) {
   return hb_script_from_string(uscript_getShortName(script), -1);
 }
 
+void RoundHarfBuzzPosition(hb_position_t* value) {
+  if ((*value) & 0xFFFF) {
+    // There is a non-zero fractional part in the 16.16 value.
+    *value = static_cast<hb_position_t>(
+                 round(static_cast<float>(*value) / (1 << 16)))
+             << 16;
+  }
+}
+
+void RoundHarfBuzzBufferPositions(hb_buffer_t* buffer) {
+  unsigned int len;
+  hb_glyph_position_t* glyph_positions =
+      hb_buffer_get_glyph_positions(buffer, &len);
+  for (unsigned int i = 0; i < len; i++) {
+    hb_glyph_position_t* pos = &glyph_positions[i];
+    RoundHarfBuzzPosition(&pos->x_offset);
+    RoundHarfBuzzPosition(&pos->y_offset);
+    RoundHarfBuzzPosition(&pos->x_advance);
+    RoundHarfBuzzPosition(&pos->y_advance);
+  }
+}
+
 inline bool ShapeRange(hb_buffer_t* buffer,
                        hb_feature_t* font_features,
                        unsigned font_features_size,
@@ -216,6 +238,16 @@ inline bool ShapeRange(hb_buffer_t* buffer,
                               ? HarfBuzzFace::PrepareForVerticalLayout
                               : HarfBuzzFace::NoVerticalLayout);
   hb_shape(hb_font, buffer, font_features, font_features_size);
+
+  // We cannot round all glyph positions during hb_shape because the
+  // hb_font_funcs_set_glyph_h_kerning_func only works for legacy kerning.
+  // OpenType uses gpos tables for kerning and harfbuzz does not call
+  // the callback to let us round as we go.
+  // Without this rounding, we get inconsistent spacing between kern points
+  // if subpixel positioning is disabled.
+  // See http://crbug.com/740385.
+  if (!face->ShouldSubpixelPosition())
+    RoundHarfBuzzBufferPositions(buffer);
 
   return true;
 }

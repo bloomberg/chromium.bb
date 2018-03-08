@@ -8,9 +8,9 @@ layer at (0,0) size 800x804 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,37) width 779: "This text should be 18px sans-serif, in small-caps and italicized. The lines should be one"
           text run at (0,133) width 99: "inch apart. "
         LayoutInline {SPAN} at (0,0) size 737x598 [color=#C0C0C0]
-          LayoutText {#text} at (98,133) size 737x598
-            text run at (98,133) width 594: "dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (691,133) width 39: "text"
+          LayoutText {#text} at (99,133) size 737x598
+            text run at (99,133) width 593: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (692,133) width 38: "text"
             text run at (0,229) width 593: "dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (593,229) width 144: "text dummy text"
             text run at (0,325) width 487: "dummy text dummy text dummy text dummy text dummy "

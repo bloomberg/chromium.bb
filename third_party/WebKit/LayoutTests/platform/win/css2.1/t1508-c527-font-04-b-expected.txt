@@ -8,8 +8,8 @@ layer at (0,0) size 800x306
           text run at (0,0) width 782: "This text should be 18px sans-serif, in small-caps, italicized, and very bold."
           text run at (0,27) width 472: "There should be a 9px gap between each line. "
         LayoutInline {SPAN} at (0,0) size 738x242 [color=#C0C0C0]
-          LayoutText {#text} at (471,27) size 738x242
-            text run at (471,27) width 243: "dummy text dummy text"
+          LayoutText {#text} at (472,27) size 738x242
+            text run at (472,27) width 242: "dummy text dummy text"
             text run at (0,54) width 445: "dummy text dummy text dummy text dummy "
             text run at (445,54) width 293: "text dummy text dummy text"
             text run at (0,81) width 445: "dummy text dummy text dummy text dummy "

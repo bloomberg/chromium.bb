@@ -17,9 +17,9 @@ layer at (0,0) size 800x192
       LayoutInline {h1} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-      LayoutInline {p} at (0,0) size 488x19
-        LayoutInline {font} at (0,0) size 488x19
-          LayoutText {#text} at (0,0) size 488x19
+      LayoutInline {p} at (0,0) size 487x19
+        LayoutInline {font} at (0,0) size 487x19
+          LayoutText {#text} at (0,0) size 487x19
             text run at (0,0) width 263: "This should be the only line on this page. "
-            text run at (263,0) width 225: "You should see a parse error above."
+            text run at (263,0) width 224: "You should see a parse error above."
       LayoutText {#text} at (0,0) size 0x0

@@ -8,13 +8,13 @@ layer at (0,0) size 800x80
           text run at (0,0) width 388: "This paragraph should have green background because CLASS "
           text run at (388,0) width 71: "contains \"b\""
       LayoutBlockFlow {address} at (0,36) size 784x20 [bgcolor=#00FF00]
-        LayoutInline {span} at (0,0) size 156x19
-          LayoutText {#text} at (0,0) size 156x19
-            text run at (0,0) width 156: "This address should also"
-        LayoutText {#text} at (155,0) size 5x19
-          text run at (155,0) width 5: " "
-        LayoutInline {span} at (0,0) size 607x19
-          LayoutText {#text} at (159,0) size 607x19
-            text run at (159,0) width 356: "have green background because the selector in the last "
-            text run at (514,0) width 252: "rule does not apply to the inner SPANs."
+        LayoutInline {span} at (0,0) size 155x19
+          LayoutText {#text} at (0,0) size 155x19
+            text run at (0,0) width 155: "This address should also"
+        LayoutText {#text} at (155,0) size 4x19
+          text run at (155,0) width 4: " "
+        LayoutInline {span} at (0,0) size 605x19
+          LayoutText {#text} at (159,0) size 605x19
+            text run at (159,0) width 354: "have green background because the selector in the last "
+            text run at (513,0) width 251: "rule does not apply to the inner SPANs."
         LayoutText {#text} at (0,0) size 0x0

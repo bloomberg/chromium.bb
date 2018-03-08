@@ -80,11 +80,11 @@ layer at (0,0) size 785x1745 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,747) size 769x20 [color=#008800]
         LayoutText {#text} at (0,0) size 376x19
           text run at (0,0) width 376: "This sentence should be a slightly different green, and used the "
-        LayoutInline {TT} at (0,0) size 41x16
-          LayoutText {#text} at (375,3) size 41x16
-            text run at (375,3) width 41: "style"
-        LayoutText {#text} at (415,0) size 58x19
-          text run at (415,0) width 58: " attribute."
+        LayoutInline {TT} at (0,0) size 40x16
+          LayoutText {#text} at (376,3) size 40x16
+            text run at (376,3) width 40: "style"
+        LayoutText {#text} at (416,0) size 57x19
+          text run at (416,0) width 57: " attribute."
       LayoutBlockFlow {P} at (0,783) size 769x20 [color=#008000]
         LayoutText {#text} at (0,0) size 268x19
           text run at (0,0) width 268: "This sentence should be green, and used the "
@@ -187,11 +187,11 @@ layer at (0,0) size 785x1745 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,532) size 747x20 [color=#008800]
                 LayoutText {#text} at (0,0) size 376x19
                   text run at (0,0) width 376: "This sentence should be a slightly different green, and used the "
-                LayoutInline {TT} at (0,0) size 41x16
-                  LayoutText {#text} at (375,3) size 41x16
-                    text run at (375,3) width 41: "style"
-                LayoutText {#text} at (415,0) size 58x19
-                  text run at (415,0) width 58: " attribute."
+                LayoutInline {TT} at (0,0) size 40x16
+                  LayoutText {#text} at (376,3) size 40x16
+                    text run at (376,3) width 40: "style"
+                LayoutText {#text} at (416,0) size 57x19
+                  text run at (416,0) width 57: " attribute."
               LayoutBlockFlow {P} at (4,568) size 747x20 [color=#008000]
                 LayoutText {#text} at (0,0) size 268x19
                   text run at (0,0) width 268: "This sentence should be green, and used the "

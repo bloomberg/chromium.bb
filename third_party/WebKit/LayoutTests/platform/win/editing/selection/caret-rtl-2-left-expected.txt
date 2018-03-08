@@ -13,5 +13,5 @@ layer at (0,0) size 800x145
       LayoutBlockFlow (anonymous) at (0,101) size 784x20
         LayoutText {#text} at (0,0) size 37x19
           text run at (0,0) width 37: "PASS"
-        LayoutBR {BR} at (36,0) size 1x19
+        LayoutBR {BR} at (37,0) size 0x19
 caret: position 0 of child 0 {#text} of child 3 {DIV} of body

@@ -10,9 +10,9 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (-22,-15) size 44x19
           chunk 1 (middle anchor) text run 1 at (-22.00,0.00) startOffset 0 endOffset 6 width 44.00: "sample"
     LayoutSVGContainer {g} at (15.50,36) size 414.50x433
-      LayoutSVGText {text} at (59.38,36) size 331.22x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (59.38,36) size 331.22x17
-          chunk 1 (middle anchor) text run 1 at (59.39,50.00) startOffset 0 endOffset 47 width 331.22: "Text Alignment, Geometry, References, and Spans"
+      LayoutSVGText {text} at (60,36) size 330x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (60,36) size 330x17
+          chunk 1 (middle anchor) text run 1 at (60.00,50.00) startOffset 0 endOffset 47 width 330.00: "Text Alignment, Geometry, References, and Spans"
       LayoutSVGContainer {g} at (111,70) size 231x70
         LayoutSVGPath {line} at (225,70) size 0x70 [stroke={[type=SOLID] [color=#808080]}] [fill={[type=SOLID] [color=#000000]}] [x1=225.00] [y1=70.00] [x2=225.00] [y2=140.00]
         LayoutSVGText {text} at (225,77) size 117x17 contains 1 chunk(s)
@@ -71,9 +71,9 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-81,0) size 161x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-81,0) size 161x19
             chunk 1 (middle anchor) text run 1 at (-80.00,15.00) startOffset 0 endOffset 25 width 160.00: "predefined text via <use>"
-      LayoutSVGText {text} at (144.02,267) size 161.94x17 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (144.02,267) size 161.94x17
-          chunk 1 (middle anchor) text run 1 at (144.02,280.00) startOffset 0 endOffset 25 width 161.95: "Text Rendering Properties"
+      LayoutSVGText {text} at (144.50,267) size 161x17 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (144.50,267) size 161x17
+          chunk 1 (middle anchor) text run 1 at (144.50,280.00) startOffset 0 endOffset 25 width 161.00: "Text Rendering Properties"
       LayoutSVGContainer {g} at (-76,-7) size 152x41 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,305.00)}]
         LayoutSVGContainer {g} at (-42,-27) size 84x34 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(0.00,0.00)}]
           LayoutSVGContainer {use} at (-42,-27) size 84x34

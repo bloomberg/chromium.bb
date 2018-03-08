@@ -9,7 +9,7 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (690,0) width 79: "Right To Left"
         LayoutBlockFlow {P} at (0,36) size 769x20
           LayoutText {#text} at (457,0) size 312x19
-            text run at (457,0) width 5 RTL: "."
+            text run at (457,0) width 4 RTL: "."
             text run at (461,0) width 308: "Well-formed pair of unicode bidi control characters"
         LayoutBlockFlow {DIV} at (0,72) size 769x20
           LayoutText {#text} at (756,0) size 13x19
@@ -104,7 +104,7 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (769,0) width 0 RTL: "\x{202C}"
         LayoutBlockFlow {P} at (0,688) size 769x20
           LayoutText {#text} at (508,0) size 261x19
-            text run at (508,0) width 5 RTL: "."
+            text run at (508,0) width 4 RTL: "."
             text run at (512,0) width 257: "Start with different directionality characters"
         LayoutBlockFlow {DIV} at (0,724) size 769x20
           LayoutText {#text} at (745,0) size 24x19
@@ -266,7 +266,7 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {UL} at (0,1760) size 769x20
         LayoutListItem {LI} at (40,0) size 729x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 677x19
-            text run at (0,0) width 677: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
+          LayoutText {#text} at (0,0) size 676x19
+            text run at (0,0) width 676: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
 selection start: position 3 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body
 selection end:   position 4 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body

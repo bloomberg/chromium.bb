@@ -13,14 +13,14 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 27x19
             text run at (0,0) width 27: "One"
         LayoutBlockFlow {DIV} at (0,20) size 784x20
-          LayoutInline {SPAN} at (0,0) size 29x19
-            LayoutText {#text} at (0,0) size 29x19
-              text run at (0,0) width 29: "Two"
-          LayoutText {#text} at (28,0) size 5x19
-            text run at (28,0) width 5: " "
-          LayoutInline {SPAN} at (0,0) size 38x19
-            LayoutText {#text} at (32,0) size 38x19
-              text run at (32,0) width 38: "Three"
+          LayoutInline {SPAN} at (0,0) size 28x19
+            LayoutText {#text} at (0,0) size 28x19
+              text run at (0,0) width 28: "Two"
+          LayoutText {#text} at (28,0) size 4x19
+            text run at (28,0) width 4: " "
+          LayoutInline {SPAN} at (0,0) size 37x19
+            LayoutText {#text} at (32,0) size 37x19
+              text run at (32,0) width 37: "Three"
         LayoutBlockFlow {DIV} at (0,40) size 784x20
           LayoutText {#text} at (0,0) size 30x19
             text run at (0,0) width 30: "Four"

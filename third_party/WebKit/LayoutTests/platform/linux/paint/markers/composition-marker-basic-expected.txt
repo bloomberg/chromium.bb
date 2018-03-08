@@ -34,8 +34,8 @@ layer at (0,0) size 800x260
               text run at (29,0) width 49: "mnopqr"
       LayoutBlockFlow (floating) {DIV} at (0,0) size 78x252
         LayoutBlockFlow {P} at (0,16) size 78x20
-          LayoutText {#text} at (0,0) size 30x19
-            text run at (0,0) width 30: "LTR"
+          LayoutText {#text} at (0,0) size 29x19
+            text run at (0,0) width 29: "LTR"
         LayoutBlockFlow {DIV} at (0,52) size 78x20
           LayoutText {#text} at (0,0) size 42x19
             text run at (0,0) width 42: "abcdef"

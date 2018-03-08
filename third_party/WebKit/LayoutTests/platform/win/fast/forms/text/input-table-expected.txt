@@ -4,8 +4,8 @@ layer at (0,0) size 785x720 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x720
     LayoutBlockFlow {BODY} at (8,8) size 769x704
       LayoutBlockFlow (anonymous) at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 232x19
-          text run at (0,0) width 232: "This tests minMaxWidth for text fields."
+        LayoutText {#text} at (0,0) size 231x19
+          text run at (0,0) width 231: "This tests minMaxWidth for text fields."
       LayoutBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 68x19
           text run at (0,0) width 68: "Test case 1"

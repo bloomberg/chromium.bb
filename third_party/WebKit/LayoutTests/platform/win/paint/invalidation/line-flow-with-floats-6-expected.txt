@@ -144,12 +144,12 @@
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
-          "rect": [134, 360, 131, 19],
+          "rect": [134, 360, 132, 19],
           "reason": "disappeared"
         },
         {

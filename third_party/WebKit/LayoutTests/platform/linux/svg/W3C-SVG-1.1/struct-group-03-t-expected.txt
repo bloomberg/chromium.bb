@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (55.61,35.70) size 374.39x219.30
+    LayoutSVGContainer {g} at (55.61,35.41) size 374.39x219.59
       LayoutSVGContainer {g} at (-105,-14) size 210x374 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(70.00,150.00)}]
         LayoutSVGHiddenContainer {defs} at (-5,-14) size 110x22
           LayoutSVGRect {rect} at (-5,-14) size 110x22 [stroke={[type=SOLID] [color=#000000]}] [x=-5.00] [y=-14.00] [width=110.00] [height=22.00]
@@ -111,7 +111,7 @@ layer at (0,0) size 800x600
             LayoutSVGRect {rect} at (-5,-14) size 50x22 [stroke={[type=SOLID] [color=#000000]}] [x=-5.00] [y=-14.00] [width=50.00] [height=22.00]
           LayoutSVGContainer {use} at (-5,-14) size 50x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,352.00)}]
             LayoutSVGRect {rect} at (-5,-14) size 50x22 [stroke={[type=SOLID] [color=#000000]}] [x=-5.00] [y=-14.00] [width=50.00] [height=22.00]
-      LayoutSVGContainer {g} at (0,-14.39) size 114.30x370.58 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(70.00,150.00)}]
+      LayoutSVGContainer {g} at (0,-14.39) size 114.59x370.58 [transform={m=((0.00,-1.00)(1.00,0.00)) t=(70.00,150.00)}]
         LayoutSVGText {text} at (0,-14.39) size 34.80x18.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,-14.39) size 34.80x18.59
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 5 width 34.20: "color"
@@ -130,9 +130,9 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (0,95.59) size 110.39x18.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,95.59) size 110.39x18.59
             chunk 1 text run 1 at (0.00,110.00) startOffset 0 endOffset 16 width 110.40: "stroke-dasharray"
-        LayoutSVGText {text} at (0,117.59) size 114.30x18.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,117.59) size 114.30x18.59
-            chunk 1 text run 1 at (0.00,132.00) startOffset 0 endOffset 17 width 114.31: "stroke-dashoffset"
+        LayoutSVGText {text} at (0,117.59) size 114.59x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,117.59) size 114.59x18.59
+            chunk 1 text run 1 at (0.00,132.00) startOffset 0 endOffset 17 width 114.60: "stroke-dashoffset"
         LayoutSVGText {text} at (0,139.59) size 94.19x18.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,139.59) size 94.19x18.59
             chunk 1 text run 1 at (0.00,154.00) startOffset 0 endOffset 14 width 94.20: "stroke-linecap"

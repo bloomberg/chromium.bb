@@ -10,7 +10,7 @@ layer at (0,0) size 785x1241 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,36) size 769x271
         LayoutText {#text} at (0,0) size 78x19
           text run at (0,0) width 78: "TEXTAREA"
-        LayoutBR {BR} at (77,0) size 1x19
+        LayoutBR {BR} at (78,0) size 0x19
         LayoutText {#text} at (406,211) size 4x19
           text run at (406,211) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
@@ -35,21 +35,21 @@ layer at (0,0) size 785x1241 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (0,20) size 0x19
         LayoutText {#text} at (0,40) size 118x19
           text run at (0,40) width 118: "Un-Styled Textarea"
-        LayoutBR {BR} at (117,40) size 1x19
+        LayoutBR {BR} at (118,40) size 0x19
         LayoutText {#text} at (181,83) size 4x19
           text run at (181,83) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,103) size 0x19
         LayoutText {#text} at (0,123) size 201x19
           text run at (0,123) width 201: "Totally Blank Un-Styled Textarea"
-        LayoutBR {BR} at (200,123) size 1x19
+        LayoutBR {BR} at (201,123) size 0x19
         LayoutText {#text} at (181,166) size 4x19
           text run at (181,166) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBR {BR} at (0,186) size 0x19
         LayoutText {#text} at (0,206) size 197x19
           text run at (0,206) width 197: "Totally Blank STYLED Textarea"
-        LayoutBR {BR} at (196,206) size 1x19
+        LayoutBR {BR} at (197,206) size 0x19
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1233.33) size 769x0
 layer at (8,64) size 406x206 clip at (9,65) size 404x204

@@ -6,14 +6,14 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "Test for "
-        LayoutInline {I} at (0,0) size 527x19
-          LayoutInline {A} at (0,0) size 498x19 [color=#0000EE]
-            LayoutText {#text} at (49,0) size 498x19
-              text run at (49,0) width 498: "REGRESSION(r27173): Web Inspector freezes beneath Image::drawPattern()"
-          LayoutText {#text} at (546,0) size 30x19
-            text run at (546,0) width 30: " Bug"
-        LayoutText {#text} at (575,0) size 5x19
-          text run at (575,0) width 5: "."
+        LayoutInline {I} at (0,0) size 526x19
+          LayoutInline {A} at (0,0) size 497x19 [color=#0000EE]
+            LayoutText {#text} at (50,0) size 497x19
+              text run at (50,0) width 497: "REGRESSION(r27173): Web Inspector freezes beneath Image::drawPattern()"
+          LayoutText {#text} at (547,0) size 29x19
+            text run at (547,0) width 29: " Bug"
+        LayoutText {#text} at (576,0) size 4x19
+          text run at (576,0) width 4: "."
       LayoutBlockFlow {P} at (0,36) size 784x40
         LayoutText {#text} at (0,0) size 771x39
           text run at (0,0) width 771: "There should be three empty squares with black borders and the last one should have blue background. WebKit should not hang"

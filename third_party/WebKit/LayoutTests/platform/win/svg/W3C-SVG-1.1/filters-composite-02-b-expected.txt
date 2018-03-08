@@ -58,18 +58,18 @@ layer at (0,0) size 800x600
             [feImage image-size="150x150"]
       LayoutSVGContainer {g} at (1,1) size 1098x723 [transform={m=((0.40,0.00)(0.00,0.40)) t=(5.00,70.00)}]
         LayoutSVGRect {rect} at (1,1) size 1098x723 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=1098.00] [height=723.00]
-        LayoutSVGText {text} at (100,15) size 767.73x72 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (100,15) size 767.73x72
-            chunk 1 text run 1 at (100.00,75.00) startOffset 0 endOffset 26 width 767.74: "on first Row : opacity 1.0"
-        LayoutSVGText {text} at (100,120) size 794.70x72 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (100,120) size 794.70x72
-            chunk 1 text run 1 at (100.00,180.00) startOffset 0 endOffset 25 width 794.71: "on second row opacity 0.5"
+        LayoutSVGText {text} at (100,15) size 768x72 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (100,15) size 768x72
+            chunk 1 text run 1 at (100.00,75.00) startOffset 0 endOffset 26 width 768.00: "on first Row : opacity 1.0"
+        LayoutSVGText {text} at (100,120) size 795x72 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (100,120) size 795x72
+            chunk 1 text run 1 at (100.00,180.00) startOffset 0 endOffset 25 width 795.00: "on second row opacity 0.5"
         LayoutSVGContainer {g} at (0,0) size 150x412 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,230.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="over"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
-          LayoutSVGText {text} at (10,340) size 132.53x72 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,340) size 132.53x72
-              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 4 width 132.53: "over"
+          LayoutSVGText {text} at (10,340) size 133.50x72 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,340) size 133.50x72
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 4 width 133.50: "over"
         LayoutSVGContainer {g} at (0,0) size 150x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,430.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="over50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
@@ -103,9 +103,9 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {g} at (0,0) size 150x412 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,230.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="xor"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150
-          LayoutSVGText {text} at (10,340) size 96.80x72 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,340) size 96.80x72
-              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 96.80: "xor"
+          LayoutSVGText {text} at (10,340) size 97.50x72 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,340) size 97.50x72
+              chunk 1 text run 1 at (10.00,400.00) startOffset 0 endOffset 3 width 97.50: "xor"
         LayoutSVGContainer {g} at (0,0) size 150x150 [transform={m=((1.00,0.00)(0.00,1.00)) t=(735.00,430.00)}]
           LayoutSVGRect {rect} at (0,0) size 150x150 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=150.00] [height=150.00]
             [filter="xor50"] LayoutSVGResourceFilter {filter} at (0,0) size 150x150

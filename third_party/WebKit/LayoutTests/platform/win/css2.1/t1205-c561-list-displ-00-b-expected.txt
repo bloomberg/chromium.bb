@@ -23,8 +23,8 @@ layer at (0,0) size 800x220
             text run at (88,0) width 77: "be line three."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,96) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 159x19
-          text run at (0,0) width 159: "4. This should be line four."
+        LayoutText {#text} at (0,0) size 158x19
+          text run at (0,0) width 158: "4. This should be line four."
       LayoutBlockFlow {DIV} at (0,116) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 156x19
           text run at (0,0) width 156: "5. This should be line five."

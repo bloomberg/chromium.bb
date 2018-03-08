@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 60x19
           LayoutText {#text} at (0,0) size 60x19
             text run at (0,0) width 60: "Filler Text"
-        LayoutText {#text} at (59,0) size 5x19
-          text run at (59,0) width 5: " "
-        LayoutTable {DIV} at (63.88,0) size 96x96 [bgcolor=#FFA500]
+        LayoutText {#text} at (60,0) size 4x19
+          text run at (60,0) width 4: " "
+        LayoutTable {DIV} at (64,0) size 96x96 [bgcolor=#FFA500]
           LayoutTableSection (anonymous) at (0,0) size 96x96
             LayoutTableRow {DIV} at (0,0) size 96x96
               LayoutTableCell {DIV} at (0,0) size 96x20 [r=0 c=0 rs=1 cs=1]

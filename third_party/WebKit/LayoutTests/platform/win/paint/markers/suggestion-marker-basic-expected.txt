@@ -5,8 +5,8 @@ layer at (0,0) size 800x460
     LayoutBlockFlow {BODY} at (8,8) size 784x0
       LayoutBlockFlow (floating) {DIV} at (598,0) size 186x192
         LayoutBlockFlow {P} at (0,16) size 186x20
-          LayoutText {#text} at (158,0) size 28x19
-            text run at (158,0) width 28: "RTL"
+          LayoutText {#text} at (159,0) size 27x19
+            text run at (159,0) width 27: "RTL"
         LayoutBlockFlow {DIV} at (0,52) size 186x20
           LayoutText {#text} at (121,0) size 65x19
             text run at (121,0) width 65: "markRtlAll"

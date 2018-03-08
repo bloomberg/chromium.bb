@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (-5,12.39) size 449.78x250.59
-      LayoutSVGText {text} at (95.56,12.39) size 258.84x15.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (95.56,12.39) size 258.84x15.59
-          chunk 1 (middle anchor) text run 1 at (95.58,25.00) startOffset 0 endOffset 44 width 258.85: "Test rotate='auto' and rotate='auto-reverse'"
+      LayoutSVGText {text} at (95.69,12.39) size 258.59x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (95.69,12.39) size 258.59x15.59
+          chunk 1 (middle anchor) text run 1 at (95.70,25.00) startOffset 0 endOffset 44 width 258.60: "Test rotate='auto' and rotate='auto-reverse'"
       LayoutSVGContainer {g} at (-5,170) size 449.78x92.98
         LayoutSVGPath {path} at (25,172.75) size 150x52.25 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [data="M 25 225 C 25 175 125 150 175 200"]
         LayoutSVGRect {rect} at (10,195) size 30x30 [stroke={[type=SOLID] [color=#000000] [stroke width=4.00]}] [fill={[type=SOLID] [color=#FFCCCC]}] [x=10.00] [y=195.00] [width=30.00] [height=30.00]

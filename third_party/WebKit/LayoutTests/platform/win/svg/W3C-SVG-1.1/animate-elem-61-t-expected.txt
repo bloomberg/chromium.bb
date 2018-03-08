@@ -11,9 +11,9 @@ layer at (0,0) size 800x600
         chunk 1 (middle anchor) text run 1 at (183.90,30.00) startOffset 0 endOffset 14 width 112.20: "multiple begin"
     LayoutSVGContainer {g} at (7.41,-47) size 194.30x225.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,100.00)}]
       LayoutSVGContainer {g} at (-72.59,-12) size 72.59x165.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,25.00)}]
-        LayoutSVGText {text} at (-47.14,-12) size 47.14x15.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-47.14,-12) size 47.14x15.59
-            chunk 1 (end anchor) text run 1 at (-47.15,0.00) startOffset 0 endOffset 9 width 47.15: "2 offsets"
+        LayoutSVGText {text} at (-47.39,-12) size 47.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-47.39,-12) size 47.39x15.59
+            chunk 1 (end anchor) text run 1 at (-47.40,0.00) startOffset 0 endOffset 9 width 47.40: "2 offsets"
         LayoutSVGText {text} at (-69,13) size 69x15.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-69,13) size 69x15.59
             chunk 1 (end anchor) text run 1 at (-69.00,25.00) startOffset 0 endOffset 12 width 69.00: "2 sync bases"

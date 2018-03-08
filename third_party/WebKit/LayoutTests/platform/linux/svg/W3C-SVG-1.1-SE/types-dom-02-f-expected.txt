@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (50.67,38.19) size 389.33x250.20
-      LayoutSVGText {text} at (50.67,38.19) size 159.33x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (50.67,38.19) size 159.33x21
-          chunk 1 (end anchor) text run 1 at (50.67,55.00) startOffset 0 endOffset 19 width 159.33: "animVal != baseVal:"
+    LayoutSVGContainer {g} at (50.39,38.19) size 389.61x250.20
+      LayoutSVGText {text} at (50.39,38.19) size 159.59x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (50.39,38.19) size 159.59x21
+          chunk 1 (end anchor) text run 1 at (50.40,55.00) startOffset 0 endOffset 19 width 159.60: "animVal != baseVal:"
       LayoutSVGContainer {g} at (40,60) size 248.39x200 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(500.00,0.00)}]
         LayoutSVGRect {rect} at (40,60) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=60.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (70,62.39) size 159x15.59 contains 1 chunk(s)
@@ -29,9 +29,9 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (70,182.39) size 116.39x15.59
             chunk 1 text run 1 at (70.00,195.00) startOffset 0 endOffset 15 width 115.80: "SVGAnimatedRect"
         LayoutSVGRect {rect} at (40,210) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=210.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,212.39) size 172.27x15.59 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,212.39) size 172.27x15.59
-            chunk 1 text run 1 at (70.00,225.00) startOffset 0 endOffset 24 width 171.68: "SVGAnimatedTransformList"
+        LayoutSVGText {text} at (70,212.39) size 172.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,212.39) size 172.80x15.59
+            chunk 1 text run 1 at (70.00,225.00) startOffset 0 endOffset 24 width 172.20: "SVGAnimatedTransformList"
         LayoutSVGRect {rect} at (40,240) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=240.00] [width=20.00] [height=20.00]
         LayoutSVGText {text} at (70,242.39) size 218.39x15.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (70,242.39) size 218.39x15.59

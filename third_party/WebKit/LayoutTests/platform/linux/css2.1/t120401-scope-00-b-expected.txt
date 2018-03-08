@@ -59,4 +59,4 @@ layer at (0,0) size 800x100
       LayoutBlockFlow {DIV} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 99x19
           text run at (0,0) width 51: "122111 "
-          text run at (50,0) width 49: "133331"
+          text run at (51,0) width 48: "133331"

@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 629x27
             text run at (0,27) width 629: "Delete at the end of document when there is a BR following a P. "
-          LayoutBR {BR} at (628,48) size 1x0
+          LayoutBR {BR} at (629,48) size 0x0
           LayoutText {#text} at (0,55) size 442x27
             text run at (0,55) width 442: "This is a test case for rdar://problem/4110366"
         LayoutBlockFlow {DIV} at (14,113) size 756x111
@@ -26,8 +26,8 @@ layer at (0,0) size 800x600
             text run at (0,27) width 240: "Red box with four lines. "
             text run at (240,27) width 480: "The second line is a nested red box with the word"
             text run at (0,55) width 81: "\"hello\". "
-            text run at (81,55) width 315: "The other three lines are empty. "
-          LayoutBR {BR} at (395,76) size 1x0
+            text run at (81,55) width 314: "The other three lines are empty. "
+          LayoutBR {BR} at (395,76) size 0x0
           LayoutText {#text} at (0,83) size 468x27
             text run at (0,83) width 468: "Selection is a caret at the start of the fourth line."
       LayoutBlockFlow {DIV} at (0,262) size 784x140 [border: (2px solid #FF0000)]
