@@ -104,12 +104,6 @@ crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
-# https://crbug.com/788390: Autoplay feature policy tests failing on the Windows FYI bot.
-crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
-crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
-crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
-crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
-
 # The tests below set document.domain.  Such tests are skipped, because they
 # cannot work when same-site WPT origins are isolated from each other via
 # --isolate-origins cmdline flag (which is how bots run the
@@ -144,21 +138,14 @@ Bug(none) external/wpt/encrypted-media/encrypted-media-default-feature-policy.ht
 Bug(none) external/wpt/feature-policy/payment-allowed-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/feature-policy/payment-disabled-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
-Bug(none) external/wpt/fetch/api/redirect/redirect-location-worker.html [ Timeout ]
-Bug(none) external/wpt/fetch/api/redirect/redirect-location.html [ Timeout ]
-Bug(none) external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout ]
 Bug(none) external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/004.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-origin-idna.sub.window.html [ Timeout ]
-Bug(none) external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Crash ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/error-codes/error.html [ Timeout ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay.html [ Timeout ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/seeking/seek-to-currentTime.html [ Timeout ]
-Bug(none) external/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Crash ]
 Bug(none) external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
-Bug(none) external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Failure ]
-Bug(none) external/wpt/preload/download-resources.html [ Failure ]
 Bug(none) external/wpt/preload/dynamic-adding-preload-nonce.html [ Failure ]
 Bug(none) external/wpt/preload/dynamic-adding-preload.html [ Failure ]
 Bug(none) external/wpt/preload/link-header-on-subresource.html [ Failure ]
@@ -171,7 +158,6 @@ Bug(none) external/wpt/preload/preload-with-type.html [ Failure ]
 Bug(none) external/wpt/preload/single-download-late-used-preload.html [ Failure ]
 Bug(none) external/wpt/preload/single-download-preload.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure ]
-Bug(none) external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Crash ]
 Bug(none) external/wpt/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash Timeout ]
 Bug(none) external/wpt/webmessaging/event.origin.sub.htm [ Failure ]
 Bug(none) external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure ]
@@ -179,7 +165,6 @@ Bug(none) external/wpt/webmessaging/with-ports/021.html [ Failure ]
 Bug(none) external/wpt/webmessaging/without-ports/020.html [ Failure ]
 Bug(none) external/wpt/webusb/usb-disabled-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/webvr/webvr-enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
-Bug(none) jquery/manipulation.html [ Timeout ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
 Bug(none) virtual/outofblink-cors/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 
@@ -193,9 +178,7 @@ crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ance
 crbug.com/801992 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Pass Timeout ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 
-crbug.com/711468 compositing/reflections/nested-reflection-transition.html [ Pass Timeout ]
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-composite-image.html [ Pass Timeout ]
-crbug.com/711468 virtual/gpu/fast/canvas/canvas-fillPath-shadow.html [ Pass Timeout ]
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Pass Timeout ]
 crbug.com/711468 http/tests/intersection-observer/cross-origin-iframe-with-nesting.html [ Failure ]
 
