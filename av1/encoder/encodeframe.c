@@ -2615,6 +2615,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int vert_ctx_is_ready = 0;
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 
+  if (bsize == cm->seq_params.sb_size) x->must_find_valid_partition = 0;
+
   // Override skipping rectangular partition operations for edge blocks
   const int has_rows = (mi_row + mi_step < cm->mi_rows);
   const int has_cols = (mi_col + mi_step < cm->mi_cols);
@@ -2788,6 +2790,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif
 
+BEGIN_PARTITION_SEARCH:
+  if (x->must_find_valid_partition) {
+    partition_none_allowed = has_rows && has_cols;
+    partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
+    partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
+  }
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
@@ -3359,6 +3367,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       }
     }
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
+  }
+
+  if (bsize == cm->seq_params.sb_size && best_rdc.rate == INT_MAX) {
+    // Did not find a valid partition, go back and search again, with less
+    // constraint on which partition types to search.
+    x->must_find_valid_partition = 1;
+    goto BEGIN_PARTITION_SEARCH;
   }
 
   // TODO(jbb): This code added so that we avoid static analysis
