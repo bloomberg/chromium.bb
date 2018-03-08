@@ -993,15 +993,6 @@ void ChromeClientImpl::ShowVirtualKeyboardOnElementFocus(LocalFrame& frame) {
       ->ShowVirtualKeyboardOnElementFocus();
 }
 
-void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(WebTappedInfo& tapped_info) {
-  //  Node* node = tapped_info.RawNode();
-  //  web_node(WebNode(node));
-  //  tapped_info.SetNode(web_node);
-  if (web_view_->Client()) {
-    web_view_->Client()->ShowUnhandledTapUIIfNeeded(tapped_info);
-  }
-}
-
 void ChromeClientImpl::OnMouseDown(Node& mouse_down_node) {
   if (auto* fill_client =
           AutofillClientFromFrame(mouse_down_node.GetDocument().GetFrame())) {
