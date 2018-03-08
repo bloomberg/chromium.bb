@@ -91,7 +91,7 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 // TODO(chengchen): Temporal flag serve as experimental flag for WIP
 // bitmask construction.
 // Shall be removed when bitmask code is completely checkedin
-#define LOOP_FILTER_BITMASK 1
+#define LOOP_FILTER_BITMASK 0
 
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.
