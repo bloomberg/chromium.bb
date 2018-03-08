@@ -29,6 +29,7 @@ static_library("core") {
   ]
 
   deps = [
+    "utilities:utilities",
     "//ui/gfx/geometry",
   ]
 
@@ -56,6 +57,7 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
+    "utilities:unit_tests",
     "//base/test:test_support",
     "//components/offline_items_collection/core/test_support",
   ]

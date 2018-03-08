@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/file_existence_checker.h"
+#include "components/offline_items_collection/core/utilities/file_existence_checker.h"
 
 #include <vector>
 
@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace offline_pages {
+namespace offline_items_collection {
 
 using FileIdPairVector = FileExistenceChecker::FileWithIdCollection<int64_t>;
 using FileIdPairSet = std::set<std::pair<base::FilePath, int64_t>>;
@@ -94,4 +94,4 @@ TEST_F(FileExistenceCheckerTest, MissingFileFound) {
   EXPECT_EQ(0UL, missing_files.count(files[1]));
 }
 
-}  // namespace offline_pages
+}  // namespace offline_items_collection
