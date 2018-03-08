@@ -85,11 +85,6 @@ const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 // to modify the dsf of the device to any non discrete value.
 const char kAshEnableScaleSettingsTray[] = "ash-enable-scale-settings-tray";
 
-// Specifies the estimated time (in milliseconds) from VSYNC event until when
-// visible light can be noticed by the user.
-const char kAshEstimatedPresentationDelay[] =
-    "ash-estimated-presentation-delay";
-
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 

@@ -5,15 +5,15 @@
 #ifndef ASH_LASER_LASER_POINTER_VIEW_H_
 #define ASH_LASER_LASER_POINTER_VIEW_H_
 
-#include "ash/fast_ink/fast_ink_points.h"
-#include "ash/fast_ink/fast_ink_view.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_view.h"
 
 namespace ash {
 
 // LaserPointerView displays the palette tool laser pointer. It draws the laser,
 // which consists of a point where the mouse cursor should be, as well as a
 // trail of lines to help users track.
-class LaserPointerView : public FastInkView {
+class LaserPointerView : public fast_ink::FastInkView {
  public:
   LaserPointerView(base::TimeDelta life_duration,
                    base::TimeDelta presentation_delay,
@@ -37,8 +37,8 @@ class LaserPointerView : public FastInkView {
   gfx::Rect GetBoundingBox();
   void Draw(gfx::Canvas& canvas);
 
-  FastInkPoints laser_points_;
-  FastInkPoints predicted_laser_points_;
+  fast_ink::FastInkPoints laser_points_;
+  fast_ink::FastInkPoints predicted_laser_points_;
   const base::TimeDelta presentation_delay_;
   // Timer which will add a new stationary point when the stylus stops moving.
   // This will remove points that are too old.

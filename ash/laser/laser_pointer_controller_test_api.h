@@ -7,9 +7,12 @@
 
 #include "base/macros.h"
 
+namespace fast_ink {
+class FastInkPoints;
+}
+
 namespace ash {
 
-class FastInkPoints;
 class LaserPointerController;
 class LaserPointerView;
 
@@ -22,8 +25,8 @@ class LaserPointerControllerTestApi {
   void SetEnabled(bool enabled);
   bool IsShowingLaserPointer() const;
   bool IsFadingAway() const;
-  const FastInkPoints& laser_points() const;
-  const FastInkPoints& predicted_laser_points() const;
+  const fast_ink::FastInkPoints& laser_points() const;
+  const fast_ink::FastInkPoints& predicted_laser_points() const;
   LaserPointerView* laser_pointer_view() const;
 
  private:

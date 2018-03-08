@@ -220,10 +220,10 @@ void HighlighterView::Draw(gfx::Canvas& canvas) {
   // is exactly kPenTipHeight.
   const int height = kPenTipHeight - kPenTipWidth;
 
-  FastInkPoints::FastInkPoint previous_point;
+  fast_ink::FastInkPoints::FastInkPoint previous_point;
 
   for (int i = 0; i < num_points; ++i) {
-    FastInkPoints::FastInkPoint current_point;
+    fast_ink::FastInkPoints::FastInkPoint current_point;
     if (i < points_.GetNumberOfPoints()) {
       current_point = points_.points()[i];
     } else {

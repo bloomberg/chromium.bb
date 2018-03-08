@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
 
 #include <algorithm>
 #include <array>
@@ -13,7 +13,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace ash {
+namespace fast_ink {
 
 FastInkPoints::FastInkPoints(base::TimeDelta life_duration)
     : life_duration_(life_duration) {}
@@ -169,7 +169,7 @@ void FastInkPoints::Predict(const FastInkPoints& real_points,
 
   gfx::Vector2dF jerk;
   if (valid_positions > 3)
-     jerk = acceleration[0] - acceleration[1];
+    jerk = acceleration[0] - acceleration[1];
   // |jerk| is aways valid (zero if |valid_positions| < 4).
 
   // Adjust max prediction time based on speed as prediction data is not great
@@ -201,4 +201,4 @@ void FastInkPoints::Predict(const FastInkPoints& real_points,
   }
 }
 
-}  // namespace ash
+}  // namespace fast_ink

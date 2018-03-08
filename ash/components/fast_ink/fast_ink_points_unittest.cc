@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/fast_ink/fast_ink_points.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 
-namespace ash {
+namespace fast_ink {
 namespace {
 
 const int kTestPointsLifetimeSeconds = 5;
 
-class FastInkPointsTest : public AshTestBase {
+class FastInkPointsTest : public testing::Test {
  public:
   FastInkPointsTest()
       : points_(base::TimeDelta::FromSeconds(kTestPointsLifetimeSeconds)),
@@ -252,4 +252,5 @@ TEST_F(FastInkPointsTest, AddGap) {
   EXPECT_TRUE(points[4].gap_after);
   EXPECT_FALSE(points[5].gap_after);
 }
-}  // namespace ash
+
+}  // namespace fast_ink

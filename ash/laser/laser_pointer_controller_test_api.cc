@@ -4,7 +4,7 @@
 
 #include "ash/laser/laser_pointer_controller_test_api.h"
 
-#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/laser/laser_pointer_view.h"
 
@@ -29,12 +29,13 @@ bool LaserPointerControllerTestApi::IsFadingAway() const {
          !instance_->laser_pointer_view_->fadeout_done_.is_null();
 }
 
-const FastInkPoints& LaserPointerControllerTestApi::laser_points() const {
+const fast_ink::FastInkPoints& LaserPointerControllerTestApi::laser_points()
+    const {
   return instance_->laser_pointer_view_->laser_points_;
 }
 
-const FastInkPoints& LaserPointerControllerTestApi::predicted_laser_points()
-    const {
+const fast_ink::FastInkPoints&
+LaserPointerControllerTestApi::predicted_laser_points() const {
   return instance_->laser_pointer_view_->predicted_laser_points_;
 }
 

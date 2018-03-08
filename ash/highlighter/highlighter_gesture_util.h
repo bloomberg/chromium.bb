@@ -10,9 +10,11 @@
 #include "ash/ash_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace ash {
-
+namespace fast_ink {
 class FastInkPoints;
+}
+
+namespace ash {
 
 // Highlighter gesture recognition result type. This enum is used to back
 // an UMA histogram and should be treated as append-only.
@@ -27,7 +29,7 @@ enum class HighlighterGestureType {
 HighlighterGestureType ASH_EXPORT
 DetectHighlighterGesture(const gfx::RectF& box,
                          const gfx::SizeF& pen_tip_size,
-                         const FastInkPoints& points);
+                         const fast_ink::FastInkPoints& points);
 
 }  // namespace ash
 

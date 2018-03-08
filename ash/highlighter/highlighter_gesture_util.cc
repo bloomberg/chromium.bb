@@ -4,7 +4,7 @@
 
 #include "ash/highlighter/highlighter_gesture_util.h"
 
-#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
 
 #include <cmath>
 
@@ -27,7 +27,8 @@ bool DetectHorizontalStroke(const gfx::RectF& box,
          box.height() < box.width() * kHorizontalStrokeFlatnessThreshold;
 }
 
-bool DetectClosedShape(const gfx::RectF& box, const FastInkPoints& points) {
+bool DetectClosedShape(const gfx::RectF& box,
+                       const fast_ink::FastInkPoints& points) {
   if (points.GetNumberOfPoints() < 3)
     return false;
 
@@ -85,9 +86,10 @@ bool DetectClosedShape(const gfx::RectF& box, const FastInkPoints& points) {
 
 }  // namespace
 
-HighlighterGestureType DetectHighlighterGesture(const gfx::RectF& box,
-                                                const gfx::SizeF& pen_tip_size,
-                                                const FastInkPoints& points) {
+HighlighterGestureType DetectHighlighterGesture(
+    const gfx::RectF& box,
+    const gfx::SizeF& pen_tip_size,
+    const fast_ink::FastInkPoints& points) {
   if (DetectHorizontalStroke(box, pen_tip_size))
     return HighlighterGestureType::kHorizontalStroke;
 

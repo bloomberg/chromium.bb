@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FAST_INK_FAST_INK_POINTS_H_
-#define ASH_FAST_INK_FAST_INK_POINTS_H_
+#ifndef ASH_COMPONENTS_FAST_INK_FAST_INK_POINTS_H_
+#define ASH_COMPONENTS_FAST_INK_FAST_INK_POINTS_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace ash {
+namespace fast_ink {
 
 // FastInkPoints is a helper class used for displaying low-latency palette
 // tools. It contains a collection of points representing one or more
 // contiguous trajectory segments.
-class ASH_EXPORT FastInkPoints {
+class FastInkPoints {
  public:
   // Struct to describe each point.
   struct FastInkPoint {
@@ -77,6 +76,6 @@ class ASH_EXPORT FastInkPoints {
   DISALLOW_COPY_AND_ASSIGN(FastInkPoints);
 };
 
-}  // namespace ash
+}  // namespace fast_ink
 
-#endif  // ASH_FAST_INK_FAST_INK_POINTS_H_
+#endif  // ASH_COMPONENTS_FAST_INK_FAST_INK_POINTS_H_
