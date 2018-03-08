@@ -39,6 +39,7 @@
 #include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_promised_info_peer.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -112,7 +113,8 @@ class QuicChromiumClientSessionTest
                       &clock_,
                       kServerHostname,
                       Perspective::IS_SERVER,
-                      false) {
+                      false),
+        migrate_session_early_v2_(false) {
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
@@ -145,10 +147,9 @@ class QuicChromiumClientSessionTest
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_,
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), session_key_,
-        /*require_confirmation=*/false, /*migrate_session_early*/ false,
-        /*migrate_session_on_network_change*/ false,
-        /*migrate_session_early_v2*/ false,
-        /*migrate_session_on_network_change_v2*/ false,
+        /*require_confirmation=*/false, /*migrate_session_early=*/false,
+        /*migrate_session_on_network_change=*/false, migrate_session_early_v2_,
+        /*migrate_session_on_network_change_v2=*/false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,
@@ -220,6 +221,7 @@ class QuicChromiumClientSessionTest
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   ProofVerifyDetailsChromium verify_details_;
+  bool migrate_session_early_v2_;
 };
 
 INSTANTIATE_TEST_CASE_P(
@@ -1424,6 +1426,53 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   EXPECT_TRUE(socket_data_->AllWriteDataConsumed());
   EXPECT_TRUE(new_socket_data.AllReadDataConsumed());
   EXPECT_TRUE(new_socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
+  migrate_session_early_v2_ = true;
+
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(client_maker_.MakePingPacket(2, true));
+  quic_data.AddRead(server_maker_.MakeAckPacket(1, 2, 1, 1, false));
+
+  quic_data.AddWrite(client_maker_.MakePingPacket(3, false));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
+            session_->connection()->retransmittable_on_wire_timeout());
+
+  // Open a stream since the connection only sends PINGs to keep a
+  // retransmittable packet on the wire if there's an open stream.
+  EXPECT_TRUE(QuicChromiumClientSessionPeer::CreateOutgoingDynamicStream(
+      session_.get()));
+
+  QuicAlarm* alarm =
+      QuicConnectionPeer::GetRetransmittableOnWireAlarm(session_->connection());
+  EXPECT_FALSE(alarm->IsSet());
+
+  // Send PING, which will be ACKed by the server. After the ACK, there will be
+  // no retransmittable packets on the wire, so the alarm should be set.
+  session_->SendPing();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(alarm->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow() + QuicTime::Delta::FromMilliseconds(100),
+            alarm->deadline());
+
+  // Advance clock and simulate the alarm firing. This should cause a PING to be
+  // sent.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
+  alarm_factory_.FireAlarm(alarm);
+  base::RunLoop().RunUntilIdle();
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
 }  // namespace

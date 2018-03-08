@@ -76,6 +76,12 @@ const int kDefaultRTTMilliSecs = 300;
 // The maximum size of uncompressed QUIC headers that will be allowed.
 const size_t kMaxUncompressedHeaderSize = 256 * 1024;
 
+// The maximum time allowed to have no retransmittable packets on the wire
+// (after sending the first retransmittable packet) if
+// |migrate_session_early_v2_| is true. PING frames will be sent as needed to
+// enforce this.
+const size_t kDefaultRetransmittableOnWireTimeoutMillisecs = 100;
+
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
@@ -752,6 +758,11 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   }
   connect_timing_.dns_start = dns_resolution_start_time;
   connect_timing_.dns_end = dns_resolution_end_time;
+  if (migrate_session_early_v2_) {
+    connection->set_retransmittable_on_wire_timeout(
+        QuicTime::Delta::FromMilliseconds(
+            kDefaultRetransmittableOnWireTimeoutMillisecs));
+  }
 }
 
 QuicChromiumClientSession::~QuicChromiumClientSession() {
