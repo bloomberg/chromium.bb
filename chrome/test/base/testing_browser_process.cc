@@ -17,7 +17,6 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/buildflags.h"
@@ -421,12 +420,8 @@ gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
 
 resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  if (!tab_manager_) {
-    tab_manager_ = std::make_unique<resource_coordinator::TabManager>();
-    tab_lifecycle_unit_source_ =
-        std::make_unique<resource_coordinator::TabLifecycleUnitSource>();
-    tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
-  }
+  if (!tab_manager_.get())
+    tab_manager_.reset(new resource_coordinator::TabManager());
   return tab_manager_.get();
 #else
   return nullptr;

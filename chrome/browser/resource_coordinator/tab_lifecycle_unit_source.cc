@@ -66,9 +66,7 @@ void TabLifecycleUnitSource::SetFocusedTabStripModelForTesting(
 TabStripModel* TabLifecycleUnitSource::GetFocusedTabStripModel() const {
   if (focused_tab_strip_model_for_testing_)
     return focused_tab_strip_model_for_testing_;
-  // Use FindLastActive() rather than FindBrowserWithActiveWindow() to avoid
-  // flakiness when focus changes during browser tests.
-  Browser* const focused_browser = chrome::FindLastActive();
+  Browser* const focused_browser = chrome::FindBrowserWithActiveWindow();
   if (!focused_browser)
     return nullptr;
   return focused_browser->tab_strip_model();
@@ -161,11 +159,7 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
   if (change_type != TabChangeType::kAll)
     return;
   auto it = tabs_.find(contents);
-  // The WebContents destructor might cause this function to be called, at this
-  // point TabClosingAt has already been called and so this WebContents has
-  // been removed from |tabs_|.
-  if (it == tabs_.end())
-    return;
+  DCHECK(it != tabs_.end());
   TabLifecycleUnit* lifecycle_unit = it->second.get();
   lifecycle_unit->SetRecentlyAudible(contents->WasRecentlyAudible());
 }

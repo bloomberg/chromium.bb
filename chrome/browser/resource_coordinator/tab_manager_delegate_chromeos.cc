@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -28,10 +29,11 @@
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/sort_windows_by_z_index.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -47,6 +49,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/zygote_host_linux.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/wm/public/activation_client.h"
 
 using base::ProcessHandle;
@@ -81,6 +84,81 @@ void OnSetOomScoreAdj(bool success, const std::string& output) {
     LOG(WARNING) << "Set OOM score: " << output;
 }
 
+using LoadTabListAndArcProcessesCallback =
+    base::OnceCallback<void(const TabStatsList&,
+                            const std::vector<arc::ArcProcess>&)>;
+
+// Loads TabStatsList and a list of ARC processes. Invokes |callback| with the
+// result.
+void LoadTabListAndArcProcesses(base::WeakPtr<TabManager> tab_manager,
+                                LoadTabListAndArcProcessesCallback callback) {
+  std::unique_ptr<TabStatsList> tab_stats_list =
+      std::make_unique<TabStatsList>();
+  TabStatsList* const tab_stats_list_raw = tab_stats_list.get();
+
+  std::unique_ptr<std::vector<arc::ArcProcess>> arc_processes =
+      std::make_unique<std::vector<arc::ArcProcess>>();
+  std::vector<arc::ArcProcess>* const arc_processes_raw = arc_processes.get();
+
+  // Invoked when the TabStatsList is loaded and when the list of ARC processes
+  // is loaded. Invokes |callback| the second time it's called (i.e. when both
+  // the lists have been loaded).
+  auto barrier = base::BarrierClosure(
+      2, base::BindOnce(
+             [](std::unique_ptr<TabStatsList> tab_stats_list,
+                std::unique_ptr<std::vector<arc::ArcProcess>> arc_processes,
+                LoadTabListAndArcProcessesCallback callback) {
+               std::move(callback).Run(*tab_stats_list.get(),
+                                       *arc_processes.get());
+             },
+             std::move(tab_stats_list), std::move(arc_processes),
+             std::move(callback)));
+
+  // Invoked when the list of browser windows sorted by z-index is loaded.
+  auto sort_windows_by_z_index_callback = base::BindOnce(
+      [](TabStatsList* tab_stats_list, base::WeakPtr<TabManager> tab_manager,
+         base::RepeatingClosure barrier,
+         std::vector<gfx::NativeWindow> windows_sorted_by_z_index) {
+        if (tab_manager) {
+          *tab_stats_list =
+              tab_manager->GetUnsortedTabStats(windows_sorted_by_z_index);
+        }
+        barrier.Run();
+      },
+      base::Unretained(tab_stats_list_raw), tab_manager, barrier);
+
+  // Start loading the list of browser windows sorted by z-index.
+  std::vector<gfx::NativeWindow> browser_windows;
+  for (Browser* browser : *BrowserList::GetInstance())
+    browser_windows.push_back(browser->window()->GetNativeWindow());
+  // In unit tests, windows can't be sorted because the Shell is not available.
+  if (ash::Shell::HasInstance()) {
+    ui::SortWindowsByZIndex(browser_windows,
+                            std::move(sort_windows_by_z_index_callback));
+  } else {
+    std::move(sort_windows_by_z_index_callback)
+        .Run(std::vector<gfx::NativeWindow>());
+  }
+
+  // Invoked when the list of ARC processes is loaded.
+  auto request_app_process_list_callback = base::BindRepeating(
+      [](std::vector<arc::ArcProcess>* arc_processes_dest,
+         base::RepeatingClosure barrier,
+         std::vector<arc::ArcProcess> arc_processes_src) {
+        *arc_processes_dest = std::move(arc_processes_src);
+        barrier.Run();
+      },
+      base::Unretained(arc_processes_raw), barrier);
+
+  // Start loading the list of ARC processes.
+  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+
+  if (!arc_process_service || !arc_process_service->RequestAppProcessList(
+                                  request_app_process_list_callback)) {
+    request_app_process_list_callback.Run(std::vector<arc::ArcProcess>());
+  }
+}
+
 }  // namespace
 
 // static
@@ -94,12 +172,10 @@ std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
       return os << "FOCUSED_APP";
     case ProcessType::IMPORTANT_APP:
       return os << "IMPORTANT_APP";
-    case ProcessType::BACKGROUND_APP:
-      return os << "BACKGROUND_APP";
     case ProcessType::BACKGROUND_TAB:
       return os << "BACKGROUND_TAB";
-    case ProcessType::PROTECTED_BACKGROUND_TAB:
-      return os << "PROTECTED_BACKGROUND_TAB";
+    case ProcessType::BACKGROUND_APP:
+      return os << "BACKGROUND_APP";
     case ProcessType::UNKNOWN_TYPE:
       return os << "UNKNOWN_TYPE";
     default:
@@ -111,16 +187,27 @@ std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
 // TabManagerDelegate::Candidate implementation.
 std::ostream& operator<<(std::ostream& out,
                          const TabManagerDelegate::Candidate& candidate) {
-  if (candidate.app())
+  if (candidate.app()) {
     out << "app " << *candidate.app();
-  else if (candidate.lifecycle_unit())
-    out << "tab " << candidate.lifecycle_unit()->GetTitle();
+  } else if (candidate.tab()) {
+    const TabStats* const& tab = candidate.tab();
+    out << "tab " << tab->title << ", renderer_handle: " << tab->renderer_handle
+        << ", oom_score: " << tab->oom_score
+        << ", is_discarded: " << tab->is_discarded
+        << ", discard_count: " << tab->discard_count
+        << ", last_active: " << tab->last_active;
+  }
   out << ", process_type " << candidate.process_type();
   return out;
 }
 
 TabManagerDelegate::Candidate& TabManagerDelegate::Candidate::operator=(
-    TabManagerDelegate::Candidate&& other) = default;
+    TabManagerDelegate::Candidate&& other) {
+  tab_ = other.tab_;
+  app_ = other.app_;
+  process_type_ = other.process_type_;
+  return *this;
+}
 
 bool TabManagerDelegate::Candidate::operator<(
     const TabManagerDelegate::Candidate& rhs) const {
@@ -128,8 +215,8 @@ bool TabManagerDelegate::Candidate::operator<(
     return process_type() < rhs.process_type();
   if (app() && rhs.app())
     return *app() < *rhs.app();
-  if (lifecycle_unit() && rhs.lifecycle_unit())
-    return lifecycle_unit_sort_key_ > rhs.lifecycle_unit_sort_key_;
+  if (tab() && rhs.tab())
+    return TabManager::CompareTabStats(*tab(), *rhs.tab());
   // Impossible case. If app and tab are mixed in one process type, favor
   // apps.
   NOTREACHED() << "Undefined comparison between apps and tabs: process_type="
@@ -145,11 +232,9 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
       return ProcessType::IMPORTANT_APP;
     return ProcessType::BACKGROUND_APP;
   }
-  if (lifecycle_unit()) {
-    if (lifecycle_unit_sort_key_.last_focused_time == base::TimeTicks::Max())
+  if (tab()) {
+    if (tab()->is_active && tab()->is_in_active_window)
       return ProcessType::FOCUSED_TAB;
-    if (!lifecycle_unit()->CanDiscard(DiscardReason::kProactive))
-      return ProcessType::PROTECTED_BACKGROUND_TAB;
     return ProcessType::BACKGROUND_TAB;
   }
   NOTREACHED() << "Unexpected process type";
@@ -331,21 +416,17 @@ void TabManagerDelegate::OnWindowActivated(
 
 void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AdjustOomPriorities();
+  if (tab_manager_) {
+    AdjustOomPriorities(tab_manager_->GetUnsortedTabStats());
+  }
 }
 
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
 void TabManagerDelegate::LowMemoryKill(DiscardReason reason) {
-  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  if (arc_process_service &&
-      arc_process_service->RequestAppProcessList(
-          base::BindRepeating(&TabManagerDelegate::LowMemoryKillImpl,
-                              weak_ptr_factory_.GetWeakPtr(), reason))) {
-    return;
-  }
-
-  LowMemoryKillImpl(reason, std::vector<arc::ArcProcess>());
+  LoadTabListAndArcProcesses(
+      tab_manager_, base::BindOnce(&TabManagerDelegate::LowMemoryKillImpl,
+                                   weak_ptr_factory_.GetWeakPtr(), reason));
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -356,12 +437,6 @@ int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
   }
   // An impossible value for oom_score_adj.
   return -1001;
-}
-
-LifecycleUnitVector TabManagerDelegate::GetLifecycleUnits() {
-  if (tab_manager_)
-    return tab_manager_->GetSortedLifecycleUnits();
-  return LifecycleUnitVector();
 }
 
 void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
@@ -470,18 +545,18 @@ void TabManagerDelegate::Observe(int type,
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
 // 3) is the tab currently selected
-void TabManagerDelegate::AdjustOomPriorities() {
+void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& tab_list) {
   if (IsArcMemoryManagementEnabled()) {
     arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
     if (arc_process_service &&
         arc_process_service->RequestAppProcessList(
             base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
-                       weak_ptr_factory_.GetWeakPtr()))) {
+                       weak_ptr_factory_.GetWeakPtr(), tab_list))) {
       return;
     }
   }
   // Pass in a dummy list if unable to get ARC processes.
-  AdjustOomPrioritiesImpl(std::vector<arc::ArcProcess>());
+  AdjustOomPrioritiesImpl(tab_list, std::vector<arc::ArcProcess>());
 }
 
 // Excludes persistent ARC apps, but still preserves active chrome tabs and
@@ -490,13 +565,13 @@ void TabManagerDelegate::AdjustOomPriorities() {
 // static
 std::vector<TabManagerDelegate::Candidate>
 TabManagerDelegate::GetSortedCandidates(
-    const LifecycleUnitVector& lifecycle_units,
+    const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
   std::vector<Candidate> candidates;
-  candidates.reserve(lifecycle_units.size() + arc_processes.size());
+  candidates.reserve(tab_list.size() + arc_processes.size());
 
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units) {
-    candidates.emplace_back(lifecycle_unit);
+  for (const auto& tab : tab_list) {
+    candidates.emplace_back(&tab);
   }
 
   for (const auto& app : arc_processes) {
@@ -532,9 +607,11 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
   return true;
 }
 
-bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
+bool TabManagerDelegate::KillTab(const TabStats& tab_stats,
                                  DiscardReason reason) {
-  return lifecycle_unit->CanDiscard(reason) && lifecycle_unit->Discard(reason);
+  // Check |tab_manager_| is alive before taking tabs into consideration.
+  return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats, reason) &&
+         tab_manager_->DiscardTabById(tab_stats.id, reason);
 }
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
@@ -543,12 +620,13 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 
 void TabManagerDelegate::LowMemoryKillImpl(
     DiscardReason reason,
-    std::vector<arc::ArcProcess> arc_processes) {
+    const TabStatsList& tab_list,
+    const std::vector<arc::ArcProcess>& arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";
 
-  std::vector<TabManagerDelegate::Candidate> candidates =
-      GetSortedCandidates(GetLifecycleUnits(), arc_processes);
+  const std::vector<TabManagerDelegate::Candidate> candidates =
+      GetSortedCandidates(tab_list, arc_processes);
 
   // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
   // I/O and if it is, move to I/O thread (crbug.com/778703).
@@ -581,9 +659,9 @@ void TabManagerDelegate::LowMemoryKillImpl(
     if (process_type <= ProcessType::IMPORTANT_APP) {
       if (it->app()) {
         MEMORY_LOG(ERROR) << "Skipped killing " << it->app()->process_name();
-      } else if (it->lifecycle_unit()) {
-        MEMORY_LOG(ERROR) << "Skipped killing "
-                          << it->lifecycle_unit()->GetTitle();
+      } else if (it->tab()) {
+        MEMORY_LOG(ERROR) << "Skipped killing " << it->tab()->title << " ("
+                          << it->tab()->renderer_handle << ")";
       }
       continue;
     }
@@ -607,19 +685,19 @@ void TabManagerDelegate::LowMemoryKillImpl(
       } else {
         MEMORY_LOG(ERROR) << "Failed to kill " << it->app()->process_name();
       }
-    } else if (it->lifecycle_unit()) {
+    } else if (it->tab()) {
       // The estimation is problematic since multiple tabs may share the same
       // process, while the calculation counts memory used by the whole process.
       // So |estimated_memory_freed_kb| is an over-estimation.
       int estimated_memory_freed_kb =
-          it->lifecycle_unit()->GetEstimatedMemoryFreedOnDiscardKB();
-      if (KillTab(it->lifecycle_unit(), reason)) {
+          mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
+      if (KillTab(*it->tab(), reason)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         memory::MemoryKillsMonitor::LogLowMemoryKill("TAB",
                                                      estimated_memory_freed_kb);
-        MEMORY_LOG(ERROR) << "Killed tab " << it->lifecycle_unit()->GetTitle()
-                          << ", estimated " << estimated_memory_freed_kb
-                          << " KB freed";
+        MEMORY_LOG(ERROR) << "Killed tab " << it->tab()->title << " ("
+                          << it->tab()->renderer_handle << "), estimated "
+                          << estimated_memory_freed_kb << " KB freed";
       }
     }
   }
@@ -630,14 +708,13 @@ void TabManagerDelegate::LowMemoryKillImpl(
 }
 
 void TabManagerDelegate::AdjustOomPrioritiesImpl(
+    const TabStatsList& tab_list,
     std::vector<arc::ArcProcess> arc_processes) {
   std::vector<TabManagerDelegate::Candidate> candidates;
   std::vector<TabManagerDelegate::Candidate> apps_non_killable;
 
   // Least important first.
-  LifecycleUnitVector lifecycle_units = GetLifecycleUnits();
-  auto all_candidates =
-      GetSortedCandidates(std::move(lifecycle_units), arc_processes);
+  auto all_candidates = GetSortedCandidates(tab_list, arc_processes);
   for (auto& candidate : all_candidates) {
     // TODO(cylee|yusukes): Consider using IsImportant() instead of
     // IsKernelKillable() for simplicity.
@@ -680,8 +757,8 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   ProcessScoreMap new_map;
 
   // Make the apps non-killable.
-  DistributeOomScoreInRange(apps_non_killable.begin(), apps_non_killable.end(),
-                            kLowestOomScore, kLowestOomScore, &new_map);
+  if (!apps_non_killable.empty())
+    SetOomScore(apps_non_killable, kLowestOomScore, &new_map);
 
   // Higher priority part.
   DistributeOomScoreInRange(candidates.begin(), lower_priority_part,
@@ -694,9 +771,17 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   oom_score_map_.swap(new_map);
 }
 
+void TabManagerDelegate::SetOomScore(
+    const std::vector<TabManagerDelegate::Candidate>& candidates,
+    int score,
+    ProcessScoreMap* new_map) {
+  DistributeOomScoreInRange(candidates.begin(), candidates.end(), score, score,
+                            new_map);
+}
+
 void TabManagerDelegate::DistributeOomScoreInRange(
-    std::vector<TabManagerDelegate::Candidate>::iterator begin,
-    std::vector<TabManagerDelegate::Candidate>::iterator end,
+    std::vector<TabManagerDelegate::Candidate>::const_iterator begin,
+    std::vector<TabManagerDelegate::Candidate>::const_iterator end,
     int range_begin,
     int range_end,
     ProcessScoreMap* new_map) {
@@ -719,7 +804,7 @@ void TabManagerDelegate::DistributeOomScoreInRange(
     if (cur->app()) {
       pid = cur->app()->pid();
     } else {
-      pid = cur->lifecycle_unit()->GetProcessHandle();
+      pid = cur->tab()->renderer_handle;
       // 1. tab_list contains entries for already-discarded tabs. If the PID
       // (renderer_handle) is zero, we don't need to adjust the oom_score.
       // 2. Only add unseen process handle so if there's multiple tab maps to
