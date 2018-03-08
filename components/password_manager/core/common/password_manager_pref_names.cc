@@ -42,5 +42,8 @@ const char kSyncPasswordHash[] = "profile.sync_password_hash";
 const char kSyncPasswordLengthAndHashSalt[] =
     "profile.sync_password_length_and_hash_salt";
 
+const char kBlacklistedCredentialsStripped[] =
+    "profile.blacklisted_credentials_stripped";
+
 }  // namespace prefs
 }  // namespace password_manager
