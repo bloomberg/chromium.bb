@@ -22,11 +22,11 @@ You must hide the existing TTS extension because extension keys must not be
 duplicated, and ChromeOS will crash if you try to load the unpacked extension
 while the built-in one is already loaded.
 
-To test, use the [https://chrome.google.com/webstore/detail/tts-demo/chhkejkkcghanjclmhhpncachhgejoel](TTS Demo extension)
+To test, use the [TTS Demo extension](https://chrome.google.com/webstore/detail/tts-demo/chhkejkkcghanjclmhhpncachhgejoel)
 in Chromeos. This should automatically recognize the unpacked TTS extension
 based on its manifest key. You can also use any site that uses a web speech API
 demo. In addition, the Chrome Accessibility team has a 
-[https://chrome.google.com/webstore/detail/idllbaaoaldabjncnbfokacibfehkemd](TTS Debug extension)
+[TTS Debug extension](https://chrome.google.com/webstore/detail/idllbaaoaldabjncnbfokacibfehkemd)
 which can run several automated tests.
 
 ## Updating
@@ -102,9 +102,9 @@ git commit -a
 repo upload .
 ```
 
-After submitting, inform the [mailto:chrome-a11y-core@google.com](Chrome Accessibility team)
+After submitting, inform the [Chrome Accessibility Team](mailto:chrome-a11y-core@google.com)
 so that they can update their local copies of TTS per the
-[https://chromium.googlesource.com/chromium/src/+/lkgr/docs/accessibility/chromevox_on_desktop_linux.md](Chromevox instructions).
+[Chromevox instructions](chromevox_on_desktop_linux.md).
 
 ## Ebuild
 
