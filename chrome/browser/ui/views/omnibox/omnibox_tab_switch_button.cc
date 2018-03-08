@@ -15,27 +15,27 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
-    : LabelButton(this, base::ASCIIToUTF16("Switch to open tab")),
+    : MdTextButton(this, views::style::CONTEXT_BUTTON_MD),
       result_view_(result_view) {
   // TODO: SetTooltipText(text);
   //       SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   SetBackground(std::make_unique<BackgroundWith1PxBorder>(GetBackgroundColor(),
                                                           SK_ColorBLACK));
+  SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon, 16, SK_ColorBLACK));
+  SetText(base::ASCIIToUTF16("Switch to open tab"));
 }
 
 void OmniboxTabSwitchButton::SetPressed() {
-  // Using transparent does nothing, since the result view is also selected.
-  background()->SetNativeControlColor(color_utils::AlphaBlend(
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint()),
+  SetBgColorOverride(color_utils::AlphaBlend(
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
+                      OmniboxState::SELECTED),
       SK_ColorBLACK, 0.8 * 255));
-  SchedulePaint();
 }
 
 void OmniboxTabSwitchButton::ClearState() {
-  background()->SetNativeControlColor(GetBackgroundColor());
-  SchedulePaint();
+  SetBgColorOverride(GetBackgroundColor());
 }
 
 bool OmniboxTabSwitchButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -67,7 +67,7 @@ void OmniboxTabSwitchButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
-  gfx::Size size = LabelButton::CalculatePreferredSize();
+  gfx::Size size = MdTextButton::CalculatePreferredSize();
   const int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
@@ -76,8 +76,8 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
 }
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
-  background()->SetNativeControlColor(GetBackgroundColor());
-  LabelButton::StateChanged(old_state);
+  SetBgColorOverride(GetBackgroundColor());
+  MdTextButton::StateChanged(old_state);
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
