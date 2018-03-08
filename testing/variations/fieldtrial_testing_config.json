@@ -2361,24 +2361,6 @@
             ]
         }
     ],
-    "OmniboxCombinedSpeculativeServiceWorker": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "PrewarmingWithServiceWorker2",
-                    "enable_features": [
-                        "OmniboxSpeculativeServiceWorkerStartOnQueryInput"
-                    ],
-                    "disable_features": [
-                        "OmniboxSpareRenderer"
-                    ]
-                }
-            ]
-        }
-    ],
     "OomIntervention": [
         {
             "platforms": [
