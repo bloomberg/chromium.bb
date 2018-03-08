@@ -20,11 +20,9 @@ def relative_dest(fs, filename):
     is relative to third_party/blink.
     """
     dest = None
-    if filename.startswith('public'):
-        dest = re.sub(r'^public', 'renderer' + fs.sep + 'public', filename)
-    elif filename.startswith('Source'):
+    if filename.startswith('Source'):
         dest = re.sub(r'^Source', 'renderer', filename)
-    elif filename.startswith('common'):
+    elif filename.startswith('common') or filename.startswith('public'):
         dest = filename
     else:
         raise ValueError('|filename| must start with "common", "public", or "Source": %s' % filename)
