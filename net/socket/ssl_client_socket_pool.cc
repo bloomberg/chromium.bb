@@ -376,10 +376,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   }
 
   const std::string& host = params_->host_and_port().host();
-  bool is_google =
-      host == "google.com" ||
-      (host.size() > 11 && host.rfind(".google.com") == host.size() - 11);
-
   bool tls13_supported = IsTLS13ExperimentHost(host);
 
   if (result == OK ||
@@ -424,29 +420,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                  100);
     }
 
-    if (is_google) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google2",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1),
-                                 100);
-      if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google_"
-                                       "Resume_Handshake",
-                                   connect_duration,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   base::TimeDelta::FromMinutes(1),
-                                   100);
-      } else if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_FULL) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google_"
-                                       "Full_Handshake",
-                                   connect_duration,
-                                   base::TimeDelta::FromMilliseconds(1),
-                                   base::TimeDelta::FromMinutes(1),
-                                   100);
-      }
-    }
-
     if (tls13_supported) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_TLS13Experiment",
                                  connect_duration,
@@ -456,11 +429,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   }
 
   base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
-
-  if (is_google) {
-    base::UmaHistogramSparse("Net.SSL_Connection_Error_Google",
-                             std::abs(result));
-  }
 
   if (tls13_supported) {
     base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
