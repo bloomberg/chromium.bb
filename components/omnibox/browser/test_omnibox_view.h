@@ -40,7 +40,6 @@ class TestOmniboxView : public OmniboxView {
   void SetCaretPos(size_t caret_pos) override {}
   void EnterKeywordModeForDefaultSearchProvider() override {}
   bool IsSelectAll() const override;
-  bool DeleteAtEndPressed() override;
   void GetSelectionBounds(size_t* start, size_t* end) const override {}
   void SelectAll(bool reversed) override {}
   void RevertAll() override {}

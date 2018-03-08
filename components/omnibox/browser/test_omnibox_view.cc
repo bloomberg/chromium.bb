@@ -25,10 +25,6 @@ bool TestOmniboxView::IsSelectAll() const {
   return false;
 }
 
-bool TestOmniboxView::DeleteAtEndPressed() {
-  return false;
-}
-
 void TestOmniboxView::OnTemporaryTextMaybeChanged(
     const base::string16& display_text,
     const AutocompleteMatch& match,

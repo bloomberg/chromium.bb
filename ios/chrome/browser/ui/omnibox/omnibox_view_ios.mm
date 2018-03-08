@@ -367,10 +367,6 @@ bool OmniboxViewIOS::IsSelectAll() const {
   return false;
 }
 
-bool OmniboxViewIOS::DeleteAtEndPressed() {
-  return false;
-}
-
 void OmniboxViewIOS::GetSelectionBounds(base::string16::size_type* start,
                                         base::string16::size_type* end) const {
   if ([field_ isFirstResponder]) {
