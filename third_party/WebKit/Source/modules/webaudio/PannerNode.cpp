@@ -650,6 +650,14 @@ void PannerHandler::UpdateDirtyState() {
                       PannerHandler::kDistanceConeGainDirty);
   }
 }
+
+bool PannerHandler::RequiresTailProcessing() const {
+  // If there's no internal panner method set up yet, assume we require tail
+  // processing in case the HRTF panner is set later, which does require tail
+  // processing.
+  return panner_ ? panner_->RequiresTailProcessing() : true;
+}
+
 // ----------------------------------------------------------------
 
 PannerNode::PannerNode(BaseAudioContext& context)

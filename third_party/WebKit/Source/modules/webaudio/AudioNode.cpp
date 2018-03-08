@@ -339,11 +339,13 @@ void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
 
     bool silent_inputs = InputsAreSilent();
     if (!silent_inputs) {
+      // Update |last_non_silent_time| AFTER processing this block.
+      // Doing it before causes |PropagateSilence()| to be one render
+      // quantum longer than necessary.
       last_non_silent_time_ =
           (Context()->CurrentSampleFrame() + frames_to_process) /
           static_cast<double>(Context()->sampleRate());
     }
-
     if (silent_inputs && PropagatesSilence()) {
       SilenceOutputs();
       // AudioParams still need to be processed so that the value can be updated
@@ -415,6 +417,10 @@ void AudioHandler::EnableOutputsIfNecessary() {
 }
 
 void AudioHandler::DisableOutputsIfNecessary() {
+  // This function calls other functions that require graph ownership,
+  // so assert that this needs graph ownership too.
+  DCHECK(Context()->IsGraphOwner());
+
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
   // The case of 1 is from AudioNodeInput::disable() where we want to disable
@@ -452,6 +458,12 @@ void AudioHandler::DisableOutputsIfNecessary() {
         output->Disable();
     }
   }
+}
+
+void AudioHandler::DisableOutputs() {
+  is_disabled_ = true;
+  for (auto& output : outputs_)
+    output->Disable();
 }
 
 void AudioHandler::MakeConnection() {
@@ -497,11 +509,11 @@ void AudioHandler::BreakConnectionWithLock() {
   AtomicDecrement(&connection_ref_count_);
 
 #if DEBUG_AUDIONODE_REFERENCES
-  fprintf(
-      stderr,
-      "[%16p]: %16p: %2d: AudioHandler::BreakConnectionWithLock %3d [%3d]\n",
-      Context(), this, GetNodeType(), connection_ref_count_,
-      node_count_[GetNodeType()]);
+  fprintf(stderr,
+          "[%16p]: %16p: %2d: AudioHandler::BreakConnectionWitLock %3d [%3d] "
+          "@%.15g\n",
+          Context(), this, GetNodeType(), connection_ref_count_,
+          node_count_[GetNodeType()], Context()->currentTime());
 #endif
 
   if (!connection_ref_count_)
@@ -526,6 +538,31 @@ void AudioHandler::PrintNodeCounts() {
 }
 
 #endif  // DEBUG_AUDIONODE_REFERENCES
+
+#if DEBUG_AUDIONODE_REFERENCES > 1
+void AudioHandler::TailProcessingDebug(const char* note) {
+  fprintf(stderr, "[%16p]: %16p: %2d: %s %d @%.15g", Context(), this,
+          GetNodeType(), note, connection_ref_count_, Context()->currentTime());
+
+  // If we're on the audio thread, we can print out the tail and
+  // latency times (because these methods can only be called from the
+  // audio thread.)
+  if (Context()->IsAudioThread()) {
+    fprintf(stderr, ", tail=%.15g + %.15g, last=%.15g\n", TailTime(),
+            LatencyTime(), last_non_silent_time_);
+  }
+
+  fprintf(stderr, "\n");
+}
+
+void AudioHandler::AddTailProcessingDebug() {
+  TailProcessingDebug("addTail");
+}
+
+void AudioHandler::RemoveTailProcessingDebug() {
+  TailProcessingDebug("remTail");
+}
+#endif  // DEBUG_AUDIONODE_REFERENCES > 1
 
 void AudioHandler::UpdateChannelCountMode() {
   channel_count_mode_ = new_channel_count_mode_;

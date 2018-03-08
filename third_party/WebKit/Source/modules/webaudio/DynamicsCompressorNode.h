@@ -70,6 +70,7 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
                             AudioParamHandler& ratio,
                             AudioParamHandler& attack,
                             AudioParamHandler& release);
+  bool RequiresTailProcessing() const final;
   double TailTime() const override;
   double LatencyTime() const override;
 

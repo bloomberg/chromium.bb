@@ -80,6 +80,10 @@ class AudioWorkletHandler final : public AudioHandler {
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map_;
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 
+  // TODO(): Adjust this if needed based on the result of the process
+  // method or the value of |tail_time_|.
+  bool RequiresTailProcessing() const { return true; }
+
   // A reference to the main thread task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

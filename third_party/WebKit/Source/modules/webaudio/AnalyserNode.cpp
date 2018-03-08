@@ -172,6 +172,16 @@ void AnalyserHandler::UpdatePullStatus() {
     }
   }
 }
+
+bool AnalyserHandler::RequiresTailProcessing() const {
+  // Tail time is always non-zero so tail processing is required.
+  return true;
+}
+
+double AnalyserHandler::TailTime() const {
+  return RealtimeAnalyser::kMaxFFTSize /
+         static_cast<double>(Context()->sampleRate());
+};
 // ----------------------------------------------------------------
 
 AnalyserNode::AnalyserNode(BaseAudioContext& context)
