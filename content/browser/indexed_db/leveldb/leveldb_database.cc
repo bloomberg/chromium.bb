@@ -430,20 +430,15 @@ leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
 }
 
 std::unique_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
-    const LevelDBSnapshot* snapshot) {
-  leveldb::ReadOptions read_options;
-  read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
-                                         // performance impact is too great.
-  read_options.snapshot = snapshot ? snapshot->snapshot_ : nullptr;
-
+    const leveldb::ReadOptions& options) {
   num_iterators_++;
   max_iterators_ = std::max(max_iterators_, num_iterators_);
   // Iterator isn't added to lru cache until it is used, as memory isn't loaded
   // for the iterator until it's first Seek call.
-  std::unique_ptr<leveldb::Iterator> i(db_->NewIterator(read_options));
+  std::unique_ptr<leveldb::Iterator> i(db_->NewIterator(options));
   return std::unique_ptr<LevelDBIterator>(
       IndexedDBClassFactory::Get()->CreateIteratorImpl(std::move(i), this,
-                                                       read_options.snapshot));
+                                                       options.snapshot));
 }
 
 const LevelDBComparator* LevelDBDatabase::Comparator() const {
@@ -462,6 +457,19 @@ void LevelDBDatabase::Compact(const base::StringPiece& start,
 
 void LevelDBDatabase::CompactAll() {
   db_->CompactRange(nullptr, nullptr);
+}
+
+leveldb::ReadOptions LevelDBDatabase::DefaultReadOptions() {
+  return DefaultReadOptions(nullptr);
+}
+
+leveldb::ReadOptions LevelDBDatabase::DefaultReadOptions(
+    const LevelDBSnapshot* snapshot) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
+                                         // performance impact is too great.
+  read_options.snapshot = snapshot ? snapshot->snapshot_ : nullptr;
+  return read_options;
 }
 
 bool LevelDBDatabase::OnMemoryDump(

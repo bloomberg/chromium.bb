@@ -48,7 +48,8 @@ Status ReadIndexes(LevelDBDatabase* db,
 
   DCHECK(indexes->empty());
 
-  std::unique_ptr<LevelDBIterator> it = db->CreateIterator();
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     IndexMetaDataKey meta_data_key;
@@ -149,7 +150,8 @@ Status ReadObjectStores(
 
   DCHECK(object_stores->empty());
 
-  std::unique_ptr<LevelDBIterator> it = db->CreateIterator();
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     ObjectStoreMetaDataKey meta_data_key;
@@ -321,7 +323,8 @@ leveldb::Status IndexedDBMetadataCoding::ReadDatabaseNames(
 
   DCHECK(names->empty());
 
-  std::unique_ptr<LevelDBIterator> it = db->CreateIterator();
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s;
   for (s = it->Seek(start_key);
        s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
