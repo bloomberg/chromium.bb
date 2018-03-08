@@ -123,10 +123,10 @@ class NotificationTemplateBuilder {
   void WriteActionElement(const message_center::ButtonInfo& button,
                           int index,
                           const GURL& origin,
-                          NotificationLaunchId launch_id);
+                          NotificationLaunchId copied_launch_id);
 
   // Adds context menu actions to the notification sent by |origin|.
-  void AddContextMenu();
+  void AddContextMenu(NotificationLaunchId copied_launch_id);
   void WriteContextMenuElement(const std::string& content,
                                const std::string& arguments);
 

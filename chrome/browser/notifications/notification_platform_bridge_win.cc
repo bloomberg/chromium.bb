@@ -740,10 +740,14 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   if (!launch_id.is_valid())
     return false;
 
+  NotificationCommon::Operation operation = launch_id.is_for_context_menu()
+                                                ? NotificationCommon::SETTINGS
+                                                : NotificationCommon::CLICK;
+
   ForwardNotificationOperationOnUiThread(
-      NotificationCommon::CLICK, launch_id.notification_type(),
-      launch_id.origin_url(), launch_id.notification_id(),
-      launch_id.profile_id(), launch_id.incognito(),
+      operation, launch_id.notification_type(), launch_id.origin_url(),
+      launch_id.notification_id(), launch_id.profile_id(),
+      launch_id.incognito(),
       /*action_index=*/base::nullopt, /*by_user=*/true);
 
   return true;

@@ -34,7 +34,15 @@ class NotificationLaunchId {
 
   std::string Serialize() const;
 
-  void set_button_index(int index) { button_index_ = index; }
+  void set_button_index(int index) {
+    DCHECK(!is_for_context_menu_);
+    button_index_ = index;
+  }
+
+  void set_is_for_context_menu() {
+    DCHECK_EQ(-1, button_index_);
+    is_for_context_menu_ = true;
+  }
 
   NotificationHandler::Type notification_type() const {
     DCHECK(is_valid());
@@ -60,6 +68,10 @@ class NotificationLaunchId {
     DCHECK(is_valid());
     return button_index_;
   }
+  bool is_for_context_menu() const {
+    DCHECK(is_valid());
+    return is_for_context_menu_;
+  }
 
  private:
   NotificationHandler::Type notification_type_;
@@ -68,6 +80,7 @@ class NotificationLaunchId {
   bool incognito_ = false;
   GURL origin_url_;
   int button_index_ = -1;
+  bool is_for_context_menu_ = false;
 
   bool is_valid_ = false;
 };

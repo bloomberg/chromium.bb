@@ -114,7 +114,7 @@ TEST_F(NotificationTemplateBuilderTest, SimpleToast) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -143,7 +143,7 @@ TEST_F(NotificationTemplateBuilderTest, Buttons) {
  <actions>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id"/>
   <action activationType="foreground" content="Button2" arguments="1|1|0|Default|0|https://example.com/|notification_id"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -175,7 +175,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id"/>
   <action activationType="foreground" content="Button2" arguments="1|1|0|Default|0|https://example.com/|notification_id"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -209,7 +209,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id"/>
   <action activationType="foreground" content="Button2" arguments="1|1|0|Default|0|https://example.com/|notification_id"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -241,7 +241,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id"/>
   <action activationType="foreground" content="Button2" arguments="1|1|0|Default|0|https://example.com/|notification_id"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -264,7 +264,7 @@ TEST_F(NotificationTemplateBuilderTest, Silent) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
  <audio silent="true"/>
 </toast>
@@ -293,7 +293,7 @@ TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
  </visual>
  <actions>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -317,7 +317,7 @@ TEST_F(NotificationTemplateBuilderTest, NullTimestamp) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -341,7 +341,7 @@ TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
   </binding>
  </visual>
  <actions>
-  <action content="%ls" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="%ls" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -386,7 +386,7 @@ TEST_F(NotificationTemplateBuilderTest, Images) {
  <actions>
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="1|0|0|Default|0|https://example.com/|notification_id" imageUri="c:\temp\img2.tmp"/>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -410,7 +410,7 @@ TEST_F(NotificationTemplateBuilderTest, ContextMessage) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -437,7 +437,7 @@ TEST_F(NotificationTemplateBuilderTest, ExtensionNoContextMessage) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -463,7 +463,7 @@ TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
@@ -498,7 +498,7 @@ title4 - message4
   </binding>
  </visual>
  <actions>
-  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
 )";
