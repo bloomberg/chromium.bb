@@ -927,18 +927,23 @@ class ParallelDownloadTest : public DownloadContentTest {
       TestDownloadHttpResponse::Parameters& parameters) {
     std::string output;
     int64_t total_bytes = 0u;
+    const int64_t kBufferSize = 64 * 1024;
     {
       base::ScopedAllowBlockingForTesting allow_io_for_test_setup;
       base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
       for (const auto& slice : slices) {
-        total_bytes += slice.received_bytes;
-
         EXPECT_TRUE(file.IsValid());
-        output = TestDownloadHttpResponse::GetPatternBytes(
-            parameters.pattern_generator_seed, slice.offset,
-            slice.received_bytes);
-        EXPECT_EQ(slice.received_bytes, file.Write(slice.offset, output.data(),
-                                                   slice.received_bytes));
+        int64_t length = slice.offset + slice.received_bytes;
+        for (int64_t offset = slice.offset; offset < length;) {
+          int64_t bytes_to_write =
+              length - offset > kBufferSize ? kBufferSize : length - offset;
+          output = TestDownloadHttpResponse::GetPatternBytes(
+              parameters.pattern_generator_seed, offset, bytes_to_write);
+          EXPECT_EQ(bytes_to_write,
+                    file.Write(offset, output.data(), bytes_to_write));
+          total_bytes += bytes_to_write;
+          offset += bytes_to_write;
+        }
       }
       file.Close();
     }
