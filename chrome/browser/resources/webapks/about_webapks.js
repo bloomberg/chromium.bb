@@ -17,6 +17,8 @@
  *   orientation: string,
  *   themeColor: string,
  *   backgroundColor: string,
+ *   lastUpdateCheckTimeMs: number,
+ *   relaxUpdates: boolean,
  * }}
  */
 var WebApkInfo;
@@ -92,6 +94,12 @@ function addWebApk(webApkInfo) {
   addWebApkField(webApkList, 'Orientation: ', webApkInfo.orientation);
   addWebApkField(webApkList, 'Theme color: ', webApkInfo.themeColor);
   addWebApkField(webApkList, 'Background color: ', webApkInfo.backgroundColor);
+  addWebApkField(
+      webApkList, 'Last Update Check Time: ',
+      new Date(webApkInfo.lastUpdateCheckTimeMs).toString());
+  addWebApkField(
+      webApkList, 'Check for Updates Less Frequently: ',
+      webApkInfo.relaxUpdates.toString());
 }
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -106,8 +106,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         @WebApkUpdateReason
         int updateReason = needsUpdate(mInfo, fetchedInfo, primaryIconUrl, badgeIconUrl);
         boolean needsUpgrade = (updateReason != WebApkUpdateReason.NONE);
-        Log.v(TAG, "Got Manifest: " + gotManifest);
-        Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
+        Log.i(TAG, "Got Manifest: " + gotManifest);
+        Log.i(TAG, "WebAPK upgrade needed: " + needsUpgrade);
 
         // If the Web Manifest was not found and an upgrade is requested, stop fetching Web
         // Manifests as the user navigates to avoid sending multiple WebAPK update requests. In
@@ -190,7 +190,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     /** Sends update request to the WebAPK Server. Should be called when WebAPK is not running. */
     public void updateWhileNotRunning(final Runnable callback) {
-        Log.v(TAG, "Update now");
+        Log.i(TAG, "Update now");
         WebApkUpdateCallback callbackRunner = (result, relaxUpdates) -> {
             onFinishedUpdate(result, relaxUpdates);
             callback.run();

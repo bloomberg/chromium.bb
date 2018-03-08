@@ -422,7 +422,7 @@ public class WebappDataStorage {
      * Returns the completion time, in milliseconds, of the last check for whether the WebAPK's Web
      * Manifest was updated. This time needs to be set when the WebAPK is registered.
      */
-    private long getLastCheckForWebManifestUpdateTimeMs() {
+    public long getLastCheckForWebManifestUpdateTimeMs() {
         return mPreferences.getLong(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME, TIMESTAMP_INVALID);
     }
 
@@ -493,7 +493,7 @@ public class WebappDataStorage {
     }
 
     /** Returns whether we should check for updates less frequently. */
-    private boolean shouldRelaxUpdates() {
+    public boolean shouldRelaxUpdates() {
         return mPreferences.getBoolean(KEY_RELAX_UPDATES, false);
     }
 

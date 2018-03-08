@@ -716,6 +716,8 @@ public class ShortcutHelper {
         List<Integer> orientations = new ArrayList<>();
         List<Long> themeColors = new ArrayList<>();
         List<Long> backgroundColors = new ArrayList<>();
+        List<Long> lastUpdateCheckTimesMs = new ArrayList<>();
+        List<Boolean> relaxUpdates = new ArrayList<>();
 
         Context context = ContextUtils.getApplicationContext();
         PackageManager packageManager = context.getPackageManager();
@@ -739,6 +741,18 @@ public class ShortcutHelper {
                     orientations.add(webApkInfo.orientation());
                     themeColors.add(webApkInfo.themeColor());
                     backgroundColors.add(webApkInfo.backgroundColor());
+
+                    WebappDataStorage storage =
+                            WebappRegistry.getInstance().getWebappDataStorage(webApkInfo.id());
+                    long lastUpdateCheckTimeMsForStorage = 0;
+                    boolean relaxUpdatesForStorage = false;
+                    if (storage != null) {
+                        lastUpdateCheckTimeMsForStorage =
+                                storage.getLastCheckForWebManifestUpdateTimeMs();
+                        relaxUpdatesForStorage = storage.shouldRelaxUpdates();
+                    }
+                    lastUpdateCheckTimesMs.add(lastUpdateCheckTimeMsForStorage);
+                    relaxUpdates.add(relaxUpdatesForStorage);
                 }
             }
         }
@@ -751,12 +765,15 @@ public class ShortcutHelper {
                 CollectionUtil.integerListToIntArray(displayModes),
                 CollectionUtil.integerListToIntArray(orientations),
                 CollectionUtil.longListToLongArray(themeColors),
-                CollectionUtil.longListToLongArray(backgroundColors));
+                CollectionUtil.longListToLongArray(backgroundColors),
+                CollectionUtil.longListToLongArray(lastUpdateCheckTimesMs),
+                CollectionUtil.booleanListToBooleanArray(relaxUpdates));
     }
 
     private static native void nativeOnWebappDataStored(long callbackPointer);
     private static native void nativeOnWebApksRetrieved(long callbackPointer, String[] names,
             String[] shortNames, String[] packageName, int[] shellApkVersions, int[] versionCodes,
             String[] uris, String[] scopes, String[] manifestUrls, String[] manifestStartUrls,
-            int[] displayModes, int[] orientations, long[] themeColors, long[] backgroundColors);
+            int[] displayModes, int[] orientations, long[] themeColors, long[] backgroundColors,
+            long[] lastUpdateCheckTimesMs, boolean[] relaxUpdates);
 }
