@@ -30,7 +30,11 @@
 #define SQLTransaction_h
 
 #include <memory>
+
+#include "bindings/core/v8/V8VoidCallback.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "bindings/modules/v8/V8SQLTransactionCallback.h"
+#include "bindings/modules/v8/V8SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -45,9 +49,6 @@ class SQLErrorData;
 class SQLTransactionBackend;
 class SQLValue;
 class ScriptValue;
-class V8SQLTransactionCallback;
-class V8SQLTransactionErrorCallback;
-class V8VoidCallback;
 
 class SQLTransaction final : public ScriptWrappable,
                              public SQLTransactionStateMachine<SQLTransaction> {
@@ -75,9 +76,9 @@ class SQLTransaction final : public ScriptWrappable,
 
    private:
     explicit OnProcessV8Impl(V8SQLTransactionCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8SQLTransactionCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8SQLTransactionCallback>> callback_;
   };
 
   class OnSuccessCallback
@@ -100,9 +101,10 @@ class SQLTransaction final : public ScriptWrappable,
     void OnSuccess() override;
 
    private:
-    explicit OnSuccessV8Impl(V8VoidCallback* callback) : callback_(callback) {}
+    explicit OnSuccessV8Impl(V8VoidCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8VoidCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
   };
 
   class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
@@ -125,9 +127,10 @@ class SQLTransaction final : public ScriptWrappable,
 
    private:
     explicit OnErrorV8Impl(V8SQLTransactionErrorCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8SQLTransactionErrorCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8SQLTransactionErrorCallback>>
+        callback_;
   };
 
   static SQLTransaction* Create(Database*,

@@ -30,8 +30,6 @@
 
 #include "modules/filesystem/DirectoryReader.h"
 
-#include "bindings/modules/v8/V8EntriesCallback.h"
-#include "bindings/modules/v8/V8ErrorCallback.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
@@ -40,7 +38,9 @@ namespace blink {
 
 namespace {
 
-void RunEntriesCallback(V8EntriesCallback* callback, EntryHeapVector* entries) {
+void RunEntriesCallback(
+    V8PersistentCallbackInterface<V8EntriesCallback>* callback,
+    EntryHeapVector* entries) {
   callback->InvokeAndReportException(nullptr, *entries);
 }
 
@@ -120,19 +120,21 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
     EntryHeapVector* entries = new EntryHeapVector(std::move(entries_));
     DOMFileSystem::ScheduleCallback(
         Filesystem()->GetExecutionContext(),
-        WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
-                  WrapPersistent(entries)));
+        WTF::Bind(
+            &RunEntriesCallback,
+            WrapPersistent(ToV8PersistentCallbackInterface(entries_callback)),
+            WrapPersistent(entries)));
     return;
   }
 
-  entries_callback_ = entries_callback;
-  error_callback_ = error_callback;
+  entries_callback_ = ToV8PersistentCallbackInterface(entries_callback);
+  error_callback_ = ToV8PersistentCallbackInterface(error_callback);
 }
 
 void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
   entries_.AppendVector(entries);
   error_callback_ = nullptr;
-  if (V8EntriesCallback* entries_callback = entries_callback_.Release()) {
+  if (auto* entries_callback = entries_callback_.Release()) {
     EntryHeapVector entries;
     entries.swap(entries_);
     entries_callback->InvokeAndReportException(nullptr, entries);
@@ -142,7 +144,7 @@ void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
 void DirectoryReader::OnError(FileError::ErrorCode error) {
   error_ = error;
   entries_callback_ = nullptr;
-  if (V8ErrorCallback* error_callback = error_callback_.Release()) {
+  if (auto* error_callback = error_callback_.Release()) {
     error_callback->InvokeAndReportException(
         nullptr, FileError::CreateDOMException(error_));
   }

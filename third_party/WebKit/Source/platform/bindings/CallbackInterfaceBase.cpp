@@ -21,6 +21,11 @@ CallbackInterfaceBase::CallbackInterfaceBase(
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
+void CallbackInterfaceBase::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
+  visitor->TraceWrappers(callback_object_);
+}
+
 V8PersistentCallbackInterfaceBase::V8PersistentCallbackInterfaceBase(
     CallbackInterfaceBase* callback_interface)
     : callback_interface_(callback_interface) {

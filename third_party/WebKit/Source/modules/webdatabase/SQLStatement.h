@@ -28,6 +28,8 @@
 #ifndef SQLStatement_h
 #define SQLStatement_h
 
+#include "bindings/modules/v8/V8SQLStatementCallback.h"
+#include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/wtf/Forward.h"
@@ -39,8 +41,6 @@ class Database;
 class SQLError;
 class SQLStatementBackend;
 class SQLTransaction;
-class V8SQLStatementCallback;
-class V8SQLStatementErrorCallback;
 
 class SQLStatement final : public GarbageCollected<SQLStatement> {
  public:
@@ -65,9 +65,9 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
 
    private:
     explicit OnSuccessV8Impl(V8SQLStatementCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8SQLStatementCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8SQLStatementCallback>> callback_;
   };
 
   class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
@@ -90,9 +90,10 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
 
    private:
     explicit OnErrorV8Impl(V8SQLStatementErrorCallback* callback)
-        : callback_(callback) {}
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
-    Member<V8SQLStatementErrorCallback> callback_;
+    Member<V8PersistentCallbackInterface<V8SQLStatementErrorCallback>>
+        callback_;
   };
 
   static SQLStatement* Create(Database*, OnSuccessCallback*, OnErrorCallback*);

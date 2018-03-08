@@ -5,10 +5,10 @@
 #ifndef CallbackInterfaceBase_h
 #define CallbackInterfaceBase_h
 
-#include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/TraceWrapperBase.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -23,7 +23,8 @@ class V8PersistentCallbackInterfaceBase;
 // As the signatures of callback interface's operations vary, this class does
 // not implement any operation. Subclasses will implement it.
 class PLATFORM_EXPORT CallbackInterfaceBase
-    : public GarbageCollectedFinalized<CallbackInterfaceBase> {
+    : public GarbageCollectedFinalized<CallbackInterfaceBase>,
+      public TraceWrapperBase {
  public:
   // Whether the callback interface is a "single operation callback interface"
   // or not.
@@ -36,6 +37,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   virtual ~CallbackInterfaceBase() = default;
 
   virtual void Trace(blink::Visitor*) {}
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();
@@ -58,8 +60,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 
  private:
   // The "callback interface type" value.
-  // TODO(yukishiino): Replace ScopedPersistent with TraceWrapperMember.
-  ScopedPersistent<v8::Object> callback_object_;
+  TraceWrapperV8Reference<v8::Object> callback_object_;
   bool is_callback_object_callable_ = false;
   // The associated Realm of the callback interface type value. Note that the
   // callback interface type value can be different from the function object
@@ -86,6 +87,8 @@ class PLATFORM_EXPORT V8PersistentCallbackInterfaceBase
   virtual ~V8PersistentCallbackInterfaceBase() { v8_object_.Reset(); }
 
   virtual void Trace(blink::Visitor*);
+
+  v8::Isolate* GetIsolate() { return callback_interface_->GetIsolate(); }
 
  protected:
   explicit V8PersistentCallbackInterfaceBase(CallbackInterfaceBase*);

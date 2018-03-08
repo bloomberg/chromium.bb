@@ -31,15 +31,14 @@
 #ifndef DirectoryReader_h
 #define DirectoryReader_h
 
+#include "bindings/modules/v8/V8EntriesCallback.h"
+#include "bindings/modules/v8/V8ErrorCallback.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-class V8EntriesCallback;
-class V8ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -73,8 +72,8 @@ class DirectoryReader : public DirectoryReaderBase {
   bool is_reading_;
   EntryHeapVector entries_;
   FileError::ErrorCode error_ = FileError::ErrorCode::kOK;
-  Member<V8EntriesCallback> entries_callback_;
-  Member<V8ErrorCallback> error_callback_;
+  Member<V8PersistentCallbackInterface<V8EntriesCallback>> entries_callback_;
+  Member<V8PersistentCallbackInterface<V8ErrorCallback>> error_callback_;
 };
 
 }  // namespace blink
