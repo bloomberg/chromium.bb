@@ -64,7 +64,7 @@ std::vector<mojom::CompositionSegmentPtr> ConvertSegments(
     segment->start_offset = ime_text_span.start_offset;
     segment->end_offset = ime_text_span.end_offset;
     segment->emphasized =
-        (ime_text_span.thick ||
+        (ime_text_span.thickness == ui::ImeTextSpan::Thickness::kThick ||
          (composition.selection.start() == ime_text_span.start_offset &&
           composition.selection.end() == ime_text_span.end_offset));
     segments.push_back(std::move(segment));

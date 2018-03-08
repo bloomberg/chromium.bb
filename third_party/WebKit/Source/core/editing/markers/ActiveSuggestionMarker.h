@@ -17,7 +17,7 @@ class CORE_EXPORT ActiveSuggestionMarker final : public StyleableMarker {
   ActiveSuggestionMarker(unsigned start_offset,
                          unsigned end_offset,
                          Color underline_color,
-                         Thickness,
+                         ui::mojom::ImeTextSpanThickness,
                          Color background_color);
 
   // DocumentMarker implementations

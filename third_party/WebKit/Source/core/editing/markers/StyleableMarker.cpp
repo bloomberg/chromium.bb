@@ -4,12 +4,14 @@
 
 #include "core/editing/markers/StyleableMarker.h"
 
+using ui::mojom::ImeTextSpanThickness;
+
 namespace blink {
 
 StyleableMarker::StyleableMarker(unsigned start_offset,
                                  unsigned end_offset,
                                  Color underline_color,
-                                 Thickness thickness,
+                                 ImeTextSpanThickness thickness,
                                  Color background_color)
     : DocumentMarker(start_offset, end_offset),
       underline_color_(underline_color),
@@ -20,8 +22,16 @@ Color StyleableMarker::UnderlineColor() const {
   return underline_color_;
 }
 
-bool StyleableMarker::IsThick() const {
-  return thickness_ == Thickness::kThick;
+bool StyleableMarker::HasThicknessNone() const {
+  return thickness_ == ImeTextSpanThickness::kNone;
+}
+
+bool StyleableMarker::HasThicknessThin() const {
+  return thickness_ == ImeTextSpanThickness::kThin;
+}
+
+bool StyleableMarker::HasThicknessThick() const {
+  return thickness_ == ImeTextSpanThickness::kThick;
 }
 
 Color StyleableMarker::BackgroundColor() const {

@@ -9,24 +9,25 @@
 
 namespace ui {
 
-ImeTextSpan::ImeTextSpan() : ImeTextSpan(0, 0, SK_ColorTRANSPARENT, false) {}
+ImeTextSpan::ImeTextSpan()
+    : ImeTextSpan(0, 0, SK_ColorTRANSPARENT, Thickness::kThin) {}
 
 ImeTextSpan::ImeTextSpan(uint32_t start_offset,
                          uint32_t end_offset,
                          SkColor underline_color,
-                         bool thick)
+                         Thickness thickness)
     : ImeTextSpan(Type::kComposition,
                   start_offset,
                   end_offset,
                   underline_color,
-                  thick,
+                  thickness,
                   SK_ColorTRANSPARENT) {}
 
 ImeTextSpan::ImeTextSpan(Type type,
                          uint32_t start_offset,
                          uint32_t end_offset,
                          SkColor underline_color,
-                         bool thick,
+                         Thickness thickness,
                          SkColor background_color,
                          SkColor suggestion_highlight_color,
                          const std::vector<std::string>& suggestions)
@@ -34,7 +35,7 @@ ImeTextSpan::ImeTextSpan(Type type,
       start_offset(start_offset),
       end_offset(end_offset),
       underline_color(underline_color),
-      thick(thick),
+      thickness(thickness),
       background_color(background_color),
       suggestion_highlight_color(suggestion_highlight_color),
       suggestions(suggestions) {}

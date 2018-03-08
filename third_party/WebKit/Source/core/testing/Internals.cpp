@@ -175,6 +175,8 @@
 
 namespace blink {
 
+using ui::mojom::ImeTextSpanThickness;
+
 namespace {
 
 class UseCounterObserverImpl final : public UseCounter::Observer {
@@ -1066,12 +1068,14 @@ static bool ParseColor(const String& value,
   return true;
 }
 
-static WTF::Optional<StyleableMarker::Thickness> ThicknessFrom(
+static WTF::Optional<ImeTextSpanThickness> ThicknessFrom(
     const String& thickness) {
+  if (EqualIgnoringASCIICase(thickness, "none"))
+    return ImeTextSpanThickness::kNone;
   if (EqualIgnoringASCIICase(thickness, "thin"))
-    return StyleableMarker::Thickness::kThin;
+    return ImeTextSpanThickness::kThin;
   if (EqualIgnoringASCIICase(thickness, "thick"))
-    return StyleableMarker::Thickness::kThick;
+    return ImeTextSpanThickness::kThick;
   return WTF::nullopt;
 }
 
@@ -1084,12 +1088,12 @@ void addStyleableMarkerHelper(
     const String& background_color_value,
     ExceptionState& exception_state,
     std::function<
-        void(const EphemeralRange&, Color, StyleableMarker::Thickness, Color)>
+        void(const EphemeralRange&, Color, ImeTextSpanThickness, Color)>
         create_marker) {
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  WTF::Optional<StyleableMarker::Thickness> thickness =
+  WTF::Optional<ImeTextSpanThickness> thickness =
       ThicknessFrom(thickness_value);
   if (!thickness) {
     exception_state.ThrowDOMException(
@@ -1123,7 +1127,7 @@ void Internals::addCompositionMarker(const Range* range,
       exception_state,
       [&document_marker_controller](
           const EphemeralRange& range, Color underline_color,
-          StyleableMarker::Thickness thickness, Color background_color) {
+          ImeTextSpanThickness thickness, Color background_color) {
         document_marker_controller.AddCompositionMarker(
             range, underline_color, thickness, background_color);
       });
@@ -1141,7 +1145,7 @@ void Internals::addActiveSuggestionMarker(const Range* range,
       exception_state,
       [&document_marker_controller](
           const EphemeralRange& range, Color underline_color,
-          StyleableMarker::Thickness thickness, Color background_color) {
+          ImeTextSpanThickness thickness, Color background_color) {
         document_marker_controller.AddActiveSuggestionMarker(
             range, underline_color, thickness, background_color);
       });
@@ -1167,7 +1171,7 @@ void Internals::addSuggestionMarker(
       exception_state,
       [&document_marker_controller, &suggestions, &suggestion_highlight_color](
           const EphemeralRange& range, Color underline_color,
-          StyleableMarker::Thickness thickness, Color background_color) {
+          ImeTextSpanThickness thickness, Color background_color) {
         document_marker_controller.AddSuggestionMarker(
             range,
             SuggestionMarkerProperties::Builder()

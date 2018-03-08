@@ -6,6 +6,7 @@
 #define StyleableMarker_h
 
 #include "core/editing/markers/DocumentMarker.h"
+#include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
 
 namespace blink {
 
@@ -13,23 +14,23 @@ namespace blink {
 // that should be renderable with customizable formatting.
 class CORE_EXPORT StyleableMarker : public DocumentMarker {
  public:
-  enum class Thickness { kThin, kThick };
-
   StyleableMarker(unsigned start_offset,
                   unsigned end_offset,
                   Color underline_color,
-                  Thickness,
+                  ui::mojom::ImeTextSpanThickness,
                   Color background_color);
 
   // StyleableMarker-specific
   Color UnderlineColor() const;
-  bool IsThick() const;
+  bool HasThicknessNone() const;
+  bool HasThicknessThin() const;
+  bool HasThicknessThick() const;
   Color BackgroundColor() const;
 
  private:
   const Color underline_color_;
   const Color background_color_;
-  const Thickness thickness_;
+  const ui::mojom::ImeTextSpanThickness thickness_;
 
   DISALLOW_COPY_AND_ASSIGN(StyleableMarker);
 };

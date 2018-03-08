@@ -615,6 +615,7 @@ source_set("blink_headers") {
   public_deps = [
     "//net",
     "//services/service_manager/public/cpp",
+    "//services/ui/public/interfaces/ime",
     "//skia",
     "//third_party/WebKit/public/common",
     "//url",

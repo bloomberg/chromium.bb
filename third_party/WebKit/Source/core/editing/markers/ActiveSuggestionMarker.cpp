@@ -6,11 +6,12 @@
 
 namespace blink {
 
-ActiveSuggestionMarker::ActiveSuggestionMarker(unsigned start_offset,
-                                               unsigned end_offset,
-                                               Color underline_color,
-                                               Thickness thickness,
-                                               Color background_color)
+ActiveSuggestionMarker::ActiveSuggestionMarker(
+    unsigned start_offset,
+    unsigned end_offset,
+    Color underline_color,
+    ui::mojom::ImeTextSpanThickness thickness,
+    Color background_color)
     : StyleableMarker(start_offset,
                       end_offset,
                       underline_color,

@@ -13,6 +13,8 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/testing/EditingTestBase.h"
 
+using ui::mojom::ImeTextSpanThickness;
+
 namespace blink {
 
 class TextSuggestionControllerTest : public EditingTestBase {};
@@ -27,7 +29,7 @@ TEST_F(TextSuggestionControllerTest, ApplySpellCheckSuggestion) {
 
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 8)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before misspelling
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -208,7 +210,7 @@ TEST_F(TextSuggestionControllerTest, DeleteActiveSuggestionRange_DeleteAtEnd) {
   // Mark "word2" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word2
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -234,7 +236,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word2" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word2
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -261,7 +263,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word1" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word1
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -289,7 +291,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word1" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word1
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -320,7 +322,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word2" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 5), Position(text, 10)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word2
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -346,7 +348,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word2" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 6), Position(text, 11)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word2
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
@@ -372,7 +374,7 @@ TEST_F(TextSuggestionControllerTest,
   // Mark "word1" as the active suggestion range
   GetDocument().Markers().AddActiveSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 5)), Color::kBlack,
-      StyleableMarker::Thickness::kThin, Color::kBlack);
+      ImeTextSpanThickness::kThin, Color::kBlack);
   // Select immediately before word1
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()

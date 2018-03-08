@@ -16,7 +16,7 @@ class ActiveSuggestionMarkerListImplTest : public EditingTestBase {
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
     return new ActiveSuggestionMarker(start_offset, end_offset, Color::kBlack,
-                                      StyleableMarker::Thickness::kThin,
+                                      ui::mojom::ImeTextSpanThickness::kThin,
                                       Color::kBlack);
   }
 
