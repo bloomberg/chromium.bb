@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import time
 
 from chromite.lib import builder_status_lib
 from chromite.lib import constants
@@ -16,7 +15,6 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
-from chromite.lib import tree_status
 from chromite.scripts import chrome_chromeos_lkgm
 
 # pylint: disable=protected-access
@@ -34,8 +32,6 @@ class BaseChromeLKGMCommitterTest(cros_test_lib.MockTempDirTestCase):
         constants.BUILDER_STATUS_PASSED, None)
     self.fail_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, None)
-    # No need to make tests sleep.
-    self.PatchObject(time, 'sleep')
 
 
 class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
@@ -61,7 +57,6 @@ class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1002.0.0', False, 'user@test.org')
 
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
@@ -79,7 +74,6 @@ class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.assertRaises(chrome_chromeos_lkgm.LKGMNotValid,
                       self.committer.CommitNewLKGM)
 
@@ -94,7 +88,6 @@ class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1003.0.0-rc2', False, 'user@test.org')
 
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
