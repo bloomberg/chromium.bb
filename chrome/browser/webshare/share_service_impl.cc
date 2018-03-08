@@ -31,24 +31,14 @@ bool IsIdentifier(char c) {
   return base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) || c == '-' || c == '_';
 }
 
-}  // namespace
-
-ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
-ShareServiceImpl::~ShareServiceImpl() = default;
-
-// static
-void ShareServiceImpl::Create(
-    blink::mojom::ShareServiceRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ShareServiceImpl>(),
-                          std::move(request));
-}
-
-// static
-bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
-                                           base::StringPiece title,
-                                           base::StringPiece text,
-                                           const GURL& share_url,
-                                           std::string* url_template_filled) {
+// Returns to |out| the result of running the "replace placeholders" algorithm
+// on |template_string|. The algorithm is specified at
+// https://wicg.github.io/web-share-target/#dfn-replace-placeholders
+bool ReplacePlaceholders(base::StringPiece template_string,
+                         base::StringPiece title,
+                         base::StringPiece text,
+                         const GURL& share_url,
+                         std::string* out) {
   constexpr char kTitlePlaceholder[] = "title";
   constexpr char kTextPlaceholder[] = "text";
   constexpr char kUrlPlaceholder[] = "url";
@@ -64,10 +54,10 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
   std::vector<base::StringPiece> split_template;
   bool last_saw_open = false;
   size_t start_index_to_copy = 0;
-  for (size_t i = 0; i < url_template.size(); ++i) {
+  for (size_t i = 0; i < template_string.size(); ++i) {
     if (last_saw_open) {
-      if (url_template[i] == '}') {
-        base::StringPiece placeholder = url_template.substr(
+      if (template_string[i] == '}') {
+        base::StringPiece placeholder = template_string.substr(
             start_index_to_copy + 1, i - 1 - start_index_to_copy);
         auto it = placeholder_to_data.find(placeholder);
         if (it != placeholder_to_data.end()) {
@@ -77,17 +67,17 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
 
         last_saw_open = false;
         start_index_to_copy = i + 1;
-      } else if (!IsIdentifier(url_template[i])) {
+      } else if (!IsIdentifier(template_string[i])) {
         // Error: Non-identifier character seen after open.
         return false;
       }
     } else {
-      if (url_template[i] == '}') {
+      if (template_string[i] == '}') {
         // Error: Saw close, with no corresponding open.
         return false;
-      } else if (url_template[i] == '{') {
-        split_template.push_back(
-            url_template.substr(start_index_to_copy, i - start_index_to_copy));
+      } else if (template_string[i] == '{') {
+        split_template.push_back(template_string.substr(
+            start_index_to_copy, i - start_index_to_copy));
 
         last_saw_open = true;
         start_index_to_copy = i;
@@ -98,10 +88,47 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
     // Error: Saw open that was never closed.
     return false;
   }
-  split_template.push_back(url_template.substr(
-      start_index_to_copy, url_template.size() - start_index_to_copy));
+  split_template.push_back(template_string.substr(
+      start_index_to_copy, template_string.size() - start_index_to_copy));
 
-  *url_template_filled = base::StrCat(split_template);
+  *out = base::StrCat(split_template);
+  return true;
+}
+
+}  // namespace
+
+ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
+ShareServiceImpl::~ShareServiceImpl() = default;
+
+// static
+void ShareServiceImpl::Create(blink::mojom::ShareServiceRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<ShareServiceImpl>(),
+                          std::move(request));
+}
+
+// static
+bool ShareServiceImpl::ReplaceUrlPlaceholders(const GURL& url_template,
+                                              base::StringPiece title,
+                                              base::StringPiece text,
+                                              const GURL& share_url,
+                                              GURL* url_template_filled) {
+  std::string new_query;
+  std::string new_ref;
+  if (!ReplacePlaceholders(url_template.query_piece(), title, text, share_url,
+                           &new_query) ||
+      !ReplacePlaceholders(url_template.ref_piece(), title, text, share_url,
+                           &new_ref)) {
+    return false;
+  }
+
+  // Check whether |url_template| has a query in order to preserve the '?' in a
+  // URL with an empty query. e.g. http://www.google.com/?
+  GURL::Replacements url_replacements;
+  if (url_template.has_query())
+    url_replacements.SetQueryStr(new_query);
+  if (url_template.has_ref())
+    url_replacements.SetRefStr(new_ref);
+  *url_template_filled = url_template.ReplaceComponents(url_replacements);
   return true;
 }
 
@@ -195,13 +222,9 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
-  // This will only replace placeholders found in the query and the fragment
-  // parts of the URL. This happens implicitly, because '{' and '}' found in the
-  // path will have been escaped during URL parsing, and thus won't be seen as
-  // placeholders by ReplacePlaceholders().
-  std::string url_template_filled;
-  if (!ReplacePlaceholders(result->url_template().spec(), title, text,
-                           share_url, &url_template_filled)) {
+  GURL url_template_filled;
+  if (!ReplaceUrlPlaceholders(result->url_template(), title, text, share_url,
+                              &url_template_filled)) {
     // TODO(mgiuca): This error should not be possible at share time, because
     // targets with invalid templates should not be chooseable. Fix
     // https://crbug.com/694380 and replace this with a DCHECK.
@@ -209,12 +232,11 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
-  const GURL target(url_template_filled);
   // User should not be able to cause an invalid target URL. The replaced pieces
   // are escaped. If somehow we slip through this DCHECK, it will just open
   // about:blank.
-  DCHECK(target.is_valid());
-  OpenTargetURL(target);
+  DCHECK(url_template_filled.is_valid());
+  OpenTargetURL(url_template_filled);
 
   std::move(callback).Run(blink::mojom::ShareError::OK);
 }
