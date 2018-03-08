@@ -46,6 +46,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -1498,11 +1499,39 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
+     * @return The margin to be applied to the URL bar based on the buttons currently visible next
+     *         to it, used to avoid text overlapping the buttons and vice versa.
+     */
+    protected int getUrlContainerMarginEnd() {
+        // When Chrome Home is enabled, the URL actions container slides out of view during the
+        // URL defocus animation. Adding margin during this animation creates a hole.
+        boolean addMarginForActionsContainer =
+                mBottomSheet == null || !mUrlFocusChangeInProgress || isUrlBarFocused();
+
+        int urlContainerMarginEnd = 0;
+        if (addMarginForActionsContainer) {
+            int urlContainerChildIndex = indexOfChild(mUrlBar);
+            assert urlContainerChildIndex != -1;
+
+            for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
+                View childView = getChildAt(i);
+                if (childView.getVisibility() != GONE) {
+                    LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
+                    urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
+                            childLayoutParams.width
+                                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
+                                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
+                }
+            }
+        }
+        return urlContainerMarginEnd;
+    }
+
+    /**
      * Updates the layout params for the location bar start aligned views.
      */
     protected void updateLayoutParams() {
         int startMargin = 0;
-        int urlContainerChildIndex = -1;
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
@@ -1511,10 +1540,8 @@ public class LocationBarLayout extends FrameLayout
                     ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
                     childView.setLayoutParams(childLayoutParams);
                 }
-                if (childView == mUrlBar) {
-                    urlContainerChildIndex = i;
-                    break;
-                }
+                if (childView == mUrlBar) break;
+
                 int widthMeasureSpec;
                 int heightMeasureSpec;
                 if (childLayoutParams.width == LayoutParams.WRAP_CONTENT) {
@@ -1542,26 +1569,7 @@ public class LocationBarLayout extends FrameLayout
             }
         }
 
-        assert urlContainerChildIndex != -1;
-        int urlContainerMarginEnd = 0;
-
-        // When Chrome Home is enabled, the URL actions container slides out of view during the
-        // URL defocus animation. Adding margin during this animation creates a hole.
-        boolean addMarginForActionsContainer =
-                mBottomSheet == null || !mUrlFocusChangeInProgress || mUrlHasFocus;
-        if (addMarginForActionsContainer) {
-            for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
-                View childView = getChildAt(i);
-                if (childView.getVisibility() != GONE) {
-                    LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
-                    urlContainerMarginEnd = Math.max(urlContainerMarginEnd,
-                            childLayoutParams.width
-                                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
-                                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
-                }
-            }
-        }
-
+        int urlContainerMarginEnd = getUrlContainerMarginEnd();
         LayoutParams urlLayoutParams = (LayoutParams) mUrlBar.getLayoutParams();
         if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
             ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
