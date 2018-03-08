@@ -95,14 +95,6 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   return result;
 }
 
-#if !defined(OS_MACOSX)
-
-size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
-  return process_metrics_->GetWorkingSetSize();
-}
-
-#endif  // !defined(OS_MACOSX)
-
 ChromeTestProcessMetrics::~ChromeTestProcessMetrics() {}
 
 ChromeTestProcessMetrics::ChromeTestProcessMetrics(

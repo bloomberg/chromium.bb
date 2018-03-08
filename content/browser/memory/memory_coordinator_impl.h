@@ -105,9 +105,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // returns false otherwise.
   bool SetChildMemoryState(int render_process_id, MemoryState memory_state);
 
-  // Tries to purge memory from the browser process.
-  bool TryToPurgeMemoryFromBrowser();
-
   // Tries to purge memory from the provided child process.
   bool TryToPurgeMemoryFromChild(int render_process_id);
 

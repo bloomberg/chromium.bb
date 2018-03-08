@@ -55,16 +55,6 @@ const char* MemoryConditionToString(MemoryCondition condition) {
   return "N/A";
 }
 
-void RecordBrowserPurge(size_t before) {
-  auto metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
-  size_t after = metrics->GetWorkingSetSize();
-  int64_t bytes = static_cast<int64_t>(before) - static_cast<int64_t>(after);
-  if (bytes < 0)
-    bytes = 0;
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser.PurgedMemory",
-                                bytes / 1024 / 1024);
-}
-
 }  // namespace
 
 // The implementation of MemoryCoordinatorHandle. See memory_coordinator.mojom
@@ -233,24 +223,6 @@ bool MemoryCoordinatorImpl::SetChildMemoryState(int render_process_id,
   // Update the internal state and send the message.
   iter->second.memory_state = memory_state;
   iter->second.handle->child()->OnStateChange(ToMojomMemoryState(memory_state));
-  return true;
-}
-
-bool MemoryCoordinatorImpl::TryToPurgeMemoryFromBrowser() {
-  base::TimeTicks now = tick_clock_->NowTicks();
-  if (can_purge_after_ > now)
-    return false;
-
-  auto metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
-  size_t before = metrics->GetWorkingSetSize();
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::BindOnce(&RecordBrowserPurge, before),
-                                base::TimeDelta::FromSeconds(2));
-
-  // Suppress purging in the browser process until a certain period of time is
-  // passed.
-  can_purge_after_ = now + base::TimeDelta::FromMinutes(2);
-  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
   return true;
 }
 

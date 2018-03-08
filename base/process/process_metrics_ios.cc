@@ -15,19 +15,6 @@
 
 namespace base {
 
-namespace {
-
-bool GetTaskInfo(task_basic_info_64* task_info_data) {
-  mach_msg_type_number_t count = TASK_BASIC_INFO_64_COUNT;
-  kern_return_t kr = task_info(mach_task_self(),
-                               TASK_BASIC_INFO_64,
-                               reinterpret_cast<task_info_t>(task_info_data),
-                               &count);
-  return kr == KERN_SUCCESS;
-}
-
-}  // namespace
-
 ProcessMetrics::ProcessMetrics(ProcessHandle process) {}
 
 ProcessMetrics::~ProcessMetrics() {}
@@ -41,13 +28,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
 double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   NOTIMPLEMENTED();
   return 0;
-}
-
-size_t ProcessMetrics::GetWorkingSetSize() const {
-  task_basic_info_64 task_info_data;
-  if (!GetTaskInfo(&task_info_data))
-    return 0;
-  return task_info_data.resident_size;
 }
 
 size_t GetMaxFds() {

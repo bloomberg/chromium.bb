@@ -21,7 +21,8 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-size_t ProcessMetrics::GetWorkingSetSize() const {
+namespace {
+size_t GetWorkingSetSize() {
   struct kinfo_proc info;
   size_t length;
   int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, process_,
@@ -37,6 +38,7 @@ size_t ProcessMetrics::GetWorkingSetSize() const {
 
   return info.p_vm_rssize * getpagesize();
 }
+}  // namespace
 
 bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
                                     size_t* shared_bytes) const {

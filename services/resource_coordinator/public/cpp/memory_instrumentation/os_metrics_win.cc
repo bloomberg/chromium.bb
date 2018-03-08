@@ -27,7 +27,11 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
   size_t private_bytes = 0;
   process_metrics->GetMemoryBytes(&private_bytes, nullptr);
   dump->platform_private_footprint->private_bytes = private_bytes;
-  dump->resident_set_kb = process_metrics->GetWorkingSetSize() / 1024;
+
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    dump->resident_set_kb = pmc.WorkingSetSize / 1024;
+  }
   return true;
 }
 

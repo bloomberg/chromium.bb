@@ -14,6 +14,12 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+
+#include <psapi.h>
+#endif
+
 namespace task_manager {
 
 namespace {
@@ -145,13 +151,18 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
     // On Linux private memory is also resident. Just use it.
     memory_usage.physical_bytes = memory_usage.private_bytes;
 #else
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (::GetProcessMemoryInfo(process_.Handle(), &pmc, sizeof(pmc))) {
+      memory_usage.physical_bytes = static_cast<int64_t>(pmc.WorkingSetSize);
+    } else {
+      memory_usage.physical_bytes = 0;
+    }
+
     // Memory = working_set.private which is working set minus shareable. This
     // avoids the unpredictable counting that occurs when calculating memory as
     // working set minus shared (renderer code counted when one tab is open and
     // not counted when two or more are open) and it is much more efficient to
     // calculate on Windows.
-    memory_usage.physical_bytes =
-        static_cast<int64_t>(process_metrics_->GetWorkingSetSize());
     memory_usage.physical_bytes -=
         static_cast<int64_t>(ws_usage.shareable * 1024);
 #endif  // defined(OS_LINUX)

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/memory/memory_metrics.h"
 
 #include <mach/mach.h>
+#include <mach/task.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -47,10 +48,15 @@ uint64_t GetFreePhysicalBytes() {
 }
 
 uint64_t GetRealMemoryUsedInBytes() {
-  base::ProcessHandle process_handle = base::GetCurrentProcessHandle();
-  std::unique_ptr<base::ProcessMetrics> process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(process_handle));
-  return static_cast<uint64_t>(process_metrics->GetWorkingSetSize());
+  task_vm_info task_info_data;
+  mach_msg_type_number_t count = sizeof(task_vm_info) / sizeof(natural_t);
+  kern_return_t kr =
+      task_info(mach_task_self(), TASK_VM_INFO,
+                reinterpret_cast<task_info_t>(&task_info_data), &count);
+  if (kr != KERN_SUCCESS)
+    return 0;
+
+  return task_info_data.resident_size - task_info_data.reusable;
 }
 
 uint64_t GetDirtyVMBytes() {

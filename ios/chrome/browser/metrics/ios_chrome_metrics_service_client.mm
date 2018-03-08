@@ -231,11 +231,17 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
   // shared between the iOS port's usage and
   // ChromeMetricsServiceClient::CollectFinalHistograms()'s usage of
   // MetricsMemoryDetails.
-  std::unique_ptr<base::ProcessMetrics> process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(
-          base::GetCurrentProcessHandle()));
-  UMA_HISTOGRAM_MEMORY_KB("Memory.Browser",
-                          process_metrics->GetWorkingSetSize() / 1024);
+  task_vm_info task_info_data;
+  mach_msg_type_number_t count = sizeof(task_vm_info) / sizeof(natural_t);
+  kern_return_t kr =
+      task_info(mach_task_self(), TASK_VM_INFO,
+                reinterpret_cast<task_info_t>(&task_info_data), &count);
+  if (kr == KERN_SUCCESS) {
+    UMA_HISTOGRAM_MEMORY_KB(
+        "Memory.Browser",
+        (task_info_data.resident_size - task_info_data.reusable) / 1024);
+  }
+
   collect_final_metrics_done_callback_.Run();
 }
 
