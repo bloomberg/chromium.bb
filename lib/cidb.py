@@ -10,6 +10,7 @@ from __future__ import print_function
 import collections
 import datetime
 import glob
+import itertools
 import os
 import re
 
@@ -647,13 +648,39 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   # See https://stackoverflow.com/a/7745635/219138 for a discussion of how to
   # perform "greatest-n-per-group" in SQL. I chose the LEFT OUTER JOIN solution.
+  # TODO(phobbs) JOIN with buildTable to get status.
   _SQL_FETCH_LATEST_BUILD_REQUEST = '''
-  SELECT t1.* from buildRequestTable as t1
+  SELECT t1.*
+  FROM buildRequestTable as t1
   LEFT OUTER JOIN buildRequestTable as t2
     ON t1.request_reason = t2.request_reason
        AND t1.request_build_config = t2.request_build_config
        AND t1.timestamp < t2.timestamp
   WHERE t2.request_build_config is NULL
+  '''
+
+  _SQL_FETCH_RETRIED_PRE_CQ_FAILURES = '''
+  SELECT b.build_config, config_counts.failure_count, count(distinct b.id)
+  FROM buildTable as b
+    JOIN (
+      SELECT b.build_config, count(distinct b.id) as failure_count
+      FROM clActionTable as c1
+          JOIN clActionTable c2
+          JOIN buildTable as b
+      WHERE c1.change_number = c2.change_number
+          AND c1.patch_number = c2.patch_number
+          AND c1.change_source = c2.change_source
+          AND c1.action = 'pre_cq_failed'
+          AND c2.action = 'verified'
+          AND c1.build_id = b.id
+          AND b.build_config != 'pre-cq-launcher'
+          {time_constraint}
+      GROUP BY b.build_config
+    ) as config_counts
+  WHERE
+      b.build_config = config_counts.build_config
+      {time_constraint}
+  GROUP BY b.build_config
   '''
 
   _DATE_FORMAT = '%Y-%m-%d'
@@ -2070,6 +2097,40 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     return [build_requests.BuildRequest(*values) for values in results]
+
+  def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
+    """Gets counts of pre-CQ flake and total pre-CQ runs by build config.
+
+    Finds counts of pre-CQ builds failing and then succeeding on retry for
+    the same patchset within a time window bounded by |start_date| and
+    |end_date|.
+
+    Note: if neither |start_date| or |end_date| is provided, this defaults
+    to a 7-day window.
+
+    Args:
+      start_date: The start date for the time window.
+      end_date: The last day to include in the time window.
+
+    Returns:
+      A list of dicts, keys = ('build_config', 'flake_count', 'build_count')
+    """
+    time_constraint = ''
+    if not start_date and not end_date:
+      time_constraint = ' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+    if start_date:
+      time_constraint += ' AND b.start_time >= DATE(%s)' % (
+          start_date.strftime(self._DATE_FORMAT))
+    if end_date:
+      time_constraint += ' AND b.start_time <= DATE(%s)' % (
+          end_date.strftime(self._DATE_FORMAT))
+
+    query = self._SQL_FETCH_RETRIED_PRE_CQ_FAILURES.format(
+        time_constraint=time_constraint)
+
+    results = self._Execute(query).fetchall()
+    keys = ('build_config', 'flake_count', 'build_count')
+    return [dict(itertools.izip(keys, row)) for row in results]
 
 
 def _INV():

@@ -724,3 +724,64 @@ class FakeCIDBConnection(object):
         return True
 
     return False
+
+  def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
+    """Queries pre-CQ config flake & run counts.
+
+    Args:
+      start_date: The start date for the time window.
+      end_date: The last day to include in the time window.
+
+    Returns:
+      A list of (config, flake, runs) tuples.
+    """
+    if start_date is None:
+      start_date = datetime.datetime.now() - datetime.timedelta(days=7)
+
+    def TimeConstraint(build):
+      if end_date is not None and build['start_time'] >= end_date:
+        return False
+      return start_date <= build['start_time']
+
+    def JoinWithBuild(actions):
+      for action in actions:
+        yield action, builds_by_id[action['build_id']]
+
+    runs_by_build_config = {}
+    builds_by_id = {}
+    for build in self.buildTable:
+      if TimeConstraint(build):
+        runs_by_build_config.setdefault(build['build_config'], []).append(build)
+        builds_by_id.setdefault(build['id'], []).append(build)
+
+    actions_by_cl = {}
+    for action in self.clActionTable:
+      k = (action['change_number'],
+           action['patch_number'],
+           action['change_source'])
+      actions_by_cl.setdefault(k, []).append(action)
+    flakes = {}
+    ignored_flake_build_configs = set(['pre-cq-launcher'])
+    for _cl, actions in actions_by_cl.iteritems():
+      has_precq_success = any(
+          c2['action'] == 'pre_cq_fully_verified'
+          for c2 in actions)
+      if has_precq_success:
+        # We must use a list here instead of a set, because we're counting
+        # flakes. We want to count two failures of the same config as two
+        # different instances of flake.
+        pre_cq_failed_configs = list([
+            b['build_config']
+            for c, b in JoinWithBuild(actions)
+            if c['action'] == 'pre_cq_failed'
+            and b['build_config'] not in ignored_flake_build_configs])
+
+        for config in pre_cq_failed_configs:
+          flakes.setdefault(config, 0)
+          flakes[config] += 1
+
+    result = []
+    for config in runs_by_build_config:
+      result.append(
+          (config, flakes.get(config, 0), len(runs_by_build_config[config])))
+    return result
