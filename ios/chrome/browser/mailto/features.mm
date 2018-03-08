@@ -9,4 +9,4 @@
 #endif
 
 const base::Feature kMailtoHandledWithGoogleUI{
-    "kMailtoHandledWithGoogleUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "kMailtoHandledWithGoogleUI", base::FEATURE_ENABLED_BY_DEFAULT};
