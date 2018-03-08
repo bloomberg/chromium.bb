@@ -14,10 +14,13 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/common/time.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -358,6 +361,37 @@ void OnInstallPaymentApp(payments::mojom::PaymentRequestEventDataPtr event_data,
   }
 }
 
+void CheckPermissionForPaymentApps(
+    BrowserContext* browser_context,
+    PaymentAppProvider::GetAllPaymentAppsCallback callback,
+    PaymentAppProvider::PaymentApps apps) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!browser_context) {
+    std::move(callback).Run(PaymentAppProvider::PaymentApps());
+    return;
+  }
+
+  PermissionManager* permission_manager =
+      browser_context->GetPermissionManager();
+  if (!permission_manager) {
+    std::move(callback).Run(PaymentAppProvider::PaymentApps());
+    return;
+  }
+
+  PaymentAppProvider::PaymentApps permitted_apps;
+  for (auto& app : apps) {
+    GURL origin = app.second->scope.GetOrigin();
+    if (permission_manager->GetPermissionStatus(PermissionType::PAYMENT_HANDLER,
+                                                origin, origin) ==
+        blink::mojom::PermissionStatus::GRANTED) {
+      permitted_apps[app.first] = std::move(app.second);
+    }
+  }
+
+  std::move(callback).Run(std::move(permitted_apps));
+}
+
 }  // namespace
 
 // static
@@ -384,7 +418,8 @@ void PaymentAppProviderImpl::GetAllPaymentApps(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&GetAllPaymentAppsOnIO, payment_app_context,
-                     std::move(callback)));
+                     base::BindOnce(&CheckPermissionForPaymentApps,
+                                    browser_context, std::move(callback))));
 }
 
 void PaymentAppProviderImpl::InvokePaymentApp(

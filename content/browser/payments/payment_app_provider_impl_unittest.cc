@@ -10,8 +10,13 @@
 #include "base/run_loop.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
 #include "content/browser/payments/payment_app_provider_impl.h"
+#include "content/public/browser/permission_type.h"
+#include "content/public/test/mock_permission_manager.h"
+#include "content/public/test/test_browser_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -51,7 +56,17 @@ void PaymentEventResultCallback(base::OnceClosure callback,
 
 class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
  public:
-  PaymentAppProviderTest() {}
+  PaymentAppProviderTest() {
+    std::unique_ptr<MockPermissionManager> mock_permission_manager(
+        new testing::NiceMock<MockPermissionManager>());
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::PAYMENT_HANDLER, testing::_,
+                                testing::_))
+        .WillByDefault(
+            testing::Return(blink::mojom::PermissionStatus::GRANTED));
+    static_cast<TestBrowserContext*>(browser_context())
+        ->SetPermissionManager(std::move(mock_permission_manager));
+  }
   ~PaymentAppProviderTest() override {}
 
   void SetPaymentInstrument(

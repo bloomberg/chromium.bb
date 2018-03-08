@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
@@ -69,6 +71,14 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
                             "\" method installed."))
         << method_name << " method install message not found in:\n"
         << contents;
+  }
+
+  void BlockAlicePay() {
+    GURL origin = alicepay_.GetURL("alicepay.com", "/app1/").GetOrigin();
+    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+        ->SetContentSettingDefaultScope(origin, origin,
+                                        CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
+                                        std::string(), CONTENT_SETTING_BLOCK);
   }
 
   // Sets a TestDownloader for alicepay.com, bobpay.com and frankpay.com to
@@ -220,6 +230,57 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
         {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
     ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
     ExpectBodyContains({"https://alicepay.com"});
+  }
+}
+
+// Test payment apps are not available if they are blocked.
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
+  InstallAlicePayForMethod("https://alicepay.com");
+  BlockAlicePay();
+
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_test.html");
+
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ASSERT_TRUE(
+        content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"false"});
+
+    // A new payment request will be created below, so call
+    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"NotSupportedError"});
+  }
+
+  // Repeat should have identical results.
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_test.html");
+
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ASSERT_TRUE(
+        content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"false"});
+
+    // A new payment request will be created below, so call
+    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    ResetEventWaiter(DialogEvent::NOT_SUPPORTED_ERROR);
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"NotSupportedError"});
   }
 }
 
