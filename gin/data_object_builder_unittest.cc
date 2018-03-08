@@ -90,7 +90,7 @@ TEST_F(DataObjectBuilderTest, UnusableAfterBuild) {
   EXPECT_FALSE(builder.Build().IsEmpty());
 
   bool has_dcheck_failure = false;
-  logging::ScopedLogAssertHandler handler(base::Bind(
+  logging::ScopedLogAssertHandler handler(base::BindRepeating(
       [](bool* flag, const char* file, int line, base::StringPiece message,
          base::StringPiece stack_trace) { *flag = true; },
       base::Unretained(&has_dcheck_failure)));

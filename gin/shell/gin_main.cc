@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
          it != args.end(); ++it) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));
+          base::BindOnce(gin::Run, runner.GetWeakPtr(), base::FilePath(*it)));
     }
 
     base::RunLoop().RunUntilIdle();

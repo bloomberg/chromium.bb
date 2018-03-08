@@ -114,7 +114,8 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
     if (!function_template.IsEmpty())
       return function_template;
     function_template = CreateFunctionTemplate(
-        isolate, base::Bind(&MyInterceptor::Call), HolderIsFirstArgument);
+        isolate, base::BindRepeating(&MyInterceptor::Call),
+        HolderIsFirstArgument);
     template_cache_.Set(name, function_template);
     return function_template;
   }
