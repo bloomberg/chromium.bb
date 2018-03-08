@@ -15,7 +15,7 @@
 #include "base/values.h"
 
 namespace net {
-class URLRequest;
+class HttpRequestHeaders;
 }
 
 namespace extensions {
@@ -47,9 +47,10 @@ class FormDataParser {
 
   virtual ~FormDataParser();
 
-  // Creates a correct parser instance based on the |request|. Returns NULL
-  // on failure.
-  static std::unique_ptr<FormDataParser> Create(const net::URLRequest& request);
+  // Creates a correct parser instance based on the |request_headers|. Returns
+  // null on failure.
+  static std::unique_ptr<FormDataParser> Create(
+      const net::HttpRequestHeaders& request_headers);
 
   // Creates a correct parser instance based on |content_type_header|, the
   // "Content-Type" request header value. If |content_type_header| is NULL, it

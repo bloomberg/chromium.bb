@@ -34,7 +34,8 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
   std::unique_ptr<ParsedDataPresenter> parsed_data_presenter(
       ParsedDataPresenter::CreateForTests());
   ASSERT_TRUE(parsed_data_presenter.get() != NULL);
-  parsed_data_presenter->FeedNext(element);
+  parsed_data_presenter->FeedBytes(
+      base::StringPiece(element.bytes(), element.length()));
   EXPECT_TRUE(parsed_data_presenter->Succeeded());
   std::unique_ptr<base::Value> result = parsed_data_presenter->Result();
   ASSERT_TRUE(result.get() != NULL);
