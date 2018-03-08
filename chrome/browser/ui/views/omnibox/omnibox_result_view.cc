@@ -275,12 +275,12 @@ OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
   return is_hovered_ ? HOVERED : NORMAL;
 }
 
-OmniboxState OmniboxResultView::GetThemeState() const {
+OmniboxPartState OmniboxResultView::GetThemeState() const {
   if (model_->IsSelectedIndex(model_index_)) {
-    return is_hovered_ ? OmniboxState::HOVERED_AND_SELECTED
-                       : OmniboxState::SELECTED;
+    return is_hovered_ ? OmniboxPartState::HOVERED_AND_SELECTED
+                       : OmniboxPartState::SELECTED;
   }
-  return is_hovered_ ? OmniboxState::HOVERED : OmniboxState::NORMAL;
+  return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
 }
 
 OmniboxTint OmniboxResultView::GetTint() const {

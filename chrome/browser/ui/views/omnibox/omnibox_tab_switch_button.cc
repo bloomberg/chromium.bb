@@ -81,7 +81,8 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
-  return GetOmniboxColor(
-      OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-      state() == STATE_HOVERED ? OmniboxState::HOVERED : OmniboxState::NORMAL);
+  return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                         result_view_->GetTint(),
+                         state() == STATE_HOVERED ? OmniboxPartState::HOVERED
+                                                  : OmniboxPartState::NORMAL);
 }
