@@ -17,19 +17,20 @@ namespace {
 constexpr uint64_t kMaxRecordSize = 5 * 1024 * 1024;
 
 constexpr char kMiSha256Header[] = "mi-sha256=";
-constexpr int kMiSha256HeaderLength = sizeof(kMiSha256Header) - 1;
+constexpr size_t kMiSha256HeaderLength = sizeof(kMiSha256Header) - 1;
 
 }  // namespace
 
 MerkleIntegritySourceStream::MerkleIntegritySourceStream(
-    const std::string& mi_header_value,
+    base::StringPiece mi_header_value,
     std::unique_ptr<SourceStream> upstream)
     // TODO(ksakamoto): Use appropriate SourceType.
     : net::FilterSourceStream(SourceStream::TYPE_NONE, std::move(upstream)),
       record_size_(0),
       failed_(false) {
   // TODO(ksakamoto): Support quoted parameter value.
-  if (mi_header_value.substr(0, kMiSha256HeaderLength) != kMiSha256Header ||
+  if (mi_header_value.size() < kMiSha256HeaderLength ||
+      mi_header_value.substr(0, kMiSha256HeaderLength) != kMiSha256Header ||
       !base::Base64UrlDecode(mi_header_value.substr(kMiSha256HeaderLength),
                              base::Base64UrlDecodePolicy::DISALLOW_PADDING,
                              &next_proof_) ||
