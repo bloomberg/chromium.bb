@@ -27,11 +27,11 @@ TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)
-    : observers_(observers),
-      web_contents_(web_contents),
+    : content::WebContentsObserver(web_contents),
+      observers_(observers),
       tab_strip_model_(tab_strip_model) {
   DCHECK(observers_);
-  DCHECK(web_contents_);
+  DCHECK(GetWebContents());
   DCHECK(tab_strip_model_);
 }
 
@@ -48,7 +48,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetTabStripModel(
 void TabLifecycleUnitSource::TabLifecycleUnit::SetWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  web_contents_ = web_contents;
+  Observe(web_contents);
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
@@ -268,7 +268,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
 
 content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
     const {
-  return web_contents_;
+  return web_contents();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTab() const {
@@ -328,7 +328,7 @@ TabLifecycleUnitSource::TabLifecycleUnit::GetRenderProcessHost() const {
   return GetWebContents()->GetMainFrame()->GetProcess();
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::OnDidStartLoading() {
+void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
   if (GetState() == State::DISCARDED) {
     SetState(State::LOADED);
     OnDiscardedStateChange();

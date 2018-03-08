@@ -73,7 +73,8 @@ bool IsFocused(LifecycleUnit* lifecycle_unit) {
 class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabLifecycleUnitSourceTest()
-      : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+      : scoped_set_tick_clock_for_testing_(&test_clock_) {
+  }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -440,24 +441,6 @@ TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
 #else
   EXPECT_FALSE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
 #endif
-}
-
-TEST_F(TabLifecycleUnitSourceTest, HandleWebContentsDestruction) {
-  LifecycleUnit* first_lifecycle_unit = nullptr;
-  LifecycleUnit* second_lifecycle_unit = nullptr;
-  CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
-                &second_lifecycle_unit);
-
-  // Detach the second WebContents and manually destroy it, the
-  // observer should be notified.
-  EXPECT_CALL(source_observer_,
-              OnLifecycleUnitDestroyed(second_lifecycle_unit));
-  delete tab_strip_model_->DetachWebContentsAt(1);
-
-  testing::Mock::VerifyAndClear(&source_observer_);
-
-  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  tab_strip_model_->CloseAllTabs();
 }
 
 }  // namespace resource_coordinator
