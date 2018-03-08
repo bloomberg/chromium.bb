@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr_shell;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.view.Surface;
+import android.view.View;
 
 import org.chromium.chrome.browser.compositor.CompositorSurfaceManager;
 
@@ -103,4 +104,9 @@ public class VrCompositorSurfaceManager implements CompositorSurfaceManager {
 
     @Override
     public void setVisibility(int visibility) {}
+
+    @Override
+    public View getActiveSurfaceView() {
+        return null;
+    }
 }

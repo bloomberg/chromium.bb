@@ -33,6 +33,13 @@ public interface SelectionPopupController {
     }
 
     /**
+     * Makes {@link SelectionPopupcontroller} to use the readback view from {@link WindowAndroid}
+     */
+    static void setShouldGetReadbackViewFromWindowAndroid() {
+        SelectionPopupControllerImpl.setShouldGetReadbackViewFromWindowAndroid();
+    }
+
+    /**
      * Set {@link ActionMode.Callback} used by {@link SelectionPopupController}.
      * @param callback ActionMode.Callback instance.
      */
