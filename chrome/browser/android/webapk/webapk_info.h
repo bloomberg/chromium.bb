@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "content/public/common/manifest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
@@ -30,7 +31,9 @@ struct WebApkInfo {
              blink::WebDisplayMode display,
              blink::WebScreenOrientationLockType orientation,
              int64_t theme_color,
-             int64_t background_color);
+             int64_t background_color,
+             base::Time last_update_check_time,
+             bool relax_updates);
   ~WebApkInfo();
 
   WebApkInfo& operator=(WebApkInfo&& other);
@@ -59,6 +62,8 @@ struct WebApkInfo {
   blink::WebScreenOrientationLockType orientation;
   int64_t theme_color;
   int64_t background_color;
+  base::Time last_update_check_time;
+  bool relax_updates;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebApkInfo);

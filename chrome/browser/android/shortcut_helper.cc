@@ -15,6 +15,7 @@
 #include "base/guid.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
@@ -361,7 +362,9 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
     const JavaParamRef<jintArray>& jdisplay_modes,
     const JavaParamRef<jintArray>& jorientations,
     const JavaParamRef<jlongArray>& jtheme_colors,
-    const JavaParamRef<jlongArray>& jbackground_colors) {
+    const JavaParamRef<jlongArray>& jbackground_colors,
+    const JavaParamRef<jlongArray>& jlast_update_check_times_ms,
+    const JavaParamRef<jbooleanArray>& jrelax_updates) {
   DCHECK(jcallback_pointer);
   std::vector<std::string> names;
   base::android::AppendJavaStringArrayToStringVector(env, jnames, &names);
@@ -395,6 +398,12 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   std::vector<int64_t> background_colors;
   base::android::JavaLongArrayToInt64Vector(env, jbackground_colors,
                                             &background_colors);
+  std::vector<int64_t> last_update_check_times_ms;
+  base::android::JavaLongArrayToInt64Vector(env, jlast_update_check_times_ms,
+                                            &last_update_check_times_ms);
+  std::vector<bool> relax_updates;
+  base::android::JavaBooleanArrayToBoolVector(env, jrelax_updates,
+                                              &relax_updates);
 
   DCHECK(short_names.size() == names.size());
   DCHECK(short_names.size() == package_names.size());
@@ -408,6 +417,8 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   DCHECK(short_names.size() == orientations.size());
   DCHECK(short_names.size() == theme_colors.size());
   DCHECK(short_names.size() == background_colors.size());
+  DCHECK(short_names.size() == last_update_check_times_ms.size());
+  DCHECK(short_names.size() == relax_updates.size());
 
   std::vector<WebApkInfo> webapk_list;
   webapk_list.reserve(short_names.size());
@@ -419,7 +430,9 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
         std::move(manifest_start_urls[i]),
         static_cast<blink::WebDisplayMode>(display_modes[i]),
         static_cast<blink::WebScreenOrientationLockType>(orientations[i]),
-        theme_colors[i], background_colors[i]));
+        theme_colors[i], background_colors[i],
+        base::Time::FromJavaTime(last_update_check_times_ms[i]),
+        relax_updates[i]));
   }
 
   ShortcutHelper::WebApkInfoCallback* webapk_list_callback =
