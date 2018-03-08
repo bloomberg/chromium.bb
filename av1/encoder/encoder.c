@@ -4039,9 +4039,9 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     if (buf_idx != INVALID_IDX) {
       YV12_BUFFER_CONFIG *const buf = &cm->buffer_pool->frame_bufs[buf_idx].buf;
       ref_buf->buf = buf;
-      av1_setup_scale_factors_for_frame(
-          &ref_buf->sf, buf->y_crop_width, buf->y_crop_height, cm->width,
-          cm->height, (buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0);
+      av1_setup_scale_factors_for_frame(&ref_buf->sf, buf->y_crop_width,
+                                        buf->y_crop_height, cm->width,
+                                        cm->height);
       if (av1_is_scaled(&ref_buf->sf))
         aom_extend_frame_borders(buf, num_planes);
     } else {
@@ -4050,8 +4050,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   }
 
   av1_setup_scale_factors_for_frame(&cm->sf_identity, cm->width, cm->height,
-                                    cm->width, cm->height,
-                                    cm->use_highbitdepth);
+                                    cm->width, cm->height);
 
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
 }

@@ -5798,7 +5798,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   // Since we have scaled the reference frames to match the size of the current
   // frame we must use a unit scaling factor during mode selection.
   av1_setup_scale_factors_for_frame(&sf, cm->width, cm->height, cm->width,
-                                    cm->height, cm->use_highbitdepth);
+                                    cm->height);
 
   struct buf_2d ref_yv12;
 

@@ -634,8 +634,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     // ARF is produced at the native frame size and resized when coded.
     av1_setup_scale_factors_for_frame(
         &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
-        frames[0]->y_crop_width, frames[0]->y_crop_height,
-        cpi->common.use_highbitdepth);
+        frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,

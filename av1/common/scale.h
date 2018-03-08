@@ -35,9 +35,6 @@ struct scale_factors {
   int (*scale_value_x)(int val, const struct scale_factors *sf);
   int (*scale_value_y)(int val, const struct scale_factors *sf);
 
-  convolve_fn_t predict[2][2][2];                // horiz, vert, avg
-  highbd_convolve_fn_t highbd_predict[2][2][2];  // horiz, vert, avg
-
   // convolve_fn_ptr[subpel_x != 0][subpel_y != 0][is_compound]
   aom_convolve_fn_t convolve[2][2][2];
   aom_highbd_convolve_fn_t highbd_convolve[2][2][2];
@@ -46,8 +43,7 @@ struct scale_factors {
 MV32 av1_scale_mv(const MV32 *mv, int x, int y, const struct scale_factors *sf);
 
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
-                                       int other_h, int this_w, int this_h,
-                                       int use_high);
+                                       int other_h, int this_w, int this_h);
 
 static INLINE int av1_is_valid_scale(const struct scale_factors *sf) {
   return sf->x_scale_fp != REF_INVALID_SCALE &&

@@ -63,8 +63,7 @@ MV32 av1_scale_mv(const MV32 *mvq4, int x, int y,
 }
 
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
-                                       int other_h, int this_w, int this_h,
-                                       int use_highbd) {
+                                       int other_h, int this_w, int this_h) {
   if (!valid_ref_frame_size(other_w, other_h, this_w, this_h)) {
     sf->x_scale_fp = REF_INVALID_SCALE;
     sf->y_scale_fp = REF_INVALID_SCALE;
@@ -83,96 +82,6 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   } else {
     sf->scale_value_x = unscaled_value;
     sf->scale_value_y = unscaled_value;
-  }
-
-  // TODO(agrange): Investigate the best choice of functions to use here
-  // for EIGHTTAP_SMOOTH. Since it is not interpolating, need to choose what
-  // to do at full-pel offsets. The current selection, where the filter is
-  // applied in one direction only, and not at all for 0,0, seems to give the
-  // best quality, but it may be worth trying an additional mode that does
-  // do the filtering on full-pel.
-  if (sf->x_step_q4 == SCALE_SUBPEL_SHIFTS) {
-    if (sf->y_step_q4 == SCALE_SUBPEL_SHIFTS) {
-      // No scaling in either direction.
-      sf->predict[0][0][0] = aom_convolve_copy;
-      sf->predict[0][0][1] = aom_convolve_avg;
-      sf->predict[0][1][0] = aom_convolve8_vert;
-      sf->predict[0][1][1] = aom_convolve8_avg_vert;
-      sf->predict[1][0][0] = aom_convolve8_horiz;
-      sf->predict[1][0][1] = aom_convolve8_avg_horiz;
-    } else {
-      // No scaling in x direction. Must always scale in the y direction.
-      sf->predict[0][0][0] = aom_convolve8_vert;
-      sf->predict[0][0][1] = aom_convolve8_avg_vert;
-      sf->predict[0][1][0] = aom_convolve8_vert;
-      sf->predict[0][1][1] = aom_convolve8_avg_vert;
-      sf->predict[1][0][0] = aom_convolve8;
-      sf->predict[1][0][1] = aom_convolve8_avg;
-    }
-  } else {
-    if (sf->y_step_q4 == SCALE_SUBPEL_SHIFTS) {
-      // No scaling in the y direction. Must always scale in the x direction.
-      sf->predict[0][0][0] = aom_convolve8_horiz;
-      sf->predict[0][0][1] = aom_convolve8_avg_horiz;
-      sf->predict[0][1][0] = aom_convolve8;
-      sf->predict[0][1][1] = aom_convolve8_avg;
-      sf->predict[1][0][0] = aom_convolve8_horiz;
-      sf->predict[1][0][1] = aom_convolve8_avg_horiz;
-    } else {
-      // Must always scale in both directions.
-      sf->predict[0][0][0] = aom_convolve8;
-      sf->predict[0][0][1] = aom_convolve8_avg;
-      sf->predict[0][1][0] = aom_convolve8;
-      sf->predict[0][1][1] = aom_convolve8_avg;
-      sf->predict[1][0][0] = aom_convolve8;
-      sf->predict[1][0][1] = aom_convolve8_avg;
-    }
-  }
-  // 2D subpel motion always gets filtered in both directions
-  sf->predict[1][1][0] = aom_convolve8;
-  sf->predict[1][1][1] = aom_convolve8_avg;
-
-  if (use_highbd) {
-    if (sf->x_step_q4 == SCALE_SUBPEL_SHIFTS) {
-      if (sf->y_step_q4 == SCALE_SUBPEL_SHIFTS) {
-        // No scaling in either direction.
-        sf->highbd_predict[0][0][0] = aom_highbd_convolve_copy;
-        sf->highbd_predict[0][0][1] = aom_highbd_convolve_avg;
-        sf->highbd_predict[0][1][0] = aom_highbd_convolve8_vert;
-        sf->highbd_predict[0][1][1] = aom_highbd_convolve8_avg_vert;
-        sf->highbd_predict[1][0][0] = aom_highbd_convolve8_horiz;
-        sf->highbd_predict[1][0][1] = aom_highbd_convolve8_avg_horiz;
-      } else {
-        // No scaling in x direction. Must always scale in the y direction.
-        sf->highbd_predict[0][0][0] = aom_highbd_convolve8_vert;
-        sf->highbd_predict[0][0][1] = aom_highbd_convolve8_avg_vert;
-        sf->highbd_predict[0][1][0] = aom_highbd_convolve8_vert;
-        sf->highbd_predict[0][1][1] = aom_highbd_convolve8_avg_vert;
-        sf->highbd_predict[1][0][0] = aom_highbd_convolve8;
-        sf->highbd_predict[1][0][1] = aom_highbd_convolve8_avg;
-      }
-    } else {
-      if (sf->y_step_q4 == SCALE_SUBPEL_SHIFTS) {
-        // No scaling in the y direction. Must always scale in the x direction.
-        sf->highbd_predict[0][0][0] = aom_highbd_convolve8_horiz;
-        sf->highbd_predict[0][0][1] = aom_highbd_convolve8_avg_horiz;
-        sf->highbd_predict[0][1][0] = aom_highbd_convolve8;
-        sf->highbd_predict[0][1][1] = aom_highbd_convolve8_avg;
-        sf->highbd_predict[1][0][0] = aom_highbd_convolve8_horiz;
-        sf->highbd_predict[1][0][1] = aom_highbd_convolve8_avg_horiz;
-      } else {
-        // Must always scale in both directions.
-        sf->highbd_predict[0][0][0] = aom_highbd_convolve8;
-        sf->highbd_predict[0][0][1] = aom_highbd_convolve8_avg;
-        sf->highbd_predict[0][1][0] = aom_highbd_convolve8;
-        sf->highbd_predict[0][1][1] = aom_highbd_convolve8_avg;
-        sf->highbd_predict[1][0][0] = aom_highbd_convolve8;
-        sf->highbd_predict[1][0][1] = aom_highbd_convolve8_avg;
-      }
-    }
-    // 2D subpel motion always gets filtered in both directions.
-    sf->highbd_predict[1][1][0] = aom_highbd_convolve8;
-    sf->highbd_predict[1][1][1] = aom_highbd_convolve8_avg;
   }
 
   // AV1 convolve functions

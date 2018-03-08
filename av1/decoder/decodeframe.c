@@ -2964,8 +2964,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         RefBuffer *const ref_buf = &cm->frame_refs[i];
         av1_setup_scale_factors_for_frame(
             &ref_buf->sf, ref_buf->buf->y_crop_width,
-            ref_buf->buf->y_crop_height, cm->width, cm->height,
-            cm->use_highbitdepth);
+            ref_buf->buf->y_crop_height, cm->width, cm->height);
       }
     }
   }
@@ -3342,8 +3341,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
     av1_setup_scale_factors_for_frame(
         &cm->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
-        xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
-        cm->use_highbitdepth);
+        xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);
   }
 
   if (cm->show_existing_frame) {
