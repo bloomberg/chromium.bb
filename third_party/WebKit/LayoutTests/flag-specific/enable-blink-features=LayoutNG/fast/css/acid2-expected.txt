@@ -79,10 +79,10 @@ layer at (48,84) size 704x84
       LayoutInline {A} at (0,0) size 214x27 [color=#0000FF]
         LayoutText {#text} at (0,0) size 214x27
           text run at (0,0) width 214: "Take The Acid2 Test"
-      LayoutText {#text} at (213,0) size 199x27
-        text run at (213,0) width 199: " and compare it to "
-      LayoutInline {A} at (0,0) size 247x27 [color=#0000FF]
-        LayoutText {#text} at (411,0) size 247x27
-          text run at (411,0) width 247: "the reference rendering"
-      LayoutText {#text} at (657,0) size 8x27
-        text run at (657,0) width 8: "."
+      LayoutText {#text} at (214,0) size 198x27
+        text run at (214,0) width 198: " and compare it to "
+      LayoutInline {A} at (0,0) size 246x27 [color=#0000FF]
+        LayoutText {#text} at (412,0) size 246x27
+          text run at (412,0) width 246: "the reference rendering"
+      LayoutText {#text} at (658,0) size 7x27
+        text run at (658,0) width 7: "."

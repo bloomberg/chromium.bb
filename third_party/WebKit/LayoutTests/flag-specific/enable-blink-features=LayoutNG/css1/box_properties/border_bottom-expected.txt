@@ -30,8 +30,8 @@ layer at (0,0) size 785x1063 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x116
           LayoutTableRow {TR} at (0,5) size 767x45
             LayoutNGTableCell {TD} at (5,5) size 757x45 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 735x39
-                text run at (2,2) width 735: "Every cell in this table should have a 2-pixel solid green bottom border. This is also true of the table-testing section in"
+              LayoutText {#text} at (2,2) size 736x39
+                text run at (2,2) width 736: "Every cell in this table should have a 2-pixel solid green bottom border. This is also true of the table-testing section in"
                 text run at (2,22) width 198: "the second half of the test page."
           LayoutTableRow {TR} at (0,55) size 767x56
             LayoutNGTableCell {TD} at (5,70) size 192x25 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
@@ -96,9 +96,9 @@ layer at (0,0) size 785x1063 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x476
           LayoutTableRow {TR} at (0,0) size 767x29
             LayoutNGTableCell {TD} at (0,0) size 767x29 [bgcolor=#C0C0C0] [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 161x19
-                LayoutText {#text} at (4,4) size 161x19
-                  text run at (4,4) width 161: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 159x19
+                LayoutText {#text} at (4,4) size 159x19
+                  text run at (4,4) width 159: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,29) size 767x447
             LayoutNGTableCell {TD} at (0,238) size 12x29 [bgcolor=#C0C0C0] [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,213) size 4x19
@@ -118,8 +118,8 @@ layer at (0,0) size 785x1063 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (1,1) size 745x116
                   LayoutTableRow {TR} at (0,5) size 745x45
                     LayoutNGTableCell {TD} at (5,5) size 735x45 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-                      LayoutText {#text} at (2,2) size 719x39
-                        text run at (2,2) width 719: "Every cell in this table should have a 2-pixel solid green bottom border. This is also true of the table-testing section"
+                      LayoutText {#text} at (2,2) size 720x39
+                        text run at (2,2) width 720: "Every cell in this table should have a 2-pixel solid green bottom border. This is also true of the table-testing section"
                         text run at (2,22) width 214: "in the second half of the test page."
                   LayoutTableRow {TR} at (0,55) size 745x56
                     LayoutNGTableCell {TD} at (5,70) size 186x25 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]

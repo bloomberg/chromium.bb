@@ -4,25 +4,25 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 52x19
-          text run at (0,0) width 52: "Test for "
-        LayoutInline {I} at (0,0) size 574x19
-          LayoutInline {A} at (0,0) size 301x19 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 301x19
-              text run at (51,0) width 301: "http://bugs.webkit.org/show_bug.cgi?id=11362"
-          LayoutText {#text} at (351,0) size 274x19
-            text run at (351,0) width 274: " Native popup with size=\"1\" wraps options"
-        LayoutText {#text} at (624,0) size 5x19
-          text run at (624,0) width 5: "."
+        LayoutText {#text} at (0,0) size 51x19
+          text run at (0,0) width 51: "Test for "
+        LayoutInline {I} at (0,0) size 572x19
+          LayoutInline {A} at (0,0) size 299x19 [color=#0000EE]
+            LayoutText {#text} at (51,0) size 299x19
+              text run at (51,0) width 299: "http://bugs.webkit.org/show_bug.cgi?id=11362"
+          LayoutText {#text} at (350,0) size 273x19
+            text run at (350,0) width 273: " Native popup with size=\"1\" wraps options"
+        LayoutText {#text} at (623,0) size 4x19
+          text run at (623,0) width 4: "."
       LayoutNGBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 35x19
           text run at (0,0) width 35: "With "
-        LayoutInline {TT} at (0,0) size 65x16
-          LayoutText {#text} at (34,3) size 65x16
-            text run at (34,3) width 65: "size=\"1\""
-        LayoutText {#text} at (98,0) size 9x19
-          text run at (98,0) width 9: ": "
-        LayoutMenuList {SELECT} at (106.36,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        LayoutInline {TT} at (0,0) size 64x16
+          LayoutText {#text} at (35,3) size 64x16
+            text run at (35,3) width 64: "size=\"1\""
+        LayoutText {#text} at (99,0) size 8x19
+          text run at (99,0) width 8: ": "
+        LayoutMenuList {SELECT} at (107,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutNGBlockFlow (anonymous) at (1,1) size 98x16
             LayoutText (anonymous) at (0,0) size 189x16
               text run at (0,0) width 189: "Very long option that does not fit"
@@ -30,12 +30,12 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,72) size 784x20
         LayoutText {#text} at (0,0) size 55x19
           text run at (0,0) width 55: "Without "
-        LayoutInline {TT} at (0,0) size 33x16
-          LayoutText {#text} at (54,3) size 33x16
-            text run at (54,3) width 33: "size"
-        LayoutText {#text} at (86,0) size 9x19
-          text run at (86,0) width 9: ": "
-        LayoutMenuList {SELECT} at (94.36,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        LayoutInline {TT} at (0,0) size 32x16
+          LayoutText {#text} at (55,3) size 32x16
+            text run at (55,3) width 32: "size"
+        LayoutText {#text} at (87,0) size 8x19
+          text run at (87,0) width 8: ": "
+        LayoutMenuList {SELECT} at (95,1) size 100x18 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutNGBlockFlow (anonymous) at (1,1) size 98x16
             LayoutText (anonymous) at (0,0) size 189x16
               text run at (0,0) width 189: "Very long option that does not fit"
