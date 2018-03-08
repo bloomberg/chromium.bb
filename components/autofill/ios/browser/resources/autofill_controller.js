@@ -17,34 +17,6 @@
   */
 goog.provide('__crWeb.autofill');
 
-/**
- * @typedef {{
- *   name: string,
- *   value: string,
- *   form_control_type: string,
- *   autocomplete_attributes: string,
- *   max_length: number,
- *   is_autofilled: boolean,
- *   is_checkable: boolean,
- *   is_focusable: boolean,
- *   should_autocomplete: boolean,
- *   role: number,
- *   option_contents: Array<string>,
- *   option_values: Array<string>
- * }}
- */
-var AutofillFormFieldData;
-
-/**
- * @typedef {{
- *   name: string,
- *   origin: string,
- *   action: string,
- *   fields: Array<AutofillFormFieldData>
- * }}
- */
-var AutofillFormData;
-
 /* Beginning of anonymous object. */
 (function() {
 
@@ -58,86 +30,6 @@ __gCrWeb.autofill = {};
 // string, so it does not get renamed by closure compiler during the
 // minification.
 __gCrWeb['autofill'] = __gCrWeb.autofill;
-
-/**
- * The maximum length allowed for form data.
- *
- * This variable is from AutofillTable::kMaxDataLength in
- * chromium/src/components/autofill/core/browser/webdata/autofill_table.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.MAX_DATA_LENGTH = 1024;
-
-/**
- * The maximum number of form fields we are willing to parse, due to
- * computational costs. Several examples of forms with lots of fields that are
- * not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
- * (3) router configuration pages; and (4) other configuration pages, e.g. for
- * Google code project settings.
- *
- * This variable is |kMaxParseableFields| from
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.MAX_PARSEABLE_FIELDS = 200;
-
-/**
- * A bit field mask to extract data from WebFormControlElement for
- * extracting none value.
- *
- * This variable is from enum ExtractMask in
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.EXTRACT_MASK_NONE = 0;
-
-/**
- * A bit field mask to extract data from WebFormControlElement for
- * extracting value from WebFormControlElement.
- *
- * This variable is from enum ExtractMask in
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.EXTRACT_MASK_VALUE = 1 << 0;
-
-/**
- * A bit field mask to extract data from WebFormControlElement for
- * extracting option text from WebFormSelectElement. Only valid when
- * EXTRACT_MASK_VALUE is set. This is used for form submission where human
- * readable value is captured.
- *
- * This variable is from enum ExtractMask in
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT = 1 << 1;
-
-/**
- * A bit field mask to extract data from WebFormControlElement for
- * extracting options from WebFormControlElement.
- *
- * This variable is from enum ExtractMask in
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.EXTRACT_MASK_OPTIONS = 1 << 2;
-
-/**
- * A value for the "presentation" role.
- *
- * This variable is from enum RoleAttribute in
- * chromium/src/components/autofill/core/common/form_field_data.h
- *
- * @const {number}
- */
-__gCrWeb.autofill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 
 /**
  * The delay between filling two fields
@@ -187,8 +79,8 @@ function isElementInsideFormOrFieldSet(element) {
   var parentNode = element.parentNode;
   while (parentNode) {
     if ((parentNode.nodeType === Node.ELEMENT_NODE) &&
-        (__gCrWeb.autofill.hasTagName(parentNode, 'form') ||
-         __gCrWeb.autofill.hasTagName(parentNode, 'fieldset'))) {
+        (__gCrWeb.fill.hasTagName(parentNode, 'form') ||
+         __gCrWeb.fill.hasTagName(parentNode, 'fieldset'))) {
       return true;
     }
     parentNode = parentNode.parentNode;
@@ -254,7 +146,7 @@ function scanFormControlElements_(controlElements) {
   for (var elementIndex = 0; elementIndex < controlElements.length;
        ++elementIndex) {
     var element = controlElements[elementIndex];
-    if (!__gCrWeb.autofill.isCheckableElement(element)) {
+    if (!__gCrWeb.fill.isCheckableElement(element)) {
       ++numEditableElements;
     }
   }
@@ -289,272 +181,13 @@ function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
       }
     }
 
-    if (__gCrWeb.autofill.hasTagName(elements[i], 'fieldset') &&
+    if (__gCrWeb.fill.hasTagName(elements[i], 'fieldset') &&
         !isElementInsideFormOrFieldSet(elements[i])) {
       fieldsets.push(elements[i]);
     }
   }
   return __gCrWeb.autofill.extractAutofillableElementsFromSet(
       unownedFieldsetChildren);
-}
-
-/**
- * Extracts fields from |controlElements| with |extractMask| to |formFields|.
- * The extracted fields are also placed in |elementArray|.
- *
- * It is based on the logic in
- *     bool ExtractFieldsFromControlElements(
- *         const WebVector<WebFormControlElement>& control_elements,
- *         const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
- *         ExtractMask extract_mask,
- *         std::vector<std::unique_ptr<FormFieldData>>* form_fields,
- *         std::vector<bool>* fields_extracted,
- *         std::map<WebFormControlElement, FormFieldData*>* element_map)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
- *
- * TODO(thestig): Make |element_map| a Map when Chrome makes iOS 8 and Safari 8
- *                part of the minimal requirements.
- *
- * @param {Array<FormControlElement>} controlElements The control elements that
- *     will be processed.
- * @param {number} extractMask Mask controls what data is extracted from
- *     controlElements.
- * @param {Array<AutofillFormFieldData>} formFields The extracted form fields.
- * @param {Array<boolean>} fieldsExtracted Indicates whether the fields were
- *     extracted.
- * @param {Array<?AutofillFormFieldData>} elementArray The extracted form
- *     fields or null if a particular control has no corresponding field.
- * @return {boolean} Whether there are fields and not too many fields in the
- *     form.
- */
-function extractFieldsFromControlElements_(
-    controlElements, extractMask, formFields, fieldsExtracted, elementArray) {
-  for (var i = 0; i < controlElements.length; ++i) {
-    fieldsExtracted[i] = false;
-    elementArray[i] = null;
-
-    /** @type {FormControlElement} */
-    var controlElement = controlElements[i];
-    if (!__gCrWeb.autofill.isAutofillableElement(controlElement)) {
-      continue;
-    }
-
-    // Create a new AutofillFormFieldData, fill it out and map it to the
-    // field's name.
-    var formField = new __gCrWeb['common'].JSONSafeObject;
-    __gCrWeb.autofill.webFormControlElementToFormField(
-        controlElement, extractMask, formField);
-    formFields.push(formField);
-    elementArray[i] = formField;
-    fieldsExtracted[i] = true;
-
-    // To avoid overly expensive computation, we impose a maximum number of
-    // allowable fields.
-    if (formFields.length > __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
-      return false;
-    }
-  }
-
-  return formFields.length > 0;
-}
-
-/**
- * Check if the node is visible.
- *
- * @param {Node} node The node to be processed.
- * @return {boolean} Whether the node is visible or not.
- */
-function isVisibleNode_(node) {
-  if (!node) return false;
-
-  if (node.nodeType === Node.ELEMENT_NODE) {
-    var style = window.getComputedStyle(/** @type {Element} */ (node));
-    if (style.visibility == 'hidden' || style.display == 'none') return false;
-  }
-
-  // Verify all ancestors are focusable.
-  return !node.parentNode || isVisibleNode_(node.parentNode);
-}
-
-/**
- * For each label element, get the corresponding form control element, use the
- * form control element along with |controlElements| and |elementArray| to find
- * the previously created AutofillFormFieldData and set the
- * AutofillFormFieldData's label to the label.firstChild().nodeValue() of the
- * label element.
- *
- * It is based on the logic in
- *     void MatchLabelsAndFields(
- *         const WebElementCollection& labels,
- *         std::map<WebFormControlElement, FormFieldData*>* element_map);
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
- *
- * This differs in that it takes a formElement field, instead of calling
- * field_element.isFormControlElement().
- *
- * This also uses (|controlElements|, |elementArray|) because there is no
- * guaranteeded Map support on iOS yet.
- *
- * @param {NodeList} labels The labels to match.
- * @param {HTMLFormElement} formElement The form element being processed.
- * @param {Array<FormControlElement>} controlElements The control elements that
- *     were processed.
- * @param {Array<?AutofillFormFieldData>} elementArray The extracted fields.
- */
-function matchLabelsAndFields_(
-    labels, formElement, controlElements, elementArray) {
-  for (var index = 0; index < labels.length; ++index) {
-    var label = labels[index];
-    var fieldElement = label.control;
-    var fieldData = null;
-    if (!fieldElement) {
-      // Sometimes site authors will incorrectly specify the corresponding
-      // field element's name rather than its id, so we compensate here.
-      var elementName = label.htmlFor;
-      if (!elementName) continue;
-      // Look through the list for elements with this name. There can actually
-      // be more than one. In this case, the label may not be particularly
-      // useful, so just discard it.
-      for (var elementIndex = 0; elementIndex < elementArray.length;
-           ++elementIndex) {
-        var currentFieldData = elementArray[elementIndex];
-        if (currentFieldData && currentFieldData['name'] === elementName) {
-          if (fieldData !== null) {
-            fieldData = null;
-            break;
-          } else {
-            fieldData = currentFieldData;
-          }
-        }
-      }
-    } else if (
-        fieldElement.form != formElement || fieldElement.type === 'hidden') {
-      continue;
-    } else {
-      // Typical case: look up |fieldData| in |elementArray|.
-      for (var elementIndex = 0; elementIndex < elementArray.length;
-           ++elementIndex) {
-        if (controlElements[elementIndex] === fieldElement) {
-          fieldData = elementArray[elementIndex];
-          break;
-        }
-      }
-    }
-
-    if (!fieldData) continue;
-
-    if (!('label' in fieldData)) {
-      fieldData['label'] = '';
-    }
-    var labelText = __gCrWeb.autofill.findChildText(label);
-    // Concatenate labels because some sites might have multiple label
-    // candidates.
-    if (fieldData['label'].length > 0 && labelText.length > 0) {
-      fieldData['label'] += ' ';
-    }
-    fieldData['label'] += labelText;
-  }
-}
-
-/**
- * Common function shared by webFormElementToFormData() and
- * unownedFormElementsAndFieldSetsToFormData(). Either pass in:
- * 1) |formElement|, |formControlElement| and an empty |fieldsets|.
- * or
- * 2) a non-empty |fieldsets|.
- *
- * It is based on the logic in
- *     bool FormOrFieldsetsToFormData(
- *         const blink::WebFormElement* form_element,
- *         const blink::WebFormControlElement* form_control_element,
- *         const std::vector<blink::WebElement>& fieldsets,
- *         const WebVector<WebFormControlElement>& control_elements,
- *         ExtractMask extract_mask,
- *         FormData* form,
- *         FormFieldData* field)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
- *
- * @param {HTMLFormElement} formElement The form element that will be processed.
- * @param {FormControlElement} formControlElement A control element in
- *     formElment, the FormField of which will be returned in field.
- * @param {Array<Element>} fieldsets The fieldsets to look through if
- *     formElement and formControlElement are not specified.
- * @param {Array<FormControlElement>} controlElements The control elements that
- *     will be processed.
- * @param {number} extractMask Mask controls what data is extracted from
- *     formElement.
- * @param {AutofillFormData} form Form to fill in the AutofillFormData
- *     information of formElement.
- * @param {?AutofillFormFieldData} field Field to fill in the form field
- *     information of formControlElement.
- * @return {boolean} Whether there are fields and not too many fields in the
- *     form.
- */
-function formOrFieldsetsToFormData_(
-    formElement, formControlElement, fieldsets, controlElements, extractMask,
-    form, field) {
-  // This should be a map from a control element to the AutofillFormFieldData.
-  // However, without Map support, it's just an Array of AutofillFormFieldData.
-  var elementArray = [];
-
-  // The extracted FormFields.
-  var formFields = [];
-
-  // A vector of bools that indicate whether each element in |controlElements|
-  // meets the requirements and thus will be in the resulting |form|.
-  var fieldsExtracted = [];
-
-  if (!extractFieldsFromControlElements_(
-          controlElements, extractMask, formFields, fieldsExtracted,
-          elementArray)) {
-    return false;
-  }
-
-  if (formElement) {
-    // Loop through the label elements inside the form element. For each label
-    // element, get the corresponding form control element, use the form control
-    // element along with |controlElements| and |elementArray| to find the
-    // previously created AutofillFormFieldData and set the
-    // AutofillFormFieldData's label.
-    var labels = formElement.getElementsByTagName('label');
-    matchLabelsAndFields_(labels, formElement, controlElements, elementArray);
-  } else {
-    // Same as the if block, but for all the labels in fieldset
-    for (var i = 0; i < fieldsets.length; ++i) {
-      var labels = fieldsets[i].getElementsByTagName('label');
-      matchLabelsAndFields_(labels, formElement, controlElements, elementArray);
-    }
-  }
-
-  // Loop through the form control elements, extracting the label text from
-  // the DOM.  We use the |fieldsExtracted| vector to make sure we assign the
-  // extracted label to the correct field, as it's possible |form_fields| will
-  // not contain all of the elements in |control_elements|.
-  for (var i = 0, fieldIdx = 0;
-       i < controlElements.length && fieldIdx < formFields.length; ++i) {
-    // This field didn't meet the requirements, so don't try to find a label
-    // for it.
-    if (!fieldsExtracted[i]) continue;
-
-    var controlElement = controlElements[i];
-    var currentField = formFields[fieldIdx];
-    if (!currentField['label']) {
-      currentField['label'] =
-          __gCrWeb.autofill.inferLabelForElement(controlElement);
-    }
-    if (currentField['label'].length > __gCrWeb.autofill.MAX_DATA_LENGTH) {
-      currentField['label'] =
-          currentField['label'].substr(0, __gCrWeb.autofill.MAX_DATA_LENGTH);
-    }
-
-    if (controlElement === formControlElement) field = formFields[fieldIdx];
-    ++fieldIdx;
-  }
-
-  form['fields'] = formFields;
-  // Protect against custom implementation of Array.toJSON in host pages.
-  form['fields'].toJSON = null;
-  return true;
 }
 
 /**
@@ -629,7 +262,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
   var delay = 0;
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
-    if (!__gCrWeb.autofill.isAutofillableElement(element)) {
+    if (!__gCrWeb.fill.isAutofillableElement(element)) {
       continue;
     }
     var fieldName = __gCrWeb.form.getFieldIdentifier(element);
@@ -638,7 +271,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     // 'select-one' element. 'select-one' elements are always autofilled even
     // if non-empty; see AutofillManager::FillOrPreviewDataModelForm().
     if (element.value && element.value.length > 0 &&
-        !__gCrWeb.autofill.isSelectElement(element) &&
+        !__gCrWeb.fill.isSelectElement(element) &&
         fieldName !== forceFillFieldName) {
       continue;
     }
@@ -647,9 +280,9 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     var value = data.fields[fieldName];
     if (!value) continue;
 
-    if (__gCrWeb.autofill.isTextInput(element) ||
-        __gCrWeb.autofill.isTextAreaElement(element) ||
-        __gCrWeb.autofill.isSelectElement(element)) {
+    if (__gCrWeb.fill.isTextInput(element) ||
+        __gCrWeb.fill.isTextAreaElement(element) ||
+        __gCrWeb.fill.isSelectElement(element)) {
       (function (_element, _value, _delay) {
         window.setTimeout(function() {
           __gCrWeb.fill.setInputElementValue(_value, _element, true);
@@ -658,8 +291,8 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
           _element.addEventListener('input', controlElementInputListener);
         }, _delay);})(element, value, delay);
       delay = delay + __gCrWeb.autofill.delayBetweenFieldFillingMs;
-    } else if (__gCrWeb.autofill.isCheckableElement(element)) {
-      // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
+    } else if (__gCrWeb.fill.isCheckableElement(element)) {
+      // TODO(bondd): Handle __gCrWeb.fill.isCheckableElement(element) ==
       // true. |is_checked| is not currently passed in by the caller.
     }
 
@@ -708,14 +341,14 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
     if (!element.isAutofilled || element.disabled) continue;
 
     var value = null;
-    if (__gCrWeb.autofill.isTextInput(element) ||
-        __gCrWeb.autofill.isTextAreaElement(element)) {
+    if (__gCrWeb.fill.isTextInput(element) ||
+        __gCrWeb.fill.isTextAreaElement(element)) {
       value = '';
-    } else if (__gCrWeb.autofill.isSelectElement(element)) {
+    } else if (__gCrWeb.fill.isSelectElement(element)) {
       // Reset to the first index.
       // TODO(bondd): Store initial values and reset to the correct one here.
       value = element.options[0].value;
-    } else if (__gCrWeb.autofill.isCheckableElement(element)) {
+    } else if (__gCrWeb.fill.isCheckableElement(element)) {
       // TODO(bondd): Handle checkable elements. They aren't properly supported
       // by iOS Autofill yet.
     }
@@ -762,8 +395,8 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
   /** @type {HTMLCollection} */
   var webForms = document.forms;
 
-  var extractMask = __gCrWeb.autofill.EXTRACT_MASK_VALUE |
-      __gCrWeb.autofill.EXTRACT_MASK_OPTIONS;
+  var extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE |
+      __gCrWeb.fill.EXTRACT_MASK_OPTIONS;
   var numFieldsSeen = 0;
   for (var formIndex = 0; formIndex < webForms.length; ++formIndex) {
     /** @type {HTMLFormElement} */
@@ -777,13 +410,13 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
     }
 
     var form = new __gCrWeb['common'].JSONSafeObject;
-    if (!__gCrWeb.autofill.webFormElementToFormData(
+    if (!__gCrWeb.fill.webFormElementToFormData(
             window, formElement, null, extractMask, form, null /* field */)) {
       continue;
     }
 
     numFieldsSeen += form['fields'].length;
-    if (numFieldsSeen > __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
+    if (numFieldsSeen > __gCrWeb.fill.MAX_PARSEABLE_FIELDS) {
       break;
     }
 
@@ -804,7 +437,7 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
         window, fieldsets, unownedControlElements, extractMask, unownedForm);
     if (hasUnownedForm) {
       numFieldsSeen += unownedForm['fields'].length;
-      if (numFieldsSeen <= __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
+      if (numFieldsSeen <= __gCrWeb.fill.MAX_PARSEABLE_FIELDS) {
         var interesting = isFormInteresting_(
             unownedForm, numEditableUnownedElements, minimumRequiredFields);
         if (interesting) {
@@ -814,63 +447,6 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
     }
   }
   return forms;
-};
-
-/**
- * Fills |form| with the form data object corresponding to the |formElement|.
- * If |field| is non-NULL, also fills |field| with the FormField object
- * corresponding to the |formControlElement|.
- * |extract_mask| controls what data is extracted.
- * Returns true if |form| is filled out. Returns false if there are no fields or
- * too many fields in the |form|.
- *
- * It is based on the logic in
- *     bool WebFormElementToFormData(
- *         const blink::WebFormElement& form_element,
- *         const blink::WebFormControlElement& form_control_element,
- *         ExtractMask extract_mask,
- *         FormData* form,
- *         FormFieldData* field)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
- *
- * @param {HTMLFrameElement|Window} frame The window or frame where the
- *     formElement is in.
- * @param {HTMLFormElement} formElement The form element that will be processed.
- * @param {FormControlElement} formControlElement A control element in
- *     formElment, the FormField of which will be returned in field.
- * @param {number} extractMask Mask controls what data is extracted from
- *     formElement.
- * @param {AutofillFormData} form Form to fill in the AutofillFormData
- *     information of formElement.
- * @param {?AutofillFormFieldData} field Field to fill in the form field
- *     information of formControlElement.
- * @return {boolean} Whether there are fields and not too many fields in the
- *     form.
- */
-__gCrWeb.autofill.webFormElementToFormData = function(
-    frame, formElement, formControlElement, extractMask, form, field) {
-  if (!frame) {
-    return false;
-  }
-
-  form['name'] = __gCrWeb.form.getFormIdentifier(formElement);
-  form['origin'] =
-      __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
-  form['action'] = __gCrWeb.common.absoluteURL(
-      frame.document, formElement.getAttribute('action'));
-
-  // Note different from form_autofill_util.cc version of this method, which
-  // computes |form.action| using document.completeURL(form_element.action())
-  // and falls back to formElement.action() if the computed action is invalid,
-  // here the action returned by |__gCrWeb.common.absoluteURL| is always
-  // valid, which is computed by creating a <a> element, and we don't check if
-  // the action is valid.
-
-  var controlElements = __gCrWeb.form.getFormControlElements(formElement);
-
-  return formOrFieldsetsToFormData_(
-      formElement, formControlElement, [] /* fieldsets */, controlElements,
-      extractMask, form, field);
 };
 
 /**
@@ -928,7 +504,7 @@ function unownedFormElementsAndFieldSetsToFormData_(
   if (document.documentElement.hasAttribute('lang') &&
       !document.documentElement.getAttribute('lang').toLowerCase().startsWith(
           'en')) {
-    return formOrFieldsetsToFormData_(
+    return __gCrWeb.fill.formOrFieldsetsToFormData(
         null /* formElement*/, null /* formControlElement */, fieldsets,
         controlElements, extractMask, form, null /* field */);
   }
@@ -946,904 +522,16 @@ function unownedFormElementsAndFieldSetsToFormData_(
     var keyword = keywords[index];
     if (title.includes(keyword) || path.includes(keyword)) {
       form['is_formless_checkout'] = true;
-      return formOrFieldsetsToFormData_(
+      return __gCrWeb.fill.formOrFieldsetsToFormData(
           null /* formElement*/, null /* formControlElement */, fieldsets,
           controlElements, extractMask, form, null /* field */);
     }
   }
 
-  return formOrFieldsetsToFormData_(
+  return __gCrWeb.fill.formOrFieldsetsToFormData(
       null /* formElement*/, null /* formControlElement */, fieldsets,
       controlElements, extractMask, form, null /* field */);
 }
-
-/**
- * Returns is the tag of an |element| is tag.
- *
- * It is based on the logic in
- *     bool HasTagName(const WebNode& node, const blink::WebString& tag)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {Node} node Node to examine.
- * @param {string} tag Tag name.
- * @return {boolean} Whether the tag of node is tag.
- */
-__gCrWeb.autofill.hasTagName = function(node, tag) {
-  return node.nodeType === Node.ELEMENT_NODE &&
-      /** @type {Element} */ (node).tagName === tag.toUpperCase();
-};
-
-/**
- * Checks if an element is autofillable.
- *
- * It is based on the logic in
- *     bool IsAutofillableElement(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is one of the element types that can be
- *     autofilled.
- */
-__gCrWeb.autofill.isAutofillableElement = function(element) {
-  return __gCrWeb.autofill.isAutofillableInputElement(element) ||
-      __gCrWeb.autofill.isSelectElement(element) ||
-      __gCrWeb.autofill.isTextAreaElement(element);
-};
-
-/**
- * Trims whitespace from the start of the input string.
- * Simplified version of string_util::TrimWhitespace.
- * @param {string} input String to trim.
- * @return {string} The |input| string without leading whitespace.
- */
-__gCrWeb.autofill.trimWhitespaceLeading = function(input) {
-  return input.replace(/^\s+/gm, '');
-};
-
-/**
- * Trims whitespace from the end of the input string.
- * Simplified version of string_util::TrimWhitespace.
- * @param {string} input String to trim.
- * @return {string} The |input| string without trailing whitespace.
- */
-__gCrWeb.autofill.trimWhitespaceTrailing = function(input) {
-  return input.replace(/\s+$/gm, '');
-};
-
-/**
- * Appends |suffix| to |prefix| so that any intermediary whitespace is collapsed
- * to a single space.  If |force_whitespace| is true, then the resulting string
- * is guaranteed to have a space between |prefix| and |suffix|.  Otherwise, the
- * result includes a space only if |prefix| has trailing whitespace or |suffix|
- * has leading whitespace.
- *
- * A few examples:
- *     CombineAndCollapseWhitespace('foo', 'bar', false)       -> 'foobar'
- *     CombineAndCollapseWhitespace('foo', 'bar', true)        -> 'foo bar'
- *     CombineAndCollapseWhitespace('foo ', 'bar', false)      -> 'foo bar'
- *     CombineAndCollapseWhitespace('foo', ' bar', false)      -> 'foo bar'
- *     CombineAndCollapseWhitespace('foo', ' bar', true)       -> 'foo bar'
- *     CombineAndCollapseWhitespace('foo   ', '   bar', false) -> 'foo bar'
- *     CombineAndCollapseWhitespace(' foo', 'bar ', false)     -> ' foobar '
- *     CombineAndCollapseWhitespace(' foo', 'bar ', true)      -> ' foo bar '
- *
- * It is based on the logic in
- * const string16 CombineAndCollapseWhitespace(const string16& prefix,
- *                                             const string16& suffix,
- *                                             bool force_whitespace)
- * @param {string} prefix The prefix string in the string combination.
- * @param {string} suffix The suffix string in the string combination.
- * @param {boolean} forceWhitespace A boolean indicating if whitespace should
- *     be added as separator in the combination.
- * @return {string} The combined string.
- */
-__gCrWeb.autofill.combineAndCollapseWhitespace = function(
-    prefix, suffix, forceWhitespace) {
-  var prefixTrimmed = __gCrWeb.autofill.trimWhitespaceTrailing(prefix);
-  var prefixTrailingWhitespace = prefixTrimmed != prefix;
-  var suffixTrimmed = __gCrWeb.autofill.trimWhitespaceLeading(suffix);
-  var suffixLeadingWhitespace = suffixTrimmed != suffix;
-  if (prefixTrailingWhitespace || suffixLeadingWhitespace || forceWhitespace) {
-    return prefixTrimmed + ' ' + suffixTrimmed;
-  } else {
-    return prefixTrimmed + suffixTrimmed;
-  }
-};
-
-/**
- * This is a helper function for the findChildText() function (see below).
- * Search depth is limited with the |depth| parameter.
- *
- * Based on form_autofill_util::FindChildTextInner().
- *
- * @param {Node} node The node to fetch the text content from.
- * @param {number} depth The maximum depth to descend on the DOM.
- * @param {Array<Node>} divsToSkip List of <div> tags to ignore if encountered.
- * @return {string} The discovered and adapted string.
- */
-__gCrWeb.autofill.findChildTextInner = function(node, depth, divsToSkip) {
-  if (depth <= 0 || !node) {
-    return '';
-  }
-
-  // Skip over comments.
-  if (node.nodeType === Node.COMMENT_NODE) {
-    return __gCrWeb.autofill.findChildTextInner(
-        node.nextSibling, depth - 1, divsToSkip);
-  }
-
-  if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.TEXT_NODE) {
-    return '';
-  }
-
-  // Ignore elements known not to contain inferable labels.
-  if (node.nodeType === Node.ELEMENT_NODE) {
-    if (node.tagName === 'OPTION' || node.tagName === 'SCRIPT' ||
-        node.tagName === 'NOSCRIPT') {
-      return '';
-    }
-    if (__gCrWeb.form.isFormControlElement(/** @type {Element} */ (node))) {
-      var input = /** @type {FormControlElement} */ (node);
-      if (__gCrWeb.autofill.isAutofillableElement(input)) {
-        return '';
-      }
-    }
-  }
-
-  if (node.tagName === 'DIV') {
-    for (var i = 0; i < divsToSkip.length; ++i) {
-      if (node === divsToSkip[i]) {
-        return '';
-      }
-    }
-  }
-
-  // Extract the text exactly at this node.
-  var nodeText = __gCrWeb.autofill.nodeValue(node);
-  if (node.nodeType === Node.TEXT_NODE && !nodeText) {
-    // In the C++ version, this text node would have been stripped completely.
-    // Just pass the buck.
-    return __gCrWeb.autofill.findChildTextInner(
-        node.nextSibling, depth, divsToSkip);
-  }
-
-  // Recursively compute the children's text.
-  // Preserve inter-element whitespace separation.
-  var childText = __gCrWeb.autofill.findChildTextInner(
-      node.firstChild, depth - 1, divsToSkip);
-  var addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
-  // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
-  addSpace = false;
-  nodeText = __gCrWeb.autofill.combineAndCollapseWhitespace(
-      nodeText, childText, addSpace);
-
-  // Recursively compute the siblings' text.
-  // Again, preserve inter-element whitespace separation.
-  var siblingText = __gCrWeb.autofill.findChildTextInner(
-      node.nextSibling, depth - 1, divsToSkip);
-  addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
-  // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
-  addSpace = false;
-  nodeText = __gCrWeb.autofill.combineAndCollapseWhitespace(
-      nodeText, siblingText, addSpace);
-
-  return nodeText;
-};
-
-/**
- * Same as findChildText() below, but with a list of div nodes to skip.
- *
- * It is based on the logic in
- *    string16 FindChildTextWithIgnoreList(
- *        const WebNode& node,
- *        const std::set<WebNode>& divs_to_skip)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {Node} node A node of which the child text will be return.
- * @param {Array<Node>} divsToSkip List of <div> tags to ignore if encountered.
- * @return {string} The child text.
- */
-__gCrWeb.autofill.findChildTextWithIgnoreList = function(node, divsToSkip) {
-  if (node.nodeType === Node.TEXT_NODE)
-    return __gCrWeb.autofill.nodeValue(node);
-
-  var child = node.firstChild;
-  var kChildSearchDepth = 10;
-  var nodeText = __gCrWeb.autofill.findChildTextInner(
-      child, kChildSearchDepth, divsToSkip);
-  nodeText = nodeText.trim();
-  return nodeText;
-};
-
-/**
- * Returns the aggregated values of the descendants of |element| that are
- * non-empty text nodes.
- *
- * It is based on the logic in
- *    string16 FindChildText(const WebNode& node)
- * chromium/src/components/autofill/content/renderer/form_autofill_util.cc,
- * which is a faster alternative to |innerText()| for performance critical
- * operations.
- *
- * @param {Node} node A node of which the child text will be return.
- * @return {string} The child text.
- */
-__gCrWeb.autofill.findChildText = function(node) {
-  return __gCrWeb.autofill.findChildTextWithIgnoreList(node, []);
-};
-
-/**
- * Shared function for InferLabelFromPrevious() and InferLabelFromNext().
- *
- * It is based on the logic in
- *     string16 InferLabelFromSibling(const WebFormControlElement& element,
- *                                    bool forward)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @param {boolean} forward whether to search for the next or previous element.
- * @return {string} The label of element or an empty string if there is no
- *                  sibling or no label.
- */
-__gCrWeb.autofill.inferLabelFromSibling = function(element, forward) {
-  var inferredLabel = '';
-  var sibling = element;
-  if (!sibling) {
-    return '';
-  }
-
-  while (true) {
-    if (forward) {
-      sibling = sibling.nextSibling;
-    } else {
-      sibling = sibling.previousSibling;
-    }
-
-    if (!sibling) {
-      break;
-    }
-
-    // Skip over comments.
-    var nodeType = sibling.nodeType;
-    if (nodeType === Node.COMMENT_NODE) {
-      continue;
-    }
-
-    // Otherwise, only consider normal HTML elements and their contents.
-    if (nodeType != Node.TEXT_NODE && nodeType != Node.ELEMENT_NODE) {
-      break;
-    }
-
-    // A label might be split across multiple "lightweight" nodes.
-    // Coalesce any text contained in multiple consecutive
-    //  (a) plain text nodes or
-    //  (b) inline HTML elements that are essentially equivalent to text nodes.
-    if (nodeType === Node.TEXT_NODE ||
-        __gCrWeb.autofill.hasTagName(sibling, 'b') ||
-        __gCrWeb.autofill.hasTagName(sibling, 'strong') ||
-        __gCrWeb.autofill.hasTagName(sibling, 'span') ||
-        __gCrWeb.autofill.hasTagName(sibling, 'font')) {
-      var value = __gCrWeb.autofill.findChildText(sibling);
-      // A text node's value will be empty if it is for a line break.
-      var addSpace = nodeType === Node.TEXT_NODE && value.length === 0;
-      inferredLabel = __gCrWeb.autofill.combineAndCollapseWhitespace(
-          value, inferredLabel, addSpace);
-      continue;
-    }
-
-    // If we have identified a partial label and have reached a non-lightweight
-    // element, consider the label to be complete.
-    var trimmedLabel = inferredLabel.trim();
-    if (trimmedLabel.length > 0) {
-      break;
-    }
-
-    // <img> and <br> tags often appear between the input element and its
-    // label text, so skip over them.
-    if (__gCrWeb.autofill.hasTagName(sibling, 'img') ||
-        __gCrWeb.autofill.hasTagName(sibling, 'br')) {
-      continue;
-    }
-
-    // We only expect <p> and <label> tags to contain the full label text.
-    if (__gCrWeb.autofill.hasTagName(sibling, 'p') ||
-        __gCrWeb.autofill.hasTagName(sibling, 'label')) {
-      inferredLabel = __gCrWeb.autofill.findChildText(sibling);
-    }
-    break;
-  }
-  return inferredLabel.trim();
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * a previous sibling of |element|,
- * e.g. Some Text <input ...>
- * or   Some <span>Text</span> <input ...>
- * or   <p>Some Text</p><input ...>
- * or   <label>Some Text</label> <input ...>
- * or   Some Text <img><input ...>
- * or   <b>Some Text</b><br/> <input ...>.
- *
- * It is based on the logic in
- *     string16 InferLabelFromPrevious(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromPrevious = function(element) {
-  return __gCrWeb.autofill.inferLabelFromSibling(element, false);
-};
-
-/**
- * Same as InferLabelFromPrevious(), but in the other direction.
- * Useful for cases like: <span><input type="checkbox">Label For Checkbox</span>
- *
- * It is based on the logic in
- *     string16 InferLabelFromNext(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromNext = function(element) {
-  return __gCrWeb.autofill.inferLabelFromSibling(element, true);
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * the placeholder attribute.
- *
- * It is based on the logic in
- *     string16 InferLabelFromPlaceholder(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromPlaceholder = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  return element.placeholder || element.getAttribute('placeholder') || '';
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * the value attribute when it is present and user has not typed in (if
- * element's value attribute is same as the element's value).
- *
- * It is based on the logic in
- *     string16 InferLabelFromValueAttr(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.InferLabelFromValueAttr = function(element) {
-  if (!element || !element.value || !element.hasAttribute('value') ||
-      element.value != element.getAttribute('value')) {
-    return '';
-  }
-
-  return element.value;
-};
-
-/**
- * Helper for |InferLabelForElement()| that tests if an inferred label is valid
- * or not. A valid label is a label that does not only contains special
- * characters.
- *
- * It is based on the logic in
- *     bool IsLabelValid(base::StringPiece16 inferred_label,
- *         const std::vector<base::char16>& stop_words)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- * The list of characters that are considered special is hard-coded in a regexp.
- *
- * @param {string} label An element to examine.
- * @return {boolean} Whether the label contains not special characters.
- */
-__gCrWeb.autofill.IsLabelValid = function(label) {
-  return label.search(/[^ *:()\u2013-]/) >= 0;
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * enclosing list item, e.g.
- *     <li>Some Text<input ...><input ...><input ...></li>
- *
- * It is based on the logic in
- *     string16 InferLabelFromListItem(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromListItem = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  var parentNode = element.parentNode;
-  while (parentNode && parentNode.nodeType === Node.ELEMENT_NODE &&
-         !__gCrWeb.autofill.hasTagName(parentNode, 'li')) {
-    parentNode = parentNode.parentNode;
-  }
-
-  if (parentNode && __gCrWeb.autofill.hasTagName(parentNode, 'li'))
-    return __gCrWeb.autofill.findChildText(parentNode);
-
-  return '';
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * surrounding table structure,
- * e.g. <tr><td>Some Text</td><td><input ...></td></tr>
- * or   <tr><th>Some Text</th><td><input ...></td></tr>
- * or   <tr><td><b>Some Text</b></td><td><b><input ...></b></td></tr>
- * or   <tr><th><b>Some Text</b></th><td><b><input ...></b></td></tr>
- *
- * It is based on the logic in
- *    string16 InferLabelFromTableColumn(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromTableColumn = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  var parentNode = element.parentNode;
-  while (parentNode && parentNode.nodeType === Node.ELEMENT_NODE &&
-         !__gCrWeb.autofill.hasTagName(parentNode, 'td')) {
-    parentNode = parentNode.parentNode;
-  }
-
-  if (!parentNode) {
-    return '';
-  }
-
-  // Check all previous siblings, skipping non-element nodes, until we find a
-  // non-empty text block.
-  var inferredLabel = '';
-  var previous = parentNode.previousSibling;
-  while (inferredLabel.length === 0 && previous) {
-    if (__gCrWeb.autofill.hasTagName(previous, 'td') ||
-        __gCrWeb.autofill.hasTagName(previous, 'th')) {
-      inferredLabel = __gCrWeb.autofill.findChildText(previous);
-    }
-    previous = previous.previousSibling;
-  }
-
-  return inferredLabel;
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * surrounding table structure,
- * e.g. <tr><td>Some Text</td></tr><tr><td><input ...></td></tr>
- *
- * If there are multiple cells and the row with the input matches up with the
- * previous row, then look for a specific cell within the previous row.
- * e.g. <tr><td>Input 1 label</td><td>Input 2 label</td></tr>
- *  <tr><td><input name="input 1"></td><td><input name="input2"></td></tr>
- *
- * It is based on the logic in
- *     string16 InferLabelFromTableRow(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromTableRow = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  var cell = element.parentNode;
-  while (cell) {
-    if (cell.nodeType === Node.ELEMENT_NODE &&
-        __gCrWeb.autofill.hasTagName(cell, 'td')) {
-      break;
-    }
-    cell = cell.parentNode;
-  }
-
-  // Not in a cell - bail out.
-  if (!cell) {
-    return '';
-  }
-
-  // Count the cell holding |element|.
-  var cellCount = cell.colSpan;
-  var cellPosition = 0;
-  var cellPositionEnd = cellCount - 1;
-
-  // Count cells to the left to figure out |element|'s cell's position.
-  var cellIterator = cell.previousSibling;
-  while (cellIterator) {
-    if (cellIterator.nodeType === Node.ELEMENT_NODE &&
-        __gCrWeb.autofill.hasTagName(cellIterator, 'td')) {
-      cellPosition += cellIterator.colSpan;
-    }
-    cellIterator = cellIterator.previousSibling;
-  }
-
-  // Count cells to the right.
-  cellIterator = cell.nextSibling;
-  while (cellIterator) {
-    if (cellIterator.nodeType === Node.ELEMENT_NODE &&
-        __gCrWeb.autofill.hasTagName(cellIterator, 'td')) {
-      cellCount += cellIterator.colSpan;
-    }
-    cellIterator = cellIterator.nextSibling;
-  }
-
-  // Combine left + right.
-  cellCount += cellPosition;
-  cellPositionEnd += cellPosition;
-
-  // Find the current row.
-  var parentNode = element.parentNode;
-  while (parentNode && parentNode.nodeType === Node.ELEMENT_NODE &&
-         !__gCrWeb.autofill.hasTagName(parentNode, 'tr')) {
-    parentNode = parentNode.parentNode;
-  }
-
-  if (!parentNode) {
-    return '';
-  }
-
-  // Now find the previous row.
-  var rowIt = parentNode.previousSibling;
-  while (rowIt) {
-    if (rowIt.nodeType === Node.ELEMENT_NODE &&
-        __gCrWeb.autofill.hasTagName(parentNode, 'tr')) {
-      break;
-    }
-    rowIt = rowIt.previousSibling;
-  }
-
-  // If there exists a previous row, check its cells and size. If they align
-  // with the current row, infer the label from the cell above.
-  if (rowIt) {
-    var matchingCell = null;
-    var prevRowCount = 0;
-    var prevRowIt = rowIt.firstChild;
-    while (prevRowIt) {
-      if (prevRowIt.nodeType === Node.ELEMENT_NODE) {
-        if (__gCrWeb.autofill.hasTagName(prevRowIt, 'td') ||
-            __gCrWeb.autofill.hasTagName(prevRowIt, 'th')) {
-          var span = prevRowIt.colSpan;
-          var prevRowCountEnd = prevRowCount + span - 1;
-          if (prevRowCount === cellPosition &&
-              prevRowCountEnd === cellPositionEnd) {
-            matchingCell = prevRowIt;
-          }
-          prevRowCount += span;
-        }
-      }
-      prevRowIt = prevRowIt.nextSibling;
-    }
-    if (cellCount === prevRowCount && matchingCell) {
-      var inferredLabel = __gCrWeb.autofill.findChildText(matchingCell);
-      if (inferredLabel.length > 0) {
-        return inferredLabel;
-      }
-    }
-  }
-
-  // If there is no previous row, or if the previous row and current row do not
-  // align, check all previous siblings, skipping non-element nodes, until we
-  // find a non-empty text block.
-  var inferredLabel = '';
-  var previous = parentNode.previousSibling;
-  while (inferredLabel.length === 0 && previous) {
-    if (__gCrWeb.autofill.hasTagName(previous, 'tr')) {
-      inferredLabel = __gCrWeb.autofill.findChildText(previous);
-    }
-    previous = previous.previousSibling;
-  }
-  return inferredLabel;
-};
-
-/**
- * Returns true if |node| is an element and it is a container type that
- * inferLabelForElement() can traverse.
- *
- * It is based on the logic in
- *     bool IsTraversableContainerElement(const WebNode& node);
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {!Node} node The node to be examined.
- * @return {boolean} Whether it can be traversed.
- */
-__gCrWeb.autofill.isTraversableContainerElement = function(node) {
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return false;
-  }
-
-  var tagName = /** @type {Element} */ (node).tagName;
-  return (
-      tagName === 'DD' || tagName === 'DIV' || tagName === 'FIELDSET' ||
-      tagName === 'LI' || tagName === 'TD' || tagName === 'TABLE');
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * an enclosing label.
- * e.g. <label>Some Text<span><input ...></span></label>
- *
- * It is based on the logic in
- *    string16 InferLabelFromEnclosingLabel(
- *        const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromEnclosingLabel = function(element) {
-  if (!element) {
-    return '';
-  }
-  var node = element.parentNode;
-  while (node && !__gCrWeb.autofill.hasTagName(node, 'label')) {
-    node = node.parentNode;
-  }
-  if (node) {
-    return __gCrWeb.autofill.findChildText(node);
-  }
-  return '';
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * a surrounding div table,
- * e.g. <div>Some Text<span><input ...></span></div>
- * e.g. <div>Some Text</div><div><input ...></div>
- *
- * Because this is already traversing the <div> structure, if it finds a <label>
- * sibling along the way, infer from that <label>.
- *
- * It is based on the logic in
- *    string16 InferLabelFromDivTable(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromDivTable = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  var node = element.parentNode;
-  var lookingForParent = true;
-  var divsToSkip = [];
-
-  // Search the sibling and parent <div>s until we find a candidate label.
-  var inferredLabel = '';
-  while (inferredLabel.length === 0 && node) {
-    if (__gCrWeb.autofill.hasTagName(node, 'div')) {
-      if (lookingForParent) {
-        inferredLabel =
-            __gCrWeb.autofill.findChildTextWithIgnoreList(node, divsToSkip);
-      } else {
-        inferredLabel = __gCrWeb.autofill.findChildText(node);
-      }
-      // Avoid sibling DIVs that contain autofillable fields.
-      if (!lookingForParent && inferredLabel.length > 0) {
-        var resultElement = node.querySelector('input, select, textarea');
-        if (resultElement) {
-          inferredLabel = '';
-          var addDiv = true;
-          for (var i = 0; i < divsToSkip.length; ++i) {
-            if (node === divsToSkip[i]) {
-              addDiv = false;
-              break;
-            }
-          }
-          if (addDiv) {
-            divsToSkip.push(node);
-          }
-        }
-      }
-
-      lookingForParent = false;
-    } else if (
-        !lookingForParent && __gCrWeb.autofill.hasTagName(node, 'label')) {
-      if (!node.control) {
-        inferredLabel = __gCrWeb.autofill.findChildText(node);
-      }
-    } else if (
-        lookingForParent &&
-        __gCrWeb.autofill.isTraversableContainerElement(node)) {
-      // If the element is in a non-div container, its label most likely is too.
-      break;
-    }
-
-    if (!node.previousSibling) {
-      // If there are no more siblings, continue walking up the tree.
-      lookingForParent = true;
-    }
-
-    if (lookingForParent) {
-      node = node.parentNode;
-    } else {
-      node = node.previousSibling;
-    }
-  }
-
-  return inferredLabel;
-};
-
-/**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * a surrounding definition list,
- * e.g. <dl><dt>Some Text</dt><dd><input ...></dd></dl>
- * e.g. <dl><dt><b>Some Text</b></dt><dd><b><input ...></b></dd></dl>
- *
- * It is based on the logic in
- *    string16 InferLabelFromDefinitionList(
- *        const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
- */
-__gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
-  if (!element) {
-    return '';
-  }
-
-  var parentNode = element.parentNode;
-  while (parentNode && parentNode.nodeType === Node.ELEMENT_NODE &&
-         !__gCrWeb.autofill.hasTagName(parentNode, 'dd')) {
-    parentNode = parentNode.parentNode;
-  }
-
-  if (!parentNode || !__gCrWeb.autofill.hasTagName(parentNode, 'dd')) {
-    return '';
-  }
-
-  // Skip by any intervening text nodes.
-  var previous = parentNode.previousSibling;
-  while (previous && previous.nodeType === Node.TEXT_NODE) {
-    previous = previous.previousSibling;
-  }
-
-  if (!previous || !__gCrWeb.autofill.hasTagName(previous, 'dt')) return '';
-
-  return __gCrWeb.autofill.findChildText(previous);
-};
-
-/**
- * Returns the element type for all ancestor nodes in CAPS, starting with the
- * parent node.
- *
- * It is based on the logic in
- *    std::vector<std::string> AncestorTagNames(
- *        const WebFormControlElement& element);
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {Array} The element types for all ancestors.
- */
-__gCrWeb.autofill.ancestorTagNames = function(element) {
-  var tagNames = [];
-  var parentNode = element.parentNode;
-  while (parentNode) {
-    if (parentNode.nodeType === Node.ELEMENT_NODE)
-      tagNames.push(parentNode.tagName);
-    parentNode = parentNode.parentNode;
-  }
-  return tagNames;
-};
-
-/**
- * Infers corresponding label for |element| from surrounding context in the DOM,
- * e.g. the contents of the preceding <p> tag or text element.
- *
- * It is based on the logic in
- *    string16 InferLabelForElement(const WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {string} The inferred label of element, or '' if none could be found.
- */
-__gCrWeb.autofill.inferLabelForElement = function(element) {
-  var inferredLabel;
-  if (__gCrWeb.autofill.isCheckableElement(element)) {
-    inferredLabel = __gCrWeb.autofill.inferLabelFromNext(element);
-    if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
-      return inferredLabel;
-    }
-  }
-
-  inferredLabel = __gCrWeb.autofill.inferLabelFromPrevious(element);
-  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
-    return inferredLabel;
-  }
-
-  // If we didn't find a label, check for the placeholder case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromPlaceholder(element);
-  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
-    return inferredLabel;
-  }
-
-  // For all other searches that involve traversing up the tree, the search
-  // order is based on which tag is the closest ancestor to |element|.
-  var tagNames = __gCrWeb.autofill.ancestorTagNames(element);
-  var seenTagNames = {};
-  for (var index = 0; index < tagNames.length; ++index) {
-    var tagName = tagNames[index];
-    if (tagName in seenTagNames) {
-      continue;
-    }
-
-    seenTagNames[tagName] = true;
-    if (tagName === 'LABEL') {
-      inferredLabel = __gCrWeb.autofill.inferLabelFromEnclosingLabel(element);
-    } else if (tagName === 'DIV') {
-      inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
-    } else if (tagName === 'TD') {
-      inferredLabel = __gCrWeb.autofill.inferLabelFromTableColumn(element);
-      if (!__gCrWeb.autofill.IsLabelValid(inferredLabel))
-        inferredLabel = __gCrWeb.autofill.inferLabelFromTableRow(element);
-    } else if (tagName === 'DD') {
-      inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
-    } else if (tagName === 'LI') {
-      inferredLabel = __gCrWeb.autofill.inferLabelFromListItem(element);
-    } else if (tagName === 'FIELDSET') {
-      break;
-    }
-
-    if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
-      return inferredLabel;
-    }
-  }
-  // If we didn't find a label, check for the value attribute case.
-  inferredLabel = __gCrWeb.autofill.InferLabelFromValueAttr(element);
-  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
-    return inferredLabel;
-  }
-
-  return '';
-};
-
-/**
- * Fills |field| data with the values of the <option> elements present in
- * |selectElement|.
- *
- * It is based on the logic in
- *     void GetOptionStringsFromElement(const WebSelectElement& select_element,
- *                                      std::vector<string16>* option_values,
- *                                      std::vector<string16>* option_contents)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
- *
- * @param {Element} selectElement A select element from which option data are
- *     extracted.
- * @param {Object} field A field that will contain the extracted option
- *     information.
- */
-__gCrWeb.autofill.getOptionStringsFromElement = function(selectElement, field) {
-  field['option_values'] = [];
-  // Protect against custom implementation of Array.toJSON in host pages.
-  field['option_values'].toJSON = null;
-  field['option_contents'] = [];
-  field['option_contents'].toJSON = null;
-  var options = selectElement.options;
-  for (var i = 0; i < options.length; ++i) {
-    var option = options[i];
-    field['option_values'].push(option['value']);
-    field['option_contents'].push(option['text']);
-  }
-};
 
 /**
  * Sets the |field|'s value to the value in |data|.
@@ -1867,157 +555,27 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
     return;
   }
 
-  if (__gCrWeb.autofill.isTextInput(field) ||
-      __gCrWeb.autofill.isTextAreaElement(field)) {
+  if (__gCrWeb.fill.isTextInput(field) ||
+      __gCrWeb.fill.isTextAreaElement(field)) {
     var sanitizedValue = data['value'];
 
-    if (__gCrWeb.autofill.isTextInput(field)) {
+    if (__gCrWeb.fill.isTextInput(field)) {
       // If the 'max_length' attribute contains a negative value, the default
       // maxlength value is used.
       var maxLength = data['max_length'];
       if (maxLength < 0) {
-        maxLength = __gCrWeb.autofill.MAX_DATA_LENGTH;
+        maxLength = __gCrWeb.fill.MAX_DATA_LENGTH;
       }
       sanitizedValue = data['value'].substr(0, maxLength);
     }
 
     __gCrWeb.fill.setInputElementValue(sanitizedValue, field, true);
     field.isAutofilled = true;
-  } else if (__gCrWeb.autofill.isSelectElement(field)) {
+  } else if (__gCrWeb.fill.isSelectElement(field)) {
     __gCrWeb.fill.setInputElementValue(data['value'], field, true);
-  } else if (__gCrWeb.autofill.isCheckableElement(field)) {
+  } else if (__gCrWeb.fill.isCheckableElement(field)) {
     __gCrWeb.fill.setInputElementValue(data['is_checked'], field, true);
   }
-};
-
-/**
- * Returns true if |element| is a text input element.
- *
- * It is based on the logic in
- *     bool IsTextInput(const blink::WebInputElement* element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is a text input field.
- */
-__gCrWeb.autofill.isTextInput = function(element) {
-  if (!element) {
-    return false;
-  }
-  return __gCrWeb.common.isTextField(element);
-};
-
-/**
- * Returns true if |element| is a 'select' element.
- *
- * It is based on the logic in
- *     bool IsSelectElement(const blink::WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is a 'select' element.
- */
-__gCrWeb.autofill.isSelectElement = function(element) {
-  if (!element) {
-    return false;
-  }
-  return element.type === 'select-one';
-};
-
-/**
- * Returns true if |element| is a 'textarea' element.
- *
- * It is based on the logic in
- *     bool IsTextAreaElement(const blink::WebFormControlElement& element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is a 'textarea' element.
- */
-__gCrWeb.autofill.isTextAreaElement = function(element) {
-  if (!element) {
-    return false;
-  }
-  return element.type === 'textarea';
-};
-
-/**
- * Returns true if |element| is a checkbox or a radio button element.
- *
- * It is based on the logic in
- *     bool IsCheckableElement(const blink::WebInputElement* element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is a checkbox or a radio button.
- */
-__gCrWeb.autofill.isCheckableElement = function(element) {
-  if (!element) {
-    return false;
-  }
-  return element.type === 'checkbox' || element.type === 'radio';
-};
-
-/**
- * Returns true if |element| is one of the input element types that can be
- * autofilled. {Text, Radiobutton, Checkbox}.
- *
- * It is based on the logic in
- *    bool IsAutofillableInputElement(const blink::WebInputElement* element)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element An element to examine.
- * @return {boolean} Whether element is one of the input element types that
- *     can be autofilled.
- */
-__gCrWeb.autofill.isAutofillableInputElement = function(element) {
-  return __gCrWeb.autofill.isTextInput(element) ||
-      __gCrWeb.autofill.isCheckableElement(element);
-};
-
-/**
- * Returns the nodeValue in a way similar to the C++ version of node.nodeValue,
- * used in src/components/autofill/content/renderer/form_autofill_util.h.
- * Newlines and tabs are stripped.
- *
- * @param {Node} node A node to examine.
- * @return {string} The text contained in |element|.
- */
-__gCrWeb.autofill.nodeValue = function(node) {
-  return (node.nodeValue || '').replace(/[\n\t]/gm, '');
-};
-
-/**
- * Returns the value in a way similar to the C++ version of node.value,
- * used in src/components/autofill/content/renderer/form_autofill_util.h.
- * Newlines and tabs are stripped.
- *
- * Note: this method tries to match the behavior of Blink for the select
- * element. On Blink, a select element with a first option that is disabled and
- * not explicitly selected will automatically select the second element.
- * On WebKit, the disabled element is enabled until user interacts with it.
- * As the result of this method will be used by code written for Blink, match
- * the behavior on it.
- *
- * @param {Element} element An element to examine.
- * @return {string} The value for |element|.
- */
-__gCrWeb.autofill.value = function(element) {
-  var value = element.value;
-  if (__gCrWeb.autofill.isSelectElement(element)) {
-    if (element.options.length > 0 && element.selectedIndex == 0 &&
-        element.options[0].disabled &&
-        !element.options[0].hasAttribute('selected')) {
-      for (var i = 0; i < element.options.length; i++) {
-        if (!element.options[i].disabled ||
-            element.options[i].hasAttribute('selected')) {
-          value = element.options[i].value;
-          break;
-        }
-      }
-    }
-  }
-  return (value || '').replace(/[\n\t]/gm, '');
 };
 
 /**
@@ -2037,7 +595,7 @@ __gCrWeb.autofill.extractAutofillableElementsFromSet = function(
   var autofillableElements = [];
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
-    if (!__gCrWeb.autofill.isAutofillableElement(element)) {
+    if (!__gCrWeb.fill.isAutofillableElement(element)) {
       continue;
     }
     autofillableElements.push(element);
@@ -2062,112 +620,6 @@ __gCrWeb.autofill.extractAutofillableElementsInForm = function(formElement) {
 };
 
 /**
- * Fills out a FormField object from a given form control element.
- *
- * It is based on the logic in
- *     void WebFormControlElementToFormField(
- *         const blink::WebFormControlElement& element,
- *         ExtractMask extract_mask,
- *         FormFieldData* field);
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
- *
- * @param {FormControlElement} element The element to be processed.
- * @param {number} extractMask A bit field mask to extract data from |element|.
- *     See the document on variable __gCrWeb.autofill.EXTRACT_MASK_NONE,
- *     __gCrWeb.autofill.EXTRACT_MASK_VALUE,
- *     __gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT and
- *     __gCrWeb.autofill.EXTRACT_MASK_OPTIONS.
- * @param {AutofillFormFieldData} field Field to fill in the element
- *     information.
- */
-__gCrWeb.autofill.webFormControlElementToFormField = function(
-    element, extractMask, field) {
-  if (!field || !element) {
-    return;
-  }
-  // The label is not officially part of a form control element; however, the
-  // labels for all form control elements are scraped from the DOM and set in
-  // form data.
-  field['name'] = __gCrWeb.form.getFieldIdentifier(element);
-  field['form_control_type'] = element.type;
-  var autocomplete_attribute = element.getAttribute('autocomplete');
-  if (autocomplete_attribute) {
-    field['autocomplete_attribute'] = autocomplete_attribute;
-  }
-  if (field['autocomplete_attribute'] != null &&
-      field['autocomplete_attribute'].length >
-          __gCrWeb.autofill.MAX_DATA_LENGTH) {
-    // Discard overly long attribute values to avoid DOS-ing the browser
-    // process. However, send over a default string to indicate that the
-    // attribute was present.
-    field['autocomplete_attribute'] = 'x-max-data-length-exceeded';
-  }
-
-  var role_attribute = element.getAttribute('role');
-  if (role_attribute && role_attribute.toLowerCase() == 'presentation') {
-    field['role'] = __gCrWeb.autofill.ROLE_ATTRIBUTE_PRESENTATION;
-  }
-
-  if (!__gCrWeb.autofill.isAutofillableElement(element)) {
-    return;
-  }
-
-  if (__gCrWeb.autofill.isAutofillableInputElement(element) ||
-      __gCrWeb.autofill.isTextAreaElement(element) ||
-      __gCrWeb.autofill.isSelectElement(element)) {
-    field['is_autofilled'] = element.isAutofilled;
-    field['should_autocomplete'] = __gCrWeb.fill.autoComplete(element);
-    field['is_focusable'] = !element.disabled && !element.readOnly &&
-        element.tabIndex >= 0 && isVisibleNode_(element);
-  }
-
-  if (__gCrWeb.autofill.isAutofillableInputElement(element)) {
-    if (__gCrWeb.autofill.isTextInput(element)) {
-      field['max_length'] = element.maxLength;
-      if (field['max_length'] == -1) {
-        // Take default value as defined by W3C.
-        field['max_length'] = 524288;
-      }
-    }
-    field['is_checkable'] = __gCrWeb.autofill.isCheckableElement(element);
-  } else if (__gCrWeb.autofill.isTextAreaElement(element)) {
-    // Nothing more to do in this case.
-  } else if (extractMask & __gCrWeb.autofill.EXTRACT_MASK_OPTIONS) {
-    __gCrWeb.autofill.getOptionStringsFromElement(element, field);
-  }
-
-  if (!(extractMask & __gCrWeb.autofill.EXTRACT_MASK_VALUE)) {
-    return;
-  }
-
-  var value = __gCrWeb.autofill.value(element);
-
-  if (__gCrWeb.autofill.isSelectElement(element) &&
-      (extractMask & __gCrWeb.autofill.EXTRACT_MASK_OPTION_TEXT)) {
-    // Convert the |select_element| value to text if requested.
-    var options = element.options;
-    for (var index = 0; index < options.length; ++index) {
-      var optionElement = options[index];
-      if (__gCrWeb.autofill.value(optionElement) === value) {
-        value = optionElement.text;
-        break;
-      }
-    }
-  }
-
-  // There is a constraint on the maximum data length in method
-  // WebFormControlElementToFormField() in form_autofill_util.h in order to
-  // prevent a malicious site from DOS'ing the browser: http://crbug.com/49332,
-  // which isn't really meaningful here, but we need to follow the same logic to
-  // get the same form signature wherever possible (to get the benefits of the
-  // existing crowdsourced field detection corpus).
-  if (value.length > __gCrWeb.autofill.MAX_DATA_LENGTH) {
-    value = value.substr(0, __gCrWeb.autofill.MAX_DATA_LENGTH);
-  }
-  field['value'] = value;
-};
-
-/**
  * For debugging purposes, annotate forms on the page with prediction data using
  * the placeholder attribute.
  *
@@ -2181,7 +633,7 @@ __gCrWeb.autofill['fillPredictionData'] = function(data) {
     var controlElements = __gCrWeb.form.getFormControlElements(form);
     for (var i = 0; i < controlElements.length; ++i) {
       var element = controlElements[i];
-      if (!__gCrWeb.autofill.isAutofillableElement(element)) {
+      if (!__gCrWeb.fill.isAutofillableElement(element)) {
         continue;
       }
       var elementName = __gCrWeb.form.getFieldIdentifier(element);
