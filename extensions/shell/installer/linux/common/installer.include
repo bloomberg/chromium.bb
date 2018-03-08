@@ -1,4 +1,5 @@
-# TODO(michaelpg): Dedupe common functionality with the Chrome installer.
+# TODO(michaelpg): Dedupe common functionality with the Chrome installer. See
+# https://crbug.com/820270.
 
 # Recursively replace @@include@@ template variables with the referenced file,
 # and write the resulting text to stdout.
@@ -53,6 +54,7 @@ process_template() (
   TMPLINCL="$(process_template_includes "$TMPLIN")"
   sed \
     -e "s#@@PACKAGE@@#${PACKAGE}#g" \
+    -e "s#@@PACKAGE_ORIG@@#${PACKAGE_ORIG}#g" \
     -e "s#@@PACKAGE_FILENAME@@#${PACKAGE_FILENAME}#g" \
     -e "s#@@PROGNAME@@#${PROGNAME}#g" \
     -e "s#@@CHANNEL@@#${CHANNEL}#g" \
@@ -68,15 +70,18 @@ process_template() (
     -e "s#@@PRODUCTURL@@#${PRODUCTURL}#g" \
     -e "s#@@PREDEPENDS@@#${PREDEPENDS}#g" \
     -e "s#@@DEPENDS@@#${DEPENDS}#g" \
+    -e "s#@@RECOMMENDS@@#${RECOMMENDS}#g" \
     -e "s#@@PROVIDES@@#${PROVIDES}#g" \
-    -e "s#@@REPLACES@@#${REPLACES}#g" \
-    -e "s#@@CONFLICTS@@#${CONFLICTS}#g" \
     -e "s#@@ARCHITECTURE@@#${ARCHITECTURE}#g" \
     -e "s#@@MAINTNAME@@#${MAINTNAME}#g" \
     -e "s#@@MAINTMAIL@@#${MAINTMAIL}#g" \
+    -e "s#@@REPOCONFIG@@#${REPOCONFIG}#g" \
+    -e "s#@@REPOCONFIGREGEX@@#${REPOCONFIGREGEX}#g" \
     -e "s#@@SHORTDESC@@#${SHORTDESC}#g" \
     -e "s#@@FULLDESC@@#${FULLDESC}#g" \
     -e "s#@@USR_BIN_SYMLINK_NAME@@#${USR_BIN_SYMLINK_NAME:-}#g" \
+    -e "s#@@LOGO_RESOURCES_PNG@@#${LOGO_RESOURCES_PNG}#g" \
+    -e "s#@@LOGO_RESOURCE_XPM@@#${LOGO_RESOURCE_XPM}#g" \
     > "$TMPLOUT" <<< "$TMPLINCL"
 )
 
