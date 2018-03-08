@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "content/common/cross_site_document_classifier.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -58,7 +58,7 @@ struct SiteIsolationResponseMetaData {
 
   GURL response_url;
   ResourceType resource_type;
-  CrossSiteDocumentMimeType canonical_mime_type;
+  network::CrossOriginReadBlocking::MimeType canonical_mime_type;
   int http_status_code;
   bool no_sniff;
 };

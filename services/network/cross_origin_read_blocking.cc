@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/cross_site_document_classifier.h"
+#include "services/network/cross_origin_read_blocking.h"
 
 #include <stddef.h>
 #include <string>
@@ -14,14 +14,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
 using base::StringPiece;
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -54,7 +53,7 @@ void AdvancePastWhitespace(StringPiece* data) {
 // |signatures|, and kNo otherwise.
 //
 // When kYes is returned, the matching prefix is erased from |data|.
-CrossSiteDocumentClassifier::Result MatchesSignature(
+CrossOriginReadBlocking::Result MatchesSignature(
     StringPiece* data,
     const StringPiece signatures[],
     size_t arr_size,
@@ -65,17 +64,17 @@ CrossSiteDocumentClassifier::Result MatchesSignature(
         // When |signatures[i]| is a prefix of |data|, it constitutes a match.
         // Strip the matching characters, and return.
         data->remove_prefix(signatures[i].length());
-        return CrossSiteDocumentClassifier::kYes;
+        return CrossOriginReadBlocking::kYes;
       }
     } else {
       if (base::StartsWith(signatures[i], *data, compare_case)) {
         // When |data| is a prefix of |signatures[i]|, that means that
         // subsequent bytes in the stream could cause a match to occur.
-        return CrossSiteDocumentClassifier::kMaybe;
+        return CrossOriginReadBlocking::kMaybe;
       }
     }
   }
-  return CrossSiteDocumentClassifier::kNo;
+  return CrossOriginReadBlocking::kNo;
 }
 
 // Returns true if |mime_type == prefix| or if |mime_type| starts with
@@ -113,18 +112,19 @@ bool MatchesMimeTypePrefix(base::StringPiece mime_type,
 
 }  // namespace
 
-CrossSiteDocumentMimeType CrossSiteDocumentClassifier::GetCanonicalMimeType(
+CrossOriginReadBlocking::MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
     base::StringPiece mime_type) {
   // Checking for image/svg+xml early ensures that it won't get classified as
-  // CROSS_SITE_DOCUMENT_MIME_TYPE_XML by the presence of the "+xml" suffix.
+  // CrossOriginReadBlocking::MimeType::kXml by the presence of the "+xml"
+  // suffix.
   if (base::LowerCaseEqualsASCII(mime_type, kImageSvg))
-    return CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS;
+    return CrossOriginReadBlocking::MimeType::kOthers;
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextHtml))
-    return CROSS_SITE_DOCUMENT_MIME_TYPE_HTML;
+    return CrossOriginReadBlocking::MimeType::kHtml;
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextPlain))
-    return CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN;
+    return CrossOriginReadBlocking::MimeType::kPlain;
 
   // StartsWith rather than LowerCaseEqualsASCII is used to account both for
   // mime types similar to 1) application/json and to 2)
@@ -134,30 +134,26 @@ CrossSiteDocumentMimeType CrossSiteDocumentClassifier::GetCanonicalMimeType(
       MatchesMimeTypePrefix(mime_type, kTextJson) ||
       MatchesMimeTypePrefix(mime_type, kTextXjson) ||
       base::EndsWith(mime_type, kJsonSuffix, kCaseInsensitive)) {
-    return CROSS_SITE_DOCUMENT_MIME_TYPE_JSON;
+    return CrossOriginReadBlocking::MimeType::kJson;
   }
 
   if (MatchesMimeTypePrefix(mime_type, kAppXml) ||
       MatchesMimeTypePrefix(mime_type, kTextXml) ||
       base::EndsWith(mime_type, kXmlSuffix, kCaseInsensitive)) {
-    return CROSS_SITE_DOCUMENT_MIME_TYPE_XML;
+    return CrossOriginReadBlocking::MimeType::kXml;
   }
 
-  return CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS;
+  return CrossOriginReadBlocking::MimeType::kOthers;
 }
 
-bool CrossSiteDocumentClassifier::IsBlockableScheme(const GURL& url) {
+bool CrossOriginReadBlocking::IsBlockableScheme(const GURL& url) {
   // We exclude ftp:// from here. FTP doesn't provide a Content-Type
   // header which our policy depends on, so we cannot protect any
-  // document from FTP servers.
+  // response from FTP servers.
   return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
 
-// We don't use Webkit's existing CORS policy implementation since
-// their policy works in terms of origins, not sites. For example,
-// when frame is sub.a.com and it is not allowed to access a document
-// with sub1.a.com. But under Site Isolation, it's allowed.
-bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
+bool CrossOriginReadBlocking::IsValidCorsHeaderSet(
     const url::Origin& frame_origin,
     const std::string& access_control_origin) {
   // Many websites are sending back "\"*\"" instead of "*". This is
@@ -181,20 +177,20 @@ bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
 }
 
 // This function is a slight modification of |net::SniffForHTML|.
-CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForHTML(
+CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForHTML(
     StringPiece data) {
   // The content sniffers used by Chrome and Firefox are using "<!--" as one of
   // the HTML signatures, but it also appears in valid JavaScript, considered as
   // well-formed JS by the browser.  Since we do not want to block any JS, we
-  // exclude it from our HTML signatures. This can weaken our document block
-  // policy, but we can break less websites.
+  // exclude it from our HTML signatures. This can weaken our CORB policy,
+  // but we can break less websites.
   //
   // Note that <body> and <br> are not included below, since <b is a prefix of
   // them.
   //
   // TODO(dsjang): parameterize |net::SniffForHTML| with an option that decides
   // whether to include <!-- or not, so that we can remove this function.
-  // TODO(dsjang): Once CrossSiteDocumentClassifier is moved into the browser
+  // TODO(dsjang): Once CrossOriginReadBlocking is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
   static const StringPiece kHtmlSignatures[] = {
@@ -244,9 +240,9 @@ CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForHTML(
   return kMaybe;
 }
 
-CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForXML(
+CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForXML(
     base::StringPiece data) {
-  // TODO(dsjang): Once CrossSiteDocumentClassifier is moved into the browser
+  // TODO(dsjang): Once CrossOriginReadBlocking is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
   AdvancePastWhitespace(&data);
@@ -255,7 +251,7 @@ CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForXML(
                           base::CompareCase::SENSITIVE);
 }
 
-CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForJSON(
+CrossOriginReadBlocking::Result CrossOriginReadBlocking::SniffForJSON(
     base::StringPiece data) {
   // Currently this function looks for an opening brace ('{'), followed by a
   // double-quoted string literal, followed by a colon. Importantly, such a
@@ -320,8 +316,8 @@ CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForJSON(
   return kMaybe;
 }
 
-CrossSiteDocumentClassifier::Result
-CrossSiteDocumentClassifier::SniffForFetchOnlyResource(base::StringPiece data) {
+CrossOriginReadBlocking::Result
+CrossOriginReadBlocking::SniffForFetchOnlyResource(base::StringPiece data) {
   // kScriptBreakingPrefixes contains prefixes that are conventionally used to
   // prevent a JSON response from becoming a valid Javascript program (an attack
   // vector known as XSSI). The presence of such a prefix is a strong signal
@@ -366,4 +362,4 @@ CrossSiteDocumentClassifier::SniffForFetchOnlyResource(base::StringPiece data) {
   return SniffForJSON(data);
 }
 
-}  // namespace content
+}  // namespace network

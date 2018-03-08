@@ -22,8 +22,8 @@ namespace {
 // only activated in renderer processes.
 static bool g_stats_gathering_enabled = false;
 
-bool IsYes(CrossSiteDocumentClassifier::Result result) {
-  return result == CrossSiteDocumentClassifier::Result::kYes;
+bool IsYes(network::CrossOriginReadBlocking::Result result) {
+  return result == network::CrossOriginReadBlocking::Result::kYes;
 }
 
 bool IsRenderableStatusCode(int status_code) {
@@ -116,16 +116,17 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   if (IsResourceTypeFrame(resource_type))
     return nullptr;
 
-  if (!CrossSiteDocumentClassifier::IsBlockableScheme(response_url))
+  if (!network::CrossOriginReadBlocking::IsBlockableScheme(response_url))
     return nullptr;
 
   if (frame_origin.IsSameOriginWith(url::Origin::Create(response_url)))
     return nullptr;
 
-  CrossSiteDocumentMimeType canonical_mime_type =
-      CrossSiteDocumentClassifier::GetCanonicalMimeType(info.mime_type);
+  network::CrossOriginReadBlocking::MimeType canonical_mime_type =
+      network::CrossOriginReadBlocking::GetCanonicalMimeType(info.mime_type);
 
-  if (canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS)
+  if (canonical_mime_type ==
+      network::CrossOriginReadBlocking::MimeType::kOthers)
     return nullptr;
 
   // Every CORS request should have the Access-Control-Allow-Origin header even
@@ -137,7 +138,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   // We can use a case-insensitive header name for EnumerateHeader().
   info.headers->EnumerateHeader(nullptr, "access-control-allow-origin",
                                 &access_control_origin);
-  if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
+  if (network::CrossOriginReadBlocking::IsValidCorsHeaderSet(
           frame_origin, access_control_origin)) {
     return nullptr;
   }
@@ -176,7 +177,7 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
   // type (text/html, text/xml, etc).
   UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.MimeType",
                             resp_data->canonical_mime_type,
-                            CROSS_SITE_DOCUMENT_MIME_TYPE_MAX);
+                            network::CrossOriginReadBlocking::MimeType::kMax);
 
   // Store the result of cross-site document blocking analysis.
   bool would_block = false;
@@ -186,23 +187,25 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
   // type claims it to be. For example, we apply a HTML sniffer for a document
   // tagged with text/html here. Whenever this check becomes true, we'll block
   // the response.
-  if (resp_data->canonical_mime_type != CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN) {
+  if (resp_data->canonical_mime_type !=
+      network::CrossOriginReadBlocking::MimeType::kPlain) {
     std::string bucket_prefix;
     bool sniffed_as_target_document = false;
-    if (resp_data->canonical_mime_type == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
+    if (resp_data->canonical_mime_type ==
+        network::CrossOriginReadBlocking::MimeType::kHtml) {
       bucket_prefix = "SiteIsolation.XSD.HTML";
       sniffed_as_target_document =
-          IsYes(CrossSiteDocumentClassifier::SniffForHTML(data));
+          IsYes(network::CrossOriginReadBlocking::SniffForHTML(data));
     } else if (resp_data->canonical_mime_type ==
-               CROSS_SITE_DOCUMENT_MIME_TYPE_XML) {
+               network::CrossOriginReadBlocking::MimeType::kXml) {
       bucket_prefix = "SiteIsolation.XSD.XML";
       sniffed_as_target_document =
-          IsYes(CrossSiteDocumentClassifier::SniffForXML(data));
+          IsYes(network::CrossOriginReadBlocking::SniffForXML(data));
     } else if (resp_data->canonical_mime_type ==
-               CROSS_SITE_DOCUMENT_MIME_TYPE_JSON) {
+               network::CrossOriginReadBlocking::MimeType::kJson) {
       bucket_prefix = "SiteIsolation.XSD.JSON";
       sniffed_as_target_document =
-          IsYes(CrossSiteDocumentClassifier::SniffForJSON(data));
+          IsYes(network::CrossOriginReadBlocking::SniffForJSON(data));
     } else {
       NOTREACHED() << "Not a blockable mime type: "
                    << resp_data->canonical_mime_type;
@@ -224,11 +227,11 @@ bool SiteIsolationStatsGatherer::OnReceivedFirstChunk(
     // and JSON sniffer to a text document in the order, and block it
     // if any of them succeeds in sniffing.
     std::string bucket_prefix;
-    if (IsYes(CrossSiteDocumentClassifier::SniffForHTML(data)))
+    if (IsYes(network::CrossOriginReadBlocking::SniffForHTML(data)))
       bucket_prefix = "SiteIsolation.XSD.Plain.HTML";
-    else if (IsYes(CrossSiteDocumentClassifier::SniffForXML(data)))
+    else if (IsYes(network::CrossOriginReadBlocking::SniffForXML(data)))
       bucket_prefix = "SiteIsolation.XSD.Plain.XML";
-    else if (IsYes(CrossSiteDocumentClassifier::SniffForJSON(data)))
+    else if (IsYes(network::CrossOriginReadBlocking::SniffForJSON(data)))
       bucket_prefix = "SiteIsolation.XSD.Plain.JSON";
 
     if (bucket_prefix.size() > 0) {

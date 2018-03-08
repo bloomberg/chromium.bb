@@ -1521,7 +1521,6 @@ test("content_unittests") {
     "../common/content_security_policy/csp_source_list_unittest.cc",
     "../common/content_security_policy/csp_source_unittest.cc",
     "../common/content_switches_internal_unittest.cc",
-    "../common/cross_site_document_classifier_unittest.cc",
     "../common/cursors/webcursor_unittest.cc",
     "../common/dom_storage/dom_storage_map_unittest.cc",
     "../common/indexed_db/indexed_db_key_unittest.cc",
