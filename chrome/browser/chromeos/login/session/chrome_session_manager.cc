@@ -40,6 +40,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -119,9 +120,13 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     if (lock_screen_apps::StateController::IsEnabled())
       lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
 
-    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-    // self-destructs on logout.
-    policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
+    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+      // App install logs are uploaded via the user's communication channel with
+      // the management server. This channel exists for regular users only.
+      // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
+      // self-destructs on logout.
+      policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
+    }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
