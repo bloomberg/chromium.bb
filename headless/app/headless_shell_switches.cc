@@ -26,6 +26,11 @@ const char kDisableCrashReporter[] = "disable-crash-reporter";
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
+// A meta flag. This sets a number of flags which put the browser into
+// deterministic mode where begin frames should be issued over DevToolsProtocol
+// (experimental).
+const char kDeterministicMode[] = "deterministic-mode";
+
 // Instructs headless_shell to cause network fetches to complete in order of
 // creation. This removes a significant source of network related
 // non-determinism at the cost of slower page loads.

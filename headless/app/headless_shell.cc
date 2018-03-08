@@ -25,6 +25,8 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
+#include "components/viz/common/switches.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -703,6 +705,21 @@ int HeadlessShellMain(int argc, const char** argv) {
   base::PathService::Get(base::DIR_TEMP, &dumps_path);
   builder.SetCrashDumpsDir(dumps_path);
 #endif
+
+  if (command_line.HasSwitch(switches::kDeterministicMode)) {
+    command_line.AppendSwitch(switches::kEnableBeginFrameControl);
+    command_line.AppendSwitch(switches::kDeterministicFetch);
+
+    // Compositor flags
+    command_line.AppendSwitch(::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line.AppendSwitch(::switches::kDisableNewContentRenderingTimeout);
+    command_line.AppendSwitch(::switches::kEnableSurfaceSynchronization);
+
+    // Renderer flags
+    command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    command_line.AppendSwitch(::switches::kDisableThreadedScrolling);
+    command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
+  }
 
   if (command_line.HasSwitch(switches::kEnableBeginFrameControl))
     builder.SetEnableBeginFrameControl(true);
