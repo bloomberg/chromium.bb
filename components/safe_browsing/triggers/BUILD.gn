@@ -50,6 +50,23 @@ source_set("ad_sampler_trigger") {
   ]
 }
 
+source_set("suspicious_site_trigger") {
+  sources = [
+    "suspicious_site_trigger.cc",
+    "suspicious_site_trigger.h",
+  ]
+  deps = [
+    ":trigger_throttler",
+    ":triggers",
+    "//base:base",
+    "//components/history/core/browser:browser",
+    "//components/prefs:prefs",
+    "//components/safe_browsing:features",
+    "//content/public/browser",
+    "//net:net",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

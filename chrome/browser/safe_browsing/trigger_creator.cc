@@ -10,6 +10,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/ad_sampler_trigger.h"
+#include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
@@ -48,6 +49,14 @@ void TriggerCreator::MaybeCreateTriggersForWebContents(
   if (trigger_manager->CanStartDataCollection(options,
                                               TriggerType::AD_SAMPLE)) {
     safe_browsing::AdSamplerTrigger::CreateForWebContents(
+        web_contents, trigger_manager, profile->GetPrefs(),
+        profile->GetRequestContext(),
+        HistoryServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS));
+  }
+  if (trigger_manager->CanStartDataCollection(options,
+                                              TriggerType::SUSPICIOUS_SITE)) {
+    safe_browsing::SuspiciousSiteTrigger::CreateForWebContents(
         web_contents, trigger_manager, profile->GetPrefs(),
         profile->GetRequestContext(),
         HistoryServiceFactory::GetForProfile(

@@ -977,6 +977,7 @@ message ClientSafeBrowsingReportRequest {
     URL_PASSWORD_PROTECTION_PHISHING = 12;
     DANGEROUS_DOWNLOAD_OPENED = 13;
     AD_SAMPLE = 14;
+    URL_SUSPICIOUS = 15;
   }
 
   message HTTPHeader {

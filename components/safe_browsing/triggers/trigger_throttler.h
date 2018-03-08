@@ -26,6 +26,7 @@ enum class TriggerType {
   SECURITY_INTERSTITIAL = 1,
   AD_SAMPLE = 2,
   GAIA_PASSWORD_REUSE = 3,
+  SUSPICIOUS_SITE = 4,
 };
 
 struct TriggerTypeHash {
@@ -61,7 +62,7 @@ class TriggerThrottler {
 
  private:
   friend class TriggerThrottlerTest;
-  FRIEND_TEST_ALL_PREFIXES(TriggerThrottlerTestFinch, AdSamplerDefaultQuota);
+  friend class TriggerThrottlerTestFinch;
 
   // Called to periodically clean-up the list of event timestamps.
   void CleanupOldEvents();

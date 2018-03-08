@@ -134,6 +134,9 @@ enum SBThreatType {
 
   // A sample of an ad was collected
   SB_THREAT_TYPE_AD_SAMPLE,
+
+  // The page loaded a resource from the Suspicious Site list.
+  SB_THREAT_TYPE_SUSPICIOUS_SITE,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;
