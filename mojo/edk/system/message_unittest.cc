@@ -705,11 +705,11 @@ TEST_F(MessageTest, ExtendMessagePayloadLarge) {
     ASSERT_GE(buffer_size, static_cast<uint32_t>(kTestMessageHeader.size()));
     memcpy(buffer, kTestMessageHeader.data(), kTestMessageHeader.size());
 
-    // 5 MB should be well beyond any reasonable default buffer size for the
+    // 512 kB should be well beyond any reasonable default buffer size for the
     // system implementation to choose, meaning that this test should guarantee
     // several reallocations of the serialized message buffer as we
     // progressively extend the payload to this size.
-    constexpr size_t kTestMessagePayloadSize = 5 * 1024 * 1024;
+    constexpr size_t kTestMessagePayloadSize = 512 * 1024;
     std::vector<uint8_t> test_payload(kTestMessagePayloadSize);
     base::RandBytes(test_payload.data(), kTestMessagePayloadSize);
 
