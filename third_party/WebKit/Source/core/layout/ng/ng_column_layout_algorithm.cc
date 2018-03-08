@@ -27,8 +27,7 @@ inline bool NeedsColumnBalancing(LayoutUnit block_size,
 // container.
 LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
                                     NGBlockNode node,
-                                    const NGConstraintSpace& space,
-                                    const ComputedStyle& style) {
+                                    const NGConstraintSpace& space) {
   // The {,max-}{height,width} properties are specified on the multicol
   // container, but here we're calculating the column block sizes inside the
   // multicol container, which isn't exactly the same. We may shrink the column
@@ -41,11 +40,12 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
   // against the resolved properties on the multicol container. That means that
   // we have to convert the value from content-box to border-box.
   NGBoxStrut border_scrollbar_padding =
-      CalculateBorderScrollbarPadding(space, style, node);
+      CalculateBorderScrollbarPadding(space, node);
   LayoutUnit extra = border_scrollbar_padding.BlockSum();
   size += extra;
 
   Optional<LayoutUnit> max_length;
+  const ComputedStyle& style = node.Style();
   Length logical_max_height = style.LogicalMaxHeight();
   if (!logical_max_height.IsMaxSizeNone()) {
     max_length = ResolveBlockLength(space, style, logical_max_height, size,
@@ -79,7 +79,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize(MinMaxSizeInput());
   NGBoxStrut border_scrollbar_padding =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Style(), min_max_size);
   NGLogicalSize content_box_size =
@@ -217,9 +217,9 @@ Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   sizes.max_size *= column_count;
   LayoutUnit column_gap = ResolveUsedColumnGap(LayoutUnit(), Style());
   LayoutUnit gap_extra = column_gap * (column_count - 1);
-  sizes += gap_extra + CalculateBorderScrollbarPadding(ConstraintSpace(),
-                                                       node_.Style(), node_)
-                           .InlineSum();
+  LayoutUnit border_scrollbar_padding =
+      CalculateBorderScrollbarPadding(ConstraintSpace(), node_).InlineSum();
+  sizes += gap_extra + border_scrollbar_padding;
 
   return sizes;
 }
@@ -269,8 +269,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
       single_strip_block_size.ToFloat() / static_cast<float>(column_count));
 
   // Finally, honor {,min-,max-}{height,width} properties.
-  return ConstrainColumnBlockSize(block_size, Node(), ConstraintSpace(),
-                                  Style());
+  return ConstrainColumnBlockSize(block_size, Node(), ConstraintSpace());
 }
 
 LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
@@ -281,7 +280,7 @@ LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
     return current_column_size;
   LayoutUnit length = current_column_size + minimal_space_shortage;
   // Honor {,min-,max-}{height,width} properties.
-  return ConstrainColumnBlockSize(length, Node(), ConstraintSpace(), Style());
+  return ConstrainColumnBlockSize(length, Node(), ConstraintSpace());
 }
 
 scoped_refptr<NGConstraintSpace>

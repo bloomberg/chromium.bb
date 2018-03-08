@@ -641,8 +641,9 @@ LayoutUnit ConstrainByMinMax(LayoutUnit length,
 
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
     const NGBlockNode node) {
+  const ComputedStyle& style = node.Style();
+
   // If we are producing an anonymous fragment (e.g. a column), it has no
   // borders, padding or scrollbars. Using the ones from the container can only
   // cause trouble.

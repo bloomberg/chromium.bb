@@ -236,8 +236,7 @@ Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   DCHECK_GE(sizes.max_size, sizes.min_size);
 
   sizes +=
-      CalculateBorderScrollbarPadding(ConstraintSpace(), node_.Style(), node_)
-          .InlineSum();
+      CalculateBorderScrollbarPadding(ConstraintSpace(), node_).InlineSum();
   return sizes;
 }
 
@@ -279,7 +278,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   }
 
   border_scrollbar_padding_ =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
 
   NGLogicalSize size = CalculateBorderBoxSize(
       ConstraintSpace(), Style(), min_max_size, CalculateDefaultBlockSize());

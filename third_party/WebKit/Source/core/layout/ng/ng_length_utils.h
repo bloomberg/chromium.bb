@@ -158,7 +158,6 @@ CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
 
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
     const NGBlockNode node);
 
 inline NGLogicalSize CalculateBorderBoxSize(
