@@ -65,9 +65,21 @@ class RefCountedSanitizerCallback
 class ImageSanitizerTest : public testing::Test {
  public:
   ImageSanitizerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {
+    InitTestDataDecoderService(/*service=*/nullptr);
+  }
 
  protected:
+  void InitTestDataDecoderService(
+      std::unique_ptr<service_manager::Service> service) {
+    if (!service)
+      service = data_decoder::DataDecoderService::Create();
+    connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForUniqueService(
+            std::move(service));
+    connector_ = connector_factory_->CreateConnector();
+  }
+
   void CreateValidImage(const base::FilePath::StringPieceType& file_name) {
     ASSERT_TRUE(WriteBase64DataToFile(kBase64edValidPng, file_name));
   }
@@ -138,9 +150,9 @@ class ImageSanitizerTest : public testing::Test {
       ImageSanitizer::ImageDecodedCallback image_decoded_callback,
       ImageSanitizer::SanitizationDoneCallback done_callback) {
     sanitizer_ = ImageSanitizer::CreateAndStart(
-        test_data_decoder_service_.connector(), service_manager::Identity(),
-        temp_dir_.GetPath(), image_relative_paths,
-        std::move(image_decoded_callback), std::move(done_callback));
+        connector_.get(), service_manager::Identity(), temp_dir_.GetPath(),
+        image_relative_paths, std::move(image_decoded_callback),
+        std::move(done_callback));
   }
 
   bool WriteBase64DataToFile(const std::string& base64_data,
@@ -171,7 +183,8 @@ class ImageSanitizerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
   ImageSanitizer::Status last_status_ = ImageSanitizer::Status::kSuccess;
   base::FilePath last_reported_path_;
   base::OnceClosure done_callback_;
@@ -316,6 +329,20 @@ TEST_F(ImageSanitizerTest, DontHoldOnToCallbacksOnSuccess) {
       FILE_PATH_LITERAL("good.png");
   CreateValidImage(kGoodPngName);
   TestDontHoldOnToCallback(base::FilePath(kGoodPngName));
+}
+
+// Tests that the callback is invoked if the data decoder service crashes.
+TEST_F(ImageSanitizerTest, DataDecoderServiceCrashes) {
+  InitTestDataDecoderService(
+      std::make_unique<data_decoder::CrashyDataDecoderService>(
+          /*crash_json=*/false, /*crash_image=*/true));
+  constexpr base::FilePath::CharType kGoodPngName[] =
+      FILE_PATH_LITERAL("good.png");
+  CreateValidImage(kGoodPngName);
+  base::FilePath good_png(kGoodPngName);
+  CreateAndStartSanitizer({good_png});
+  WaitForSanitizationDone();
+  EXPECT_EQ(last_reported_status(), ImageSanitizer::Status::kServiceError);
 }
 
 }  // namespace extensions
