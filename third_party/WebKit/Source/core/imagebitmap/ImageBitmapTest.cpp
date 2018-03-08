@@ -250,17 +250,7 @@ static ImageBitmapOptions PrepareBitmapOptions(
   return options;
 }
 
-// This test is failing on Android Arm 64 Official Test Bot.
-// See <http://crbug.com/721819>.
-#if defined(OS_ANDROID)
-#define MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement \
-  DISABLED_ImageBitmapColorSpaceConversionHTMLImageElement
-#else
-#define MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement \
-  ImageBitmapColorSpaceConversionHTMLImageElement
-#endif
-
-TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
+TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
   // Enable experimental canvas features for this test.
   ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
 
@@ -375,17 +365,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
   }
 }
 
-// This test is failing on Android Arm 64 Official Test Bot.
-// See <http://crbug.com/721819>.
-#if defined(OS_ANDROID)
-#define MAYBE_ImageBitmapColorSpaceConversionImageBitmap \
-  DISABLED_ImageBitmapColorSpaceConversionImageBitmap
-#else
-#define MAYBE_ImageBitmapColorSpaceConversionImageBitmap \
-  ImageBitmapColorSpaceConversionImageBitmap
-#endif
-
-TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
+TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
   // Enable experimental canvas features for this test.
   ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
 
@@ -499,18 +479,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
   }
 }
 
-// This test is failing on Android Arm 64 Official Test Bot.
-// See <http://crbug.com/721819>.
-#if defined(OS_ANDROID)
-#define MAYBE_ImageBitmapColorSpaceConversionStaticBitmapImage \
-  DISABLED_ImageBitmapColorSpaceConversionStaticBitmapImage
-#else
-#define MAYBE_ImageBitmapColorSpaceConversionStaticBitmapImage \
-  ImageBitmapColorSpaceConversionStaticBitmapImage
-#endif
-
-TEST_F(ImageBitmapTest,
-       MAYBE_ImageBitmapColorSpaceConversionStaticBitmapImage) {
+TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
   // Enable experimental canvas features for this test.
   ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
 
