@@ -4,10 +4,8 @@
 
 #include "modules/xr/XRView.h"
 
-#include "modules/xr/XRLayer.h"
 #include "modules/xr/XRPresentationFrame.h"
 #include "modules/xr/XRSession.h"
-#include "modules/xr/XRViewport.h"
 #include "platform/geometry/FloatPoint3D.h"
 
 namespace blink {
@@ -21,13 +19,6 @@ XRView::XRView(XRSession* session, Eye eye)
 
 XRSession* XRView::session() const {
   return session_;
-}
-
-XRViewport* XRView::getViewport(XRLayer* layer) const {
-  if (!layer || layer->session() != session_)
-    return nullptr;
-
-  return layer->GetViewport(eye_);
 }
 
 void XRView::UpdateProjectionMatrixFromFoV(float up_rad,

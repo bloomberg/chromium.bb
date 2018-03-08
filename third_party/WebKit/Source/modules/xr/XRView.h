@@ -15,9 +15,7 @@
 
 namespace blink {
 
-class XRLayer;
 class XRSession;
-class XRViewport;
 
 class XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -28,9 +26,10 @@ class XRView final : public ScriptWrappable {
   XRView(XRSession*, Eye);
 
   const String& eye() const { return eye_string_; }
+  Eye EyeValue() const { return eye_; }
+
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
-  XRViewport* getViewport(XRLayer*) const;
 
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,

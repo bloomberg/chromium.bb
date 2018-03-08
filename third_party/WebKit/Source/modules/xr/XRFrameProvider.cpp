@@ -361,8 +361,8 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
   DCHECK(layer->session() == exclusive_session_);
   DCHECK(presentation_provider_);
 
-  XRViewport* left = layer->GetViewport(XRView::kEyeLeft);
-  XRViewport* right = layer->GetViewport(XRView::kEyeRight);
+  XRViewport* left = layer->GetViewportForEye(XRView::kEyeLeft);
+  XRViewport* right = layer->GetViewportForEye(XRView::kEyeRight);
   float width = layer->framebufferWidth();
   float height = layer->framebufferHeight();
 

@@ -137,6 +137,23 @@ void XRWebGLLayer::getXRWebGLRenderingContext(
   }
 }
 
+XRViewport* XRWebGLLayer::getViewport(XRView* view) {
+  if (!view || view->session() != session())
+    return nullptr;
+
+  return GetViewportForEye(view->EyeValue());
+}
+
+XRViewport* XRWebGLLayer::GetViewportForEye(XRView::Eye eye) {
+  if (viewports_dirty_)
+    UpdateViewports();
+
+  if (eye == XRView::kEyeLeft)
+    return left_viewport_;
+
+  return right_viewport_;
+}
+
 void XRWebGLLayer::requestViewportScaling(double scale_factor) {
   if (!session()->exclusive()) {
     // TODO(bajones): For the moment we're just going to ignore viewport changes
@@ -154,16 +171,6 @@ void XRWebGLLayer::requestViewportScaling(double scale_factor) {
     viewport_scale_ = scale_factor;
     viewports_dirty_ = true;
   }
-}
-
-XRViewport* XRWebGLLayer::GetViewport(XRView::Eye eye) {
-  if (viewports_dirty_)
-    UpdateViewports();
-
-  if (eye == XRView::kEyeLeft)
-    return left_viewport_;
-
-  return right_viewport_;
 }
 
 void XRWebGLLayer::UpdateViewports() {
