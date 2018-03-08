@@ -10,10 +10,6 @@ namespace blink {
 XRLayer::XRLayer(XRSession* session, XRLayerType layer_type)
     : session_(session), layer_type_(layer_type) {}
 
-XRViewport* XRLayer::GetViewport(XRView::Eye) {
-  return nullptr;
-}
-
 void XRLayer::OnFrameStart() {}
 void XRLayer::OnFrameEnd() {}
 void XRLayer::OnResize() {}

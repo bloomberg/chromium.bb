@@ -9,5 +9,4 @@
 ] interface XRView {
   readonly attribute VREye? eye;
   readonly attribute Float32Array projectionMatrix;
-  XRViewport? getViewport(XRLayer layer);
 };

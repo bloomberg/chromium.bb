@@ -19,8 +19,6 @@ PASS XRDevice interface object name
 PASS XRDevice interface: existence and properties of interface prototype object
 PASS XRDevice interface: existence and properties of interface prototype object's "constructor" property
 PASS XRDevice interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRDevice interface: attribute external
-PASS Unscopable handled correctly for external property on XRDevice
 PASS XRDevice interface: operation supportsSession(XRSessionCreationOptions)
 PASS Unscopable handled correctly for supportsSession(XRSessionCreationOptions) on XRDevice
 PASS XRDevice interface: operation requestSession(XRSessionCreationOptions)
@@ -117,8 +115,6 @@ PASS XRView interface: attribute eye
 PASS Unscopable handled correctly for eye property on XRView
 PASS XRView interface: attribute projectionMatrix
 PASS Unscopable handled correctly for projectionMatrix property on XRView
-PASS XRView interface: operation getViewport(XRLayer)
-PASS Unscopable handled correctly for getViewport(XRLayer) on XRView
 PASS XRViewport interface: existence and properties of interface object
 PASS XRViewport interface object length
 PASS XRViewport interface object name
@@ -173,6 +169,8 @@ PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS Unscopable handled correctly for framebufferWidth property on XRWebGLLayer
 PASS XRWebGLLayer interface: attribute framebufferHeight
 PASS Unscopable handled correctly for framebufferHeight property on XRWebGLLayer
+PASS XRWebGLLayer interface: operation getViewport(XRView)
+PASS Unscopable handled correctly for getViewport(XRView) on XRWebGLLayer
 PASS XRWebGLLayer interface: operation requestViewportScaling(double)
 PASS Unscopable handled correctly for requestViewportScaling(double) on XRWebGLLayer
 PASS XRPresentationContext interface: existence and properties of interface object

@@ -9000,7 +9000,6 @@ interface XRCoordinateSystem
     method getTransformTo
 interface XRDevice : EventTarget
     attribute @@toStringTag
-    getter external
     method constructor
     method requestSession
     method supportsSession
@@ -9087,7 +9086,6 @@ interface XRView
     getter eye
     getter projectionMatrix
     method constructor
-    method getViewport
 interface XRViewport
     attribute @@toStringTag
     getter height
@@ -9107,6 +9105,7 @@ interface XRWebGLLayer : XRLayer
     getter multiview
     getter stencil
     method constructor
+    method getViewport
     method requestViewportScaling
 interface XSLTProcessor
     attribute @@toStringTag

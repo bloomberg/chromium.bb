@@ -22,5 +22,6 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
   readonly attribute unsigned long framebufferHeight;
   readonly attribute WebGLFramebuffer framebuffer;
 
+  XRViewport? getViewport(XRView view);
   void requestViewportScaling(double viewportScaleFactor);
 };

@@ -9,6 +9,7 @@
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "modules/xr/XRLayer.h"
+#include "modules/xr/XRView.h"
 #include "modules/xr/XRWebGLLayerInit.h"
 #include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
 #include "platform/wtf/RefCounted.h"
@@ -23,6 +24,7 @@ class ExceptionState;
 class WebGLFramebuffer;
 class WebGLRenderingContextBase;
 class XRSession;
+class XRViewport;
 
 class XRWebGLLayer final : public XRLayer {
   DEFINE_WRAPPERTYPEINFO();
@@ -54,9 +56,10 @@ class XRWebGLLayer final : public XRLayer {
   bool alpha() const { return drawing_buffer_->alpha(); }
   bool multiview() const { return drawing_buffer_->multiview(); }
 
+  XRViewport* getViewport(XRView*);
   void requestViewportScaling(double scale_factor);
 
-  XRViewport* GetViewport(XRView::Eye) override;
+  XRViewport* GetViewportForEye(XRView::Eye);
 
   void UpdateViewports();
 

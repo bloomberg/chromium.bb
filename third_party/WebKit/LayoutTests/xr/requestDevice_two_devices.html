@@ -13,8 +13,19 @@ promise_test( (t) => {
   // return, update this test.
   setFakeDevices([fakeDevices["FakeGooglePixelPhone"], fakeDevices["FakeMagicWindowOnly"]]);
   return navigator.xr.requestDevice().then( (device) => {
-    assert_true(device != null);
-    assert_false(device.external);
+    t.step(() => {
+      assert_true(device != null);
+      assert_true(device instanceof XRDevice);
+    });
+
+    // Repeated calls to requestDevice should yeild the same device each time.
+    navigator.xr.requestDevice().then( (device2) => {
+      t.step(() => {
+        assert_true(device2 != null);
+        assert_true(device2 instanceof XRDevice);
+        assert_equals(device, device2);
+      });
+    });
   });
 }, "navigator.xr.requestDevice properly returns one device when there are two");
 </script>

@@ -5,7 +5,6 @@
 #ifndef XRLayer_h
 #define XRLayer_h
 
-#include "modules/xr/XRView.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -13,7 +12,6 @@
 namespace blink {
 
 class XRSession;
-class XRViewport;
 
 enum XRLayerType { kXRWebGLLayerType };
 
@@ -25,7 +23,6 @@ class XRLayer : public ScriptWrappable {
 
   XRSession* session() const { return session_; }
   XRLayerType layerType() const { return layer_type_; }
-  virtual XRViewport* GetViewport(XRView::Eye);
 
   virtual void OnFrameStart();
   virtual void OnFrameEnd();

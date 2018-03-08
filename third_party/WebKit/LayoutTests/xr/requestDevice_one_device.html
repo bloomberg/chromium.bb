@@ -12,8 +12,10 @@ let fakeDevices = fakeXRDevices();
 promise_test((t) => {
   setFakeDevices([fakeDevices["FakeGooglePixelPhone"]]);
   return navigator.xr.requestDevice().then( (device) => {
-    assert_true(device != null);
-    assert_false(device.external);
+    t.step(() => {
+      assert_true(device != null);
+      assert_true(device instanceof XRDevice);
+    });
   });
 }, "navigator.xr.requestDevice properly returns a single device");
 
