@@ -313,7 +313,7 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.wma',      '.wmv',         '.xls',
   '.xlsx',     '.crdownload',  '.crx',
   '.dmg',      '.exe',         '.html',
-  'htm',       '.jar',         '.ps',
+  '.htm',      '.jar',         '.ps',
   '.torrent',  '.txt',         '.zip',
   'directory', 'no extension', 'unknown extension',
   '.mhtml'
