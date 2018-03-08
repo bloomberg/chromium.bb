@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/highlighter/highlighter_gesture_util.h"
-#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -30,7 +30,7 @@ class HighlighterGestureUtilTest : public AshTestBase {
   ~HighlighterGestureUtilTest() override = default;
 
  protected:
-  FastInkPoints points_;
+  fast_ink::FastInkPoints points_;
 
   void MoveTo(float x, float y) { AddPoint(x, y); }
 

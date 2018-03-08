@@ -13,6 +13,7 @@
 #include "ash/public/cpp/scale_utility.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/system/palette/palette_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -55,9 +56,13 @@ float GetScreenshotScale(aura::Window* window) {
 }  // namespace
 
 HighlighterController::HighlighterController()
-    : binding_(this), weak_factory_(this) {}
+    : binding_(this), weak_factory_(this) {
+  Shell::Get()->AddPreTargetHandler(this);
+}
 
-HighlighterController::~HighlighterController() = default;
+HighlighterController::~HighlighterController() {
+  Shell::Get()->RemovePreTargetHandler(this);
+}
 
 void HighlighterController::SetExitCallback(base::OnceClosure exit_callback,
                                             bool require_success) {
@@ -159,7 +164,7 @@ void HighlighterController::RecognizeGesture() {
       highlighter_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
   const gfx::Rect bounds = current_window->bounds();
 
-  const FastInkPoints& points = highlighter_view_->points();
+  const fast_ink::FastInkPoints& points = highlighter_view_->points();
   gfx::RectF box = points.GetBoundingBoxF();
 
   const HighlighterGestureType gesture_type =
@@ -232,6 +237,9 @@ void HighlighterController::DestroyPointerView() {
 }
 
 bool HighlighterController::CanStartNewGesture(ui::TouchEvent* event) {
+  // Ignore events over the palette.
+  if (ash::palette_utils::PaletteContainsPointInScreen(event->root_location()))
+    return false;
   return !interrupted_stroke_timer_ &&
          FastInkPointerController::CanStartNewGesture(event);
 }

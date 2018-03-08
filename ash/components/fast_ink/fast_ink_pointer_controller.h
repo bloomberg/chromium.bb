@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
-#define ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
+#ifndef ASH_COMPONENTS_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
+#define ASH_COMPONENTS_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/event_handler.h"
@@ -18,11 +17,11 @@ namespace views {
 class View;
 }
 
-namespace ash {
+namespace fast_ink {
 
 // Base class for a fast ink based pointer controller. Enables/disables
 // the pointer, receives points and passes them off to be rendered.
-class ASH_EXPORT FastInkPointerController : public ui::EventHandler {
+class FastInkPointerController : public ui::EventHandler {
  public:
   FastInkPointerController();
   ~FastInkPointerController() override;
@@ -62,6 +61,6 @@ class ASH_EXPORT FastInkPointerController : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(FastInkPointerController);
 };
 
-}  // namespace ash
+}  // namespace fast_ink
 
-#endif  // ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
+#endif  // ASH_COMPONENTS_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_

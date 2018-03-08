@@ -10,9 +10,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace fast_ink {
+class FastInkPoints;
+}
+
 namespace ash {
 
-class FastInkPoints;
 class HighlighterController;
 
 // An api for testing the HighlighterController class.
@@ -39,8 +42,8 @@ class HighlighterControllerTestApi
   bool IsFadingAway() const;
   bool IsWaitingToResumeStroke() const;
   bool IsShowingSelectionResult() const;
-  const FastInkPoints& points() const;
-  const FastInkPoints& predicted_points() const;
+  const fast_ink::FastInkPoints& points() const;
+  const fast_ink::FastInkPoints& predicted_points() const;
 
   void ResetEnabledState() { handle_enabled_state_changed_called_ = false; }
   // Flushes the mojo connection, then checks whether HandleEnabledStateChange

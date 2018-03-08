@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/fast_ink/fast_ink_view.h"
+#include "ash/components/fast_ink/fast_ink_view.h"
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -10,9 +10,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
-#include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -23,6 +20,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
@@ -31,7 +29,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+namespace fast_ink {
 namespace {
 
 gfx::Rect BufferRectFromScreenRect(
@@ -99,7 +97,7 @@ struct FastInkView::Resource {
   ~Resource() {
     // context_provider might be null in unit tests when ran with --mash
     // TODO(kaznacheev) Have MASH provide a context provider for tests
-    // when crbug/772562 is fixed
+    // when https://crbug/772562 is fixed
     if (!context_provider)
       return;
     gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
@@ -120,7 +118,7 @@ struct FastInkView::Resource {
 
 class FastInkView::LayerTreeFrameSinkHolder
     : public cc::LayerTreeFrameSinkClient,
-      public ash::ShellObserver {
+      public aura::EnvObserver {
  public:
   LayerTreeFrameSinkHolder(FastInkView* view,
                            std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
@@ -130,13 +128,13 @@ class FastInkView::LayerTreeFrameSinkHolder
   ~LayerTreeFrameSinkHolder() override {
     if (frame_sink_)
       frame_sink_->DetachFromClient();
-    if (shell_)
-      shell_->RemoveShellObserver(this);
+    if (env_)
+      env_->RemoveObserver(this);
   }
 
   // Delete frame sink after having reclaimed all exported resources.
   // TODO(reveman): Find a better way to handle deletion of in-flight resources.
-  // crbug.com/765763
+  // https://crbug.com/765763
   static void DeleteWhenLastResourceHasBeenReclaimed(
       std::unique_ptr<LayerTreeFrameSinkHolder> holder) {
     if (holder->last_frame_size_in_pixels_.IsEmpty()) {
@@ -167,14 +165,15 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (holder->exported_resources_.empty())
       return;
 
-    ash::Shell* shell = ash::Shell::Get();
-    holder->shell_ = shell;
+    aura::Env* env = aura::Env::GetInstance();
+    holder->env_ = env;
     holder->view_ = nullptr;
 
     // If we have exported resources to reclaim then extend the lifetime of
-    // holder by adding it as a shell observer. The holder will delete itself
-    // when shell shuts down or when all exported resources have been reclaimed.
-    shell->AddShellObserver(holder.release());
+    // holder by adding it as an aura env observer. The holder will delete
+    // itself when aura shuts down or when all exported resources have been
+    // reclaimed.
+    env->AddObserver(holder.release());
   }
 
   void SubmitCompositorFrame(viz::CompositorFrame frame,
@@ -205,7 +204,7 @@ class FastInkView::LayerTreeFrameSinkHolder
         view_->ReclaimResource(std::move(resource));
     }
 
-    if (shell_ && exported_resources_.empty())
+    if (env_ && exported_resources_.empty())
       ScheduleDelete();
   }
   void SetTreeActivationCallback(const base::Closure& callback) override {}
@@ -220,7 +219,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();
-    if (shell_)
+    if (env_)
       ScheduleDelete();
   }
   void OnDraw(const gfx::Transform& transform,
@@ -231,11 +230,12 @@ class FastInkView::LayerTreeFrameSinkHolder
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override {}
 
-  // Overridden from ash::ShellObserver:
-  void OnShellDestroyed() override {
-    shell_->RemoveShellObserver(this);
-    shell_ = nullptr;
-    // Make sure frame sink never outlives the shell.
+  // Overridden from aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override {}
+  void OnWillDestroyEnv() override {
+    env_->RemoveObserver(this);
+    env_ = nullptr;
+    // Make sure frame sink never outlives aura.
     frame_sink_->DetachFromClient();
     frame_sink_.reset();
     ScheduleDelete();
@@ -255,7 +255,7 @@ class FastInkView::LayerTreeFrameSinkHolder
       exported_resources_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
-  ash::Shell* shell_ = nullptr;
+  aura::Env* env_ = nullptr;
   bool delete_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
@@ -427,14 +427,7 @@ void FastInkView::SubmitCompositorFrame() {
       }
     }
     gles2->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-
-    // For mus and mash, the compositor isn't sharing the GPU channel with
-    // FastInkView, so it cannot consume unverified sync token generated here.
-    // We need generate verified sync token for mus and mash.
-    if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
-      gles2->GenUnverifiedSyncTokenCHROMIUM(resource->sync_token.GetData());
-    else
-      gles2->GenSyncTokenCHROMIUM(resource->sync_token.GetData());
+    gles2->GenSyncTokenCHROMIUM(resource->sync_token.GetData());
 
     resource->damaged = false;
   }
@@ -521,4 +514,4 @@ void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {
   returned_resources_.push_back(std::move(resource));
 }
 
-}  // namespace ash
+}  // namespace fast_ink

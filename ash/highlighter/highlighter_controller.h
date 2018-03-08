@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "ash/fast_ink/fast_ink_pointer_controller.h"
+#include "ash/ash_export.h"
+#include "ash/components/fast_ink/fast_ink_pointer_controller.h"
 #include "ash/public/interfaces/highlighter_controller.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -25,8 +26,9 @@ class HighlighterView;
 // Controller for the highlighter functionality.
 // Enables/disables highlighter as well as receives points
 // and passes them off to be rendered.
-class ASH_EXPORT HighlighterController : public FastInkPointerController,
-                                         public mojom::HighlighterController {
+class ASH_EXPORT HighlighterController
+    : public fast_ink::FastInkPointerController,
+      public mojom::HighlighterController {
  public:
   HighlighterController();
   ~HighlighterController() override;
@@ -37,7 +39,7 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController,
   // after the first complete gesture, regardless of the recognition result.
   void SetExitCallback(base::OnceClosure callback, bool require_success);
 
-  // FastInkPointerController:
+  // fast_ink::FastInkPointerController:
   void SetEnabled(bool enabled) override;
 
   void BindRequest(mojom::HighlighterControllerRequest request);
@@ -49,7 +51,7 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController,
  private:
   friend class HighlighterControllerTestApi;
 
-  // FastInkPointerController:
+  // fast_ink::FastInkPointerController:
   views::View* GetPointerView() const override;
   void CreatePointerView(base::TimeDelta presentation_delay,
                          aura::Window* root_window) override;

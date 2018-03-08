@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "ash/fast_ink/fast_ink_pointer_controller.h"
+#include "ash/ash_export.h"
+#include "ash/components/fast_ink/fast_ink_pointer_controller.h"
 
 namespace ash {
 
@@ -15,23 +16,25 @@ class LaserPointerView;
 
 // Controller for the laser pointer functionality. Enables/disables laser
 // pointer as well as receives points and passes them off to be rendered.
-class ASH_EXPORT LaserPointerController : public FastInkPointerController {
+class ASH_EXPORT LaserPointerController
+    : public fast_ink::FastInkPointerController {
  public:
   LaserPointerController();
   ~LaserPointerController() override;
 
-  // FastInkPointerController:
+  // fast_ink::FastInkPointerController:
   void SetEnabled(bool enabled) override;
 
  private:
   friend class LaserPointerControllerTestApi;
 
-  // FastInkPointerController:
+  // fast_ink::FastInkPointerController:
   views::View* GetPointerView() const override;
   void CreatePointerView(base::TimeDelta presentation_delay,
                          aura::Window* root_window) override;
   void UpdatePointerView(ui::TouchEvent* event) override;
   void DestroyPointerView() override;
+  bool CanStartNewGesture(ui::TouchEvent* event) override;
 
   // |laser_pointer_view_| will only hold an instance when the laser pointer is
   // enabled and activated (pressed or dragged).

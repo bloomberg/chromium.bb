@@ -4,7 +4,7 @@
 
 #include "ash/highlighter/highlighter_controller_test_api.h"
 
-#include "ash/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_view.h"
 
@@ -74,11 +74,12 @@ bool HighlighterControllerTestApi::IsWaitingToResumeStroke() const {
          instance_->interrupted_stroke_timer_->IsRunning();
 }
 
-const FastInkPoints& HighlighterControllerTestApi::points() const {
+const fast_ink::FastInkPoints& HighlighterControllerTestApi::points() const {
   return instance_->highlighter_view_->points_;
 }
 
-const FastInkPoints& HighlighterControllerTestApi::predicted_points() const {
+const fast_ink::FastInkPoints& HighlighterControllerTestApi::predicted_points()
+    const {
   return instance_->highlighter_view_->predicted_points_;
 }
 

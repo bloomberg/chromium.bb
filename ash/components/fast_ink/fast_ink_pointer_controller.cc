@@ -2,47 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/fast_ink/fast_ink_pointer_controller.h"
+#include "ash/components/fast_ink/fast_ink_pointer_controller.h"
 
-#include "ash/public/cpp/ash_switches.h"
-#include "ash/shell.h"
-#include "ash/system/palette/palette_utils.h"
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
+#include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
-
+namespace fast_ink {
 namespace {
 
-// The default amount of time used to estimate time from VSYNC event to when
-// visible light can be noticed by the user. This is used when a device
-// specific estimate was not provided using --estimated-presentation-delay.
-const int kDefaultPresentationDelayMs = 18;
-
-base::TimeDelta GetPresentationDelay() {
-  int64_t presentation_delay_ms;
-  // Use device specific presentation delay if specified.
-  std::string presentation_delay_string =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAshEstimatedPresentationDelay);
-  if (!base::StringToInt64(presentation_delay_string, &presentation_delay_ms))
-    presentation_delay_ms = kDefaultPresentationDelayMs;
-  return base::TimeDelta::FromMilliseconds(presentation_delay_ms);
-}
+// The amount of time used to estimate time from VSYNC event to when
+// visible light can be noticed by the user.
+const int kPresentationDelayMs = 18;
 
 }  // namespace
 
 FastInkPointerController::FastInkPointerController()
-    : presentation_delay_(GetPresentationDelay()) {
-  Shell::Get()->AddPreTargetHandler(this);
-}
+    : presentation_delay_(
+          base::TimeDelta::FromMilliseconds(kPresentationDelayMs)) {}
 
-FastInkPointerController::~FastInkPointerController() {
-  Shell::Get()->RemovePreTargetHandler(this);
-}
+FastInkPointerController::~FastInkPointerController() {}
 
 void FastInkPointerController::SetEnabled(bool enabled) {
   enabled_ = enabled;
@@ -81,9 +61,6 @@ void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {
       static_cast<aura::Window*>(event->target())->GetRootWindow();
 
   if (CanStartNewGesture(event)) {
-    // Ignore events over the palette.
-    if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
-      return;
     DestroyPointerView();
     CreatePointerView(presentation_delay_, root_window);
   } else {
@@ -93,7 +70,7 @@ void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {
     views::Widget* widget = pointer_view->GetWidget();
     if (widget->IsClosed() ||
         widget->GetNativeWindow()->GetRootWindow() != root_window) {
-      // The pointer widget is longer valid, end the current pointer session.
+      // The pointer widget is no longer valid, end the current pointer session.
       DestroyPointerView();
       return;
     }
@@ -103,4 +80,4 @@ void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {
   event->StopPropagation();
 }
 
-}  // namespace ash
+}  // namespace fast_ink

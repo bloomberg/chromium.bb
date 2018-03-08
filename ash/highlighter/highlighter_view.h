@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "ash/fast_ink/fast_ink_points.h"
-#include "ash/fast_ink/fast_ink_view.h"
+#include "ash/components/fast_ink/fast_ink_points.h"
+#include "ash/components/fast_ink/fast_ink_view.h"
 #include "base/time/time.h"
 
 namespace aura {
@@ -26,7 +26,7 @@ enum class HighlighterGestureType;
 // HighlighterView displays the highlighter palette tool. It draws the
 // highlighter stroke which consists of a series of thick lines connecting
 // touch points.
-class HighlighterView : public FastInkView {
+class HighlighterView : public fast_ink::FastInkView {
  public:
   static const SkColor kPenColor;
   static const gfx::SizeF kPenTipSize;
@@ -35,7 +35,7 @@ class HighlighterView : public FastInkView {
                   aura::Window* container);
   ~HighlighterView() override;
 
-  const FastInkPoints& points() const { return points_; }
+  const fast_ink::FastInkPoints& points() const { return points_; }
   bool animating() const { return animation_timer_.get(); }
 
   void AddNewPoint(const gfx::PointF& new_point, const base::TimeTicks& time);
@@ -54,8 +54,8 @@ class HighlighterView : public FastInkView {
   void UpdateBuffer();
   void Draw(gfx::Canvas& canvas);
 
-  FastInkPoints points_;
-  FastInkPoints predicted_points_;
+  fast_ink::FastInkPoints points_;
+  fast_ink::FastInkPoints predicted_points_;
   const base::TimeDelta presentation_delay_;
   std::unique_ptr<base::OneShotTimer> animation_timer_;
   gfx::Rect highlighter_damage_rect_;
