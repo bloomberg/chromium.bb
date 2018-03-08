@@ -1969,12 +1969,17 @@
       },
       'Mac Builder': {
         'additional_compile_targets': [
-          'all',
+          'browser_tests',
+          'capture_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
         ],
       },
       'Mac Builder (dbg)': {
         'additional_compile_targets': [
-          'all',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
