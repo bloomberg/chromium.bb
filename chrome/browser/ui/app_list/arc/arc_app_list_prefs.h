@@ -268,6 +268,14 @@ class ArcAppListPrefs : public KeyedService,
   std::unordered_set<std::string> GetAppsForPackage(
       const std::string& package_name) const;
 
+  // Gets Chrome prefs for given |package_name| and |key|.
+  base::Value* GetPackagePrefs(const std::string& package_name,
+                               const std::string& key);
+  // Sets Chrome prefs for given |package_name| and |key| to |value|.
+  void SetPackagePrefs(const std::string& package_name,
+                       const std::string& key,
+                       base::Value value);
+
   void SetDefaltAppsReadyCallback(base::Closure callback);
   void SimulateDefaultAppAvailabilityTimeoutForTesting();
 

@@ -23,6 +23,7 @@ class Profile;
 namespace arc {
 
 class ArcUsbHostBridge;
+class ArcUsbHostPermissionTest;
 
 class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
                                     public ArcUsbHostUiDelegate,
@@ -129,8 +130,13 @@ class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
     return pending_requests_;
   }
 
+  // Clear |usb_scan_devicelist_permission_packages_| and
+  // |usb_access_permission_dict_| for testing. Will not affect Chrome prefs.
+  void ClearPermissionForTesting();
+
  private:
   friend class ArcUsbHostPermissionManagerFactory;
+  friend class ArcUsbHostPermissionTest;
 
   ArcUsbHostPermissionManager(Profile* profile,
                               ArcAppListPrefs* arc_app_list_prefs,
@@ -160,7 +166,7 @@ class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
 
   void UpdateArcUsbAccessPermission(const std::string& package_name,
                                     const UsbDeviceEntry& usb_device_entry,
-                                    bool accpet);
+                                    bool allowed);
 
   std::vector<UsbPermissionRequest> pending_requests_;
 

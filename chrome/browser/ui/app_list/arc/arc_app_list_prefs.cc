@@ -832,6 +832,27 @@ void ArcAppListPrefs::RegisterDefaultApps() {
   }
 }
 
+base::Value* ArcAppListPrefs::GetPackagePrefs(const std::string& package_name,
+                                              const std::string& key) {
+  if (!GetPackage(package_name)) {
+    LOG(ERROR) << package_name << " can not be found.";
+    return nullptr;
+  }
+  ScopedArcPrefUpdate update(prefs_, package_name, arc::prefs::kArcPackages);
+  return update.Get()->FindKey(key);
+}
+
+void ArcAppListPrefs::SetPackagePrefs(const std::string& package_name,
+                                      const std::string& key,
+                                      base::Value value) {
+  if (!GetPackage(package_name)) {
+    LOG(ERROR) << package_name << " can not be found.";
+    return;
+  }
+  ScopedArcPrefUpdate update(prefs_, package_name, arc::prefs::kArcPackages);
+  update.Get()->SetKey(key, std::move(value));
+}
+
 void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::Closure callback) {
   DCHECK(!callback.is_null());
   DCHECK(default_apps_ready_callback_.is_null());
