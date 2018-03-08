@@ -881,6 +881,10 @@
       name: "PWAFullCodeCache"
     },
     {
+      name: "RasterInducingScroll",
+      status: "experimental",
+    },
+    {
       name: "ReducedReferrerGranularity",
     },
     {
