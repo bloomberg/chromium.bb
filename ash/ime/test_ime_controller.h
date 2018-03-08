@@ -30,7 +30,7 @@ class ASH_EXPORT TestImeController : mojom::ImeController {
                   std::vector<mojom::ImeMenuItemPtr> menu_items) override;
   void SetImesManagedByPolicy(bool managed) override;
   void ShowImeMenuOnShelf(bool show) override;
-  void SetCapsLockState(bool enabled) override;
+  void UpdateCapsLockState(bool enabled) override;
   void SetExtraInputOptionsEnabledState(bool is_extra_input_options_enabled,
                                         bool is_emoji_enabled,
                                         bool is_handwriting_enabled,

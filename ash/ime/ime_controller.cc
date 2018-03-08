@@ -129,7 +129,7 @@ void ImeController::ShowImeMenuOnShelf(bool show) {
   Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(show);
 }
 
-void ImeController::SetCapsLockState(bool caps_enabled) {
+void ImeController::UpdateCapsLockState(bool caps_enabled) {
   is_caps_lock_enabled_ = caps_enabled;
 
   for (ImeController::Observer& observer : observers_)
@@ -147,9 +147,11 @@ void ImeController::SetExtraInputOptionsEnabledState(
   is_voice_enabled_ = is_voice_enabled;
 }
 
-void ImeController::SetCapsLockFromTray(bool caps_enabled) {
+void ImeController::SetCapsLockEnabled(bool caps_enabled) {
+  is_caps_lock_enabled_ = caps_enabled;
+
   if (client_)
-    client_->SetCapsLockFromTray(caps_enabled);
+    client_->SetCapsLockEnabled(caps_enabled);
 }
 
 void ImeController::FlushMojoForTesting() {

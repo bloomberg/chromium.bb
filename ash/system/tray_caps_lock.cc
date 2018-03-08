@@ -158,7 +158,7 @@ class CapsLockDefaultView : public ActionableView {
   // ActionableView:
   bool PerformAction(const ui::Event& event) override {
     bool new_state = !IsCapsLockEnabled();
-    Shell::Get()->ime_controller()->SetCapsLockFromTray(new_state);
+    Shell::Get()->ime_controller()->SetCapsLockEnabled(new_state);
     Shell::Get()->metrics()->RecordUserMetricsAction(
         new_state ? UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK
                   : UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK);

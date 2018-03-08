@@ -11,6 +11,7 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/test_ime_controller_client.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -965,10 +966,11 @@ namespace {
 
 // Tests the four combinations of the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
-  chromeos::input_method::InputMethodManager* input_method_manager =
-      chromeos::input_method::InputMethodManager::Get();
-  ASSERT_TRUE(input_method_manager);
-  EXPECT_FALSE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+  ImeController* controller = Shell::Get()->ime_controller();
+
+  TestImeControllerClient client;
+  controller->SetClient(client.CreateInterfacePtr());
+  EXPECT_EQ(0, client.set_caps_lock_count_);
 
   // 1. Press Alt, Press Search, Release Search, Release Alt.
   // Note when you press Alt then press search, the key_code at this point is
@@ -980,30 +982,38 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   const ui::Accelerator release_search_before_alt(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN));
   EXPECT_TRUE(ProcessInController(release_search_before_alt));
-  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
-  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(1, client.set_caps_lock_count_);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
 
   // 2. Press Search, Press Alt, Release Search, Release Alt.
   const ui::Accelerator press_search_then_alt(ui::VKEY_MENU,
                                               ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(ProcessInController(press_search_then_alt));
   EXPECT_TRUE(ProcessInController(release_search_before_alt));
-  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
-  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(2, client.set_caps_lock_count_);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
 
   // 3. Press Alt, Press Search, Release Alt, Release Search.
   EXPECT_FALSE(ProcessInController(press_alt_then_search));
   const ui::Accelerator release_alt_before_search(
       CreateReleaseAccelerator(ui::VKEY_MENU, ui::EF_COMMAND_DOWN));
   EXPECT_TRUE(ProcessInController(release_alt_before_search));
-  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
-  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(3, client.set_caps_lock_count_);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
 
   // 4. Press Search, Press Alt, Release Alt, Release Search.
   EXPECT_FALSE(ProcessInController(press_search_then_alt));
   EXPECT_TRUE(ProcessInController(release_alt_before_search));
-  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
-  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(4, client.set_caps_lock_count_);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
 }
 
 class PreferredReservedAcceleratorsTest : public AshTestBase {

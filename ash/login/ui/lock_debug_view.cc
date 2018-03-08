@@ -319,7 +319,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Enable or disable caps lock.
   if (sender == toggle_caps_lock_) {
     ImeController* ime_controller = Shell::Get()->ime_controller();
-    ime_controller->SetCapsLockFromTray(!ime_controller->IsCapsLockEnabled());
+    ime_controller->SetCapsLockEnabled(!ime_controller->IsCapsLockEnabled());
     return;
   }
 
