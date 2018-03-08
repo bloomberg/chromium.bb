@@ -157,7 +157,8 @@ class DelayNavigationThrottleInstantiationTest
   DISALLOW_COPY_AND_ASSIGN(DelayNavigationThrottleInstantiationTest);
 };
 
-TEST_P(DelayNavigationThrottleInstantiationTest, Instantiate) {
+// Disabled due to crbug.com/820070.
+TEST_P(DelayNavigationThrottleInstantiationTest, DISABLED_Instantiate) {
   std::unique_ptr<content::NavigationHandle> test_handle =
       content::NavigationHandle::CreateNavigationHandleForTesting(url_,
                                                                   main_rfh());
