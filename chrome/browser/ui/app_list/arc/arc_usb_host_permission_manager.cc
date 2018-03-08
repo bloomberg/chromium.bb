@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager_factory.h"
@@ -15,6 +16,14 @@
 namespace arc {
 
 namespace {
+
+constexpr char kUsbAccessPermission[] = "usb_access_permission";
+constexpr char kUsbDeviceName[] = "usb_device_name";
+constexpr char kUsbProductId[] = "usb_product_id";
+constexpr char kUsbScanDeviceListPermission[] =
+    "usb_scan_devicelist_permission";
+constexpr char kUsbSerialNumber[] = "usb_serial_number";
+constexpr char kUsbVendorId[] = "usb_vendor_id";
 
 std::string GetAppIdFromPackageName(const std::string& package_name,
                                     const ArcAppListPrefs* arc_app_list_prefs) {
@@ -27,6 +36,20 @@ std::string GetAppIdFromPackageName(const std::string& package_name,
   std::unordered_set<std::string> app_ids =
       arc_app_list_prefs->GetAppsForPackage(package_name);
   return app_ids.empty() ? std::string() : *app_ids.begin();
+}
+
+bool GetUint16FromDict(const base::Value& dict,
+                       const std::string& key,
+                       uint16_t* result) {
+  const base::Value* value =
+      dict.FindKeyOfType(key, base::Value::Type::INTEGER);
+  if (!value)
+    return false;
+  int tmp = value->GetInt();
+  if (tmp < 0 || tmp > UINT16_MAX)
+    return false;
+  *result = static_cast<uint16_t>(tmp);
+  return true;
 }
 
 }  // namespace
@@ -125,9 +148,63 @@ ArcUsbHostPermissionManager::~ArcUsbHostPermissionManager() {
 }
 
 void ArcUsbHostPermissionManager::RestorePermissionFromChromePrefs() {
-  // TODO(lgcheng): Restores scan devicelist permissions.
+  const std::vector<std::string> packages =
+      arc_app_list_prefs_->GetPackagesFromPrefs();
+  for (auto& package : packages) {
+    // Restore scan device list permission.
+    const base::Value* scan_permision_value =
+        arc_app_list_prefs_->GetPackagePrefs(package,
+                                             kUsbScanDeviceListPermission);
+    if (scan_permision_value && scan_permision_value->is_bool() &&
+        scan_permision_value->GetBool()) {
+      usb_scan_devicelist_permission_packages_.emplace(package);
+    }
 
-  // TODO(lgcheng): Restores persistent device access permissions.
+    // Restore device accesss permission.
+    const base::Value* access_permision_list_value =
+        arc_app_list_prefs_->GetPackagePrefs(package, kUsbAccessPermission);
+    if (!access_permision_list_value)
+      return;
+
+    if (!access_permision_list_value->is_list()) {
+      LOG(ERROR) << "Wrong value type found for device access permission list.";
+      return;
+    }
+
+    for (const auto& access_permision :
+         access_permision_list_value->GetList()) {
+      const base::Value* serial_number_value = access_permision.FindKeyOfType(
+          kUsbSerialNumber, base::Value::Type::STRING);
+      if (!serial_number_value) {
+        LOG(WARNING) << "Invalid device access permisison: No serial number.";
+        continue;
+      }
+
+      const base::Value* device_name_value = access_permision.FindKeyOfType(
+          kUsbDeviceName, base::Value::Type::STRING);
+      if (!device_name_value) {
+        LOG(WARNING) << "Invalid device access permisison: No device name.";
+        continue;
+      }
+
+      uint16_t vendor_id;
+      uint16_t product_id;
+
+      if (!GetUint16FromDict(access_permision, kUsbVendorId, &vendor_id) ||
+          !GetUint16FromDict(access_permision, kUsbProductId, &product_id)) {
+        LOG(WARNING) << "Invalid device access permisison: Invalid vendor_id "
+                        "and/or product_id.";
+        continue;
+      }
+
+      usb_access_permission_dict_.emplace(std::make_pair(
+          package,
+          UsbDeviceEntry(std::string() /*guid*/,
+                         base::UTF8ToUTF16(device_name_value->GetString()),
+                         base::UTF8ToUTF16(serial_number_value->GetString()),
+                         vendor_id, product_id)));
+    }
+  }
 }
 
 void ArcUsbHostPermissionManager::RequestUsbScanDeviceListPermission(
@@ -198,7 +275,7 @@ void ArcUsbHostPermissionManager::DeviceRemoved(const std::string& guid) {
   // Remove runtime permissions.
   for (auto iter = usb_access_permission_dict_.begin();
        iter != usb_access_permission_dict_.end();) {
-    auto& usb_device_entry = iter->second;
+    UsbDeviceEntry& usb_device_entry = iter->second;
     if (!usb_device_entry.IsPersistent() && usb_device_entry.guid == guid)
       iter = usb_access_permission_dict_.erase(iter);
     else
@@ -241,7 +318,7 @@ void ArcUsbHostPermissionManager::MaybeProcessNextPermissionRequest() {
   else
     current_requesting_guid_ = current_request.usb_device_entry()->guid;
 
-  auto app_id =
+  const std::string app_id =
       GetAppIdFromPackageName(current_requesting_package_, arc_app_list_prefs_);
   // App is uninstalled during the process.
   if (app_id.empty()) {
@@ -249,7 +326,7 @@ void ArcUsbHostPermissionManager::MaybeProcessNextPermissionRequest() {
     return;
   }
 
-  auto app_name = arc_app_list_prefs_->GetApp(app_id)->name;
+  const std::string app_name = arc_app_list_prefs_->GetApp(app_id)->name;
 
   if (current_request.is_scan_request()) {
     if (HasUsbScanDeviceListPermission(current_requesting_package_)) {
@@ -337,8 +414,14 @@ void ArcUsbHostPermissionManager::UpdateArcUsbScanDeviceListPermission(
   if (!allowed)
     return;
 
-  usb_scan_devicelist_permission_packages_.emplace(package_name);
-  // TODO(lgcheng): Update Chrome prefs based result of emplace.
+  const auto result =
+      usb_scan_devicelist_permission_packages_.emplace(package_name);
+  // Permission is already recored.
+  if (!result.second)
+    return;
+
+  arc_app_list_prefs_->SetPackagePrefs(
+      package_name, kUsbScanDeviceListPermission, base::Value(allowed));
 }
 
 void ArcUsbHostPermissionManager::UpdateArcUsbAccessPermission(
@@ -355,7 +438,40 @@ void ArcUsbHostPermissionManager::UpdateArcUsbAccessPermission(
 
   usb_access_permission_dict_.emplace(
       std::make_pair(package_name, usb_device_entry));
-  // TODO(lgcheng): Update Chrome prefs if the device entry is persistent.
+
+  if (!usb_device_entry.IsPersistent())
+    return;
+
+  base::DictionaryValue new_permission;
+  new_permission.SetKey(kUsbSerialNumber,
+                        base::Value(usb_device_entry.serial_number));
+  new_permission.SetKey(kUsbDeviceName,
+                        base::Value(usb_device_entry.device_name));
+  new_permission.SetKey(kUsbVendorId, base::Value(usb_device_entry.vendor_id));
+  new_permission.SetKey(kUsbProductId,
+                        base::Value(usb_device_entry.product_id));
+
+  base::Value* access_permission_list_value =
+      arc_app_list_prefs_->GetPackagePrefs(package_name, kUsbAccessPermission);
+  if (!access_permission_list_value ||
+      !access_permission_list_value->is_list()) {
+    if (access_permission_list_value &&
+        !access_permission_list_value->is_list()) {
+      LOG(WARNING) << "Wrong base::Value::Type found for device access "
+                      "permission list Chrome prefs. Will overwrite with "
+                      "base::Value::Type::List";
+    }
+    arc_app_list_prefs_->SetPackagePrefs(package_name, kUsbAccessPermission,
+                                         base::Value(base::Value::Type::LIST));
+  }
+  arc_app_list_prefs_->GetPackagePrefs(package_name, kUsbAccessPermission)
+      ->GetList()
+      .emplace_back(std::move(new_permission));
+}
+
+void ArcUsbHostPermissionManager::ClearPermissionForTesting() {
+  usb_scan_devicelist_permission_packages_.clear();
+  usb_access_permission_dict_.clear();
 }
 
 }  // namespace arc
