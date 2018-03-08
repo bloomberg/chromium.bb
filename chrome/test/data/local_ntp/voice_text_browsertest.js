@@ -103,8 +103,8 @@ test.text.testShowErrorMessageWithTryAgainLink = function() {
   const tryAgainError = RecognitionError.NO_MATCH;
   text.showErrorMessage(tryAgainError);
   assertEquals(
-      'No translation <a class="voice-text-link" id="voice-retry-link">' +
-          'Try again</a>',
+      'No translation <a class="voice-text-link" id="voice-retry-link" ' +
+          'tabindex="0">Try again</a>',
       text.interim_.innerHTML);
   assertEquals('', text.final_.innerHTML);
 };

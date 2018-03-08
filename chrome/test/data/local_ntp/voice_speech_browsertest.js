@@ -106,6 +106,13 @@ test.speech.viewState = {};
 
 
 /**
+ * Represents the target of the view's window click event.
+ * @type {object}
+ */
+test.speech.viewClickTarget = {};
+
+
+/**
  * Set up the text DOM and test environment.
  */
 test.speech.setUp = function() {
@@ -132,6 +139,9 @@ test.speech.setUp = function() {
   // Mock view functions.
   test.speech.stubs.replace(view, 'hide', () => test.speech.viewActiveCount--);
   test.speech.stubs.replace(view, 'init', () => {});
+  test.speech.stubs.replace(view, 'onWindowClick_', (event) => {
+    test.speech.viewClickTarget = event.target;
+  });
   test.speech.stubs.replace(
       view, 'setReadyForSpeech', () => test.speech.viewState.ready = true);
   test.speech.stubs.replace(
@@ -244,6 +254,27 @@ test.speech.testOmniboxFocusWithWorkingView = function() {
 
   speech.onOmniboxFocused();
   test.speech.validateInactive();
+};
+
+/**
+ * Tests that with everything OK, focusing the Omnibox using keyboard navigation
+ * does not terminate speech.
+ */
+test.speech.testOmniboxFocusWithKeyboardNavigationDoesNotAbort = function() {
+  test.speech.initSpeech();
+  const tabKey = new KeyboardEvent('test', {code: 'Tab'});
+  speech.start();
+
+  assertEquals(speech.State_.STARTED, speech.currentState_);
+  assertEquals(1, test.speech.recognitionActiveCount);
+  assertEquals(1, test.speech.viewActiveCount);
+  assertTrue(speech.isRecognizing());
+  assertTrue(test.speech.clock.isTimeoutSet(speech.idleTimer_));
+  assertFalse(test.speech.clock.isTimeoutSet(speech.errorTimer_));
+
+  speech.onKeyDown(tabKey);
+  speech.onOmniboxFocused();
+  assertTrue(speech.isRecognizing());
 };
 
 
@@ -725,6 +756,57 @@ test.speech.testClickToRetryWhenNotStopped = function() {
       /*submitQuery=*/false, /*shouldRetry=*/true, /*navigatingAway=*/false);
 
   test.speech.validateInactive();
+};
+
+
+/**
+ * Tests keyboard navigation on the support link.
+ */
+test.speech.testKeyboardNavigationOnSupportLink = function() {
+  test.speech.initSpeech();
+  const fakeKeyboardEvent = {
+    target: {id: text.SUPPORT_LINK_ID},
+    code: KEYCODE.ENTER,
+    stopPropagation: () => {}
+  };
+  speech.start();
+
+  speech.onKeyDown(fakeKeyboardEvent);
+  assertEquals(text.SUPPORT_LINK_ID, test.speech.viewClickTarget.id);
+};
+
+
+/**
+ * Tests keyboard navigation on the retry link.
+ */
+test.speech.testKeyboardNavigationOnRetryLink = function() {
+  test.speech.initSpeech();
+  const fakeKeyboardEvent = {
+    target: {id: text.RETRY_LINK_ID},
+    code: KEYCODE.SPACE,
+    stopPropagation: () => {}
+  };
+  speech.start();
+
+  speech.onKeyDown(fakeKeyboardEvent);
+  assertEquals(text.RETRY_LINK_ID, test.speech.viewClickTarget.id);
+};
+
+
+/**
+ * Tests keyboard navigation on the close button.
+ */
+test.speech.testKeyboardNavigationOnCloseButton = function() {
+  test.speech.initSpeech();
+  const fakeKeyboardEvent = {
+    target: {id: view.CLOSE_BUTTON_ID},
+    code: KEYCODE.NUMPAD_ENTER,
+    stopPropagation: () => {}
+  };
+  speech.start();
+
+  speech.onKeyDown(fakeKeyboardEvent);
+  assertEquals(view.CLOSE_BUTTON_ID, test.speech.viewClickTarget.id);
 };
 
 
