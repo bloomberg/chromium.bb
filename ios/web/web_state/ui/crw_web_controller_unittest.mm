@@ -562,15 +562,20 @@ class CRWWebControllerDownloadTest : public CRWWebControllerTest {
   // and waits for decision handler call. Returns false if decision handler call
   // times out.
   bool CallDecidePolicyForNavigationResponseWithResponse(
-      NSURLResponse* response) WARN_UNUSED_RESULT {
+      NSURLResponse* response,
+      BOOL for_main_frame) WARN_UNUSED_RESULT {
     CRWFakeWKNavigationResponse* navigation_response =
         [[CRWFakeWKNavigationResponse alloc] init];
     navigation_response.response = response;
+    navigation_response.forMainFrame = for_main_frame;
 
     // Wait for decidePolicyForNavigationResponse: callback.
     __block bool callback_called = false;
-    [navigation_delegate_ webView:mock_web_view_
-        didStartProvisionalNavigation:nil];
+    if (for_main_frame) {
+      // webView:didStartProvisionalNavigation: is not called for iframes.
+      [navigation_delegate_ webView:mock_web_view_
+          didStartProvisionalNavigation:nil];
+    }
     [navigation_delegate_ webView:mock_web_view_
         decidePolicyForNavigationResponse:navigation_response
                           decisionHandler:^(WKNavigationResponsePolicy policy) {
@@ -598,7 +603,8 @@ TEST_F(CRWWebControllerDownloadTest, CreationWithNSURLResponse) {
                                 MIMEType:@(kTestMimeType)
                    expectedContentLength:content_length
                         textEncodingName:nil];
-  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(response));
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES));
 
   // Verify that download task was created.
   ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
@@ -626,7 +632,8 @@ TEST_F(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
       headerFields:@{
         @"content-disposition" : @(kContentDisposition),
       }];
-  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(response));
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES));
 
   // Verify that download task was created.
   ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
@@ -640,6 +647,35 @@ TEST_F(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task->GetTransitionType(),
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
+// the DownloadTask for NSHTTPURLResponse and iframes.
+TEST_F(CRWWebControllerDownloadTest, IFrameCreationWithNSHTTPURLResponse) {
+  // Simulate download response.
+  const char kContentDisposition[] = "attachment; filename=download.test";
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestURLString)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:@{
+        @"content-disposition" : @(kContentDisposition),
+      }];
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/NO));
+
+  // Verify that download task was created.
+  ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
+  DownloadTask* task = delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_TRUE(task);
+  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
+  EXPECT_EQ(-1, task->GetTotalBytes());
+  EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
+  EXPECT_EQ("", task->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(),
+      ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME));
 }
 
 // Tests |currentURLWithTrustLevel:| method.
