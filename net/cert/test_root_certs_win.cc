@@ -65,8 +65,9 @@ struct CryptoAPIInjector {
     // sz_CERT_STORE_PROV_SYSTEM_[A/W] and CERT_STORE_PROV_SYSTEM_A, based
     // on whether or not any third-party CryptoAPI modules have been
     // installed.
-    const CRYPT_OID_FUNC_ENTRY kFunctionToIntercept =
-        { CERT_STORE_PROV_SYSTEM_W, &InterceptedOpenStoreW };
+    const CRYPT_OID_FUNC_ENTRY kFunctionToIntercept = {
+        CERT_STORE_PROV_SYSTEM_W,
+        reinterpret_cast<void*>(&InterceptedOpenStoreW)};
 
     // Inject kFunctionToIntercept at the front of the linked list that
     // crypt32 uses when CertOpenStore is called, replacing the existing

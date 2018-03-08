@@ -623,7 +623,8 @@ class RevocationInjector {
 
   RevocationInjector() {
     const CRYPT_OID_FUNC_ENTRY kInterceptFunction[] = {
-        {CRYPT_DEFAULT_OID, &CertDllVerifyRevocationWithCRLSet},
+        {CRYPT_DEFAULT_OID,
+         reinterpret_cast<void*>(&CertDllVerifyRevocationWithCRLSet)},
     };
     BOOL ok = CryptInstallOIDFunctionAddress(
         NULL, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
