@@ -1591,11 +1591,13 @@ void LayerTreeImpl::AppendSwapPromises(
   new_swap_promises.clear();
 }
 
-void LayerTreeImpl::FinishSwapPromises(viz::CompositorFrameMetadata* metadata) {
+void LayerTreeImpl::FinishSwapPromises(
+    viz::CompositorFrameMetadata* metadata,
+    FrameTokenAllocator* frame_token_allocator) {
   for (const auto& swap_promise : swap_promise_list_)
-    swap_promise->WillSwap(metadata);
+    swap_promise->WillSwap(metadata, frame_token_allocator);
   for (const auto& swap_promise : pinned_swap_promise_list_)
-    swap_promise->WillSwap(metadata);
+    swap_promise->WillSwap(metadata, frame_token_allocator);
 }
 
 void LayerTreeImpl::ClearSwapPromises() {

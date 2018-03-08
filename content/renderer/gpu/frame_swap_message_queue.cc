@@ -208,10 +208,6 @@ void FrameSwapMessageQueue::TransferMessages(
   source->clear();
 }
 
-uint32_t FrameSwapMessageQueue::AllocateFrameToken() {
-  return ++last_used_frame_token_;
-}
-
 void FrameSwapMessageQueue::NotifyFramesAreDiscarded(
     bool frames_are_discarded) {
   DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);

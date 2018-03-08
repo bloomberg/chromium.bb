@@ -11,6 +11,8 @@
 
 namespace cc {
 
+class FrameTokenAllocator;
+
 // Observes RenderFrameMetadata associated with the submission of a frame.
 // LayerTreeHostImpl will create the metadata when submitting a CompositorFrame.
 //
@@ -22,7 +24,8 @@ class CC_EXPORT RenderFrameMetadataObserver {
 
   // Binds on the current thread. This should only be called from the compositor
   // thread.
-  virtual void BindToCurrentThread() = 0;
+  virtual void BindToCurrentThread(
+      FrameTokenAllocator* frame_token_allocator) = 0;
 
   // Notification of the RendarFrameMetadata for the frame being submitted to
   // the display compositor.

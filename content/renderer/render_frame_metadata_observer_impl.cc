@@ -4,6 +4,8 @@
 
 #include "content/renderer/render_frame_metadata_observer_impl.h"
 
+#include "cc/trees/frame_token_allocator.h"
+
 namespace content {
 
 RenderFrameMetadataObserverImpl::RenderFrameMetadataObserverImpl(
@@ -15,8 +17,10 @@ RenderFrameMetadataObserverImpl::RenderFrameMetadataObserverImpl(
 
 RenderFrameMetadataObserverImpl::~RenderFrameMetadataObserverImpl() {}
 
-void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
+void RenderFrameMetadataObserverImpl::BindToCurrentThread(
+    cc::FrameTokenAllocator* frame_token_allocator) {
   DCHECK(request_.is_pending());
+  frame_token_allocator_ = frame_token_allocator;
   render_frame_metadata_observer_binding_.Bind(std::move(request_));
   render_frame_metadata_observer_client_.Bind(std::move(client_info_));
 }
