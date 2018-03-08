@@ -30,11 +30,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
  public:
   ~NGContainerFragmentBuilder() override;
 
-  LayoutUnit InlineSize() const { return inline_size_; }
+  LayoutUnit InlineSize() const { return size_.inline_size; }
+  LayoutUnit BlockSize() const { return size_.block_size; }
+  const NGLogicalSize& Size() const { return size_; }
   NGContainerFragmentBuilder& SetInlineSize(LayoutUnit);
-  void SetBlockSize(LayoutUnit block_size) { block_size_ = block_size; }
-
-  virtual NGLogicalSize Size() const = 0;
+  void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
   // The NGBfcOffset is where this fragment was positioned within the BFC. If
   // it is not set, this fragment may be placed anywhere within the BFC.
@@ -165,8 +165,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
                              WritingMode,
                              TextDirection);
 
-  LayoutUnit inline_size_;
-  LayoutUnit block_size_;
+  NGLogicalSize size_;
 
   WTF::Optional<NGBfcOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;

@@ -24,7 +24,7 @@ NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetInlineSize(
     LayoutUnit inline_size) {
   DCHECK_GE(inline_size, LayoutUnit());
-  inline_size_ = inline_size;
+  size_.inline_size = inline_size;
   return *this;
 }
 
@@ -172,8 +172,8 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 
   descendant_candidates->ReserveCapacity(oof_positioned_candidates_.size());
 
-  DCHECK_GE(inline_size_, LayoutUnit());
-  DCHECK_GE(block_size_, LayoutUnit());
+  DCHECK_GE(InlineSize(), LayoutUnit());
+  DCHECK_GE(BlockSize(), LayoutUnit());
   NGPhysicalSize builder_physical_size{
       Size().ConvertToPhysical(GetWritingMode())};
 
@@ -214,7 +214,7 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 String NGContainerFragmentBuilder::ToString() const {
   StringBuilder builder;
   builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %zu\n",
-                                inline_size_.ToFloat(), block_size_.ToFloat(),
+                                InlineSize().ToFloat(), BlockSize().ToFloat(),
                                 children_.size()));
   for (auto& child : children_) {
     builder.Append(child->DumpFragmentTree(

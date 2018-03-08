@@ -42,8 +42,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
-  NGLogicalSize Size() const final { return {inline_size_, block_size_}; }
-
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
   NGFragmentBuilder& SetPadding(const NGBoxStrut&);
 

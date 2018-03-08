@@ -31,11 +31,11 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   void Reset();
 
-  NGLogicalSize Size() const final;
+  LayoutUnit LineHeight() const;
   LayoutUnit ComputeBlockSize() const;
 
-  void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
+  void SetMetrics(const NGLineHeightMetrics&);
 
   void SwapPositionedFloats(Vector<NGPositionedFloat>*);
 

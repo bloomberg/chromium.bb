@@ -184,8 +184,8 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
     const NGStaticPosition& static_position,
     LayoutObject* inline_container) {
-  DCHECK_GE(inline_size_, LayoutUnit());
-  DCHECK_GE(block_size_, LayoutUnit());
+  DCHECK_GE(InlineSize(), LayoutUnit());
+  DCHECK_GE(BlockSize(), LayoutUnit());
 
   NGOutOfFlowPositionedDescendant descendant{node, static_position,
                                              inline_container};
@@ -197,21 +197,21 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
       if (IsLtr(Direction()))
         zero_offset = NGLogicalOffset();
       else
-        zero_offset = NGLogicalOffset(inline_size_, LayoutUnit());
+        zero_offset = NGLogicalOffset(InlineSize(), LayoutUnit());
       break;
     case WritingMode::kVerticalRl:
     case WritingMode::kSidewaysRl:
       if (IsLtr(Direction()))
-        zero_offset = NGLogicalOffset(LayoutUnit(), block_size_);
+        zero_offset = NGLogicalOffset(LayoutUnit(), BlockSize());
       else
-        zero_offset = NGLogicalOffset(inline_size_, block_size_);
+        zero_offset = NGLogicalOffset(InlineSize(), BlockSize());
       break;
     case WritingMode::kVerticalLr:
     case WritingMode::kSidewaysLr:
       if (IsLtr(Direction()))
         zero_offset = NGLogicalOffset();
       else
-        zero_offset = NGLogicalOffset(inline_size_, LayoutUnit());
+        zero_offset = NGLogicalOffset(InlineSize(), LayoutUnit());
       break;
   }
   oof_positioned_candidates_.push_back(
@@ -322,10 +322,9 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
     NGLogicalSize* container_size) {
   // This function has detailed knowledge of inline fragment tree structure,
   // and will break if this changes.
-  DCHECK_GE(inline_size_, LayoutUnit());
-  DCHECK_GE(block_size_, LayoutUnit());
-  container_size->inline_size = inline_size_;
-  container_size->block_size = block_size_;
+  DCHECK_GE(InlineSize(), LayoutUnit());
+  DCHECK_GE(BlockSize(), LayoutUnit());
+  *container_size = Size();
 
   for (size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {

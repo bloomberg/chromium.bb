@@ -29,11 +29,11 @@ void NGLineBoxFragmentBuilder::Reset() {
   children_.clear();
   offsets_.clear();
   metrics_ = NGLineHeightMetrics();
-  inline_size_ = LayoutUnit();
+  size_.inline_size = LayoutUnit();
 }
 
-NGLogicalSize NGLineBoxFragmentBuilder::Size() const {
-  return {inline_size_, metrics_.LineHeight().ClampNegativeToZero()};
+LayoutUnit NGLineBoxFragmentBuilder::LineHeight() const {
+  return metrics_.LineHeight().ClampNegativeToZero();
 }
 
 LayoutUnit NGLineBoxFragmentBuilder::ComputeBlockSize() const {
@@ -120,8 +120,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   WritingMode writing_mode(node_.Style().GetWritingMode());
-  NGPhysicalSize physical_size =
-      NGLogicalSize(inline_size_, block_size_).ConvertToPhysical(writing_mode);
+  NGPhysicalSize physical_size = Size().ConvertToPhysical(writing_mode);
 
   NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
