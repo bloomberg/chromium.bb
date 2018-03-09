@@ -15,9 +15,33 @@
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/user/rounded_image_view.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
+
+namespace {
+
+views::View* CreateUserAvatarView() {
+  DCHECK(Shell::Get());
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(0);
+
+  auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
+  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
+    gfx::ImageSkia icon =
+        gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
+    image_view->SetImage(icon, icon.size());
+  } else {
+    image_view->SetImage(user_session->user_info->avatar,
+                         gfx::Size(kTrayItemSize, kTrayItemSize));
+  }
+
+  return image_view;
+}
+
+}  // namespace
 
 TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     : controller_(controller) {
@@ -27,6 +51,8 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing);
   layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+
+  AddChildView(CreateUserAvatarView());
 
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
