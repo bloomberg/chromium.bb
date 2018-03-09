@@ -4,6 +4,7 @@
 
 #include "ash/system/power/power_button_controller.h"
 
+#include <limits>
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
@@ -22,6 +23,7 @@
 #include "base/command_line.h"
 #include "base/time/default_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/views/widget/widget.h"
 
@@ -239,8 +241,10 @@ void PowerButtonController::OnDisplayModeChanged(
       internal_display_off && external_display_on;
 }
 
-void PowerButtonController::BrightnessChanged(int level, bool user_initiated) {
-  brightness_is_zero_ = level == 0;
+void PowerButtonController::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  brightness_is_zero_ =
+      change.percent() <= std::numeric_limits<double>::epsilon();
 }
 
 void PowerButtonController::PowerButtonEventReceived(

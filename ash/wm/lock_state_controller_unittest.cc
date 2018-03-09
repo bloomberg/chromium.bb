@@ -32,6 +32,11 @@
 namespace ash {
 namespace {
 
+// Shorthand for some long constants.
+constexpr power_manager::BacklightBrightnessChange_Cause kUserCause =
+    power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+constexpr power_manager::BacklightBrightnessChange_Cause kOtherCause =
+    power_manager::BacklightBrightnessChange_Cause_OTHER;
 bool cursor_visible() {
   return Shell::Get()->cursor_manager()->IsCursorVisible();
 }
@@ -89,6 +94,15 @@ class LockStateControllerTest : public PowerButtonTestBase {
   void AdvancePartially(SessionStateAnimator::AnimationSpeed speed,
                         float factor) {
     test_animator_->Advance(test_animator_->GetDuration(speed) * factor);
+  }
+
+  void SendBrightnessChange(
+      double percent,
+      power_manager::BacklightBrightnessChange_Cause cause) {
+    power_manager::BacklightBrightnessChange change;
+    change.set_percent(percent);
+    change.set_cause(cause);
+    power_manager_client_->SendScreenBrightnessChanged(change);
   }
 
   void ExpectPreLockAnimationStarted() {
@@ -342,14 +356,14 @@ TEST_F(LockStateControllerTest, LegacyIgnorePowerButtonIfScreenIsOff) {
 
   // When the screen brightness is at 0%, we shouldn't do anything in response
   // to power button presses.
-  power_manager_client_->SendBrightnessChanged(0, true);
+  SendBrightnessChange(0, kUserCause);
   PressPowerButton();
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
   ReleasePowerButton();
 
   // After increasing the brightness to 10%, we should start the timer like
   // usual.
-  power_manager_client_->SendBrightnessChanged(10, true);
+  SendBrightnessChange(10, kUserCause);
   PressPowerButton();
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
   ReleasePowerButton();
@@ -378,7 +392,7 @@ TEST_F(LockStateControllerTest, LegacyHonorPowerButtonInDockedMode) {
 
   // When all of the displays are turned off (e.g. due to user inactivity), the
   // power button should be ignored.
-  power_manager_client_->SendBrightnessChanged(0, true);
+  SendBrightnessChange(0, kUserCause);
   internal_display->set_current_mode(nullptr);
   external_display->set_current_mode(nullptr);
   power_button_controller_->OnDisplayModeChanged(outputs);
@@ -637,13 +651,13 @@ TEST_F(LockStateControllerTest, DisableTouchscreenForScreenOff) {
   base::RunLoop().RunUntilIdle();
 
   // Manually turn the screen off and check that the touchscreen is enabled.
-  power_manager_client_->SendBrightnessChanged(0, true /* user_initiated */);
+  SendBrightnessChange(0, kUserCause);
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
       TouchscreenEnabledSource::GLOBAL));
 
   // It should be disabled if the screen is turned off due to user inactivity.
-  power_manager_client_->SendBrightnessChanged(100, true /* user_initiated */);
-  power_manager_client_->SendBrightnessChanged(0, false /* user_initiated */);
+  SendBrightnessChange(100, kUserCause);
+  SendBrightnessChange(0, kOtherCause);
   EXPECT_FALSE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
       TouchscreenEnabledSource::GLOBAL));
 }
@@ -660,7 +674,7 @@ TEST_F(LockStateControllerTest, TouchscreenUnableWhileScreenOff) {
   base::RunLoop().RunUntilIdle();
 
   // The touchscreen should remain enabled.
-  power_manager_client_->SendBrightnessChanged(0, false /* user_initiated */);
+  SendBrightnessChange(0, kOtherCause);
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
       TouchscreenEnabledSource::GLOBAL));
 }

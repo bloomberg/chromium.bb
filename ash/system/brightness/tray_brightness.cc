@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
@@ -239,11 +240,14 @@ bool TrayBrightness::ShouldShowShelf() const {
   return false;
 }
 
-void TrayBrightness::BrightnessChanged(int level, bool user_initiated) {
+void TrayBrightness::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_BRIGHTNESS_CHANGED);
-  double percent = static_cast<double>(level);
-  HandleBrightnessChanged(percent, user_initiated);
+  const bool user_initiated =
+      change.cause() ==
+      power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+  HandleBrightnessChanged(change.percent(), user_initiated);
 }
 
 void TrayBrightness::HandleBrightnessChanged(double percent,

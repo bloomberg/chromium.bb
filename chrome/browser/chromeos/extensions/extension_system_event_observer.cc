@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -21,9 +22,12 @@ ExtensionSystemEventObserver::~ExtensionSystemEventObserver() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
-void ExtensionSystemEventObserver::BrightnessChanged(int level,
-                                                     bool user_initiated) {
-  extensions::DispatchBrightnessChangedEvent(level, user_initiated);
+void ExtensionSystemEventObserver::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  const bool user_initiated =
+      change.cause() ==
+      power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+  extensions::DispatchBrightnessChangedEvent(change.percent(), user_initiated);
 }
 
 void ExtensionSystemEventObserver::SuspendDone(

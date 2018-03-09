@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 
 namespace ash {
 
@@ -51,10 +52,14 @@ BacklightsForcedOffSetter::ForceBacklightsOff() {
   return scoped_backlights_forced_off;
 }
 
-void BacklightsForcedOffSetter::BrightnessChanged(int level,
-                                                  bool user_initiated) {
+void BacklightsForcedOffSetter::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  const bool user_initiated =
+      change.cause() ==
+      power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
+
   const ScreenState old_state = screen_state_;
-  if (level != 0)
+  if (change.percent() > 0.0)
     screen_state_ = ScreenState::ON;
   else
     screen_state_ = user_initiated ? ScreenState::OFF : ScreenState::OFF_AUTO;

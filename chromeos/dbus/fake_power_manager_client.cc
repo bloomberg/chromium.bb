@@ -61,9 +61,13 @@ void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
   screen_brightness_percent_ = percent;
   requested_screen_brightness_percent_ = percent;
 
+  power_manager::BacklightBrightnessChange change;
+  change.set_percent(percent);
+  change.set_cause(power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakePowerManagerClient::SendBrightnessChanged,
-                                weak_ptr_factory_.GetWeakPtr(), percent, true));
+      FROM_HERE,
+      base::BindOnce(&FakePowerManagerClient::SendScreenBrightnessChanged,
+                     weak_ptr_factory_.GetWeakPtr(), change));
 }
 
 void FakePowerManagerClient::GetScreenBrightnessPercent(
@@ -145,17 +149,21 @@ void FakePowerManagerClient::SetBacklightsForcedOff(bool forced_off) {
   backlights_forced_off_ = forced_off;
   ++num_set_backlights_forced_off_calls_;
 
-  double target_brightness =
-      forced_off ? 0 : requested_screen_brightness_percent_;
+  power_manager::BacklightBrightnessChange change;
+  change.set_percent(forced_off ? 0 : requested_screen_brightness_percent_);
+  change.set_cause(
+      forced_off ? power_manager::BacklightBrightnessChange_Cause_FORCED_OFF
+                 : power_manager::
+                       BacklightBrightnessChange_Cause_NO_LONGER_FORCED_OFF);
+
   if (enqueue_brightness_changes_on_backlights_forced_off_) {
-    pending_brightness_changes_.push(target_brightness);
+    pending_screen_brightness_changes_.push(change);
   } else {
-    screen_brightness_percent_ = target_brightness;
+    screen_brightness_percent_ = change.percent();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&FakePowerManagerClient::SendBrightnessChanged,
-                       weak_ptr_factory_.GetWeakPtr(), target_brightness,
-                       false));
+        base::BindOnce(&FakePowerManagerClient::SendScreenBrightnessChanged,
+                       weak_ptr_factory_.GetWeakPtr(), change));
   }
 }
 
@@ -217,17 +225,16 @@ void FakePowerManagerClient::SendDarkSuspendImminent() {
     observer.DarkSuspendImminent();
 }
 
-void FakePowerManagerClient::SendBrightnessChanged(int level,
-                                                   bool user_initiated) {
+void FakePowerManagerClient::SendScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
   for (auto& observer : observers_)
-    observer.BrightnessChanged(level, user_initiated);
+    observer.ScreenBrightnessChanged(change);
 }
 
 void FakePowerManagerClient::SendKeyboardBrightnessChanged(
-    int level,
-    bool user_initiated) {
+    const power_manager::BacklightBrightnessChange& change) {
   for (auto& observer : observers_)
-    observer.KeyboardBrightnessChanged(level, user_initiated);
+    observer.KeyboardBrightnessChanged(change);
 }
 
 void FakePowerManagerClient::SendScreenIdleStateChanged(
@@ -286,16 +293,16 @@ void FakePowerManagerClient::SetPowerPolicyQuitClosure(
   power_policy_quit_closure_ = std::move(quit_closure);
 }
 
-bool FakePowerManagerClient::ApplyPendingBrightnessChange() {
-  if (pending_brightness_changes_.empty())
+bool FakePowerManagerClient::ApplyPendingScreenBrightnessChange() {
+  if (pending_screen_brightness_changes_.empty())
     return false;
-  double brightness = pending_brightness_changes_.front();
-  pending_brightness_changes_.pop();
 
-  DCHECK(brightness == 0 || brightness == requested_screen_brightness_percent_);
+  power_manager::BacklightBrightnessChange change =
+      pending_screen_brightness_changes_.front();
+  pending_screen_brightness_changes_.pop();
 
-  screen_brightness_percent_ = brightness;
-  SendBrightnessChanged(brightness, false);
+  screen_brightness_percent_ = change.percent();
+  SendScreenBrightnessChanged(change);
   return true;
 }
 

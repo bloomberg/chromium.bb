@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -190,18 +191,18 @@ void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
   power_instance->Resume();
 }
 
-void ArcPowerBridge::BrightnessChanged(int level, bool user_initiated) {
-  double percent = static_cast<double>(level);
+void ArcPowerBridge::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
   const base::TimeTicks now = base::TimeTicks::Now();
   if (last_brightness_changed_time_.is_null() ||
       (now - last_brightness_changed_time_) >= kNotifyBrightnessDelay) {
-    UpdateAndroidScreenBrightness(percent);
+    UpdateAndroidScreenBrightness(change.percent());
     notify_brightness_timer_.Stop();
   } else {
     notify_brightness_timer_.Start(
         FROM_HERE, kNotifyBrightnessDelay,
         base::Bind(&ArcPowerBridge::UpdateAndroidScreenBrightness,
-                   weak_ptr_factory_.GetWeakPtr(), percent));
+                   weak_ptr_factory_.GetWeakPtr(), change.percent()));
   }
   last_brightness_changed_time_ = now;
 }

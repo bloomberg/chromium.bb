@@ -65,7 +65,8 @@ class ASH_EXPORT BacklightsForcedOffSetter
   std::unique_ptr<ScopedBacklightsForcedOff> ForceBacklightsOff();
 
   // Overridden from chromeos::PowerManagerClient::Observer:
-  void BrightnessChanged(int level, bool user_initiated) override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
   void PowerManagerRestarted() override;
 
   // Resets internal state for tests.

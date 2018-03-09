@@ -34,7 +34,8 @@ class ASH_EXPORT TrayKeyboardBrightness
   bool ShouldShowShelf() const override;
 
   // Overriden from PowerManagerClient::Observer.
-  void KeyboardBrightnessChanged(int level, bool user_initiated) override;
+  void KeyboardBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   tray::KeyboardBrightnessView* brightness_view_ = nullptr;
 

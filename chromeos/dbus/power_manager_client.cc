@@ -25,6 +25,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
@@ -360,19 +361,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
     // brightness level in Chrome as it'll make things less reliable.
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
-        power_manager::kBrightnessChangedSignal,
-        base::Bind(&PowerManagerClientImpl::BrightnessChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        power_manager::kScreenBrightnessChangedSignal,
+        base::BindRepeating(
+            &PowerManagerClientImpl::ScreenBrightnessChangedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&PowerManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kKeyboardBrightnessChangedSignal,
-        base::Bind(&PowerManagerClientImpl::KeyboardBrightnessChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(
+            &PowerManagerClientImpl::KeyboardBrightnessChangedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&PowerManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
@@ -503,36 +506,34 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
   }
 
-  void BrightnessChangedReceived(dbus::Signal* signal) {
+  void ScreenBrightnessChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    int32_t brightness_level = 0;
-    bool user_initiated = 0;
-    if (!(reader.PopInt32(&brightness_level) &&
-          reader.PopBool(&user_initiated))) {
-      POWER_LOG(ERROR) << "Brightness changed signal had incorrect parameters: "
-                       << signal->ToString();
+    power_manager::BacklightBrightnessChange proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      POWER_LOG(ERROR) << "Unable to decode protocol buffer from "
+                       << power_manager::kScreenBrightnessChangedSignal
+                       << " signal";
       return;
     }
-    POWER_LOG(DEBUG) << "Brightness changed to " << brightness_level
-                     << ": user initiated " << user_initiated;
+    POWER_LOG(DEBUG) << "Screen brightness changed to " << proto.percent()
+                     << ": cause " << proto.cause();
     for (auto& observer : observers_)
-      observer.BrightnessChanged(brightness_level, user_initiated);
+      observer.ScreenBrightnessChanged(proto);
   }
 
   void KeyboardBrightnessChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    int32_t brightness_level = 0;
-    bool user_initiated = 0;
-    if (!(reader.PopInt32(&brightness_level) &&
-          reader.PopBool(&user_initiated))) {
-      POWER_LOG(ERROR) << "Keyboard brightness changed signal had incorrect "
-                       << "parameters: " << signal->ToString();
+    power_manager::BacklightBrightnessChange proto;
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      POWER_LOG(ERROR) << "Unable to decode protocol buffer from "
+                       << power_manager::kKeyboardBrightnessChangedSignal
+                       << " signal";
       return;
     }
-    POWER_LOG(DEBUG) << "Keyboard brightness changed to " << brightness_level
-                     << ": user initiated " << user_initiated;
+    POWER_LOG(DEBUG) << "Keyboard brightness changed to " << proto.percent()
+                     << ": cause " << proto.cause();
     for (auto& observer : observers_)
-      observer.KeyboardBrightnessChanged(brightness_level, user_initiated);
+      observer.KeyboardBrightnessChanged(proto);
   }
 
   void ScreenIdleStateChangedReceived(dbus::Signal* signal) {

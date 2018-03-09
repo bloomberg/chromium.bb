@@ -150,7 +150,10 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
   // Check that Chrome OS brightness changes are passed to Android.
   const double kUpdatedBrightness = 45.0;
   power_manager_client_->set_screen_brightness_percent(kUpdatedBrightness);
-  power_manager_client_->SendBrightnessChanged(kUpdatedBrightness, true);
+  power_manager::BacklightBrightnessChange change;
+  change.set_percent(kUpdatedBrightness);
+  change.set_cause(power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+  power_manager_client_->SendScreenBrightnessChanged(change);
   EXPECT_DOUBLE_EQ(kUpdatedBrightness, power_instance_->screen_brightness());
 
   // Requests from Android should update the Chrome OS brightness.
@@ -162,7 +165,8 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
   // To prevent battles between Chrome OS and Android, the updated brightness
   // shouldn't be passed to Android immediately, but it should be passed after
   // the timer fires.
-  power_manager_client_->SendBrightnessChanged(kAndroidBrightness, true);
+  change.set_percent(kAndroidBrightness);
+  power_manager_client_->SendScreenBrightnessChanged(change);
   EXPECT_DOUBLE_EQ(kUpdatedBrightness, power_instance_->screen_brightness());
   ASSERT_TRUE(power_bridge_->TriggerNotifyBrightnessTimerForTesting());
   EXPECT_DOUBLE_EQ(kAndroidBrightness, power_instance_->screen_brightness());
