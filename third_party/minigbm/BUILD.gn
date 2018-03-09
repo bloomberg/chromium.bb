@@ -14,11 +14,11 @@ declare_args() {
   use_system_minigbm = false
 
   use_amdgpu_minigbm = false
-  use_amlogic_minigbm = false
   use_exynos_minigbm = false
   use_intel_minigbm = false
   use_marvell_minigbm = false
   use_mediatek_minigbm = false
+  use_meson_minigbm = false
   use_msm_minigbm = false
   use_radeon_minigbm = false
   use_rockchip_minigbm = false
@@ -33,9 +33,6 @@ if (!use_system_minigbm) {
     if (use_amdgpu_minigbm) {
       defines += [ "DRV_AMDGPU" ]
     }
-    if (use_amlogic_minigbm) {
-      defines += [ "DRV_AMLOGIC" ]
-    }
     if (use_exynos_minigbm) {
       defines += [ "DRV_EXYNOS" ]
     }
@@ -48,8 +45,8 @@ if (!use_system_minigbm) {
     if (use_mediatek_minigbm) {
       defines += [ "DRV_MEDIATEK" ]
     }
-    if (use_msm_minigbm) {
-      defines += [ "DRV_MSM" ]
+    if (use_meson_minigbm) {
+      defines += [ "DRV_MESON" ]
     }
     if (use_msm_minigbm) {
       defines += [ "DRV_MSM" ]
@@ -71,7 +68,6 @@ if (!use_system_minigbm) {
   shared_library("minigbm") {
     sources = [
       "src/amdgpu.c",
-      "src/amlogic.c",
       "src/drv.c",
       "src/evdi.c",
       "src/exynos.c",
@@ -82,6 +78,7 @@ if (!use_system_minigbm) {
       "src/i915.c",
       "src/marvell.c",
       "src/mediatek.c",
+      "src/meson.c",
       "src/msm.c",
       "src/nouveau.c",
       "src/radeon.c",
@@ -105,6 +102,14 @@ if (!use_system_minigbm) {
     # Clients need this to pick up the shared library correctly.
     all_dependent_configs =
         [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
+
+  # This target is used for Chromecast build, which expects the resulting lib
+  # to have a name <GN target name> + .so
+  group("libminigbm") {
+    deps = [
+      ":minigbm",
+    ]
   }
 }
 
