@@ -54,8 +54,11 @@ VROrientationDevice::VROrientationDevice(
     mojom::SensorProviderPtr* sensor_provider,
     base::OnceClosure ready_callback)
     : ready_callback_(std::move(ready_callback)), binding_(this) {
+  // Use RELATIVE_ORIENTATION_QUATERNION rather than
+  // ABSOLUTE_ORIENTATION_QUATERNION because compass readings can be innacurate
+  // when used indoors.
   (*sensor_provider)
-      ->GetSensor(SensorType::ABSOLUTE_ORIENTATION_QUATERNION,
+      ->GetSensor(SensorType::RELATIVE_ORIENTATION_QUATERNION,
                   base::BindOnce(&VROrientationDevice::SensorReady,
                                  base::Unretained(this)));
 

@@ -70,7 +70,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
     auto init_params = mojom::SensorInitParams::New();
     init_params->sensor = std::move(sensor_ptr_);
     init_params->default_configuration = PlatformSensorConfiguration(
-        SensorTraits<mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION>::
+        SensorTraits<mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION>::
             kDefaultFrequency);
 
     init_params->client_request = mojo::MakeRequest(&sensor_client_ptr_);
@@ -79,7 +79,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
 
     init_params->buffer_offset = SensorReadingSharedBuffer::GetOffset(
-        mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION);
+        mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION);
 
     return init_params;
   }
