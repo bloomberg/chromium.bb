@@ -285,7 +285,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                     nextIndex = currentIndex - 1;
                 }
                 if (mStacks.get(nextIndex).isDisplayable()) {
-                    setActiveStackState(nextIndex == 1);
+                    setActiveStackState(nextIndex);
                 }
             }
 
@@ -1081,7 +1081,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      */
     private void flingStacks(int index) {
         // velocityX is measured in pixel per second.
-        setActiveStackState(index == INCOGNITO_STACK_INDEX);
+        setActiveStackState(index);
         finishScrollStacks();
         requestStackUpdate();
     }
@@ -1226,13 +1226,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     /**
      * Sets the active tab stack.
      *
-     * @param isIncognito True if the model to select is incognito.
-     * @return Whether the tab stack index passed in differed from the currently selected stack.
+     * @param stackIndex Index of the tab stack to be made active.
      */
-    public boolean setActiveStackState(boolean isIncognito) {
-        if (isIncognito == mTabModelSelector.isIncognitoSelected()) return false;
-        mTemporarySelectedStack = isIncognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX;
-        return true;
+    public void setActiveStackState(int stackIndex) {
+        mTemporarySelectedStack = stackIndex;
     }
 
     private void resetScrollData() {
