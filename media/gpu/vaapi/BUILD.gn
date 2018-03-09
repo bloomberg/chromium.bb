@@ -5,6 +5,8 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
+import("//ui/gl/features.gni")
+import("//ui/ozone/ozone.gni")
 
 assert(use_vaapi)
 
@@ -51,35 +53,36 @@ action("libva_generate_stubs") {
 source_set("vaapi") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
-              "va_surface.cc",
-              "va_surface.h",
-              "vaapi_decode_surface.cc",
-              "vaapi_decode_surface.h",
-              "vaapi_jpeg_decode_accelerator.cc",
-              "vaapi_jpeg_decode_accelerator.h",
-              "vaapi_jpeg_decoder.cc",
-              "vaapi_jpeg_decoder.h",
-              "vaapi_jpeg_encode_accelerator.cc",
-              "vaapi_jpeg_encode_accelerator.h",
-              "vaapi_jpeg_encoder.cc",
-              "vaapi_jpeg_encoder.h",
-              "vaapi_picture.cc",
-              "vaapi_picture.h",
-              "vaapi_picture_factory.cc",
-              "vaapi_picture_factory.h",
-              "vaapi_video_decode_accelerator.cc",
-              "vaapi_video_decode_accelerator.h",
-              "vaapi_video_encode_accelerator.cc",
-              "vaapi_video_encode_accelerator.h",
-              "vaapi_h264_accelerator.cc",
-              "vaapi_h264_accelerator.h",
-              "vaapi_vp8_accelerator.cc",
-              "vaapi_vp8_accelerator.h",
-              "vaapi_vp9_accelerator.cc",
-              "vaapi_vp9_accelerator.h",
-              "vaapi_wrapper.cc",
-              "vaapi_wrapper.h",
-            ] + get_target_outputs(":libva_generate_stubs")
+    "va_surface.cc",
+    "va_surface.h",
+    "vaapi_decode_surface.cc",
+    "vaapi_decode_surface.h",
+    "vaapi_h264_accelerator.cc",
+    "vaapi_h264_accelerator.h",
+    "vaapi_jpeg_decode_accelerator.cc",
+    "vaapi_jpeg_decode_accelerator.h",
+    "vaapi_jpeg_decoder.cc",
+    "vaapi_jpeg_decoder.h",
+    "vaapi_jpeg_encode_accelerator.cc",
+    "vaapi_jpeg_encode_accelerator.h",
+    "vaapi_jpeg_encoder.cc",
+    "vaapi_jpeg_encoder.h",
+    "vaapi_picture.cc",
+    "vaapi_picture.h",
+    "vaapi_picture_factory.cc",
+    "vaapi_picture_factory.h",
+    "vaapi_video_decode_accelerator.cc",
+    "vaapi_video_decode_accelerator.h",
+    "vaapi_video_encode_accelerator.cc",
+    "vaapi_video_encode_accelerator.h",
+    "vaapi_vp8_accelerator.cc",
+    "vaapi_vp8_accelerator.h",
+    "vaapi_vp9_accelerator.cc",
+    "vaapi_vp9_accelerator.h",
+    "vaapi_wrapper.cc",
+    "vaapi_wrapper.h",
+  ]
+  sources += get_target_outputs(":libva_generate_stubs")
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
@@ -90,24 +93,34 @@ source_set("vaapi") {
     "//media/gpu:common",
     "//third_party/libyuv",
   ]
+
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
     sources += [
-      "vaapi_tfp_picture.cc",
-      "vaapi_tfp_picture.h",
+      "vaapi_picture_tfp.cc",
+      "vaapi_picture_tfp.h",
     ]
   }
 
-  if (is_linux) {
+  if (ozone_platform_gbm || use_egl) {
     sources += [
-      "vaapi_drm_picture.cc",
-      "vaapi_drm_picture.h",
+      "vaapi_picture_native_pixmap.cc",
+      "vaapi_picture_native_pixmap.h",
     ]
-  }
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    if (ozone_platform_gbm) {
+      sources += [
+        "vaapi_picture_native_pixmap_ozone.cc",
+        "vaapi_picture_native_pixmap_ozone.h",
+      ]
+      deps += [ "//ui/ozone" ]
+    }
+    if (use_egl) {
+      sources += [
+        "vaapi_picture_native_pixmap_egl.cc",
+        "vaapi_picture_native_pixmap_egl.h",
+      ]
+    }
   }
 }
 
