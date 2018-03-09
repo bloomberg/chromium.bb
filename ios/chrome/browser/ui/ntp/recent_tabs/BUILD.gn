@@ -33,6 +33,7 @@ source_set("recent_tabs") {
     "//base",
     "//components/browser_sync",
     "//components/sessions",
+    "//components/strings",
     "//components/sync",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
