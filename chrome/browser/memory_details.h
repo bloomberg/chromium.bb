@@ -19,6 +19,10 @@
 #include "chrome/browser/site_details.h"
 #include "content/public/common/process_type.h"
 
+namespace memory_instrumentation {
+class GlobalMemoryDump;
+}  // namespace memory_instrumentation
+
 // We collect data about each browser process.  A browser may
 // have multiple processes (of course!).  Even IE has multiple
 // processes these days.
@@ -49,10 +53,6 @@ struct ProcessMemoryInformation {
 
   // The process id.
   base::ProcessId pid;
-  // The working set information.
-  base::WorkingSetKBytes working_set;
-  // The committed bytes.
-  base::CommittedKBytes committed;
   // The process version
   base::string16 version;
   // The process product name.
@@ -69,9 +69,8 @@ struct ProcessMemoryInformation {
   RendererProcessType renderer_type;
   // A collection of titles used, i.e. for a tab it'll show all the page titles.
   std::vector<base::string16> titles;
-  // The physical footprint is a macOS concept that tracks anonymous,
-  // non-discardable memory.
-  size_t phys_footprint;
+  // Consistent memory metric for all platforms.
+  size_t private_memory_footprint_kb;
 };
 
 typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;
@@ -169,6 +168,10 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // Collect child process information on the UI thread.  Information about
   // renderer processes is only available there.
   void CollectChildInfoOnUIThread();
+
+  void DidReceiveMemoryDump(
+      bool success,
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   std::vector<ProcessData> process_data_;
 

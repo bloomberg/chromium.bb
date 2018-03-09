@@ -58,13 +58,6 @@ void CollectProcessDataForChromeProcess(
     }
   }
 
-  std::unique_ptr<base::ProcessMetrics> metrics =
-      base::ProcessMetrics::CreateProcessMetrics(
-          pid, content::BrowserChildProcessHost::GetPortProvider());
-  metrics->GetCommittedAndWorkingSetKBytes(&info.committed, &info.working_set);
-  base::ProcessMetrics::TaskVMInfo vm_info = metrics->GetTaskVMInfo();
-  info.phys_footprint = vm_info.phys_footprint;
-
   processes->push_back(info);
 }
 

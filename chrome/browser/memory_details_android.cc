@@ -63,7 +63,6 @@ void GetProcessDataMemoryInformation(
 
     std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(*i));
-    metrics->GetWorkingSetKBytes(&pmi.working_set);
 
     // TODO(ssid): Reading "/proc/fd" only works for current process. For child
     // processes, the values need to be computed by the process itself.
