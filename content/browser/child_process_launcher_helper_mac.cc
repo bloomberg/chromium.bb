@@ -13,6 +13,7 @@
 #include "content/browser/mach_broker_mac.h"
 #include "content/browser/sandbox_parameters_mac.h"
 #include "content/grit/content_resources.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -47,7 +48,7 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 
 std::unique_ptr<PosixFileDescriptorInfo>
 ChildProcessLauncherHelper::GetFilesToMap() {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   return CreateDefaultPosixFilesToMap(
       child_process_id(), mojo_client_handle(),
       false /* include_service_required_files */, GetProcessType(),
@@ -242,7 +243,7 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 // static
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
     ChildProcessLauncherHelper::Process process) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   // Client has gone away, so just kill the process.  Using exit code 0 means
   // that UMA won't treat this as a crash.
   process.process.Terminate(RESULT_CODE_NORMAL_EXIT, false);

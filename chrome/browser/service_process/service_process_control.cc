@@ -28,6 +28,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/service_process_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
@@ -338,8 +339,8 @@ ServiceProcessControl::Launcher::Launcher(
 void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notify_task_ = task;
-  BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-                          base::Bind(&Launcher::DoRun, this));
+  content::GetProcessLauncherTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&Launcher::DoRun, this));
 }
 
 ServiceProcessControl::Launcher::~Launcher() {

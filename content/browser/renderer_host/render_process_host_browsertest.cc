@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -356,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererOnProcessReuse) {
   base::WaitableEvent launcher_thread_done(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  BrowserThread::PostTask(
-      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+  GetProcessLauncherTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce([](base::WaitableEvent* done) { done->Signal(); },
                      base::Unretained(&launcher_thread_done)));
   ASSERT_TRUE(launcher_thread_done.TimedWait(TestTimeouts::action_timeout()));

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 
@@ -62,8 +63,8 @@ void ChildProcessLauncher::SetProcessPriority(
     const ChildProcessLauncherPriority& priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Process to_pass = process_.process.Duplicate();
-  BrowserThread::PostTask(
-      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+  GetProcessLauncherTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread,
           helper_, std::move(to_pass), priority));

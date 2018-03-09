@@ -374,21 +374,6 @@ void OnStoppedStartupTracing(const base::FilePath& trace_file) {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-#if defined(OS_ANDROID)
-NOINLINE void ResetThread_PROCESS_LAUNCHER(
-    std::unique_ptr<BrowserProcessSubThread> thread) {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
-}
-#else   // defined(OS_ANDROID)
-NOINLINE void ResetThread_PROCESS_LAUNCHER() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::PROCESS_LAUNCHER);
-}
-#endif  // defined(OS_ANDROID)
-
 NOINLINE void ResetThread_IO(std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
@@ -1022,37 +1007,6 @@ int BrowserMainLoop::CreateThreads() {
         *task_scheduler_init_params.get());
   }
 
-  TRACE_EVENT_BEGIN1("startup", "BrowserMainLoop::CreateThreads:start",
-                     "Thread", "BrowserThread::PROCESS_LAUNCHER");
-
-#if defined(OS_ANDROID)
-  // Android specializes Launcher thread so it is accessible in java.
-  // Note Android never does clean shutdown, so shutdown use-after-free
-  // concerns are not a problem in practice.
-  base::MessageLoop* message_loop = android::LauncherThread::GetMessageLoop();
-  DCHECK(message_loop);
-  // This BrowserThread will use this message loop instead of creating a new
-  // thread. Note that means this/ thread will not be joined on shutdown, and
-  // may cause use-after-free if anything tries to access objects deleted by
-  // AtExitManager, such as non-leaky LazyInstance.
-  process_launcher_thread_.reset(new BrowserProcessSubThread(
-      BrowserThread::PROCESS_LAUNCHER, message_loop));
-#else   // defined(OS_ANDROID)
-  // This thread ID will be backed by a SingleThreadTaskRunner using
-  // |task_traits|.
-  // TODO(gab): WithBaseSyncPrimitives() is likely not required here.
-  base::TaskTraits task_traits = {base::MayBlock(),
-                                  base::WithBaseSyncPrimitives(),
-                                  base::TaskPriority::USER_BLOCKING,
-                                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          task_traits, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-  DCHECK(redirection_task_runner);
-  BrowserThreadImpl::RedirectThreadIDToTaskRunner(
-      BrowserThread::PROCESS_LAUNCHER, std::move(redirection_task_runner));
-#endif  // defined(OS_ANDROID)
-
   // |io_thread_| is created by |PostMainMessageLoopStart()|, but its
   // full initialization is deferred until this point because it requires
   // several dependencies we don't want to depend on so early in startup.
@@ -1205,39 +1159,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   {
     base::ThreadRestrictions::ScopedAllowWait allow_wait_for_join;
-
-    // Must be size_t so we can subtract from it.
-    for (size_t thread_id = BrowserThread::ID_COUNT - 1;
-         thread_id >= (BrowserThread::UI + 1); --thread_id) {
-      // Find the thread object we want to stop. Looping over all valid
-      // BrowserThread IDs and DCHECKing on a missing case in the switch
-      // statement helps avoid a mismatch between this code and the
-      // BrowserThread::ID enumeration.
-      //
-      // The destruction order is the reverse order of occurrence in the
-      // BrowserThread::ID list. The rationale for the order is that he
-      // PROCESS_LAUNCHER thread must be stopped after IO in case the IO thread
-      // posted a task to terminate a process on the process launcher thread.
-      switch (thread_id) {
-        case BrowserThread::PROCESS_LAUNCHER: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
-#if defined(OS_ANDROID)
-          ResetThread_PROCESS_LAUNCHER(std::move(process_launcher_thread_));
-#else   // defined(OS_ANDROID)
-          ResetThread_PROCESS_LAUNCHER();
-#endif  // defined(OS_ANDROID)
-          break;
-        }
-        case BrowserThread::IO: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
-          ResetThread_IO(std::move(io_thread_));
-          break;
-        }
-        case BrowserThread::UI:
-        case BrowserThread::ID_COUNT:
-          NOTREACHED();
-          break;
-      }
+    {
+      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+      ResetThread_IO(std::move(io_thread_));
     }
 
     {

@@ -67,9 +67,6 @@ class CONTENT_EXPORT BrowserThread {
     // The main thread in the browser.
     UI,
 
-    // Used to launch and terminate Chrome processes.
-    PROCESS_LAUNCHER,
-
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
     // Blocking IO should happen in TaskScheduler.
     IO,

@@ -12,7 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-/** This is BrowserThread::PROCESS_LAUNCHER. It is available before native library is loaded. */
+/** This is the process launcher thread. It is available before native library is loaded. */
 @JNINamespace("content::android")
 public final class LauncherThread {
     private static final JavaHandlerThread sThread =

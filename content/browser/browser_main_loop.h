@@ -339,11 +339,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Only the IO thread is a real thread by default, other BrowserThreads are
   // redirected to TaskScheduler under the hood.
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
-#if defined(OS_ANDROID)
-  // On Android, the PROCESS_LAUNCHER thread is handled by Java,
-  // |process_launcher_thread_| is merely a proxy to the real message loop.
-  std::unique_ptr<BrowserProcessSubThread> process_launcher_thread_;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
   // the only user and this use case is going away in
   // https://codereview.chromium.org/2216583003/.
