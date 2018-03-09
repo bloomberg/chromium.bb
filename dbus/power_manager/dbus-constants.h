@@ -53,9 +53,6 @@ const char kIdleActionImminentSignal[] = "IdleActionImminent";
 const char kIdleActionDeferredSignal[] = "IdleActionDeferred";
 const char kScreenIdleStateChangedSignal[] = "ScreenIdleStateChanged";
 const char kInactivityDelaysChangedSignal[] = "InactivityDelaysChanged";
-// TODO(derat): Delete BrightnessChanged once Chrome is using
-// ScreenBrightnessChanged: https://crbug.com/811138
-const char kBrightnessChangedSignal[] = "BrightnessChanged";
 // Values
 const int kBrightnessTransitionGradual = 1;
 const int kBrightnessTransitionInstant = 2;
