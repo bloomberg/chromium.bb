@@ -418,8 +418,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @param time  The current time of the app in ms.
      */
     public void commitOutstandingModelState(long time) {
-        mStacks.get(1).ensureCleaningUpDyingTabs(time);
-        mStacks.get(0).ensureCleaningUpDyingTabs(time);
+        for (int i = 0; i < mStacks.size(); i++) {
+            mStacks.get(i).ensureCleaningUpDyingTabs(time);
+        }
     }
 
     @Override
@@ -568,15 +569,21 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
         boolean animationsWasDone = super.onUpdateAnimation(time, jumpToEnd);
-        boolean finishedView0 = mStacks.get(0).onUpdateViewAnimation(time, jumpToEnd);
-        boolean finishedView1 = mStacks.get(1).onUpdateViewAnimation(time, jumpToEnd);
-        boolean finishedCompositor0 = mStacks.get(0).onUpdateCompositorAnimations(time, jumpToEnd);
-        boolean finishedCompositor1 = mStacks.get(1).onUpdateCompositorAnimations(time, jumpToEnd);
-        if (animationsWasDone && finishedView0 && finishedView1 && finishedCompositor0
-                && finishedCompositor1) {
+
+        boolean finishedAllViews = true;
+        for (int i = 0; i < mStacks.size(); i++) {
+            finishedAllViews &= mStacks.get(i).onUpdateViewAnimation(time, jumpToEnd);
+        }
+
+        boolean finishedAllCompositors = true;
+        for (int i = 0; i < mStacks.size(); i++) {
+            finishedAllCompositors &= mStacks.get(i).onUpdateCompositorAnimations(time, jumpToEnd);
+        }
+
+        if (animationsWasDone && finishedAllViews && finishedAllCompositors) {
             return true;
         } else {
-            if (!animationsWasDone || !finishedCompositor0 || !finishedCompositor1) {
+            if (!animationsWasDone || !finishedAllCompositors) {
                 requestStackUpdate();
             }
 
@@ -773,18 +780,19 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     private void requestStackUpdate() {
-        // TODO(jgreenwald): It isn't always necessary to invalidate both
-        // stacks.
-        mStacks.get(0).requestUpdate();
-        mStacks.get(1).requestUpdate();
+        // TODO(jgreenwald): It isn't always necessary to invalidate all stacks.
+        for (int i = 0; i < mStacks.size(); i++) {
+            mStacks.get(i).requestUpdate();
+        }
     }
 
     @Override
     public void notifySizeChanged(float width, float height, int orientation) {
         mCachedLandscapeViewport = null;
         mCachedPortraitViewport = null;
-        mStacks.get(0).notifySizeChanged(width, height, orientation);
-        mStacks.get(1).notifySizeChanged(width, height, orientation);
+        for (Stack stack : mStacks) {
+            stack.notifySizeChanged(width, height, orientation);
+        }
         resetScrollData();
         requestStackUpdate();
     }
@@ -793,8 +801,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     public void contextChanged(Context context) {
         super.contextChanged(context);
         StackTab.resetDimensionConstants(context);
-        mStacks.get(0).contextChanged(context);
-        mStacks.get(1).contextChanged(context);
+        for (Stack stack : mStacks) {
+            stack.contextChanged(context);
+        }
         requestStackUpdate();
     }
 
@@ -1049,16 +1058,28 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         super.updateLayout(time, dt);
         boolean needUpdate = false;
 
+        if (mStackRects.size() > mStacks.size()) {
+            mStackRects.subList(mStacks.size(), mStackRects.size()).clear();
+        }
+        while (mStackRects.size() < mStacks.size()) mStackRects.add(new RectF());
+
         final PortraitViewport viewport = getViewportParameters();
-        mStackRects.get(0).left = viewport.getStack0Left();
-        mStackRects.get(0).right = mStackRects.get(0).left + viewport.getWidth();
-        mStackRects.get(0).top = viewport.getStack0Top();
-        mStackRects.get(0).bottom = mStackRects.get(0).top + viewport.getHeight();
-        mStackRects.get(1).left =
-                mStackRects.get(0).left + viewport.getStack0ToStack1TranslationX();
-        mStackRects.get(1).right = mStackRects.get(1).left + viewport.getWidth();
-        mStackRects.get(1).top = mStackRects.get(0).top + viewport.getStack0ToStack1TranslationY();
-        mStackRects.get(1).bottom = mStackRects.get(1).top + viewport.getHeight();
+
+        if (!mStackRects.isEmpty()) {
+            mStackRects.get(0).left = viewport.getStack0Left();
+            mStackRects.get(0).right = mStackRects.get(0).left + viewport.getWidth();
+            mStackRects.get(0).top = viewport.getStack0Top();
+            mStackRects.get(0).bottom = mStackRects.get(0).top + viewport.getHeight();
+        }
+
+        for (int i = 1; i < mStackRects.size(); i++) {
+            mStackRects.get(i).left =
+                    mStackRects.get(i - 1).left + viewport.getStack0ToStack1TranslationX();
+            mStackRects.get(i).right = mStackRects.get(i).left + viewport.getWidth();
+            mStackRects.get(i).top =
+                    mStackRects.get(i - 1).top + viewport.getStack0ToStack1TranslationY();
+            mStackRects.get(i).bottom = mStackRects.get(i).top + viewport.getHeight();
+        }
 
         mStacks.get(0).setStackFocusInfo(1.0f + mRenderedScrollOffset,
                 mSortingComparator == mOrderComparator ? mTabModelSelector.getModel(false).index()
@@ -1068,13 +1089,16 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                                                        : -1);
 
         // Compute position and visibility
-        mStacks.get(0).computeTabPosition(time, mStackRects.get(0));
-        mStacks.get(1).computeTabPosition(time, mStackRects.get(1));
+        for (int i = 0; i < mStacks.size(); i++) {
+            mStacks.get(i).computeTabPosition(time, mStackRects.get(i));
+        }
 
         // Pre-allocate/resize {@link #mLayoutTabs} before it get populated by
         // computeTabPositionAndAppendLayoutTabs.
-        final int tabVisibleCount =
-                mStacks.get(0).getVisibleCount() + mStacks.get(1).getVisibleCount();
+        int tabVisibleCount = 0;
+        for (int i = 0; i < mStacks.size(); i++) {
+            tabVisibleCount += mStacks.get(i).getVisibleCount();
+        }
 
         int layoutTabCount = tabVisibleCount + (mNewTabLayoutTab == null ? 0 : 1);
 
@@ -1085,13 +1109,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
 
         int index = 0;
-        if (getTabStackIndex() == 1) {
-            index = appendVisibleLayoutTabs(time, 0, mLayoutTabs, index);
-            index = appendVisibleLayoutTabs(time, 1, mLayoutTabs, index);
-        } else {
-            index = appendVisibleLayoutTabs(time, 1, mLayoutTabs, index);
-            index = appendVisibleLayoutTabs(time, 0, mLayoutTabs, index);
+        for (int i = 0; i < mStacks.size(); i++) {
+            // Append tabs for the current stack last so they get priority in rendering.
+            if (getTabStackIndex() == i) continue;
+            index = appendVisibleLayoutTabs(time, i, mLayoutTabs, index);
         }
+        index = appendVisibleLayoutTabs(time, getTabStackIndex(), mLayoutTabs, index);
         assert index == tabVisibleCount : "index should be incremented up to tabVisibleCount";
 
         // Update tab snapping
@@ -1191,15 +1214,26 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
     }
 
+    /**
+     * Updates mSortedPriorityArray, which stores the list of StackTabs to render, sorted by
+     * rendering priority.
+     *
+     * @param comparator The comparator used to sort the StackTabs.
+     * @return True if at least one Stack has a tab, false if there are no tabs.
+     */
     private boolean updateSortedPriorityArray(Comparator<StackTab> comparator) {
-        final int allTabsCount = mStacks.get(0).getCount() + mStacks.get(1).getCount();
+        int allTabsCount = 0;
+        for (int i = 0; i < mStacks.size(); i++) {
+            allTabsCount += mStacks.get(i).getCount();
+        }
         if (allTabsCount == 0) return false;
         if (mSortedPriorityArray == null || mSortedPriorityArray.length != allTabsCount) {
             mSortedPriorityArray = new StackTab[allTabsCount];
         }
         int sortedOffset = 0;
-        sortedOffset = addAllTabs(mStacks.get(0), mSortedPriorityArray, sortedOffset);
-        sortedOffset = addAllTabs(mStacks.get(1), mSortedPriorityArray, sortedOffset);
+        for (int i = 0; i < mStacks.size(); i++) {
+            sortedOffset = addAllTabs(mStacks.get(i), mSortedPriorityArray, sortedOffset);
+        }
         assert sortedOffset == mSortedPriorityArray.length;
         Arrays.sort(mSortedPriorityArray, comparator);
         return true;
