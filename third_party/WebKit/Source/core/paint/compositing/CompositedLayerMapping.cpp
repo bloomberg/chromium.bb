@@ -1689,6 +1689,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
               LayoutPoint(owning_layer_.SubpixelAccumulation()),
               LayoutSize(layout_box.ScrollWidth(), layout_box.ScrollHeight())))
           .Size();
+  // Ensure scrolling contents are at least as large as the scroll clip
+  scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
 
   if (overflow_clip_rect_offset_changed)
     scrolling_contents_layer_->SetNeedsDisplay();

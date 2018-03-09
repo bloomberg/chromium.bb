@@ -2178,6 +2178,81 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, ViewportScrollbarGeometry) {
+  // Tests for correct behavior of solid color scrollbars on unscrollable pages
+  // under tricky fractional scale/size issues.
+
+  // Nexus 6 viewport size.
+  const gfx::Size viewport_size(412, 604);
+
+  // The content size of a non-scrollable page we'd expect given Android's
+  // behavior of a 980px layout width on non-mobile pages (often ceiled to 981
+  // due to fractions resulting from DSF). Due to floating point error,
+  // viewport_size.height() / minimum_scale ~= 1438.165 < 1439. Ensure we snap
+  // correctly and err on the side of not showing the scrollbars.
+  const gfx::Size content_size(981, 1439);
+  const float minimum_scale =
+      viewport_size.width() / static_cast<float>(content_size.width());
+
+  // Since the page is unscrollable, the outer viewport matches the content
+  // size.
+  const gfx::Size outer_viewport_size = content_size;
+
+  SolidColorScrollbarLayerImpl* v_scrollbar;
+  SolidColorScrollbarLayerImpl* h_scrollbar;
+
+  // Setup
+  {
+    LayerTreeSettings settings = DefaultSettings();
+    CreateHostImpl(settings, CreateLayerTreeFrameSink());
+    LayerTreeImpl* active_tree = host_impl_->active_tree();
+    active_tree->PushPageScaleFromMainThread(1.f, minimum_scale, 4.f);
+
+    CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+    // When Chrome on Android loads a non-mobile page, it resizes the main
+    // frame (outer viewport) such that it matches the width of the content,
+    // preventing horizontal scrolling. Replicate that behavior here.
+    host_impl_->OuterViewportScrollLayer()->SetScrollable(outer_viewport_size);
+    LayerImpl* outer_clip =
+        host_impl_->OuterViewportScrollLayer()->test_properties()->parent;
+    outer_clip->SetBounds(outer_viewport_size);
+
+    // Add scrollbars. They will always exist - even if unscrollable - but their
+    // visibility will be determined by whether the content can be scrolled.
+    {
+      std::unique_ptr<SolidColorScrollbarLayerImpl> v_scrollbar_unique =
+          SolidColorScrollbarLayerImpl::Create(active_tree, 400, VERTICAL, 10,
+                                               0, false, true);
+      std::unique_ptr<SolidColorScrollbarLayerImpl> h_scrollbar_unique =
+          SolidColorScrollbarLayerImpl::Create(active_tree, 401, HORIZONTAL, 10,
+                                               0, false, true);
+      v_scrollbar = v_scrollbar_unique.get();
+      h_scrollbar = h_scrollbar_unique.get();
+
+      LayerImpl* scroll = active_tree->OuterViewportScrollLayer();
+      LayerImpl* root = active_tree->InnerViewportContainerLayer();
+      v_scrollbar_unique->SetScrollElementId(scroll->element_id());
+      h_scrollbar_unique->SetScrollElementId(scroll->element_id());
+      root->test_properties()->AddChild(std::move(v_scrollbar_unique));
+      root->test_properties()->AddChild(std::move(h_scrollbar_unique));
+    }
+
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    host_impl_->active_tree()->DidBecomeActive();
+  }
+
+  // Zoom out to the minimum scale. The scrollbars shoud not be scrollable.
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(0.f);
+  EXPECT_FALSE(v_scrollbar->CanScrollOrientation());
+  EXPECT_FALSE(h_scrollbar->CanScrollOrientation());
+
+  // Zoom in a little and confirm that they're now scrollable.
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(minimum_scale * 1.05f);
+  EXPECT_TRUE(v_scrollbar->CanScrollOrientation());
+  EXPECT_TRUE(h_scrollbar->CanScrollOrientation());
+}
+
 TEST_F(LayerTreeHostImplTest, ViewportScrollOrder) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());

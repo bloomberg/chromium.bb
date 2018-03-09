@@ -484,6 +484,9 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
         PixelSnappedIntRect(
             LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
             .Size();
+    // The scrolling contents layer must be at least as large as the clip.
+    scroll_contents_size =
+        scroll_contents_size.ExpandedTo(container_layer->Bounds());
     web_layer->SetBounds(scroll_contents_size);
     // VisualViewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
