@@ -46,7 +46,7 @@
         TestRunner.addResult('Test function finished.');
 
         TestRunner.addResult('Disabling breakpoints...');
-        Bindings.breakpointManager.setBreakpointsActive(false);
+        Common.moduleSetting('breakpointsActive').set(false);
 
         TestRunner.addResult('Running test function again...');
         ConsoleTestRunner.addConsoleSniffer(testFunctionFinishedForTheSecondTime);
@@ -65,7 +65,7 @@
       function didShowScriptSource(sourceFrame) {
         currentSourceFrame = sourceFrame;
         TestRunner.addResult('Enabling breakpoints...');
-        Bindings.breakpointManager.setBreakpointsActive(true);
+        Common.moduleSetting('breakpointsActive').set(true);
 
         TestRunner.addResult('Running test function...');
         SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);

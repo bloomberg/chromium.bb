@@ -31,7 +31,7 @@
 
   function step3() {
     TestRunner.addResult('Main resource was shown.');
-    if (!Bindings.breakpointManager.breakpointsActive())
+    if (!Common.moduleSetting('breakpointsActive').get())
       TestRunner.addResult('Breakpoints are deactivated.');
     else
       TestRunner.addResult('Error: breakpoints are activated.');
