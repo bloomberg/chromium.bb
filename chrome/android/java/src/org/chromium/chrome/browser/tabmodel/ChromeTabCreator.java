@@ -322,9 +322,15 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 break;
             case FROM_CHROME_UI:
             case FROM_LONGPRESS_FOREGROUND:
-            case FROM_LONGPRESS_BACKGROUND:
             case FROM_LAUNCHER_SHORTCUT:
                 transition = PageTransition.AUTO_TOPLEVEL;
+                break;
+            case FROM_LONGPRESS_BACKGROUND:
+                // On low end devices tabs are backgrounded in a frozen state, so we set the
+                // transition type to RELOAD to avoid handling intents when the tab is foregrounded.
+                // (https://crbug.com/758027)
+                transition = SysUtils.isLowEndDevice() ? PageTransition.RELOAD
+                                                       : PageTransition.AUTO_TOPLEVEL;
                 break;
             default:
                 assert false;
