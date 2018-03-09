@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/vr_features.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/sounds/wav_audio_handler.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -166,6 +167,10 @@ AssetsLoadStatus LoadSound(const base::FilePath& component_install_dir,
   auto buffer = std::make_unique<std::string>();
   if (!base::ReadFileToString(file_path, buffer.get())) {
     return AssetsLoadStatus::kParseFailure;
+  }
+
+  if (!media::WavAudioHandler::Create(*buffer)) {
+    return AssetsLoadStatus::kInvalidContent;
   }
 
   *out_buffer = std::move(buffer);
