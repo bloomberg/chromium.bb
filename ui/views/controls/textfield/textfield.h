@@ -288,9 +288,11 @@ class VIEWS_EXPORT Textfield : public View,
                            const gfx::Point& p) override;
 
   // WordLookupClient overrides:
-  bool GetDecoratedWordAtPoint(const gfx::Point& point,
-                               gfx::DecoratedText* decorated_word,
-                               gfx::Point* baseline_point) override;
+  bool GetWordLookupDataAtPoint(const gfx::Point& point,
+                                gfx::DecoratedText* decorated_word,
+                                gfx::Point* baseline_point) override;
+  bool GetWordLookupDataFromSelection(gfx::DecoratedText* decorated_text,
+                                      gfx::Point* baseline_point) override;
 
   // SelectionControllerDelegate overrides:
   bool HasTextBeingDragged() const override;

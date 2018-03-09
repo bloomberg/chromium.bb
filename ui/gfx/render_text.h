@@ -507,9 +507,19 @@ class GFX_EXPORT RenderText {
   // at the point, returns a nearby word. |baseline_point| should correspond to
   // the baseline point of the leftmost glyph of the |word| in the view's
   // coordinates. Returns false, if no word can be retrieved.
-  bool GetDecoratedWordAtPoint(const Point& point,
-                               DecoratedText* decorated_word,
-                               Point* baseline_point);
+  bool GetWordLookupDataAtPoint(const Point& point,
+                                DecoratedText* decorated_word,
+                                Point* baseline_point);
+
+  // Retrieves the text at |range| along with its styling information.
+  // |baseline_point| should correspond to the baseline point of
+  // the leftmost glyph of the text in the view's coordinates. If the text
+  // spans multiple lines, |baseline_point| will correspond with the leftmost
+  // glyph on the first line in the range. Returns false, if no text can be
+  // retrieved.
+  bool GetLookupDataForRange(const Range& range,
+                             DecoratedText* decorated_text,
+                             Point* baseline_point);
 
   // Retrieves the text in the given |range|.
   base::string16 GetTextFromRange(const Range& range) const;

@@ -4,10 +4,18 @@
 
 #include "ui/views/controls/views_text_services_context_menu.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/memory/ptr_util.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/decorated_text.h"
+#import "ui/gfx/decorated_text_mac.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -16,18 +24,47 @@ namespace {
 // This class serves as a bridge to TextServicesContextMenu to add and handle
 // text service items in the context menu. The items include Speech, Look Up
 // and BiDi.
-// TODO (spqchan): Add Look Up and BiDi.
 class ViewsTextServicesContextMenuMac
     : public ViewsTextServicesContextMenu,
       public ui::TextServicesContextMenu::Delegate {
  public:
   ViewsTextServicesContextMenuMac(ui::SimpleMenuModel* menu, Textfield* client)
       : text_services_menu_(this), client_(client) {
+    // The menu index for "Look Up".
+    constexpr int kLookupMenuIndex = 0;
+
+    base::string16 text = GetSelectedText();
+    if (!text.empty()) {
+      menu->InsertItemAt(
+          kLookupMenuIndex, IDS_CONTENT_CONTEXT_LOOK_UP,
+          l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, text));
+      menu->InsertSeparatorAt(kLookupMenuIndex + 1, ui::NORMAL_SEPARATOR);
+    }
     text_services_menu_.AppendToContextMenu(menu);
     text_services_menu_.AppendEditableItems(menu);
   }
 
   ~ViewsTextServicesContextMenuMac() override {}
+
+  // ViewsTextServicesContextMenu:
+  bool SupportsCommand(int command_id) const override {
+    return command_id == IDS_CONTENT_CONTEXT_LOOK_UP;
+  }
+
+  bool IsCommandIdChecked(int command_id) const override {
+    DCHECK_EQ(IDS_CONTENT_CONTEXT_LOOK_UP, command_id);
+    return false;
+  }
+
+  bool IsCommandIdEnabled(int command_id) const override {
+    DCHECK_EQ(IDS_CONTENT_CONTEXT_LOOK_UP, command_id);
+    return true;
+  }
+
+  void ExecuteCommand(int command_id) override {
+    DCHECK_EQ(IDS_CONTENT_CONTEXT_LOOK_UP, command_id);
+    LookUpInDictionary();
+  }
 
   // TextServicesContextMenu::Delegate:
   base::string16 GetSelectedText() const override {
@@ -55,6 +92,24 @@ class ViewsTextServicesContextMenuMac
   }
 
  private:
+  // Handler for the "Look Up" menu item.
+  void LookUpInDictionary() {
+    gfx::Point baseline_point;
+    gfx::DecoratedText text;
+    if (client_->GetWordLookupDataFromSelection(&text, &baseline_point)) {
+      Widget* widget = client_->GetWidget();
+      gfx::NativeView view = widget->GetNativeView();
+      views::View::ConvertPointToTarget(client_, widget->GetRootView(),
+                                        &baseline_point);
+
+      NSPoint lookup_point = NSMakePoint(
+          baseline_point.x(), NSHeight([view frame]) - baseline_point.y());
+      [view showDefinitionForAttributedString:
+                gfx::GetAttributedStringFromDecoratedText(text)
+                                      atPoint:lookup_point];
+    }
+  }
+
   // Appends and handles the text service menu.
   ui::TextServicesContextMenu text_services_menu_;
 

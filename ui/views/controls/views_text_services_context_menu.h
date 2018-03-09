@@ -34,6 +34,14 @@ class ViewsTextServicesContextMenu {
   VIEWS_EXPORT static bool IsTextDirectionCheckedForTesting(
       ViewsTextServicesContextMenu* menu,
       base::i18n::TextDirection direction);
+
+  // Returns true if the given |command_id| is handled by the menu.
+  virtual bool SupportsCommand(int command_id) const = 0;
+
+  // Methods associated with SimpleMenuModel::Delegate.
+  virtual bool IsCommandIdChecked(int command_id) const = 0;
+  virtual bool IsCommandIdEnabled(int command_id) const = 0;
+  virtual void ExecuteCommand(int command_id) = 0;
 };
 
 }  // namespace views
