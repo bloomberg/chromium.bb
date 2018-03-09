@@ -944,6 +944,10 @@
       status: "experimental",
     },
     {
+      name: "RTCRtpSenderParameters",
+      status: "experimental",
+    },
+    {
       name: "RTCUnifiedPlan",
       status: "experimental",
     },

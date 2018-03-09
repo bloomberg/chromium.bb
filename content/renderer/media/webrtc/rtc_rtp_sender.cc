@@ -4,8 +4,11 @@
 
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
+#include "content/renderer/media/webrtc/rtc_rtp_parameters.h"
 
 namespace content {
 
@@ -117,6 +120,12 @@ class RTCRtpSender::RTCRtpSenderInternal
     DCHECK(main_thread_->BelongsToCurrentThread());
     auto dtmf_sender = webrtc_sender()->GetDtmfSender();
     return std::make_unique<RtcDtmfSenderHandler>(dtmf_sender);
+  }
+
+  std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() const {
+    webrtc::RtpParameters parameters = webrtc_sender_->GetParameters();
+    return std::make_unique<blink::WebRTCRtpParameters>(
+        GetWebRTCRtpParameters(parameters));
   }
 
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
@@ -254,6 +263,11 @@ void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
 std::unique_ptr<blink::WebRTCDTMFSenderHandler> RTCRtpSender::GetDtmfSender()
     const {
   return internal_->GetDtmfSender();
+}
+
+std::unique_ptr<blink::WebRTCRtpParameters> RTCRtpSender::GetParameters()
+    const {
+  return internal_->GetParameters();
 }
 
 webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {

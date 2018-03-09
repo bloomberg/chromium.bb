@@ -5389,7 +5389,9 @@ interface RTCRtpSender
     getter dtmf
     getter track
     method constructor
+    method getParameters
     method replaceTrack
+    method setParameters
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp

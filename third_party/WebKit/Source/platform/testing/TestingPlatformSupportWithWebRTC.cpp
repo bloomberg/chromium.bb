@@ -31,6 +31,9 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;
   }
+  std::unique_ptr<WebRTCRtpParameters> GetParameters() const override {
+    return std::unique_ptr<WebRTCRtpParameters>();
+  }
 
  private:
   const uintptr_t id_;
