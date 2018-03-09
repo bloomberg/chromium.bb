@@ -43,8 +43,6 @@ static const CGFloat kReconnectViewHeight = 90.f;
 static const CGFloat kPadding = 20.f;
 static const CGFloat kMargin = 20.f;
 
-static const CGFloat kBarHeight = 58.f;
-
 static const CGFloat kKeyboardAnimationTime = 0.3;
 
 static NSString* const kConnectionErrorFeedbackContext =
@@ -108,13 +106,13 @@ static NSString* const kConnectionErrorFeedbackContext =
     _navBar.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Attach navBar to the top of the view.
+    UILayoutGuide* layoutGuide =
+        remoting::SafeAreaLayoutGuideForView(self.view);
     [NSLayoutConstraint activateConstraints:@[
-      [[_navBar topAnchor] constraintEqualToAnchor:[self.view topAnchor]],
-      [[_navBar leadingAnchor]
-          constraintEqualToAnchor:[self.view leadingAnchor]],
-      [[_navBar trailingAnchor]
-          constraintEqualToAnchor:[self.view trailingAnchor]],
-      [[_navBar heightAnchor] constraintEqualToConstant:kBarHeight],
+      [_navBar.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
+      [_navBar.leadingAnchor constraintEqualToAnchor:layoutGuide.leadingAnchor],
+      [_navBar.trailingAnchor
+          constraintEqualToAnchor:layoutGuide.trailingAnchor],
     ]];
   }
   return self;
