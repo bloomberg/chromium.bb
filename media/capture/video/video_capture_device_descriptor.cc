@@ -74,6 +74,8 @@ const char* VideoCaptureDeviceDescriptor::GetCaptureApiTypeString() const {
       return "V4L2 SPLANE";
     case VideoCaptureApi::WIN_MEDIA_FOUNDATION:
       return "Media Foundation";
+    case VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR:
+      return "Media Foundation Sensor Camera";
     case VideoCaptureApi::WIN_DIRECT_SHOW:
       return "Direct Show";
     case VideoCaptureApi::MACOSX_AVFOUNDATION:

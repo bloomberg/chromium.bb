@@ -108,6 +108,8 @@ EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
       return media::mojom::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
     case media::VideoCaptureApi::WIN_MEDIA_FOUNDATION:
       return media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION;
+    case media::VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR:
+      return media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR;
     case media::VideoCaptureApi::WIN_DIRECT_SHOW:
       return media::mojom::VideoCaptureApi::WIN_DIRECT_SHOW;
     case media::VideoCaptureApi::MACOSX_AVFOUNDATION:
@@ -139,6 +141,9 @@ bool EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::
       return true;
     case media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION:
       *output = media::VideoCaptureApi::WIN_MEDIA_FOUNDATION;
+      return true;
+    case media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR:
+      *output = media::VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR;
       return true;
     case media::mojom::VideoCaptureApi::WIN_DIRECT_SHOW:
       *output = media::VideoCaptureApi::WIN_DIRECT_SHOW;

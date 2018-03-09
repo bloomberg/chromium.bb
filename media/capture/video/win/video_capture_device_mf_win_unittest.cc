@@ -791,6 +791,13 @@ class MockMFMediaEvent : public base::RefCountedThreadSafe<MockMFMediaEvent>,
   virtual ~MockMFMediaEvent() = default;
 };
 
+struct DepthDeviceParams {
+  GUID depth_video_stream_subtype;
+  // Depth stream could offer other (e.g. I420) formats, in addition to 16-bit.
+  bool additional_i420_formats_in_depth_stream;
+  // Depth device sometimes provides multiple video streams.
+  bool additional_i420_video_stream;
+};
 }  // namespace
 
 const int kArbitraryValidVideoWidth = 1920;
@@ -943,6 +950,72 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
             return S_OK;
           }
           return E_FAIL;
+        }));
+
+    EXPECT_CALL(*capture_source_, DoGetCurrentDeviceMediaType(_, _))
+        .WillRepeatedly(Invoke(get_device_media_type));
+  }
+
+  void PrepareMFDepthDeviceWithCombinedFormatsAndStreams(
+      DepthDeviceParams params) {
+    EXPECT_CALL(*capture_source_, DoGetDeviceStreamCount(_))
+        .WillRepeatedly(Invoke([params](DWORD* stream_count) {
+          *stream_count = params.additional_i420_video_stream ? 2 : 1;
+          return S_OK;
+        }));
+    EXPECT_CALL(*capture_source_, DoGetDeviceStreamCategory(_, _))
+        .WillRepeatedly(Invoke([](DWORD stream_index,
+                                  MF_CAPTURE_ENGINE_STREAM_CATEGORY* category) {
+          if (stream_index <= 1) {
+            *category = MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_PREVIEW;
+            return S_OK;
+          }
+          return E_FAIL;
+        }));
+
+    auto get_device_media_type = [params](DWORD stream_index,
+                                          IMFMediaType** media_type) {
+      if (stream_index == 0) {
+        *media_type = new StubMFMediaType(
+            MFMediaType_Video, params.depth_video_stream_subtype,
+            kArbitraryValidVideoWidth, kArbitraryValidVideoHeight, 30);
+        (*media_type)->AddRef();
+        return S_OK;
+      } else if (stream_index == 1 && params.additional_i420_video_stream) {
+        *media_type = new StubMFMediaType(MFMediaType_Video, MFVideoFormat_I420,
+                                          kArbitraryValidVideoWidth,
+                                          kArbitraryValidVideoHeight, 30);
+        (*media_type)->AddRef();
+        return S_OK;
+      }
+      return E_FAIL;
+    };
+
+    EXPECT_CALL(*capture_source_, DoGetAvailableDeviceMediaType(_, _, _))
+        .WillRepeatedly(Invoke([params, get_device_media_type](
+                                   DWORD stream_index, DWORD media_type_index,
+                                   IMFMediaType** media_type) {
+          if (stream_index == 0 &&
+              params.additional_i420_formats_in_depth_stream &&
+              media_type_index == 1) {
+            *media_type = new StubMFMediaType(
+                MFMediaType_Video, MFVideoFormat_I420,
+                kArbitraryValidVideoWidth, kArbitraryValidVideoHeight, 30);
+            (*media_type)->AddRef();
+            return S_OK;
+          }
+          if (media_type_index != 0)
+            return MF_E_NO_MORE_TYPES;
+          return get_device_media_type(stream_index, media_type);
+        }));
+
+    EXPECT_CALL(*(engine_.Get()),
+                DoGetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, _))
+        .WillRepeatedly(Invoke([this](MF_CAPTURE_ENGINE_SINK_TYPE sink_type,
+                                      IMFCaptureSink** sink) {
+          *sink = this->capture_preview_sink_.get();
+          this->capture_preview_sink_->AddRef();
+          return S_OK;
         }));
 
     EXPECT_CALL(*capture_source_, DoGetCurrentDeviceMediaType(_, _))
@@ -1138,51 +1211,61 @@ TEST_F(VideoCaptureDeviceMFWinTest, TakePhotoViaPhotoStream) {
   device_->TakePhoto(std::move(take_photo_callback));
 }
 
-class DepthCameraDeviceMFWinTest : public VideoCaptureDeviceMFWinTest,
-                                   public testing::WithParamInterface<GUID> {};
+class DepthCameraDeviceMFWinTest
+    : public VideoCaptureDeviceMFWinTest,
+      public testing::WithParamInterface<DepthDeviceParams> {};
 
-const GUID kDepthCameraOfferedVideoMediaSubtype[] = {
-    kMediaSubTypeY16, kMediaSubTypeZ16, kMediaSubTypeINVZ};
+const DepthDeviceParams kDepthCamerasParams[] = {
+    {kMediaSubTypeY16, false, false},
+    {kMediaSubTypeZ16, false, true},
+    {kMediaSubTypeINVZ, true, false},
+    {MFVideoFormat_D16, true, true}};
 
-INSTANTIATE_TEST_CASE_P(
-    DepthCameraDeviceMFWinTests,
-    DepthCameraDeviceMFWinTest,
-    testing::ValuesIn(kDepthCameraOfferedVideoMediaSubtype));
+INSTANTIATE_TEST_CASE_P(DepthCameraDeviceMFWinTests,
+                        DepthCameraDeviceMFWinTest,
+                        testing::ValuesIn(kDepthCamerasParams));
 
-// Given an |IMFCaptureSource| offering a video stream with subtype Y16, Z16 or
-// INVZ , when allocating and starting |VideoCaptureDevice| then expect the MF
-// source and the MF sink to be set to the same media subtype
+// Given an |IMFCaptureSource| offering a video stream with subtype Y16, Z16,
+// INVZ or D16, when allocating and starting |VideoCaptureDevice| expect the MF
+// source and the MF sink to be set to the same media subtype.
 TEST_P(DepthCameraDeviceMFWinTest, AllocateAndStartDepthCamera) {
   if (ShouldSkipTest())
     return;
 
-  GUID offered_video_media_subtype = GetParam();
-  PrepareMFDeviceWithOneVideoStream(offered_video_media_subtype);
+  DepthDeviceParams params = GetParam();
+  if (!params.additional_i420_video_stream &&
+      !params.additional_i420_formats_in_depth_stream) {
+    PrepareMFDeviceWithOneVideoStream(params.depth_video_stream_subtype);
+  } else {
+    PrepareMFDepthDeviceWithCombinedFormatsAndStreams(params);
+  }
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
 
   EXPECT_CALL(*(capture_source_.get()), DoSetCurrentDeviceMediaType(0, _))
-      .WillOnce(Invoke([offered_video_media_subtype](DWORD stream_index,
-                                                     IMFMediaType* media_type) {
+      .WillOnce(Invoke([params](DWORD stream_index, IMFMediaType* media_type) {
         GUID source_video_media_subtype;
         media_type->GetGUID(MF_MT_SUBTYPE, &source_video_media_subtype);
-        EXPECT_EQ(source_video_media_subtype, offered_video_media_subtype);
+        EXPECT_EQ(source_video_media_subtype,
+                  params.depth_video_stream_subtype);
         return S_OK;
       }));
 
   EXPECT_CALL(*(capture_preview_sink_.get()), DoAddStream(0, _, _, _))
-      .WillOnce(Invoke([offered_video_media_subtype](DWORD stream_index,
-                                                     IMFMediaType* media_type,
-                                                     IMFAttributes* attributes,
-                                                     DWORD* sink_stream_index) {
+      .WillOnce(Invoke([params](DWORD stream_index, IMFMediaType* media_type,
+                                IMFAttributes* attributes,
+                                DWORD* sink_stream_index) {
         GUID sink_video_media_subtype;
         media_type->GetGUID(MF_MT_SUBTYPE, &sink_video_media_subtype);
-        EXPECT_EQ(sink_video_media_subtype, offered_video_media_subtype);
+        EXPECT_EQ(sink_video_media_subtype, params.depth_video_stream_subtype);
         return S_OK;
       }));
 
-  device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  VideoCaptureFormat format(gfx::Size(640, 480), 30, media::PIXEL_FORMAT_Y16);
+  VideoCaptureParams video_capture_params;
+  video_capture_params.requested_format = format;
+  device_->AllocateAndStart(video_capture_params, std::move(client_));
 }
 
 }  // namespace media

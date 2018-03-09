@@ -306,7 +306,10 @@ test("capture_unittests") {
   }
 
   if (is_win) {
-    sources += [ "video/win/video_capture_device_mf_win_unittest.cc" ]
+    sources += [
+      "video/win/video_capture_device_factory_win_unittest.cc",
+      "video/win/video_capture_device_mf_win_unittest.cc",
+    ]
     libs = [
       "mf.lib",
       "mfplat.lib",
