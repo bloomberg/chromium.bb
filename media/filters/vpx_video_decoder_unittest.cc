@@ -39,7 +39,8 @@ class VpxVideoDecoderTest : public testing::Test {
                                       bool success) {
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
-        base::Bind(&VpxVideoDecoderTest::FrameReady, base::Unretained(this)));
+        base::Bind(&VpxVideoDecoderTest::FrameReady, base::Unretained(this)),
+        VideoDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
   }
 

@@ -200,7 +200,7 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_OneClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoCdm, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, IsNull()));
 
@@ -211,7 +211,7 @@ TEST_F(AudioDecoderSelectorTest, Destroy_ClearStream_OneClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoCdm, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -220,9 +220,9 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_MultipleClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoCdm, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
@@ -233,9 +233,9 @@ TEST_F(AudioDecoderSelectorTest, Destroy_ClearStream_MultipleClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoCdm, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -245,7 +245,7 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_BlackListedDecoder) {
   InitializeDecoderSelector(kNoCdm, 2);
 
   // Decoder 1 is blacklisted and will not even be tried.
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
@@ -258,7 +258,7 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_NoDecryptor_OneClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
   EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
 
@@ -270,7 +270,7 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -279,9 +279,9 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_NoDecryptor_MultipleDecoders) {
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
@@ -293,9 +293,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(EncryptedConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _));
+  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -313,7 +313,7 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_1_, NotNull()));
 
@@ -325,7 +325,7 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -335,9 +335,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
 
@@ -349,9 +349,9 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _));
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _));
 
   SelectDecoderAndDestroy();
 }
@@ -368,7 +368,7 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptAndDecode) {
 #else
   // A DecryptingDemuxerStream will be created. The clear decoder will be
   // initialized and returned.
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(NotNull(), NotNull()));
 #endif
@@ -381,7 +381,7 @@ TEST_F(AudioDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
-  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(EncryptedConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, IsNull()));
 
@@ -394,9 +394,9 @@ TEST_F(AudioDecoderSelectorTest,
   InitializeDecoderSelector(kDecryptOnly, 2);
 
   // When DecryptingDemuxerStream is chosen, the blacklist is ignored.
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
 
@@ -410,9 +410,9 @@ TEST_F(AudioDecoderSelectorTest,
 
   // DecryptingAudioDecoder is blacklisted so we'll fall back to use
   // DecryptingDemuxerStream to do decrypt-only.
-  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_1_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(false));
-  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _))
+  EXPECT_CALL(*decoder_2_, Initialize(ClearConfig(), _, _, _, _))
       .WillOnce(RunCallback<2>(true));
   EXPECT_CALL(*this, OnDecoderSelected(decoder_2_, NotNull()));
 

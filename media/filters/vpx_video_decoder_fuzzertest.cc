@@ -107,7 +107,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     decoder.Initialize(
         config, true /* low_delay */, nullptr /* cdm_context */,
         base::Bind(&OnInitDone, run_loop.QuitClosure(), &success),
-        base::Bind(&OnOutputComplete));
+        base::Bind(&OnOutputComplete),
+        VideoDecoder::WaitingForDecryptionKeyCB());
     run_loop.Run();
     if (!success)
       return 0;

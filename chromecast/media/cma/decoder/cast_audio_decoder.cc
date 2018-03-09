@@ -70,7 +70,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     decoder_->Initialize(
         media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config_),
         nullptr, base::Bind(&CastAudioDecoderImpl::OnInitialized, self),
-        base::Bind(&CastAudioDecoderImpl::OnDecoderOutput, self));
+        base::Bind(&CastAudioDecoderImpl::OnDecoderOutput, self),
+        ::media::AudioDecoder::WaitingForDecryptionKeyCB());
     // Unfortunately there is no result from decoder_->Initialize() until later
     // (the pipeline status callback is posted to the task runner).
   }

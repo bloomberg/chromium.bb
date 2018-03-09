@@ -32,11 +32,13 @@ std::string GpuMemoryBufferDecoderWrapper::GetDisplayName() const {
   return decoder_->GetDisplayName();
 }
 
-void GpuMemoryBufferDecoderWrapper::Initialize(const VideoDecoderConfig& config,
-                                               bool low_delay,
-                                               CdmContext* cdm_context,
-                                               const InitCB& init_cb,
-                                               const OutputCB& output_cb) {
+void GpuMemoryBufferDecoderWrapper::Initialize(
+    const VideoDecoderConfig& config,
+    bool low_delay,
+    CdmContext* cdm_context,
+    const InitCB& init_cb,
+    const OutputCB& output_cb,
+    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(eos_decode_cb_.is_null());
   DCHECK_EQ(pending_copies_, 0u);
@@ -46,7 +48,8 @@ void GpuMemoryBufferDecoderWrapper::Initialize(const VideoDecoderConfig& config,
   decoder_->Initialize(
       config, low_delay, cdm_context, init_cb,
       base::BindRepeating(&GpuMemoryBufferDecoderWrapper::OnOutputReady,
-                          weak_factory_.GetWeakPtr(), output_cb));
+                          weak_factory_.GetWeakPtr(), output_cb),
+      waiting_for_decryption_key_cb);
 }
 
 void GpuMemoryBufferDecoderWrapper::Decode(

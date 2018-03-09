@@ -100,11 +100,13 @@ std::string MojoVideoDecoder::GetDisplayName() const {
   return "MojoVideoDecoder";
 }
 
-void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                  bool low_delay,
-                                  CdmContext* cdm_context,
-                                  const InitCB& init_cb,
-                                  const OutputCB& output_cb) {
+void MojoVideoDecoder::Initialize(
+    const VideoDecoderConfig& config,
+    bool low_delay,
+    CdmContext* cdm_context,
+    const InitCB& init_cb,
+    const OutputCB& output_cb,
+    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 

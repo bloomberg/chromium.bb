@@ -138,11 +138,13 @@ std::string VpxVideoDecoder::GetDisplayName() const {
   return "VpxVideoDecoder";
 }
 
-void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                 bool /* low_delay */,
-                                 CdmContext* /* cdm_context */,
-                                 const InitCB& init_cb,
-                                 const OutputCB& output_cb) {
+void VpxVideoDecoder::Initialize(
+    const VideoDecoderConfig& config,
+    bool /* low_delay */,
+    CdmContext* /* cdm_context */,
+    const InitCB& init_cb,
+    const OutputCB& output_cb,
+    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 

@@ -59,10 +59,13 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     bool /* low_delay */,
     CdmContext* cdm_context,
     const InitCB& init_cb,
-    const OutputCB& output_cb) {
+    const OutputCB& output_cb,
+    const DecoderType::WaitingForDecryptionKeyCB&
+        waiting_for_decryption_key_cb) {
   DCHECK(config.IsValidConfig());
   stats_.audio_decoder_name = decoder->GetDisplayName();
-  decoder->Initialize(config, cdm_context, init_cb, output_cb);
+  decoder->Initialize(config, cdm_context, init_cb, output_cb,
+                      waiting_for_decryption_key_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::OnStreamReset(
@@ -146,10 +149,13 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
     bool low_delay,
     CdmContext* cdm_context,
     const InitCB& init_cb,
-    const OutputCB& output_cb) {
+    const OutputCB& output_cb,
+    const DecoderType::WaitingForDecryptionKeyCB&
+        waiting_for_decryption_key_cb) {
   DCHECK(config.IsValidConfig());
   stats_.video_decoder_name = decoder->GetDisplayName();
-  decoder->Initialize(config, low_delay, cdm_context, init_cb, output_cb);
+  decoder->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
+                      waiting_for_decryption_key_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(

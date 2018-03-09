@@ -243,7 +243,8 @@ class AudioDecoderTest
                                    bool success) {
     decoder_->Initialize(
         config, nullptr, NewExpectedBoolCB(success),
-        base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)));
+        base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
+        AudioDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
   }
 

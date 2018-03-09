@@ -751,7 +751,8 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
       base::Bind(&VideoFrameQualityValidator::InitializeCB,
                  base::Unretained(this)),
       base::Bind(&VideoFrameQualityValidator::VerifyOutputFrame,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      VideoDecoder::WaitingForDecryptionKeyCB());
 }
 
 void VideoFrameQualityValidator::InitializeCB(bool success) {

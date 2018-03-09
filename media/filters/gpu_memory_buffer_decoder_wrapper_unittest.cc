@@ -5,6 +5,7 @@
 #include "media/filters/gpu_memory_buffer_decoder_wrapper.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "media/base/bind_to_current_loop.h"
@@ -40,10 +41,12 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
     EXPECT_CALL(*this, OnInitDone(true))
         .WillOnce(RunClosure(loop.QuitClosure()));
 
+    VideoDecoder::WaitingForDecryptionKeyCB unused_cb;
     VideoDecoderConfig actual_config;
-    EXPECT_CALL(*decoder_, Initialize(_, true, nullptr, _, _))
+    EXPECT_CALL(*decoder_, Initialize(_, true, nullptr, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&actual_config),
-                        SaveArg<4>(replaced_output_cb), RunCallback<3>(true)));
+                        SaveArg<4>(replaced_output_cb), RunCallback<3>(true),
+                        SaveArg<5>(&unused_cb)));
 
     VideoDecoder::OutputCB output_cb =
         base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnOutputReady,
@@ -52,7 +55,7 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
         config_, true, nullptr,
         base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnInitDone,
                             base::Unretained(this)),
-        output_cb);
+        output_cb, base::DoNothing());
     loop.Run();
 
     // Verify the VideoDecoderConfig is passed correctly.
@@ -60,6 +63,8 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
 
     // Verify the OutputCB has been replaced with a custom one.
     ASSERT_FALSE(replaced_output_cb->Equals(output_cb));
+
+    ASSERT_FALSE(unused_cb.is_null());
   }
 
   // Verifies EOS waits for all pending copies and returns the correct final

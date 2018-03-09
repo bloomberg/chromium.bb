@@ -44,7 +44,8 @@ class AomVideoDecoderTest : public testing::Test {
                                       bool success) {
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
-        base::Bind(&AomVideoDecoderTest::FrameReady, base::Unretained(this)));
+        base::Bind(&AomVideoDecoderTest::FrameReady, base::Unretained(this)),
+        VideoDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
   }
 

@@ -35,12 +35,14 @@ class MockOffloadableVideoDecoder : public OffloadableVideoDecoder {
   std::string GetDisplayName() const override {
     return "MockOffloadableVideoDecoder";
   }
-  MOCK_METHOD5(Initialize,
-               void(const VideoDecoderConfig& config,
-                    bool low_delay,
-                    CdmContext* cdm_context,
-                    const InitCB& init_cb,
-                    const OutputCB& output_cb));
+  MOCK_METHOD6(
+      Initialize,
+      void(const VideoDecoderConfig& config,
+           bool low_delay,
+           CdmContext* cdm_context,
+           const InitCB& init_cb,
+           const OutputCB& output_cb,
+           const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb));
   MOCK_METHOD2(Decode,
                void(const scoped_refptr<DecoderBuffer>& buffer,
                     const DecodeCB&));
@@ -97,11 +99,12 @@ class OffloadingVideoDecoderTest : public testing::Test {
     // Verify methods are called on the current thread since the offload codec
     // requirement is not satisfied.
     VideoDecoder::OutputCB output_cb;
-    EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _))
+    EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
         .WillOnce(DoAll(VerifyOn(task_env_.GetMainThreadTaskRunner()),
                         RunCallback<3>(true), SaveArg<4>(&output_cb)));
     offloading_decoder_->Initialize(config, false, nullptr, ExpectInitCB(true),
-                                    ExpectOutputCB());
+                                    ExpectOutputCB(),
+                                    VideoDecoder::WaitingForDecryptionKeyCB());
     task_env_.RunUntilIdle();
 
     // Verify decode works and is called on the right thread.
@@ -134,8 +137,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
           .WillOnce(VerifyOn(task_env_.GetMainThreadTaskRunner()));
     }
     offloading_decoder_->Initialize(config, false, nullptr, ExpectInitCB(true),
-                                    ExpectOutputCB());
-    EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _))
+                                    ExpectOutputCB(),
+                                    VideoDecoder::WaitingForDecryptionKeyCB());
+    EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
         .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                         RunCallback<3>(true), SaveArg<4>(&output_cb)));
     task_env_.RunUntilIdle();
@@ -212,10 +216,11 @@ TEST_F(OffloadingVideoDecoderTest, OffloadingAfterNoOffloading) {
   offloading_decoder_->Initialize(
       TestVideoConfig::Normal(kCodecVP9), false, nullptr, ExpectInitCB(true),
       base::Bind(&OffloadingVideoDecoderTest::OutputDone,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      VideoDecoder::WaitingForDecryptionKeyCB());
   EXPECT_CALL(*decoder_, Detach())
       .WillOnce(VerifyNotOn(task_env_.GetMainThreadTaskRunner()));
-  EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _))
+  EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
       .WillOnce(DoAll(VerifyOn(task_env_.GetMainThreadTaskRunner()),
                       RunCallback<3>(true), SaveArg<4>(&output_cb)));
   task_env_.RunUntilIdle();

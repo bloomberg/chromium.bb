@@ -169,7 +169,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
-                      base::Bind(&OutputCb));
+                      base::Bind(&OutputCb),
+                      VideoDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
 
     if (config.is_encrypted() && cdm_) {

@@ -120,8 +120,8 @@ template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
   DVLOG(2) << __func__;
 
-  decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
-      task_runner_, media_log_, waiting_for_decryption_key_cb_));
+  decoder_.reset(new typename StreamTraits::DecryptingDecoderType(task_runner_,
+                                                                  media_log_));
 
   if (decoder_->GetDisplayName() == blacklisted_decoder_) {
     DVLOG(1) << __func__ << ": Decrypting decoder is blacklisted.";
@@ -134,7 +134,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
       input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
-      output_cb_);
+      output_cb_, waiting_for_decryption_key_cb_);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -223,7 +223,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
       input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
-      output_cb_);
+      output_cb_, waiting_for_decryption_key_cb_);
 }
 
 template <DemuxerStream::Type StreamType>
