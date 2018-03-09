@@ -17,11 +17,6 @@ bool StructTraits<media_router::mojom::MediaStatusDataView,
   if (!data.ReadTitle(&out->title) || !base::IsStringUTF8(out->title))
     return false;
 
-  if (!data.ReadDescription(&out->description) ||
-      !base::IsStringUTF8(out->description)) {
-    return false;
-  }
-
   out->can_play_pause = data.can_play_pause();
   out->can_mute = data.can_mute();
   out->can_set_volume = data.can_set_volume();

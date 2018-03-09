@@ -20,7 +20,7 @@ MediaStatus::~MediaStatus() = default;
 MediaStatus& MediaStatus::operator=(const MediaStatus& other) = default;
 
 bool MediaStatus::operator==(const MediaStatus& other) const {
-  return title == other.title && description == other.description &&
+  return title == other.title &&
          can_play_pause == other.can_play_pause && can_mute == other.can_mute &&
          can_set_volume == other.can_set_volume && can_seek == other.can_seek &&
          play_state == other.play_state && is_muted == other.is_muted &&

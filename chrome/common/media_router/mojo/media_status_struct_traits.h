@@ -58,11 +58,6 @@ struct StructTraits<media_router::mojom::MediaStatusDataView,
     return status.title;
   }
 
-  static const std::string& description(
-      const media_router::MediaStatus& status) {
-    return status.description;
-  }
-
   static bool can_play_pause(const media_router::MediaStatus& status) {
     return status.can_play_pause;
   }

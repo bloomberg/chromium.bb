@@ -160,7 +160,6 @@ IPEndpointAdapter.prototype.toNewVersion = function() {
  */
 function MediaStatusAdapter(fields) {
   this.title = null;
-  this.description = null;
   this.can_play_pause = false;
   this.can_mute = false;
   this.can_set_volume = false;
@@ -180,7 +179,6 @@ MediaStatusAdapter.PlayState = mediaRouter.mojom.MediaStatus.PlayState;
 MediaStatusAdapter.prototype.toNewVersion = function() {
   return new mediaRouter.mojom.MediaStatus({
     'title': this.title,
-    'description': this.description,
     'canPlayPause': this.can_play_pause,
     'canMute': this.can_mute,
     'canSetVolume': this.can_set_volume,
