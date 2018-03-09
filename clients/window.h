@@ -27,6 +27,7 @@
 #include "config.h"
 
 #include <stdint.h>
+#include <time.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-client.h>
 #include <cairo.h>
@@ -712,5 +713,31 @@ keysym_modifiers_add(struct wl_array *modifiers_map,
 xkb_mod_mask_t
 keysym_modifiers_get_mask(struct wl_array *modifiers_map,
 			  const char *name);
+
+struct toytimer;
+typedef void (*toytimer_cb)(struct toytimer *);
+
+struct toytimer {
+	struct display *display;
+	struct task tsk;
+	int fd;
+	toytimer_cb callback;
+};
+
+void
+toytimer_init(struct toytimer *tt, clockid_t clock, struct display *display,
+	      toytimer_cb callback);
+
+void
+toytimer_fini(struct toytimer *tt);
+
+void
+toytimer_arm(struct toytimer *tt, const struct itimerspec *its);
+
+void
+toytimer_arm_once_usec(struct toytimer *tt, uint32_t usec);
+
+void
+toytimer_disarm(struct toytimer *tt);
 
 #endif
