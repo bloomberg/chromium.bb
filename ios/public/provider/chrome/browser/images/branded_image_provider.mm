@@ -34,10 +34,6 @@ UIImage* BrandedImageProvider::GetSigninConfirmationPersonalizeServicesImage() {
   return nil;
 }
 
-bool BrandedImageProvider::GetToolbarVoiceSearchButtonImageId(int* image_id) {
-  return false;
-}
-
 NSArray<UIImage*>* BrandedImageProvider::GetToolbarVoiceSearchButtonImages(
     bool incognito) {
   return nil;

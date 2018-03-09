@@ -45,11 +45,6 @@ ChromiumBrandedImageProvider::GetSigninConfirmationPersonalizeServicesImage() {
   return rb.GetNativeImageNamed(IDR_IOS_SETTINGS_INFO_24).ToUIImage();
 }
 
-bool ChromiumBrandedImageProvider::GetToolbarVoiceSearchButtonImageId(
-    int* image_id) {
-  return false;
-}
-
 NSArray<UIImage*>*
 ChromiumBrandedImageProvider::GetToolbarVoiceSearchButtonImages(
     bool incognito) {
