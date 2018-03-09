@@ -54,6 +54,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
       is_mouse_down_(false),
+      tickmarks_showing_(false),
       weak_factory_(this) {}
 
 ScrollbarAnimationController::ScrollbarAnimationController(
@@ -76,6 +77,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
       is_mouse_down_(false),
+      tickmarks_showing_(false),
       weak_factory_(this) {
   vertical_controller_ = SingleScrollbarAnimationControllerThinning::Create(
       scroll_element_id, ScrollbarOrientation::VERTICAL, client,
@@ -194,11 +196,15 @@ void ScrollbarAnimationController::DidScrollEnd() {
   if (need_thinning_animation_ && MouseIsNearAnyScrollbar())
     return;
 
-  if (has_scrolled)
+  if (has_scrolled && !tickmarks_showing_)
     PostDelayedAnimation(FADE_OUT);
 }
 
 void ScrollbarAnimationController::DidScrollUpdate() {
+  UpdateScrollbarState();
+}
+
+void ScrollbarAnimationController::UpdateScrollbarState() {
   if (need_thinning_animation_ && Captured())
     return;
 
@@ -209,10 +215,14 @@ void ScrollbarAnimationController::DidScrollUpdate() {
   // As an optimization, we avoid spamming fade delay tasks during active fast
   // scrolls.  But if we're not within one, we need to post every scroll update.
   if (!currently_scrolling_) {
-    // We don't fade out scrollbar if they need thinning animation and mouse is
-    // near.
-    if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
+    // We don't fade out scrollbar if they need thinning animation (Aura
+    // Overlay) and mouse is near or tickmarks show.
+    if (need_thinning_animation_) {
+      if (!MouseIsNearAnyScrollbar() && !tickmarks_showing_)
+        PostDelayedAnimation(FADE_OUT);
+    } else {
       PostDelayedAnimation(FADE_OUT);
+    }
   } else {
     show_in_fast_scroll_ = true;
   }
@@ -225,11 +235,22 @@ void ScrollbarAnimationController::DidScrollUpdate() {
 
 void ScrollbarAnimationController::WillUpdateScroll() {
   if (show_scrollbars_on_scroll_gesture_)
-    DidScrollUpdate();
+    UpdateScrollbarState();
 }
 
 void ScrollbarAnimationController::DidRequestShowFromMainThread() {
-  DidScrollUpdate();
+  UpdateScrollbarState();
+}
+
+void ScrollbarAnimationController::UpdateTickmarksVisibility(bool show) {
+  if (!need_thinning_animation_)
+    return;
+
+  if (tickmarks_showing_ == show)
+    return;
+
+  tickmarks_showing_ = show;
+  UpdateScrollbarState();
 }
 
 void ScrollbarAnimationController::DidMouseDown() {
@@ -267,7 +288,7 @@ void ScrollbarAnimationController::DidMouseUp() {
   vertical_controller_->DidMouseUp();
   horizontal_controller_->DidMouseUp();
 
-  if (!MouseIsNearAnyScrollbar() && !ScrollbarsHidden())
+  if (!MouseIsNearAnyScrollbar() && !ScrollbarsHidden() && !tickmarks_showing_)
     PostDelayedAnimation(FADE_OUT);
 }
 
@@ -281,7 +302,7 @@ void ScrollbarAnimationController::DidMouseLeave() {
   delayed_scrollbar_animation_.Cancel();
   need_trigger_scrollbar_fade_in_ = false;
 
-  if (ScrollbarsHidden() || Captured())
+  if (ScrollbarsHidden() || Captured() || tickmarks_showing_)
     return;
 
   PostDelayedAnimation(FADE_OUT);
@@ -297,7 +318,7 @@ void ScrollbarAnimationController::DidMouseMove(
   vertical_controller_->DidMouseMove(device_viewport_point);
   horizontal_controller_->DidMouseMove(device_viewport_point);
 
-  if (Captured()) {
+  if (Captured() || tickmarks_showing_) {
     DCHECK(!ScrollbarsHidden());
     return;
   }

@@ -270,4 +270,8 @@ ScrollbarLayerImplBase::GetScrollbarAnimator() const {
   return layer_tree_impl()->settings().scrollbar_animator;
 }
 
+bool ScrollbarLayerImplBase::HasFindInPageTickmarks() const {
+  return false;
+}
+
 }  // namespace cc
