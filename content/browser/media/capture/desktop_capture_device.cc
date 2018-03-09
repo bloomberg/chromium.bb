@@ -117,7 +117,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
 
   void SetMockTimeForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<base::TickClock> tick_clock);
+      base::TickClock* tick_clock);
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
@@ -166,7 +166,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // be returned to the caller directly then this is NULL.
   std::unique_ptr<webrtc::DesktopFrame> output_frame_;
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_ = nullptr;
 
   // Timer used to capture the frame.
   std::unique_ptr<base::OneShotTimer> capture_timer_;
@@ -204,7 +204,6 @@ DesktopCaptureDevice::Core::Core(
     DesktopMediaID::Type type)
     : task_runner_(task_runner),
       desktop_capturer_(std::move(capturer)),
-      tick_clock_(nullptr),
       capture_timer_(new base::OneShotTimer()),
       max_cpu_consumption_percentage_(GetMaximumCpuConsumptionPercentage()),
       capture_in_progress_(false),
@@ -268,9 +267,9 @@ void DesktopCaptureDevice::Core::SetNotificationWindowId(
 
 void DesktopCaptureDevice::Core::SetMockTimeForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
-  capture_timer_.reset(new base::OneShotTimer(tick_clock_.get()));
+    base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
+  capture_timer_.reset(new base::OneShotTimer(tick_clock_));
   capture_timer_->SetTaskRunner(task_runner);
 }
 
@@ -577,8 +576,8 @@ DesktopCaptureDevice::DesktopCaptureDevice(
 
 void DesktopCaptureDevice::SetMockTimeForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<base::TickClock> tick_clock) {
-  core_->SetMockTimeForTesting(task_runner, std::move(tick_clock));
+    base::TickClock* tick_clock) {
+  core_->SetMockTimeForTesting(task_runner, tick_clock);
 }
 
 }  // namespace content

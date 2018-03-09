@@ -18,12 +18,12 @@ const int kMaxBurstClients = 10;
 
 class MediaServiceThrottlerTest : public testing::Test {
  public:
-  MediaServiceThrottlerTest() : clock_(new base::SimpleTestTickClock()) {
+  MediaServiceThrottlerTest() {
     throttler_ = MediaServiceThrottler::GetInstance();
-    clock_->SetNowTicks(base::TimeTicks());
-    throttler_->SetTickClockForTesting(clock_);
+    clock_.SetNowTicks(base::TimeTicks());
+    throttler_->SetTickClockForTesting(&clock_);
     test_task_runner_ =
-        base::MakeRefCounted<FakeSingleThreadTaskRunner>(clock_);
+        base::MakeRefCounted<FakeSingleThreadTaskRunner>(&clock_);
     throttler_->ResetInternalStateForTesting();
     throttler_->SetCrashListenerTaskRunnerForTesting(test_task_runner_);
     base_delay_ = throttler_->GetBaseThrottlingRateForTesting();
@@ -50,10 +50,10 @@ class MediaServiceThrottlerTest : public testing::Test {
              throttler_->GetDelayForClientCreation());
   }
 
-  base::TimeTicks TestNow() { return clock_->NowTicks(); }
+  base::TimeTicks TestNow() { return clock_.NowTicks(); }
 
   MediaServiceThrottler* throttler_;
-  base::SimpleTestTickClock* clock_;
+  base::SimpleTestTickClock clock_;
 
   base::TimeDelta base_delay_;
 
@@ -114,7 +114,7 @@ TEST_F(MediaServiceThrottlerTest,
   // Schedule some clients below the burst threshold.
   SimulateClientCreations(7);
 
-  clock_->Advance(base_delay_ * 5);
+  clock_.Advance(base_delay_ * 5);
 
   // Make sure the passage of allows for more clients to be scheduled, since
   // 7 + 8 > kMaxBurstClients.
@@ -129,7 +129,7 @@ TEST_F(MediaServiceThrottlerTest,
   SimulateClientCreations(3 * kMaxBurstClients);
 
   // Advance the time so there are still 2 * kMaxBurstClients pending clients.
-  clock_->Advance(base_delay_ * kMaxBurstClients);
+  clock_.Advance(base_delay_ * kMaxBurstClients);
 
   // Make sure delay we do not burst schedule new clients.
   EXPECT_NE(base::TimeDelta(), throttler_->GetDelayForClientCreation());
@@ -142,7 +142,7 @@ TEST_F(MediaServiceThrottlerTest, NoCrash_LongInactivity_ShouldReset) {
   SimulateClientCreations(base::TimeDelta::FromMinutes(2) / base_delay_);
 
   // Advance the time so the scheduler perceived a full minute of inactivity.
-  clock_->Advance(base::TimeDelta::FromSeconds(61));
+  clock_.Advance(base::TimeDelta::FromSeconds(61));
 
   // Make sure new clients are burst scheduled.
   EXPECT_EQ(base::TimeDelta(), throttler_->GetDelayForClientCreation());
@@ -170,7 +170,7 @@ TEST_F(MediaServiceThrottlerTest,
   SimulateClientCreations(kMaxBurstClients);
 
   SimulateCrashes(1);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+  clock_.Advance(base::TimeDelta::FromMilliseconds(1));
 
   // Because we use the floor function when calculating crashes, a small time
   // advance should nullify a single crash.
@@ -183,7 +183,7 @@ TEST_F(MediaServiceThrottlerTest, WithCrash_ManyCrashes_DelayShouldIncrease) {
   SimulateClientCreations(kMaxBurstClients);
 
   SimulateCrashes(2);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+  clock_.Advance(base::TimeDelta::FromMilliseconds(1));
 
   // The delay after crashes should be greater than the base delay.
   EXPECT_LT(base_delay_, GetCurrentDelayBetweenClients());
@@ -236,7 +236,7 @@ TEST_F(MediaServiceThrottlerTest, WithCrash_NoCrashesForAMinute_ShouldReset) {
 
   // The effective server crash count should be reset because it has been over
   // a minute since the last crash.
-  clock_->Advance(base::TimeDelta::FromSeconds(61));
+  clock_.Advance(base::TimeDelta::FromSeconds(61));
 
   SimulateClientCreations(kMaxBurstClients);
 
@@ -248,9 +248,9 @@ TEST_F(MediaServiceThrottlerTest, WithCrash_ConstantCrashes_ShouldNotReset) {
   SimulateCrashes(9);
 
   // The effective server crash count should not be reset.
-  clock_->Advance(base::TimeDelta::FromSeconds(59));
+  clock_.Advance(base::TimeDelta::FromSeconds(59));
   SimulateCrashes(1);
-  clock_->Advance(base::TimeDelta::FromSeconds(2));
+  clock_.Advance(base::TimeDelta::FromSeconds(2));
 
   SimulateClientCreations(kMaxBurstClients);
 
@@ -266,7 +266,7 @@ TEST_F(MediaServiceThrottlerTest, CrashListener_NoRequests_ShouldShutDown) {
   SimulateClientCreations(base::TimeDelta::FromMinutes(3) / base_delay_);
 
   // The MediaServerCrashListener should be alive, with 1s second to spare.
-  clock_->Advance(base::TimeDelta::FromSeconds(59));
+  clock_.Advance(base::TimeDelta::FromSeconds(59));
   test_task_runner_->RunTasks();
   EXPECT_TRUE(throttler_->IsCrashListenerAliveForTesting());
 
@@ -275,12 +275,12 @@ TEST_F(MediaServiceThrottlerTest, CrashListener_NoRequests_ShouldShutDown) {
   throttler_->GetDelayForClientCreation();
 
   // The MediaServerCrashListener should be alive, with 58s second to spare.
-  clock_->Advance(base::TimeDelta::FromSeconds(2));
+  clock_.Advance(base::TimeDelta::FromSeconds(2));
   test_task_runner_->RunTasks();
   EXPECT_TRUE(throttler_->IsCrashListenerAliveForTesting());
 
   // The MediaServerCrashListener should be dead.
-  clock_->Advance(base::TimeDelta::FromSeconds(59));
+  clock_.Advance(base::TimeDelta::FromSeconds(59));
   test_task_runner_->RunTasks();
   EXPECT_FALSE(throttler_->IsCrashListenerAliveForTesting());
 }
@@ -295,7 +295,7 @@ TEST_F(MediaServiceThrottlerTest,
   SimulateClientCreations(base::TimeDelta::FromMinutes(3) / base_delay_);
 
   // The MediaServerCrashListener should be alive, with 1s second to spare.
-  clock_->Advance(base::TimeDelta::FromSeconds(59));
+  clock_.Advance(base::TimeDelta::FromSeconds(59));
   test_task_runner_->RunTasks();
   EXPECT_TRUE(throttler_->IsCrashListenerAliveForTesting());
 
@@ -303,7 +303,7 @@ TEST_F(MediaServiceThrottlerTest,
   SimulateCrashes(1);
 
   // The MediaServerCrashListener should be dead.
-  clock_->Advance(base::TimeDelta::FromSeconds(2));
+  clock_.Advance(base::TimeDelta::FromSeconds(2));
   test_task_runner_->RunTasks();
   EXPECT_FALSE(throttler_->IsCrashListenerAliveForTesting());
 }

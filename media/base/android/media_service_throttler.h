@@ -79,7 +79,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
   // based on |current_crashes_|.
   base::TimeDelta GetThrottlingDelayFromServerCrashes();
 
-  std::unique_ptr<base::TickClock> clock_;
+  base::TickClock* clock_;
 
   // Effective number of media server crashes.
   // NOTE: This is of type double because we decay the number of crashes at a

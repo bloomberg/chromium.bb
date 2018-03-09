@@ -86,9 +86,6 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // Not owned by us.
   base::TickClock* tick_clock_;
 
-  // Owned copy of |tick_clock_|, or nullptr if one was provided to us.
-  std::unique_ptr<base::TickClock> optional_tick_clock_;
-
   // Time at which we most recently got a failed overlay request.
   base::TimeTicks most_recent_overlay_failure_;
 

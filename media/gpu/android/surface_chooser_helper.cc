@@ -34,15 +34,15 @@ SurfaceChooserHelper::SurfaceChooserHelper(
     bool is_overlay_required,
     bool promote_aggressively,
     std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator,
-    std::unique_ptr<base::TickClock> tick_clock)
+    base::TickClock* tick_clock)
     : surface_chooser_(std::move(surface_chooser)),
       is_overlay_required_(is_overlay_required),
       promotion_hint_aggregator_(
           promotion_hint_aggregator
               ? std::move(promotion_hint_aggregator)
               : std::make_unique<PromotionHintAggregatorImpl>()),
-      tick_clock_(tick_clock ? std::move(tick_clock)
-                             : std::make_unique<base::DefaultTickClock>()) {
+      tick_clock_(tick_clock ? tick_clock
+                             : base::DefaultTickClock::GetInstance()) {
   surface_chooser_state_.is_required = is_overlay_required_;
   surface_chooser_state_.promote_aggressively = promote_aggressively;
 }

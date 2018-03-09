@@ -22,10 +22,8 @@ AndroidVideoSurfaceChooserImpl::AndroidVideoSurfaceChooserImpl(
       tick_clock_(tick_clock),
       weak_factory_(this) {
   // Use a DefaultTickClock if one wasn't provided.
-  if (!tick_clock_) {
-    optional_tick_clock_ = std::make_unique<base::DefaultTickClock>();
-    tick_clock_ = optional_tick_clock_.get();
-  }
+  if (!tick_clock_)
+    tick_clock_ = base::DefaultTickClock::GetInstance();
 }
 
 AndroidVideoSurfaceChooserImpl::~AndroidVideoSurfaceChooserImpl() {}
