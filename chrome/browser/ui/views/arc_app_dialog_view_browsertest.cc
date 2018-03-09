@@ -11,10 +11,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,11 +41,6 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     profile_ = browser()->profile();
-    arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
-    if (!arc_app_list_pref_) {
-      ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
-          profile_);
-    }
 
     arc::SetArcPlayStoreEnabledForProfile(profile_, true);
 
@@ -410,112 +402,59 @@ IN_PROC_BROWSER_TEST_F(ArcAppPermissionDialogViewBrowserTest,
 // share same package.
 IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
                        UserConfirmsUninstall) {
-  std::vector<std::string> app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
+  EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
   std::string package_name = "fake.package.0";
   std::string app_activity = "fake.app.0.activity";
   std::string app_id =
       arc_app_list_pref()->GetAppId(package_name, app_activity);
 
-  AppListService* service = AppListService::Get();
-  ASSERT_TRUE(service);
-  AppListControllerDelegate* controller(service->GetControllerDelegate());
-  ASSERT_TRUE(controller);
-
-  // The dialog is only shown when AppList is visible, so we show AppList
-  // first.
-  service->ShowForProfile(browser()->profile());
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
+                            app_id);
   content::RunAllPendingInMessageLoop();
-
-  // When we show the dialog, AppList loses focus and gets dismissed.
-  EXPECT_FALSE(service->IsAppListVisible());
 
   // Cancelling the dialog won't uninstall any app.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(false));
   content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
+  EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
 
-  // The app list is not showing, so the dialog won't show.
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsArcAppDialogViewAliveForTest());
-
-  // Acceptting the dialog won't work since it was not shown.
-  EXPECT_FALSE(CloseAppDialogViewAndConfirmForTest(true));
-  content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
-  controller->DismissView();
-
-  // Show the app list, and then the dialog.
-  service->ShowForProfile(browser()->profile());
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
+                            app_id);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
 
-  // Acceptting the dialog should work now.
+  // Accepting the dialog should work now.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(true));
   content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 0u);
-  controller->DismissView();
+  EXPECT_EQ(0u, arc_app_list_pref()->GetAppIds().size());
 }
 
 // User confirms/cancels ARC app shortcut removal. Note that the app is not
 // uninstalled when the shortcut is removed.
 IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
                        UserConfirmsUninstallShortcut) {
-  std::vector<std::string> app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
+  EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
   std::string package_name = "fake.package.0";
   std::string intent_uri = "Fake Shortcut uri 0";
   std::string app_id = arc_app_list_pref()->GetAppId(package_name, intent_uri);
 
-  AppListService* service = AppListService::Get();
-  ASSERT_TRUE(service);
-  AppListControllerDelegate* controller(service->GetControllerDelegate());
-  ASSERT_TRUE(controller);
-
-  // The dialog is only shown when AppList is visible, so we show AppList
-  // first.
-  service->ShowForProfile(browser()->profile());
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
+                            app_id);
   content::RunAllPendingInMessageLoop();
-
-  // When we show the dialog, AppList loses focus and gets dismissed.
-  EXPECT_FALSE(service->IsAppListVisible());
 
   // Cancelling the dialog won't uninstall any app.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(false));
   content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
+  EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
 
-  // The app list is not showing, so the dialog won't show.
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsArcAppDialogViewAliveForTest());
-
-  // Acceptting the dialog won't work since it was not shown.
-  EXPECT_FALSE(CloseAppDialogViewAndConfirmForTest(true));
-  content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 2u);
-
-  // Show the app list, and then the dialog.
-  service->ShowForProfile(browser()->profile());
-  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
+                            app_id);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
 
-  // Acceptting the dialog should work now.
+  // Accepting the dialog should uninstall the shortcut only.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(true));
   content::RunAllPendingInMessageLoop();
-  app_ids = arc_app_list_pref()->GetAppIds();
-  EXPECT_EQ(app_ids.size(), 1u);
-  controller->DismissView();
+  EXPECT_EQ(1u, arc_app_list_pref()->GetAppIds().size());
 }
 
 }  // namespace arc
