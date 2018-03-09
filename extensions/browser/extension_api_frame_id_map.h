@@ -131,7 +131,7 @@ class ExtensionApiFrameIdMap {
   // the given render frame.
   void OnRenderFrameDeleted(content::RenderFrameHost* rfh);
 
-  // Updates the tab and window id for the given RenderFrameHost if necessary.
+  // Updates the tab and window id for the given RenderFrameHost, if any exists.
   void UpdateTabAndWindowId(int tab_id,
                             int window_id,
                             content::RenderFrameHost* rfh);
@@ -179,9 +179,8 @@ class ExtensionApiFrameIdMap {
   virtual ~ExtensionApiFrameIdMap();
 
   // Determines the value to be stored in |frame_data_map_| for a given key.
-  // Returns empty FrameData when the corresponding RenderFrameHost is not
-  // alive. This method is only called when |key| is not in |frame_data_map_|.
-  // Virtual for testing.
+  // This method is only called when |key| is not in |frame_data_map_|.
+  // virtual for testing.
   virtual FrameData KeyToValue(const RenderFrameIdKey& key) const;
 
   // Looks up the data for the given |key| and adds it to the |frame_data_map_|.
