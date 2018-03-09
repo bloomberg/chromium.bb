@@ -68,10 +68,11 @@ class SpellingRequest {
 
  private:
   // Request server-side checking for |text_|.
-  void RequestRemoteCheck(SpellingServiceClient* client);
+  void RequestRemoteCheck(SpellingServiceClient* client,
+                          const service_manager::Identity& renderer_identity);
 
   // Request a check for |text_| from local spell checker.
-  void RequestLocalCheck();
+  void RequestLocalCheck(int document_tag);
 
   // Check if all pending requests are done, send reply to render process if so.
   void OnCheckCompleted();
@@ -96,11 +97,13 @@ class SpellingRequest {
   base::RepeatingClosure completion_barrier_;
   bool remote_success_;
 
+  // The string to be spell-checked.
   base::string16 text_;
-  const service_manager::Identity renderer_identity_;
-  int document_tag_;
+
+  // Callback to send the results to renderer.
   RequestTextCheckCallback callback_;
 
+  // Callback to delete |this|. Called on |this| after everything is done.
   DestructionCallback destruction_callback_;
 
   base::WeakPtrFactory<SpellingRequest> weak_factory_;
@@ -115,8 +118,6 @@ SpellingRequest::SpellingRequest(
     DestructionCallback destruction_callback)
     : remote_success_(false),
       text_(text),
-      renderer_identity_(renderer_identity),
-      document_tag_(document_tag),
       callback_(std::move(callback)),
       destruction_callback_(std::move(destruction_callback)),
       weak_factory_(this) {
@@ -126,14 +127,16 @@ SpellingRequest::SpellingRequest(
   completion_barrier_ =
       BarrierClosure(2, base::BindOnce(&SpellingRequest::OnCheckCompleted,
                                        weak_factory_.GetWeakPtr()));
-  RequestRemoteCheck(client);
-  RequestLocalCheck();
+  RequestRemoteCheck(client, renderer_identity);
+  RequestLocalCheck(document_tag);
 }
 
-void SpellingRequest::RequestRemoteCheck(SpellingServiceClient* client) {
+void SpellingRequest::RequestRemoteCheck(
+    SpellingServiceClient* client,
+    const service_manager::Identity& renderer_identity) {
   BrowserContext* context = NULL;
   content::RenderProcessHost* host =
-      content::RenderProcessHost::FromRendererIdentity(renderer_identity_);
+      content::RenderProcessHost::FromRendererIdentity(renderer_identity);
   if (host)
     context = host->GetBrowserContext();
 
@@ -144,10 +147,10 @@ void SpellingRequest::RequestRemoteCheck(SpellingServiceClient* client) {
                      weak_factory_.GetWeakPtr()));
 }
 
-void SpellingRequest::RequestLocalCheck() {
+void SpellingRequest::RequestLocalCheck(int document_tag) {
   // |this| may be gone at callback invocation if the owner has been removed.
   spellcheck_platform::RequestTextCheck(
-      document_tag_, text_,
+      document_tag, text_,
       base::BindOnce(&SpellingRequest::OnLocalCheckCompletedOnAnyThread,
                      weak_factory_.GetWeakPtr()));
 }
