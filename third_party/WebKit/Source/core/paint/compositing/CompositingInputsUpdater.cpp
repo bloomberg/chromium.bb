@@ -60,17 +60,6 @@ static const PaintLayer* FindParentLayerOnClippingContainerChain(
   return nullptr;
 }
 
-static const PaintLayer* FindParentLayerOnContainingBlockChain(
-    const LayoutObject* object) {
-  for (const LayoutObject* current = object; current;
-       current = current->ContainingBlock()) {
-    if (current->HasLayer())
-      return static_cast<const LayoutBoxModelObject*>(current)->Layer();
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 static bool NeedsToEscapeClipInheritedFromCompositingContainer(
     const PaintLayer* layer,
     const LayoutObject& desired_clip) {
@@ -92,11 +81,12 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     return;
 
   LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
+  const ComputedStyle& style = layout_object.StyleRef();
 
   const PaintLayer* previous_overflow_layer = layer->AncestorOverflowLayer();
   layer->UpdateAncestorOverflowLayer(info.last_overflow_clip_layer);
   if (info.last_overflow_clip_layer && layer->NeedsCompositingInputsUpdate() &&
-      layout_object.Style()->HasStickyConstrainedPosition()) {
+      style.HasStickyConstrainedPosition()) {
     if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (info.last_overflow_clip_layer != previous_overflow_layer) {
         // Old ancestor scroller should no longer have these constraints.
@@ -142,22 +132,48 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     update_type = kForceUpdate;
   }
 
+  if (style.GetPosition() == EPosition::kAbsolute) {
+    info.scrolling_ancestor = info.scrolling_ancestor_for_absolute;
+    info.needs_reparent_scroll = info.needs_reparent_scroll_for_absolute;
+  } else if (style.GetPosition() == EPosition::kFixed) {
+    info.scrolling_ancestor = info.scrolling_ancestor_for_fixed;
+    info.needs_reparent_scroll = info.needs_reparent_scroll_for_fixed;
+  }
+
   if (update_type == kForceUpdate)
     UpdateAncestorDependentCompositingInputs(layer, info);
 
   info.enclosing_composited_layer = enclosing_composited_layer;
 
-  if (layer->StackingNode()->IsStackingContext())
-    info.ancestor_stacking_context = layer;
-
   if (layer->IsRootLayer() || layout_object.HasOverflowClip())
     info.last_overflow_clip_layer = layer;
 
-  if (layer->ScrollsOverflow())
-    info.last_scrolling_ancestor = layer;
-
   if (layout_object.HasClipRelatedProperty())
     info.has_ancestor_with_clip_related_property = true;
+
+  // Handles sibling scroll problem, i.e. a non-stacking context scroller
+  // needs to propagate scroll to its descendants that are siblings in
+  // paint order. For example:
+  // <div style="overflow:scroll;">
+  //   <div style="position:relative;">Paint sibling.</div>
+  // </div>
+  if (layer->ScrollsOverflow()) {
+    info.scrolling_ancestor = layer;
+    info.needs_reparent_scroll = true;
+  }
+  if (layout_object.CanContainAbsolutePositionObjects()) {
+    info.scrolling_ancestor_for_absolute = info.scrolling_ancestor;
+    info.needs_reparent_scroll_for_absolute = info.needs_reparent_scroll;
+  }
+  if (layout_object.CanContainFixedPositionObjects() &&
+      !layout_object.IsLayoutView()) {
+    info.scrolling_ancestor_for_fixed = info.scrolling_ancestor;
+    info.needs_reparent_scroll_for_fixed = info.needs_reparent_scroll;
+  }
+  if (style.IsStackingContext()) {
+    info.needs_reparent_scroll = info.needs_reparent_scroll_for_absolute =
+        info.needs_reparent_scroll_for_fixed = false;
+  }
 
   for (PaintLayer* child = layer->FirstChild(); child;
        child = child->NextSibling())
@@ -275,24 +291,9 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
     }
   }
 
-  if (info.last_scrolling_ancestor) {
-    const LayoutObject* containing_block = layout_object.ContainingBlock();
-    const PaintLayer* parent_layer_on_containing_block_chain =
-        FindParentLayerOnContainingBlockChain(containing_block);
-
-    properties.ancestor_scrolling_layer =
-        parent_layer_on_containing_block_chain->AncestorScrollingLayer();
-    if (parent_layer_on_containing_block_chain->ScrollsOverflow()) {
-      properties.ancestor_scrolling_layer =
-          parent_layer_on_containing_block_chain;
-    }
-
-    if (layer->StackingNode()->IsStacked() &&
-        properties.ancestor_scrolling_layer &&
-        !info.ancestor_stacking_context->GetLayoutObject().IsDescendantOf(
-            &properties.ancestor_scrolling_layer->GetLayoutObject()))
-      properties.scroll_parent = properties.ancestor_scrolling_layer;
-  }
+  properties.ancestor_scrolling_layer = info.scrolling_ancestor;
+  if (info.needs_reparent_scroll && layer->StackingNode()->IsStacked())
+    properties.scroll_parent = info.scrolling_ancestor;
 
   layer->UpdateAncestorDependentCompositingInputs(properties);
 }

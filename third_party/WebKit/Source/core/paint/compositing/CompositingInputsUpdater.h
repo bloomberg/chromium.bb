@@ -32,23 +32,20 @@ class CompositingInputsUpdater {
   };
 
   struct AncestorInfo {
-    AncestorInfo()
-        : ancestor_stacking_context(nullptr),
-          enclosing_composited_layer(nullptr),
-          last_overflow_clip_layer(nullptr),
-          last_scrolling_ancestor(nullptr),
-          has_ancestor_with_clip_related_property(false) {}
+    PaintLayer* enclosing_composited_layer = nullptr;
+    PaintLayer* last_overflow_clip_layer = nullptr;
+    bool has_ancestor_with_clip_related_property = false;
 
-    PaintLayer* ancestor_stacking_context;
-    PaintLayer* enclosing_composited_layer;
-    PaintLayer* last_overflow_clip_layer;
-    // Notice that lastScrollingAncestor isn't the same thing as
-    // ancestorScrollingLayer. The former is just the nearest scrolling
-    // along the PaintLayer::parent() chain. The latter is the layer that
-    // actually controls the scrolling of this layer, which we find on the
-    // containing block chain.
-    PaintLayer* last_scrolling_ancestor;
-    bool has_ancestor_with_clip_related_property;
+    PaintLayer* scrolling_ancestor = nullptr;
+    PaintLayer* scrolling_ancestor_for_absolute = nullptr;
+    PaintLayer* scrolling_ancestor_for_fixed = nullptr;
+    // These flags are set to true if a non-stacking context scroller
+    // is encountered, so that a descendant element won't inherit scroll
+    // translation from its compositing ancestor directly thus having to
+    // setup an alternative scroll parent instead.
+    bool needs_reparent_scroll = false;
+    bool needs_reparent_scroll_for_absolute = false;
+    bool needs_reparent_scroll_for_fixed = false;
   };
 
   void UpdateRecursive(PaintLayer*, UpdateType, AncestorInfo);
