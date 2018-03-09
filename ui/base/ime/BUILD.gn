@@ -192,6 +192,13 @@ jumbo_component("ime") {
       "input_method_win_tsf.h",
     ]
     libs = [ "imm32.lib" ]
+
+    jumbo_excluded_sources = [
+      # tsf_text_store.cc needs INITGUID to be defined before
+      # including any header to properly generate GUID objects. That
+      # is not guaranteed when included in a jumbo build.
+      "win/tsf_text_store.cc",
+    ]
   }
 
   if (is_mac) {
