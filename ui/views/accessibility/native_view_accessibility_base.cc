@@ -72,6 +72,31 @@ ui::AXPlatformNode* FromNativeWindow(gfx::NativeWindow native_window) {
   return ui::AXPlatformNode::FromNativeViewAccessible(native_view_accessible);
 }
 
+ui::AXPlatformNode* PlatformNodeFromNodeID(int32_t id) {
+  // Note: For Views, node IDs and unique IDs are the same - but that isn't
+  // necessarily true for all AXPlatformNodes.
+  auto it = g_unique_id_to_ax_platform_node.Get().find(id);
+
+  if (it == g_unique_id_to_ax_platform_node.Get().end())
+    return nullptr;
+
+  return it->second;
+}
+
+void FireEvent(QueuedEvent event) {
+  ui::AXPlatformNode* node = PlatformNodeFromNodeID(event.node_id);
+  if (node)
+    node->NotifyAccessibilityEvent(event.type);
+}
+
+void FlushQueue() {
+  DCHECK(g_is_queueing_events);
+  for (QueuedEvent event : g_event_queue.Get())
+    FireEvent(event);
+  g_is_queueing_events = false;
+  g_event_queue.Get().clear();
+}
+
 }  // namespace
 
 // static
@@ -99,31 +124,6 @@ NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
   return ax_node_->GetNativeViewAccessible();
-}
-
-ui::AXPlatformNode* PlatformNodeFromNodeID(int32_t id) {
-  // Note: For Views, node IDs and unique IDs are the same - but that isn't
-  // necessarily true for all AXPlatformNodes.
-  auto it = g_unique_id_to_ax_platform_node.Get().find(id);
-
-  if (it == g_unique_id_to_ax_platform_node.Get().end())
-    return nullptr;
-
-  return it->second;
-}
-
-void FireEvent(QueuedEvent event) {
-  ui::AXPlatformNode* node = PlatformNodeFromNodeID(event.node_id);
-  if (node)
-    node->NotifyAccessibilityEvent(event.type);
-}
-
-void FlushQueue() {
-  DCHECK(g_is_queueing_events);
-  for (QueuedEvent event : g_event_queue.Get())
-    FireEvent(event);
-  g_is_queueing_events = false;
-  g_event_queue.Get().clear();
 }
 
 void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
