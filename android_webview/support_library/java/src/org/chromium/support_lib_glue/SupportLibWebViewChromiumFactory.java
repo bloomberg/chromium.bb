@@ -15,8 +15,10 @@ import com.android.webview.chromium.WebViewChromiumAwInit;
 import com.android.webview.chromium.WebkitToSharedGlueConverter;
 
 import org.chromium.support_lib_boundary.StaticsBoundaryInterface;
+import org.chromium.support_lib_boundary.SupportLibraryInfoBoundaryInterface;
 import org.chromium.support_lib_boundary.WebViewProviderFactoryBoundaryInterface;
 import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
+import org.chromium.support_lib_boundary.util.Features;
 
 import java.lang.reflect.InvocationHandler;
 import java.util.List;
@@ -28,14 +30,23 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
     // SupportLibWebkitToCompatConverterAdapter
     private final InvocationHandler mCompatConverterAdapter;
     private final WebViewChromiumAwInit mAwInit;
+    private final String[] mSupportLibrarySupportedFeatures;
+    private final String[] mWebViewSupportedFeatures =
+            new String[] {Features.VISUAL_STATE_CALLBACK};
 
     // Initialization guarded by mAwInit.getLock()
     private InvocationHandler mStatics;
 
-    public SupportLibWebViewChromiumFactory() {
+    public SupportLibWebViewChromiumFactory(
+            /* SupportLibraryInfo */ InvocationHandler supportLibraryInfo) {
         mCompatConverterAdapter = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
                 new SupportLibWebkitToCompatConverterAdapter());
         mAwInit = WebkitToSharedGlueConverter.getGlobalAwInit();
+        mSupportLibrarySupportedFeatures =
+                BoundaryInterfaceReflectionUtil
+                        .castToSuppLibClass(
+                                SupportLibraryInfoBoundaryInterface.class, supportLibraryInfo)
+                        .getSupportedFeatures();
     }
 
     @Override
@@ -84,5 +95,10 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             }
         }
         return mStatics;
+    }
+
+    @Override
+    public String[] getSupportedFeatures() {
+        return mWebViewSupportedFeatures;
     }
 }

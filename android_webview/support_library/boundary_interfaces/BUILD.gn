@@ -8,12 +8,14 @@ import("//build/config/android/rules.gni")
 android_library("boundary_interface_java") {
   java_files = [
     "src/org/chromium/support_lib_boundary/StaticsBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/SupportLibraryInfoBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/VisualStateCallbackBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebSettingsBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebViewProviderBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebViewProviderFactoryBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebkitToCompatConverterBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/util/BoundaryInterfaceReflectionUtil.java",
+    "src/org/chromium/support_lib_boundary/util/Features.java",
   ]
 
   proguard_configs = [ "proguard.flags" ]
