@@ -5,6 +5,7 @@
 #ifndef CompositedLayerRasterInvalidator_h
 #define CompositedLayerRasterInvalidator_h
 
+#include "platform/graphics/compositing/ChunkToLayerMapper.h"
 #include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
@@ -48,13 +49,13 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   friend class CompositedLayerRasterInvalidatorTest;
 
   struct PaintChunkInfo {
-    PaintChunkInfo(const IntRect& bounds,
-                   const TransformationMatrix& chunk_to_layer_transform,
-                   const FloatClipRect& chunk_to_layer_clip,
+    PaintChunkInfo(const CompositedLayerRasterInvalidator& invalidator,
+                   const ChunkToLayerMapper& mapper,
                    const PaintChunk& chunk)
-        : bounds_in_layer(bounds),
-          chunk_to_layer_transform(chunk_to_layer_transform),
-          chunk_to_layer_clip(chunk_to_layer_clip),
+        : bounds_in_layer(invalidator.ClipByLayerBounds(
+              mapper.MapVisualRect(chunk.bounds))),
+          chunk_to_layer_transform(mapper.Transform()),
+          chunk_to_layer_clip(mapper.ClipRect()),
           id(chunk.id),
           is_cacheable(chunk.is_cacheable),
           properties(chunk.properties) {}
@@ -71,22 +72,12 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     PaintChunkProperties properties;
   };
 
-  IntRect MapRectFromChunkToLayer(const FloatRect&,
-                                  const PaintChunk&,
-                                  const PropertyTreeState& layer_state) const;
-  TransformationMatrix ChunkToLayerTransform(
-      const PaintChunk&,
-      const PropertyTreeState& layer_state) const;
-  FloatClipRect ChunkToLayerClip(const PaintChunk&,
-                                 const PropertyTreeState& layer_state) const;
-
-  void GenerateRasterInvalidations(
-      const Vector<const PaintChunk*>& new_chunks,
-      const Vector<PaintChunkInfo>& new_chunks_info,
-      const PropertyTreeState& layer_state);
+  void GenerateRasterInvalidations(const Vector<const PaintChunk*>& new_chunks,
+                                   const PropertyTreeState& layer_state,
+                                   Vector<PaintChunkInfo>& new_chunks_info);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
   void AddDisplayItemRasterInvalidations(const PaintChunk&,
-                                         const PropertyTreeState& layer_state);
+                                         const ChunkToLayerMapper&);
   void IncrementallyInvalidateChunk(const PaintChunkInfo& old_chunk,
                                     const PaintChunkInfo& new_chunk);
   void FullyInvalidateChunk(const PaintChunkInfo& old_chunk,

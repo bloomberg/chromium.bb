@@ -8,6 +8,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/render_surface_filters.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/compositing/ChunkToLayerMapper.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/GeometryMapper.h"
@@ -424,6 +425,8 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
     translated = true;
   };
 
+  ChunkToLayerMapper mapper(layer_state_, layer_offset_);
+
   for (auto chunk_it = paint_chunks.begin(); chunk_it != paint_chunks.end();
        chunk_it++) {
     const PaintChunk& chunk = **chunk_it;
@@ -450,6 +453,8 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
       properties_adjusted = true;
     };
 
+    mapper.SwitchToChunk(chunk);
+
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
       DCHECK(item.IsDrawing());
       auto record =
@@ -469,8 +474,7 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
       cc_list_.StartPaint();
       if (record && record->size() != 0)
         cc_list_.push<cc::DrawRecordOp>(std::move(record));
-      cc_list_.EndPaintOfUnpaired(PaintChunksToCcLayer::MapRectFromChunkToLayer(
-          item.VisualRect(), chunk, layer_state_, layer_offset_));
+      cc_list_.EndPaintOfUnpaired(mapper.MapVisualRect(item.VisualRect()));
     }
     if (transformed)
       AppendRestore(1);
@@ -526,25 +530,6 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
 
   cc_list->Finalize();
   return cc_list;
-}
-
-IntRect PaintChunksToCcLayer::MapRectFromChunkToLayer(
-    const FloatRect& r,
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset) {
-  FloatClipRect rect(r);
-  GeometryMapper::LocalToAncestorVisualRect(
-      chunk.properties.property_tree_state.GetPropertyTreeState(), layer_state,
-      rect);
-  if (rect.Rect().IsEmpty())
-    return IntRect();
-
-  // Now rect is in the space of the containing transform node of layer,
-  // so need to subtract off the layer offset.
-  rect.Rect().Move(-layer_offset.x(), -layer_offset.y());
-  rect.Rect().Inflate(chunk.outset_for_raster_effects);
-  return EnclosingIntRect(rect.Rect());
 }
 
 }  // namespace blink

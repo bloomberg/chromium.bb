@@ -250,6 +250,11 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
       local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
       clip_behavior, success);
   DCHECK(success);
+
+  // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
+  if (local_state.Effect() != ancestor_state.Effect())
+    result.ClearIsTight();
+
   return result;
 }
 

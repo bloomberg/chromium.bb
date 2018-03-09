@@ -649,6 +649,7 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   expected_visual_rect = FloatClipRect(output);
   expected_visual_rect.ClearIsTight();
   expected_clip = FloatClipRect(FloatRect(50, 60, 90, 90));
+  expected_clip.ClearIsTight();
   CHECK_MAPPINGS();
 }
 

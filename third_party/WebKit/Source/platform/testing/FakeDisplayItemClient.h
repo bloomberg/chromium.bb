@@ -6,6 +6,7 @@
 #define FakeDisplayItemClient_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {

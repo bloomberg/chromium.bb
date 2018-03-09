@@ -294,10 +294,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
   EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
 
   // Change both clip0 and clip2.
-  LOG(ERROR) << "22222222222222222222222222222222222222222222";
   CHUNKS(new_chunks, Chunk(0), Chunk(1), Chunk(2));
   FloatRoundedRect new_clip_rect(FloatRect(-2000, -2000, 4000, 4000), radii);
-  LOG(ERROR) << "new_clip_rect: " << new_clip_rect.ToString();
   clip0->Update(clip0->Parent(), clip0->LocalTransformSpace(), new_clip_rect);
   clip2->Update(clip2->Parent(), clip2->LocalTransformSpace(), new_clip_rect);
   new_chunks_array[0].properties = chunks[0]->properties;
@@ -314,7 +312,6 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
                             PaintInvalidationReason::kPaintProperty);
   invalidator.SetTracksRasterInvalidations(false);
   clip2->ClearChangedToRoot();
-  LOG(ERROR) << "333333333333333333333333333333333333333333333";
 
   // Change chunk1's properties to use a different property tree state.
   CHUNKS(new_chunks1, Chunk(0), Chunk(1), Chunk(2));
