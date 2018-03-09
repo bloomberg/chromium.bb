@@ -2372,7 +2372,10 @@ void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
   const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
       region->focus.edge_top_rounded().x(),
       region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));
-  legacy_render_widget_host_HWND_->MoveCaretTo(caret_rect);
+  gfx::Rect dip_caret_rect = display::win::ScreenWin::DIPToScreenRect(
+      legacy_render_widget_host_HWND_->hwnd(), caret_rect);
+  dip_caret_rect.set_width(1);  // Collapse any selection.
+  legacy_render_widget_host_HWND_->MoveCaretTo(dip_caret_rect);
 #endif  // defined(OS_WIN)
 }
 
