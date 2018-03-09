@@ -17,6 +17,14 @@ template <>
 struct PLATFORM_EXPORT
     StructTraits<blink::mojom::blink::SerializedBlob::DataView,
                  scoped_refptr<blink::BlobDataHandle>> {
+  static bool IsNull(const scoped_refptr<blink::BlobDataHandle>& input) {
+    return !input;
+  }
+
+  static void SetToNull(scoped_refptr<blink::BlobDataHandle>* output) {
+    *output = nullptr;
+  }
+
   static WTF::String uuid(const scoped_refptr<blink::BlobDataHandle>& input) {
     return input->Uuid();
   }
