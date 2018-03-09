@@ -30,8 +30,7 @@ class TestObserver : public AppListModelObserver {
       : status_changed_count_(0),
         items_added_(0),
         items_removed_(0),
-        items_updated_(0) {
-  }
+        items_updated_(0) {}
   ~TestObserver() override {}
 
   // AppListModelObserver
@@ -162,8 +161,8 @@ TEST_F(AppListModelTest, SetItemPosition) {
   AppListItem* item2 = model_.CreateItem("Added Item 2");
   model_.AddItem(item2);
   EXPECT_EQ("Item 0,Item 1,Added Item 1,Added Item 2", GetModelContents());
-  model_.SetItemPosition(
-      item2, item0->position().CreateBetween(item1->position()));
+  model_.SetItemPosition(item2,
+                         item0->position().CreateBetween(item1->position()));
   EXPECT_EQ(num_apps + 2, model_.top_level_item_list()->item_count());
   EXPECT_EQ(num_apps + 2, observer_.items_added());
   EXPECT_EQ("Item 0,Added Item 2,Item 1,Added Item 1", GetModelContents());
@@ -223,8 +222,7 @@ TEST_F(AppListModelTest, AppOrder) {
 
 class AppListModelFolderTest : public AppListModelTest {
  public:
-  AppListModelFolderTest() {
-  }
+  AppListModelFolderTest() {}
   ~AppListModelFolderTest() override {}
 
   // testing::Test overrides:
@@ -247,8 +245,7 @@ TEST_F(AppListModelFolderTest, FolderItem) {
   }
   ASSERT_EQ(num_folder_apps, folder->item_list()->item_count());
   // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(0)));
+  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
@@ -258,13 +255,11 @@ TEST_F(AppListModelFolderTest, FolderItem) {
   // Confirm that everything was moved where expected.
   EXPECT_EQ(model_.GetItemName(num_observed_apps),
             folder->item_list()->item_at(0)->id());
-  EXPECT_EQ(model_.GetItemName(0),
-            folder->item_list()->item_at(1)->id());
+  EXPECT_EQ(model_.GetItemName(0), folder->item_list()->item_at(1)->id());
   EXPECT_EQ(model_.GetItemName(num_observed_apps - 1),
             folder->item_list()->item_at(num_observed_apps)->id());
   // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(0)));
+  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
       folder, folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
@@ -381,8 +376,7 @@ TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
   EXPECT_EQ("Item 0,Item 1,folder1,Item 2,Item 3", GetModelContents());
   // Move Item 1 to folder1, then Item 2 before Item 1.
   model_.MoveItemToFolderAt(model_.top_level_item_list()->item_at(1),
-                            folder1->id(),
-                            syncer::StringOrdinal());
+                            folder1->id(), syncer::StringOrdinal());
   EXPECT_EQ("Item 0,folder1,Item 2,Item 3", GetModelContents());
   model_.MoveItemToFolderAt(model_.top_level_item_list()->item_at(2),
                             folder1->id(),
@@ -390,13 +384,13 @@ TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
   EXPECT_EQ("Item 2,Item 1", GetItemListContents(folder1->item_list()));
   EXPECT_EQ("Item 0,folder1,Item 3", GetModelContents());
   // Move Item 2 out of folder to before folder.
-  model_.MoveItemToFolderAt(
-      folder1->item_list()->item_at(0), "", folder1->position());
+  model_.MoveItemToFolderAt(folder1->item_list()->item_at(0), "",
+                            folder1->position());
   EXPECT_EQ("Item 0,Item 2,folder1,Item 3", GetModelContents());
   // Move remaining folder item, (Item 1) out of folder to folder position.
   ASSERT_EQ(1u, folder1->item_list()->item_count());
-  model_.MoveItemToFolderAt(
-      folder1->item_list()->item_at(0), "", folder1->position());
+  model_.MoveItemToFolderAt(folder1->item_list()->item_at(0), "",
+                            folder1->position());
   EXPECT_EQ("Item 0,Item 2,Item 1,Item 3", GetModelContents());
 }
 
