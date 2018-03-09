@@ -5,6 +5,7 @@
 #include "device/vr/oculus/oculus_render_loop.h"
 
 #include "device/vr/oculus/oculus_type_converters.h"
+#include "third_party/libovr/src/Include/Extras/OVR_Math.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 #include "third_party/libovr/src/Include/OVR_CAPI_D3D.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -14,6 +15,32 @@
 #endif
 
 namespace device {
+
+namespace {
+
+// How far the index trigger needs to be pushed to be considered "pressed".
+const float kTriggerPressedThreshold = 0.6f;
+
+// WebXR reports a pointer pose separate from the grip pose, which represents a
+// pointer ray emerging from the tip of the controller. Oculus does not report
+// anything like that, but the pose they report matches WebXR's idea of the
+// pointer pose more than grip. For consistency with other WebXR backends we
+// apply a rotation and slight translation to the reported pose to get the grip
+// pose. Experimentally determined, should roughly place the grip pose origin at
+// the center of the Oculus Touch handle.
+const float kGripRotationXDelta = 45.0f;
+const float kGripOffsetZMeters = 0.025f;
+
+gfx::Transform PoseToTransform(const ovrPosef& pose) {
+  OVR::Matrix4f mat(pose);
+  return gfx::Transform(mat.M[0][0], mat.M[0][1], mat.M[0][2], mat.M[0][3],
+                        mat.M[1][0], mat.M[1][1], mat.M[1][2], mat.M[1][3],
+                        mat.M[2][0], mat.M[2][1], mat.M[2][2], mat.M[2][3],
+                        mat.M[3][0], mat.M[3][1], mat.M[3][2], mat.M[3][3]);
+}
+
+}  // namespace
+
 OculusRenderLoop::OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid)
     : base::Thread("OculusRenderLoop"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -177,6 +204,8 @@ void OculusRenderLoop::RequestPresent(
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
 
+  report_webxr_input_ = present_options->webxr_input;
+
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), true, std::move(transport_options)));
@@ -206,10 +235,124 @@ void OculusRenderLoop::GetVSync(
       mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
   last_render_pose_ = state.HeadPose.ThePose;
 
+  if (pose && report_webxr_input_) {
+    pose->input_state = GetInputState(state);
+  }
+
   base::TimeDelta time = base::TimeDelta::FromSecondsD(predicted_time);
 
   std::move(callback).Run(std::move(pose), time, frame,
                           mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
+}
+
+std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
+    const ovrTrackingState& tracking_state) {
+  std::vector<mojom::XRInputSourceStatePtr> input_states;
+
+  ovrInputState input_state;
+
+  // Get the state of the active controllers.
+  if ((OVR_SUCCESS(ovr_GetInputState(session_, ovrControllerType_Active,
+                                     &input_state)))) {
+    // Report whichever touch controllers are currently active.
+    if (input_state.ControllerType & ovrControllerType_LTouch) {
+      input_states.push_back(GetTouchData(
+          ovrControllerType_LTouch, tracking_state.HandPoses[ovrHand_Left],
+          input_state, ovrHand_Left));
+    } else {
+      primary_input_pressed[ovrControllerType_LTouch] = false;
+    }
+
+    if (input_state.ControllerType & ovrControllerType_RTouch) {
+      input_states.push_back(GetTouchData(
+          ovrControllerType_RTouch, tracking_state.HandPoses[ovrHand_Right],
+          input_state, ovrHand_Right));
+    } else {
+      primary_input_pressed[ovrControllerType_RTouch] = false;
+    }
+
+    // If an oculus remote is active, report a gaze controller.
+    if (input_state.ControllerType & ovrControllerType_Remote) {
+      device::mojom::XRInputSourceStatePtr state =
+          device::mojom::XRInputSourceState::New();
+
+      state->source_id = ovrControllerType_Remote;
+      state->primary_input_pressed =
+          (input_state.Buttons & ovrButton_Enter) != 0;
+
+      if (!state->primary_input_pressed &&
+          primary_input_pressed[ovrControllerType_Remote]) {
+        state->primary_input_clicked = true;
+      }
+
+      primary_input_pressed[ovrControllerType_Remote] =
+          state->primary_input_pressed;
+
+      input_states.push_back(std::move(state));
+    } else {
+      primary_input_pressed[ovrControllerType_Remote] = false;
+    }
+  }
+
+  return input_states;
+}
+
+device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
+    ovrControllerType type,
+    const ovrPoseStatef& pose,
+    const ovrInputState& input_state,
+    ovrHandType hand) {
+  device::mojom::XRInputSourceStatePtr state =
+      device::mojom::XRInputSourceState::New();
+
+  state->source_id = type;
+  state->primary_input_pressed =
+      (input_state.IndexTrigger[hand] > kTriggerPressedThreshold);
+
+  // If the input has gone from pressed to not pressed since the last poll
+  // report it as clicked.
+  if (!state->primary_input_pressed && primary_input_pressed[type])
+    state->primary_input_clicked = true;
+
+  primary_input_pressed[type] = state->primary_input_pressed;
+
+  device::mojom::XRInputSourceDescriptionPtr desc =
+      device::mojom::XRInputSourceDescription::New();
+
+  // It's a handheld pointing device.
+  desc->pointer_origin = device::mojom::XRPointerOrigin::HAND;
+
+  // Set handedness.
+  switch (hand) {
+    case ovrHand_Left:
+      desc->handedness = device::mojom::XRHandedness::LEFT;
+      break;
+    case ovrHand_Right:
+      desc->handedness = device::mojom::XRHandedness::RIGHT;
+      break;
+    default:
+      desc->handedness = device::mojom::XRHandedness::NONE;
+      break;
+  }
+
+  // Touch controller are fully 6DoF.
+  desc->emulated_position = false;
+
+  // The grip pose will be rotated and translated back a bit from the pointer
+  // pose, which is what the Oculus API returns.
+  state->grip = PoseToTransform(pose.ThePose);
+  state->grip->RotateAboutXAxis(kGripRotationXDelta);
+  state->grip->Translate3d(0, 0, kGripOffsetZMeters);
+
+  // Need to apply the inverse transform from above to put the pointer back in
+  // the right orientation relative to the grip.
+  desc->pointer_offset = gfx::Transform();
+  desc->pointer_offset->Translate3d(0, 0, -kGripOffsetZMeters);
+  desc->pointer_offset->RotateAboutXAxis(-kGripRotationXDelta);
+
+  state->description = std::move(desc);
+
+  return state;
 }
 
 }  // namespace device
