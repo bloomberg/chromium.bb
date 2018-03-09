@@ -359,6 +359,9 @@ static void setup_frame(AV1_COMP *cpi) {
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
         cm->frame_refs[cm->primary_ref_frame].idx < 0) {
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+      // Ensure the coefficient CDFs are correct
+      av1_default_coef_probs(cm);
+      cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
       cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
     } else {
       *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
@@ -4467,6 +4470,14 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
     }
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    else if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
+             cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+      av1_default_coef_probs(cm);
+      cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
+    }
+#endif
 
     // Variance adaptive and in frame q adjustment experiments are mutually
     // exclusive.
