@@ -339,6 +339,10 @@ typedef struct AV1Common {
   /* profile settings */
   TX_MODE tx_mode;
 
+#if CONFIG_ENTROPY_STATS
+  int coef_cdf_category;
+#endif
+
   int base_qindex;
   int y_dc_delta_q;
   int u_dc_delta_q;

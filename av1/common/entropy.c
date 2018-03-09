@@ -560,6 +560,10 @@ static int get_q_ctx(int q) {
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
   const int index = get_q_ctx(cm->base_qindex);
+#if CONFIG_ENTROPY_STATS
+  cm->coef_cdf_category = index;
+#endif
+
   av1_copy(cm->fc->txb_skip_cdf, av1_default_txb_skip_cdfs[index]);
   av1_copy(cm->fc->eob_extra_cdf, av1_default_eob_extra_cdfs[index]);
   av1_copy(cm->fc->dc_sign_cdf, av1_default_dc_sign_cdfs[index]);

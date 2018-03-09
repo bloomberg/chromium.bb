@@ -414,102 +414,116 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_filter_intra_cdfs[BLOCK_SIZES_ALL][CDF_SIZE(2)]");
 
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = TXB_SKIP_CONTEXTS;
-  cts_each_dim[2] = 2;
-  optimize_cdf_table(&fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
-                     "CONTEXTS][CDF_SIZE(2)]");
-
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = EOB_COEF_CONTEXTS;
+  /* transform coding */
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = TX_SIZES;
+  cts_each_dim[2] = TXB_SKIP_CONTEXTS;
   cts_each_dim[3] = 2;
+  optimize_cdf_table(&fc.txb_skip[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "av1_default_txb_skip_cdfs[TOKEN_CDF_Q_CTXS][TX_SIZES]"
+                     "[TXB_SKIP_CONTEXTS][CDF_SIZE(2)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = TX_SIZES;
+  cts_each_dim[2] = PLANE_TYPES;
+  cts_each_dim[3] = EOB_COEF_CONTEXTS;
+  cts_each_dim[4] = 2;
   optimize_cdf_table(
-      &fc.eob_extra[0][0][0][0], probsfile, 4, cts_each_dim,
-      "static const aom_cdf_prob "
-      "default_eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]"
+      &fc.eob_extra[0][0][0][0][0], probsfile, 5, cts_each_dim,
+      "static const aom_cdf_prob av1_default_eob_extra_cdfs "
+      "[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]"
       "[CDF_SIZE(2)]");
 
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 5;
-  optimize_cdf_table(&fc.eob_multi16[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi16[PLANE_TYPES][2][CDF_SIZE(5)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 6;
-  optimize_cdf_table(&fc.eob_multi32[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi32[PLANE_TYPES][2][CDF_SIZE(6)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 7;
-  optimize_cdf_table(&fc.eob_multi64[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi64[PLANE_TYPES][2][CDF_SIZE(7)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 8;
-  optimize_cdf_table(&fc.eob_multi128[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi128[PLANE_TYPES][2][CDF_SIZE(8)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 9;
-  optimize_cdf_table(&fc.eob_multi256[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi256[PLANE_TYPES][2][CDF_SIZE(9)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 10;
-  optimize_cdf_table(&fc.eob_multi512[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi512[PLANE_TYPES][2][CDF_SIZE(10)]");
-
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  cts_each_dim[2] = 11;
-  optimize_cdf_table(&fc.eob_multi1024[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_eob_multi1024[PLANE_TYPES][2][CDF_SIZE(11)]");
-
-  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
   cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = LEVEL_CONTEXTS;
-  cts_each_dim[3] = BR_CDF_SIZE;
-  optimize_cdf_table(&fc.coeff_lps_multi[0][0][0][0], probsfile, 4,
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 5;
+  optimize_cdf_table(&fc.eob_multi16[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi16_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(5)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 6;
+  optimize_cdf_table(&fc.eob_multi32[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi32_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(6)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 7;
+  optimize_cdf_table(&fc.eob_multi64[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi64_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(7)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 8;
+  optimize_cdf_table(&fc.eob_multi128[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi128_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(8)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 9;
+  optimize_cdf_table(&fc.eob_multi256[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi256_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(9)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 10;
+  optimize_cdf_table(&fc.eob_multi512[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi512_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(10)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = 2;
+  cts_each_dim[3] = 11;
+  optimize_cdf_table(&fc.eob_multi1024[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob av1_default_eob_multi1024_cdfs"
+                     "[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][CDF_SIZE(11)]");
+
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = TX_SIZES;
+  cts_each_dim[2] = PLANE_TYPES;
+  cts_each_dim[3] = LEVEL_CONTEXTS;
+  cts_each_dim[4] = BR_CDF_SIZE;
+  optimize_cdf_table(&fc.coeff_lps_multi[0][0][0][0][0], probsfile, 5,
                      cts_each_dim,
                      "static const aom_cdf_prob "
-                     "default_coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_"
-                     "CONTEXTS][CDF_SIZE(BR_CDF_SIZE)]");
+                     "av1_default_coeff_lps_multi_cdfs[TOKEN_CDF_Q_CTXS]"
+                     "[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]"
+                     "[CDF_SIZE(BR_CDF_SIZE)]");
 
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D;
-  cts_each_dim[3] = 4;
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = TX_SIZES;
+  cts_each_dim[2] = PLANE_TYPES;
+  cts_each_dim[3] = SIG_COEF_CONTEXTS;
+  cts_each_dim[4] = NUM_BASE_LEVELS + 2;
   optimize_cdf_table(
-      &fc.coeff_base_multi[0][0][0][0], probsfile, 4, cts_each_dim,
-      "static const aom_cdf_prob "
-      "default_coeff_base_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]"
-      "[CDF_SIZE(NUM_BASE_LEVELS+2)]");
+      &fc.coeff_base_multi[0][0][0][0][0], probsfile, 5, cts_each_dim,
+      "static const aom_cdf_prob av1_default_coeff_base_multi_cdfs"
+      "[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]"
+      "[CDF_SIZE(NUM_BASE_LEVELS + 2)]");
 
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = SIG_COEF_CONTEXTS_EOB;
-  cts_each_dim[3] = 3;
+  cts_each_dim[0] = TOKEN_CDF_Q_CTXS;
+  cts_each_dim[1] = TX_SIZES;
+  cts_each_dim[2] = PLANE_TYPES;
+  cts_each_dim[3] = SIG_COEF_CONTEXTS_EOB;
+  cts_each_dim[4] = NUM_BASE_LEVELS + 1;
   optimize_cdf_table(
-      &fc.coeff_base_eob_multi[0][0][0][0], probsfile, 4, cts_each_dim,
-      "static const aom_cdf_prob "
-      "default_coeff_base_eob_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_"
-      "CONTEXTS_EOB][CDF_SIZE(NUM_BASE_LEVELS+1)]");
+      &fc.coeff_base_eob_multi[0][0][0][0][0], probsfile, 5, cts_each_dim,
+      "static const aom_cdf_prob av1_default_coeff_base_eob_multi_cdfs"
+      "[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS_EOB]"
+      "[CDF_SIZE(NUM_BASE_LEVELS + 1)]");
 
   /* Skip mode flag */
   cts_each_dim[0] = SKIP_MODE_CONTEXTS;

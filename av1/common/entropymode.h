@@ -192,26 +192,27 @@ typedef struct FRAME_COUNTS {
                                 [SWITCHABLE_FILTERS];
 
 #if CONFIG_ENTROPY_STATS
-  unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
-  unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
+  unsigned int txb_skip[TOKEN_CDF_Q_CTXS][TX_SIZES][TXB_SKIP_CONTEXTS][2];
+  unsigned int eob_extra[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
+                        [EOB_COEF_CONTEXTS][2];
   unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS]
                         [2];
-#endif  // CONFIG_ENTROPY_STATS
   unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
-  unsigned int eob_multi16[PLANE_TYPES][2][5];
-  unsigned int eob_multi32[PLANE_TYPES][2][6];
-  unsigned int eob_multi64[PLANE_TYPES][2][7];
-  unsigned int eob_multi128[PLANE_TYPES][2][8];
-  unsigned int eob_multi256[PLANE_TYPES][2][9];
-  unsigned int eob_multi512[PLANE_TYPES][2][10];
-  unsigned int eob_multi1024[PLANE_TYPES][2][11];
-  unsigned int coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
-                              [BR_CDF_SIZE];
-  unsigned int coeff_base_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
-                               [NUM_BASE_LEVELS + 2];
-  unsigned int coeff_base_eob_multi[TX_SIZES][PLANE_TYPES]
+  unsigned int eob_multi16[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][5];
+  unsigned int eob_multi32[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][6];
+  unsigned int eob_multi64[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][7];
+  unsigned int eob_multi128[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][8];
+  unsigned int eob_multi256[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][9];
+  unsigned int eob_multi512[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][10];
+  unsigned int eob_multi1024[TOKEN_CDF_Q_CTXS][PLANE_TYPES][2][11];
+  unsigned int coeff_lps_multi[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
+                              [LEVEL_CONTEXTS][BR_CDF_SIZE];
+  unsigned int coeff_base_multi[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
+                               [SIG_COEF_CONTEXTS][NUM_BASE_LEVELS + 2];
+  unsigned int coeff_base_eob_multi[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
                                    [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
+#endif  // CONFIG_ENTROPY_STATS
 
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[GLOBALMV_MODE_CONTEXTS][2];

@@ -133,10 +133,16 @@ static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
   return error;
 }
 
-void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
+#if CONFIG_ENTROPY_STATS
+void av1_update_eob_context(int cdf_idx, int eob, int seg_eob, TX_SIZE tx_size,
                             TX_TYPE tx_type, PLANE_TYPE plane,
                             FRAME_CONTEXT *ec_ctx, FRAME_COUNTS *counts,
                             uint8_t allow_update_cdf) {
+#else
+void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
+                            TX_TYPE tx_type, PLANE_TYPE plane,
+                            FRAME_CONTEXT *ec_ctx, uint8_t allow_update_cdf) {
+#endif
   int eob_extra, dummy;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
   const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
@@ -148,36 +154,48 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
 
   switch (eob_multi_size) {
     case 0:
-      ++counts->eob_multi16[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi16[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf)
         update_cdf(ec_ctx->eob_flag_cdf16[plane][eob_multi_ctx], eob_pt - 1, 5);
       break;
     case 1:
-      ++counts->eob_multi32[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi32[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf)
         update_cdf(ec_ctx->eob_flag_cdf32[plane][eob_multi_ctx], eob_pt - 1, 6);
       break;
     case 2:
-      ++counts->eob_multi64[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi64[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf)
         update_cdf(ec_ctx->eob_flag_cdf64[plane][eob_multi_ctx], eob_pt - 1, 7);
       break;
     case 3:
-      ++counts->eob_multi128[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi128[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf128[plane][eob_multi_ctx], eob_pt - 1,
                    8);
       }
       break;
     case 4:
-      ++counts->eob_multi256[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi256[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf256[plane][eob_multi_ctx], eob_pt - 1,
                    9);
       }
       break;
     case 5:
-      ++counts->eob_multi512[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi512[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf512[plane][eob_multi_ctx], eob_pt - 1,
                    10);
@@ -185,7 +203,9 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
       break;
     case 6:
     default:
-      ++counts->eob_multi1024[plane][eob_multi_ctx][eob_pt - 1];
+#if CONFIG_ENTROPY_STATS
+      ++counts->eob_multi1024[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
       if (allow_update_cdf) {
         update_cdf(ec_ctx->eob_flag_cdf1024[plane][eob_multi_ctx], eob_pt - 1,
                    11);
@@ -197,7 +217,7 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
 #if CONFIG_ENTROPY_STATS
-    counts->eob_extra[txs_ctx][plane][eob_pt][bit]++;
+    counts->eob_extra[cdf_idx][txs_ctx][plane][eob_pt][bit]++;
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(ec_ctx->eob_extra_cdf[txs_ctx][plane][eob_pt], bit, 2);
@@ -1319,10 +1339,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   TX_SIZE txsize_ctx = get_txsize_entropy_ctx(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
+#if CONFIG_ENTROPY_STATS
+  int cdf_idx = cm->coef_cdf_category;
+#endif  // CONFIG_ENTROPY_STATS
 
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
 #if CONFIG_ENTROPY_STATS
-  ++td->counts->txb_skip[txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
+  ++td->counts->txb_skip[cdf_idx][txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
 #endif  // CONFIG_ENTROPY_STATS
   if (allow_update_cdf) {
     update_cdf(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
@@ -1340,8 +1363,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   av1_txb_init_levels(tcoeff, width, height, levels);
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
                            tx_size, td->counts, allow_update_cdf);
+#if CONFIG_ENTROPY_STATS
+  av1_update_eob_context(cdf_idx, eob, seg_eob, tx_size, tx_type, plane_type,
+                         ec_ctx, td->counts, allow_update_cdf);
+#else
   av1_update_eob_context(eob, seg_eob, tx_size, tx_type, plane_type, ec_ctx,
-                         td->counts, allow_update_cdf);
+                         allow_update_cdf);
+#endif
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
 
   for (c = eob - 1; c >= 0; --c) {
@@ -1366,11 +1394,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     {
       if (c == eob - 1) {
         assert(coeff_ctx < 4);
-        ++td->counts->coeff_base_eob_multi[txsize_ctx][plane_type][coeff_ctx]
-                                          [AOMMIN(level, 3) - 1];
+#if CONFIG_ENTROPY_STATS
+        ++td->counts->coeff_base_eob_multi[cdf_idx][txsize_ctx][plane_type]
+                                          [coeff_ctx][AOMMIN(level, 3) - 1];
       } else {
-        ++td->counts->coeff_base_multi[txsize_ctx][plane_type][coeff_ctx]
-                                      [AOMMIN(level, 3)];
+        ++td->counts->coeff_base_multi[cdf_idx][txsize_ctx][plane_type]
+                                      [coeff_ctx][AOMMIN(level, 3)];
+#endif
       }
     }
     if (level > NUM_BASE_LEVELS) {
@@ -1390,8 +1420,10 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #endif  // CONFIG_ENTROPY_STATS
           if (lps == k) break;
         }
-        ++td->counts->coeff_lps_multi[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
-                                     [br_ctx][k];
+#if CONFIG_ENTROPY_STATS
+        ++td->counts->coeff_lps_multi[cdf_idx][AOMMIN(txsize_ctx, TX_32X32)]
+                                     [plane_type][br_ctx][k];
+#endif
         if (k < BR_CDF_SIZE - 1) break;
       }
     }
