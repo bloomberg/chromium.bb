@@ -22,6 +22,9 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
     build_properties, oauth_file, tmp_dir):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   build_properties = json.loads(build_properties)
+  if not configuration_name:
+    # we are deprecating perf-id crbug.com/817823
+    configuration_name = build_properties['buildername'],
   args = [
       '--tmp-dir', tmp_dir,
       '--buildername', build_properties['buildername'],
