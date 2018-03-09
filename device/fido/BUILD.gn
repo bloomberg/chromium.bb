@@ -217,6 +217,7 @@ source_set("test_support") {
   sources = [
     "fake_u2f_discovery.cc",
     "fake_u2f_discovery.h",
+    "test_callback_receiver.h",
   ]
   deps = [
     "//base",

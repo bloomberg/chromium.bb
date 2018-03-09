@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <list>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
@@ -12,6 +12,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_command_type.h"
@@ -31,12 +32,6 @@ using ::testing::WithArg;
 using ::testing::WithArgs;
 
 namespace {
-
-void ResponseCallback(std::unique_ptr<device::U2fApduResponse>* output,
-                      bool success,
-                      std::unique_ptr<device::U2fApduResponse> response) {
-  *output = std::move(response);
-}
 
 std::string HexEncode(base::span<const uint8_t> in) {
   return base::HexEncode(in.data(), in.size());
@@ -97,107 +92,40 @@ device::mojom::HidDeviceInfoPtr TestHidDevice() {
   return hid_device;
 }
 
-}  // namespace
-
-class U2fDeviceEnumerate {
+class U2fDeviceEnumerateCallbackReceiver
+    : public test::TestCallbackReceiver<std::vector<mojom::HidDeviceInfoPtr>> {
  public:
-  explicit U2fDeviceEnumerate(device::mojom::HidManager* hid_manager)
-      : closure_(),
-        callback_(base::BindOnce(&U2fDeviceEnumerate::ReceivedCallback,
-                                 base::Unretained(this))),
-        hid_manager_(hid_manager),
-        run_loop_() {}
-  ~U2fDeviceEnumerate() = default;
+  U2fDeviceEnumerateCallbackReceiver(device::mojom::HidManager* hid_manager)
+      : hid_manager_(hid_manager) {}
+  ~U2fDeviceEnumerateCallbackReceiver() = default;
 
-  void ReceivedCallback(std::vector<device::mojom::HidDeviceInfoPtr> devices) {
-    std::list<std::unique_ptr<U2fHidDevice>> u2f_devices;
-    filter_.SetUsagePage(0xf1d0);
-    for (auto& device_info : devices) {
-      if (filter_.Matches(*device_info))
-        u2f_devices.push_front(std::make_unique<U2fHidDevice>(
+  std::vector<std::unique_ptr<U2fHidDevice>> TakeReturnedDevicesFiltered() {
+    std::vector<std::unique_ptr<U2fHidDevice>> filtered_results;
+    std::vector<mojom::HidDeviceInfoPtr> results;
+    std::tie(results) = TakeResult();
+    for (auto& device_info : results) {
+      HidDeviceFilter filter;
+      filter.SetUsagePage(0xf1d0);
+      if (filter.Matches(*device_info)) {
+        filtered_results.push_back(std::make_unique<U2fHidDevice>(
             std::move(device_info), hid_manager_));
+      }
     }
-    devices_ = std::move(u2f_devices);
-    closure_.Run();
-  }
-
-  std::list<std::unique_ptr<U2fHidDevice>>& WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
-    return devices_;
-  }
-
-  device::mojom::HidManager::GetDevicesCallback callback() {
-    return std::move(callback_);
+    return filtered_results;
   }
 
  private:
-  HidDeviceFilter filter_;
-  std::list<std::unique_ptr<U2fHidDevice>> devices_;
-  base::Closure closure_;
-  device::mojom::HidManager::GetDevicesCallback callback_;
   device::mojom::HidManager* hid_manager_;
-  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(U2fDeviceEnumerateCallbackReceiver);
 };
 
-class TestVersionCallback {
- public:
-  TestVersionCallback()
-      : closure_(),
-        callback_(base::BindOnce(&TestVersionCallback::ReceivedCallback,
-                                 base::Unretained(this))),
-        run_loop_() {}
-  ~TestVersionCallback() = default;
+using TestVersionCallbackReceiver =
+    test::StatusAndValueCallbackReceiver<bool, U2fDevice::ProtocolVersion>;
+using TestDeviceCallbackReceiver = ::device::test::
+    StatusAndValueCallbackReceiver<bool, std::unique_ptr<U2fApduResponse>>;
 
-  void ReceivedCallback(bool success, U2fDevice::ProtocolVersion version) {
-    version_ = version;
-    std::move(closure_).Run();
-  }
-
-  U2fDevice::ProtocolVersion WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
-    return version_;
-  }
-
-  U2fDevice::VersionCallback callback() { return std::move(callback_); }
-
- private:
-  U2fDevice::ProtocolVersion version_;
-  base::OnceClosure closure_;
-  U2fDevice::VersionCallback callback_;
-  base::RunLoop run_loop_;
-};
-
-class TestDeviceCallback {
- public:
-  TestDeviceCallback()
-      : closure_(),
-        callback_(base::Bind(&TestDeviceCallback::ReceivedCallback,
-                             base::Unretained(this))),
-        run_loop_() {}
-  ~TestDeviceCallback() = default;
-
-  void ReceivedCallback(bool success,
-                        std::unique_ptr<U2fApduResponse> response) {
-    response_ = std::move(response);
-    closure_.Run();
-  }
-
-  std::unique_ptr<U2fApduResponse> WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
-    return std::move(response_);
-  }
-
-  const U2fDevice::DeviceCallback& callback() { return callback_; }
-
- private:
-  std::unique_ptr<U2fApduResponse> response_;
-  base::Closure closure_;
-  U2fDevice::DeviceCallback callback_;
-  base::RunLoop run_loop_;
-};
+}  // namespace
 
 class U2fHidDeviceTest : public ::testing::Test {
  public:
@@ -220,16 +148,15 @@ TEST_F(U2fHidDeviceTest, TestHidDeviceVersion) {
   if (!U2fHidDevice::IsTestEnabled())
     return;
 
-  U2fDeviceEnumerate callback(hid_manager_.get());
-  hid_manager_->GetDevices(callback.callback());
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
 
-  for (auto& device : u2f_devices) {
-    TestVersionCallback vc;
+  for (auto& device : receiver.TakeReturnedDevicesFiltered()) {
+    TestVersionCallbackReceiver vc;
     device->Version(vc.callback());
-    U2fDevice::ProtocolVersion version = vc.WaitForCallback();
-    EXPECT_EQ(version, U2fDevice::ProtocolVersion::U2F_V2);
+    vc.WaitForCallback();
+    EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2, vc.value());
   }
 }
 
@@ -237,114 +164,109 @@ TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
   if (!U2fHidDevice::IsTestEnabled())
     return;
 
-  U2fDeviceEnumerate callback(hid_manager_.get());
-  hid_manager_->GetDevices(callback.callback());
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
 
-  for (auto& device : u2f_devices) {
-    TestVersionCallback vc;
-    TestVersionCallback vc2;
+  for (auto& device : receiver.TakeReturnedDevicesFiltered()) {
+    TestVersionCallbackReceiver vc;
+    TestVersionCallbackReceiver vc2;
     // Call version twice to check message queueing
     device->Version(vc.callback());
     device->Version(vc2.callback());
-    U2fDevice::ProtocolVersion version = vc.WaitForCallback();
-    EXPECT_EQ(version, U2fDevice::ProtocolVersion::U2F_V2);
-    version = vc2.WaitForCallback();
-    EXPECT_EQ(version, U2fDevice::ProtocolVersion::U2F_V2);
+    vc.WaitForCallback();
+    EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2, vc.value());
+    vc2.WaitForCallback();
+    EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2, vc2.value());
   }
 }
 
 TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Setup and enumerate mock device
-  U2fDeviceEnumerate callback(hid_manager_.get());
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   auto hid_device = TestHidDevice();
   fake_hid_manager_->AddDevice(std::move(hid_device));
-  hid_manager_->GetDevices(callback.callback());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
 
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
+
   // Put device in IDLE state
-  TestDeviceCallback cb0;
   device->state_ = U2fHidDevice::State::IDLE;
 
   // Manually delete connection
   device->connection_ = nullptr;
+
   // Add pending transactions manually and ensure they are processed
-  std::unique_ptr<U2fApduResponse> response1(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+  TestDeviceCallbackReceiver receiver_1;
   device->pending_transactions_.emplace(
       U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      base::BindOnce(&ResponseCallback, &response1));
-  std::unique_ptr<U2fApduResponse> response2(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+      receiver_1.callback());
+  TestDeviceCallbackReceiver receiver_2;
   device->pending_transactions_.emplace(
       U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      base::BindOnce(&ResponseCallback, &response2));
-  std::unique_ptr<U2fApduResponse> response3(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+      receiver_2.callback());
+  TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::BindOnce(&ResponseCallback, &response3));
+                         receiver_3.callback());
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
-  EXPECT_EQ(nullptr, response1);
-  EXPECT_EQ(nullptr, response2);
-  EXPECT_EQ(nullptr, response3);
+  EXPECT_EQ(nullptr, receiver_1.value());
+  EXPECT_EQ(nullptr, receiver_2.value());
+  EXPECT_EQ(nullptr, receiver_3.value());
 }
 
 TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Setup and enumerate mock device
-  U2fDeviceEnumerate callback(hid_manager_.get());
-
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   auto hid_device = TestHidDevice();
-
   fake_hid_manager_->AddDevice(std::move(hid_device));
-  hid_manager_->GetDevices(callback.callback());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
 
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
+
   // Mock connection where writes always fail
   FakeHidConnection::mock_connection_error_ = true;
   device->state_ = U2fHidDevice::State::IDLE;
-  std::unique_ptr<U2fApduResponse> response0(
+  TestDeviceCallbackReceiver receiver_0;
+  std::unique_ptr<U2fApduResponse> response_0(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::BindOnce(&ResponseCallback, &response0));
-  EXPECT_EQ(nullptr, response0);
+                         receiver_0.callback());
+  EXPECT_EQ(nullptr, receiver_0.value());
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
 
   // Add pending transactions manually and ensure they are processed
-  std::unique_ptr<U2fApduResponse> response1(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+  TestDeviceCallbackReceiver receiver_1;
   device->pending_transactions_.emplace(
       U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      base::BindOnce(&ResponseCallback, &response1));
-  std::unique_ptr<U2fApduResponse> response2(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+      receiver_1.callback());
+  TestDeviceCallbackReceiver receiver_2;
   device->pending_transactions_.emplace(
       U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      base::BindOnce(&ResponseCallback, &response2));
-  std::unique_ptr<U2fApduResponse> response3(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
+      receiver_2.callback());
+  TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::BindOnce(&ResponseCallback, &response3));
+                         receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
-  EXPECT_EQ(nullptr, response1);
-  EXPECT_EQ(nullptr, response2);
-  EXPECT_EQ(nullptr, response3);
+  EXPECT_EQ(nullptr, receiver_1.value());
+  EXPECT_EQ(nullptr, receiver_2.value());
+  EXPECT_EQ(nullptr, receiver_3.value());
 }
 
 TEST_F(U2fHidDeviceTest, TestLegacyVersion) {
   const std::vector<uint8_t> kChannelId = {0x01, 0x02, 0x03, 0x04};
 
-  U2fDeviceEnumerate callback(hid_manager_.get());
   auto hid_device = TestHidDevice();
 
   // Replace device HID connection with custom client connection bound to mock
@@ -402,15 +324,19 @@ TEST_F(U2fHidDeviceTest, TestLegacyVersion) {
   fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
                                                std::move(connection_client));
 
-  hid_manager_->GetDevices(callback.callback());
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(1u, u2f_devices.size());
   auto& device = u2f_devices.front();
-  TestVersionCallback vc;
+  TestVersionCallbackReceiver vc;
   device->Version(vc.callback());
-  EXPECT_EQ(vc.WaitForCallback(), U2fDevice::ProtocolVersion::U2F_V2);
+  vc.WaitForCallback();
+  EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2, vc.value());
 }
 
 TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
@@ -419,7 +345,6 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
 
   const std::vector<uint8_t> kChannelId = {0x01, 0x02, 0x03, 0x04};
 
-  U2fDeviceEnumerate callback(hid_manager_.get());
   auto hid_device = TestHidDevice();
 
   // Replace device HID connection with custom client connection bound to mock
@@ -474,15 +399,19 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
   fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
                                                std::move(connection_client));
 
-  hid_manager_->GetDevices(callback.callback());
-  std::list<std::unique_ptr<U2fHidDevice>>& u2f_devices =
-      callback.WaitForCallback();
+  U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<U2fHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
 
   ASSERT_EQ(1u, u2f_devices.size());
   auto& device = u2f_devices.front();
-  TestVersionCallback vc;
+  TestVersionCallbackReceiver vc;
   device->Version(vc.callback());
-  EXPECT_EQ(vc.WaitForCallback(), U2fDevice::ProtocolVersion::U2F_V2);
+  vc.WaitForCallback();
+  EXPECT_EQ(U2fDevice::ProtocolVersion::U2F_V2, vc.value());
 }
 
 }  // namespace device

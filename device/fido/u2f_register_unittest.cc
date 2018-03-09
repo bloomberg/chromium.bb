@@ -18,6 +18,7 @@
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/mock_u2f_device.h"
 #include "device/fido/register_response_data.h"
+#include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/u2f_response_test_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -285,34 +286,9 @@ std::vector<uint8_t> GetTestAttestationObjectBytes() {
   return test_authenticator_object;
 }
 
-class TestRegisterCallback {
- public:
-  TestRegisterCallback()
-      : callback_(base::BindOnce(&TestRegisterCallback::ReceivedCallback,
-                                 base::Unretained(this))) {}
-  ~TestRegisterCallback() = default;
-
-  void ReceivedCallback(U2fReturnCode status_code,
-                        base::Optional<RegisterResponseData> response_data) {
-    response_ = std::make_pair(status_code, std::move(response_data));
-    run_loop_.Quit();
-  }
-
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-  WaitForCallback() {
-    run_loop_.Run();
-    return response_;
-  }
-
-  U2fRegister::RegisterResponseCallback callback() {
-    return std::move(callback_);
-  }
-
- private:
-  std::pair<U2fReturnCode, base::Optional<RegisterResponseData>> response_;
-  U2fRegister::RegisterResponseCallback callback_;
-  base::RunLoop run_loop_;
-};
+using TestRegisterCallback = ::device::test::StatusAndValueCallbackReceiver<
+    U2fReturnCode,
+    base::Optional<RegisterResponseData>>;
 
 }  // namespace
 
@@ -337,18 +313,20 @@ class U2fRegisterTest : public ::testing::Test {
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
         registered_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-        kNoIndividualAttestation, register_callback_.callback());
+        kNoIndividualAttestation, register_callback_receiver_.callback());
   }
 
   test::FakeU2fDiscovery* discovery() const { return discovery_; }
-  TestRegisterCallback& register_callback() { return register_callback_; }
+  TestRegisterCallback& register_callback_receiver() {
+    return register_callback_receiver_;
+  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   test::ScopedFakeU2fDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeU2fDiscovery* discovery_;
-  TestRegisterCallback register_callback_;
+  TestRegisterCallback register_callback_receiver_;
 };
 
 TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
@@ -382,7 +360,7 @@ TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
       std::vector<uint8_t>(std::begin(kChallengeDigest),
                            std::end(kChallengeDigest)),
       std::vector<uint8_t>(std::begin(kAppIdDigest), std::end(kAppIdDigest)),
-      kNoIndividualAttestation, register_callback().callback());
+      kNoIndividualAttestation, register_callback_receiver().callback());
 
   const auto register_command_without_individual_attestation =
       register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
@@ -413,9 +391,10 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(),
+            register_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fRegisterTest, TestDelayedSuccess) {
@@ -434,9 +413,10 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
       .WillRepeatedly(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(),
+            register_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fRegisterTest, TestMultipleDevices) {
@@ -463,10 +443,10 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   discovery()->AddDevice(std::move(device1));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            std::get<1>(response).value().raw_id());
+            register_callback_receiver().value()->raw_id());
 }
 
 // Tests a scenario where a single device is connected and registration call
@@ -501,9 +481,10 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(),
+            register_callback_receiver().value()->raw_id());
 }
 
 // Tests a scenario where two devices are connected and registration call is
@@ -552,9 +533,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   discovery()->AddDevice(std::move(device1));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(),
+            register_callback_receiver().value()->raw_id());
 }
 
 // Tests a scenario where single device is connected and registration is called
@@ -591,9 +573,10 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));
-  EXPECT_EQ(base::nullopt, std::get<1>(response));
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
+            register_callback_receiver().status());
+  EXPECT_EQ(base::nullopt, register_callback_receiver().value());
 }
 
 // Tests a scenario where one (device1) of the two devices connected has created
@@ -642,9 +625,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   discovery()->AddDevice(std::move(device1));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const auto& response = register_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));
-  EXPECT_EQ(base::nullopt, std::get<1>(response));
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
+            register_callback_receiver().status());
+  EXPECT_EQ(base::nullopt, register_callback_receiver().value());
 }
 
 // These test the parsing of the U2F raw bytes of the registration response.
@@ -780,9 +764,9 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
         .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
     discovery()->AddDevice(std::move(device));
 
-    const auto& response = cb.WaitForCallback();
-    EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
-    EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
+    cb.WaitForCallback();
+    EXPECT_EQ(U2fReturnCode::SUCCESS, cb.status());
+    EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_id());
   }
 }
 

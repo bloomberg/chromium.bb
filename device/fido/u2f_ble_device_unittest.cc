@@ -5,43 +5,22 @@
 #include "device/fido/u2f_ble_device.h"
 
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/fido/mock_u2f_ble_connection.h"
+#include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
+namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Test;
-
-namespace {
-
-class TestMessageCallback {
- public:
-  void OnMessage(U2fReturnCode code, const std::vector<uint8_t>& data) {
-    result_ = std::make_pair(code, data);
-    run_loop_->Quit();
-  }
-
-  const std::pair<U2fReturnCode, std::vector<uint8_t>>& WaitForResult() {
-    run_loop_->Run();
-    run_loop_.emplace();
-    return result_;
-  }
-
-  U2fDevice::MessageCallback GetCallback() {
-    return base::BindRepeating(&TestMessageCallback::OnMessage,
-                               base::Unretained(this));
-  }
-
- private:
-  std::pair<U2fReturnCode, std::vector<uint8_t>> result_;
-  base::Optional<base::RunLoop> run_loop_{base::in_place};
-};
+using TestMessageCallbackReceiver =
+    test::StatusAndValueCallbackReceiver<U2fReturnCode,
+                                         const std::vector<uint8_t>&>;
 
 }  // namespace
 
@@ -94,11 +73,12 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Callback) {
       .WillOnce(Invoke(
           [this](const auto& data, auto* cb) { std::move(*cb).Run(false); }));
 
-  TestMessageCallback callback;
-  device()->SendPing({'T', 'E', 'S', 'T'}, callback.GetCallback());
+  TestMessageCallbackReceiver callback_receiver;
+  device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
 
-  EXPECT_EQ(std::make_pair(U2fReturnCode::FAILURE, std::vector<uint8_t>()),
-            callback.WaitForResult());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::FAILURE, callback_receiver.status());
+  EXPECT_EQ(std::vector<uint8_t>(), callback_receiver.value());
 }
 
 TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
@@ -109,11 +89,12 @@ TEST_F(U2fBleDeviceTest, SendPingTest_Failure_Timeout) {
         scoped_task_environment_.FastForwardBy(U2fDevice::kDeviceTimeout);
       }));
 
-  TestMessageCallback callback;
-  device()->SendPing({'T', 'E', 'S', 'T'}, callback.GetCallback());
+  TestMessageCallbackReceiver callback_receiver;
+  device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
 
-  EXPECT_EQ(std::make_pair(U2fReturnCode::FAILURE, std::vector<uint8_t>()),
-            callback.WaitForResult());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::FAILURE, callback_receiver.status());
+  EXPECT_EQ(std::vector<uint8_t>(), callback_receiver.value());
 }
 
 TEST_F(U2fBleDeviceTest, SendPingTest) {
@@ -129,10 +110,12 @@ TEST_F(U2fBleDeviceTest, SendPingTest) {
         std::move(*cb).Run(true);
       }));
 
-  TestMessageCallback callback;
-  device()->SendPing(ping_data, callback.GetCallback());
-  EXPECT_EQ(std::make_pair(U2fReturnCode::SUCCESS, ping_data),
-            callback.WaitForResult());
+  TestMessageCallbackReceiver callback_receiver;
+  device()->SendPing(ping_data, callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, callback_receiver.status());
+  EXPECT_EQ(ping_data, callback_receiver.value());
 }
 
 TEST_F(U2fBleDeviceTest, StaticGetIdTest) {
@@ -141,9 +124,9 @@ TEST_F(U2fBleDeviceTest, StaticGetIdTest) {
 }
 
 TEST_F(U2fBleDeviceTest, TryWinkTest) {
-  base::RunLoop run_loop;
-  device()->TryWink(run_loop.QuitClosure());
-  run_loop.Run();
+  test::TestCallbackReceiver<> closure_receiver;
+  device()->TryWink(closure_receiver.callback());
+  closure_receiver.WaitForCallback();
 }
 
 TEST_F(U2fBleDeviceTest, GetIdTest) {
