@@ -25,8 +25,9 @@ class ChromeWebContentsViewDelegateViewsMac
   bool TakeFocus(bool reverse) override;
 
  private:
-  // Used to handle focus management.
-  std::unique_ptr<ChromeWebContentsViewFocusHelper> focus_helper_;
+  content::WebContents* web_contents_;
+
+  ChromeWebContentsViewFocusHelper* GetFocusHelper() const;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViewsMac);
 };

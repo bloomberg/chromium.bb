@@ -14,31 +14,40 @@
 ChromeWebContentsViewDelegateViewsMac::ChromeWebContentsViewDelegateViewsMac(
     content::WebContents* web_contents)
     : ChromeWebContentsViewDelegateMac(web_contents),
-      focus_helper_(
-          std::make_unique<ChromeWebContentsViewFocusHelper>(web_contents)) {}
+      web_contents_(web_contents) {
+  ChromeWebContentsViewFocusHelper::CreateForWebContents(web_contents);
+}
 
 ChromeWebContentsViewDelegateViewsMac::
     ~ChromeWebContentsViewDelegateViewsMac() {
 }
 
+ChromeWebContentsViewFocusHelper*
+ChromeWebContentsViewDelegateViewsMac::GetFocusHelper() const {
+  ChromeWebContentsViewFocusHelper* helper =
+      ChromeWebContentsViewFocusHelper::FromWebContents(web_contents_);
+  DCHECK(helper);
+  return helper;
+}
+
 void ChromeWebContentsViewDelegateViewsMac::StoreFocus() {
-  focus_helper_->StoreFocus();
+  GetFocusHelper()->StoreFocus();
 }
 
 bool ChromeWebContentsViewDelegateViewsMac::RestoreFocus() {
-  return focus_helper_->RestoreFocus();
+  return GetFocusHelper()->RestoreFocus();
 }
 
 void ChromeWebContentsViewDelegateViewsMac::ResetStoredFocus() {
-  focus_helper_->ResetStoredFocus();
+  GetFocusHelper()->ResetStoredFocus();
 }
 
 bool ChromeWebContentsViewDelegateViewsMac::Focus() {
-  return focus_helper_->Focus();
+  return GetFocusHelper()->Focus();
 }
 
 bool ChromeWebContentsViewDelegateViewsMac::TakeFocus(bool reverse) {
-  return focus_helper_->TakeFocus(reverse);
+  return GetFocusHelper()->TakeFocus(reverse);
 }
 
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
