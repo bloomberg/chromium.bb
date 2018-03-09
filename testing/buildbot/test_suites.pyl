@@ -291,7 +291,6 @@
   },
 
   'aura_gtests': {
-    'app_shell_unittests': {},
     'aura_unittests': {},
     'compositor_unittests': {},
     'wm_unittests': {},
@@ -1196,7 +1195,6 @@
   'linux_chromeos_specific_gtests': {
     'app_list_presenter_unittests': {},
     'app_list_unittests': {},
-    'app_shell_unittests': {},
     'ash_content_unittests': {},
     'ash_unittests': {},
     'aura_unittests': {},
@@ -1300,6 +1298,7 @@
   },
 
   'non_android_chromium_gtests': {
+    'app_shell_unittests': {},
     'browser_tests': {
       'swarming': {
         'shards': 10,
