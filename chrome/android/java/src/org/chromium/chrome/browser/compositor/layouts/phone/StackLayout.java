@@ -228,8 +228,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             // Click event happens before the up event. mClicked is set to mute the up event.
             mClicked = true;
             PortraitViewport viewportParams = getViewportParameters();
-            int stackIndexAt = viewportParams.getStackIndexAt(x, y);
-            if (stackIndexAt == getTabStackIndex()) {
+            final int stackIndexDeltaAt = viewportParams.getStackIndexDeltaAt(x, y);
+            if (stackIndexDeltaAt == 0) {
                 mStacks.get(getTabStackIndex()).click(time(), x, y);
             } else {
                 flingStacks(getTabStackIndex() == 0);
@@ -274,12 +274,19 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         private void onUpOrCancel(long time) {
             int currentIndex = getTabStackIndex();
-            int nextIndex = 1 - currentIndex;
             if (!mClicked
-                    && Math.abs(currentIndex + mRenderedScrollOffset) > THRESHOLD_TO_SWITCH_STACK
-                    && mStacks.get(nextIndex).isDisplayable()) {
-                setActiveStackState(nextIndex == 1);
+                    && Math.abs(currentIndex + mRenderedScrollOffset) > THRESHOLD_TO_SWITCH_STACK) {
+                int nextIndex;
+                if (currentIndex + mRenderedScrollOffset < 0) {
+                    nextIndex = currentIndex + 1;
+                } else {
+                    nextIndex = currentIndex - 1;
+                }
+                if (mStacks.get(nextIndex).isDisplayable()) {
+                    setActiveStackState(nextIndex == 1);
+                }
             }
+
             mClicked = false;
             finishScrollStacks();
             mStacks.get(getTabStackIndex()).onUpOrCancel(time);
@@ -817,7 +824,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @return     The input mode to select.
      */
     private @SwipeMode int computeInputMode(long time, float x, float y, float dx, float dy) {
-        if (!mStacks.get(1).isDisplayable()) return SWIPE_MODE_SEND_TO_STACK;
+        if (mStacks.size() == 0) return SWIPE_MODE_NONE;
+
+        if (mStacks.size() == 1 || (mStacks.size() == 2 && !mStacks.get(1).isDisplayable())) {
+            return SWIPE_MODE_SEND_TO_STACK;
+        }
+
         int currentIndex = getTabStackIndex();
 
         // When a drag starts, lock the drag into being either horizontal or vertical until the
@@ -881,21 +893,58 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             return margin;
         }
 
-        int getStackIndexAt(float x, float y) {
-            if (LocalizationUtils.isLayoutRtl()) {
-                // On RTL portrait mode, stack1 (incognito) is on the left.
-                float separation = getStack0Left();
-                return x < separation ? 1 : 0;
-            } else {
-                float separation = getStack0Left() + getWidth();
-                return x < separation ? 0 : 1;
+        /**
+         * Returns an offset that can be added to the index of the current stack to get the index of
+         * the stack at the specified on-screen location.
+         * @param x The x coordinate of the specified on-screen location.
+         * @param y The x coordinate of the specified on-screen location.
+         * @return  The offset to be added to the index of the current stack.
+         */
+        int getStackIndexDeltaAt(float x, float y) {
+            int delta = 0;
+            if (x < getCurrentStackLeft()) {
+                delta = -1;
+            } else if (x > getCurrentStackLeft() + getWidth()) {
+                delta = 1;
             }
+
+            // Tabs are counted from left to right in LTR mode, but from right to left in RTL mode.
+            if (LocalizationUtils.isLayoutRtl()) delta *= -1;
+
+            return delta;
         }
 
+        /**
+         * @return The current x coordinate for the left edge of the first stack (right edge if in
+         * RTL mode).
+         */
         float getStack0Left() {
-            return LocalizationUtils.isLayoutRtl()
-                    ? getInnerMargin() - getClampedRenderedScrollOffset() * getFullScrollDistance()
-                    : getClampedRenderedScrollOffset() * getFullScrollDistance();
+            float stack0LeftLtr = getClampedRenderedScrollOffset() * getFullScrollDistance();
+            if (mStacks.size() > 2) {
+                // If we have one or two stacks, we only show a margin on the right side of the left
+                // stack and on the left side of the right stack. But if we have three or more
+                // stacks, we put a margin on both sides
+                stack0LeftLtr += getInnerMargin() / 2;
+            }
+
+            if (LocalizationUtils.isLayoutRtl()) return getInnerMargin() - stack0LeftLtr;
+
+            return stack0LeftLtr;
+        }
+
+        /**
+         * @return The current x coordinate for the left edge of the current stack (actually the
+         * right edge if in RTL mode).
+         */
+        float getCurrentStackLeft() {
+            float offset = getClampedRenderedScrollOffset() + getTabStackIndex();
+            if (mStacks.size() > 2) {
+                return offset * getFullScrollDistance() + getInnerMargin() / 2;
+            }
+
+            // Note: getInnerMargin() is zero if there's only one stack.
+            boolean isRightStack = (getTabStackIndex() == 1) ^ LocalizationUtils.isLayoutRtl();
+            return offset * getFullScrollDistance() + (isRightStack ? getInnerMargin() : 0);
         }
 
         float getWidth() {
@@ -941,9 +990,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
 
         @Override
-        int getStackIndexAt(float x, float y) {
-            float separation = getStack0Top() + getHeight();
-            return y < separation ? 0 : 1;
+        int getStackIndexDeltaAt(float x, float y) {
+            if (y < getCurrentStackTop()) return -1;
+            if (y > getCurrentStackTop() + getHeight()) return 1;
+            return 0;
         }
 
         @Override
@@ -955,6 +1005,20 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         float getStack0Top() {
             return getClampedRenderedScrollOffset() * getFullScrollDistance()
                     + getTopHeightOffset();
+        }
+
+        /**
+         * @return The current y coordinate for the top edge of the current stack.
+         */
+        float getCurrentStackTop() {
+            float offset = getClampedRenderedScrollOffset() + getTabStackIndex();
+            if (mStacks.size() > 2) {
+                return offset * getFullScrollDistance() + getInnerMargin() / 2
+                        + getTopHeightOffset();
+            }
+
+            return offset * getFullScrollDistance()
+                    + ((getTabStackIndex() == 1) ? getInnerMargin() : 0) + getTopHeightOffset();
         }
 
         @Override
@@ -992,12 +1056,19 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
     }
 
+    /**
+     * Scrolls the tab stacks by amount delta (clamped so that it's not possible to scroll past the
+     * last stack in either direciton). Positive delta corresponds to increasing the x coordinate
+     * in portrait mode (in both LTR and RTL modes), or increasing the y coordinate in landscape
+     * mode.
+     * @param delta The amount to scroll by.
+     */
     private void scrollStacks(float delta) {
         cancelAnimation(this, Property.STACK_SNAP);
         float fullDistance = getFullScrollDistance();
         mScrollIndexOffset += MathUtils.flipSignIf(delta / fullDistance,
                 getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
-        mRenderedScrollOffset = MathUtils.clamp(mScrollIndexOffset, 0, -1);
+        mRenderedScrollOffset = MathUtils.clamp(mScrollIndexOffset, 0, -(mStacks.size() - 1));
         requestStackUpdate();
     }
 
@@ -1162,9 +1233,16 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         mRenderedScrollOffset = mScrollIndexOffset;
     }
 
+    /**
+     * @return The distance between two neighboring tab stacks.
+     */
     private float getFullScrollDistance() {
         float distance = getOrientation() == Orientation.PORTRAIT ? getWidth()
                                                                   : getHeightMinusBrowserControls();
+        if (mStacks.size() > 2) {
+            return distance - getViewportParameters().getInnerMargin();
+        }
+
         return distance - 2 * getViewportParameters().getInnerMargin();
     }
 
