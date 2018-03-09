@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @class CommandDispatcher;
-@protocol ToolbarCommands;
+@protocol ToolbarCoordinatee;
 @protocol ToolsMenuConfigurationProvider;
 
 // This object is an interface between multiple toolbars and the objects which
@@ -25,8 +25,7 @@
 
 // Adds a |toolbarCoordinator| to the set of coordinators this object is
 // interfacing with.
-- (void)addToolbarCoordinator:
-    (id<NewTabPageControllerDelegate, ToolbarCommands>)toolbarCoordinator;
+- (void)addToolbarCoordinator:(id<ToolbarCoordinatee>)toolbarCoordinator;
 
 @end
 

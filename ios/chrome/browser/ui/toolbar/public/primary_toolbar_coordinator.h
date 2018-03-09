@@ -12,7 +12,6 @@
 
 @protocol ActivityServicePositioner;
 @protocol QRScannerResultLoading;
-@protocol TabHistoryUIUpdater;
 @protocol VoiceSearchControllerDelegate;
 
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
@@ -27,7 +26,6 @@
 // internal ViewController.
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate;
 - (id<QRScannerResultLoading>)QRScannerResultLoader;
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 - (id<ActivityServicePositioner>)activityServicePositioner;
 - (id<OmniboxFocuser>)omniboxFocuser;
 

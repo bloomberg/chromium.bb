@@ -7,9 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinatee.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
 
 @class AdaptiveToolbarViewController;
@@ -21,9 +20,7 @@ class WebStateList;
 // Coordinator for the adaptive toolbar. This Coordinator is the super class of
 // the specific coordinator (primary or secondary).
 @interface AdaptiveToolbarCoordinator
-    : ChromeCoordinator<NewTabPageControllerDelegate,
-                        SideSwipeToolbarSnapshotProviding,
-                        ToolbarCommands>
+    : ChromeCoordinator<SideSwipeToolbarSnapshotProviding, ToolbarCoordinatee>
 
 // Initializes this Coordinator with its |browserState|.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState

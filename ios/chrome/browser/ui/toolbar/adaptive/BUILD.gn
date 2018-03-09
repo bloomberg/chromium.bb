@@ -11,6 +11,7 @@ source_set("adaptive") {
     "primary_toolbar_coordinator.mm",
     "secondary_toolbar_coordinator.h",
     "secondary_toolbar_coordinator.mm",
+    "toolbar_coordinatee.h",
     "toolbar_coordinator_adaptor.h",
     "toolbar_coordinator_adaptor.mm",
   ]
@@ -26,6 +27,7 @@ source_set("adaptive") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/location_bar",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:util",

@@ -7,7 +7,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #import "ios/chrome/browser/ui/orchestrator/toolbar_animatee.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
 
@@ -18,7 +17,6 @@
 @interface PrimaryToolbarViewController
     : AdaptiveToolbarViewController<ActivityServicePositioner,
                                     FullscreenUIElement,
-                                    TabHistoryUIUpdater,
                                     ToolbarAnimatee>
 
 @property(nonatomic, weak) id<PrimaryToolbarViewControllerDelegate> delegate;

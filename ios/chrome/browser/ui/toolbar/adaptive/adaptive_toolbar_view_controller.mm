@@ -6,6 +6,7 @@
 
 #import "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -63,6 +64,15 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self addStandardActionsForAllButtons];
+
+  // Adds the layout guide to the buttons.
+  self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
+  self.view.forwardButton.guideName = kForwardButtonGuide;
+  self.view.backButton.guideName = kBackButtonGuide;
+
+  // Add navigation popup menu triggers.
+  [self addLongPressGestureToView:self.view.backButton];
+  [self addLongPressGestureToView:self.view.forwardButton];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -157,6 +167,21 @@
        }];
 }
 
+#pragma mark - TabHistoryUIUpdater
+
+- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)buttonType {
+  if (buttonType == ToolbarButtonTypeBack) {
+    self.view.backButton.selected = YES;
+  } else {
+    self.view.forwardButton.selected = YES;
+  }
+}
+
+- (void)updateUIForTabHistoryWasDismissed {
+  self.view.backButton.selected = NO;
+  self.view.forwardButton.selected = NO;
+}
+
 #pragma mark - Private
 
 // Updates all buttons visibility to match any recent WebState or SizeClass
@@ -207,6 +232,27 @@
     base::RecordAction(base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
   } else {
     NOTREACHED();
+  }
+}
+
+// Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
+- (void)addLongPressGestureToView:(UIView*)view {
+  UILongPressGestureRecognizer* navigationHistoryLongPress =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  [view addGestureRecognizer:navigationHistoryLongPress];
+}
+
+// Handles the long press on the views.
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
+  if (gesture.state != UIGestureRecognizerStateBegan)
+    return;
+
+  if (gesture.view == self.view.backButton) {
+    [self.dispatcher showTabHistoryPopupForBackwardHistory];
+  } else if (gesture.view == self.view.forwardButton) {
+    [self.dispatcher showTabHistoryPopupForForwardHistory];
   }
 }
 

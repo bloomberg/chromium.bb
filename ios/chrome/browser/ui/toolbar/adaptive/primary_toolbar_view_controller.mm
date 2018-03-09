@@ -91,19 +91,6 @@
   [self.view setUp];
 }
 
-- (void)viewDidLoad {
-  [super viewDidLoad];
-
-  // Adds the layout guide to the buttons.
-  self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
-  self.view.forwardButton.guideName = kForwardButtonGuide;
-  self.view.backButton.guideName = kBackButtonGuide;
-
-  // Add navigation popup menu triggers.
-  [self addLongPressGestureToView:self.view.backButton];
-  [self addLongPressGestureToView:self.view.forwardButton];
-}
-
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
   UIView* omniboxView = self.view.locationBarContainer;
@@ -138,21 +125,6 @@
 
 - (UIView*)shareButtonView {
   return self.view.shareButton;
-}
-
-#pragma mark - TabHistoryUIUpdater
-
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)buttonType {
-  if (buttonType == ToolbarButtonTypeBack) {
-    self.view.backButton.selected = YES;
-  } else {
-    self.view.forwardButton.selected = YES;
-  }
-}
-
-- (void)updateUIForTabHistoryWasDismissed {
-  self.view.backButton.selected = NO;
-  self.view.forwardButton.selected = NO;
 }
 
 #pragma mark - FullscreenUIElement
@@ -247,27 +219,6 @@
   [NSLayoutConstraint
       deactivateConstraints:self.view.contractedNoMarginConstraints];
   [NSLayoutConstraint deactivateConstraints:self.view.expandedConstraints];
-}
-
-// Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
-- (void)addLongPressGestureToView:(UIView*)view {
-  UILongPressGestureRecognizer* navigationHistoryLongPress =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  [view addGestureRecognizer:navigationHistoryLongPress];
-}
-
-// Handles the long press on the views.
-- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
-  if (gesture.state != UIGestureRecognizerStateBegan)
-    return;
-
-  if (gesture.view == self.view.backButton) {
-    [self.dispatcher showTabHistoryPopupForBackwardHistory];
-  } else if (gesture.view == self.view.forwardButton) {
-    [self.dispatcher showTabHistoryPopupForForwardHistory];
-  }
 }
 
 @end

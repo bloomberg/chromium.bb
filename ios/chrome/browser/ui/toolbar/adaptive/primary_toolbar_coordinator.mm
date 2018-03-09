@@ -86,10 +86,6 @@
   return self.locationBarCoordinator;
 }
 
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  return self.viewController;
-}
-
 - (id<ActivityServicePositioner>)activityServicePositioner {
   return self.viewController;
 }
