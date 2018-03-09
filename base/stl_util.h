@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/optional.h"
 
 namespace base {
 
@@ -335,6 +336,17 @@ class IsNotIn {
   typename Collection::const_iterator i_;
   const typename Collection::const_iterator end_;
 };
+
+// Helper for returning the optional value's address, or nullptr.
+template <class T>
+T* OptionalOrNullptr(base::Optional<T>& optional) {
+  return optional.has_value() ? &optional.value() : nullptr;
+}
+
+template <class T>
+const T* OptionalOrNullptr(const base::Optional<T>& optional) {
+  return optional.has_value() ? &optional.value() : nullptr;
+}
 
 }  // namespace base
 

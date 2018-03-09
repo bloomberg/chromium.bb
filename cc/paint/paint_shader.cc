@@ -288,7 +288,7 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider) {
           points, colors_.data(),
           positions_.empty() ? nullptr : positions_.data(),
           static_cast<int>(colors_.size()), tx_, flags_,
-          local_matrix_ ? &*local_matrix_ : nullptr);
+          base::OptionalOrNullptr(local_matrix_));
       break;
     }
     case Type::kRadialGradient:
@@ -296,26 +296,26 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider) {
           center_, start_radius_, colors_.data(),
           positions_.empty() ? nullptr : positions_.data(),
           static_cast<int>(colors_.size()), tx_, flags_,
-          local_matrix_ ? &*local_matrix_ : nullptr);
+          base::OptionalOrNullptr(local_matrix_));
       break;
     case Type::kTwoPointConicalGradient:
       cached_shader_ = SkGradientShader::MakeTwoPointConical(
           start_point_, start_radius_, end_point_, end_radius_, colors_.data(),
           positions_.empty() ? nullptr : positions_.data(),
           static_cast<int>(colors_.size()), tx_, flags_,
-          local_matrix_ ? &*local_matrix_ : nullptr);
+          base::OptionalOrNullptr(local_matrix_));
       break;
     case Type::kSweepGradient:
       cached_shader_ = SkGradientShader::MakeSweep(
           center_.x(), center_.y(), colors_.data(),
           positions_.empty() ? nullptr : positions_.data(),
           static_cast<int>(colors_.size()), tx_, start_degrees_, end_degrees_,
-          flags_, local_matrix_ ? &*local_matrix_ : nullptr);
+          flags_, base::OptionalOrNullptr(local_matrix_));
       break;
     case Type::kImage:
       if (image_) {
         cached_shader_ = image_.GetSkImage()->makeShader(
-            tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
+            tx_, ty_, base::OptionalOrNullptr(local_matrix_));
       }
       break;
     case Type::kPaintRecord: {
@@ -328,7 +328,7 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider) {
         case ScalingBehavior::kRasterAtScale:
           cached_shader_ = SkShader::MakePictureShader(
               std::move(picture), tx_, ty_,
-              local_matrix_ ? &*local_matrix_ : nullptr, nullptr);
+              base::OptionalOrNullptr(local_matrix_), nullptr);
           break;
         // For fixed scale, we create an image shader with an image backed by
         // the picture.
@@ -338,7 +338,7 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider) {
               nullptr, nullptr, SkImage::BitDepth::kU8,
               SkColorSpace::MakeSRGB());
           cached_shader_ = image->makeShader(
-              tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
+              tx_, ty_, base::OptionalOrNullptr(local_matrix_));
           break;
         }
       }

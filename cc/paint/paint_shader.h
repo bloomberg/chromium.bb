@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -115,7 +116,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   }
 
   const gfx::SizeF* tile_scale() const {
-    return tile_scale_ ? &*tile_scale_ : nullptr;
+    return base::OptionalOrNullptr(tile_scale_);
   }
   const sk_sp<PaintRecord>& paint_record() const { return record_; }
   bool GetRasterizationTileRect(const SkMatrix& ctm, SkRect* tile_rect) const;

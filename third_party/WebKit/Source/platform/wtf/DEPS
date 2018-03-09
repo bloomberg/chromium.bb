@@ -15,6 +15,7 @@ include_rules = [
     "+base/optional.h",
     "+base/process/process_metrics.h",
     "+base/rand_util.h",
+    "+base/stl_util.h",
     "+base/strings",
     "+base/template_util.h",
     "+base/threading/thread_checker.h",
