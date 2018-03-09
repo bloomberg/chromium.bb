@@ -52,10 +52,10 @@ TEST(av1_fwd_txfm1d, round_shift) {
   EXPECT_EQ(round_shift(-8, 2), -2);
 }
 
-TEST(av1_fwd_txfm1d, cospi_arr_data) {
+TEST(av1_fwd_txfm1d, av1_cospi_arr_data) {
   for (int i = 0; i < 7; i++) {
     for (int j = 0; j < 64; j++) {
-      EXPECT_EQ(cospi_arr_data[i][j],
+      EXPECT_EQ(av1_cospi_arr_data[i][j],
                 (int32_t)round(cos(M_PI * j / 128) * (1 << (cos_bit_min + i))));
     }
   }
