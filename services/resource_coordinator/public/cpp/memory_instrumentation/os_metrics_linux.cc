@@ -200,7 +200,7 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
 
   dump->platform_private_footprint->rss_anon_bytes = rss_anon_bytes;
   dump->platform_private_footprint->vm_swap_bytes = vm_swap_bytes;
-  dump->resident_set_kb = process_metrics->GetRSS() / 1024;
+  dump->resident_set_kb = process_metrics->GetResidentSetSize() / 1024;
 
   return true;
 }

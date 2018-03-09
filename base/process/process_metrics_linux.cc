@@ -211,7 +211,7 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-size_t ProcessMetrics::GetRSS() const {
+size_t ProcessMetrics::GetResidentSetSize() const {
   return internal::ReadProcStatsAndGetFieldAsSizeT(process_, internal::VM_RSS) *
       getpagesize();
 }
