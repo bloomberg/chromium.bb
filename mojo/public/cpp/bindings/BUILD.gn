@@ -88,6 +88,7 @@ component("bindings_base") {
   defines = [ "IS_MOJO_CPP_BINDINGS_BASE_IMPL" ]
 
   public_deps = [
+    ":mojo_features",
     "//base",
     "//mojo/public/cpp/system",
   ]
@@ -160,7 +161,6 @@ component("bindings") {
 
   public_deps = [
     ":bindings_base",
-    ":mojo_features",
     ":struct_traits",
     "//base",
     "//ipc:message_support",
