@@ -483,6 +483,8 @@ component("ash") {
     "system/audio/tray_audio.h",
     "system/audio/volume_view.cc",
     "system/audio/volume_view.h",
+    "system/bluetooth/bluetooth_feature_pod_controller.cc",
+    "system/bluetooth/bluetooth_feature_pod_controller.h",
     "system/bluetooth/bluetooth_notification_controller.cc",
     "system/bluetooth/bluetooth_notification_controller.h",
     "system/bluetooth/bluetooth_observer.h",

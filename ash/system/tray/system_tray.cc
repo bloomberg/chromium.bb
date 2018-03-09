@@ -270,7 +270,8 @@ void SystemTray::CreateItems() {
   tray_network_ = new TrayNetwork(this);
   AddTrayItem(base::WrapUnique(tray_network_));
   AddTrayItem(std::make_unique<TrayVPN>(this));
-  AddTrayItem(std::make_unique<TrayBluetooth>(this));
+  tray_bluetooth_ = new TrayBluetooth(this);
+  AddTrayItem(base::WrapUnique(tray_bluetooth_));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(base::WrapUnique(tray_cast_));
   screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
@@ -399,6 +400,10 @@ views::View* SystemTray::GetHelpButtonView() const {
 
 TrayAudio* SystemTray::GetTrayAudio() const {
   return tray_audio_;
+}
+
+TrayBluetooth* SystemTray::GetTrayBluetooth() const {
+  return tray_bluetooth_;
 }
 
 void SystemTray::CanSwitchAwayFromActiveUser(
