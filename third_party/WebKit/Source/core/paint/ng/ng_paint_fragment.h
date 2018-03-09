@@ -50,9 +50,12 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
     return children_;
   }
 
-  // Returns offset to its container box for inline fragments.
+  // Returns the container line box for inline fragments.
+  const NGPaintFragment* ContainerLineBox() const;
+
+  // Returns offset to its container box for inline and line box fragments.
   const NGPhysicalOffset& InlineOffsetToContainerBox() const {
-    DCHECK(PhysicalFragment().IsInline());
+    DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
     return inline_offset_to_container_box_;
   }
 
