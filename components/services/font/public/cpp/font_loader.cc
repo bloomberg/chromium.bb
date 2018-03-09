@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/font_service/public/cpp/font_loader.h"
+#include "components/services/font/public/cpp/font_loader.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
-#include "components/font_service/public/cpp/font_service_thread.h"
+#include "components/services/font/public/cpp/font_service_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace font_service {
@@ -38,9 +38,8 @@ bool FontLoader::matchFamilyName(const char family_name[],
 }
 
 SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
-  TRACE_EVENT2("font_loader", "FontLoader::openStream",
-               "identity", identity.fID,
-               "name", identity.fString.c_str());
+  TRACE_EVENT2("font_loader", "FontLoader::openStream", "identity",
+               identity.fID, "name", identity.fString.c_str());
   {
     base::AutoLock lock(lock_);
     auto mapped_font_files_it = mapped_font_files_.find(identity.fID);
@@ -59,8 +58,9 @@ SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
   {
     base::AutoLock lock(lock_);
     auto mapped_font_files_it =
-        mapped_font_files_.insert(std::make_pair(mapped_font_file->font_id(),
-                                                 mapped_font_file.get()))
+        mapped_font_files_
+            .insert(std::make_pair(mapped_font_file->font_id(),
+                                   mapped_font_file.get()))
             .first;
     return mapped_font_files_it->second->CreateMemoryStream();
   }

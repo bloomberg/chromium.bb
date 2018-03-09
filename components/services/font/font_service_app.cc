@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/font_service/font_service_app.h"
+#include "components/services/font/font_service_app.h"
 
 #include <utility>
 
@@ -65,8 +65,7 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
       SkFontConfigInterface::GetSingletonDirectInterface();
   const bool r = fc->matchFamilyName(
       family_name.data(),
-      SkFontStyle(requested_style->weight,
-                  requested_style->width,
+      SkFontStyle(requested_style->weight, requested_style->width,
                   static_cast<SkFontStyle::Slant>(requested_style->slant)),
       &result_identity, &result_family, &result_style);
 

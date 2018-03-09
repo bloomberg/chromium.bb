@@ -13,7 +13,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/font_service/public/interfaces",
+    "//components/services/font/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

@@ -1,7 +1,7 @@
 include_rules = [
   "+cc",
   "-cc/blink",
-  "+components/font_service/public",
+  "+components/services/font/public",
   "+components/gpu",
   "+mojo/cc",
   "+mojo/common",

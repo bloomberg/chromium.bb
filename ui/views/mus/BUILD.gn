@@ -80,9 +80,9 @@ jumbo_component("mus") {
   ]
 
   if (is_linux && !is_android) {
-    deps += [ "//components/font_service/public/cpp" ]
+    deps += [ "//components/services/font/public/cpp" ]
     data_deps = [
-      "//components/font_service",
+      "//components/services/font:font_service",
     ]
   }
 }

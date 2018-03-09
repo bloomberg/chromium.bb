@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_LOADER_H_
-#define COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_LOADER_H_
+#ifndef COMPONENTS_SERVICES_FONT_PUBLIC_CPP_FONT_LOADER_H_
+#define COMPONENTS_SERVICES_FONT_PUBLIC_CPP_FONT_LOADER_H_
 
 #include <stdint.h>
 
@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "components/font_service/public/cpp/mapped_font_file.h"
-#include "components/font_service/public/interfaces/font_service.mojom.h"
+#include "components/services/font/public/cpp/mapped_font_file.h"
+#include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
@@ -70,4 +70,4 @@ class FontLoader : public SkFontConfigInterface,
 
 }  // namespace font_service
 
-#endif  // COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_LOADER_H_
+#endif  // COMPONENTS_SERVICES_FONT_PUBLIC_CPP_FONT_LOADER_H_

@@ -444,7 +444,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash/components/quick_launch:manifest",
       "//ash/components/touch_hud:manifest",
       "//ash:manifest",
-      "//components/font_service:manifest",
+      "//components/services/font:manifest",
     ]
   }
 }

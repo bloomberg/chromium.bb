@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/font_service/public/cpp/font_service_thread.h"
+#include "components/services/font/public/cpp/font_service_thread.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/font_service/public/cpp/mapped_font_file.h"
+#include "components/services/font/public/cpp/mapped_font_file.h"
 
 namespace font_service {
 namespace internal {
@@ -132,8 +132,7 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     // behaviour of the current Linux IPC version.
 
     *out_family_name = family_name.data();
-    *out_style = SkFontStyle(style->weight,
-                             style->width,
+    *out_style = SkFontStyle(style->weight, style->width,
                              static_cast<SkFontStyle::Slant>(style->slant));
   }
 
