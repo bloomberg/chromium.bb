@@ -453,7 +453,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         startMarginAnimation(true);
 
         // Animate the stack to leave incognito mode.
-        if (!mStacks.get(1).isDisplayable()) uiPreemptivelySelectTabModel(false);
+        if (!mStacks.get(1).isDisplayable()) onTabModelSwitched(false);
     }
 
     @Override
@@ -464,7 +464,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         // trigger the overlap animation.
         startMarginAnimation(true);
         // Animate the stack to leave incognito mode.
-        if (!mStacks.get(1).isDisplayable()) uiPreemptivelySelectTabModel(false);
+        if (!mStacks.get(1).isDisplayable()) onTabModelSwitched(false);
     }
 
     @Override
@@ -558,7 +558,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             startMarginAnimation(false);
         }
 
-        uiPreemptivelySelectTabModel(newIsIncognito);
+        onTabModelSwitched(newIsIncognito);
     }
 
     @Override
@@ -649,7 +649,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         // Make sure we show/hide both stacks depending on which tab we're closing.
         startMarginAnimation(true, incognitoVisible);
-        if (!incognitoVisible) uiPreemptivelySelectTabModel(false);
+        if (!incognitoVisible) onTabModelSwitched(false);
     }
 
     /**
@@ -683,10 +683,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     public void uiDoneEnteringStack() {
         mSortingComparator = mVisibilityComparator;
         doneShowing();
-    }
-
-    private void uiPreemptivelySelectTabModel(boolean incognito) {
-        onTabModelSwitched(incognito);
     }
 
     /**
