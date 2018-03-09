@@ -64,7 +64,7 @@ catalog("catalog") {
   }
 
   if (is_linux && !is_android) {
-    standalone_services += [ "//components/font_service:manifest" ]
+    standalone_services += [ "//components/services/font:manifest" ]
   }
 
   if (enable_nacl) {

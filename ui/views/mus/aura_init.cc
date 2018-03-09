@@ -25,7 +25,7 @@
 #include "ui/views/views_delegate.h"
 
 #if defined(OS_LINUX)
-#include "components/font_service/public/cpp/font_loader.h"
+#include "components/services/font/public/cpp/font_loader.h"
 #include "ui/gfx/platform_font_linux.h"
 #endif
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
-#define COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
+#ifndef COMPONENTS_SERVICES_FONT_FONT_SERVICE_APP_H_
+#define COMPONENTS_SERVICES_FONT_FONT_SERVICE_APP_H_
 
 #include <stdint.h>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/font_service/public/interfaces/font_service.mojom.h"
+#include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -52,4 +52,4 @@ class FontServiceApp : public service_manager::Service,
 
 }  // namespace font_service
 
-#endif  // COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
+#endif  // COMPONENTS_SERVICES_FONT_FONT_SERVICE_APP_H_

@@ -8,7 +8,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/font_service/public/interfaces/constants.mojom.h"
+#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 
 using content::ContentBrowserClient;

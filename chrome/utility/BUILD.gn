@@ -154,8 +154,8 @@ static_library("utility") {
       "//ash/components/quick_launch/public/mojom",
       "//ash/components/touch_hud:lib",
       "//chrome/services/file_util:lib",
-      "//components/font_service:lib",
-      "//components/font_service/public/interfaces",
+      "//components/services/font:lib",
+      "//components/services/font/public/interfaces",
       "//services/ui:lib",
       "//services/ui/public/interfaces",
     ]

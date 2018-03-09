@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/font_service/public/cpp/mapped_font_file.h"
+#include "components/services/font/public/cpp/mapped_font_file.h"
 
 #include <utility>
 
@@ -28,7 +28,7 @@ SkMemoryStream* MappedFontFile::CreateMemoryStream() {
   DCHECK(mapped_font_file_.IsValid());
   sk_sp<SkData> data =
       SkData::MakeWithProc(mapped_font_file_.data(), mapped_font_file_.length(),
-                          &MappedFontFile::ReleaseProc, this);
+                           &MappedFontFile::ReleaseProc, this);
   if (!data)
     return nullptr;
   AddRef();

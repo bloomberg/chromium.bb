@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FONT_SERVICE_PUBLIC_CPP_MAPPED_FONT_FILE_H_
-#define COMPONENTS_FONT_SERVICE_PUBLIC_CPP_MAPPED_FONT_FILE_H_
+#ifndef COMPONENTS_SERVICES_FONT_PUBLIC_CPP_MAPPED_FONT_FILE_H_
+#define COMPONENTS_SERVICES_FONT_PUBLIC_CPP_MAPPED_FONT_FILE_H_
 
 #include <stdint.h>
 
@@ -53,4 +53,4 @@ class MappedFontFile : public base::RefCountedThreadSafe<MappedFontFile> {
 }  // namespace internal
 }  // namespace font_service
 
-#endif  // COMPONENTS_FONT_SERVICE_PUBLIC_CPP_MAPPED_FONT_FILE_H_
+#endif  // COMPONENTS_SERVICES_FONT_PUBLIC_CPP_MAPPED_FONT_FILE_H_

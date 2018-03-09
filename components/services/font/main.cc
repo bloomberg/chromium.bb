@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/font_service/font_service_app.h"
 #include "services/service_manager/public/c/main.h"
+#include "components/services/font/font_service_app.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
