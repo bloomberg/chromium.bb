@@ -206,40 +206,30 @@ int WindowPositioner::GetForceMaximizedWidthLimit() {
 
 // static
 void WindowPositioner::GetBoundsAndShowStateForNewWindow(
-    const aura::Window* new_window,
     bool is_saved_bounds,
     ui::WindowShowState show_state_in,
     gfx::Rect* bounds_in_out,
     ui::WindowShowState* show_state_out) {
-  // Always open new window in the target display.
-  aura::Window* target = Shell::GetRootWindowForNewWindows();
+  aura::Window* root_window = Shell::GetRootWindowForNewWindows();
+  aura::Window* top_window = GetReferenceWindow(root_window, nullptr, nullptr);
 
-  aura::Window* top_window = GetReferenceWindow(target, nullptr, nullptr);
-  // Our window should not have any impact if we are already on top.
-  if (top_window == new_window)
-    top_window = nullptr;
-
-  // If there is no valid other window we take and adjust the passed coordinates
+  // If there is no valid window we take and adjust the passed coordinates
   // and show state.
   if (!top_window) {
     gfx::Rect work_area = display::Screen::GetScreen()
-                              ->GetDisplayNearestWindow(target)
+                              ->GetDisplayNearestWindow(root_window)
                               .work_area();
-
     bounds_in_out->AdjustToFit(work_area);
-    // Use adjusted saved bounds, if there is one.
-    if (is_saved_bounds)
-      return;
 
-    if (show_state_in == ui::SHOW_STATE_DEFAULT) {
+    // If there is no window and no saved bounds, assume first run.
+    if (!is_saved_bounds && show_state_in == ui::SHOW_STATE_DEFAULT) {
       const bool maximize_first_window_on_first_run =
           Shell::Get()->shell_delegate()->IsForceMaximizeOnFirstRun();
       // We want to always open maximized on "small screens" or when policy
       // tells us to.
       const bool set_maximized =
-          ((work_area.width() <= GetForceMaximizedWidthLimit() ||
-            maximize_first_window_on_first_run) &&
-           (!new_window || !wm::GetWindowState(new_window)->IsFullscreen()));
+          work_area.width() <= GetForceMaximizedWidthLimit() ||
+          maximize_first_window_on_first_run;
 
       if (set_maximized)
         *show_state_out = ui::SHOW_STATE_MAXIMIZED;
@@ -268,7 +258,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     }
     if (is_saved_bounds || has_restore_bounds) {
       gfx::Rect work_area = display::Screen::GetScreen()
-                                ->GetDisplayNearestWindow(target)
+                                ->GetDisplayNearestWindow(root_window)
                                 .work_area();
       bounds_in_out->AdjustToFit(work_area);
       // Use adjusted saved bounds or restore bounds, if there is one.

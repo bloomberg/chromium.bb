@@ -157,7 +157,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      nullptr, false, ui::SHOW_STATE_DEFAULT, &bounds_in_out, &show_state_out);
+      false, ui::SHOW_STATE_DEFAULT, &bounds_in_out, &show_state_out);
 
   EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
 }
@@ -176,7 +176,7 @@ TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
   delegate->SetForceMaximizeOnFirstRun(true);
 
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      nullptr, false, ui::SHOW_STATE_DEFAULT, &bounds_in_out, &show_state_out);
+      false, ui::SHOW_STATE_DEFAULT, &bounds_in_out, &show_state_out);
 
   EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
 }

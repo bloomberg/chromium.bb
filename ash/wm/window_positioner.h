@@ -29,14 +29,9 @@ class ASH_EXPORT WindowPositioner {
   static int GetForceMaximizedWidthLimit();
 
   // Computes and returns the bounds and show state for new window
-  // based on the parameter passed AND existing windows. |window| is
-  // the one this function will generate a bounds for and used to
-  // exclude the self window in making decision how to position the
-  // window. |window| can be (and in most case) NULL.
-  // |is_saved_bounds| indicates the |bounds_in_out| is the saved
-  // bounds.
+  // based on the parameter passed AND existing windows. |is_saved_bounds|
+  // indicates the |bounds_in_out| is the saved bounds.
   static void GetBoundsAndShowStateForNewWindow(
-      const aura::Window* new_window,
       bool is_saved_bounds,
       ui::WindowShowState show_state_in,
       gfx::Rect* bounds_in_out,

@@ -571,18 +571,10 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     // Initialize default window bounds according to window type.
     if (window_type == Browser::TYPE_TABBED ||
         window_type == Browser::TYPE_POPUP) {
-      // Try to position the new browser relative to its originating
-      // browser window. The call offsets the bounds by kWindowTilePixels
-      // (defined in WindowSizer to be 10).
-      //
-      // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
-      // GetBrowserWindowBounds will default to saved "default" values for
-      // the app.
-      ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+      ui::WindowShowState ignored_show_state = ui::SHOW_STATE_DEFAULT;
       WindowSizer::GetBrowserWindowBoundsAndShowState(
-          std::string(), gfx::Rect(),
-          ChromeExtensionFunctionDetails(this).GetCurrentBrowser(),
-          &window_bounds, &show_state);
+          std::string(), gfx::Rect(), nullptr, &window_bounds,
+          &ignored_show_state);
     }
 
     // Any part of the bounds can optionally be set by the caller.
