@@ -2559,6 +2559,7 @@
       'ToTWin64(dll)',
       'ToTWinCFI',
       'ToTWinCFI64',
+      'ToTWinLibcxx64',
       'ToTWinThinLTO64',
       # chromium.fyi
       'CrWinAsan tester',
