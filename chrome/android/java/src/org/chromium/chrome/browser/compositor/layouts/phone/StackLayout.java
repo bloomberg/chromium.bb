@@ -76,6 +76,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final int SWIPE_MODE_SEND_TO_STACK = 1;
     private static final int SWIPE_MODE_SWITCH_STACK = 2;
 
+    private static final int INVALID_STACK_INDEX = -1;
     public static final int NORMAL_STACK_INDEX = 0;
     public static final int INCOGNITO_STACK_INDEX = 1;
 
@@ -154,7 +155,11 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final int LAYOUTTAB_ASYNCHRONOUS_INITIALIZATION_BATCH_SIZE = 4;
     private boolean mDelayedLayoutTabInitRequired;
 
-    private Boolean mTemporarySelectedStack;
+    /**
+     * Temporarily stores the index of the selected tab stack. This is used to set the currently
+     * selected stack in TabModelSelector once the stack-switching animation finishes.
+     */
+    private int mTemporarySelectedStack = INVALID_STACK_INDEX;
 
     // Orientation Variables
     private PortraitViewport mCachedPortraitViewport;
@@ -387,10 +392,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      */
     protected int getTabStackIndex(int tabId) {
         if (tabId == Tab.INVALID_TAB_ID) {
-            boolean incognito = mTemporarySelectedStack != null
-                    ? mTemporarySelectedStack
-                    : mTabModelSelector.isIncognitoSelected();
-            return incognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX;
+            if (mTemporarySelectedStack != INVALID_STACK_INDEX) return mTemporarySelectedStack;
+
+            return mTabModelSelector.isIncognitoSelected() ? INCOGNITO_STACK_INDEX
+                                                           : NORMAL_STACK_INDEX;
         } else {
             return TabModelUtils.getTabById(mTabModelSelector.getModel(true), tabId) != null ? 1
                                                                                              : 0;
@@ -587,9 +592,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     protected void onAnimationFinished() {
         mFlingFromModelChange = false;
-        if (mTemporarySelectedStack != null) {
-            mTabModelSelector.selectModel(mTemporarySelectedStack);
-            mTemporarySelectedStack = null;
+        if (mTemporarySelectedStack != INVALID_STACK_INDEX) {
+            mTabModelSelector.selectModel(mTemporarySelectedStack == INCOGNITO_STACK_INDEX);
+            mTemporarySelectedStack = INVALID_STACK_INDEX;
         }
         if (mStackAnimationCount == 0) super.onAnimationFinished();
         if (mNewTabLayoutTab != null) {
@@ -1012,9 +1017,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             addToAnimation(this, Property.STACK_SNAP, mRenderedScrollOffset, target, duration, 0);
         } else {
             setProperty(Property.STACK_SNAP, target);
-            if (mTemporarySelectedStack != null) {
-                mTabModelSelector.selectModel(mTemporarySelectedStack);
-                mTemporarySelectedStack = null;
+            if (mTemporarySelectedStack != INVALID_STACK_INDEX) {
+                mTabModelSelector.selectModel(mTemporarySelectedStack == INCOGNITO_STACK_INDEX);
+                mTemporarySelectedStack = INVALID_STACK_INDEX;
             }
         }
     }
@@ -1125,7 +1130,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      */
     public boolean setActiveStackState(boolean isIncognito) {
         if (isIncognito == mTabModelSelector.isIncognitoSelected()) return false;
-        mTemporarySelectedStack = isIncognito;
+        mTemporarySelectedStack = isIncognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX;
         return true;
     }
 
