@@ -18,8 +18,8 @@
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/ws/cursor_state.h"
 #include "services/ui/ws/cursor_state_delegate.h"
-#include "services/ui/ws/event_dispatcher.h"
-#include "services/ui/ws/event_dispatcher_delegate.h"
+#include "services/ui/ws/event_processor.h"
+#include "services/ui/ws/event_processor_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "services/ui/ws/window_server.h"
 
@@ -42,7 +42,7 @@ class WindowManagerStateTestApi;
 // Manages state specific to a WindowManager that is shared across displays.
 // WindowManagerState is owned by the WindowTree the window manager is
 // associated with.
-class WindowManagerState : public EventDispatcherDelegate,
+class WindowManagerState : public EventProcessorDelegate,
                            public ServerWindowObserver,
                            public CursorStateDelegate {
  public:
@@ -63,9 +63,9 @@ class WindowManagerState : public EventDispatcherDelegate,
   }
 
   bool SetCapture(ServerWindow* window, ClientSpecificId client_id);
-  ServerWindow* capture_window() { return event_dispatcher_.capture_window(); }
+  ServerWindow* capture_window() { return event_processor_.capture_window(); }
   const ServerWindow* capture_window() const {
-    return event_dispatcher_.capture_window();
+    return event_processor_.capture_window();
   }
 
   void ReleaseCaptureBlockedByAnyModalWindow();
@@ -92,9 +92,9 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Deletes the WindowManagerDisplayRoot whose root is |display_root|.
   void DeleteWindowManagerDisplayRoot(ServerWindow* display_root);
 
-  // TODO(sky): EventDispatcher is really an implementation detail and should
+  // TODO(sky): EventProcessor is really an implementation detail and should
   // not be exposed.
-  EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
+  EventProcessor* event_processor() { return &event_processor_; }
 
   CursorState& cursor_state() { return cursor_state_; }
 
@@ -199,7 +199,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   void OnEventAckTimeout(ClientSpecificId client_id);
 
   // Implemenation of processing an event with a match phase of all. This
-  // handles debug accelerators and forwards to EventDispatcher.
+  // handles debug accelerators and forwards to EventProcessor.
   void ProcessEventImpl(const Event& event,
                         const EventLocation& event_location);
 
@@ -246,16 +246,16 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   void AdjustEventLocation(int64_t display_id, LocatedEvent* event);
 
-  // EventDispatcherDelegate:
+  // EventProcessorDelegate:
   void OnAccelerator(uint32_t accelerator_id,
                      int64_t display_id,
                      const Event& event,
                      AcceleratorPhase phase) override;
-  void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
-  ServerWindow* GetFocusedWindowForEventDispatcher(int64_t display_id) override;
+  void SetFocusedWindowFromEventProcessor(ServerWindow* window) override;
+  ServerWindow* GetFocusedWindowForEventProcessor(int64_t display_id) override;
   void SetNativeCapture(ServerWindow* window) override;
   void ReleaseNativeCapture() override;
-  void UpdateNativeCursorFromDispatcher() override;
+  void UpdateNativeCursorFromEventProcessor() override;
   void OnCaptureChanged(ServerWindow* new_capture,
                         ServerWindow* old_capture) override;
   void OnMouseCursorLocationChanged(const gfx::PointF& point,
@@ -308,7 +308,7 @@ class WindowManagerState : public EventDispatcherDelegate,
   std::unique_ptr<InFlightEventDispatchDetails>
       in_flight_event_dispatch_details_;
 
-  EventDispatcher event_dispatcher_;
+  EventProcessor event_processor_;
 
   // PlatformDisplay that currently has capture.
   PlatformDisplay* platform_display_with_capture_ = nullptr;

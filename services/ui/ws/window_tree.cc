@@ -21,9 +21,9 @@
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_location.h"
 #include "services/ui/ws/event_matcher.h"
+#include "services/ui/ws/event_processor.h"
 #include "services/ui/ws/focus_controller.h"
 #include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/modal_window_controller.h"
@@ -437,7 +437,7 @@ bool WindowTree::ProcessSetBlockingContainers(
         MakeClientWindowId(transport_container->min_container_id));
     all_containers.push_back(blocking_containers);
   }
-  window_manager_state_->event_dispatcher()
+  window_manager_state_->event_processor()
       ->modal_window_controller()
       ->SetBlockingContainers(all_containers);
   return true;
@@ -2487,7 +2487,7 @@ void WindowTree::AddAccelerators(
 
   bool success = true;
   for (auto iter = accelerators.begin(); iter != accelerators.end(); ++iter) {
-    if (!window_manager_state_->event_dispatcher()->AddAccelerator(
+    if (!window_manager_state_->event_processor()->AddAccelerator(
             iter->get()->id, std::move(iter->get()->event_matcher)))
       success = false;
   }
@@ -2495,7 +2495,7 @@ void WindowTree::AddAccelerators(
 }
 
 void WindowTree::RemoveAccelerator(uint32_t id) {
-  window_manager_state_->event_dispatcher()->RemoveAccelerator(id);
+  window_manager_state_->event_processor()->RemoveAccelerator(id);
 }
 
 void WindowTree::AddActivationParent(Id transport_window_id) {

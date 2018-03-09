@@ -164,12 +164,12 @@ bool WindowManagerState::DebugAccelerator::Matches(
 // details.
 struct WindowManagerState::EventTask {
   enum class Type {
-    // ProcessEvent() was called while waiting on a client or EventDispatcher
+    // ProcessEvent() was called while waiting on a client or EventProcessor
     // to complete processing. |event| is non-null and |processed_target| is
     // null.
     kEvent,
 
-    // In certain situations EventDispatcher::ProcessEvent() generates more than
+    // In certain situations EventProcessor::ProcessEvent() generates more than
     // one event. When that happens, |kProcessedEvent| is used for all events
     // after the first. For example, a move may result in an exit for one
     // Window and and an enter for another Window. The event generated for the
@@ -178,7 +178,7 @@ struct WindowManagerState::EventTask {
     kProcessedEvent,
 
     // ScheduleCallbackWhenDoneProcessingEvents() is called while waiting on
-    // a client or EventDispatcher. |event| and |processed_target| are null.
+    // a client or EventProcessor. |event| and |processed_target| are null.
     kClosure
   };
 
@@ -204,7 +204,7 @@ struct WindowManagerState::EventTask {
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
     : window_tree_(window_tree),
-      event_dispatcher_(this),
+      event_processor_(this),
       cursor_state_(window_tree_->display_manager(), this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
@@ -239,7 +239,7 @@ void WindowManagerState::SetFrameDecorationValues(
 bool WindowManagerState::SetCapture(ServerWindow* window,
                                     ClientSpecificId client_id) {
   if (capture_window() == window &&
-      client_id == event_dispatcher_.capture_window_client_id()) {
+      client_id == event_processor_.capture_window_client_id()) {
     return true;
   }
 #if DCHECK_IS_ON()
@@ -249,11 +249,11 @@ bool WindowManagerState::SetCapture(ServerWindow* window,
     DCHECK(display_root && display_root->window_manager_state() == this);
   }
 #endif
-  return event_dispatcher_.SetCaptureWindow(window, client_id);
+  return event_processor_.SetCaptureWindow(window, client_id);
 }
 
 void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
-  event_dispatcher_.ReleaseCaptureBlockedByAnyModalWindow();
+  event_processor_.ReleaseCaptureBlockedByAnyModalWindow();
 }
 
 void WindowManagerState::SetCursorLocation(const gfx::Point& display_pixels,
@@ -270,7 +270,7 @@ void WindowManagerState::SetCursorLocation(const gfx::Point& display_pixels,
 
 void WindowManagerState::SetKeyEventsThatDontHideCursor(
     std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) {
-  event_dispatcher()->SetKeyEventsThatDontHideCursor(
+  event_processor()->SetKeyEventsThatDontHideCursor(
       std::move(dont_hide_cursor_list));
 }
 
@@ -297,22 +297,22 @@ void WindowManagerState::SetDragDropSourceWindow(
     return;
   }
 
-  event_dispatcher_.SetDragDropSourceWindow(drag_source, window,
-                                            source_connection, drag_pointer,
-                                            drag_data, drag_operation);
+  event_processor_.SetDragDropSourceWindow(drag_source, window,
+                                           source_connection, drag_pointer,
+                                           drag_data, drag_operation);
 }
 
 void WindowManagerState::CancelDragDrop() {
-  event_dispatcher_.CancelDragDrop();
+  event_processor_.CancelDragDrop();
 }
 
 void WindowManagerState::EndDragDrop() {
-  event_dispatcher_.EndDragDrop();
-  UpdateNativeCursorFromDispatcher();
+  event_processor_.EndDragDrop();
+  UpdateNativeCursorFromEventProcessor();
 }
 
 void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
-  event_dispatcher_.AddSystemModalWindow(window);
+  event_processor_.AddSystemModalWindow(window);
 }
 
 void WindowManagerState::DeleteWindowManagerDisplayRoot(
@@ -336,7 +336,7 @@ void WindowManagerState::DeleteWindowManagerDisplayRoot(
 }
 
 void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
-  event_dispatcher_.OnWillDestroyDragTargetConnection(tree);
+  event_processor_.OnWillDestroyDragTargetConnection(tree);
 
   if (!in_flight_event_dispatch_details_ ||
       in_flight_event_dispatch_details_->tree != tree)
@@ -379,7 +379,7 @@ void WindowManagerState::ProcessEvent(ui::Event* event, int64_t display_id) {
 
 bool WindowManagerState::IsProcessingEvent() const {
   return in_flight_event_dispatch_details_ ||
-         event_dispatcher_.IsProcessingEvent();
+         event_processor_.IsProcessingEvent();
 }
 
 void WindowManagerState::ScheduleCallbackWhenDoneProcessingEvents(
@@ -410,9 +410,9 @@ void WindowManagerState::OnAcceleratorAck(
     DCHECK(details->event->IsKeyEvent());
     if (!properties.empty())
       details->event->AsKeyEvent()->SetProperties(properties);
-    event_dispatcher_.ProcessEvent(
+    event_processor_.ProcessEvent(
         *details->event, EventLocation(details->display_id),
-        EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
+        EventProcessor::AcceleratorMatchPhase::POST_ONLY);
   } else {
     // We're not going to process the event any further, notify event observers.
     // We don't do this first to ensure we don't send an event twice to clients.
@@ -502,11 +502,11 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
 void WindowManagerState::ProcessEventImpl(const ui::Event& event,
                                           const EventLocation& event_location) {
   DCHECK(!in_flight_event_dispatch_details_ &&
-         !event_dispatcher_.IsProcessingEvent());
+         !event_processor_.IsProcessingEvent());
   // Debug accelerators are always checked and don't interfere with processing.
   ProcessDebugAccelerator(event, event_location.display_id);
-  event_dispatcher_.ProcessEvent(event, event_location,
-                                 EventDispatcher::AcceleratorMatchPhase::ANY);
+  event_processor_.ProcessEvent(event, event_location,
+                                EventProcessor::AcceleratorMatchPhase::ANY);
 }
 
 void WindowManagerState::QueueEvent(
@@ -534,7 +534,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
     target = GetWindowManagerRootForDisplayRoot(target);
 
   if (event.IsMousePointerEvent())
-    UpdateNativeCursorFromDispatcher();
+    UpdateNativeCursorFromEventProcessor();
 
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
   DCHECK(tree);
@@ -586,7 +586,7 @@ void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type,
                  << display_root->root()->GetDebugWindowHierarchy();
     }
   }
-  ServerWindow* focused_window = GetFocusedWindowForEventDispatcher(display_id);
+  ServerWindow* focused_window = GetFocusedWindowForEventProcessor(display_id);
   LOG(ERROR) << "Focused window: "
              << (focused_window ? focused_window->frame_sink_id().ToString()
                                 : "(null)");
@@ -697,7 +697,7 @@ void WindowManagerState::AdjustEventLocation(int64_t display_id,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// EventDispatcherDelegate:
+// EventProcessorDelegate:
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        int64_t display_id,
@@ -716,12 +716,12 @@ void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
   window_tree_->OnAccelerator(accelerator_id, event, std::move(ack_callback));
 }
 
-void WindowManagerState::SetFocusedWindowFromEventDispatcher(
+void WindowManagerState::SetFocusedWindowFromEventProcessor(
     ServerWindow* new_focused_window) {
   window_server()->SetFocusedWindow(new_focused_window);
 }
 
-ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher(
+ServerWindow* WindowManagerState::GetFocusedWindowForEventProcessor(
     int64_t display_id) {
   ServerWindow* focused_window = window_server()->GetFocusedWindow();
   if (focused_window)
@@ -767,8 +767,8 @@ void WindowManagerState::ReleaseNativeCapture() {
   platform_display_with_capture_ = nullptr;
 }
 
-void WindowManagerState::UpdateNativeCursorFromDispatcher() {
-  const ui::CursorData cursor = event_dispatcher_.GetCurrentMouseCursor();
+void WindowManagerState::UpdateNativeCursorFromEventProcessor() {
+  const ui::CursorData cursor = event_processor_.GetCurrentMouseCursor();
   cursor_state_.SetCurrentWindowCursor(cursor);
 }
 
@@ -919,7 +919,7 @@ void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,
   window_server()->SendToPointerWatchers(event, nullptr, /* window */
                                          nullptr /* ignore_tree */, display_id);
   if (event.IsMousePointerEvent())
-    UpdateNativeCursorFromDispatcher();
+    UpdateNativeCursorFromEventProcessor();
 }
 
 ServerWindow* WindowManagerState::GetFallbackTargetForEventBlockedByModal(

@@ -15,7 +15,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
-#include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/event_processor.h"
 #include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/user_display_manager.h"

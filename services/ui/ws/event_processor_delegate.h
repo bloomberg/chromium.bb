@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_EVENT_DISPATCHER_DELEGATE_H_
-#define SERVICES_UI_WS_EVENT_DISPATCHER_DELEGATE_H_
+#ifndef SERVICES_UI_WS_EVENT_PROCESSOR_DELEGATE_H_
+#define SERVICES_UI_WS_EVENT_PROCESSOR_DELEGATE_H_
 
 #include <stdint.h>
 
@@ -26,8 +26,9 @@ namespace ws {
 class Accelerator;
 class ServerWindow;
 
-// Used by EventDispatcher for mocking in tests.
-class EventDispatcherDelegate {
+// Used by EventProcessor for dispatching of events, as well as to inform the
+// delegate of various state changes.
+class EventProcessorDelegate {
  public:
   enum class AcceleratorPhase {
     PRE,
@@ -39,8 +40,8 @@ class EventDispatcherDelegate {
                              const ui::Event& event,
                              AcceleratorPhase phase) = 0;
 
-  virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
-  virtual ServerWindow* GetFocusedWindowForEventDispatcher(
+  virtual void SetFocusedWindowFromEventProcessor(ServerWindow* window) = 0;
+  virtual ServerWindow* GetFocusedWindowForEventProcessor(
       int64_t display_id) = 0;
 
   // Called when capture should be set on the native display. |window| is the
@@ -51,9 +52,9 @@ class EventDispatcherDelegate {
   // longer a ServerWindow holding capture.
   virtual void ReleaseNativeCapture() = 0;
 
-  // Called when EventDispatcher has a new value for the cursor and our
+  // Called when EventProcessor has a new value for the cursor and our
   // delegate should perform the native updates.
-  virtual void UpdateNativeCursorFromDispatcher() = 0;
+  virtual void UpdateNativeCursorFromEventProcessor() = 0;
 
   // Called when |window| has lost capture. The native display may still be
   // holding capture. The delegate should not change native display capture.
@@ -125,10 +126,10 @@ class EventDispatcherDelegate {
       const viz::FrameSinkId& frame_sink_id) = 0;
 
  protected:
-  virtual ~EventDispatcherDelegate() {}
+  virtual ~EventProcessorDelegate() {}
 };
 
 }  // namespace ws
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_EVENT_DISPATCHER_DELEGATE_H_
+#endif  // SERVICES_UI_WS_EVENT_PROCESSOR_DELEGATE_H_

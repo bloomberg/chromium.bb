@@ -24,7 +24,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/drag_controller.h"
-#include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/event_processor.h"
 #include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/platform_display.h"
@@ -167,26 +167,26 @@ class WindowTreeTestApi {
 
 // -----------------------------------------------------------------------------
 
-class EventDispatcherTestApi {
+class EventProcessorTestApi {
  public:
-  explicit EventDispatcherTestApi(EventDispatcher* ed) : ed_(ed) {}
-  ~EventDispatcherTestApi() {}
+  explicit EventProcessorTestApi(EventProcessor* ep) : ep_(ep) {}
+  ~EventProcessorTestApi() {}
 
-  bool AreAnyPointersDown() const { return ed_->AreAnyPointersDown(); }
-  bool is_mouse_button_down() const { return ed_->mouse_button_down_; }
+  bool AreAnyPointersDown() const { return ep_->AreAnyPointersDown(); }
+  bool is_mouse_button_down() const { return ep_->mouse_button_down_; }
   bool IsWindowPointerTarget(const ServerWindow* window) const;
   int NumberPointerTargetsForWindow(ServerWindow* window);
   ModalWindowController* modal_window_controller() const {
-    return &ed_->modal_window_controller_;
+    return &ep_->modal_window_controller_;
   }
-  ServerWindow* capture_window() { return ed_->capture_window_; }
-  EventTargeter* event_targeter() { return ed_->event_targeter_.get(); }
+  ServerWindow* capture_window() { return ep_->capture_window_; }
+  EventTargeter* event_targeter() { return ep_->event_targeter_.get(); }
   bool IsObservingWindow(ServerWindow* window);
 
  private:
-  EventDispatcher* ed_;
+  EventProcessor* ep_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventDispatcherTestApi);
+  DISALLOW_COPY_AND_ASSIGN(EventProcessorTestApi);
 };
 
 // -----------------------------------------------------------------------------
