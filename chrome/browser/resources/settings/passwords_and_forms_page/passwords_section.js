@@ -554,6 +554,8 @@ Polymer({
   /** @private */
   onPasswordsExportDialogClosed_: function() {
     this.showPasswordsExportDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
   },
 
   /**
