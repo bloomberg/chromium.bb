@@ -353,10 +353,6 @@ const ui::AXUniqueId& NativeViewAccessibilityBase::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
 
-gfx::RectF NativeViewAccessibilityBase::GetBoundsInScreen() const {
-  return gfx::RectF(view()->GetBoundsInScreen());
-}
-
 void NativeViewAccessibilityBase::PopulateChildWidgetVector(
     std::vector<Widget*>* result_child_widgets) {
   // Only attach child widgets to the root view.
