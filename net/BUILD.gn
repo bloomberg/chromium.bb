@@ -6227,6 +6227,10 @@ fuzzer_test("net_url_request_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_url_request_fuzzer.dict"
+
+  # TODO(crbug.com/820089): Figure out why this fuzzer's corpus explodes to
+  # 10 GB. For now, disable it on ClusterFuzz.
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
