@@ -63,6 +63,8 @@ WKHTTPSystemCookieStore::~WKHTTPSystemCookieStore() = default;
 void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
     const GURL& url,
     SystemCookieCallbackForCookies callback) {
+  // This function shouldn't be called if cookie_store_ is deleted.
+  DCHECK(cookie_store_);
   __block SystemCookieCallbackForCookies shared_callback = std::move(callback);
   GURL block_url = url;
   web::WebThread::PostTask(
@@ -81,6 +83,8 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
 
 void WKHTTPSystemCookieStore::GetAllCookiesAsync(
     SystemCookieCallbackForCookies callback) {
+  // This function shouldn't be called if cookie_store_ is deleted.
+  DCHECK(cookie_store_);
   __block SystemCookieCallbackForCookies shared_callback = std::move(callback);
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
@@ -93,6 +97,8 @@ void WKHTTPSystemCookieStore::GetAllCookiesAsync(
 
 void WKHTTPSystemCookieStore::DeleteCookieAsync(NSHTTPCookie* cookie,
                                                 SystemCookieCallback callback) {
+  // This function shouldn't be called if cookie_store_ is deleted.
+  DCHECK(cookie_store_);
   __block SystemCookieCallback shared_callback = std::move(callback);
   NSHTTPCookie* block_cookie = cookie;
   web::WebThread::PostTask(
@@ -111,6 +117,8 @@ void WKHTTPSystemCookieStore::SetCookieAsync(
     NSHTTPCookie* cookie,
     const base::Time* optional_creation_time,
     SystemCookieCallback callback) {
+  // cookies can't be set if cookie_store_ is deleted.
+  DCHECK(cookie_store_);
   __block SystemCookieCallback shared_callback = std::move(callback);
   NSHTTPCookie* block_cookie = cookie;
   base::Time cookie_time = base::Time::Now();
