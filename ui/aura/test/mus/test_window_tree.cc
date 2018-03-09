@@ -280,6 +280,10 @@ void TestWindowTree::EmbedUsingToken(ui::Id window_id,
                                      uint32_t embed_flags,
                                      EmbedUsingTokenCallback callback) {}
 
+void TestWindowTree::ScheduleEmbedForExistingClient(
+    ui::ClientSpecificId window_id,
+    ScheduleEmbedForExistingClientCallback callback) {}
+
 void TestWindowTree::SetFocus(uint32_t change_id, ui::Id window_id) {
   OnChangeReceived(change_id, WindowTreeChangeType::FOCUS);
 }

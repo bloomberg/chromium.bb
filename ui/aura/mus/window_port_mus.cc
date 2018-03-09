@@ -103,6 +103,14 @@ void WindowPortMus::Embed(ui::mojom::WindowTreeClientPtr client,
                              std::move(callback));
 }
 
+void WindowPortMus::EmbedUsingToken(
+    const base::UnguessableToken& token,
+    uint32_t flags,
+    ui::mojom::WindowTree::EmbedCallback callback) {
+  window_tree_client_->EmbedUsingToken(window_, token, flags,
+                                       std::move(callback));
+}
+
 std::unique_ptr<viz::ClientLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,

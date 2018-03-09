@@ -38,6 +38,8 @@
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
+#include "ui/aura/mus/embed_root.h"
+#include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
@@ -291,6 +293,10 @@ WindowTreeClient::~WindowTreeClient() {
   for (auto& pair : windows)
     WindowPortForShutdown::Install(pair.second->GetWindow());
 
+  // EmbedRoots keep a reference to this; so they must all be destroyed before
+  // the destructor completes.
+  DCHECK(embed_roots_.empty());
+
   env->WindowTreeClientDestroyed(this);
   CHECK(windows_.empty());
 }
@@ -364,6 +370,27 @@ void WindowTreeClient::ScheduleEmbed(
                        base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
+void WindowTreeClient::EmbedUsingToken(
+    Window* window,
+    const base::UnguessableToken& token,
+    uint32_t flags,
+    ui::mojom::WindowTree::EmbedCallback callback) {
+  DCHECK(tree_);
+  // Window::Init() must be called before Embed() (otherwise the server hasn't
+  // been told about the window).
+  DCHECK(window->layer());
+  if (!window->children().empty()) {
+    // The window server removes all children before embedding. In other words,
+    // it's generally an error to Embed() with existing children. So, fail
+    // early.
+    std::move(callback).Run(false);
+    return;
+  }
+
+  tree_->EmbedUsingToken(WindowMus::Get(window)->server_id(), token, flags,
+                         std::move(callback));
+}
+
 void WindowTreeClient::AttachCompositorFrameSink(
     ui::Id window_id,
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
@@ -371,6 +398,14 @@ void WindowTreeClient::AttachCompositorFrameSink(
   DCHECK(tree_);
   tree_->AttachCompositorFrameSink(window_id, std::move(compositor_frame_sink),
                                    std::move(client));
+}
+
+std::unique_ptr<EmbedRoot> WindowTreeClient::CreateEmbedRoot(
+    EmbedRootDelegate* delegate) {
+  std::unique_ptr<EmbedRoot> embed_root =
+      base::WrapUnique(new EmbedRoot(this, delegate, next_window_id_++));
+  embed_roots_.insert(embed_root.get());
+  return embed_root;
 }
 
 WindowTreeClient::WindowTreeClient(
@@ -754,6 +789,18 @@ void WindowTreeClient::OnEmbedImpl(
       GetWindowByServerId(focused_window_id));
 
   delegate_->OnEmbed(std::move(window_tree_host));
+}
+
+EmbedRoot* WindowTreeClient::GetEmbedRootWithRootWindow(aura::Window* window) {
+  for (EmbedRoot* embed_root : embed_roots_) {
+    if (embed_root->window() == window)
+      return embed_root;
+  }
+  return nullptr;
+}
+
+void WindowTreeClient::OnEmbedRootDestroyed(EmbedRoot* embed_root) {
+  embed_roots_.erase(embed_root);
 }
 
 WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
@@ -1211,6 +1258,20 @@ void WindowTreeClient::OnEmbed(
               focused_window_id, drawn, local_surface_id);
 }
 
+void WindowTreeClient::OnEmbedFromToken(
+    const base::UnguessableToken& token,
+    ui::mojom::WindowDataPtr root,
+    int64_t display_id,
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  for (EmbedRoot* embed_root : embed_roots_) {
+    if (embed_root->token() == token) {
+      embed_root->OnEmbed(CreateWindowTreeHost(WindowMusType::EMBED, *root,
+                                               display_id, local_surface_id));
+      break;
+    }
+  }
+}
+
 void WindowTreeClient::OnEmbeddedAppDisconnected(ui::Id window_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (window)
@@ -1221,6 +1282,13 @@ void WindowTreeClient::OnUnembed(ui::Id window_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
+
+  EmbedRoot* embed_root = GetEmbedRootWithRootWindow(window->GetWindow());
+  if (embed_root) {
+    embed_root->OnUnembed();
+    if (!GetWindowByServerId(window_id))
+      return;  // EmbedRoot was deleted, resulting in deleting window.
+  }
 
   delegate_->OnUnembed(window->GetWindow());
   delete window;
@@ -1440,11 +1508,15 @@ void WindowTreeClient::OnWindowDeleted(ui::Id window_id) {
   if (roots_.count(window)) {
     // Roots are associated with WindowTreeHosts. The WindowTreeHost owns the
     // root, so we have to delete the WindowTreeHost to indirectly delete the
-    // Window. Additionally clients may want to do extra processing before the
-    // delete, so call to the delegate to handle it. Let the window know it is
-    // going to be deleted so we don't callback to the server.
+    // Window. Clients may want to do extra processing before the delete,
+    // notify the appropriate delegate to handle the deletion. Let the window
+    // know it is going to be deleted so we don't callback to the server.
     window->PrepareForDestroy();
-    delegate_->OnEmbedRootDestroyed(GetWindowTreeHostMus(window));
+    EmbedRoot* embed_root = GetEmbedRootWithRootWindow(window->GetWindow());
+    if (embed_root)
+      embed_root->OnUnembed();
+    else
+      delegate_->OnEmbedRootDestroyed(GetWindowTreeHostMus(window));
   } else {
     window->DestroyFromServer();
   }

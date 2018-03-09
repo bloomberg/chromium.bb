@@ -15,6 +15,7 @@
 
 #include "base/atomicops.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -64,6 +65,8 @@ struct PropertyData;
 namespace aura {
 class CaptureSynchronizer;
 class DragDropControllerMus;
+class EmbedRoot;
+class EmbedRootDelegate;
 class FocusSynchronizer;
 class InFlightBoundsChange;
 class InFlightChange;
@@ -166,12 +169,19 @@ class AURA_EXPORT WindowTreeClient
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              ui::mojom::WindowTree::EmbedCallback callback);
+  void EmbedUsingToken(Window* window,
+                       const base::UnguessableToken& token,
+                       uint32_t flags,
+                       ui::mojom::WindowTree::EmbedCallback callback);
 
   // Schedules an embed of a client. See
   // mojom::WindowTreeClient::ScheduleEmbed() for details.
   void ScheduleEmbed(
       ui::mojom::WindowTreeClientPtr client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
+
+  // Creates a new EmbedRoot. See EmbedRoot for details.
+  std::unique_ptr<EmbedRoot> CreateEmbedRoot(EmbedRootDelegate* delegate);
 
   void AttachCompositorFrameSink(
       ui::Id window_id,
@@ -203,6 +213,7 @@ class AURA_EXPORT WindowTreeClient
   void RemoveTestObserver(WindowTreeClientTestObserver* observer);
 
  private:
+  friend class EmbedRoot;
   friend class InFlightBoundsChange;
   friend class InFlightFocusChange;
   friend class InFlightPropertyChange;
@@ -321,6 +332,12 @@ class AURA_EXPORT WindowTreeClient
                    bool drawn,
                    const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
+  // Returns the EmbedRoot whose root is |window|, or null if there isn't one.
+  EmbedRoot* GetEmbedRootWithRootWindow(aura::Window* window);
+
+  // Called from EmbedRoot's destructor.
+  void OnEmbedRootDestroyed(EmbedRoot* embed_root);
+
   // Called by WmNewDisplayAdded().
   WindowTreeHostMus* WmNewDisplayAddedImpl(
       const display::Display& display,
@@ -384,6 +401,11 @@ class AURA_EXPORT WindowTreeClient
       int64_t display_id,
       ui::Id focused_window_id,
       bool drawn,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbedFromToken(
+      const base::UnguessableToken& token,
+      ui::mojom::WindowDataPtr root,
+      int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
   void OnUnembed(ui::Id window_id) override;
@@ -636,6 +658,8 @@ class AURA_EXPORT WindowTreeClient
   WindowManagerDelegate* window_manager_delegate_;
 
   std::set<WindowMus*> roots_;
+
+  base::flat_set<EmbedRoot*> embed_roots_;
 
   IdToWindowMap windows_;
   std::map<ui::ClientSpecificId, std::set<Window*>> embedded_windows_;

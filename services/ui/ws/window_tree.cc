@@ -163,7 +163,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
   std::vector<const ServerWindow*> to_send;
   CHECK_EQ(1u, roots_.size());
   const ServerWindow* root = *roots_.begin();
-  GetUnknownWindowsFrom(root, &to_send);
+  GetUnknownWindowsFrom(root, &to_send, nullptr);
 
   Display* display = GetDisplay(root);
   int64_t display_id = display ? display->GetId() : display::kInvalidDisplayId;
@@ -696,6 +696,7 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
   if (!window_tree_client || !CanEmbed(window_id))
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
+  DCHECK(window);  // CanEmbed() returns false if no window.
   PrepareForEmbed(window);
   // mojom::kEmbedFlagEmbedderInterceptsEvents is inherited, otherwise an
   // embedder could effectively circumvent it by embedding itself.
@@ -703,6 +704,27 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
     flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
   window_server_->EmbedAtWindow(window, std::move(window_tree_client), flags,
                                 base::WrapUnique(new DefaultAccessPolicy));
+  client()->OnFrameSinkIdAllocated(ClientWindowIdToTransportId(window_id),
+                                   window->frame_sink_id());
+  return true;
+}
+
+bool WindowTree::EmbedExistingTree(
+    const ClientWindowId& window_id,
+    const WindowTreeAndWindowId& tree_and_window_id,
+    const base::UnguessableToken& token) {
+  const ClientWindowId window_id_in_embedded(tree_and_window_id.tree->id(),
+                                             tree_and_window_id.window_id);
+  if (!CanEmbed(window_id) ||
+      !tree_and_window_id.tree->IsValidIdForNewWindow(window_id_in_embedded)) {
+    return false;
+  }
+  ServerWindow* window = GetWindowByClientId(window_id);
+  DCHECK(window);  // CanEmbed() returns false if no window.
+  PrepareForEmbed(window);
+  tree_and_window_id.tree->AddRootForToken(token, window,
+                                           window_id_in_embedded);
+  window->UpdateFrameSinkId(window_id_in_embedded);
   client()->OnFrameSinkIdAllocated(ClientWindowIdToTransportId(window_id),
                                    window->frame_sink_id());
   return true;
@@ -928,7 +950,7 @@ void WindowTree::ProcessWindowHierarchyChanged(const ServerWindow* window,
   // about.
   std::vector<const ServerWindow*> to_send;
   if (!IsWindowKnown(window))
-    GetUnknownWindowsFrom(window, &to_send);
+    GetUnknownWindowsFrom(window, &to_send, nullptr);
   const bool knows_old = old_parent && IsWindowKnown(old_parent);
   if (!knows_old && !knows_new)
     return;
@@ -1170,9 +1192,10 @@ Id WindowTree::TransportIdForWindow(const ServerWindow* window) const {
 }
 
 bool WindowTree::IsValidIdForNewWindow(const ClientWindowId& id) const {
-  // Reserve 0 to indicate a null window.
+  // Reserve 0 (ClientWindowId() and sink_id) to indicate a null window.
   return client_id_to_window_map_.count(id) == 0u &&
-         access_policy_->IsValidIdForNewWindow(id) && id != ClientWindowId();
+         access_policy_->IsValidIdForNewWindow(id) && id != ClientWindowId() &&
+         id.sink_id() != 0;
 }
 
 bool WindowTree::CanReorderWindow(const ServerWindow* window,
@@ -1253,24 +1276,27 @@ bool WindowTree::DeleteWindowImpl(WindowTree* source, ServerWindow* window) {
 
 void WindowTree::GetUnknownWindowsFrom(
     const ServerWindow* window,
-    std::vector<const ServerWindow*>* windows) {
+    std::vector<const ServerWindow*>* windows,
+    const ClientWindowId* id_for_window) {
   if (!access_policy_->CanGetWindowTree(window))
     return;
 
   // This function is called in the context of a hierarchy change when the
   // parent wasn't known. We need to tell the client about the window so that
   // it can set the parent correctly.
-  windows->push_back(window);
+  if (windows)
+    windows->push_back(window);
   if (IsWindowKnown(window))
     return;
 
-  const ClientWindowId client_window_id = window->frame_sink_id();
+  const ClientWindowId client_window_id =
+      id_for_window ? *id_for_window : window->frame_sink_id();
   AddToMaps(window, client_window_id);
   if (!access_policy_->CanDescendIntoWindowForWindowTree(window))
     return;
   const ServerWindow::Windows& children = window->children();
   for (ServerWindow* child : children)
-    GetUnknownWindowsFrom(child, windows);
+    GetUnknownWindowsFrom(child, windows, nullptr);
 }
 
 void WindowTree::AddToMaps(const ServerWindow* window,
@@ -1278,6 +1304,20 @@ void WindowTree::AddToMaps(const ServerWindow* window,
   DCHECK_EQ(0u, client_id_to_window_map_.count(client_window_id));
   client_id_to_window_map_[client_window_id] = window;
   window_to_client_id_map_[window] = client_window_id;
+}
+
+void WindowTree::AddRootForToken(const base::UnguessableToken& token,
+                                 ServerWindow* window,
+                                 const ClientWindowId& client_window_id) {
+  roots_.insert(window);
+  Display* display = GetDisplay(window);
+  int64_t display_id = display ? display->GetId() : display::kInvalidDisplayId;
+  // Caller should have verified there is no window already registered for
+  // |client_window_id|.
+  DCHECK(!GetWindowByClientId(client_window_id));
+  GetUnknownWindowsFrom(window, nullptr, &client_window_id);
+  client()->OnEmbedFromToken(token, WindowToWindowData(window), display_id,
+                             window->current_local_surface_id());
 }
 
 bool WindowTree::RemoveFromMaps(const ServerWindow* window) {
@@ -2010,13 +2050,33 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
                                  EmbedUsingTokenCallback callback) {
   mojom::WindowTreeClientPtr client =
       GetAndRemoveScheduledEmbedWindowTreeClient(token);
-  if (!client) {
+  if (client) {
+    Embed(transport_window_id, std::move(client), flags, std::move(callback));
+    return;
+  }
+
+  WindowTreeAndWindowId tree_and_id =
+      window_server()->UnregisterEmbedToken(token);
+  if (!tree_and_id.tree) {
     DVLOG(1) << "EmbedUsingToken failed, no ScheduleEmbed(), token="
              << token.ToString();
     std::move(callback).Run(false);
     return;
   }
-  Embed(transport_window_id, std::move(client), flags, std::move(callback));
+  if (tree_and_id.tree == this) {
+    DVLOG(1) << "EmbedUsingToken failed, attempt to embed self, token="
+             << token.ToString();
+    std::move(callback).Run(false);
+    return;
+  }
+  std::move(callback).Run(EmbedExistingTree(
+      MakeClientWindowId(transport_window_id), tree_and_id, token));
+}
+
+void WindowTree::ScheduleEmbedForExistingClient(
+    uint32_t window_id,
+    ScheduleEmbedForExistingClientCallback callback) {
+  std::move(callback).Run(window_server()->RegisterEmbedToken(this, window_id));
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {

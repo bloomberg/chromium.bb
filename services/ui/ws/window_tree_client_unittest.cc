@@ -316,6 +316,11 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
+  void OnEmbedFromToken(
+      const base::UnguessableToken& token,
+      mojom::WindowDataPtr root,
+      int64_t display_id,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {}
   void OnEmbeddedAppDisconnected(Id window_id) override {
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }

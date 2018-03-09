@@ -34,7 +34,13 @@ FrameSinkId, see below for details on FrameSinkId). In other words, both the
 embedder and embedded client use the same ClientWindowId for the Window. See
 discussion on FrameSinkId for more details.
 
-ClientWindowId is globally unique, but a Window may have multiple 
+For a client to establish an embed root, it first calls
+ScheduleEmbedForExistingClient(), so it can provide a window_id that is unique
+within its own scope. That client then passes the returned token to what will
+become its embedder to call EmbedUsingToken(). In this case, the embedder and
+embedded client do not use the same ClientWindowId for the Window.
+
+ClientWindowId is globally unique, but a Window may have multiple
 ClientWindowIds associated with it.
 
 TODO(sky): See http://crbug.com/817850 for making it so there is only one
@@ -58,6 +64,9 @@ The FrameSinkId of top-level windows is set to the ClientWindowId from the
 client requesting the top-level (top-levels are created and owned by the Window
 Manager). The Window Manager is told the updated FrameSinkId when it is asked
 to create the top-level (WmCreateTopLevelWindow()).
+
+The FrameSinkId of an embed root's Window is set to the ClientWindowId of the
+embed root's Window from the embedded client.
 
 ### LocalSurfaceId
 
