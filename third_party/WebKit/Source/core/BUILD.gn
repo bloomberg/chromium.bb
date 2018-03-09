@@ -502,15 +502,15 @@ css_properties("make_core_generated_computed_style_base") {
     "../build/scripts/templates/fields/primitive.tmpl",
     "../build/scripts/templates/fields/monotonic_flag.tmpl",
     "../build/scripts/templates/fields/external.tmpl",
-    "../build/scripts/templates/ComputedStyleBase.h.tmpl",
-    "../build/scripts/templates/ComputedStyleBase.cpp.tmpl",
-    "../build/scripts/templates/ComputedStyleBaseConstants.h.tmpl",
+    "../build/scripts/templates/computed_style_base.h.tmpl",
+    "../build/scripts/templates/computed_style_base.cc.tmpl",
+    "../build/scripts/templates/computed_style_base_constants.h.tmpl",
     "../build/scripts/keyword_utils.py",
   ]
   outputs = [
-    "$blink_core_output_dir/ComputedStyleBase.h",
-    "$blink_core_output_dir/ComputedStyleBase.cpp",
-    "$blink_core_output_dir/ComputedStyleBaseConstants.h",
+    "$blink_core_output_dir/computed_style_base.h",
+    "$blink_core_output_dir/computed_style_base.cc",
+    "$blink_core_output_dir/computed_style_base_constants.h",
   ]
 }
 

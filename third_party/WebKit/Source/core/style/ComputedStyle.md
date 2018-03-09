@@ -17,14 +17,14 @@ These files are inputs to the generator and tell the generator what shape our fi
 * [ComputedStyleDiffFunctions.json5](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/ComputedStyleDiffFunctions.json5): Specifies the fields we want to diff in the various diff functions in ComputedStyle. It is used to generate the various diffing functions on ComputedStyle.
 
 ## Generator files:
-These scripts generate the ComputedStyleBase.{h,cpp} files. This is a list of the relevant generator files (more detailed documentation can be found in the files themselves):
+These scripts generate the computed_style_base.{h,cc} files. This is a list of the relevant generator files (more detailed documentation can be found in the files themselves):
 * [make_computed_style_base.py](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/make_computed_style_base.py): Main file that handles the code generation logic. It consumes the JSON inputs provided and outputs fields and groups that encapsulate the structure of ComputedStyle.
 
 ## Template files:
 For each generate file, the Python script uses a Jinja template file to format the output:
-* [ComputedStyleBase.h.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/ComputedStyleBase.h.tmpl): Header file with the field and group declarations.
-* [ComputedStyleBase.cpp.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/ComputedStyleBase.cpp.tmpl): Implementation of various generated helper functions. Notably, contains implementation of functions that use ComputedStyle such as the diffing functions.
-* [ComputedStyleBaseConstants.h.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/ComputedStyleBaseConstants.h.tmpl): Definitions of generated enums.
+* [computed_style_base.h.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/computed_style_base.h.tmpl): Header file with the field and group declarations.
+* [computed_style_base.cc.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/computed_style_base.cc.tmpl): Implementation of various generated helper functions. Notably, contains implementation of functions that use ComputedStyle such as the diffing functions.
+* [computed_style_base_constants.h.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/computed_style_base_constants.h.tmpl): Definitions of generated enums.
 * [fields/*.tmpl](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/build/scripts/templates/fields/): These files contain various macros that help us generate accessors for the fields depending on their field_template.
 
 # Understanding where to make changes:
