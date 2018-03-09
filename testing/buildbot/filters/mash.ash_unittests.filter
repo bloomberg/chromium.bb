@@ -181,6 +181,7 @@
 # TODO: Needs cursor manager support. http://crbug.com/698033
 -PartialScreenshotControllerTest.CursorVisibilityTest
 -PartialScreenshotControllerTest.LargeCursor
+-PowerButtonControllerTest.HideCursorAfterShowMenu
 
 # TODO: Needs LockStateController. http://crbug.com/632189.
 -PreferredReservedAcceleratorsTest.AcceleratorsWithFullscreen
