@@ -4282,11 +4282,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM() {
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoSwapInterval(GLint interval) {
-  context_->SetSwapInterval(interval);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoFlushDriverCachesCHROMIUM() {
   // On Adreno Android devices we need to use a workaround to force caches to
   // clear.

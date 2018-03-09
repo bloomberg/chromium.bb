@@ -1500,9 +1500,6 @@ GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
 void GL_APIENTRY GLES2CommitOverlayPlanesCHROMIUM() {
   gles2::GetGLContext()->CommitOverlayPlanesCHROMIUM();
 }
-void GL_APIENTRY GLES2SwapInterval(GLint interval) {
-  gles2::GetGLContext()->SwapInterval(interval);
-}
 void GL_APIENTRY GLES2FlushDriverCachesCHROMIUM() {
   gles2::GetGLContext()->FlushDriverCachesCHROMIUM();
 }
@@ -2952,10 +2949,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glCommitOverlayPlanesCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glCommitOverlayPlanesCHROMIUM),
-    },
-    {
-        "glSwapInterval",
-        reinterpret_cast<GLES2FunctionPointer>(glSwapInterval),
     },
     {
         "glFlushDriverCachesCHROMIUM",

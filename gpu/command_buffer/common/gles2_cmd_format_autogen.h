@@ -13785,38 +13785,6 @@ static_assert(sizeof(CommitOverlayPlanesCHROMIUM) == 4,
 static_assert(offsetof(CommitOverlayPlanesCHROMIUM, header) == 0,
               "offset of CommitOverlayPlanesCHROMIUM header should be 0");
 
-struct SwapInterval {
-  typedef SwapInterval ValueType;
-  static const CommandId kCmdId = kSwapInterval;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLint _interval) {
-    SetHeader();
-    interval = _interval;
-  }
-
-  void* Set(void* cmd, GLint _interval) {
-    static_cast<ValueType*>(cmd)->Init(_interval);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  int32_t interval;
-};
-
-static_assert(sizeof(SwapInterval) == 8, "size of SwapInterval should be 8");
-static_assert(offsetof(SwapInterval, header) == 0,
-              "offset of SwapInterval header should be 0");
-static_assert(offsetof(SwapInterval, interval) == 4,
-              "offset of SwapInterval interval should be 4");
-
 struct FlushDriverCachesCHROMIUM {
   typedef FlushDriverCachesCHROMIUM ValueType;
   static const CommandId kCmdId = kFlushDriverCachesCHROMIUM;

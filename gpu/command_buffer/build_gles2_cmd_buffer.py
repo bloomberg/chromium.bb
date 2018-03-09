@@ -3584,14 +3584,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
   },
-  'SwapInterval': {
-    'impl_func': False,
-    'decoder_func': 'DoSwapInterval',
-    'client_test': False,
-    'expectation': False,
-    'extension': True,
-    'trace_level': 1,
-  },
   'TexImage2D': {
     'type': 'Custom',
     'impl_func': False,

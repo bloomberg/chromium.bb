@@ -1327,13 +1327,6 @@ void GLES2Implementation::SwapBuffersWithBoundsCHROMIUM(GLsizei count,
   }
 }
 
-void GLES2Implementation::SwapInterval(int interval) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSwapInterval("
-      << interval << ")");
-  helper_->SwapInterval(interval);
-}
-
 void GLES2Implementation::BindAttribLocation(
   GLuint program, GLuint index, const char* name) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

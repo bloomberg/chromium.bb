@@ -2799,13 +2799,6 @@ void CommitOverlayPlanesCHROMIUM() {
   }
 }
 
-void SwapInterval(GLint interval) {
-  gles2::cmds::SwapInterval* c = GetCmdSpace<gles2::cmds::SwapInterval>();
-  if (c) {
-    c->Init(interval);
-  }
-}
-
 void FlushDriverCachesCHROMIUM() {
   gles2::cmds::FlushDriverCachesCHROMIUM* c =
       GetCmdSpace<gles2::cmds::FlushDriverCachesCHROMIUM>();

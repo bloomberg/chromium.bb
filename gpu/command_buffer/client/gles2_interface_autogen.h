@@ -777,7 +777,6 @@ virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 virtual void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                                const GLuint* textures) = 0;
 virtual void CommitOverlayPlanesCHROMIUM() = 0;
-virtual void SwapInterval(GLint interval) = 0;
 virtual void FlushDriverCachesCHROMIUM() = 0;
 virtual GLuint GetLastFlushIdCHROMIUM() = 0;
 virtual void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,

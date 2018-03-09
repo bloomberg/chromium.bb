@@ -1021,7 +1021,6 @@ void GLES2InterfaceStub::ScheduleCALayerInUseQueryCHROMIUM(
     GLsizei /* count */,
     const GLuint* /* textures */) {}
 void GLES2InterfaceStub::CommitOverlayPlanesCHROMIUM() {}
-void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {}
 void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {}
 GLuint GLES2InterfaceStub::GetLastFlushIdCHROMIUM() {
   return 0;

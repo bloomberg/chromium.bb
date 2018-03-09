@@ -4279,19 +4279,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleCommitOverlayPlanesCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleSwapInterval(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::SwapInterval& c =
-      *static_cast<const volatile gles2::cmds::SwapInterval*>(cmd_data);
-  GLint interval = static_cast<GLint>(c.interval);
-  error::Error error = DoSwapInterval(interval);
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::HandleFlushDriverCachesCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
