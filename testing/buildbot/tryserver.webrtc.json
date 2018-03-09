@@ -3,42 +3,42 @@
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "android_chromium_compile": {
     "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "android_webrtc_compile_rel": {
-    "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   },
   "linux_chromium_compile": {
     "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux_chromium_webrtc_compile_rel_ng": {
-    "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   },
   "mac_chromium_compile": {
     "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "mac_chromium_webrtc_compile_rel_ng": {
-    "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   },
   "win_chromium_compile": {
     "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "win_chromium_webrtc_compile_rel_ng": {
-    "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   }
 }
