@@ -7,6 +7,8 @@
 
 #include "net/quic/platform/impl/quic_test_impl.h"
 
+using QuicFlagSaver = QuicFlagSaverImpl;
+
 // Defines the base classes to be used in QUIC tests.
 using QuicTest = QuicTestImpl;
 template <class T>
