@@ -30,7 +30,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
 void OmniboxTabSwitchButton::SetPressed() {
   SetBgColorOverride(color_utils::AlphaBlend(
       GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-                      OmniboxState::SELECTED),
+                      OmniboxPartState::SELECTED),
       SK_ColorBLACK, 0.8 * 255));
 }
 
@@ -81,7 +81,8 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
-  return GetOmniboxColor(
-      OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-      state() == STATE_HOVERED ? OmniboxState::HOVERED : OmniboxState::NORMAL);
+  return GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                         result_view_->GetTint(),
+                         state() == STATE_HOVERED ? OmniboxPartState::HOVERED
+                                                  : OmniboxPartState::NORMAL);
 }
