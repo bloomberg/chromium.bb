@@ -36,6 +36,7 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
     case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
+    case ax::mojom::Event::kFocusContext:
       return api::automation::EVENT_TYPE_FOCUS;
     case ax::mojom::Event::kHide:
       return api::automation::EVENT_TYPE_HIDE;
@@ -317,6 +318,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_NONE:
     case api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED:
     case api::automation::EVENT_TYPE_CLICKED:
+    case api::automation::EVENT_TYPE_FOCUSCONTEXT:
     case api::automation::EVENT_TYPE_HITTESTRESULT:
     case api::automation::EVENT_TYPE_HOVER:
     case api::automation::EVENT_TYPE_MEDIASTARTEDPLAYING:

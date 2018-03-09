@@ -200,6 +200,8 @@ EventMap BuildEventMap() {
   const EventMap::value_type events[] = {
       {ax::mojom::Event::kFocus,
        NSAccessibilityFocusedUIElementChangedNotification},
+      {ax::mojom::Event::kFocusContext,
+       NSAccessibilityFocusedUIElementChangedNotification},
       {ax::mojom::Event::kTextChanged, NSAccessibilityTitleChangedNotification},
       {ax::mojom::Event::kValueChanged,
        NSAccessibilityValueChangedNotification},

@@ -32,6 +32,7 @@ chrome.automation.EventType = {
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
+  FOCUS_CONTEXT: 'focusContext',
   IMAGE_FRAME_UPDATED: 'imageFrameUpdated',
   HIDE: 'hide',
   HIT_TEST_RESULT: 'hitTestResult',

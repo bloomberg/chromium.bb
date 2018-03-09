@@ -24,6 +24,7 @@
     documentSelectionChanged,
     expandedChanged,
     focus,
+    focusContext,
     imageFrameUpdated,
     hide,
     hitTestResult,

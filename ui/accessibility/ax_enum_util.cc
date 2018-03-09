@@ -32,6 +32,8 @@ const char* ToString(ax::mojom::Event event) {
       return "expandedChanged";
     case ax::mojom::Event::kFocus:
       return "focus";
+    case ax::mojom::Event::kFocusContext:
+      return "focusContext";
     case ax::mojom::Event::kHide:
       return "hide";
     case ax::mojom::Event::kHitTestResult:

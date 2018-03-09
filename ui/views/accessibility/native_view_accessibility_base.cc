@@ -7,7 +7,9 @@
 
 #include "ui/views/accessibility/native_view_accessibility_base.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,6 +23,17 @@ namespace {
 
 base::LazyInstance<std::map<int32_t, ui::AXPlatformNode*>>::Leaky
     g_unique_id_to_ax_platform_node = LAZY_INSTANCE_INITIALIZER;
+
+// Information required to fire a delayed accessibility event.
+struct QueuedEvent {
+  ax::mojom::Event type;
+  int32_t node_id;
+};
+
+base::LazyInstance<std::vector<QueuedEvent>>::Leaky g_event_queue =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool g_is_queueing_events = false;
 
 bool IsAccessibilityFocusableWhenEnabled(View* view) {
   return view->focus_behavior() != View::FocusBehavior::NEVER &&
@@ -88,9 +101,49 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
   return ax_node_->GetNativeViewAccessible();
 }
 
+ui::AXPlatformNode* PlatformNodeFromNodeID(int32_t id) {
+  // Note: For Views, node IDs and unique IDs are the same - but that isn't
+  // necessarily true for all AXPlatformNodes.
+  auto it = g_unique_id_to_ax_platform_node.Get().find(id);
+
+  if (it == g_unique_id_to_ax_platform_node.Get().end())
+    return nullptr;
+
+  return it->second;
+}
+
+void FireEvent(QueuedEvent event) {
+  ui::AXPlatformNode* node = PlatformNodeFromNodeID(event.node_id);
+  if (node)
+    node->NotifyAccessibilityEvent(event.type);
+}
+
+void FlushQueue() {
+  DCHECK(g_is_queueing_events);
+  for (QueuedEvent event : g_event_queue.Get())
+    FireEvent(event);
+  g_is_queueing_events = false;
+  g_event_queue.Get().clear();
+}
+
 void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
+  if (g_is_queueing_events) {
+    g_event_queue.Get().push_back({event_type, GetUniqueId().Get()});
+    return;
+  }
+
   ax_node_->NotifyAccessibilityEvent(event_type);
+
+  // A focus context event is intended to send a focus event and a delay
+  // before the next focus event. It makes sense to delay the entire next
+  // synchronous batch of next events so that ordering remains the same.
+  if (event_type == ax::mojom::Event::kFocusContext) {
+    // Begin queueing subsequent events and flush queue asynchronously.
+    g_is_queueing_events = true;
+    base::OnceCallback<void()> cb = base::BindOnce(&FlushQueue);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(cb));
+  }
 }
 
 // ui::AXPlatformNodeDelegate
@@ -250,7 +303,7 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
   View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
   if (fake_focus_view_id_) {
-    ui::AXPlatformNode* ax_node = GetFromNodeID(fake_focus_view_id_);
+    ui::AXPlatformNode* ax_node = PlatformNodeFromNodeID(fake_focus_view_id_);
     if (ax_node)
       return ax_node->GetNativeViewAccessible();
   }
@@ -258,14 +311,7 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
 }
 
 ui::AXPlatformNode* NativeViewAccessibilityBase::GetFromNodeID(int32_t id) {
-  // Note: For Views, node IDs and unique IDs are the same - but that isn't
-  // necessarily true for all AXPlatformNodes.
-  auto it = g_unique_id_to_ax_platform_node.Get().find(id);
-
-  if (it == g_unique_id_to_ax_platform_node.Get().end())
-    return nullptr;
-
-  return it->second;
+  return PlatformNodeFromNodeID(id);
 }
 
 int NativeViewAccessibilityBase::GetIndexInParent() const {

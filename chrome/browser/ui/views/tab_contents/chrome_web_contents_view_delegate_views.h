@@ -12,8 +12,8 @@
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
-class ChromeWebContentsViewFocusHelper;
 class RenderViewContextMenuBase;
+class ChromeWebContentsViewFocusHelper;
 
 namespace content {
 class WebContents;
@@ -49,9 +49,6 @@ class ChromeWebContentsViewDelegateViews
   void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) override;
 
  private:
-  // Used to handle focus management.
-  std::unique_ptr<ChromeWebContentsViewFocusHelper> focus_helper_;
-
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.
   std::unique_ptr<RenderViewContextMenuBase> context_menu_;
@@ -60,6 +57,8 @@ class ChromeWebContentsViewDelegateViews
   std::unique_ptr<content::WebDragDestDelegate> bookmark_handler_;
 
   content::WebContents* web_contents_;
+
+  ChromeWebContentsViewFocusHelper* GetFocusHelper() const;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViews);
 };
