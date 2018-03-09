@@ -215,6 +215,7 @@
         self.buttonFactory.toolbarConfiguration.NTPBackgroundColor;
     [self insertSubview:_backgroundView atIndex:0];
     AddSameConstraints(self, _backgroundView);
+    _backgroundView.alpha = 0;
   }
   return _backgroundView;
 }
