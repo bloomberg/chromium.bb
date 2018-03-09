@@ -267,48 +267,52 @@ void Service::OnStart() {
     window_server_->SetGpuHost(std::move(gpu_host));
 
     registry_.AddInterface<mojom::Gpu>(
-        base::Bind(&Service::BindGpuRequest, base::Unretained(this)));
+        base::BindRepeating(&Service::BindGpuRequest, base::Unretained(this)));
 #if defined(OS_CHROMEOS)
     registry_.AddInterface<mojom::Arc>(
-        base::Bind(&Service::BindArcRequest, base::Unretained(this)));
+        base::BindRepeating(&Service::BindArcRequest, base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
   }
-  registry_.AddInterface<mojom::VideoDetector>(
-      base::Bind(&Service::BindVideoDetectorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::VideoDetector>(base::BindRepeating(
+      &Service::BindVideoDetectorRequest, base::Unretained(this)));
 
   ime_driver_.Init(context()->connector(), test_config_);
 
   registry_with_source_info_.AddInterface<mojom::AccessibilityManager>(
-      base::Bind(&Service::BindAccessibilityManagerRequest,
-                 base::Unretained(this)));
-  registry_with_source_info_.AddInterface<mojom::Clipboard>(
-      base::Bind(&Service::BindClipboardRequest, base::Unretained(this)));
+      base::BindRepeating(&Service::BindAccessibilityManagerRequest,
+                          base::Unretained(this)));
+  registry_with_source_info_.AddInterface<mojom::Clipboard>(base::BindRepeating(
+      &Service::BindClipboardRequest, base::Unretained(this)));
   registry_with_source_info_.AddInterface<mojom::DisplayManager>(
-      base::Bind(&Service::BindDisplayManagerRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::IMERegistrar>(
-      base::Bind(&Service::BindIMERegistrarRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::IMEDriver>(
-      base::Bind(&Service::BindIMEDriverRequest, base::Unretained(this)));
+      base::BindRepeating(&Service::BindDisplayManagerRequest,
+                          base::Unretained(this)));
+  registry_.AddInterface<mojom::IMERegistrar>(base::BindRepeating(
+      &Service::BindIMERegistrarRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::IMEDriver>(base::BindRepeating(
+      &Service::BindIMEDriverRequest, base::Unretained(this)));
   registry_with_source_info_.AddInterface<mojom::UserActivityMonitor>(
-      base::Bind(&Service::BindUserActivityMonitorRequest,
-                 base::Unretained(this)));
-  registry_with_source_info_.AddInterface<WindowTreeHostFactory>(base::Bind(
-      &Service::BindWindowTreeHostFactoryRequest, base::Unretained(this)));
+      base::BindRepeating(&Service::BindUserActivityMonitorRequest,
+                          base::Unretained(this)));
+  registry_with_source_info_.AddInterface<WindowTreeHostFactory>(
+      base::BindRepeating(&Service::BindWindowTreeHostFactoryRequest,
+                          base::Unretained(this)));
   registry_with_source_info_
-      .AddInterface<mojom::WindowManagerWindowTreeFactory>(
-          base::Bind(&Service::BindWindowManagerWindowTreeFactoryRequest,
-                     base::Unretained(this)));
-  registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(base::Bind(
-      &Service::BindWindowTreeFactoryRequest, base::Unretained(this)));
+      .AddInterface<mojom::WindowManagerWindowTreeFactory>(base::BindRepeating(
+          &Service::BindWindowManagerWindowTreeFactoryRequest,
+          base::Unretained(this)));
+  registry_with_source_info_.AddInterface<mojom::WindowTreeFactory>(
+      base::BindRepeating(&Service::BindWindowTreeFactoryRequest,
+                          base::Unretained(this)));
   registry_with_source_info_
       .AddInterface<discardable_memory::mojom::DiscardableSharedMemoryManager>(
-          base::Bind(&Service::BindDiscardableSharedMemoryManagerRequest,
-                     base::Unretained(this)));
+          base::BindRepeating(
+              &Service::BindDiscardableSharedMemoryManagerRequest,
+              base::Unretained(this)));
   if (test_config_) {
-    registry_.AddInterface<WindowServerTest>(base::Bind(
+    registry_.AddInterface<WindowServerTest>(base::BindRepeating(
         &Service::BindWindowServerTestRequest, base::Unretained(this)));
   }
-  registry_.AddInterface<mojom::RemoteEventDispatcher>(base::Bind(
+  registry_.AddInterface<mojom::RemoteEventDispatcher>(base::BindRepeating(
       &Service::BindRemoteEventDispatcherRequest, base::Unretained(this)));
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
