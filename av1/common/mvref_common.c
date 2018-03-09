@@ -1232,7 +1232,8 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
-    if (cm->seq_params.enable_order_hint && buf_idx != INVALID_IDX) {
+    if (cm->seq_params.enable_order_hint && !cm->error_resilient_mode &&
+        buf_idx != INVALID_IDX) {
       const int ref_frame_offset =
           cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
       cm->ref_frame_sign_bias[ref_frame] =
@@ -1391,7 +1392,7 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
 
 void av1_setup_motion_field(AV1_COMMON *cm) {
   memset(cm->ref_frame_side, -1, sizeof(cm->ref_frame_side));
-  if (!cm->seq_params.enable_order_hint) return;
+  if (!cm->seq_params.enable_order_hint || cm->error_resilient_mode) return;
 
   int cur_frame_index = cm->cur_frame->cur_frame_offset;
   int alt_frame_index = 0, gld_frame_index = 0;
@@ -1772,7 +1773,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   cm->is_skip_mode_allowed = 0;
   cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
 
-  if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE) return;
+  if (!cm->seq_params.enable_order_hint || cm->error_resilient_mode ||
+      frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
+    return;
 
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   const int cur_frame_offset = cm->frame_offset;
