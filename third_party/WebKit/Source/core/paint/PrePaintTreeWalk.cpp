@@ -100,11 +100,9 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
     FrameViewPaintPropertyTreeBuilder::Update(frame_view,
                                               *context().tree_builder_context);
   }
-  paint_invalidator_.InvalidatePaint(frame_view,
-                                     context().tree_builder_context
-                                         ? &*context().tree_builder_context
-                                         : nullptr,
-                                     context().paint_invalidator_context);
+  paint_invalidator_.InvalidatePaint(
+      frame_view, WTF::OptionalOrNullptr(context().tree_builder_context),
+      context().paint_invalidator_context);
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
 #ifndef NDEBUG
@@ -210,8 +208,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   }
 
   paint_invalidator_.InvalidatePaint(
-      object,
-      context.tree_builder_context ? &*context.tree_builder_context : nullptr,
+      object, WTF::OptionalOrNullptr(context.tree_builder_context),
       context.paint_invalidator_context);
 
   if (context.tree_builder_context) {

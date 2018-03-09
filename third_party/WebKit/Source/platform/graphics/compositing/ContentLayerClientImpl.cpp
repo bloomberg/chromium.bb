@@ -188,7 +188,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
       paint_artifact.GetDisplayItemList(),
       cc::DisplayItemList::kTopLevelDisplayItemList,
-      params ? &*params : nullptr);
+      WTF::OptionalOrNullptr(params));
 
   if (paint_chunks[0]->size()) {
     cc_picture_layer_->SetBackgroundColor(DisplayItemBackgroundColor(

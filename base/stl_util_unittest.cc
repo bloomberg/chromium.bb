@@ -438,5 +438,14 @@ TEST(ContainsValue, OrdinaryArrays) {
   EXPECT_TRUE(ContainsValue(allowed_chars_including_nul, 0));
 }
 
+TEST(STLUtilTest, OptionalOrNullptr) {
+  Optional<float> optional;
+  EXPECT_EQ(nullptr, base::OptionalOrNullptr(optional));
+
+  optional = 0.1f;
+  EXPECT_EQ(&optional.value(), base::OptionalOrNullptr(optional));
+  EXPECT_NE(nullptr, base::OptionalOrNullptr(optional));
+}
+
 }  // namespace
 }  // namespace base

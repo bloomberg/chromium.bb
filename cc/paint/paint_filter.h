@@ -8,6 +8,7 @@
 #include "base/containers/stack_container.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
@@ -98,7 +99,7 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     return str.c_str();
   }
   const CropRect* crop_rect() const {
-    return crop_rect_ ? &*crop_rect_ : nullptr;
+    return base::OptionalOrNullptr(crop_rect_);
   }
 
   virtual size_t SerializedSize() const = 0;
