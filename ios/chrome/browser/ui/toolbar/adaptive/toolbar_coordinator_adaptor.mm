@@ -14,7 +14,8 @@
 
 @interface ToolbarCoordinatorAdaptor ()<ToolbarCommands>
 @property(nonatomic, strong)
-    NSMutableArray<id<ToolbarCoordinating, ToolbarCommands>>* coordinators;
+    NSMutableArray<id<NewTabPageControllerDelegate, ToolbarCommands>>*
+        coordinators;
 // Coordinator for the toolsMenu.
 @property(nonatomic, strong) ToolsMenuCoordinator* toolsMenuCoordinator;
 @end
@@ -44,20 +45,20 @@
 }
 
 - (void)addToolbarCoordinator:
-    (id<ToolbarCoordinating, ToolbarCommands>)toolbarCoordinator {
+    (id<NewTabPageControllerDelegate, ToolbarCommands>)toolbarCoordinator {
   [self.coordinators addObject:toolbarCoordinator];
 }
 
 #pragma mark - NewTabPageControllerDelegate
 
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-  for (id<ToolbarCoordinating> coordinator in self.coordinators) {
-    [coordinator setToolbarBackgroundAlpha:alpha];
+- (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
+  for (id<NewTabPageControllerDelegate> coordinator in self.coordinators) {
+    [coordinator setToolbarBackgroundToIncognitoNTPColorWithAlpha:alpha];
   }
 }
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
-  for (id<ToolbarCoordinating> coordinator in self.coordinators) {
+  for (id<NewTabPageControllerDelegate> coordinator in self.coordinators) {
     [coordinator setScrollProgressForTabletOmnibox:progress];
   }
 }

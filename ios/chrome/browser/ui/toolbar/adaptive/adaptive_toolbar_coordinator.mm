@@ -87,7 +87,7 @@
 
 #pragma mark - ToolbarCoordinating
 
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+- (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
   // TODO(crbug.com/803379): Implement that.
 }
 

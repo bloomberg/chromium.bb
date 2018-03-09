@@ -214,7 +214,7 @@ initWithToolsMenuConfigurationProvider:
   if (!self.started)
     return;
 
-  [self setToolbarBackgroundAlpha:1];
+  [self setToolbarBackgroundToIncognitoNTPColorWithAlpha:0];
   self.started = NO;
   self.delegate = nil;
   [self.mediator disconnect];
@@ -309,9 +309,8 @@ initWithToolsMenuConfigurationProvider:
 
 #pragma mark - NewTabPageControllerDelegate
 
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-  [self.toolbarViewController
-      setBackgroundToIncognitoNTPColorWithAlpha:1 - alpha];
+- (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
+  [self.toolbarViewController setBackgroundToIncognitoNTPColorWithAlpha:alpha];
 }
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
