@@ -1525,6 +1525,13 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 	enum theme_location location;
 	double x, y;
 
+	if (!surface) {
+		input->output = NULL;
+		input->has_focus = false;
+		notify_pointer_focus(&input->base, NULL, 0, 0);
+		return;
+	}
+
 	x = wl_fixed_to_double(fixed_x);
 	y = wl_fixed_to_double(fixed_y);
 
