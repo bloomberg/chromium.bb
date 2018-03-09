@@ -263,6 +263,24 @@ interface WindowTree {
   // that client B may call EmbedUsingToken().
   ScheduleEmbed(WindowTreeClient client)
       => (mojo.common.mojom.UnguessableToken token);
+
+  // Creates an UnguessableToken for use in a future call, by another client, to
+  // EmbedUsingToken().
+  //
+  // The following example shows how to use this api. Client A wants client B
+  // to embed it in a window created by client B.
+  // 1. Client A calls ScheduleEmbedForExistingClient() to get a token.
+  // 2. Client A passes the token to client B. This communication is done using
+  //    an additional channel, outside of WindowTree/WindowTreeClient.
+  // 3. Client B calls EmbedUsingToken().
+  // 4. Client A receives OnEmbedFromToken() with the token from step 1.
+  //
+  // |window_id| is the id used for the window once EmbedUsingToken() is called.
+  ScheduleEmbedForExistingClient(uint32 window_id) => (
+      mojo.common.mojom.UnguessableToken token);
+
+  // Pair with ScheduleEmbed() or ScheduleEmbedForExistingClient() to complete
+  // an embedding, see them for details.
   EmbedUsingToken(uint64 window_id,
                   mojo.common.mojom.UnguessableToken token,
                   uint32 embed_flags)
@@ -372,6 +390,13 @@ interface WindowTreeClient {
           uint64 focused_window,
           bool parent_drawn,
           viz.mojom.LocalSurfaceId? local_surface_id);
+
+  // See description in ScheduleEmbedForExistingClient() for details on this.
+  // Supplied arguments match that of OnEmbed().
+  OnEmbedFromToken(mojo.common.mojom.UnguessableToken token,
+                   WindowData root,
+                   int64 display_id,
+                   viz.mojom.LocalSurfaceId? local_surface_id);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called

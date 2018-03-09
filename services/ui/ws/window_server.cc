@@ -281,6 +281,12 @@ void WindowServer::DestroyTree(WindowTree* tree) {
     tree_map_.erase(iter);
   }
 
+  base::EraseIf(scheduled_embeds_,
+                [&tree](const std::pair<base::UnguessableToken,
+                                        const WindowTreeAndWindowId&>& pair) {
+                  return (tree == pair.second.tree);
+                });
+
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : tree_map_)
     pair.second->OnWillDestroyTree(tree);
@@ -311,6 +317,25 @@ WindowTree* WindowServer::GetTreeWithClientName(
       return entry.second.get();
   }
   return nullptr;
+}
+
+base::UnguessableToken WindowServer::RegisterEmbedToken(
+    WindowTree* tree,
+    ClientSpecificId window_id) {
+  const base::UnguessableToken token = base::UnguessableToken::Create();
+  DCHECK(!scheduled_embeds_.count(token));
+  scheduled_embeds_[token] = {tree, window_id};
+  return token;
+}
+
+WindowTreeAndWindowId WindowServer::UnregisterEmbedToken(
+    const base::UnguessableToken& token) {
+  auto iter = scheduled_embeds_.find(token);
+  if (iter == scheduled_embeds_.end())
+    return {};
+  WindowTreeAndWindowId result = iter->second;
+  scheduled_embeds_.erase(iter);
+  return result;
 }
 
 void WindowServer::OnTreeMessagedClient(ClientSpecificId id) {

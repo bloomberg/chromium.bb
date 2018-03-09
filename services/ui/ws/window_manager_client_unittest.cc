@@ -15,11 +15,14 @@
 #include "services/ui/ws/window_server_test_base.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/embed_root.h"
+#include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/mus/test_window_manager_delegate.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window.h"
@@ -745,6 +748,127 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   aura::Window* transient_in_wm = second_client_child_in_wm->children()[0];
   ASSERT_EQ(second_client_child_in_wm,
             transient_window_client->GetTransientParent(transient_in_wm));
+}
+
+class TestEmbedRootDelegate : public aura::EmbedRootDelegate {
+ public:
+  TestEmbedRootDelegate() {}
+
+  void SetQuitClosure(base::Closure closure) { quit_closure_ = closure; }
+
+  const base::UnguessableToken& token() const { return token_; }
+  aura::Window* embed_window() { return embed_window_; }
+  bool got_unembed() const { return got_unembed_; }
+
+  // EmbedRootDelegate:
+  void OnEmbedTokenAvailable(const base::UnguessableToken& token) override {
+    token_ = token;
+    quit_closure_.Run();
+  }
+  void OnEmbed(aura::Window* window) override {
+    embed_window_ = window;
+    quit_closure_.Run();
+  }
+  void OnUnembed() override {
+    got_unembed_ = true;
+    quit_closure_.Run();
+  }
+
+ private:
+  base::Closure quit_closure_;
+  aura::Window* embed_window_ = nullptr;
+  bool got_unembed_ = false;
+
+  base::UnguessableToken token_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEmbedRootDelegate);
+};
+
+// This test exercises multiple EmbedRoots for a single client.
+TEST_F(WindowServerTest, EmbedRoot) {
+  EstablishConnectionViaFactoryDelegate delegate(window_manager());
+  set_window_manager_delegate(&delegate);
+  std::unique_ptr<aura::WindowTreeClient> second_client =
+      aura::WindowTreeClient::CreateForWindowTreeFactory(connector(), this,
+                                                         false);
+
+  // Create a visible window so that the window-manager has a different number
+  // of initial windows than the client.
+  NewVisibleWindow(GetFirstWMRoot(), window_manager(),
+                   aura::WindowMusType::EMBED_IN_OWNER);
+  std::vector<std::unique_ptr<aura::EmbedRoot>> embed_roots;
+  for (int i = 0; i < 2; ++i) {
+    // Create a new EmbedRoot and wait for the token from the server.
+    TestEmbedRootDelegate test_embed_root_delegate;
+    std::unique_ptr<aura::EmbedRoot> embed_root =
+        second_client->CreateEmbedRoot(&test_embed_root_delegate);
+    base::RunLoop run_loop1;
+    test_embed_root_delegate.SetQuitClosure(run_loop1.QuitClosure());
+    run_loop1.Run();
+    ASSERT_TRUE(test_embed_root_delegate.token());
+
+    // Embed the token from the window manager's connection and wait for
+    // OnEmbed().
+    aura::Window* embed_window_in_wm =
+        NewVisibleWindow(GetFirstWMRoot(), window_manager(),
+                         aura::WindowMusType::EMBED_IN_OWNER);
+    window_manager()->EmbedUsingToken(embed_window_in_wm,
+                                      test_embed_root_delegate.token(), 0u,
+                                      base::DoNothing());
+
+    base::RunLoop run_loop2;
+    test_embed_root_delegate.SetQuitClosure(run_loop2.QuitClosure());
+    run_loop2.Run();
+    ASSERT_TRUE(test_embed_root_delegate.embed_window());
+    EXPECT_NE(test_embed_root_delegate.embed_window(), embed_window_in_wm);
+    // Create a child of the embed root's window in |second_client|. Then wait
+    // for completion to ensure all is well.
+    NewVisibleWindow(test_embed_root_delegate.embed_window(),
+                     second_client.get());
+    aura::test::WaitForAllChangesToComplete(second_client.get());
+    embed_roots.push_back(std::move(embed_root));
+  }
+}
+
+TEST_F(WindowServerTest, DeleteEmbedRoot) {
+  EstablishConnectionViaFactoryDelegate delegate(window_manager());
+  set_window_manager_delegate(&delegate);
+  std::unique_ptr<aura::WindowTreeClient> second_client =
+      aura::WindowTreeClient::CreateForWindowTreeFactory(connector(), this,
+                                                         false);
+
+  // Create a new EmbedRoot and wait for the token from the server.
+  TestEmbedRootDelegate test_embed_root_delegate;
+  std::unique_ptr<aura::EmbedRoot> embed_root =
+      second_client->CreateEmbedRoot(&test_embed_root_delegate);
+  base::RunLoop run_loop1;
+  test_embed_root_delegate.SetQuitClosure(run_loop1.QuitClosure());
+  run_loop1.Run();
+  ASSERT_TRUE(test_embed_root_delegate.token());
+
+  // Embed the token from the window manager's connection and wait for
+  // OnEmbed().
+  aura::Window* embed_window_in_wm = NewVisibleWindow(
+      GetFirstWMRoot(), window_manager(), aura::WindowMusType::EMBED_IN_OWNER);
+  window_manager()->EmbedUsingToken(embed_window_in_wm,
+                                    test_embed_root_delegate.token(), 0u,
+                                    base::DoNothing());
+
+  base::RunLoop run_loop2;
+  test_embed_root_delegate.SetQuitClosure(run_loop2.QuitClosure());
+  run_loop2.Run();
+  ASSERT_TRUE(test_embed_root_delegate.embed_window());
+  aura::WindowTracker embed_root_window_tracker;
+  embed_root_window_tracker.Add(test_embed_root_delegate.embed_window());
+
+  // Delete the embed root (from the window-manager).
+  delete embed_window_in_wm;
+  base::RunLoop run_loop3;
+  test_embed_root_delegate.SetQuitClosure(run_loop3.QuitClosure());
+  run_loop3.Run();
+  EXPECT_TRUE(test_embed_root_delegate.got_unembed());
+  // The EmbedRoot's window should still exist in the embedded client.
+  EXPECT_FALSE(embed_root_window_tracker.windows().empty());
 }
 
 }  // namespace ws

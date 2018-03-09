@@ -53,10 +53,10 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
   DISALLOW_COPY_AND_ASSIGN(ChangeCompletionWaiter);
 };
 
-// Under mus and mash, waits until there are no more pending changes on the
-// default window tree (e.g. window bounds, window visibility, cursor). Returns
-// immediately under classic ash because window operations are synchronous.
-void WaitForAllChangesToComplete();
+// Under mus and mash, waits until there are no more pending changes for
+// |client|. If |client| is null, the default is used. Returns immediately under
+// classic ash because window operations are synchronous.
+void WaitForAllChangesToComplete(WindowTreeClient* client = nullptr);
 
 }  // namespace test
 }  // namespace aura

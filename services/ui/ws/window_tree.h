@@ -55,6 +55,7 @@ class WindowManagerState;
 class WindowServer;
 
 struct EventLocation;
+struct WindowTreeAndWindowId;
 
 namespace test {
 class WindowTreeTestApi;
@@ -196,6 +197,14 @@ class WindowTree : public mojom::WindowTree,
   bool Embed(const ClientWindowId& window_id,
              mojom::WindowTreeClientPtr window_tree_client,
              uint32_t flags);
+
+  // Called from EmbedUsingToken() to embed an existing client that previously
+  // called ScheduleEmbedForExistingClient(). |tree_and_window_id.tree| is the
+  // client that previously called ScheduleEmbedForExistingClient() and
+  // |token| is the token returned to the client.
+  bool EmbedExistingTree(const ClientWindowId& window_id,
+                         const WindowTreeAndWindowId& tree_and_window_id,
+                         const base::UnguessableToken& token);
 
   // Dispatches an event to the client. |callback| is run with the result from
   // the client.
@@ -352,10 +361,20 @@ class WindowTree : public mojom::WindowTree,
   // the tree that originated the change.
   bool DeleteWindowImpl(WindowTree* source, ServerWindow* window);
 
-  // If |window| is known does nothing. Otherwise adds |window| to |windows|,
-  // marks |window| as known and recurses.
+  // If |window| is known does nothing. Otherwise adds |window| to |windows| (if
+  // non-null) and marks |window| as known and recurses. If |window| is not
+  // known it assigned the ClientWindowId |id_for_window|, if |id_for_window|
+  // is null, then the FrameSinkId of |window| is used.
   void GetUnknownWindowsFrom(const ServerWindow* window,
-                             std::vector<const ServerWindow*>* windows);
+                             std::vector<const ServerWindow*>* windows,
+                             const ClientWindowId* id_for_window);
+
+  // Called to add |window| as an embed root. This matches a call from the
+  // client to ScheduleEmbedForExistingClient(). |client_window_id| is the
+  // ClientWindowId to use for |window|.
+  void AddRootForToken(const base::UnguessableToken& token,
+                       ServerWindow* window,
+                       const ClientWindowId& client_window_id);
 
   void AddToMaps(const ServerWindow* window,
                  const ClientWindowId& client_window_id);
@@ -511,6 +530,9 @@ class WindowTree : public mojom::WindowTree,
                        const base::UnguessableToken& token,
                        uint32_t flags,
                        EmbedUsingTokenCallback callback) override;
+  void ScheduleEmbedForExistingClient(
+      ClientSpecificId window_id,
+      ScheduleEmbedForExistingClientCallback callback) override;
   void SetFocus(uint32_t change_id, Id transport_window_id) override;
   void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetEventTargetingPolicy(Id transport_window_id,

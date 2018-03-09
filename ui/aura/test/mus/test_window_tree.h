@@ -202,6 +202,9 @@ class TestWindowTree : public ui::mojom::WindowTree {
                        const base::UnguessableToken& token,
                        uint32_t embed_flags,
                        EmbedUsingTokenCallback callback) override;
+  void ScheduleEmbedForExistingClient(
+      ui::ClientSpecificId window_id,
+      ScheduleEmbedForExistingClientCallback callback) override;
   void SetFocus(uint32_t change_id, ui::Id window_id) override;
   void SetCanFocus(ui::Id window_id, bool can_focus) override;
   void SetEventTargetingPolicy(ui::Id window_id,

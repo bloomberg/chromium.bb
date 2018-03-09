@@ -94,6 +94,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void Embed(ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              ui::mojom::WindowTree::EmbedCallback callback);
+  void EmbedUsingToken(const base::UnguessableToken& token,
+                       uint32_t flags,
+                       ui::mojom::WindowTree::EmbedCallback callback);
 
   std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,

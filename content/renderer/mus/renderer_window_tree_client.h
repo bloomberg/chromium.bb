@@ -117,6 +117,11 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
       ui::Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbedFromToken(
+      const base::UnguessableToken& token,
+      ui::mojom::WindowDataPtr root,
+      int64_t display_id,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
   void OnUnembed(ui::Id window_id) override;
   void OnCaptureChanged(ui::Id new_capture_window_id,

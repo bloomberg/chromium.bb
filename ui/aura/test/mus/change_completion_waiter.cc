@@ -24,7 +24,7 @@ WindowTreeClient* GetWindowTreeClient() {
 // all changes sent to mus have been acked.
 class AllChangesCompletedWaiter : public WindowTreeClientTestObserver {
  public:
-  AllChangesCompletedWaiter();
+  explicit AllChangesCompletedWaiter(WindowTreeClient* client);
   ~AllChangesCompletedWaiter() override;
 
   void Wait();
@@ -43,8 +43,8 @@ class AllChangesCompletedWaiter : public WindowTreeClientTestObserver {
   DISALLOW_COPY_AND_ASSIGN(AllChangesCompletedWaiter);
 };
 
-AllChangesCompletedWaiter::AllChangesCompletedWaiter()
-    : client_(GetWindowTreeClient()) {}
+AllChangesCompletedWaiter::AllChangesCompletedWaiter(WindowTreeClient* client)
+    : client_(client) {}
 
 AllChangesCompletedWaiter::~AllChangesCompletedWaiter() = default;
 
@@ -110,10 +110,10 @@ void ChangeCompletionWaiter::OnChangeCompleted(uint32_t change_id,
   }
 }
 
-void WaitForAllChangesToComplete() {
+void WaitForAllChangesToComplete(WindowTreeClient* client) {
   if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
     return;
-  AllChangesCompletedWaiter().Wait();
+  AllChangesCompletedWaiter(client ? client : GetWindowTreeClient()).Wait();
 }
 
 }  // namespace test

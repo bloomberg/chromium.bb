@@ -170,6 +170,16 @@ void RendererWindowTreeClient::Embed(uint32_t frame_routing_id,
       CreateMusEmbeddedFrame(render_frame_proxy, token));
 }
 
+void RendererWindowTreeClient::OnEmbedFromToken(
+    const base::UnguessableToken& token,
+    ui::mojom::WindowDataPtr root,
+    int64_t display_id,
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  // Renderers don't use ScheduleEmbedForExistingClient(), so this path should
+  // never be hit.
+  NOTREACHED();
+}
+
 void RendererWindowTreeClient::DestroyFrame(uint32_t frame_routing_id) {
   pending_frames_.erase(frame_routing_id);
 }

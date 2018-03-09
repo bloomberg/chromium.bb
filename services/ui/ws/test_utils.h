@@ -473,6 +473,11 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbedFromToken(
+      const base::UnguessableToken& token,
+      mojom::WindowDataPtr root,
+      int64_t display_id,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(Id window) override;
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
