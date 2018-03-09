@@ -249,47 +249,6 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
-TEST_F(UseCounterTest, CSSSelectorPseudoAnyLink) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoAnyLink;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
-  document.documentElement()->SetInnerHTMLFromString(
-      "<style>:any-link { color: red; }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
-}
-
-TEST_F(UseCounterTest, CSSSelectorPseudoWebkitAnyLink) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
-  document.documentElement()->SetInnerHTMLFromString(
-      "<style>:-webkit-any-link { color: red; }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
-}
-
-TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {
-  UseCounter use_counter;
-  WebFeature feature = WebFeature::kCSSTypedOMStylePropertyMap;
-  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
-  use_counter.Count(GetDocument(), feature);
-  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
-}
-
-TEST_F(UseCounterTest, CSSSelectorPseudoMatches) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoMatches;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
-  document.documentElement()->SetInnerHTMLFromString(
-      "<style>.a+:matches(.b, .c+.d) { color: red; }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
-}
-
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   UseCounter use_counter;
 
@@ -334,6 +293,58 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   histogram_tester_.ExpectUniqueSample(
       kCSSHistogramName,
       UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property), 1);
+}
+
+/*
+ * Counter-specific tests
+ *
+ * NOTE: Most individual UseCounters don't need dedicated test cases.  They are
+ * "tested" by analyzing the data they generate including on some known pages.
+ * Feel free to add tests for counters where the triggering logic is
+ * non-trivial, but it's not required. Manual analysis is necessary to trust the
+ * data anyway, real-world pages are full of edge-cases and surprises that you
+ * won't find in unit testing anyway.
+ */
+
+TEST_F(UseCounterTest, CSSSelectorPseudoAnyLink) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorPseudoAnyLink;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>:any-link { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSSelectorPseudoWebkitAnyLink) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>:-webkit-any-link { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {
+  UseCounter use_counter;
+  WebFeature feature = WebFeature::kCSSTypedOMStylePropertyMap;
+  EXPECT_FALSE(use_counter.IsCounted(GetDocument(), feature));
+  use_counter.Count(GetDocument(), feature);
+  EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
+}
+
+TEST_F(UseCounterTest, CSSSelectorPseudoMatches) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorPseudoMatches;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>.a+:matches(.b, .c+.d) { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
 TEST_F(UseCounterTest, DropMeasurementOnViewSourcePages) {

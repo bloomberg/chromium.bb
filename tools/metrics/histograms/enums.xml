@@ -17943,6 +17943,8 @@ Called by update_net_error_codes.py.-->
   <int value="2385" label="V8PaintWorkletGlobalScope_RegisterPaint_Method"/>
   <int value="2386"
       label="V8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter"/>
+  <int value="2387" label="CSSSelectorPseudoFocus"/>
+  <int value="2388" label="CSSSelectorPseudoFocusVisible"/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -27862,9 +27864,9 @@ Called by update_use_counter_css.py.-->
   <int value="175" label="webkit-appearance"/>
   <int value="176" label="webkit-aspect-ratio"/>
   <int value="177" label="alias-webkit-backface-visibility"/>
-  <int value="178" label="webkit-background-clip"/>
+  <int value="178" label="alias-webkit-background-clip"/>
   <int value="179" label="webkit-background-composite"/>
-  <int value="180" label="webkit-background-origin"/>
+  <int value="180" label="alias-webkit-background-origin"/>
   <int value="181" label="alias-webkit-background-size"/>
   <int value="182" label="webkit-border-after"/>
   <int value="183" label="webkit-border-after-color"/>
@@ -28275,6 +28277,8 @@ Called by update_use_counter_css.py.-->
   <int value="588" label="font-variant-east-asian"/>
   <int value="589" label="text-decoration-skip-ink"/>
   <int value="590" label="scroll-customization"/>
+  <int value="591" label="row-gap"/>
+  <int value="592" label="gap"/>
 </enum>
 
 <enum name="MappedEditingCommands">
