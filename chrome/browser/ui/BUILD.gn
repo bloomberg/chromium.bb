@@ -3899,19 +3899,24 @@ static_library("test_support") {
       "extensions/browser_action_test_util.h",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
+      "views/toolbar/browser_action_test_util_views_mac.mm",
     ]
     if (!is_mac || mac_views_browser) {
       sources += [
         "views/find_bar_host_unittest_util_views.cc",
         "views/toolbar/browser_action_test_util_views.cc",
       ]
-      if (!is_mac) {
-        deps += [ "//ui/aura" ]
-      }
     } else {
       sources += [
         "cocoa/extensions/browser_action_test_util_views_cocoa.mm",
         "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
+      ]
+    }
+    if (use_aura) {
+      sources += [ "views/toolbar/browser_action_test_util_views_aura.cc" ]
+      deps += [
+        "//ui/aura",
+        "//ui/wm",
       ]
     }
   }

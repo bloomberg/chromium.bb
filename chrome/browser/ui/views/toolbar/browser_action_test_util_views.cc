@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -151,12 +150,6 @@ gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
   ToolbarActionViewController* popup_owner =
       GetToolbarActionsBar()->popup_owner();
   return popup_owner ? popup_owner->GetPopupNativeView() : nullptr;
-}
-
-bool BrowserActionTestUtil::WaitForPopup() {
-  // TODO(tapted): Implement this for MacViews.
-  NOTIMPLEMENTED();
-  return HasPopup();
 }
 
 bool BrowserActionTestUtil::HasPopup() {
