@@ -568,13 +568,6 @@ void AppListView::StartDrag(const gfx::Point& location) {
 }
 
 void AppListView::UpdateDrag(const gfx::Point& location) {
-  if (initial_drag_point_ == gfx::Point()) {
-    // When the app grid view redirects the event to the app list view, we
-    // detect this by seeing that StartDrag was not called. This sets up the
-    // drag.
-    StartDrag(location);
-    return;
-  }
   // Update the widget bounds based on the initial widget bounds and drag delta.
   gfx::Point location_in_screen_coordinates = location;
   ConvertPointToScreen(this, &location_in_screen_coordinates);
@@ -803,7 +796,7 @@ display::Display AppListView::GetDisplayNearestView() const {
 }
 
 AppsContainerView* AppListView::GetAppsContainerView() {
-  return app_list_main_view_->contents_view()->apps_container_view();
+  return app_list_main_view_->contents_view()->GetAppsContainerView();
 }
 
 AppsGridView* AppListView::GetRootAppsGridView() {

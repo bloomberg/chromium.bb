@@ -635,7 +635,7 @@ void AppsGridView::EndDrag(bool cancel) {
       // An EndDrag can be received during a reparent via a model change. This
       // is always a cancel and needs to be forwarded to the folder.
       DCHECK(cancel);
-      contents_view_->app_list_main_view()->CancelDragInActiveFolder();
+      contents_view_->GetAppListMainView()->CancelDragInActiveFolder();
       return;
     }
 
@@ -720,7 +720,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   // folder's grid view.
   AppListItemView* view = new AppListItemView(
       this, original_drag_view->item(),
-      contents_view_->app_list_main_view()->view_delegate());
+      contents_view_->GetAppListMainView()->view_delegate());
   AddChildView(view);
   drag_view_ = view;
   drag_view_->SetPaintToLayer();
@@ -966,7 +966,7 @@ void AppsGridView::Update() {
 void AppsGridView::UpdateSuggestions() {
   if (!suggestions_container_)
     return;
-  suggestions_container_->SetResults(contents_view_->app_list_main_view()
+  suggestions_container_->SetResults(contents_view_->GetAppListMainView()
                                          ->view_delegate()
                                          ->GetSearchModel()
                                          ->results());
@@ -1029,7 +1029,7 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   DCHECK_LE(index, item_list_->item_count());
   AppListItemView* view = new AppListItemView(
       this, item_list_->item_at(index),
-      contents_view_->app_list_main_view()->view_delegate());
+      contents_view_->GetAppListMainView()->view_delegate());
   view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
   return view;
@@ -1554,7 +1554,7 @@ bool AppsGridView::HandleFocusMovementInFullscreenAllAppsState(bool arrow_up) {
     if (arrow_up) {
       contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
     } else {
-      contents_view_->apps_container_view()
+      contents_view_->GetAppsContainerView()
           ->app_list_folder_view()
           ->folder_header_view()
           ->SetTextFocus();
@@ -2225,7 +2225,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     else
       activated_folder_item_view_ = nullptr;
   }
-  contents_view_->app_list_main_view()->ActivateApp(pressed_item_view->item(),
+  contents_view_->GetAppListMainView()->ActivateApp(pressed_item_view->item(),
                                                     event.flags());
 }
 

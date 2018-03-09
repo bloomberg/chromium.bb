@@ -15,7 +15,6 @@
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
-#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -411,9 +410,9 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
 
 AppListFolderView::AppListFolderView(AppsContainerView* container_view,
                                      AppListModel* model,
-                                     AppListMainView* app_list_main_view)
+                                     ContentsView* contents_view)
     : container_view_(container_view),
-      app_list_main_view_(app_list_main_view),
+      contents_view_(contents_view),
       background_view_(new views::View),
       contents_container_(new views::View),
       folder_header_view_(new FolderHeaderView(this)),
@@ -434,8 +433,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   AddChildView(contents_container_);
   view_model_->Add(contents_container_, kIndexContentsContainer);
 
-  items_grid_view_ =
-      new AppsGridView(app_list_main_view_->contents_view(), this);
+  items_grid_view_ = new AppsGridView(contents_view_, this);
   items_grid_view_->SetModel(model);
   contents_container_->AddChildView(items_grid_view_);
   view_model_->Add(items_grid_view_, kIndexChildItems);
@@ -732,7 +730,7 @@ void AppListFolderView::NavigateBack(AppListFolderItem* item,
 }
 
 void AppListFolderView::GiveBackFocusToSearchBox() {
-  app_list_main_view_->search_box_view()->search_box()->RequestFocus();
+  contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
 }
 
 void AppListFolderView::SetItemName(AppListFolderItem* item,
