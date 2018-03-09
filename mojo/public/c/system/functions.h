@@ -42,7 +42,7 @@ MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow(void);
 //
 // Concurrent operations on |handle| may succeed (or fail as usual) if they
 // happen before the close, be cancelled with result |MOJO_RESULT_CANCELLED| if
-// they properly overlap (this is likely the case with watchers), or fail with
+// they properly overlap (this is likely the case with traps), or fail with
 // |MOJO_RESULT_INVALID_ARGUMENT| if they happen after.
 MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 

@@ -11,37 +11,37 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
-#include "mojo/public/c/system/watcher.h"
+#include "mojo/public/c/system/trap.h"
 
 namespace mojo {
 
-// Thread-safe Context object used to dispatch watch notifications from a
-// arbitrary threads.
+// Thread-safe Context object used to schedule trap events from arbitrary
+// threads.
 class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
  public:
-  // Creates a |Context| instance for a new watch on |watcher|, to watch
-  // |handle| for |signals|.
+  // Creates a |Context| instance for a new watch on |watcher|, to observe
+  // |signals| on |handle|.
   static scoped_refptr<Context> Create(
       base::WeakPtr<SimpleWatcher> watcher,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      WatcherHandle watcher_handle,
+      TrapHandle trap_handle,
       Handle handle,
       MojoHandleSignals signals,
-      MojoWatchCondition condition,
+      MojoTriggerCondition condition,
       int watch_id,
-      MojoResult* watch_result) {
+      MojoResult* result) {
     scoped_refptr<Context> context =
         new Context(watcher, task_runner, watch_id);
 
-    // If MojoWatch succeeds, it assumes ownership of a reference to |context|.
-    // In that case, this reference is balanced in CallNotify() when |result| is
-    // |MOJO_RESULT_CANCELLED|.
+    // If MojoAddTrigger succeeds, it effectively assumes ownership of a
+    // reference to |context|. In that case, this reference is balanced in
+    // CallNotify() when |result| is |MOJO_RESULT_CANCELLED|.
     context->AddRef();
 
-    *watch_result = MojoWatch(watcher_handle.value(), handle.value(), signals,
-                              condition, context->value());
-    if (*watch_result != MOJO_RESULT_OK) {
-      // Balanced by the AddRef() above since watching failed.
+    *result = MojoAddTrigger(trap_handle.value(), handle.value(), signals,
+                             condition, context->value(), nullptr);
+    if (*result != MOJO_RESULT_OK) {
+      // Balanced by the AddRef() above since MojoAddTrigger failed.
       context->Release();
       return nullptr;
     }
@@ -49,16 +49,13 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
     return context;
   }
 
-  static void CallNotify(uintptr_t context_value,
-                         MojoResult result,
-                         MojoHandleSignalsState signals_state,
-                         MojoWatcherNotificationFlags flags) {
-    auto* context = reinterpret_cast<Context*>(context_value);
-    context->Notify(result, signals_state, flags);
+  static void CallNotify(const MojoTrapEvent* event) {
+    auto* context = reinterpret_cast<Context*>(event->trigger_context);
+    context->Notify(event->result, event->signals_state, event->flags);
 
-    // That was the last notification for the context. We can release the ref
-    // owned by the watch, which may in turn delete the Context.
-    if (result == MOJO_RESULT_CANCELLED)
+    // The trigger was removed. We can release the ref it owned, which in turn
+    // may delete the Context.
+    if (event->result == MOJO_RESULT_CANCELLED)
       context->Release();
   }
 
@@ -82,9 +79,9 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
 
   void Notify(MojoResult result,
               MojoHandleSignalsState signals_state,
-              MojoWatcherNotificationFlags flags) {
+              MojoTrapEventFlags flags) {
     if (result == MOJO_RESULT_CANCELLED) {
-      // The SimpleWatcher may have explicitly cancelled this watch, so we don't
+      // The SimpleWatcher may have explicitly removed this trigger, so we don't
       // bother dispatching the notification - it would be ignored anyway.
       //
       // TODO(rockot): This shouldn't really be necessary, but there are already
@@ -98,7 +95,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
 
     HandleSignalsState state(signals_state.satisfied_signals,
                              signals_state.satisfiable_signals);
-    if ((flags & MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM) &&
+    if (!(flags & MOJO_TRAP_EVENT_FLAG_WITHIN_API_CALL) &&
         task_runner_->RunsTasksInCurrentSequence() && weak_watcher_ &&
         weak_watcher_->is_default_task_runner_) {
       // System notifications will trigger from the task runner passed to
@@ -132,7 +129,7 @@ SimpleWatcher::SimpleWatcher(const base::Location& from_here,
                                   base::ThreadTaskRunnerHandle::Get()),
       heap_profiler_tag_(from_here.file_name()),
       weak_factory_(this) {
-  MojoResult rv = CreateWatcher(&Context::CallNotify, &watcher_handle_);
+  MojoResult rv = CreateTrap(&Context::CallNotify, &trap_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
@@ -149,7 +146,7 @@ bool SimpleWatcher::IsWatching() const {
 
 MojoResult SimpleWatcher::Watch(Handle handle,
                                 MojoHandleSignals signals,
-                                MojoWatchCondition condition,
+                                MojoTriggerCondition condition,
                                 const ReadyCallbackWithState& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsWatching());
@@ -159,15 +156,15 @@ MojoResult SimpleWatcher::Watch(Handle handle,
   handle_ = handle;
   watch_id_ += 1;
 
-  MojoResult watch_result = MOJO_RESULT_UNKNOWN;
+  MojoResult result = MOJO_RESULT_UNKNOWN;
   context_ = Context::Create(weak_factory_.GetWeakPtr(), task_runner_,
-                             watcher_handle_.get(), handle_, signals, condition,
-                             watch_id_, &watch_result);
+                             trap_handle_.get(), handle_, signals, condition,
+                             watch_id_, &result);
   if (!context_) {
     handle_.set_value(kInvalidHandleValue);
     callback_.Reset();
-    DCHECK_EQ(MOJO_RESULT_INVALID_ARGUMENT, watch_result);
-    return watch_result;
+    DCHECK_EQ(MOJO_RESULT_INVALID_ARGUMENT, result);
+    return result;
   }
 
   if (arming_policy_ == ArmingPolicy::AUTOMATIC)
@@ -191,13 +188,13 @@ void SimpleWatcher::Cancel() {
   handle_.set_value(kInvalidHandleValue);
   callback_.Reset();
 
-  // Ensure |context_| is unset by the time we call MojoCancelWatch, as may
+  // Ensure |context_| is unset by the time we call MojoRemoveTrigger, as it may
   // re-enter the notification callback and we want to ensure |context_| is
   // unset by then.
   scoped_refptr<Context> context;
   std::swap(context, context_);
   MojoResult rv =
-      MojoCancelWatch(watcher_handle_.get().value(), context->value());
+      MojoRemoveTrigger(trap_handle_.get().value(), context->value(), nullptr);
 
   // It's possible this cancellation could race with a handle closure
   // notification, in which case the watch may have already been implicitly
@@ -215,9 +212,9 @@ MojoResult SimpleWatcher::Arm(MojoResult* ready_result,
   if (!ready_state)
     ready_state = &local_ready_state;
   MojoResult rv =
-      MojoArmWatcher(watcher_handle_.get().value(), &num_ready_contexts,
-                     &ready_context, &local_ready_result,
-                     reinterpret_cast<MojoHandleSignalsState*>(ready_state));
+      MojoArmTrap(trap_handle_.get().value(), nullptr, &num_ready_contexts,
+                  &ready_context, &local_ready_result,
+                  reinterpret_cast<MojoHandleSignalsState*>(ready_state));
   if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
     DCHECK(context_);
     DCHECK_EQ(1u, num_ready_contexts);

@@ -14,7 +14,7 @@ Watch::Watch(const scoped_refptr<WatcherDispatcher>& watcher,
              const scoped_refptr<Dispatcher>& dispatcher,
              uintptr_t context,
              MojoHandleSignals signals,
-             MojoWatchCondition condition)
+             MojoTriggerCondition condition)
     : watcher_(watcher),
       dispatcher_(dispatcher),
       context_(context),
@@ -31,15 +31,15 @@ bool Watch::NotifyState(const HandleSignalsState& state,
   RequestContext* const request_context = RequestContext::current();
   const bool notify_success =
       (state.satisfies_any(signals_) &&
-       condition_ == MOJO_WATCH_CONDITION_SATISFIED) ||
+       condition_ == MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED) ||
       (!state.satisfies_all(signals_) &&
-       condition_ == MOJO_WATCH_CONDITION_NOT_SATISFIED);
+       condition_ == MOJO_TRIGGER_CONDITION_SIGNALS_UNSATISFIED);
   if (notify_success) {
     rv = MOJO_RESULT_OK;
     if (allowed_to_call_callback && rv != last_known_result_) {
       request_context->AddWatchNotifyFinalizer(this, MOJO_RESULT_OK, state);
     }
-  } else if (condition_ == MOJO_WATCH_CONDITION_SATISFIED &&
+  } else if (condition_ == MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED &&
              !state.can_satisfy_any(signals_)) {
     rv = MOJO_RESULT_FAILED_PRECONDITION;
     if (allowed_to_call_callback && rv != last_known_result_) {
@@ -60,7 +60,7 @@ void Watch::Cancel() {
 
 void Watch::InvokeCallback(MojoResult result,
                            const HandleSignalsState& state,
-                           MojoWatcherNotificationFlags flags) {
+                           MojoTrapEventFlags flags) {
   // We hold the lock through invocation to ensure that only one notification
   // callback runs for this context at any given time.
   base::AutoLock lock(notification_lock_);

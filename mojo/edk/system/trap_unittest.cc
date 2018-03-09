@@ -19,13 +19,38 @@
 #include "base/time/time.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/c/system/watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace edk {
 namespace {
+
+// TODO(https://crbug.com/819046): These are temporary wrappers to reduce
+// changes necessary during the API rename. Remove them.
+
+MojoResult MojoWatch(MojoHandle trap_handle,
+                     MojoHandle handle,
+                     MojoHandleSignals signals,
+                     MojoTriggerCondition condition,
+                     uintptr_t context) {
+  return MojoAddTrigger(trap_handle, handle, signals, condition, context,
+                        nullptr);
+}
+
+MojoResult MojoCancelWatch(MojoHandle trap_handle, uintptr_t context) {
+  return MojoRemoveTrigger(trap_handle, context, nullptr);
+}
+
+MojoResult MojoArmWatcher(MojoHandle trap_handle,
+                          uint32_t* num_ready_contexts,
+                          uintptr_t* ready_contexts,
+                          MojoResult* ready_results,
+                          MojoHandleSignalsState* ready_signals) {
+  return MojoArmTrap(trap_handle, nullptr, num_ready_contexts, ready_contexts,
+                     ready_results, ready_signals);
+}
 
 using WatcherTest = test::MojoTestBase;
 
@@ -38,7 +63,7 @@ class WatchHelper {
   ~WatchHelper() {}
 
   MojoResult CreateWatcher(MojoHandle* handle) {
-    return MojoCreateWatcher(&Notify, handle);
+    return MojoCreateTrap(&Notify, nullptr, handle);
   }
 
   uintptr_t CreateContext(const ContextCallback& callback) {
@@ -85,11 +110,9 @@ class WatchHelper {
     DISALLOW_COPY_AND_ASSIGN(NotificationContext);
   };
 
-  static void Notify(uintptr_t context,
-                     MojoResult result,
-                     MojoHandleSignalsState state,
-                     MojoWatcherNotificationFlags flags) {
-    reinterpret_cast<NotificationContext*>(context)->Notify(result, state);
+  static void Notify(const MojoTrapEvent* event) {
+    reinterpret_cast<NotificationContext*>(event->trigger_context)
+        ->Notify(event->result, event->signals_state);
   }
 
   DISALLOW_COPY_AND_ASSIGN(WatchHelper);
@@ -109,25 +132,19 @@ class ThreadedRunner : public base::SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadedRunner);
 };
 
-void ExpectNoNotification(uintptr_t context,
-                          MojoResult result,
-                          MojoHandleSignalsState state,
-                          MojoWatcherNotificationFlags flags) {
+void ExpectNoNotification(const MojoTrapEvent* event) {
   NOTREACHED();
 }
 
-void ExpectOnlyCancel(uintptr_t context,
-                      MojoResult result,
-                      MojoHandleSignalsState state,
-                      MojoWatcherNotificationFlags flags) {
-  EXPECT_EQ(result, MOJO_RESULT_CANCELLED);
+void ExpectOnlyCancel(const MojoTrapEvent* event) {
+  EXPECT_EQ(event->result, MOJO_RESULT_CANCELLED);
 }
 
 TEST_F(WatcherTest, InvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoCreateWatcher(&ExpectNoNotification, nullptr));
+            MojoCreateTrap(&ExpectNoNotification, nullptr, nullptr));
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectNoNotification, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
 
   // Try to watch unwatchable handles.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -698,7 +715,7 @@ TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandlePeer) {
 
 TEST_F(WatcherTest, ArmWithNoWatches) {
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectNoNotification, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
@@ -709,7 +726,7 @@ TEST_F(WatcherTest, WatchDuplicateContext) {
   CreateMessagePipe(&a, &b);
 
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_WATCH_CONDITION_SATISFIED, 0));
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
@@ -723,7 +740,7 @@ TEST_F(WatcherTest, WatchDuplicateContext) {
 
 TEST_F(WatcherTest, CancelUnknownWatch) {
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectNoNotification, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND, MojoCancelWatch(w, 1234));
 }
 
@@ -732,7 +749,7 @@ TEST_F(WatcherTest, ArmWithWatchAlreadySatisfied) {
   CreateMessagePipe(&a, &b);
 
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_WRITABLE,
                                       MOJO_WATCH_CONDITION_SATISFIED, 0));
 
@@ -759,7 +776,7 @@ TEST_F(WatcherTest, ArmWithWatchAlreadyUnsatisfiable) {
   CreateMessagePipe(&a, &b);
 
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
   EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_WATCH_CONDITION_SATISFIED, 0));
 
@@ -1638,7 +1655,7 @@ TEST_F(WatcherTest, ArmFailureCirculation) {
 
   // Create a watcher and watch all of them.
   MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
   for (size_t i = 0; i < kNumTestHandles; ++i) {
     EXPECT_EQ(MOJO_RESULT_OK,
               MojoWatch(w, handles[i], MOJO_HANDLE_SIGNAL_READABLE,
@@ -1725,12 +1742,9 @@ TEST_F(WatcherTest, WatchNotSatisfied) {
 
 base::Closure g_do_random_thing_callback;
 
-void ReadAllMessages(uintptr_t context,
-                     MojoResult result,
-                     MojoHandleSignalsState state,
-                     MojoWatcherNotificationFlags flags) {
-  if (result == MOJO_RESULT_OK) {
-    MojoHandle handle = static_cast<MojoHandle>(context);
+void ReadAllMessages(const MojoTrapEvent* event) {
+  if (event->result == MOJO_RESULT_OK) {
+    MojoHandle handle = static_cast<MojoHandle>(event->trigger_context);
     MojoMessageHandle message;
     while (MojoReadMessage(handle, &message, MOJO_READ_MESSAGE_FLAG_NONE) ==
            MOJO_RESULT_OK) {
@@ -1787,7 +1801,13 @@ void DoRandomThing(MojoHandle* watchers,
                          &num_ready_contexts, &ready_context, &ready_result,
                          &ready_state) == MOJO_RESULT_FAILED_PRECONDITION &&
           ready_result == MOJO_RESULT_OK) {
-        ReadAllMessages(ready_context, ready_result, ready_state, 0);
+        MojoTrapEvent event;
+        event.struct_size = sizeof(event);
+        event.trigger_context = ready_context;
+        event.result = ready_result;
+        event.signals_state = ready_state;
+        event.flags = MOJO_TRAP_EVENT_FLAG_NONE;
+        ReadAllMessages(&event);
       }
       break;
     }
@@ -1822,7 +1842,7 @@ TEST_F(WatcherTest, ConcurrencyStressTest) {
                  kNumWatchedHandles);
 
   for (size_t i = 0; i < kNumWatchers; ++i)
-    MojoCreateWatcher(&ReadAllMessages, &watchers[i]);
+    MojoCreateTrap(&ReadAllMessages, nullptr, &watchers[i]);
   for (size_t i = 0; i < kNumWatchedHandles; i += 2)
     CreateMessagePipe(&watched_handles[i], &watched_handles[i + 1]);
 

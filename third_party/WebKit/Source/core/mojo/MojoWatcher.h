@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/trap.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 
@@ -49,15 +49,12 @@ class MojoWatcher final : public ScriptWrappable,
   MojoResult Watch(mojo::Handle, const MojoHandleSignals&);
   MojoResult Arm(MojoResult* ready_result);
 
-  static void OnHandleReady(uintptr_t context,
-                            MojoResult,
-                            MojoHandleSignalsState,
-                            MojoWatcherNotificationFlags);
+  static void OnHandleReady(const MojoTrapEvent*);
   void RunReadyCallback(MojoResult);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TraceWrapperMember<V8MojoWatchCallback> callback_;
-  mojo::ScopedWatcherHandle watcher_handle_;
+  mojo::ScopedTrapHandle trap_handle_;
   mojo::Handle handle_;
 };
 

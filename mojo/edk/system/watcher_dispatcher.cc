@@ -15,8 +15,8 @@
 namespace mojo {
 namespace edk {
 
-WatcherDispatcher::WatcherDispatcher(MojoWatcherCallback callback)
-    : callback_(callback) {}
+WatcherDispatcher::WatcherDispatcher(MojoTrapEventHandler handler)
+    : handler_(handler) {}
 
 void WatcherDispatcher::NotifyHandleState(Dispatcher* dispatcher,
                                           const HandleSignalsState& state) {
@@ -58,11 +58,17 @@ void WatcherDispatcher::NotifyHandleClosed(Dispatcher* dispatcher) {
   watch->Cancel();
 }
 
-void WatcherDispatcher::InvokeWatchCallback(
-    uintptr_t context,
-    MojoResult result,
-    const HandleSignalsState& state,
-    MojoWatcherNotificationFlags flags) {
+void WatcherDispatcher::InvokeWatchCallback(uintptr_t context,
+                                            MojoResult result,
+                                            const HandleSignalsState& state,
+                                            MojoTrapEventFlags flags) {
+  MojoTrapEvent event;
+  event.struct_size = sizeof(event);
+  event.trigger_context = context;
+  event.result = result;
+  event.signals_state = static_cast<MojoHandleSignalsState>(state);
+  event.flags = flags;
+
   {
     // We avoid holding the lock during dispatch. It's OK for notification
     // callbacks to close this watcher, and it's OK for notifications to race
@@ -81,7 +87,7 @@ void WatcherDispatcher::InvokeWatchCallback(
       return;
   }
 
-  callback_(context, result, static_cast<MojoHandleSignalsState>(state), flags);
+  handler_(&event);
 }
 
 Dispatcher::Type WatcherDispatcher::GetType() const {
@@ -113,7 +119,7 @@ MojoResult WatcherDispatcher::Close() {
 MojoResult WatcherDispatcher::WatchDispatcher(
     scoped_refptr<Dispatcher> dispatcher,
     MojoHandleSignals signals,
-    MojoWatchCondition condition,
+    MojoTriggerCondition condition,
     uintptr_t context) {
   // NOTE: Because it's critical to avoid acquiring any other dispatcher locks
   // while |lock_| is held, we defer adding oursevles to the dispatcher until

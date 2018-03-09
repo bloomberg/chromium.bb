@@ -10,15 +10,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/public/c/system/watcher.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/c/system/trap.h"
+#include "mojo/public/cpp/system/trap.h"
 
 namespace mojo {
 namespace {
 
-class WatchContext : public base::RefCountedThreadSafe<WatchContext> {
+class TriggerContext : public base::RefCountedThreadSafe<TriggerContext> {
  public:
-  WatchContext()
+  TriggerContext()
       : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
@@ -27,22 +27,19 @@ class WatchContext : public base::RefCountedThreadSafe<WatchContext> {
   MojoHandleSignalsState wait_state() const { return wait_state_; }
   uintptr_t context_value() const { return reinterpret_cast<uintptr_t>(this); }
 
-  static void OnNotification(uintptr_t context_value,
-                             MojoResult result,
-                             MojoHandleSignalsState state,
-                             MojoWatcherNotificationFlags flags) {
-    auto* context = reinterpret_cast<WatchContext*>(context_value);
-    context->Notify(result, state);
-    if (result == MOJO_RESULT_CANCELLED) {
+  static void OnNotification(const MojoTrapEvent* event) {
+    auto* context = reinterpret_cast<TriggerContext*>(event->trigger_context);
+    context->Notify(event->result, event->signals_state);
+    if (event->result == MOJO_RESULT_CANCELLED) {
       // Balanced in Wait() or WaitMany().
       context->Release();
     }
   }
 
  private:
-  friend class base::RefCountedThreadSafe<WatchContext>;
+  friend class base::RefCountedThreadSafe<TriggerContext>;
 
-  ~WatchContext() {}
+  ~TriggerContext() {}
 
   void Notify(MojoResult result, MojoHandleSignalsState state) {
     if (wait_result_ == MOJO_RESULT_UNKNOWN) {
@@ -57,32 +54,32 @@ class WatchContext : public base::RefCountedThreadSafe<WatchContext> {
   // NOTE: Although these are modified in Notify() which may be called from any
   // sequence, Notify() is guaranteed to never run concurrently with itself.
   // Furthermore, they are only modified once, before |event_| signals; so there
-  // is no need for a WatchContext user to synchronize access to these fields
+  // is no need for a TriggerContext user to synchronize access to these fields
   // apart from waiting on |event()|.
   MojoResult wait_result_ = MOJO_RESULT_UNKNOWN;
   MojoHandleSignalsState wait_state_ = {0, 0};
 
-  DISALLOW_COPY_AND_ASSIGN(WatchContext);
+  DISALLOW_COPY_AND_ASSIGN(TriggerContext);
 };
 
 }  // namespace
 
 MojoResult Wait(Handle handle,
                 MojoHandleSignals signals,
-                MojoWatchCondition condition,
+                MojoTriggerCondition condition,
                 MojoHandleSignalsState* signals_state) {
-  ScopedWatcherHandle watcher;
-  MojoResult rv = CreateWatcher(&WatchContext::OnNotification, &watcher);
+  ScopedTrapHandle trap;
+  MojoResult rv = CreateTrap(&TriggerContext::OnNotification, &trap);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  scoped_refptr<WatchContext> context = new WatchContext;
+  scoped_refptr<TriggerContext> context = new TriggerContext;
 
-  // Balanced in WatchContext::OnNotification if MojoWatch() is successful.
-  // Otherwise balanced immediately below.
+  // Balanced in TriggerContext::OnNotification if MojoAddTrigger() is
+  // successful. Otherwise balanced immediately below.
   context->AddRef();
 
-  rv = MojoWatch(watcher.get().value(), handle.value(), signals, condition,
-                 context->context_value());
+  rv = MojoAddTrigger(trap.get().value(), handle.value(), signals, condition,
+                      context->context_value(), nullptr);
   if (rv == MOJO_RESULT_INVALID_ARGUMENT) {
     // Balanced above.
     context->Release();
@@ -94,8 +91,8 @@ MojoResult Wait(Handle handle,
   uintptr_t ready_context;
   MojoResult ready_result;
   MojoHandleSignalsState ready_state;
-  rv = MojoArmWatcher(watcher.get().value(), &num_ready_contexts,
-                      &ready_context, &ready_result, &ready_state);
+  rv = MojoArmTrap(trap.get().value(), nullptr, &num_ready_contexts,
+                   &ready_context, &ready_result, &ready_state);
   if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
     DCHECK_EQ(1u, num_ready_contexts);
     if (signals_state)
@@ -123,22 +120,23 @@ MojoResult WaitMany(const Handle* handles,
   if (!handles || !signals)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  ScopedWatcherHandle watcher;
-  MojoResult rv = CreateWatcher(&WatchContext::OnNotification, &watcher);
+  ScopedTrapHandle trap;
+  MojoResult rv = CreateTrap(&TriggerContext::OnNotification, &trap);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  std::vector<scoped_refptr<WatchContext>> contexts(num_handles);
+  std::vector<scoped_refptr<TriggerContext>> contexts(num_handles);
   std::vector<base::WaitableEvent*> events(num_handles);
   for (size_t i = 0; i < num_handles; ++i) {
-    contexts[i] = new WatchContext();
+    contexts[i] = new TriggerContext();
 
-    // Balanced in WatchContext::OnNotification if MojoWatch() is successful.
-    // Otherwise balanced immediately below.
+    // Balanced in TriggerContext::OnNotification if MojoAddTrigger() is
+    // successful. Otherwise balanced immediately below.
     contexts[i]->AddRef();
 
     MojoResult rv =
-        MojoWatch(watcher.get().value(), handles[i].value(), signals[i],
-                  MOJO_WATCH_CONDITION_SATISFIED, contexts[i]->context_value());
+        MojoAddTrigger(trap.get().value(), handles[i].value(), signals[i],
+                       MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                       contexts[i]->context_value(), nullptr);
     if (rv == MOJO_RESULT_INVALID_ARGUMENT) {
       if (result_index)
         *result_index = i;
@@ -156,8 +154,8 @@ MojoResult WaitMany(const Handle* handles,
   uintptr_t ready_context = 0;
   MojoResult ready_result = MOJO_RESULT_UNKNOWN;
   MojoHandleSignalsState ready_state{0, 0};
-  rv = MojoArmWatcher(watcher.get().value(), &num_ready_contexts,
-                      &ready_context, &ready_result, &ready_state);
+  rv = MojoArmTrap(trap.get().value(), nullptr, &num_ready_contexts,
+                   &ready_context, &ready_result, &ready_state);
 
   size_t index = num_handles;
   if (rv == MOJO_RESULT_FAILED_PRECONDITION) {

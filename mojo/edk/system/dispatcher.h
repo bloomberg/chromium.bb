@@ -25,6 +25,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 
 namespace mojo {
@@ -73,7 +74,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   virtual MojoResult WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                                      MojoHandleSignals signals,
-                                     MojoWatchCondition condition,
+                                     MojoTriggerCondition condition,
                                      uintptr_t context);
   virtual MojoResult CancelWatch(uintptr_t context);
   virtual MojoResult Arm(uint32_t* num_ready_contexts,

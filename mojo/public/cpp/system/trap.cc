@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/trap.h"
 
 #include "mojo/public/c/system/functions.h"
 
 namespace mojo {
 
-MojoResult CreateWatcher(MojoWatcherCallback callback,
-                         ScopedWatcherHandle* watcher_handle) {
+MojoResult CreateTrap(MojoTrapEventHandler handler,
+                      ScopedTrapHandle* trap_handle) {
   MojoHandle handle;
-  MojoResult rv = MojoCreateWatcher(callback, &handle);
+  MojoResult rv = MojoCreateTrap(handler, nullptr, &handle);
   if (rv == MOJO_RESULT_OK)
-    watcher_handle->reset(WatcherHandle(handle));
+    trap_handle->reset(TrapHandle(handle));
   return rv;
 }
 

@@ -16,7 +16,7 @@
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/handle_signals_state.h"
 #include "mojo/public/cpp/system/system_export.h"
-#include "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/trap.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -119,7 +119,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // Destroying the SimpleWatcher implicitly calls |Cancel()|.
   MojoResult Watch(Handle handle,
                    MojoHandleSignals signals,
-                   MojoWatchCondition condition,
+                   MojoTriggerCondition condition,
                    const ReadyCallbackWithState& callback);
 
   // DEPRECATED: Please use the above signature instead.
@@ -211,7 +211,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // base::SequencedTaskRunnerHandle::Get() for the thread.
   const bool is_default_task_runner_;
 
-  ScopedWatcherHandle watcher_handle_;
+  ScopedTrapHandle trap_handle_;
 
   // A thread-safe context object corresponding to the currently active watch,
   // if any.

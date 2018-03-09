@@ -16,7 +16,7 @@
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/c/system/watcher.h"
+#include "mojo/public/c/system/trap.h"
 
 namespace mojo {
 namespace edk {
@@ -26,9 +26,9 @@ class Watch;
 // The dispatcher type which backs watcher handles.
 class WatcherDispatcher : public Dispatcher {
  public:
-  // Constructs a new WatcherDispatcher which invokes |callback| when a
+  // Constructs a new WatcherDispatcher which invokes |handler| when a
   // registered watch observes some relevant state change.
-  explicit WatcherDispatcher(MojoWatcherCallback callback);
+  explicit WatcherDispatcher(MojoTrapEventHandler handler);
 
   // Methods used by watched dispatchers to notify watchers of events.
   void NotifyHandleState(Dispatcher* dispatcher,
@@ -40,14 +40,14 @@ class WatcherDispatcher : public Dispatcher {
   void InvokeWatchCallback(uintptr_t context,
                            MojoResult result,
                            const HandleSignalsState& state,
-                           MojoWatcherNotificationFlags flags);
+                           MojoTrapEventFlags flags);
 
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;
   MojoResult WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                              MojoHandleSignals signals,
-                             MojoWatchCondition condition,
+                             MojoTriggerCondition condition,
                              uintptr_t context) override;
   MojoResult CancelWatch(uintptr_t context) override;
   MojoResult Arm(uint32_t* num_ready_contexts,
@@ -62,7 +62,7 @@ class WatcherDispatcher : public Dispatcher {
 
   ~WatcherDispatcher() override;
 
-  const MojoWatcherCallback callback_;
+  const MojoTrapEventHandler handler_;
 
   // Guards access to the fields below.
   //

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -160,7 +161,7 @@ class MojoTestBase : public testing::Test {
   // Helper to block the calling thread waiting for signals to go high or low.
   static MojoResult WaitForSignals(MojoHandle handle,
                                    MojoHandleSignals signals,
-                                   MojoWatchCondition condition,
+                                   MojoTriggerCondition condition,
                                    MojoHandleSignalsState* state = nullptr);
 
   // Like above but only waits for signals to go high.

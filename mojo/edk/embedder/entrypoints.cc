@@ -33,30 +33,36 @@ MojoResult MojoQueryHandleSignalsStateImpl(
   return g_core->QueryHandleSignalsState(handle, signals_state);
 }
 
-MojoResult MojoCreateWatcherImpl(MojoWatcherCallback callback,
-                                 MojoHandle* watcher_handle) {
-  return g_core->CreateWatcher(callback, watcher_handle);
+MojoResult MojoCreateTrapImpl(MojoTrapEventHandler handler,
+                              const MojoCreateTrapOptions* options,
+                              MojoHandle* trap_handle) {
+  return g_core->CreateTrap(handler, options, trap_handle);
 }
 
-MojoResult MojoArmWatcherImpl(MojoHandle watcher_handle,
-                              uint32_t* num_ready_contexts,
-                              uintptr_t* ready_contexts,
-                              MojoResult* ready_results,
-                              MojoHandleSignalsState* ready_signals_states) {
-  return g_core->ArmWatcher(watcher_handle, num_ready_contexts, ready_contexts,
-                            ready_results, ready_signals_states);
+MojoResult MojoArmTrapImpl(MojoHandle trap_handle,
+                           const MojoArmTrapOptions* options,
+                           uint32_t* num_ready_triggers,
+                           uintptr_t* ready_triggers,
+                           MojoResult* ready_results,
+                           MojoHandleSignalsState* ready_signals_states) {
+  return g_core->ArmTrap(trap_handle, options, num_ready_triggers,
+                         ready_triggers, ready_results, ready_signals_states);
 }
 
-MojoResult MojoWatchImpl(MojoHandle watcher_handle,
-                         MojoHandle handle,
-                         MojoHandleSignals signals,
-                         MojoWatchCondition condition,
-                         uintptr_t context) {
-  return g_core->Watch(watcher_handle, handle, signals, condition, context);
+MojoResult MojoAddTriggerImpl(MojoHandle trap_handle,
+                              MojoHandle handle,
+                              MojoHandleSignals signals,
+                              MojoTriggerCondition condition,
+                              uintptr_t context,
+                              const MojoAddTriggerOptions* options) {
+  return g_core->AddTrigger(trap_handle, handle, signals, condition, context,
+                            options);
 }
 
-MojoResult MojoCancelWatchImpl(MojoHandle watcher_handle, uintptr_t context) {
-  return g_core->CancelWatch(watcher_handle, context);
+MojoResult MojoRemoveTriggerImpl(MojoHandle trap_handle,
+                                 uintptr_t context,
+                                 const MojoRemoveTriggerOptions* options) {
+  return g_core->RemoveTrigger(trap_handle, context, options);
 }
 
 MojoResult MojoCreateMessageImpl(const MojoCreateMessageOptions* options,
@@ -277,10 +283,10 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoDuplicateBufferHandleImpl,
                                     MojoMapBufferImpl,
                                     MojoUnmapBufferImpl,
-                                    MojoCreateWatcherImpl,
-                                    MojoWatchImpl,
-                                    MojoCancelWatchImpl,
-                                    MojoArmWatcherImpl,
+                                    MojoCreateTrapImpl,
+                                    MojoAddTriggerImpl,
+                                    MojoRemoveTriggerImpl,
+                                    MojoArmTrapImpl,
                                     MojoFuseMessagePipesImpl,
                                     MojoCreateMessageImpl,
                                     MojoDestroyMessageImpl,

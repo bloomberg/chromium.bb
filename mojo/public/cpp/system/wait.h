@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/system_export.h"
@@ -35,15 +36,16 @@ namespace mojo {
 MOJO_CPP_SYSTEM_EXPORT MojoResult
 Wait(Handle handle,
      MojoHandleSignals signals,
-     MojoWatchCondition condition,
+     MojoTriggerCondition condition,
      MojoHandleSignalsState* signals_state = nullptr);
 
 // A pseudonym for the above Wait() which always waits on
-// |MOJO_WATCH_CONDITION_SATISFIED|.
+// |MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED|.
 inline MojoResult Wait(Handle handle,
                        MojoHandleSignals signals,
                        MojoHandleSignalsState* signals_state = nullptr) {
-  return Wait(handle, signals, MOJO_WATCH_CONDITION_SATISFIED, signals_state);
+  return Wait(handle, signals, MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+              signals_state);
 }
 
 // Waits on |handles[0]|, ..., |handles[num_handles-1]| until:

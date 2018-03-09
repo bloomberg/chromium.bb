@@ -26,8 +26,8 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/c/system/watcher.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
@@ -179,19 +179,24 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult Close(MojoHandle handle);
   MojoResult QueryHandleSignalsState(MojoHandle handle,
                                      MojoHandleSignalsState* signals_state);
-  MojoResult CreateWatcher(MojoWatcherCallback callback,
-                           MojoHandle* watcher_handle);
-  MojoResult Watch(MojoHandle watcher_handle,
-                   MojoHandle handle,
-                   MojoHandleSignals signals,
-                   MojoWatchCondition condition,
-                   uintptr_t context);
-  MojoResult CancelWatch(MojoHandle watcher_handle, uintptr_t context);
-  MojoResult ArmWatcher(MojoHandle watcher_handle,
-                        uint32_t* num_ready_contexts,
-                        uintptr_t* ready_contexts,
-                        MojoResult* ready_results,
-                        MojoHandleSignalsState* ready_signals_states);
+  MojoResult CreateTrap(MojoTrapEventHandler handler,
+                        const MojoCreateTrapOptions* options,
+                        MojoHandle* trap_handle);
+  MojoResult AddTrigger(MojoHandle trap_handle,
+                        MojoHandle handle,
+                        MojoHandleSignals signals,
+                        MojoTriggerCondition condition,
+                        uintptr_t context,
+                        const MojoAddTriggerOptions* options);
+  MojoResult RemoveTrigger(MojoHandle trap_handle,
+                           uintptr_t context,
+                           const MojoRemoveTriggerOptions* options);
+  MojoResult ArmTrap(MojoHandle trap_handle,
+                     const MojoArmTrapOptions* options,
+                     uint32_t* num_ready_triggers,
+                     uintptr_t* ready_triggers,
+                     MojoResult* ready_results,
+                     MojoHandleSignalsState* ready_signals_states);
   MojoResult CreateMessage(const MojoCreateMessageOptions* options,
                            MojoMessageHandle* message_handle);
   MojoResult DestroyMessage(MojoMessageHandle message_handle);
