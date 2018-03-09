@@ -105,8 +105,7 @@ cr.define('certificate_manager', function() {
 
     /** @override */
     exportPersonalCertificatePasswordSelected(password) {
-      this.resolverMap_.get('exportPersonalCertificatePasswordSelected')
-          .resolve(password);
+      this.methodCalled('exportPersonalCertificatePasswordSelected', password);
       return this.fulfillRequest_();
     }
 
@@ -118,8 +117,7 @@ cr.define('certificate_manager', function() {
 
     /** @override */
     importPersonalCertificatePasswordSelected(password) {
-      this.resolverMap_.get('importPersonalCertificatePasswordSelected')
-          .resolve(password);
+      this.methodCalled('importPersonalCertificatePasswordSelected', password);
       return this.fulfillRequest_();
     }
 
