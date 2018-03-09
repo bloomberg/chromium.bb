@@ -139,9 +139,9 @@ int main(int argc, char** argv) {
   base::ProcessHandle child_handle =
       LaunchCoolChildProcess(channel.PassClientHandle());
 
-  // At this point it's safe for |child| to go out of scope and nothing will
-  // break.
-  child.Connect(child_handle, channel.PassServerHandle());
+  // At this point it's safe for |invitation| to go out of scope and nothing
+  // will break.
+  invitation.Send(child_handle, channel.PassServerHandle());
 
   return 0;
 }
