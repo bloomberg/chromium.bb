@@ -151,3 +151,18 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
   assertEquals(linkText, result.nodes[1].node);
   assertEquals(paragraph1, result.blockParent);
 });
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupNativeTextBox',
+    function() {
+  let root = {role: 'desktop'};
+  let parent = {role: 'pane', parent: root, root: root};
+  let searchBar = {role: 'textField', name: 'Address and search bar',
+      value: 'http://www.google.com', children: []};
+  let result = buildNodeGroup([searchBar], 0);
+  assertEquals('http://www.google.com ', result.text);
+
+  // If there is no value, it should use the name.
+  searchBar.value = '';
+  result = buildNodeGroup([searchBar], 0);
+  assertEquals('Address and search bar ', result.text);
+});
