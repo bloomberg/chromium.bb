@@ -119,8 +119,7 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     int32_t run_types,
     const base::Closure& on_menu_closed_callback) {
   if ((run_types & kNativeRunTypes) != 0 &&
-      (run_types & MenuRunner::IS_NESTED) == 0 &&
-      (run_types & MenuRunner::ALWAYS_VIEWS) == 0) {
+      (run_types & MenuRunner::IS_NESTED) == 0) {
     return new MenuRunnerImplCocoa(menu_model, on_menu_closed_callback);
   }
 

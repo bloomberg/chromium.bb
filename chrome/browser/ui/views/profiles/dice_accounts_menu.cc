@@ -87,8 +87,8 @@ DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
 
 void DiceAccountsMenu::Show(views::View* anchor_view) {
   DCHECK(!runner_);
-  runner_ = std::make_unique<views::MenuRunner>(
-      &menu_, views::MenuRunner::COMBOBOX | views::MenuRunner::ALWAYS_VIEWS);
+  runner_ =
+      std::make_unique<views::MenuRunner>(&menu_, views::MenuRunner::COMBOBOX);
   // Calculate custom anchor bounds to position the menu.
   // The menu is aligned along the right edge (left edge in RTL mode) of the
   // anchor, slightly shifted inside by |kAnchorInset| and overlapping
