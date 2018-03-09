@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -12,7 +13,8 @@
 namespace ash {
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
-    : controller_(std::make_unique<UnifiedSystemTrayController>()),
+    : controller_(std::make_unique<UnifiedSystemTrayController>(
+          tray->shelf()->GetStatusAreaWidget()->system_tray())),
       tray_(tray) {
   views::TrayBubbleView::InitParams init_params;
   init_params.anchor_alignment = views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;

@@ -8,8 +8,11 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
+#include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
@@ -20,7 +23,9 @@
 
 namespace ash {
 
-UnifiedSystemTrayController::UnifiedSystemTrayController() = default;
+UnifiedSystemTrayController::UnifiedSystemTrayController(
+    SystemTray* system_tray)
+    : system_tray_(system_tray) {}
 
 UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 
@@ -58,7 +63,18 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   // TODO(tetsui): Implement.
 }
 
+void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
+  // TODO(tetsui): Implement UnifiedSystemTray's Bluetooth detailed view.
+
+  // Initially create default view to set |default_bubble_height_|.
+  system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
+                                true /* show_by_click */);
+  system_tray_->ShowDetailedView(system_tray_->GetTrayBluetooth(), 0,
+                                 BubbleCreationType::BUBBLE_USE_EXISTING);
+}
+
 void UnifiedSystemTrayController::InitFeaturePods() {
+  AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
@@ -67,7 +83,6 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 
   // TODO(tetsui): Add more feature pod items in spec:
   // * NetworkFeaturePodController
-  // * BluetoothFeaturePodController
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(

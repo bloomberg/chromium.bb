@@ -13,12 +13,15 @@
 namespace ash {
 
 class FeaturePodControllerBase;
+class SystemTray;
 class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
 class UnifiedSystemTrayController {
  public:
-  UnifiedSystemTrayController();
+  // |system_tray| is used to show detailed views which are still not
+  // implemented on UnifiedSystemTray.
+  UnifiedSystemTrayController(SystemTray* system_tray);
   ~UnifiedSystemTrayController();
 
   // Create the view. The created view is unowned.
@@ -35,6 +38,9 @@ class UnifiedSystemTrayController {
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
 
+  // Show the detailed view of bluetooth. Called from the view.
+  void ShowBluetoothDetailedView();
+
  private:
   // Initialize feature pod controllers and their views.
   // If you want to add a new feature pod item, you have to add here.
@@ -42,6 +48,11 @@ class UnifiedSystemTrayController {
 
   // Add the feature pod controller and its view.
   void AddFeaturePodItem(std::unique_ptr<FeaturePodControllerBase> controller);
+
+  // Only used to show detailed views which are still not implemented on
+  // UnifiedSystemTray. Unowned.
+  // TODO(tetsui): Remove reference to |system_tray|.
+  SystemTray* const system_tray_;
 
   // Unowned. Owned by Views hierarchy.
   UnifiedSystemTrayView* unified_view_ = nullptr;
