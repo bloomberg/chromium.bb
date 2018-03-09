@@ -28,10 +28,13 @@ void BubbleIconView::Init() {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
-BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
+BubbleIconView::BubbleIconView(CommandUpdater* command_updater,
+                               int command_id,
+                               BubbleIconView::Delegate* delegate)
     : widget_observer_(this),
       image_(new views::ImageView()),
       command_updater_(command_updater),
+      delegate_(delegate),
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {}
@@ -42,6 +45,12 @@ bool BubbleIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
   // already invisible currently.
   return GetBubble() != nullptr;
+}
+
+bool BubbleIconView::SetCommandEnabled(bool enabled) const {
+  DCHECK(command_updater_);
+  command_updater_->UpdateCommandEnabled(command_id_, enabled);
+  return command_updater_->IsCommandEnabled(command_id_);
 }
 
 void BubbleIconView::SetImage(const gfx::ImageSkia* image_skia) {
@@ -67,6 +76,10 @@ void BubbleIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
 
   if (bubble_widget->IsVisible())
     SetHighlighted(true);
+}
+
+bool BubbleIconView::Refresh() {
+  return false;
 }
 
 void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -238,6 +251,10 @@ void BubbleIconView::SetActiveInternal(bool active) {
     return;
   active_ = active;
   UpdateIcon();
+}
+
+content::WebContents* BubbleIconView::GetWebContents() const {
+  return delegate_->GetWebContentsForBubbleIconView();
 }
 
 BubbleIconView::WidgetObserver::WidgetObserver(BubbleIconView* parent)

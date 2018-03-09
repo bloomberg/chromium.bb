@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/prefs/pref_member.h"
@@ -31,7 +32,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 
-class BubbleIconView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class FindBarIcon;
@@ -73,7 +73,8 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public zoom::ZoomEventManagerObserver,
                         public views::ButtonListener,
-                        public ContentSettingImageView::Delegate {
+                        public ContentSettingImageView::Delegate,
+                        public BubbleIconView::Delegate {
  public:
   class Delegate {
    public:
@@ -236,6 +237,9 @@ class LocationBarView : public LocationBar,
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
+  // BubbleIconView::Delegate:
+  content::WebContents* GetWebContentsForBubbleIconView() override;
+
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
@@ -271,21 +275,18 @@ class LocationBarView : public LocationBar,
   // of at least one of the views in |content_setting_views_| changed.
   bool RefreshContentSettingViews();
 
+  // Updates the visibility state of the BubbleIconView (page action) icons
+  // to reflect what actions are available on the current page.
+  // Returns true if the visibility of at least one of the views in
+  // |bubble_icons_| changed.
+  bool RefreshBubbleIconViews();
+
   // Updates the view for the zoom icon based on the current tab's zoom. Returns
   // true if the visibility of the view changed.
   bool RefreshZoomView();
 
-  // Updates |save_credit_card_icon_view_|. Returns true if visibility changed.
-  bool RefreshSaveCreditCardIconView();
-
   // Updates |find_bar_icon_|. Returns true if visibility changed.
   bool RefreshFindBarIcon();
-
-  // Updates the Translate icon based on the current tab's Translate status.
-  void RefreshTranslateIcon();
-
-  // Updates |manage_passwords_icon_view_|. Returns true if visibility changed.
-  bool RefreshManagePasswordsIconView();
 
   // Updates the color of the icon for the "clear all" button.
   void RefreshClearAllButtonIcon();

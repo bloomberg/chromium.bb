@@ -14,14 +14,18 @@ class CommandUpdater;
 // the page translated.
 class TranslateIconView : public BubbleIconView {
  public:
-  explicit TranslateIconView(CommandUpdater* command_updater);
+  TranslateIconView(CommandUpdater* command_updater,
+                    BubbleIconView::Delegate* delegate);
   ~TranslateIconView() override;
+
+  // BubbleIconView:
+  views::BubbleDialogDelegateView* GetBubble() const override;
+  bool Refresh() override;
 
  protected:
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   void OnPressed(bool activated) override;
-  views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:

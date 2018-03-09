@@ -258,15 +258,20 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  bubble_icons_.push_back(zoom_view_ = new ZoomView(delegate_));
-  bubble_icons_.push_back(manage_passwords_icon_view_ =
-                              new ManagePasswordsIconViews(command_updater()));
-  if (browser_)
-    bubble_icons_.push_back(
-        save_credit_card_icon_view_ =
-            new autofill::SaveCardIconView(command_updater(), browser_));
-  bubble_icons_.push_back(translate_icon_view_ =
-                              new TranslateIconView(command_updater()));
+  zoom_view_ = new ZoomView(delegate_);
+  bubble_icons_.push_back(zoom_view_);
+  manage_passwords_icon_view_ =
+      new ManagePasswordsIconViews(command_updater(), this);
+  bubble_icons_.push_back(manage_passwords_icon_view_);
+
+  if (browser_) {
+    save_credit_card_icon_view_ =
+        new autofill::SaveCardIconView(command_updater(), browser_, this);
+    bubble_icons_.push_back(save_credit_card_icon_view_);
+  }
+  translate_icon_view_ = new TranslateIconView(command_updater(), this);
+  bubble_icons_.push_back(translate_icon_view_);
+
 #if defined(OS_CHROMEOS)
   if (browser_)
     bubble_icons_.push_back(intent_picker_view_ =
@@ -641,14 +646,19 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
+
+  // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
   RefreshZoomView();
-  RefreshTranslateIcon();
-  RefreshSaveCreditCardIconView();
-  RefreshManagePasswordsIconView();
+
+  RefreshBubbleIconViews();
+
+  // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
   RefreshFindBarIcon();
 
-  if (star_view_)
+  if (star_view_) {
+    // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
     UpdateBookmarkStarVisibility();
+  }
 
   if (contents)
     omnibox_view_->OnTabChanged(contents);
@@ -707,6 +717,12 @@ content::WebContents* LocationBarView::GetContentSettingWebContents() {
 ContentSettingBubbleModelDelegate*
 LocationBarView::GetContentSettingBubbleModelDelegate() {
   return delegate_->GetContentSettingBubbleModelDelegate();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, public BubbleIconView::Delegate implementation:
+WebContents* LocationBarView::GetWebContentsForBubbleIconView() {
+  return GetWebContents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -770,6 +786,21 @@ bool LocationBarView::RefreshContentSettingViews() {
   return visibility_changed;
 }
 
+bool LocationBarView::RefreshBubbleIconViews() {
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_)) {
+    // For hosted apps, the location bar is normally hidden and icons appear in
+    // the window frame instead.
+    GetWidget()->non_client_view()->ResetWindowControls();
+  }
+
+  bool visibility_changed = false;
+  for (auto* v : bubble_icons_) {
+    visibility_changed |= v->Refresh();
+  }
+  return visibility_changed;
+}
+
 bool LocationBarView::RefreshZoomView() {
   DCHECK(zoom_view_);
   WebContents* web_contents = GetWebContents();
@@ -807,26 +838,6 @@ bool LocationBarView::IsVirtualKeyboardVisible() {
 #endif
 }
 
-bool LocationBarView::RefreshSaveCreditCardIconView() {
-  WebContents* web_contents = GetWebContents();
-  if (!save_credit_card_icon_view_ || !web_contents)
-    return false;
-
-  const bool was_visible = save_credit_card_icon_view_->visible();
-  // |controller| may be nullptr due to lazy initialization.
-  autofill::SaveCardBubbleControllerImpl* controller =
-      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
-  bool enabled = controller && controller->IsIconVisible();
-  if (!command_updater()->UpdateCommandEnabled(
-          IDC_SAVE_CREDIT_CARD_FOR_PAGE, enabled)) {
-    enabled = enabled && command_updater()->IsCommandEnabled(
-        IDC_SAVE_CREDIT_CARD_FOR_PAGE);
-  }
-  save_credit_card_icon_view_->SetVisible(enabled);
-
-  return was_visible != save_credit_card_icon_view_->visible();
-}
-
 bool LocationBarView::RefreshFindBarIcon() {
   // |browser_| may be nullptr since some unit tests pass it in for the
   // Browser*. |browser_->window()| may return nullptr because Update() is
@@ -839,33 +850,6 @@ bool LocationBarView::RefreshFindBarIcon() {
   find_bar_icon_->SetVisible(
       browser_->GetFindBarController()->find_bar()->IsFindBarVisible());
   return was_visible != find_bar_icon_->visible();
-}
-
-void LocationBarView::RefreshTranslateIcon() {
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return;
-  translate::LanguageState& language_state =
-      ChromeTranslateClient::FromWebContents(web_contents)->GetLanguageState();
-  bool enabled = language_state.translate_enabled();
-  if (!command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled)) {
-    enabled = enabled && command_updater()->IsCommandEnabled(
-        IDC_TRANSLATE_PAGE);
-  }
-  translate_icon_view_->SetVisible(enabled);
-  if (!enabled)
-    TranslateBubbleView::CloseCurrentBubble();
-}
-
-bool LocationBarView::RefreshManagePasswordsIconView() {
-  DCHECK(manage_passwords_icon_view_);
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return false;
-  const bool was_visible = manage_passwords_icon_view_->visible();
-  ManagePasswordsUIController::FromWebContents(
-      web_contents)->UpdateIconAndBubbleState(manage_passwords_icon_view_);
-  return was_visible != manage_passwords_icon_view_->visible();
 }
 
 void LocationBarView::RefreshClearAllButtonIcon() {
@@ -959,14 +943,14 @@ void LocationBarView::UpdateContentSettingsIcons() {
 }
 
 void LocationBarView::UpdateManagePasswordsIconAndBubble() {
-  if (RefreshManagePasswordsIconView()) {
+  if (manage_passwords_icon_view_->Refresh()) {
     Layout();
     SchedulePaint();
   }
 }
 
 void LocationBarView::UpdateSaveCreditCardIcon() {
-  if (RefreshSaveCreditCardIconView()) {
+  if (save_credit_card_icon_view_->Refresh()) {
     Layout();
     SchedulePaint();
   }
