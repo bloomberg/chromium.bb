@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -260,6 +261,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
   virtual bool IsExternalPepperPlugin(const std::string& module_name);
+
+  // Returns true if the given Pepper plugin should process content from
+  // different origins in different PPAPI processes. This is generally a
+  // worthwhile precaution when the plugin provides an active scripting
+  // language.
+  virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
 
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
