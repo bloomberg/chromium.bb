@@ -4725,7 +4725,7 @@ histogram as enum -->
   <int value="0" label="Root Certificate"/>
 </enum>
 
-<enum name="CertificateReportOutcome">
+<enum name="CertificateErrorReportEvent">
   <int value="0" label="Submitted"/>
   <int value="1" label="Failed"/>
   <int value="2" label="Successful"/>
