@@ -88,17 +88,6 @@ const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the omnibox "
     "dropdown.";
 
-const char kOmniboxUIHideSuggestionUrlSchemeName[] =
-    "Hide scheme in omnibox suggestions";
-const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
-    "Elides the schemes of suggested URLs in the omnibox dropdown.";
-
-const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[] =
-    "Hide trivial subdomains in omnibox suggestions";
-const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[] =
-    "Elides trivially informative subdomains (www, m) from suggested URLs in "
-    "the omnibox dropdown.";
-
 const char kPasswordExportName[] = "Password Export";
 const char kPasswordExportDescription[] =
     "Enables password exporting functionality in password settings.";

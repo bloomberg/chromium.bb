@@ -182,17 +182,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
-    {"omnibox-ui-hide-suggestion-url-scheme",
-     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlScheme)},
-    {"omnibox-ui-hide-suggestion-url-trivial-subdomains",
-     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)},
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,

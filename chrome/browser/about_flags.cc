@@ -3204,18 +3204,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)},
 
-    {"omnibox-ui-hide-suggestion-url-scheme",
-     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlScheme)},
-
-    {"omnibox-ui-hide-suggestion-url-trivial-subdomains",
-     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)},
-
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription, kOsDesktop,

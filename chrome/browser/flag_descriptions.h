@@ -646,12 +646,6 @@ extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[];
 
-extern const char kOmniboxUIHideSuggestionUrlSchemeName[];
-extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
-
-extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
-extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
-
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 

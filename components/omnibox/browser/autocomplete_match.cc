@@ -574,14 +574,11 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
   auto format_types = url_formatter::kFormatUrlOmitDefaults;
   if (preserve_scheme) {
     format_types &= ~url_formatter::kFormatUrlOmitHTTP;
-  } else if (base::FeatureList::IsEnabled(
-                 omnibox::kUIExperimentHideSuggestionUrlScheme)) {
+  } else {
     format_types |= url_formatter::kFormatUrlOmitHTTPS;
   }
 
-  if (!preserve_subdomain &&
-      base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)) {
+  if (!preserve_subdomain) {
     format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
   }
 
