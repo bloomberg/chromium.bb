@@ -3753,12 +3753,12 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // Very low chances to have copy tiles on the key frames, so don't
           // search on key frames to reduce unnecessary search.
           if (cm->frame_type != KEY_FRAME && tile_copy_mode) {
-            const int idendical_tile_offset =
+            const int identical_tile_offset =
                 find_identical_tile(tile_row, tile_col, tile_buffers);
 
-            if (idendical_tile_offset > 0) {
+            if (identical_tile_offset > 0) {
               tile_size = 0;
-              tile_header = idendical_tile_offset | 0x80;
+              tile_header = identical_tile_offset | 0x80;
               tile_header <<= 24;
             }
           }

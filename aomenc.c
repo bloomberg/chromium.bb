@@ -168,7 +168,7 @@ static const arg_def_t psnrarg =
 #if CONFIG_FILEOPTIONS
 static const arg_def_t use_cfg = ARG_DEF("c", "cfg", 1, "Config file to use");
 static const arg_def_t ext_partition =
-    ARG_DEF(NULL, "ext-partition", 1, "corresponds to exended partitions");
+    ARG_DEF(NULL, "ext-partition", 1, "corresponds to extended partitions");
 #endif
 
 static const struct arg_enum_list test_decode_enum[] = {
