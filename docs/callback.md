@@ -546,6 +546,12 @@ void Bar(char* ptr);
 base::Bind(&Foo, "test");
 base::Bind(&Bar, "test");  // This fails because ptr is not const.
 ```
+ - In case of partial binding of parameters a possibility of having unbound
+   parameters before bound parameters. Example:
+```cpp
+void Foo(int x, bool y);
+base::Bind(&Foo, _1, false); // _1 is a placeholder.
+```
 
 If you are thinking of forward declaring `base::Callback` in your own header
 file, please include "base/callback_forward.h" instead.
