@@ -5,6 +5,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 
 #include "ash/ash_constants.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -56,7 +57,17 @@ FrameCaptionButton::~FrameCaptionButton() = default;
 
 // static
 SkColor FrameCaptionButton::GetButtonColor(bool use_light_images) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return use_light_images ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+
   return use_light_images ? SK_ColorWHITE : gfx::kChromeIconGrey;
+}
+
+// static
+float FrameCaptionButton::GetInactiveButtonColorAlphaRatio() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? kInactiveFrameButtonIconAlphaRatioTouch
+             : kInactiveFrameButtonIconAlphaRatio;
 }
 
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
@@ -185,7 +196,7 @@ int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {
     return base_alpha;
 
   // Paint icons as active when they are hovered over or pressed.
-  double inactive_alpha = kInactiveFrameButtonIconAlphaRatio;
+  double inactive_alpha = GetInactiveButtonColorAlphaRatio();
 
   if (hover_animation().is_animating()) {
     inactive_alpha =

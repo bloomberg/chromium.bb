@@ -572,10 +572,11 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     // Add the container for extra hosted app buttons (e.g app menu button).
     SkColor button_color = ash::FrameCaptionButton::GetButtonColor(
         default_frame_header->ShouldUseLightImages());
+    const float inactive_alpha_ratio =
+        ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
     hosted_app_button_container_ = new HostedAppButtonContainer(
         browser_view(), button_color,
-        SkColorSetA(button_color,
-                    255 * ash::kInactiveFrameButtonIconAlphaRatio));
+        SkColorSetA(button_color, 255 * inactive_alpha_ratio));
     caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
   } else if (!browser->is_app()) {
     // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
