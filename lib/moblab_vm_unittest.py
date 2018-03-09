@@ -71,7 +71,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
   def _InitializeWorkspaceAttributes(self, workspace='workspace'):
     """Initialize attributes related to workspace paths."""
-    # pylint:disable=protected-access
+    # pylint:disable=protected-access,attribute-defined-outside-init
     self.workspace = os.path.join(self.tempdir, workspace)
     osutils.SafeMakedirs(self.workspace)
     self.moblab_workdir_path = os.path.join(self.workspace,
