@@ -832,9 +832,11 @@ TEST_F(QuicIetfFramerTest, PaddingSandwich) {
 }
 
 TEST_F(QuicIetfFramerTest, PathChallengeFrame) {
-  QuicPathFrameBuffer buffer0 = {0, 0, 0, 0, 0, 0, 0, 0};
-  QuicPathFrameBuffer buffer1 = {0x80, 0x91, 0xa2, 0xb3,
-                                 0xc4, 0xd5, 0xe5, 0xf7};
+  // Double-braces needed on some platforms due to
+  // https://bugs.llvm.org/show_bug.cgi?id=21629
+  QuicPathFrameBuffer buffer0 = {{0, 0, 0, 0, 0, 0, 0, 0}};
+  QuicPathFrameBuffer buffer1 = {
+      {0x80, 0x91, 0xa2, 0xb3, 0xc4, 0xd5, 0xe5, 0xf7}};
   char packet_buffer[kNormalPacketBufferSize];
   EXPECT_TRUE(
       TryPathChallengeFrame(packet_buffer, sizeof(packet_buffer), buffer0));
@@ -843,9 +845,11 @@ TEST_F(QuicIetfFramerTest, PathChallengeFrame) {
 }
 
 TEST_F(QuicIetfFramerTest, PathResponseFrame) {
-  QuicPathFrameBuffer buffer0 = {0, 0, 0, 0, 0, 0, 0, 0};
-  QuicPathFrameBuffer buffer1 = {0x80, 0x91, 0xa2, 0xb3,
-                                 0xc4, 0xd5, 0xe5, 0xf7};
+  // Double-braces needed on some platforms due to
+  // https://bugs.llvm.org/show_bug.cgi?id=21629
+  QuicPathFrameBuffer buffer0 = {{0, 0, 0, 0, 0, 0, 0, 0}};
+  QuicPathFrameBuffer buffer1 = {
+      {0x80, 0x91, 0xa2, 0xb3, 0xc4, 0xd5, 0xe5, 0xf7}};
   char packet_buffer[kNormalPacketBufferSize];
   EXPECT_TRUE(
       TryPathResponseFrame(packet_buffer, sizeof(packet_buffer), buffer0));
