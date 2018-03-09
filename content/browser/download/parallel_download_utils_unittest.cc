@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/common/download_save_info.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/content_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +40,7 @@ class MockByteStreamReader : public ByteStreamReader {
 std::unique_ptr<DownloadFileImpl::SourceStream> CreateSourceStream(
     int64_t offset,
     int64_t length) {
-  auto input_stream = std::make_unique<DownloadManager::InputStream>(
+  auto input_stream = std::make_unique<ByteStreamInputStream>(
       std::make_unique<MockByteStreamReader>());
   return std::make_unique<DownloadFileImpl::SourceStream>(
       offset, length, std::move(input_stream));

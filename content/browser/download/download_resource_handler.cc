@@ -17,6 +17,7 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_ukm_helper.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -92,8 +93,7 @@ static void StartOnUIThread(
 
   download_manager->StartDownload(
       std::move(info),
-      std::make_unique<DownloadManager::InputStream>(std::move(stream)),
-      started_cb);
+      std::make_unique<ByteStreamInputStream>(std::move(stream)), started_cb);
 }
 
 void InitializeDownloadTabInfoOnUIThread(

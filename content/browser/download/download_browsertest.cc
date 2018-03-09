@@ -170,7 +170,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   DownloadFileWithDelay(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       base::WeakPtr<DownloadFileWithDelayFactory> owner);
@@ -215,7 +215,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override;
 
@@ -236,7 +236,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 DownloadFileWithDelay::DownloadFileWithDelay(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
@@ -295,7 +295,7 @@ DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer) {
   return new DownloadFileWithDelay(
@@ -331,7 +331,7 @@ class CountingDownloadFile : public DownloadFileImpl {
   CountingDownloadFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
@@ -388,7 +388,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     return new CountingDownloadFile(std::move(save_info),
@@ -402,7 +402,7 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
   ErrorInjectionDownloadFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       int64_t error_stream_offset,
@@ -449,7 +449,7 @@ class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     ErrorInjectionDownloadFile* download_file = new ErrorInjectionDownloadFile(

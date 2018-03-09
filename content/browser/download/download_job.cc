@@ -85,10 +85,9 @@ void DownloadJob::OnDownloadFileInitialized(
   std::move(callback).Run(result, bytes_wasted);
 }
 
-bool DownloadJob::AddInputStream(
-    std::unique_ptr<DownloadManager::InputStream> stream,
-    int64_t offset,
-    int64_t length) {
+bool DownloadJob::AddInputStream(std::unique_ptr<download::InputStream> stream,
+                                 int64_t offset,
+                                 int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadFile* download_file = download_item_->download_file_.get();
   if (!download_file) {

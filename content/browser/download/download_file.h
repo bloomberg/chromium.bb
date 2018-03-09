@@ -15,8 +15,8 @@
 #include "components/download/public/common/base_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/input_stream.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_manager.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 class GURL;
@@ -69,15 +69,9 @@ class CONTENT_EXPORT DownloadFile {
 
   // Add an input stream to write into a slice of the file, used for
   // parallel download.
-  virtual void AddInputStream(
-      std::unique_ptr<DownloadManager::InputStream> stream,
-      int64_t offset,
-      int64_t length) = 0;
-
-  // Called when the response for the stream starting at |offset| is completed,
-  virtual void OnResponseCompleted(
-      int64_t offset,
-      download::DownloadInterruptReason status) = 0;
+  virtual void AddInputStream(std::unique_ptr<download::InputStream> stream,
+                              int64_t offset,
+                              int64_t length) = 0;
 
   // Rename the download file to |full_path|.  If that file exists
   // |full_path| will be uniquified by suffixing " (<number>)" to the

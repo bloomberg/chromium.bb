@@ -29,6 +29,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
@@ -298,12 +299,12 @@ class MockDownloadFileFactory
   // Overridden method from DownloadFileFactory
   MOCK_METHOD2(MockCreateFile,
                MockDownloadFile*(const download::DownloadSaveInfo&,
-                                 DownloadManager::InputStream*));
+                                 download::InputStream*));
 
   DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     return MockCreateFile(*save_info, stream.get());
@@ -571,7 +572,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
       .WillRepeatedly(Return("client-id"));
   MockDownloadFile* mock_file = new MockDownloadFile;
   auto input_stream =
-      std::make_unique<DownloadManager::InputStream>(std::move(stream));
+      std::make_unique<ByteStreamInputStream>(std::move(stream));
   EXPECT_CALL(*mock_download_file_factory_.get(),
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));

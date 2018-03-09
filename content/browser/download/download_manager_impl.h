@@ -76,7 +76,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void Shutdown() override;
   void GetAllDownloads(DownloadVector* result) override;
   void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
-                     std::unique_ptr<DownloadManager::InputStream> stream,
+                     std::unique_ptr<download::InputStream> stream,
                      const download::DownloadUrlParameters::OnStartedCallback&
                          on_started) override;
 
@@ -130,7 +130,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // UrlDownloadHandler::Delegate implementation.
   void OnUrlDownloadStarted(
       std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
@@ -174,7 +174,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   void StartDownloadWithId(
       std::unique_ptr<download::DownloadCreateInfo> info,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       const download::DownloadUrlParameters::OnStartedCallback& on_started,
       bool new_download,
       uint32_t id);

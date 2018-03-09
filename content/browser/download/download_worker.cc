@@ -6,7 +6,7 @@
 
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/browser/byte_stream.h"
+#include "components/download/public/common/input_stream.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/resource_downloader.h"
 #include "content/public/browser/web_contents.h"
@@ -19,21 +19,27 @@ namespace {
 
 const int kWorkerVerboseLevel = 1;
 
-class CompletedByteStreamReader : public ByteStreamReader {
+class CompletedInputStream : public download::InputStream {
  public:
-  CompletedByteStreamReader(int status) : status_(status) {};
-  ~CompletedByteStreamReader() override = default;
+  CompletedInputStream(download::DownloadInterruptReason status)
+      : status_(status){};
+  ~CompletedInputStream() override = default;
 
-  // ByteStreamReader implementations:
-  ByteStreamReader::StreamState Read(scoped_refptr<net::IOBuffer>* data,
-                                     size_t* length) override {
-    return ByteStreamReader::STREAM_COMPLETE;
+  // download::InputStream
+  bool IsEmpty() override { return false; }
+  download::InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
+                                          size_t* length) override {
+    *length = 0;
+    return InputStream::StreamState::COMPLETE;
   }
-  int GetStatus() const override { return status_; }
-  void RegisterCallback(const base::Closure& sink_callback) override {}
+
+  download::DownloadInterruptReason GetCompletionStatus() override {
+    return status_;
+  }
 
  private:
-  int status_;
+  download::DownloadInterruptReason status_;
+  DISALLOW_COPY_AND_ASSIGN(CompletedInputStream);
 };
 
 std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
@@ -116,7 +122,7 @@ void DownloadWorker::Cancel(bool user_cancel) {
 
 void DownloadWorker::OnUrlDownloadStarted(
     std::unique_ptr<download::DownloadCreateInfo> create_info,
-    std::unique_ptr<DownloadManager::InputStream> input_stream,
+    std::unique_ptr<download::InputStream> input_stream,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
@@ -134,8 +140,7 @@ void DownloadWorker::OnUrlDownloadStarted(
     VLOG(kWorkerVerboseLevel)
         << "Parallel download sub-request failed. reason = "
         << create_info->result;
-    input_stream->stream_reader_.reset(
-        new CompletedByteStreamReader(create_info->result));
+    input_stream.reset(new CompletedInputStream(create_info->result));
   }
 
   request_handle_ = std::move(create_info->request_handle);

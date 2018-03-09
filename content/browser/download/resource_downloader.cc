@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/download/public/common/stream_handle_input_stream.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
 
@@ -205,7 +206,7 @@ void ResourceDownloader::OnResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
                      delegate_, std::move(download_create_info),
-                     std::make_unique<DownloadManager::InputStream>(
+                     std::make_unique<download::StreamHandleInputStream>(
                          std::move(stream_handle)),
                      callback_));
 }

@@ -22,6 +22,7 @@ source_set("internal") {
     "download_ukm_helper.cc",
     "download_utils.cc",
     "rate_estimator.cc",
+    "stream_handle_input_stream.cc",
   ]
 
   public_deps = [
@@ -32,6 +33,7 @@ source_set("internal") {
     "//base",
     "//components/download/public/common:interfaces",
     "//components/download/quarantine",
+    "//mojo/public/c/system",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
   ]
