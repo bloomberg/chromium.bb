@@ -712,7 +712,7 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
                  weak_ptr_factory_.GetWeakPtr());
 
   scoped_refptr<MetricsMemoryDetails> details(
-      new MetricsMemoryDetails(callback, &memory_growth_tracker_));
+      new MetricsMemoryDetails(callback));
   details->StartFetch();
 
   scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
