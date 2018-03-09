@@ -3,3 +3,9 @@
 include_rules = [
   "+services/viz/public/interfaces",
 ]
+
+specific_include_rules = {
+  "hit_test_query_fuzzer.cc": [
+    "+mojo/edk/embedder",
+  ]
+}
