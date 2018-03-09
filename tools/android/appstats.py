@@ -7,6 +7,7 @@
 
 import argparse
 import curses
+import logging
 import os
 import re
 import sys
@@ -127,27 +128,13 @@ class DeviceHelper(object):
     intersect the two.  The returned result is sorted based on userid."""
     pids = []
     try:
-      # TODO(catapult:#3215): Migrate to adb.GetPids().
-      pid_lines = adb.RunShellCommand(
-          ['ps'], large_output=True, check_return=True)
-      if default_pid:
-        pid_lines = Utils.FindLines(pid_lines, str(default_pid))
-      if process_filter:
-        pid_lines = Utils.FindLines(pid_lines, process_filter)
-      for line in pid_lines:
-        data = re.split('\s+', line.strip())
-        pid = data[1]
-        name = data[-1]
-
-        # Confirm that the pid and name match.  Using a regular grep isn't
-        # reliable when doing it on the whole 'ps' input line.
-        pid_matches = not default_pid or pid == str(default_pid)
-        name_matches = not process_filter or name.find(process_filter) != -1
-        if pid_matches and name_matches:
-          userid = DeviceHelper.__GetUserIdForProcessName(adb, name)
-          pids.append((userid, pid, name))
-    except device_errors.AdbShellCommandFailedError:
-      pass
+      for process in adb.ListProcesses(process_filter):
+        if default_pid and process.pid != default_pid:
+          continue
+        userid = DeviceHelper.__GetUserIdForProcessName(adb, process.name)
+        pids.append((userid, process.pid, process.name))
+    except device_errors.AdbShellCommandFailedError as exc:
+      logging.warning('Error getting PIDs to track: %s', exc)
     return sorted(pids, key=lambda tup: tup[0])
 
 class NetworkHelper(object):
