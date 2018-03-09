@@ -2562,7 +2562,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->allow_filter_intra = 1;
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  cm->seq_params.order_hint_bits = DEFAULT_EXPLICIT_ORDER_HINT_BITS;
+  cm->seq_params.order_hint_bits_minus1 = DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1;
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
   cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
   cm->seq_params.enable_order_hint = oxcf->enable_order_hint;

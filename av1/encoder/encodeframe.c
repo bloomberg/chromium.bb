@@ -4382,7 +4382,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     cm->frame_offset = cm->current_video_frame;
   }
 #if CONFIG_EXPLICIT_ORDER_HINT
-  cm->frame_offset %= (1 << cm->seq_params.order_hint_bits);
+  cm->frame_offset %= (1 << (cm->seq_params.order_hint_bits_minus1 + 1));
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
   av1_setup_frame_buf_refs(cm);
   if (cpi->sf.selective_ref_frame >= 2) enforce_max_ref_frames(cpi);

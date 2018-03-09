@@ -2386,7 +2386,8 @@ void read_sequence_header(SequenceHeader *seq_params,
 #endif
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  seq_params->order_hint_bits = aom_rb_read_literal(rb, 3);
+  seq_params->order_hint_bits_minus1 =
+      seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
 #endif
 }
 
@@ -2785,7 +2786,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  cm->frame_offset = aom_rb_read_literal(rb, cm->seq_params.order_hint_bits);
+  cm->frame_offset =
+      aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
   cm->current_video_frame = cm->frame_offset;
 #else
   if (cm->show_frame == 0) {

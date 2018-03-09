@@ -212,7 +212,7 @@ typedef struct SequenceHeader {
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
 #if CONFIG_EXPLICIT_ORDER_HINT
-  int order_hint_bits;
+  int order_hint_bits_minus1;
 #endif
   int force_screen_content_tools;  // 0 - force off
                                    // 1 - force on

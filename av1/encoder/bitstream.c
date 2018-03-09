@@ -2843,7 +2843,8 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 #endif
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  aom_wb_write_literal(wb, seq_params->order_hint_bits, 3);
+  if (seq_params->enable_order_hint)
+    aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
 #endif
 }
 
@@ -3072,8 +3073,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  aom_wb_write_literal(wb, cm->frame_offset, cm->seq_params.order_hint_bits);
-  // assert(cm->current_video_frame == cm->frame_offset);
+  aom_wb_write_literal(wb, cm->frame_offset,
+                       cm->seq_params.order_hint_bits_minus1 + 1);
 #else
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(

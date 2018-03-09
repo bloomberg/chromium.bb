@@ -1779,7 +1779,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     ref_frame_info[i].map_idx = map_idx;
     ref_frame_info[i].offset = -1;
 #if CONFIG_EXPLICIT_ORDER_HINT
-    ref_frame_info[i].bits = cm->seq_params.order_hint_bits;
+    ref_frame_info[i].bits = cm->seq_params.order_hint_bits_minus1 + 1;
 #endif
 
     const int buf_idx = cm->ref_frame_map[map_idx];
