@@ -17,7 +17,7 @@
 
   function dumpTopCallFrame(result) {
     var frame = result.params.callFrames[0];
-    testRunner.log('functionName (should be empty): ' + (frame.functionName.length ? frame.functionName : 'empty'));
+    testRunner.log('functionName (should be onclick): ' + (frame.functionName.length ? frame.functionName : 'empty'));
   }
 
   await dp.Debugger.enable();
