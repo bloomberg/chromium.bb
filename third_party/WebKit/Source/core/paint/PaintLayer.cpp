@@ -3027,6 +3027,14 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   SetNeedsCompositingInputsUpdate();
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
+
+  // We don't need to invalidate paint of objects on SPv175 when paint order
+  // changes. However, we do need to repaint the containing stacking context,
+  // in order to generate new paint chunks in the correct order. Raster
+  // invalidation will be issued if needed during paint.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      diff.ZIndexChanged())
+    SetNeedsRepaint();
 }
 
 LayoutPoint PaintLayer::LocationInternal() const {

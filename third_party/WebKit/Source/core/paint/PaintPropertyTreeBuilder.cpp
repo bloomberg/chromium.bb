@@ -2264,7 +2264,8 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
   }
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
+bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
+  bool had_paint_properties = object_.FirstFragment().PaintProperties();
   // Note: It is important to short-circuit on object_.StyleRef().ClipPath()
   // because NeedsClipPathClip() and NeedsEffect() requires the clip path
   // cache to be resolved, but the clip path cache invalidation must delayed
@@ -2305,6 +2306,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
   }
 
   UpdateRepeatingPaintOffsetAdjustment();
+
+  return needs_paint_properties != had_paint_properties;
 }
 
 bool ObjectPaintPropertyTreeBuilder::ObjectTypeMightNeedPaintProperties()
@@ -2332,13 +2335,13 @@ void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
 bool ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   UpdatePaintingLayer();
 
+  bool property_added_or_removed = false;
   if (ObjectTypeMightNeedPaintProperties())
-    UpdateFragments();
+    property_added_or_removed = UpdateFragments();
   else
     object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
 
   bool property_changed = false;
-  bool property_added_or_removed = false;
   auto* fragment_data = &object_.GetMutableForPainting().FirstFragment();
   for (auto& fragment_context : context_.fragments) {
     FragmentPaintPropertyTreeBuilder builder(object_, context_,
