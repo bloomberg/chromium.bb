@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//components/viz/viz.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 viz_component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
@@ -67,5 +68,20 @@ viz_source_set("unit_tests") {
     # TODO(kylechar): This is temporary and will be removed when all host to
     # service communication is over Mojo.
     "//components/viz/service",
+  ]
+}
+
+fuzzer_test("hit_test_query_fuzzer") {
+  sources = [
+    "hit_test/hit_test_query_fuzzer.cc",
+  ]
+
+  libfuzzer_options = [ "max_len=4096" ]
+
+  deps = [
+    ":host",
+    "//base/test:test_support",
+    "//components/viz/test:test_support",
+    "//mojo/edk/system",
   ]
 }
