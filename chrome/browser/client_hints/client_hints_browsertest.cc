@@ -29,54 +29,50 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/url_request/url_request_mock_data_job.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_test_job.h"
 
 namespace {
 
 // An interceptor that records count of fetches and client hint headers for
 // requests to https://foo.com/non-existing-image.jpg.
-class ThirdPartyRequestInterceptor : public net::URLRequestInterceptor {
+class ThirdPartyURLLoaderInterceptor {
  public:
-  ThirdPartyRequestInterceptor()
-      : request_count_seen_(0u), client_hints_count_seen_(0u) {}
+  explicit ThirdPartyURLLoaderInterceptor(const GURL intercepted_url)
+      : intercepted_url_(intercepted_url),
+        interceptor_(base::BindRepeating(
+            &ThirdPartyURLLoaderInterceptor::InterceptURLRequest,
+            base::Unretained(this))) {}
 
-  ~ThirdPartyRequestInterceptor() override = default;
-
-  // net::URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    net::HttpRequestHeaders headers = request->extra_request_headers();
-
-    request_count_seen_++;
-    if (headers.HasHeader("dpr")) {
-      client_hints_count_seen_++;
-    }
-    if (headers.HasHeader("device-memory")) {
-      client_hints_count_seen_++;
-    }
-    return new net::URLRequestMockDataJob(request, network_delegate, "contents",
-                                          1, false);
-  }
+  ~ThirdPartyURLLoaderInterceptor() = default;
 
   size_t request_count_seen() const { return request_count_seen_; }
 
   size_t client_hints_count_seen() const { return client_hints_count_seen_; }
 
  private:
-  mutable size_t request_count_seen_;
+  bool InterceptURLRequest(
+      content::URLLoaderInterceptor::RequestParams* params) {
+    if (params->url_request.url != intercepted_url_)
+      return false;
 
-  mutable size_t client_hints_count_seen_;
+    request_count_seen_++;
+    if (params->url_request.headers.HasHeader("dpr")) {
+      client_hints_count_seen_++;
+    }
+    if (params->url_request.headers.HasHeader("device-memory")) {
+      client_hints_count_seen_++;
+    }
+    return false;
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyRequestInterceptor);
+  GURL intercepted_url_;
+
+  size_t request_count_seen_ = 0u;
+
+  size_t client_hints_count_seen_ = 0u;
+
+  content::URLLoaderInterceptor interceptor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThirdPartyURLLoaderInterceptor);
 };
 
 }  // namespace
@@ -151,16 +147,12 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
-    request_interceptor_ = new ThirdPartyRequestInterceptor();
-    std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
-        request_interceptor_);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&InstallMockInterceptors,
-                       GURL("https://foo.com/non-existing-image.jpg"),
-                       std::move(owned_interceptor)));
+    request_interceptor_ = std::make_unique<ThirdPartyURLLoaderInterceptor>(
+        GURL("https://foo.com/non-existing-image.jpg"));
     base::RunLoop().RunUntilIdle();
   }
+
+  void TearDownOnMainThread() override { request_interceptor_.reset(); }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
@@ -241,16 +233,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  static void InstallMockInterceptors(
-      const GURL& url,
-      std::unique_ptr<net::URLRequestInterceptor> request_interceptor) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    chrome_browser_net::SetUrlRequestMocksEnabled(true);
-
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, std::move(request_interceptor));
-  }
-
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     bool is_main_frame_navigation =
@@ -297,8 +279,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   size_t count_client_hints_headers_seen_;
 
-  // Not owned. May be null.
-  ThirdPartyRequestInterceptor* request_interceptor_;
+  std::unique_ptr<ThirdPartyURLLoaderInterceptor> request_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTest);
 };
