@@ -5,6 +5,7 @@
 #ifndef UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
 #define UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
 
+#include "mojo/common/time_struct_traits.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/mojo/accelerator.mojom.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -49,13 +50,18 @@ struct StructTraits<ui::mojom::AcceleratorDataView, ui::Accelerator> {
     return p.key_state();
   }
   static int32_t modifiers(const ui::Accelerator& p) { return p.modifiers(); }
+  static base::TimeTicks time_stamp(const ui::Accelerator& p) {
+    return p.time_stamp();
+  }
   static bool Read(ui::mojom::AcceleratorDataView data, ui::Accelerator* out) {
     ui::Accelerator::KeyState key_state;
     if (!data.ReadKeyState(&key_state))
       return false;
+    base::TimeTicks time_stamp;
+    if (!data.ReadTimeStamp(&time_stamp))
+      return false;
     *out = ui::Accelerator(static_cast<ui::KeyboardCode>(data.key_code()),
-                           data.modifiers());
-    out->set_key_state(key_state);
+                           data.modifiers(), key_state, time_stamp);
     return true;
   }
 };

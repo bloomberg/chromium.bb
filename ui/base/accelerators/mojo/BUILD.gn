@@ -9,6 +9,7 @@ mojom("interfaces") {
     "accelerator.mojom",
   ]
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//ui/events/mojo:interfaces",
   ]
 }

@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"
@@ -44,7 +45,8 @@ class UI_BASE_EXPORT Accelerator {
   // NOTE: this constructor strips out non key related flags.
   Accelerator(KeyboardCode key_code,
               int modifiers,
-              KeyState key_state = KeyState::PRESSED);
+              KeyState key_state = KeyState::PRESSED,
+              base::TimeTicks time_stamp = base::TimeTicks());
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();
@@ -72,6 +74,8 @@ class UI_BASE_EXPORT Accelerator {
   KeyState key_state() const { return key_state_; }
 
   int modifiers() const { return modifiers_; }
+
+  base::TimeTicks time_stamp() const { return time_stamp_; }
 
   bool IsShiftDown() const;
   bool IsCtrlDown() const;
@@ -107,6 +111,9 @@ class UI_BASE_EXPORT Accelerator {
 
   // The state of the Shift/Ctrl/Alt keys. This corresponds to Event::flags().
   int modifiers_;
+
+  // The |time_stamp_| of the KeyEvent.
+  base::TimeTicks time_stamp_;
 
   // Stores platform specific data. May be NULL.
   // TODO: this is only used in Mac code and should be removed from here.
