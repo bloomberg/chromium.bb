@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import json
 import os
 
 from chromite.lib import constants
@@ -250,8 +249,8 @@ def RunRemote(site_config, options, patch_pool):
         options.branch,
         options.gerrit_patches+options.local_patches)
 
-  logging.info('Submitting tryjob...')
-  results = []
+  print('Submitting tryjob...')
+  links = []
   for build_config in options.build_configs:
     tryjob = remote_try.RemoteTryJob(
         build_configs=[build_config],
@@ -264,19 +263,14 @@ def RunRemote(site_config, options, patch_pool):
         swarming=options.where == SWARMING,
         master_buildbucket_id='',  # TODO: Add new option to populate.
     )
-    results.extend(tryjob.Submit(dryrun=False))
 
-  if options.json:
-    print(json.dumps(results))
-  else:
-    links = [r['url'] for r in results]
-    if options.where != SWARMING:
-      links.append(tryjob.LegacyBuildbotWaterfallLink(options.build_configs))
+    tryjob.Submit(dryrun=False)
+    links.extend(tryjob.GetTrybotWaterfallLinks())
 
-    print('Tryjob submitted!')
-    print('To view your tryjobs, visit:')
-    for link in links:
-      print('  %s' % link)
+  print('Tryjob submitted!')
+  print('To view your tryjobs, visit:')
+  for link in links:
+    print('  %s' % link)
 
 def AdjustOptions(options):
   """Set defaults that require some logic.
@@ -368,10 +362,6 @@ def VerifyOptions(options, site_config):
   if options.where in (REMOTE, SWARMING) and options.buildroot:
     cros_build_lib.Die('--buildroot is not used for remote tryjobs.')
 
-  if options.where not in (REMOTE, SWARMING) and options.json:
-    cros_build_lib.Die('--json can only be used for remote tryjobs.')
-
-
 @command.CommandDecorator('tryjob')
 class TryjobCommand(command.CliCommand):
   """Schedule a tryjob."""
@@ -424,9 +414,6 @@ List Examples:
         '--pass-through', dest='passthrough_raw', action='append',
         help='Arguments to pass to cbuildbot. To be avoided.'
              'Confirm with Chrome OS deputy before use.')
-    parser.add_argument(
-        '--json', action='store_true', default=False,
-        help='Return details of remote tryjob in script friendly output.')
 
     # Do we build locally, on on a trybot builder?
     where_group = parser.add_argument_group(
@@ -577,14 +564,16 @@ List Examples:
         help='List the trybot configs (adjusted by --production).')
 
   def Run(self):
-    """Runs `cros tryjob`."""
+    """Runs `cros chroot`."""
     site_config = config_lib.GetConfig()
 
     AdjustOptions(self.options)
     self.options.Freeze()
+
     VerifyOptions(self.options, site_config)
 
-    logging.info('Verifying patches...')
+    # Verify gerrit patches are valid.
+    print('Verifying patches...')
     patch_pool = trybot_patch_pool.TrybotPatchPool.FromOptions(
         gerrit_patches=self.options.gerrit_patches,
         local_patches=self.options.local_patches,

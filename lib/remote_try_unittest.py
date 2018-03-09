@@ -247,8 +247,8 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
     """Talk to a test buildbucket instance with min job settings."""
     # Submit jobs
     job = self._CreateJobMin()
-    results = job.Submit(testjob=True)
-    buildbucket_ids = [r['buildbucket_id'] for r in results]
+    job.Submit(testjob=True)
+    buildbucket_ids = job.buildbucket_ids
 
     self.verifyBuildbucketRequest(
         buildbucket_ids[0],
@@ -304,29 +304,24 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
             },
         })
 
-    expected = [
-        {
-            'build_config': 'amd64-generic-paladin',
-            'buildbucket_id': buildbucket_ids[0],
-            'url': ('http://cros-goldeneye/chromeos/healthmonitoring/'
-                    'buildDetails?buildbucketId='+buildbucket_ids[0]),
-        },
-        {
-            'build_config': 'arm-generic-paladin',
-            'buildbucket_id': buildbucket_ids[1],
-            'url': ('http://cros-goldeneye/chromeos/healthmonitoring/'
-                    'buildDetails?buildbucketId='+buildbucket_ids[1]),
-        },
-    ]
-    self.assertEqual(results, expected)
+    # Verify live URLs.
+    job_links = job.GetTrybotWaterfallLinks()
+    self.assertEqual(job_links, [
+        ('http://cros-goldeneye/chromeos/healthmonitoring/'
+         'buildDetails?buildbucketId=%s' % buildbucket_ids[0]),
+        ('http://cros-goldeneye/chromeos/healthmonitoring/'
+         'buildDetails?buildbucketId=%s' % buildbucket_ids[1]),
+        ('https://uberchromegw.corp.google.com/i/chromiumos.tryserver/'
+         'waterfall?committer=default_email&builder=paladin'),
+    ])
 
   @cros_test_lib.NetworkTest()
   def testMaxTestBucket(self):
     """Talk to a test buildbucket instance with max job settings."""
     # Submit jobs
     job = self._CreateJobMax()
-    results = job.Submit(testjob=True)
-    buildbucket_ids = [r['buildbucket_id'] for r in results]
+    job.Submit(testjob=True)
+    buildbucket_ids = job.buildbucket_ids
 
     # Verify buildbucket contents.
     self.verifyBuildbucketRequest(
@@ -389,21 +384,17 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
             },
         })
 
-    expected = [
-        {
-            'build_config': 'amd64-generic-paladin',
-            'buildbucket_id': buildbucket_ids[0],
-            'url': ('http://cros-goldeneye/chromeos/healthmonitoring/'
-                    'buildDetails?buildbucketId='+buildbucket_ids[0]),
-        },
-        {
-            'build_config': 'arm-generic-paladin',
-            'buildbucket_id': buildbucket_ids[1],
-            'url': ('http://cros-goldeneye/chromeos/healthmonitoring/'
-                    'buildDetails?buildbucketId='+buildbucket_ids[1]),
-        },
-    ]
-    self.assertEqual(results, expected)
+    # Verify live URLs.
+    job_links = job.GetTrybotWaterfallLinks()
+
+    self.assertEqual(len(buildbucket_ids), len(job_links))
+    for buildbucket_id, link in zip(buildbucket_ids, job_links):
+      self.assertEqual(
+          link,
+          ('http://cros-goldeneye/chromeos/healthmonitoring/buildDetails?'
+           'buildbucketId=%s' %
+           buildbucket_id)
+      )
 
   # pylint: disable=protected-access
   def testPostConfigsToBuildBucket(self):
