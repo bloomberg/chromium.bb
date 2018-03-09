@@ -334,28 +334,26 @@ TextureDefinition::TextureDefinition(
       wrap_s_(texture->wrap_s()),
       wrap_t_(texture->wrap_t()),
       usage_(texture->usage()),
-      immutable_(texture->IsImmutable()),
-      defined_(texture->IsDefined()) {
+      immutable_(texture->IsImmutable()) {
+  const Texture::LevelInfo* level = texture->GetLevelInfo(target_, 0);
+  defined_ = !!level;
   DCHECK(!image_buffer_.get() || defined_);
-  if (!image_buffer_.get() && defined_) {
+  if (!defined_)
+    return;
+  if (!image_buffer_.get()) {
     image_buffer_ = NativeImageBuffer::Create(texture->service_id());
     DCHECK(image_buffer_.get());
   }
 
-  DCHECK(!texture->face_infos_.empty());
-  const Texture::FaceInfo& first_face = texture->face_infos_[0];
   if (image_buffer_.get()) {
-    scoped_refptr<gl::GLImage> gl_image(new GLImageSync(
-        image_buffer_, gfx::Size(first_face.level_infos[0].width,
-                                 first_face.level_infos[0].height)));
+    scoped_refptr<gl::GLImage> gl_image(
+        new GLImageSync(image_buffer_, gfx::Size(level->width, level->height)));
     texture->SetLevelImage(target_, 0, gl_image.get(), Texture::BOUND);
   }
 
-  DCHECK(!first_face.level_infos.empty());
-  const Texture::LevelInfo& level = first_face.level_infos[0];
-  level_info_ = LevelInfo(level.target, level.internal_format, level.width,
-                          level.height, level.depth, level.border, level.format,
-                          level.type, level.cleared_rect);
+  level_info_ = LevelInfo(level->target, level->internal_format, level->width,
+                          level->height, level->depth, level->border,
+                          level->format, level->type, level->cleared_rect);
 }
 
 TextureDefinition::TextureDefinition(const TextureDefinition& other) = default;
@@ -398,7 +396,7 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
                           level_info_.border, level_info_.format,
                           level_info_.type, level_info_.cleared_rect);
     texture->face_infos_[0].level_infos.resize(
-        texture->face_infos_[0].num_mip_levels);
+        std::max(1, texture->face_infos_[0].num_mip_levels));
   }
 
   if (image_buffer_.get()) {
