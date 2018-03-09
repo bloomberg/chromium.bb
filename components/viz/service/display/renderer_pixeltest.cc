@@ -1449,13 +1449,10 @@ class VideoGLRendererPixelHiLoTest
           ::testing::tuple<bool, HighbitTexture>> {
  public:
   void SetSupportHighbitTexture(HighbitTexture texture) {
-    cc::TestInProcessContextProvider* context_provider =
-        GetTestInProcessContextProvider();
     switch (texture) {
       case HighbitTexture::Y8:
         break;
       case HighbitTexture::R16_EXT:
-        context_provider->SetSupportTextureNorm16(true);
         video_resource_updater_->SetUseR16ForTesting(true);
         break;
     }
