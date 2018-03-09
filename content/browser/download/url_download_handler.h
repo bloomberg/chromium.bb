@@ -6,10 +6,11 @@
 #define CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOAD_HANDLER
 
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/public/browser/download_manager.h"
+#include "content/common/content_export.h"
 
 namespace download {
 struct DownloadCreateInfo;
+class InputStream;
 }  // namespace download
 
 namespace content {
@@ -22,7 +23,7 @@ class CONTENT_EXPORT UrlDownloadHandler {
    public:
     virtual void OnUrlDownloadStarted(
         std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-        std::unique_ptr<DownloadManager::InputStream> input_stream,
+        std::unique_ptr<download::InputStream> input_stream,
         const download::DownloadUrlParameters::OnStartedCallback& callback) = 0;
     // Called after the connection is cancelled or finished.
     virtual void OnUrlDownloadStopped(UrlDownloadHandler* downloader) = 0;

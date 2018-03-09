@@ -34,7 +34,7 @@ class DownloadFileWithError: public DownloadFileImpl {
   DownloadFileWithError(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -112,7 +112,7 @@ static void RenameErrorCallback(
 DownloadFileWithError::DownloadFileWithError(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -292,7 +292,7 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override;
 
@@ -318,7 +318,7 @@ DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer) {
   return new DownloadFileWithError(

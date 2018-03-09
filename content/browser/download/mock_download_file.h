@@ -14,6 +14,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "components/download/public/common/input_stream.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file.h"
 #include "content/public/browser/download_manager.h"
@@ -35,12 +36,11 @@ class MockDownloadFile : public DownloadFile {
            const CancelRequestCallback& cancel_request_callback,
            const download::DownloadItem::ReceivedSlices& received_slices,
            bool is_parallelizable));
-  void AddInputStream(
-      std::unique_ptr<DownloadManager::InputStream> input_stream,
-      int64_t offset,
-      int64_t length) override;
+  void AddInputStream(std::unique_ptr<download::InputStream> input_stream,
+                      int64_t offset,
+                      int64_t length) override;
   MOCK_METHOD3(DoAddInputStream,
-               void(DownloadManager::InputStream* input_stream,
+               void(download::InputStream* input_stream,
                     int64_t offset,
                     int64_t length));
   MOCK_METHOD2(OnResponseCompleted,

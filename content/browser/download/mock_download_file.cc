@@ -38,7 +38,7 @@ MockDownloadFile::~MockDownloadFile() {
 }
 
 void MockDownloadFile::AddInputStream(
-    std::unique_ptr<DownloadManager::InputStream> input_stream,
+    std::unique_ptr<download::InputStream> input_stream,
     int64_t offset,
     int64_t length) {
   // Gmock currently can't mock method that takes move-only parameters,

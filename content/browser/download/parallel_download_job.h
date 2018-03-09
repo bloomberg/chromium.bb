@@ -59,7 +59,7 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // DownloadWorker::Delegate implementation.
   void OnInputStreamReady(
       DownloadWorker* worker,
-      std::unique_ptr<DownloadManager::InputStream> input_stream) override;
+      std::unique_ptr<download::InputStream> input_stream) override;
 
   // Build parallel requests after a delay, to effectively measure the single
   // stream bandwidth.

@@ -31,7 +31,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
     // destination file.
     virtual void OnInputStreamReady(
         DownloadWorker* worker,
-        std::unique_ptr<DownloadManager::InputStream> input_stream) = 0;
+        std::unique_ptr<download::InputStream> input_stream) = 0;
   };
 
   DownloadWorker(DownloadWorker::Delegate* delegate,
@@ -56,7 +56,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
   // UrlDownloader::Delegate implementation.
   void OnUrlDownloadStarted(
       std::unique_ptr<download::DownloadCreateInfo> create_info,
-      std::unique_ptr<DownloadManager::InputStream> input_stream,
+      std::unique_ptr<download::InputStream> input_stream,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;

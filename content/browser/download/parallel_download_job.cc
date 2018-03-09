@@ -125,7 +125,7 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 
 void ParallelDownloadJob::OnInputStreamReady(
     DownloadWorker* worker,
-    std::unique_ptr<DownloadManager::InputStream> input_stream) {
+    std::unique_ptr<download::InputStream> input_stream) {
   bool success = DownloadJob::AddInputStream(
       std::move(input_stream), worker->offset(), worker->length());
   download::RecordParallelDownloadAddStreamSuccess(success);

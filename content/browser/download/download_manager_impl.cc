@@ -33,6 +33,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
@@ -120,11 +121,11 @@ void CreateInterruptedDownload(
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&DownloadManager::StartDownload, download_manager,
-                     std::move(failed_created_info),
-                     std::make_unique<DownloadManager::InputStream>(
-                         std::move(empty_byte_stream)),
-                     params->callback()));
+      base::BindOnce(
+          &DownloadManager::StartDownload, download_manager,
+          std::move(failed_created_info),
+          std::make_unique<ByteStreamInputStream>(std::move(empty_byte_stream)),
+          params->callback()));
 }
 
 // Helper functions for DownloadItem -> DownloadEntry for InProgressCache.
@@ -539,7 +540,7 @@ bool DownloadManagerImpl::InterceptDownload(
 
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     const download::DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
@@ -574,7 +575,7 @@ void DownloadManagerImpl::StartDownload(
 
 void DownloadManagerImpl::StartDownloadWithId(
     std::unique_ptr<download::DownloadCreateInfo> info,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     const download::DownloadUrlParameters::OnStartedCallback& on_started,
     bool new_download,
     uint32_t id) {
@@ -1077,7 +1078,7 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
 
 void DownloadManagerImpl::OnUrlDownloadStarted(
     std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-    std::unique_ptr<DownloadManager::InputStream> stream,
+    std::unique_ptr<download::InputStream> stream,
     const download::DownloadUrlParameters::OnStartedCallback& callback) {
   StartDownload(std::move(download_create_info), std::move(stream), callback);
 }

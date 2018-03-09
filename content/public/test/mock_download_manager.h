@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/input_stream.h"
 #include "content/public/browser/download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,13 +102,12 @@ class MockDownloadManager : public DownloadManager {
 
   // Gasket for handling scoped_ptr arguments.
   void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
-                     std::unique_ptr<DownloadManager::InputStream> stream,
+                     std::unique_ptr<download::InputStream> stream,
                      const download::DownloadUrlParameters::OnStartedCallback&
                          callback) override;
 
   MOCK_METHOD2(MockStartDownload,
-               void(download::DownloadCreateInfo*,
-                    DownloadManager::InputStream*));
+               void(download::DownloadCreateInfo*, download::InputStream*));
   MOCK_METHOD3(RemoveDownloadsByURLAndTime,
                int(const base::Callback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,

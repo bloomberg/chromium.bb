@@ -24,6 +24,7 @@
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
@@ -125,7 +126,7 @@ class TestDownloadFileImpl : public DownloadFileImpl {
   TestDownloadFileImpl(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      std::unique_ptr<DownloadManager::InputStream> stream,
+      std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
@@ -241,7 +242,7 @@ class DownloadFileTest : public testing::Test {
 
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), download_dir_.GetPath(),
-        std::make_unique<DownloadManager::InputStream>(
+        std::make_unique<ByteStreamInputStream>(
             std::unique_ptr<ByteStreamReader>(input_stream_)),
         download::DownloadItem::kInvalidId, observer_factory_.GetWeakPtr()));
 
@@ -947,7 +948,7 @@ TEST_F(DownloadFileTest, MultipleStreamsWrite) {
 
   // Activate the streams.
   download_file_->AddInputStream(
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length, download::DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
@@ -994,11 +995,11 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
 
   // Activate all the streams.
   download_file_->AddInputStream(
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length, stream_1_length);
   download_file_->AddInputStream(
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[1])),
       stream_0_length + stream_1_length,
       download::DownloadSaveInfo::kLengthFullContent);
@@ -1042,7 +1043,7 @@ TEST_F(DownloadFileTest, MultipleStreamsFirstStreamWriteAllData) {
 
   additional_streams_[0] = new StrictMock<MockByteStreamReader>();
   download_file_->AddInputStream(
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       stream_0_length - 1, download::DownloadSaveInfo::kLengthFullContent);
   base::RunLoop().RunUntilIdle();
@@ -1082,7 +1083,7 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
       .RetiresOnSaturation();
 
   download_file_->AddInputStream(
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(additional_streams_[0])),
       0, download::DownloadSaveInfo::kLengthFullContent);
 

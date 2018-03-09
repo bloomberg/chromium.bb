@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_item_impl.h"
@@ -107,7 +108,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
 
   void OnInputStreamReady(
       DownloadWorker* worker,
-      std::unique_ptr<DownloadManager::InputStream> input_stream) override {
+      std::unique_ptr<download::InputStream> input_stream) override {
     CountOnInputStreamReady();
   }
 
@@ -182,7 +183,7 @@ class ParallelDownloadJobTest : public testing::Test {
     create_info->request_handle = std::move(request_handle);
     delegate->OnUrlDownloadStarted(
         std::move(create_info),
-        std::make_unique<DownloadManager::InputStream>(
+        std::make_unique<ByteStreamInputStream>(
             std::make_unique<MockByteStreamReader>()),
         download::DownloadUrlParameters::OnStartedCallback());
   }
@@ -493,7 +494,7 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       observer.get());
   auto download_file = std::make_unique<DownloadFileImpl>(
       std::move(save_info), base::FilePath(),
-      std::make_unique<DownloadManager::InputStream>(
+      std::make_unique<ByteStreamInputStream>(
           std::unique_ptr<ByteStreamReader>(input_stream)),
       download::DownloadItem::kInvalidId, observer_factory.GetWeakPtr());
   CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 0, 0);

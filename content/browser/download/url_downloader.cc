@@ -14,6 +14,7 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -225,11 +226,11 @@ void UrlDownloader::OnStart(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
-                     delegate_, std::move(create_info),
-                     std::make_unique<DownloadManager::InputStream>(
-                         std::move(stream_reader)),
-                     callback));
+      base::BindOnce(
+          &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
+          std::move(create_info),
+          std::make_unique<ByteStreamInputStream>(std::move(stream_reader)),
+          callback));
 }
 
 void UrlDownloader::OnReadyToRead() {
