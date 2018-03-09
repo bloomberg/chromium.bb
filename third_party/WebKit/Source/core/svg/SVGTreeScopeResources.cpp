@@ -17,16 +17,16 @@ SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* tree_scope)
 
 SVGTreeScopeResources::~SVGTreeScopeResources() = default;
 
-SVGResource* SVGTreeScopeResources::ResourceForId(const AtomicString& id) {
+LocalSVGResource* SVGTreeScopeResources::ResourceForId(const AtomicString& id) {
   if (id.IsEmpty())
     return nullptr;
   auto& entry = resources_.insert(id, nullptr).stored_value->value;
   if (!entry)
-    entry = new SVGResource(*tree_scope_, id);
+    entry = new LocalSVGResource(*tree_scope_, id);
   return entry;
 }
 
-SVGResource* SVGTreeScopeResources::ExistingResourceForId(
+LocalSVGResource* SVGTreeScopeResources::ExistingResourceForId(
     const AtomicString& id) const {
   if (id.IsEmpty())
     return nullptr;
@@ -39,7 +39,7 @@ void SVGTreeScopeResources::RemoveUnreferencedResources() {
   // Remove resources that are no longer referenced.
   Vector<AtomicString> to_be_removed;
   for (const auto& entry : resources_) {
-    SVGResource* resource = entry.value.Get();
+    LocalSVGResource* resource = entry.value.Get();
     DCHECK(resource);
     if (resource->IsEmpty()) {
       resource->Unregister();
@@ -55,7 +55,7 @@ void SVGTreeScopeResources::RemoveWatchesForElement(SVGElement& element) {
   // Remove the element from pending resources.
   Vector<AtomicString> to_be_removed;
   for (const auto& entry : resources_) {
-    SVGResource* resource = entry.value.Get();
+    LocalSVGResource* resource = entry.value.Get();
     DCHECK(resource);
     resource->RemoveWatch(element);
     if (resource->IsEmpty()) {

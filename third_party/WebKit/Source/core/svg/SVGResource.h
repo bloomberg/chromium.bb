@@ -21,9 +21,9 @@ class TreeScope;
 
 // A class tracking a reference to an SVG resource (an element that constitutes
 // a paint server, mask, clip-path, filter et.c.)
-class SVGResource : public GarbageCollected<SVGResource> {
+class SVGResource : public GarbageCollectedFinalized<SVGResource> {
  public:
-  SVGResource(TreeScope&, const AtomicString& id);
+  virtual ~SVGResource();
 
   Element* Target() const { return target_; }
   LayoutSVGResourceContainer* ResourceContainer() const;
@@ -33,6 +33,23 @@ class SVGResource : public GarbageCollected<SVGResource> {
 
   bool HasClients() const { return !clients_.IsEmpty(); }
 
+  virtual void Trace(Visitor*);
+
+ protected:
+  SVGResource();
+
+  Member<Element> target_;
+  HeapHashCountedSet<Member<SVGResourceClient>> clients_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SVGResource);
+};
+
+// Local resource reference (see SVGResource.)
+class LocalSVGResource final : public SVGResource {
+ public:
+  LocalSVGResource(TreeScope&, const AtomicString& id);
+
   void AddWatch(SVGElement&);
   void RemoveWatch(SVGElement&);
 
@@ -40,22 +57,18 @@ class SVGResource : public GarbageCollected<SVGResource> {
 
   bool IsEmpty() const;
 
-  void Trace(Visitor*);
-
   void NotifyPendingClients();
   void NotifyContentChanged();
+
+  void Trace(Visitor*) override;
 
  private:
   void TargetChanged(const AtomicString& id);
   void NotifyElementChanged();
 
   Member<TreeScope> tree_scope_;
-  Member<Element> target_;
   Member<IdTargetObserver> id_observer_;
-  HeapHashCountedSet<Member<SVGResourceClient>> clients_;
   HeapHashSet<Member<SVGElement>> pending_clients_;
-
-  DISALLOW_COPY_AND_ASSIGN(SVGResource);
 };
 
 }  // namespace blink
