@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_touch_exploration_manager_chromeos.h"
+#include "ash/accessibility/touch_exploration_manager.h"
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -14,11 +14,11 @@
 
 namespace ash {
 
-using AshTouchExplorationManagerTest = AshTestBase;
+using TouchExplorationManagerTest = AshTestBase;
 
-TEST_F(AshTouchExplorationManagerTest, AdjustSound) {
+TEST_F(TouchExplorationManagerTest, AdjustSound) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-  AshTouchExplorationManager touch_exploration_manager(controller);
+  TouchExplorationManager touch_exploration_manager(controller);
   chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
 
   touch_exploration_manager.SetOutputLevel(10);
@@ -38,9 +38,9 @@ TEST_F(AshTouchExplorationManagerTest, AdjustSound) {
   EXPECT_TRUE(audio_handler->IsOutputMuted());
 }
 
-TEST_F(AshTouchExplorationManagerTest, HandleAccessibilityGesture) {
+TEST_F(TouchExplorationManagerTest, HandleAccessibilityGesture) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-  AshTouchExplorationManager touch_exploration_manager(controller);
+  TouchExplorationManager touch_exploration_manager(controller);
   AccessibilityController* a11y_controller =
       Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;

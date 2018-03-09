@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_touch_exploration_manager_chromeos.h"
+#include "ash/accessibility/touch_exploration_manager.h"
 
 #include <memory>
 #include <vector>
@@ -34,7 +34,7 @@ AccessibilityController* GetA11yController() {
 
 }  // namespace
 
-AshTouchExplorationManager::AshTouchExplorationManager(
+TouchExplorationManager::TouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
       audio_handler_(chromeos::CrasAudioHandler::Get()),
@@ -46,7 +46,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
   UpdateTouchExplorationState();
 }
 
-AshTouchExplorationManager::~AshTouchExplorationManager() {
+TouchExplorationManager::~TouchExplorationManager() {
   // TODO(jamescook): Clean up shutdown order so this check isn't needed.
   if (Shell::Get()->accessibility_controller())
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
@@ -55,12 +55,12 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void AshTouchExplorationManager::OnAccessibilityStatusChanged(
+void TouchExplorationManager::OnAccessibilityStatusChanged(
     AccessibilityNotificationVisibility notify) {
   UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::SetOutputLevel(int volume) {
+void TouchExplorationManager::SetOutputLevel(int volume) {
   if (volume > 0) {
     if (audio_handler_->IsOutputMuted()) {
       audio_handler_->SetOutputMute(false);
@@ -72,12 +72,12 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
     audio_handler_->SetOutputMute(true);
 }
 
-void AshTouchExplorationManager::SilenceSpokenFeedback() {
+void TouchExplorationManager::SilenceSpokenFeedback() {
   if (GetA11yController()->IsSpokenFeedbackEnabled())
     GetA11yController()->SilenceSpokenFeedback();
 }
 
-void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
+void TouchExplorationManager::PlayVolumeAdjustEarcon() {
   if (!VolumeAdjustSoundEnabled())
     return;
   if (!audio_handler_->IsOutputMuted() &&
@@ -86,24 +86,24 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
   }
 }
 
-void AshTouchExplorationManager::PlayPassthroughEarcon() {
+void TouchExplorationManager::PlayPassthroughEarcon() {
   GetA11yController()->PlayEarcon(chromeos::SOUND_PASSTHROUGH);
 }
 
-void AshTouchExplorationManager::PlayExitScreenEarcon() {
+void TouchExplorationManager::PlayExitScreenEarcon() {
   GetA11yController()->PlayEarcon(chromeos::SOUND_EXIT_SCREEN);
 }
 
-void AshTouchExplorationManager::PlayEnterScreenEarcon() {
+void TouchExplorationManager::PlayEnterScreenEarcon() {
   GetA11yController()->PlayEarcon(chromeos::SOUND_ENTER_SCREEN);
 }
 
-void AshTouchExplorationManager::HandleAccessibilityGesture(
+void TouchExplorationManager::HandleAccessibilityGesture(
     ax::mojom::Gesture gesture) {
   GetA11yController()->HandleAccessibilityGesture(gesture);
 }
 
-void AshTouchExplorationManager::OnDisplayMetricsChanged(
+void TouchExplorationManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   const display::Display this_display =
@@ -113,15 +113,15 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
     UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::OnTwoFingerTouchStart() {
+void TouchExplorationManager::OnTwoFingerTouchStart() {
   GetA11yController()->OnTwoFingerTouchStart();
 }
 
-void AshTouchExplorationManager::OnTwoFingerTouchStop() {
+void TouchExplorationManager::OnTwoFingerTouchStop() {
   GetA11yController()->OnTwoFingerTouchStop();
 }
 
-void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
+void TouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
   GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
       [](int tick_count, bool should_toggle) {
@@ -132,11 +132,11 @@ void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
       tick_count));
 }
 
-void AshTouchExplorationManager::PlayTouchTypeEarcon() {
+void TouchExplorationManager::PlayTouchTypeEarcon() {
   GetA11yController()->PlayEarcon(chromeos::SOUND_TOUCH_TYPE);
 }
 
-void AshTouchExplorationManager::ToggleSpokenFeedback() {
+void TouchExplorationManager::ToggleSpokenFeedback() {
   GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(
       base::BindOnce([](bool should_toggle) {
         if (!should_toggle)
@@ -147,14 +147,14 @@ void AshTouchExplorationManager::ToggleSpokenFeedback() {
       }));
 }
 
-void AshTouchExplorationManager::OnWindowActivated(
+void TouchExplorationManager::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::SetTouchAccessibilityAnchorPoint(
+void TouchExplorationManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   if (touch_exploration_controller_) {
     touch_exploration_controller_->SetTouchAccessibilityAnchorPoint(
@@ -162,17 +162,17 @@ void AshTouchExplorationManager::SetTouchAccessibilityAnchorPoint(
   }
 }
 
-void AshTouchExplorationManager::OnKeyboardVisibleBoundsChanged(
+void TouchExplorationManager::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& new_bounds) {
   UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::OnKeyboardClosed() {
+void TouchExplorationManager::OnKeyboardClosed() {
   keyboard_observer_.RemoveAll();
   UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::OnVirtualKeyboardStateChanged(
+void TouchExplorationManager::OnVirtualKeyboardStateChanged(
     bool activated,
     aura::Window* root_window) {
   UpdateKeyboardObserverFromStateChanged(
@@ -180,7 +180,7 @@ void AshTouchExplorationManager::OnVirtualKeyboardStateChanged(
       &keyboard_observer_);
 }
 
-void AshTouchExplorationManager::UpdateTouchExplorationState() {
+void TouchExplorationManager::UpdateTouchExplorationState() {
   // See crbug.com/603745 for more details.
   const bool pass_through_surface =
       wm::GetActiveWindow() &&
@@ -230,7 +230,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   }
 }
 
-bool AshTouchExplorationManager::VolumeAdjustSoundEnabled() {
+bool TouchExplorationManager::VolumeAdjustSoundEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableVolumeAdjustSound);
 }
