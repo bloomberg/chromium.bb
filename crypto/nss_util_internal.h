@@ -53,7 +53,7 @@ class CRYPTO_EXPORT AutoSECMODListReadLock {
 // loaded and |callback| is non-null, the |callback| will be run once the slot
 // is loaded.
 CRYPTO_EXPORT ScopedPK11Slot GetSystemNSSKeySlot(
-    const base::Callback<void(ScopedPK11Slot)>& callback) WARN_UNUSED_RESULT;
+    base::OnceCallback<void(ScopedPK11Slot)> callback) WARN_UNUSED_RESULT;
 
 // Sets the test system slot to |slot|, which means that |slot| will be exposed
 // through |GetSystemNSSKeySlot| and |IsTPMTokenReady| will return true.
@@ -102,7 +102,7 @@ CRYPTO_EXPORT ScopedPK11Slot GetPublicSlotForChromeOSUser(
 // is loaded.
 CRYPTO_EXPORT ScopedPK11Slot GetPrivateSlotForChromeOSUser(
     const std::string& username_hash,
-    const base::Callback<void(ScopedPK11Slot)>& callback) WARN_UNUSED_RESULT;
+    base::OnceCallback<void(ScopedPK11Slot)> callback) WARN_UNUSED_RESULT;
 
 // Closes the NSS DB for |username_hash| that was previously opened by the
 // *Initialize*ForChromeOSUser functions.
