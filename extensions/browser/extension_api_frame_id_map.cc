@@ -162,6 +162,10 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
     const RenderFrameIdKey& key) const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       key.render_process_id, key.frame_routing_id);
+
+  if (!rfh || !rfh->IsRenderFrameLive())
+    return FrameData();
+
   int tab_id = extension_misc::kUnknownTabId;
   int window_id = extension_misc::kUnknownWindowId;
   if (helper_)
@@ -347,19 +351,18 @@ void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(rfh);
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+
+  // Only track FrameData for live render frames.
+  if (!rfh->IsRenderFrameLive()) {
+    return;
+  }
+
   base::AutoLock lock(frame_data_map_lock_);
   FrameDataMap::iterator iter = frame_data_map_.find(key);
-  if (iter != frame_data_map_.end()) {
-    iter->second.tab_id = tab_id;
-    iter->second.window_id = window_id;
-  } else {
-    DCHECK(!rfh->IsRenderFrameLive());
-    // TODO(crbug.com/817205): Remove this branch. We should only maintain frame
-    // data for tracked live render frames. Most probably this is causing a
-    // memory leak.
-    frame_data_map_[key] =
-        FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
-  }
+  // The FrameData for |rfh| should have already been initialized.
+  DCHECK(iter != frame_data_map_.end());
+  iter->second.tab_id = tab_id;
+  iter->second.window_id = window_id;
 }
 
 bool ExtensionApiFrameIdMap::HasCachedFrameDataForTesting(
