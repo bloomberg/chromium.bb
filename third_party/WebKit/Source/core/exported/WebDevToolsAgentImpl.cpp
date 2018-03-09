@@ -385,8 +385,6 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolCommand(
   // detach, so we have to check a flag here.
   if (detached_)
     return;
-  InspectorTaskRunner::IgnoreInterruptsScope scope(
-      frame_->GetFrame()->GetInspectorTaskRunner());
   inspector_session_->DispatchProtocolMessage(method, message);
 }
 
