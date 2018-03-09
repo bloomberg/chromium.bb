@@ -12,11 +12,21 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeWebContentsViewFocusHelper);
+
+// static
+void ChromeWebContentsViewFocusHelper::CreateForWebContents(
+    content::WebContents* web_contents) {
+  if (!ChromeWebContentsViewFocusHelper::FromWebContents(web_contents)) {
+    web_contents->SetUserData(
+        ChromeWebContentsViewFocusHelper::UserDataKey(),
+        base::WrapUnique(new ChromeWebContentsViewFocusHelper(web_contents)));
+  }
+}
+
 ChromeWebContentsViewFocusHelper::ChromeWebContentsViewFocusHelper(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {}
-
-ChromeWebContentsViewFocusHelper::~ChromeWebContentsViewFocusHelper() {}
 
 bool ChromeWebContentsViewFocusHelper::Focus() {
   SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
@@ -52,12 +62,10 @@ void ChromeWebContentsViewFocusHelper::StoreFocus() {
 }
 
 bool ChromeWebContentsViewFocusHelper::RestoreFocus() {
-  views::View* last_focused_view = last_focused_view_tracker_.view();
+  views::View* view_to_focus = GetStoredFocus();
   last_focused_view_tracker_.Clear();
-  if (last_focused_view &&
-      last_focused_view->IsFocusable() &&
-      GetFocusManager()->ContainsView(last_focused_view)) {
-    last_focused_view->RequestFocus();
+  if (view_to_focus) {
+    view_to_focus->RequestFocus();
     return true;
   }
   return false;
@@ -65,6 +73,15 @@ bool ChromeWebContentsViewFocusHelper::RestoreFocus() {
 
 void ChromeWebContentsViewFocusHelper::ResetStoredFocus() {
   last_focused_view_tracker_.Clear();
+}
+
+views::View* ChromeWebContentsViewFocusHelper::GetStoredFocus() {
+  views::View* last_focused_view = last_focused_view_tracker_.view();
+  if (last_focused_view && last_focused_view->IsFocusable() &&
+      GetFocusManager()->ContainsView(last_focused_view)) {
+    return last_focused_view;
+  }
+  return nullptr;
 }
 
 gfx::NativeView ChromeWebContentsViewFocusHelper::GetActiveNativeView() {

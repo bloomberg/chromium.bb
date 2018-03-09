@@ -19,13 +19,11 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/views/widget/widget.h"
 
-
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
-    : ContextMenuDelegate(web_contents),
-      focus_helper_(
-          std::make_unique<ChromeWebContentsViewFocusHelper>(web_contents)),
-      web_contents_(web_contents) {}
+    : ContextMenuDelegate(web_contents), web_contents_(web_contents) {
+  ChromeWebContentsViewFocusHelper::CreateForWebContents(web_contents);
+}
 
 ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() =
     default;
@@ -43,24 +41,32 @@ content::WebDragDestDelegate*
   return bookmark_handler_.get();
 }
 
+ChromeWebContentsViewFocusHelper*
+ChromeWebContentsViewDelegateViews::GetFocusHelper() const {
+  ChromeWebContentsViewFocusHelper* helper =
+      ChromeWebContentsViewFocusHelper::FromWebContents(web_contents_);
+  DCHECK(helper);
+  return helper;
+}
+
 bool ChromeWebContentsViewDelegateViews::Focus() {
-  return focus_helper_->Focus();
+  return GetFocusHelper()->Focus();
 }
 
 bool ChromeWebContentsViewDelegateViews::TakeFocus(bool reverse) {
-  return focus_helper_->TakeFocus(reverse);
+  return GetFocusHelper()->TakeFocus(reverse);
 }
 
 void ChromeWebContentsViewDelegateViews::StoreFocus() {
-  focus_helper_->StoreFocus();
+  GetFocusHelper()->StoreFocus();
 }
 
 bool ChromeWebContentsViewDelegateViews::RestoreFocus() {
-  return focus_helper_->RestoreFocus();
+  return GetFocusHelper()->RestoreFocus();
 }
 
 void ChromeWebContentsViewDelegateViews::ResetStoredFocus() {
-  focus_helper_->ResetStoredFocus();
+  GetFocusHelper()->ResetStoredFocus();
 }
 
 std::unique_ptr<RenderViewContextMenuBase>

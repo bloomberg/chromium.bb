@@ -84,6 +84,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
+#include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -747,6 +748,9 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   bool change_tab_contents =
       contents_web_view_->web_contents() != new_contents;
 
+  bool will_restore_focus = !browser_->tab_strip_model()->closing_all() &&
+                            GetWidget()->IsActive() && GetWidget()->IsVisible();
+
   // Update various elements that are interested in knowing the current
   // WebContents.
 
@@ -754,12 +758,13 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
   if (change_tab_contents) {
-    if (GetWidget() &&
-        (contents_web_view_->HasFocus() || devtools_web_view_->HasFocus())) {
+    if (will_restore_focus) {
       // Manually clear focus before setting focus behavior so that the focus
       // is not temporarily advanced to an arbitrary place in the UI via
       // SetFocusBehavior(FocusBehavior::NEVER), confusing screen readers.
       // The saved focus for new_contents is restored after it is attached.
+      // In addition, this ensures that the next RestoreFocus() will be
+      // read out to screen readers, even if focus doesn't actually change.
       GetWidget()->GetFocusManager()->ClearFocus();
     }
     contents_web_view_->SetWebContents(nullptr);
@@ -785,6 +790,20 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   UpdateDevToolsForContents(new_contents, !change_tab_contents);
 
   if (change_tab_contents) {
+    // When the location bar or other UI focus will be restored, first focus the
+    // root view so that screen readers announce the current page title. The
+    // kFocusContext event will delay the subsequent focus event so that screen
+    // readers register them as distinct events.
+    if (will_restore_focus) {
+      ChromeWebContentsViewFocusHelper* focus_helper =
+          ChromeWebContentsViewFocusHelper::FromWebContents(new_contents);
+      if (focus_helper &&
+          focus_helper->GetStoredFocus() != contents_web_view_) {
+        GetWidget()->GetRootView()->NotifyAccessibilityEvent(
+            ax::mojom::Event::kFocusContext, true);
+      }
+    }
+
     web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(new_contents);
     SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(new_contents);
@@ -796,8 +815,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     UpdateDevToolsForContents(new_contents, true);
   }
 
-  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
-      GetWidget()->IsVisible()) {
+  if (will_restore_focus) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
     new_contents->RestoreFocus();

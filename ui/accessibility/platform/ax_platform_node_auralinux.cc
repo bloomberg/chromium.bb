@@ -1113,6 +1113,7 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
     case ax::mojom::Event::kFocus:
+    case ax::mojom::Event::kFocusContext:
       OnFocused();
       break;
     default:

@@ -38,6 +38,7 @@ enum Event {
   kDocumentSelectionChanged,
   kExpandedChanged,           // Web
   kFocus,
+  kFocusContext,              // Contextual focus event that must delay the next focus event
   kHide,                      // Remove: http://crbug.com/392502
   kHitTestResult,
   kHover,
