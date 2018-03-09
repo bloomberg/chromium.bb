@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -101,14 +102,12 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
   if (is_compatible) {
     user_manager::known_user::SetIntegerPref(
         account_id, prefs::kArcCompatibleFilesystemChosen,
-        arc::kFileSystemCompatible);
+        kFileSystemCompatible);
 
     // TODO(kinaba): Remove this code for accounts without user prefs.
     // See the comment for |g_known_compatible_users| for the detail.
-    if (GetFileSystemCompatibilityPref(account_id) !=
-        arc::kFileSystemCompatible) {
+    if (GetFileSystemCompatibilityPref(account_id) != kFileSystemCompatible)
       g_known_compatible_users.Get().insert(account_id);
-    }
   }
   callback.Run();
 }
@@ -436,6 +435,73 @@ bool IsArcOobeOptInActive() {
   // is new and the swtich is appended.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew())
     return false;
+
+  return true;
+}
+
+bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
+  DCHECK(profile);
+
+  // Skip to show UI asking users to set up ARC OptIn preferences, if all of
+  // them are managed by the admin policy. Note that the ToS agreement is anyway
+  // not shown in the case of the managed ARC.
+  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
+      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+    VLOG(1) << "All opt-in preferences are under managed. "
+            << "Skip ARC Terms of Service negotiation.";
+    return false;
+  }
+
+  // If it is marked that the Terms of service is accepted already,
+  // just skip the negotiation with user, and start Android management
+  // check directly.
+  // This happens, e.g., when a user accepted the Terms of service on Opt-in
+  // flow, but logged out before ARC sign in procedure was done. Then, logs
+  // in again.
+  if (profile->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+    VLOG(1) << "The user already accepts ARC Terms of Service.";
+    return false;
+  }
+
+  return true;
+}
+
+bool IsArcTermsOfServiceOobeNegotiationNeeded() {
+  if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    VLOG(1) << "Skip ARC Terms of Service screen because user is not "
+            << "logged in.";
+    return false;
+  }
+
+  const Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (!IsArcAllowedForProfile(profile)) {
+    VLOG(1) << "Skip ARC Terms of Service screen because ARC is not allowed.";
+    return false;
+  }
+
+  if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
+      !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+    VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
+    return false;
+  }
+
+  if (!IsPlayStoreAvailable()) {
+    VLOG(1) << "Skip ARC Terms of Service screen because Play Store is not "
+               "available on the device.";
+    return false;
+  }
+
+  if (IsActiveDirectoryUserForProfile(profile)) {
+    VLOG(1) << "Skip ARC Terms of Service screen because it does not apply to "
+               "Active Directory users.";
+    return false;
+  }
+
+  if (!IsArcTermsOfServiceNegotiationNeeded(profile)) {
+    VLOG(1) << "Skip ARC Terms of Service screen because it is already "
+               "accepted or fully controlled by policy.";
+    return false;
+  }
 
   return true;
 }

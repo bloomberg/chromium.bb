@@ -122,6 +122,14 @@ bool IsActiveDirectoryUserForProfile(const Profile* profile);
 // Returns true if ChromeOS OOBE opt-in window is currently showing.
 bool IsArcOobeOptInActive();
 
+// Returns true if Terms of Service negotiation is needed. Otherwise false.
+bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile);
+
+// Returns true if Terms of Service negotiation is needed in OOBE flow.
+// Otherwise false. Similar to IsArcTermsOfServiceNegotiationNeeded but
+// also checks set of preconditions and uses active user profile.
+bool IsArcTermsOfServiceOobeNegotiationNeeded();
+
 // Checks and updates the preference value whether the underlying filesystem
 // for the profile is compatible with ARC, when necessary. After it's done (or
 // skipped), |callback| is run either synchronously or asynchronously.

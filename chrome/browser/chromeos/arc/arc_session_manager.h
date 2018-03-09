@@ -283,11 +283,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void MaybeStartTermsOfServiceNegotiation();
   void OnTermsOfServiceNegotiated(bool accepted);
 
-  // Returns true if Terms of Service negotiation is needed. Otherwise false.
-  // TODO(crbug.com/698418): Write unittest for this utility after extracting
-  //   ToS related code from ArcSessionManager into a dedicated class.
-  bool IsArcTermsOfServiceNegotiationNeeded() const;
-
   void ShutdownSession();
   void ResetArcState();
   void OnArcSignInTimeout();

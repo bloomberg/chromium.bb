@@ -12,6 +12,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -25,7 +26,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -37,6 +40,8 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,13 +59,53 @@ void SetProfileIsManagedForTesting(Profile* profile) {
   connector->OverrideIsManagedForTesting(true);
 }
 
+void DisableDBusForProfileManager() {
+  // Prevent access to DBus. This switch is reset in case set from test SetUp
+  // due massive usage of InitFromArgv.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kTestType))
+    command_line->AppendSwitch(switches::kTestType);
+}
+
+class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
+ public:
+  explicit FakeUserManagerWithLocalState(
+      TestingProfileManager* testing_profile_manager)
+      : testing_profile_manager_(testing_profile_manager),
+        test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {
+    RegisterPrefs(test_local_state_->registry());
+  }
+
+  PrefService* GetLocalState() const override {
+    return test_local_state_.get();
+  }
+
+  TestingProfileManager* testing_profile_manager() {
+    return testing_profile_manager_;
+  }
+
+ private:
+  // Unowned pointer.
+  TestingProfileManager* const testing_profile_manager_;
+
+  std::unique_ptr<TestingPrefServiceSimple> test_local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeUserManagerWithLocalState);
+};
+
 class ScopedLogIn {
  public:
   ScopedLogIn(
-      chromeos::FakeChromeUserManager* fake_user_manager,
+      FakeUserManagerWithLocalState* fake_user_manager,
       const AccountId& account_id,
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR)
       : fake_user_manager_(fake_user_manager), account_id_(account_id) {
+    // Prevent access to DBus. This switch is reset in case set from test SetUp
+    // due massive usage of InitFromArgv.
+    base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+    if (!command_line.HasSwitch(switches::kTestType))
+      command_line.AppendSwitch(switches::kTestType);
+
     switch (user_type) {
       case user_manager::USER_TYPE_REGULAR:  // fallthrough
       case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
@@ -75,9 +120,13 @@ class ScopedLogIn {
       default:
         NOTREACHED();
     }
+    fake_user_manager_->testing_profile_manager()->SetLoggedIn(true);
   }
 
-  ~ScopedLogIn() { LogOut(); }
+  ~ScopedLogIn() {
+    fake_user_manager_->testing_profile_manager()->SetLoggedIn(false);
+    LogOut();
+  }
 
  private:
   void LogIn() {
@@ -97,7 +146,7 @@ class ScopedLogIn {
 
   void LogOut() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  FakeUserManagerWithLocalState* fake_user_manager_;
   const AccountId account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLogIn);
@@ -119,23 +168,6 @@ class FakeInstallAttributesManaged : public chromeos::InstallAttributes {
   }
 };
 
-class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
- public:
-  FakeUserManagerWithLocalState()
-      : test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {
-    RegisterPrefs(test_local_state_->registry());
-  }
-
-  PrefService* GetLocalState() const override {
-    return test_local_state_.get();
-  }
-
- private:
-  std::unique_ptr<TestingPrefServiceSimple> test_local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUserManagerWithLocalState);
-};
-
 bool IsArcAllowedForProfileOnFirstCall(const Profile* profile) {
   ResetArcAllowedCheckForTesting(profile);
   return IsArcAllowedForProfile(profile);
@@ -151,8 +183,14 @@ class ChromeArcUtilTest : public testing::Test {
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
 
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<FakeUserManagerWithLocalState>());
+        std::make_unique<FakeUserManagerWithLocalState>(
+            profile_manager_.get()));
     // Used by FakeChromeUserManager.
     chromeos::DeviceSettingsService::Initialize();
     chromeos::CrosSettings::Initialize();
@@ -161,21 +199,23 @@ class ChromeArcUtilTest : public testing::Test {
     wallpaper_controller_client_->InitForTesting(
         test_wallpaper_controller_.CreateInterfacePtr());
 
-    profile_ = std::make_unique<TestingProfile>();
-    profile_->set_profile_name(kTestProfileName);
+    profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
   }
 
   void TearDown() override {
-    profile_.reset();
-    user_manager_enabler_.reset();
+    profile_manager_->DeleteTestingProfile(kTestProfileName);
+    profile_ = nullptr;
     command_line_.reset();
     wallpaper_controller_client_.reset();
+    chromeos::CrosSettings::Shutdown();
+    chromeos::DeviceSettingsService::Shutdown();
+    user_manager_enabler_.reset();
   }
 
-  TestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_; }
 
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  FakeUserManagerWithLocalState* GetFakeUserManager() const {
+    return static_cast<FakeUserManagerWithLocalState*>(
         user_manager::UserManager::Get());
   }
 
@@ -191,8 +231,11 @@ class ChromeArcUtilTest : public testing::Test {
   TestWallpaperController test_wallpaper_controller_;
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle thread_bundle_;
+  base::ScopedTempDir data_dir_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
-  std::unique_ptr<TestingProfile> profile_;
+  // Owned by |profile_manager_|
+  TestingProfile* profile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeArcUtilTest);
 };
@@ -621,6 +664,77 @@ TEST_F(ChromeArcUtilTest, IsActiveDirectoryUserForProfile_AD) {
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
   EXPECT_TRUE(IsActiveDirectoryUserForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForAlreadyAccepted) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForManagedUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededNoLogin) {
+  DisableDBusForProfileManager();
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ChromeArcUtilTest,
+       TermsOfServiceOobeNegotiationNeededNoArcAvailability) {
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededNoPlayStore) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--arc-start-mode=always-start-with-no-play-store"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededAdUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::AdFromUserEmailObjGuid(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
 }
 
 using ArcMigrationTest = ChromeArcUtilTest;
