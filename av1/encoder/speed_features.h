@@ -553,6 +553,14 @@ typedef struct SPEED_FEATURES {
   // Use hash table to store intra(keyframe only) txb transform search results
   // to avoid repeated search on the same residue signal.
   int use_intra_txb_hash;
+
+  // Use hash table to store inter txb transform search results
+  // to avoid repeated search on the same residue signal.
+  int use_inter_txb_hash;
+
+  // Use hash table to store macroblock RD search results
+  // to avoid repeated search on the same residue signal.
+  int use_mb_rd_hash;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

@@ -448,6 +448,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->adaptive_txb_search = 0;
   sf->two_pass_partition_search = 0;
   sf->use_intra_txb_hash = 0;
+  sf->use_inter_txb_hash = 1;
+  sf->use_mb_rd_hash = 1;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

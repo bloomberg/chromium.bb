@@ -4364,17 +4364,18 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const TX_SIZE min_tx_size = sub_tx_size_map[1][max_txsize_rect_lookup[bsize]];
   const TxSetType tx_set_type = get_ext_tx_set_type(
       min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
-  int within_border = mi_row >= xd->tile.mi_row_start &&
-                      (mi_row + mi_size_high[bsize] < xd->tile.mi_row_end) &&
-                      mi_col >= xd->tile.mi_col_start &&
-                      (mi_col + mi_size_wide[bsize] < xd->tile.mi_col_end);
+  const int within_border =
+      mi_row >= xd->tile.mi_row_start &&
+      (mi_row + mi_size_high[bsize] < xd->tile.mi_row_end) &&
+      mi_col >= xd->tile.mi_col_start &&
+      (mi_col + mi_size_wide[bsize] < xd->tile.mi_col_end);
 
   av1_invalid_rd_stats(rd_stats);
 
   const uint32_t hash = get_block_residue_hash(x, bsize);
   MB_RD_RECORD *mb_rd_record = &x->mb_rd_record;
 
-  if (ref_best_rd != INT64_MAX && within_border) {
+  if (ref_best_rd != INT64_MAX && within_border && cpi->sf.use_mb_rd_hash) {
     for (int i = 0; i < mb_rd_record->num; ++i) {
       const int index = (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
       // If there is a match in the tx_rd_record, fetch the RD decision and
@@ -4402,7 +4403,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // store and reuse rate and distortion values to speed up TX size search.
   TXB_RD_INFO_NODE matched_rd_info[16 + 64 + 256];
   int found_rd_info = 0;
-  if (ref_best_rd != INT64_MAX && within_border) {
+  if (ref_best_rd != INT64_MAX && within_border && cpi->sf.use_inter_txb_hash) {
     found_rd_info =
         find_tx_size_rd_records(x, bsize, mi_row, mi_col, matched_rd_info);
   }
@@ -4444,7 +4445,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
   // Save the RD search results into tx_rd_record.
-  if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
+  if (within_border && cpi->sf.use_mb_rd_hash)
+    save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
 }
 
 static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
