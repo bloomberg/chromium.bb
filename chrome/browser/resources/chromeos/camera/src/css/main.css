@@ -840,8 +840,9 @@ body.album #album {
     display: none;
   }
 
-  /* Hide everything from the browse view, but the current one. */
-  #browser .padder > :not(.selected) {
+  /* Hide everything from the browser/album view, but the selected one(s). */
+  #browser .padder > :not(.selected),
+  #album .padder > :not(.selected) {
     display: none;
   }
 
