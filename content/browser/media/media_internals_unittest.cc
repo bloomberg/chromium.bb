@@ -126,6 +126,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   std::map<VideoCaptureApi, std::string> api_to_string_map;
   api_to_string_map[VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE] = "V4L2 SPLANE";
   api_to_string_map[VideoCaptureApi::WIN_MEDIA_FOUNDATION] = "Media Foundation";
+  api_to_string_map[VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR] =
+      "Media Foundation Sensor Camera";
   api_to_string_map[VideoCaptureApi::WIN_DIRECT_SHOW] = "Direct Show";
   api_to_string_map[VideoCaptureApi::MACOSX_AVFOUNDATION] = "AV Foundation";
   api_to_string_map[VideoCaptureApi::MACOSX_DECKLINK] = "DeckLink";

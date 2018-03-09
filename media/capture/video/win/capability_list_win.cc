@@ -12,12 +12,24 @@
 
 namespace media {
 
-static bool CompareCapability(const VideoCaptureFormat& requested,
-                              const CapabilityWin& capability_lhs,
-                              const CapabilityWin& capability_rhs) {
-  const VideoCaptureFormat& lhs = capability_lhs.supported_format;
-  const VideoCaptureFormat& rhs = capability_rhs.supported_format;
+namespace {
 
+// Compares the priority of the capture formats. Returns true if |lhs| is the
+// preferred capture format in comparison with |rhs|. Returns false otherwise.
+bool CompareCapability(const VideoCaptureFormat& requested,
+                       const VideoCaptureFormat& lhs,
+                       const VideoCaptureFormat& rhs) {
+  // When 16-bit format is requested and available, avoid other formats.
+  // If both lhs and rhs are 16-bit, we still need to compare them based on
+  // height, width and frame rate.
+  const bool use_requested =
+      (requested.pixel_format == media::PIXEL_FORMAT_Y16);
+  if (use_requested && lhs.pixel_format != rhs.pixel_format) {
+    if (lhs.pixel_format == requested.pixel_format)
+      return true;
+    if (rhs.pixel_format == requested.pixel_format)
+      return false;
+  }
   const int diff_height_lhs =
       std::abs(lhs.frame_size.height() - requested.frame_size.height());
   const int diff_height_rhs =
@@ -41,14 +53,18 @@ static bool CompareCapability(const VideoCaptureFormat& requested,
                                                           rhs.pixel_format);
 }
 
+}  // namespace
+
 const CapabilityWin& GetBestMatchedCapability(
     const VideoCaptureFormat& requested,
     const CapabilityList& capabilities) {
   DCHECK(!capabilities.empty());
   const CapabilityWin* best_match = &(*capabilities.begin());
   for (const CapabilityWin& capability : capabilities) {
-    if (CompareCapability(requested, capability, *best_match))
+    if (CompareCapability(requested, capability.supported_format,
+                          best_match->supported_format)) {
       best_match = &capability;
+    }
   }
   return *best_match;
 }

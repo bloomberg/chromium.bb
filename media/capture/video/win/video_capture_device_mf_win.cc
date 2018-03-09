@@ -119,15 +119,13 @@ scoped_refptr<IMFCaptureEngineOnSampleCallback> CreateMFPhotoCallback(
   return scoped_refptr<IMFCaptureEngineOnSampleCallback>(
       new MFPhotoCallback(std::move(callback), format));
 }
-}  // namespace
 
 void LogError(const Location& from_here, HRESULT hr) {
   DPLOG(ERROR) << from_here.ToString()
                << " hr = " << logging::SystemErrorCodeToString(hr);
 }
 
-static bool GetFrameSizeFromMediaType(IMFMediaType* type,
-                                      gfx::Size* frame_size) {
+bool GetFrameSizeFromMediaType(IMFMediaType* type, gfx::Size* frame_size) {
   UINT32 width32, height32;
   if (FAILED(MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width32, &height32)))
     return false;
@@ -135,7 +133,7 @@ static bool GetFrameSizeFromMediaType(IMFMediaType* type,
   return true;
 }
 
-static bool GetFrameRateFromMediaType(IMFMediaType* type, float* frame_rate) {
+bool GetFrameRateFromMediaType(IMFMediaType* type, float* frame_rate) {
   UINT32 numerator, denominator;
   if (FAILED(MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &numerator,
                                  &denominator)) ||
@@ -146,9 +144,9 @@ static bool GetFrameRateFromMediaType(IMFMediaType* type, float* frame_rate) {
   return true;
 }
 
-static bool GetFormatFromSourceMediaType(IMFMediaType* source_media_type,
-                                         bool photo,
-                                         VideoCaptureFormat* format) {
+bool GetFormatFromSourceMediaType(IMFMediaType* source_media_type,
+                                  bool photo,
+                                  VideoCaptureFormat* format) {
   GUID major_type_guid;
   if (FAILED(source_media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid)) ||
       (major_type_guid != MFMediaType_Image &&
@@ -168,9 +166,9 @@ static bool GetFormatFromSourceMediaType(IMFMediaType* source_media_type,
   return true;
 }
 
-static HRESULT CopyAttribute(IMFAttributes* source_attributes,
-                             IMFAttributes* destination_attributes,
-                             const GUID& key) {
+HRESULT CopyAttribute(IMFAttributes* source_attributes,
+                      IMFAttributes* destination_attributes,
+                      const GUID& key) {
   PROPVARIANT var;
   PropVariantInit(&var);
   HRESULT hr = source_attributes->GetItem(key, &var);
@@ -188,7 +186,7 @@ struct MediaFormatConfiguration {
   VideoPixelFormat pixel_format;
 };
 
-static bool GetMediaFormatConfigurationFromMFSourceMediaSubtype(
+bool GetMediaFormatConfigurationFromMFSourceMediaSubtype(
     const GUID& mf_source_media_subtype,
     MediaFormatConfiguration* media_format_configuration) {
   static const MediaFormatConfiguration kMediaFormatConfigurationMap[] = {
@@ -208,14 +206,13 @@ static bool GetMediaFormatConfigurationFromMFSourceMediaSubtype(
       {MFVideoFormat_NV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
       {MFVideoFormat_YV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
 
-      // Depth cameras use specific uncompressed video formats unknown to
-      // IMFCaptureEngine.
-      // Therefore, IMFCaptureEngine cannot perform any transcoding on these.
-      // So we ask IMFCaptureEngine to let the frame pass through, without
-      // transcoding.
+      // Depth cameras use 16-bit uncompressed video formats.
+      // We ask IMFCaptureEngine to let the frame pass through, without
+      // transcoding, since transcoding would lead to precision loss.
       {kMediaSubTypeY16, kMediaSubTypeY16, PIXEL_FORMAT_Y16},
       {kMediaSubTypeZ16, kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
       {kMediaSubTypeINVZ, kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
+      {MFVideoFormat_D16, MFVideoFormat_D16, PIXEL_FORMAT_Y16},
 
       // Photo type
       {GUID_ContainerFormatJpeg, GUID_ContainerFormatJpeg, PIXEL_FORMAT_MJPEG}};
@@ -231,8 +228,12 @@ static bool GetMediaFormatConfigurationFromMFSourceMediaSubtype(
   return false;
 }
 
-static HRESULT GetMFSinkMediaSubtype(IMFMediaType* source_media_type,
-                                     GUID* mf_sink_media_subtype) {
+// Calculate sink subtype based on source subtype. |passthrough| is set when
+// sink and source are the same and means that there should be no transcoding
+// done by IMFCaptureEngine.
+HRESULT GetMFSinkMediaSubtype(IMFMediaType* source_media_type,
+                              GUID* mf_sink_media_subtype,
+                              bool* passthrough) {
   GUID source_subtype;
   HRESULT hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &source_subtype);
   if (FAILED(hr))
@@ -242,19 +243,22 @@ static HRESULT GetMFSinkMediaSubtype(IMFMediaType* source_media_type,
           source_subtype, &media_format_configuration))
     return E_FAIL;
   *mf_sink_media_subtype = media_format_configuration.mf_sink_media_subtype;
+  *passthrough =
+      (media_format_configuration.mf_sink_media_subtype == source_subtype);
   return S_OK;
 }
 
-static HRESULT ConvertToPhotoSinkMediaType(
-    IMFMediaType* source_media_type,
-    IMFMediaType* destination_media_type) {
+HRESULT ConvertToPhotoSinkMediaType(IMFMediaType* source_media_type,
+                                    IMFMediaType* destination_media_type) {
   HRESULT hr =
       destination_media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Image);
   if (FAILED(hr))
     return hr;
 
+  bool passthrough = false;
   GUID mf_sink_media_subtype;
-  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype);
+  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype,
+                             &passthrough);
   if (FAILED(hr))
     return hr;
 
@@ -266,19 +270,23 @@ static HRESULT ConvertToPhotoSinkMediaType(
                        MF_MT_FRAME_SIZE);
 }
 
-static HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
-                                           IMFMediaType* sink_media_type) {
+HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
+                                    IMFMediaType* sink_media_type) {
   HRESULT hr = sink_media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   if (FAILED(hr))
     return hr;
 
+  bool passthrough = false;
   GUID mf_sink_media_subtype;
-  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype);
+  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype,
+                             &passthrough);
   if (FAILED(hr))
     return hr;
 
   hr = sink_media_type->SetGUID(MF_MT_SUBTYPE, mf_sink_media_subtype);
-  if (FAILED(hr))
+  // Copying attribute values for passthrough mode is redundant, since the
+  // format is kept unchanged, and causes AddStream error MF_E_INVALIDMEDIATYPE.
+  if (FAILED(hr) || passthrough)
     return hr;
 
   hr = CopyAttribute(source_media_type, sink_media_type, MF_MT_FRAME_SIZE);
@@ -298,7 +306,7 @@ static HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
                        MF_MT_INTERLACE_MODE);
 }
 
-static const CapabilityWin& GetBestMatchedPhotoCapability(
+const CapabilityWin& GetBestMatchedPhotoCapability(
     ComPtr<IMFMediaType> current_media_type,
     gfx::Size requested_size,
     const CapabilityList& capabilities) {
@@ -336,6 +344,7 @@ HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
   return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
                                                       IID_PPV_ARGS(engine));
 }
+}  // namespace
 
 class MFVideoCallback final
     : public base::RefCountedThreadSafe<MFVideoCallback>,
