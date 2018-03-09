@@ -7,8 +7,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_save_info.h"
-#include "content/public/common/content_features.h"
 
 namespace content {
 
@@ -157,7 +157,7 @@ bool CanRecoverFromError(
 
 int64_t GetMinSliceSizeConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
-      features::kParallelDownloading, kMinSliceSizeFinchKey);
+      download::features::kParallelDownloading, kMinSliceSizeFinchKey);
   int64_t result;
   return base::StringToInt64(finch_value, &result)
              ? result
@@ -166,7 +166,7 @@ int64_t GetMinSliceSizeConfig() {
 
 int GetParallelRequestCountConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
-      features::kParallelDownloading, kParallelRequestCountFinchKey);
+      download::features::kParallelDownloading, kParallelRequestCountFinchKey);
   int result;
   return base::StringToInt(finch_value, &result) ? result
                                                  : kParallelRequestCount;
@@ -174,7 +174,7 @@ int GetParallelRequestCountConfig() {
 
 base::TimeDelta GetParallelRequestDelayConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
-      features::kParallelDownloading, kParallelRequestDelayFinchKey);
+      download::features::kParallelDownloading, kParallelRequestDelayFinchKey);
   int64_t time_ms = 0;
   return base::StringToInt64(finch_value, &time_ms)
              ? base::TimeDelta::FromMilliseconds(time_ms)
@@ -183,7 +183,8 @@ base::TimeDelta GetParallelRequestDelayConfig() {
 
 base::TimeDelta GetParallelRequestRemainingTimeConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
-      features::kParallelDownloading, kParallelRequestRemainingTimeFinchKey);
+      download::features::kParallelDownloading,
+      kParallelRequestRemainingTimeFinchKey);
   int time_in_seconds = 0;
   return base::StringToInt(finch_value, &time_in_seconds)
              ? base::TimeDelta::FromSeconds(time_in_seconds)
@@ -214,11 +215,12 @@ int64_t GetMaxContiguousDataBlockSizeFromBeginning(
 
 bool IsParallelDownloadEnabled() {
   bool feature_enabled =
-      base::FeatureList::IsEnabled(features::kParallelDownloading);
+      base::FeatureList::IsEnabled(download::features::kParallelDownloading);
   // Disabled when |kEnableParallelDownloadFinchKey| Finch config is set to
   // false.
   bool enabled_parameter = GetFieldTrialParamByFeatureAsBool(
-      features::kParallelDownloading, kEnableParallelDownloadFinchKey, true);
+      download::features::kParallelDownloading, kEnableParallelDownloadFinchKey,
+      true);
   return feature_enabled && enabled_parameter;
 }
 
