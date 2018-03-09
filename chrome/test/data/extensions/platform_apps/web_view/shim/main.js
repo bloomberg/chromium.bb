@@ -1477,6 +1477,10 @@ function testNestedCrossOriginSubframes() {
     window.console.log('guest.consolemessage ' + e.message);
   };
   webview.onloadstop = function() {
+    // Only consider the first load stop, not the following one due to the
+    // iframe navigation.
+    webview.onloadstop = undefined;
+
     window.onmessage = function(e) {
       if (e.data == 'frames-loaded') {
         embedder.test.succeed();
@@ -1501,6 +1505,10 @@ function testNestedSubframes() {
     window.console.log('guest.consolemessage ' + e.message);
   };
   webview.onloadstop = function() {
+    // Only consider the first load stop, not the following one due to the
+    // iframe navigation.
+    webview.onloadstop = undefined;
+
     window.onmessage = function(e) {
       if (e.data == 'frames-loaded') {
         embedder.test.succeed();
