@@ -232,7 +232,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             if (stackIndexDeltaAt == 0) {
                 mStacks.get(getTabStackIndex()).click(time(), x, y);
             } else {
-                flingStacks(getTabStackIndex() == 0);
+                final int newStackIndex = getTabStackIndex() + stackIndexDeltaAt;
+                if (newStackIndex < 0 || newStackIndex >= mStacks.size()) return;
+                flingStacks(newStackIndex);
             }
             requestStackUpdate();
         }
@@ -569,7 +571,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     @Override
     public void onTabModelSwitched(boolean toIncognitoTabModel) {
-        flingStacks(toIncognitoTabModel);
+        flingStacks(toIncognitoTabModel ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX);
         mFlingFromModelChange = true;
     }
 
@@ -751,7 +753,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
         startMarginAnimation(true);
         startYOffsetAnimation(true);
-        flingStacks(getTabStackIndex() == 1);
+        flingStacks(getTabStackIndex());
 
         if (!animate) onUpdateAnimation(time, true);
 
@@ -1072,9 +1074,14 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         requestStackUpdate();
     }
 
-    private void flingStacks(boolean toIncognito) {
+    /**
+     * Scrolls over to the tab stack at the specified index, and records that it's now the current
+     * tab stack.
+     * @param index The index of the newly-selected tab stack.
+     */
+    private void flingStacks(int index) {
         // velocityX is measured in pixel per second.
-        setActiveStackState(toIncognito);
+        setActiveStackState(index == INCOGNITO_STACK_INDEX);
         finishScrollStacks();
         requestStackUpdate();
     }
