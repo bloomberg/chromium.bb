@@ -12,7 +12,9 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -28,6 +30,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
@@ -37,6 +40,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -421,13 +425,22 @@ const char kAppUrlPath[]        = "/in_scope/index.html";
 const char kInScopeUrlPath[]    = "/in_scope/other.html";
 const char kOutOfScopeUrlPath[] = "/out_of_scope/index.html";
 
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
+
 class BookmarkAppNavigationThrottleBaseBrowserTest
     : public ExtensionBrowserTest {
  public:
+  BookmarkAppNavigationThrottleBaseBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        mock_cert_verifier_(),
+        cert_verifier_(&mock_cert_verifier_) {}
+
   void SetUp() override {
+    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
     // Register a request handler that will return empty pages. Tests are
     // responsible for adding elements and firing events on these empty pages.
-    embedded_test_server()->RegisterRequestHandler(
+    https_server_.RegisterRequestHandler(
         base::BindRepeating([](const HttpRequest& request) {
           // Let the default request handlers handle redirections.
           if (request.GetURL().path() == "/server-redirect" ||
@@ -444,9 +457,25 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
     ExtensionBrowserTest::SetUp();
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+    ProfileIOData::SetCertVerifierForTesting(nullptr);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+  }
+
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+    // By default, all SSL cert checks are valid. Can be overriden in tests.
+    cert_verifier_.set_default_result(net::OK);
   }
 
   void InstallTestBookmarkApp() {
@@ -458,15 +487,13 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
   }
 
   const Extension* InstallTestBookmarkApp(const std::string& app_host) {
-    if (!embedded_test_server()->Started()) {
-      CHECK(embedded_test_server()->Start());
+    if (!https_server_.Started()) {
+      CHECK(https_server_.Start());
     }
 
     WebApplicationInfo web_app_info;
-    web_app_info.app_url =
-        embedded_test_server()->GetURL(app_host, kAppUrlPath);
-    web_app_info.scope =
-        embedded_test_server()->GetURL(app_host, kAppScopePath);
+    web_app_info.app_url = https_server_.GetURL(app_host, kAppUrlPath);
+    web_app_info.scope = https_server_.GetURL(app_host, kAppScopePath);
     web_app_info.title = base::UTF8ToUTF16("Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
     web_app_info.open_as_window = true;
@@ -479,14 +506,13 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
   const Extension* InstallImmediateRedirectingApp(
       const std::string& target_host,
       const std::string& target_path) {
-    EXPECT_TRUE(embedded_test_server()->Start());
-    const GURL target_url =
-        embedded_test_server()->GetURL(target_host, target_path);
+    EXPECT_TRUE(https_server_.Start());
+    const GURL target_url = https_server_.GetURL(target_host, target_path);
 
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = embedded_test_server()->GetURL(
-        kAppUrlHost, CreateServerRedirect(target_url));
-    web_app_info.scope = embedded_test_server()->GetURL(kAppUrlHost, "/");
+    web_app_info.app_url =
+        https_server_.GetURL(kAppUrlHost, CreateServerRedirect(target_url));
+    web_app_info.scope = https_server_.GetURL(kAppUrlHost, "/");
     web_app_info.title = base::UTF8ToUTF16("Redirecting Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
     web_app_info.open_as_window = true;
@@ -495,7 +521,7 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
   }
 
   Browser* OpenTestBookmarkApp() {
-    GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+    GURL app_url = https_server_.GetURL(kAppUrlHost, kAppUrlPath);
     auto observer = GetTestNavigationObserver(app_url);
     Browser* app_browser = LaunchAppBrowser(test_bookmark_app_);
     observer->WaitForNavigationFinished();
@@ -514,8 +540,7 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
   // Navigates the browser's current active tab to the test app's URL. It does
   // not open a new app window.
   void NavigateToTestAppURL() {
-    const GURL app_url =
-        embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+    const GURL app_url = https_server_.GetURL(kAppUrlHost, kAppUrlPath);
     NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_TYPED);
     ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
         app_url, base::BindOnce(&NavigateToURLWrapper, &params)));
@@ -761,15 +786,26 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
   }
 
   GURL GetLaunchingPageURL() {
-    return embedded_test_server()->GetURL(kLaunchingPageHost,
-                                          kLaunchingPagePath);
+    return https_server_.GetURL(kLaunchingPageHost, kLaunchingPagePath);
   }
 
   const base::HistogramTester& global_histogram() { return histogram_tester_; }
 
   const Extension* test_bookmark_app() { return test_bookmark_app_; }
 
+  const net::EmbeddedTestServer& https_server() { return https_server_; }
+
+  CertVerifierBrowserTest::CertVerifier& mock_cert_verifier() {
+    return cert_verifier_;
+  }
+
  private:
+  net::EmbeddedTestServer https_server_;
+  net::MockCertVerifier mock_cert_verifier_;
+  // Similar to net::MockCertVerifier, but also updates the CertVerifier
+  // used by the NetworkService. This is needed for when tests run with
+  // the NetworkService enabled.
+  CertVerifierBrowserTest::CertVerifier cert_verifier_;
   const Extension* test_bookmark_app_;
   base::HistogramTester histogram_tester_;
 };
@@ -803,7 +839,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionDoesNotOpenAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -822,7 +858,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   feature_list.InitWithFeatures({}, {features::kDesktopPWAsLinkCapturing});
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionDoesNotOpenAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -851,8 +887,7 @@ IN_PROC_BROWSER_TEST_P(
     MainFrameNavigations) {
   InstallTestBookmarkApp();
 
-  GURL target_url =
-      embedded_test_server()->GetURL(kAppUrlHost, std::get<0>(GetParam()));
+  GURL target_url = https_server().GetURL(kAppUrlHost, std::get<0>(GetParam()));
   ui::PageTransition transition = std::get<1>(GetParam());
   NavigateParams params(browser(), target_url, transition);
 
@@ -863,8 +898,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   if (ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_LINK, transition) &&
-      target_url ==
-          embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath)) {
+      target_url == https_server().GetURL(kAppUrlHost, kInScopeUrlPath)) {
     TestTabActionOpensAppWindow(target_url,
                                 base::BindOnce(&NavigateToURLAndWait, &params));
   } else {
@@ -891,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   InsertIFrame(initial_tab);
 
   content::RenderFrameHost* iframe = GetIFrame(initial_tab);
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
 
   NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
   params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
@@ -928,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   }
 
   content::RenderFrameHost* iframe = GetIFrame(initial_tab);
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
 
   NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
   params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
@@ -951,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        LinkNavigationFromAddressBar) {
   InstallTestBookmarkApp();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   // Fake a navigation with a TRANSITION_LINK core type and a
   // TRANSITION_FROM_ADDRESS_BAR qualifier. This matches the transition that
   // results from pasting a URL into the address and navigating to it.
@@ -977,8 +1011,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   // Navigate to an in-scope URL to generate a link navigation that didn't
   // get intercepted. The navigation won't get intercepted because the target
   // URL is in-scope of the app for the current URL.
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       in_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -988,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   // Navigate to an out-of-scope URL.
   {
     const GURL out_of_scope_url =
-        embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+        https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
     NavigateParams params(browser(), out_of_scope_url,
                           ui::PAGE_TRANSITION_TYPED);
     ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
@@ -1024,7 +1057,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionDoesNotOpenAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1043,7 +1076,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1063,7 +1096,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1083,7 +1116,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlPath);
   TestTabActionOpensBackgroundTab(
       app_url,
       base::BindOnce(&ClickLinkWithModifiersAndWait,
@@ -1103,9 +1136,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-  const GURL redirecting_url = embedded_test_server()->GetURL(
-      kLaunchingPageHost, CreateServerRedirect(app_url));
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL redirecting_url =
+      https_server().GetURL(kLaunchingPageHost, CreateServerRedirect(app_url));
   TestTabActionOpensAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWaitForURL,
@@ -1125,9 +1158,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-  const GURL redirecting_url = embedded_test_server()->GetURL(
-      kLaunchingPageHost, CreateServerRedirect(app_url));
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL redirecting_url =
+      https_server().GetURL(kLaunchingPageHost, CreateServerRedirect(app_url));
   TestTabActionOpensAppWindow(
       app_url,
       base::BindOnce(&ClickLinkAndWaitForURL,
@@ -1154,9 +1187,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   int num_tabs = browser()->tab_strip_model()->count();
   size_t num_browsers = chrome::GetBrowserCount(profile());
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-  const GURL redirecting_url = embedded_test_server()->GetURL(
-      kLaunchingPageHost, CreateClientRedirect(app_url));
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL redirecting_url =
+      https_server().GetURL(kLaunchingPageHost, CreateClientRedirect(app_url));
   ClickLinkAndWaitForURL(browser()->tab_strip_model()->GetActiveWebContents(),
                          redirecting_url, app_url, LinkTarget::SELF,
                          GetParam());
@@ -1191,9 +1224,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   int num_tabs = browser()->tab_strip_model()->count();
   size_t num_browsers = chrome::GetBrowserCount(profile());
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-  const GURL redirecting_url = embedded_test_server()->GetURL(
-      kLaunchingPageHost, CreateClientRedirect(app_url));
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL redirecting_url =
+      https_server().GetURL(kLaunchingPageHost, CreateClientRedirect(app_url));
   ClickLinkAndWaitForURL(browser()->tab_strip_model()->GetActiveWebContents(),
                          redirecting_url, app_url, LinkTarget::BLANK,
                          GetParam());
@@ -1225,8 +1258,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   TestTabActionOpensAppWindow(
       in_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1247,7 +1279,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   NavigateToLaunchingPage();
 
   const GURL out_of_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+      https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
   TestTabActionDoesNotOpenAppWindow(
       out_of_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1284,7 +1316,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
         ASSERT_TRUE(result);
       },
       browser()->tab_strip_model()->GetActiveWebContents(),
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath)));
+      https_server().GetURL(kAppUrlHost, kInScopeUrlPath)));
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
@@ -1312,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
         ASSERT_TRUE(result);
       },
       browser()->tab_strip_model()->GetActiveWebContents(),
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath)));
+      https_server().GetURL(kAppUrlHost, kInScopeUrlPath)));
 
   // Fetch requests don't go through our NavigationHandle.
   ExpectNavigationResultHistogramEquals(global_histogram(), {});
@@ -1325,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensBackgroundTab(
       app_url,
       base::BindOnce(&ExecuteContextMenuLinkCommandAndWait,
@@ -1345,7 +1377,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensForegroundWindow(
       app_url,
       base::BindOnce(&ExecuteContextMenuLinkCommandAndWait,
@@ -1366,7 +1398,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   Browser* app_browser = OpenTestBookmarkApp();
 
   base::HistogramTester scoped_histogram;
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestAppActionOpensForegroundTab(
       app_browser, app_url,
       base::BindOnce(&ExecuteContextMenuLinkCommandAndWait,
@@ -1392,8 +1424,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL initial_url = initial_tab->GetLastCommittedURL();
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   auto observer = GetTestNavigationObserver(in_scope_url);
   content::ContextMenuParams params;
   params.page_url = initial_url;
@@ -1428,8 +1459,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   Browser* incognito_browser = CreateIncognitoBrowser();
   NavigateToLaunchingPage(incognito_browser);
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   TestActionDoesNotOpenAppWindow(
       incognito_browser, in_scope_url,
       base::BindOnce(
@@ -1449,13 +1479,12 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   // Navigate to out-of-scope URL. Shouldn't open a new window.
   const GURL out_of_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+      https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
   NavigateParams params(browser(), out_of_scope_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       out_of_scope_url, base::BindOnce(&NavigateToURLWrapper, &params)));
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensAppWindow(
       in_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1477,13 +1506,12 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 
   // Navigate to out-of-scope URL. Shouldn't open a new window.
   const GURL out_of_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+      https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
   NavigateParams params(browser(), out_of_scope_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       out_of_scope_url, base::BindOnce(&NavigateToURLWrapper, &params)));
 
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   TestTabActionOpensAppWindow(
       in_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1504,8 +1532,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
   NavigateToTestAppURL();
 
   base::HistogramTester scoped_histogram;
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   TestTabActionDoesNotOpenAppWindow(
       in_scope_url,
       base::BindOnce(&ClickLinkAndWait,
@@ -1532,8 +1559,7 @@ IN_PROC_BROWSER_TEST_P(
   NavigateToTestAppURL();
 
   // Call window.open() with |target_url|.
-  const GURL target_url =
-      embedded_test_server()->GetURL(GetParam(), kAppUrlPath);
+  const GURL target_url = https_server().GetURL(GetParam(), kAppUrlPath);
   TestTabActionOpensAppWindowWithOpener(
       target_url,
       base::BindOnce(&WindowOpenAndWait,
@@ -1555,8 +1581,7 @@ IN_PROC_BROWSER_TEST_P(
       app_browser->tab_strip_model()->GetActiveWebContents();
 
   // Call window.open() with |target_url|.
-  const GURL target_url =
-      embedded_test_server()->GetURL(GetParam(), kAppUrlPath);
+  const GURL target_url = https_server().GetURL(GetParam(), kAppUrlPath);
   TestAppActionOpensAppWindowWithOpener(
       app_browser, target_url,
       base::BindOnce(&WindowOpenAndWait, app_web_contents, target_url));
@@ -1579,12 +1604,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   content::WebContents* current_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   EXPECT_EQ(WindowAccessResult::CAN_ACCESS,
             CanChildWindowAccessOpener(current_tab, app_url));
 
   const GURL other_app_url =
-      embedded_test_server()->GetURL(kOtherAppUrlHost, kAppUrlPath);
+      https_server().GetURL(kOtherAppUrlHost, kAppUrlPath);
   EXPECT_EQ(WindowAccessResult::CANNOT_ACCESS,
             CanChildWindowAccessOpener(current_tab, other_app_url));
 }
@@ -1601,12 +1626,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   content::WebContents* app_web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
 
-  const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+  const GURL app_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
   EXPECT_EQ(WindowAccessResult::CAN_ACCESS,
             CanChildWindowAccessOpener(app_web_contents, app_url));
 
   const GURL other_app_url =
-      embedded_test_server()->GetURL(kOtherAppUrlHost, kAppUrlPath);
+      https_server().GetURL(kOtherAppUrlHost, kAppUrlPath);
   EXPECT_EQ(WindowAccessResult::CANNOT_ACCESS,
             CanChildWindowAccessOpener(app_web_contents, other_app_url));
 }
@@ -1627,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
   const GURL app_url = AppLaunchInfo::GetFullLaunchURL(app);
   NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   TestTabActionDoesNotOpenAppWindow(
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath),
+      https_server().GetURL(kAppUrlHost, kInScopeUrlPath),
       base::BindOnce(&NavigateToURLWrapper, &params));
 
   // The first AUTO_BOOKMARK navigation is the one we triggered and the second
@@ -1795,7 +1820,7 @@ IN_PROC_BROWSER_TEST_P(
     if (start_url_path == kLaunchingPagePath)
       start_url = GetLaunchingPageURL();
     else
-      start_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
+      start_url = https_server().GetURL(kAppUrlHost, kAppUrlPath);
 
     NavigateParams params(current_browser, start_url,
                           ui::PAGE_TRANSITION_TYPED);
@@ -1808,8 +1833,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   // If the submit method is GET then add an query params.
-  GURL target_url =
-      embedded_test_server()->GetURL(kAppUrlHost, target_url_path);
+  GURL target_url = https_server().GetURL(kAppUrlHost, target_url_path);
   if (request_type == net::URLFetcher::RequestType::GET) {
     target_url = AddTestQueryParam(target_url);
   }
@@ -1906,8 +1930,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonLinkBrowserTest,
   size_t num_browsers = chrome::GetBrowserCount(profile());
 
   base::HistogramTester scoped_histogram;
-  const GURL in_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath);
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
   ClickLinkAndWait(app_web_contents, in_scope_url, LinkTarget::SELF,
                    std::get<1>(GetParam()));
 
@@ -1933,7 +1956,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonLinkBrowserTest,
 
   const base::HistogramTester scoped_histogram;
   const GURL out_of_scope_url =
-      embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+      https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
   TestAppActionOpensForegroundTab(
       app_browser, out_of_scope_url,
       base::BindOnce(&ClickLinkAndWait,
