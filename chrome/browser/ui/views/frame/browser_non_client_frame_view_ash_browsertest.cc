@@ -61,6 +61,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -558,7 +559,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
       static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
   EXPECT_EQ(SK_ColorBLUE, frame_header->GetActiveFrameColor());
   EXPECT_EQ(SK_ColorBLUE, frame_header->GetInactiveFrameColor());
-  EXPECT_EQ(SK_ColorWHITE, button_container->active_icon_color_);
+  // TODO(afakhry): Figure out the right way to test this (i.e. are we testing
+  // that the caption colors are light since the frame color is dark? Or are we
+  // testing that the colors are contrasting?). Do this while working on themes
+  // in https://crbug.com/820495.
+  const SkColor expected_active_icon_color =
+      GetParam() ? gfx::kGoogleGrey100 : SK_ColorWHITE;
+  EXPECT_EQ(expected_active_icon_color, button_container->active_icon_color_);
 
   // Show a content setting icon.
   auto& content_setting_views =

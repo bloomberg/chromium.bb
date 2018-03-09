@@ -29,6 +29,9 @@ extern const SkColor kChromeOsBootColor;
 // The alpha to draw inactive browser frame icons with.
 ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatio;
 
+// Similar to the above but for touch-optimized UI.
+ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatioTouch;
+
 // The border color of keyboard focus for launcher items and system tray.
 extern const SkColor kFocusBorderColor;
 extern const int kFocusBorderThickness;

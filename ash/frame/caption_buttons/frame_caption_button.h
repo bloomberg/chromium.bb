@@ -34,6 +34,9 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
   // Gets the color to use for a frame caption button.
   static SkColor GetButtonColor(bool use_light_images);
 
+  // Gets the alpha ratio for the colors of inactive frame caption buttons.
+  static float GetInactiveButtonColorAlphaRatio();
+
   // Sets the image to use to paint the button. If |animate| is ANIMATE_YES,
   // the button crossfades to the new visuals. If the image matches the one
   // currently used by the button and |animate| is ANIMATE_NO, the crossfade
