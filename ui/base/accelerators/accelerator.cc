@@ -5,6 +5,7 @@
 #include "ui/base/accelerators/accelerator.h"
 
 #include <stdint.h>
+#include <tuple>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -39,10 +40,12 @@ Accelerator::Accelerator() : Accelerator(VKEY_UNKNOWN, EF_NONE) {}
 
 Accelerator::Accelerator(KeyboardCode key_code,
                          int modifiers,
-                         KeyState key_state)
+                         KeyState key_state,
+                         base::TimeTicks time_stamp)
     : key_code_(key_code),
       key_state_(key_state),
       modifiers_(modifiers & kInterestingFlagsMask),
+      time_stamp_(time_stamp),
       interrupted_by_mouse_event_(false) {}
 
 Accelerator::Accelerator(const KeyEvent& key_event)
@@ -51,12 +54,14 @@ Accelerator::Accelerator(const KeyEvent& key_event)
                                                     : KeyState::RELEASED),
       // |modifiers_| may include the repeat flag.
       modifiers_(key_event.flags() & kInterestingFlagsMask),
+      time_stamp_(key_event.time_stamp()),
       interrupted_by_mouse_event_(false) {}
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
   key_state_ = accelerator.key_state_;
   modifiers_ = accelerator.modifiers_;
+  time_stamp_ = accelerator.time_stamp_;
   interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
   if (accelerator.platform_accelerator_)
     platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
@@ -74,7 +79,7 @@ KeyEvent Accelerator::ToKeyEvent() const {
   return KeyEvent(key_state() == Accelerator::KeyState::PRESSED
                       ? ET_KEY_PRESSED
                       : ET_KEY_RELEASED,
-                  key_code(), modifiers());
+                  key_code(), modifiers(), time_stamp());
 }
 
 Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
@@ -82,6 +87,7 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
     key_code_ = accelerator.key_code_;
     key_state_ = accelerator.key_state_;
     modifiers_ = accelerator.modifiers_;
+    time_stamp_ = accelerator.time_stamp_;
     interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
     if (accelerator.platform_accelerator_)
       platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
@@ -92,14 +98,10 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
 }
 
 bool Accelerator::operator <(const Accelerator& rhs) const {
-  if (key_code_ != rhs.key_code_)
-    return key_code_ < rhs.key_code_;
-  if (key_state_ != rhs.key_state_) {
-    return static_cast<int32_t>(key_state_) <
-           static_cast<int32_t>(rhs.key_state_);
-  }
-  return MaskOutKeyEventFlags(modifiers_) <
-         MaskOutKeyEventFlags(rhs.modifiers_);
+  const int modifiers_with_mask = MaskOutKeyEventFlags(modifiers_);
+  const int rhs_modifiers_with_mask = MaskOutKeyEventFlags(rhs.modifiers_);
+  return std::tie(key_code_, key_state_, modifiers_with_mask) <
+         std::tie(rhs.key_code_, rhs.key_state_, rhs_modifiers_with_mask);
 }
 
 bool Accelerator::operator ==(const Accelerator& rhs) const {
