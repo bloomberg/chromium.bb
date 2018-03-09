@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -84,6 +86,14 @@ void ContentRulesetService::TryOpenAndSetRulesetFile(
 void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
+
+  // If Ad Tagging is running, then every request does a lookup and it's
+  // important that we verify the ruleset early on.
+  if (base::FeatureList::IsEnabled(kAdTagging)) {
+    // Even though the handle will immediately be destroyed, it will still
+    // validate the ruleset on its task runner.
+    VerifiedRuleset::Handle ruleset_handle(ruleset_dealer_.get());
+  }
 
   ruleset_data_ = std::move(ruleset_data);
   for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
