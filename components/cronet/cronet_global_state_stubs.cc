@@ -8,7 +8,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "url/url_util.h"
 
 // This file provides minimal "stub" implementations of the Cronet global-state

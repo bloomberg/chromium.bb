@@ -40,7 +40,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/chromium/quic_stream_factory_peer.h"

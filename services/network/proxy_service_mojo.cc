@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/network_delegate_error_observer.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
-#include "net/proxy_resolution/proxy_service.h"
 #include "services/network/proxy_resolver_factory_mojo.h"
 
 namespace network {

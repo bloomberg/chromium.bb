@@ -36,7 +36,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/http_util.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"

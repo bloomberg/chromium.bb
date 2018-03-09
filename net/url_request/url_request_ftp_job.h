@@ -17,7 +17,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_transaction.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {

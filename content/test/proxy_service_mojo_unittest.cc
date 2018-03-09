@@ -24,7 +24,7 @@
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "services/network/proxy_service_mojo.h"
