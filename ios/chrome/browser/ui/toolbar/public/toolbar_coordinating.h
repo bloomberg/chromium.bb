@@ -9,10 +9,15 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 
+@protocol TabHistoryUIUpdater;
+
+// Defines a class coordinating the interactions with the toolbar.
 @protocol ToolbarCoordinating<NewTabPageControllerDelegate>
 
 // Updates the tools menu, changing its content to reflect the current page.
 - (void)updateToolsMenu;
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 
 @end
 

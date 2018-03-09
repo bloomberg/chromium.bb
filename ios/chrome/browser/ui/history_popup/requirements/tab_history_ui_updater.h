@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 
 @protocol TabHistoryUIUpdater
-@optional
 // Tells the receiver to update its UI now that TabHistory popup will be
 // presented.
 - (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button;

@@ -85,7 +85,7 @@
   return toolbarSnapshot;
 }
 
-#pragma mark - ToolbarCoordinating
+#pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
   // TODO(crbug.com/803379): Implement that.
@@ -99,6 +99,12 @@
 
 - (void)triggerToolsMenuButtonAnimation {
   [self.viewController.toolsMenuButton triggerAnimation];
+}
+
+#pragma mark - ToolbarCoordinatee
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+  return self.viewController;
 }
 
 #pragma mark - Protected

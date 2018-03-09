@@ -6,13 +6,15 @@
 
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinatee.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinatorAdaptor ()<ToolbarCommands>
+@interface ToolbarCoordinatorAdaptor ()<TabHistoryUIUpdater, ToolbarCommands>
 @property(nonatomic, strong)
     NSMutableArray<id<NewTabPageControllerDelegate, ToolbarCommands>>*
         coordinators;
@@ -81,6 +83,25 @@
 
 - (void)updateToolsMenu {
   [self.toolsMenuCoordinator updateConfiguration];
+}
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+  return self;
+}
+
+#pragma mark - TabHistoryUIUpdater
+
+- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
+  for (id<ToolbarCoordinatee> coordinator in self.coordinators) {
+    [coordinator.tabHistoryUIUpdater
+        updateUIForTabHistoryPresentationFrom:button];
+  }
+}
+
+- (void)updateUIForTabHistoryWasDismissed {
+  for (id<ToolbarCoordinatee> coordinator in self.coordinators) {
+    [coordinator.tabHistoryUIUpdater updateUIForTabHistoryWasDismissed];
+  }
 }
 
 @end
