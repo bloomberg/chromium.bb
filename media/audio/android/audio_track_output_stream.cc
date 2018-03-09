@@ -33,7 +33,7 @@ AudioTrackOutputStream::AudioTrackOutputStream(AudioManagerBase* manager,
                                                const AudioParameters& params)
     : params_(params),
       audio_manager_(manager),
-      tick_clock_(new base::DefaultTickClock()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   if (!params_.IsBitstreamFormat()) {
     audio_bus_ = AudioBus::Create(params_);
   }

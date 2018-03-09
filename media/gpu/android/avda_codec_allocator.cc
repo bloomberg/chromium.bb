@@ -455,7 +455,7 @@ AVDACodecAllocator::AVDACodecAllocator(
       factory_cb_(std::move(factory_cb)),
       weak_this_factory_(this) {
   // We leak the clock we create, but that's okay because we're a singleton.
-  auto* clock = tick_clock ? tick_clock : new base::DefaultTickClock();
+  auto* clock = tick_clock ? tick_clock : base::DefaultTickClock::GetInstance();
 
   // Create threads with names and indices that match up with TaskType.
   threads_.push_back(new ThreadAndHangDetector("AVDAAutoThread", clock));

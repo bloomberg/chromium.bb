@@ -39,13 +39,12 @@ class AudioDeviceListenerWinTest : public testing::Test {
     output_device_listener_.reset(new AudioDeviceListenerWin(base::Bind(
         &AudioDeviceListenerWinTest::OnDeviceChange, base::Unretained(this))));
 
-    tick_clock_ = new base::SimpleTestTickClock();
-    tick_clock_->Advance(base::TimeDelta::FromSeconds(12345));
-    output_device_listener_->tick_clock_.reset(tick_clock_);
+    tick_clock_.Advance(base::TimeDelta::FromSeconds(12345));
+    output_device_listener_->tick_clock_ = &tick_clock_;
   }
 
   void AdvanceLastDeviceChangeTime() {
-    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(
+    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(
         AudioDeviceListenerWin::kDeviceChangeLimitMs + 1));
   }
 
@@ -68,7 +67,7 @@ class AudioDeviceListenerWinTest : public testing::Test {
  private:
   ScopedCOMInitializer com_init_;
   std::unique_ptr<AudioDeviceListenerWin> output_device_listener_;
-  base::SimpleTestTickClock* tick_clock_;
+  base::SimpleTestTickClock tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerWinTest);
 };

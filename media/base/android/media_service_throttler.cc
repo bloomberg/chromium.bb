@@ -84,7 +84,7 @@ MediaServiceThrottler* MediaServiceThrottler::GetInstance() {
 MediaServiceThrottler::~MediaServiceThrottler() {}
 
 MediaServiceThrottler::MediaServiceThrottler()
-    : clock_(new base::DefaultTickClock()),
+    : clock_(base::DefaultTickClock::GetInstance()),
       current_crashes_(0),
       crash_listener_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // base::Unretained is safe because the MediaServiceThrottler is supposed to
@@ -95,7 +95,7 @@ MediaServiceThrottler::MediaServiceThrottler()
 }
 
 void MediaServiceThrottler::SetTickClockForTesting(base::TickClock* clock) {
-  clock_.reset(clock);
+  clock_ = clock;
 }
 
 base::TimeDelta MediaServiceThrottler::GetBaseThrottlingRateForTesting() {

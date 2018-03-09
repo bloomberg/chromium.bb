@@ -35,10 +35,7 @@ class SurfaceChooserHelperTest : public testing::Test {
 
   void ReplaceHelper(bool is_overlay_required, bool promote_aggressively) {
     // Advance the clock so that time 0 isn't recent.
-    std::unique_ptr<base::SimpleTestTickClock> tick_clock =
-        std::make_unique<base::SimpleTestTickClock>();
-    tick_clock_ = tick_clock.get();
-    tick_clock_->Advance(TimeDelta::FromSeconds(10000));
+    tick_clock_.Advance(TimeDelta::FromSeconds(10000));
 
     std::unique_ptr<MockAndroidVideoSurfaceChooser> chooser =
         std::make_unique<MockAndroidVideoSurfaceChooser>();
@@ -48,7 +45,7 @@ class SurfaceChooserHelperTest : public testing::Test {
     aggregator_ = aggregator.get();
     helper_ = std::make_unique<SurfaceChooserHelper>(
         std::move(chooser), is_overlay_required, promote_aggressively,
-        std::move(aggregator), std::move(tick_clock));
+        std::move(aggregator), &tick_clock_);
   }
 
   // Convenience function.
@@ -57,7 +54,7 @@ class SurfaceChooserHelperTest : public testing::Test {
     helper_->UpdateChooserState(base::Optional<AndroidOverlayFactoryCB>());
   }
 
-  base::SimpleTestTickClock* tick_clock_ = nullptr;
+  base::SimpleTestTickClock tick_clock_;
 
   MockPromotionHintAggregator* aggregator_ = nullptr;
 
@@ -217,7 +214,7 @@ TEST_F(SurfaceChooserHelperTest, PromotionHintsUpdateChooserStatePeriodically) {
   helper_->NotifyPromotionHintAndUpdateChooser(hint, false);
 
   // Advancing the time and using an overlay should not send a hint.
-  tick_clock_->Advance(base::TimeDelta::FromSeconds(10));
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(10));
   EXPECT_CALL(*chooser_, MockUpdateState()).Times(0);
   helper_->NotifyPromotionHintAndUpdateChooser(hint, true);
 
