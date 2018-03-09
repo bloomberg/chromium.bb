@@ -226,9 +226,10 @@ public abstract class ChromeFeatureList {
             "NTPArticleSuggestionsExpandableHeader";
     public static final String NTP_CONDENSED_LAYOUT = "NTPCondensedLayout";
     public static final String NTP_CONDENSED_TILE_LAYOUT = "NTPCondensedTileLayout";
-    public static final String NTP_MODERN_LAYOUT = "NTPModernLayout";
     public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
+    public static final String NTP_MODERN_LAYOUT = "NTPModernLayout";
+    public static final String NTP_SHORTCUTS = "NTPShortcuts";
     public static final String NTP_SHOW_GOOGLE_G_IN_OMNIBOX = "NTPShowGoogleGInOmnibox";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =

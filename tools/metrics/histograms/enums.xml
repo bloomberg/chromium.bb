@@ -26879,6 +26879,7 @@ from previous Chrome versions.
   <int value="1019857902"
       label="disable-hide-inactive-stacked-tab-close-buttons"/>
   <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
@@ -27197,6 +27198,7 @@ from previous Chrome versions.
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
+  <int value="1792609232" label="NTPShortcuts:enabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1809323887"
       label="AutofillUpstreamUseGooglePayBranding:disabled"/>

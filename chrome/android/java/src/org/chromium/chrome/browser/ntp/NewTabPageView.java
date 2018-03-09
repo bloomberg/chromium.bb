@@ -364,6 +364,8 @@ public class NewTabPageView
             }
         });
 
+        initializeShortcuts();
+
         mInitialized = true;
 
         TraceEvent.end(TAG + ".initialize()");
@@ -1064,5 +1066,20 @@ public class NewTabPageView
     private void onDestroy() {
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         VrShellDelegate.unregisterVrModeObserver(this);
+    }
+
+    private void initializeShortcuts() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHORTCUTS)) return;
+
+        ViewGroup shortcuts =
+                (ViewGroup) mRecyclerView.getAboveTheFoldView().findViewById(R.id.shortcuts);
+        shortcuts.setVisibility(View.VISIBLE);
+
+        shortcuts.findViewById(R.id.bookmarks_button)
+                .setOnClickListener(view -> mManager.getNavigationDelegate().navigateToBookmarks());
+
+        shortcuts.findViewById(R.id.downloads_button)
+                .setOnClickListener(
+                        view -> mManager.getNavigationDelegate().navigateToDownloadManager());
     }
 }

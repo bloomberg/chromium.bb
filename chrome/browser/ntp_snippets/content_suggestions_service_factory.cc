@@ -68,7 +68,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -126,8 +125,8 @@ using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
 
 #if defined(OS_ANDROID)
-using chrome::android::GetIsChromeHomeEnabled;
 using content::DownloadManager;
+using ntp_snippets::AreNtpShortcutsEnabled;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
 using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
@@ -507,7 +506,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::DefaultClock::GetInstance(),
-          GetIsChromeHomeEnabled());
+          AreNtpShortcutsEnabled());
 
   auto* service = new ContentSuggestionsService(
       State::ENABLED, identity_manager, history_service, large_icon_service,
