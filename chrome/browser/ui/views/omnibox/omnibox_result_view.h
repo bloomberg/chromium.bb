@@ -26,7 +26,6 @@ enum class OmniboxState;
 enum class OmniboxTint;
 
 namespace gfx {
-class Canvas;
 class Image;
 }
 
@@ -97,6 +96,10 @@ class OmniboxResultView : public views::View,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
+  // Create instance and add it as a child.
+  views::ImageView* AddImageView();
+  OmniboxTextView* AddOmniboxTextView(const gfx::FontList& font_list);
+
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
 
@@ -122,7 +125,6 @@ class OmniboxResultView : public views::View,
   void Layout() override;
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -137,25 +139,22 @@ class OmniboxResultView : public views::View,
   // Cache the font height as a minor optimization.
   int font_height_;
 
+  // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;
 
-  gfx::Rect answer_icon_bounds_;
-  gfx::Rect icon_bounds_;
-
-  std::unique_ptr<views::ImageView> keyword_icon_;
-  std::unique_ptr<OmniboxTabSwitchButton> tab_switch_button_;
-
+  // For sliding in the keyword search.
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
-  // If the answer has an icon, cache the image.
-  gfx::ImageSkia answer_image_;
-
   // Weak pointers for easy reference.
+  views::ImageView* icon_view_;          // Small icon. e.g. favicon.
+  views::ImageView* image_view_;         // Larger image for rich suggestions.
+  views::ImageView* keyword_icon_view_;  // An icon resembling a '>'.
+  OmniboxTabSwitchButton* tab_switch_button_;
   OmniboxTextView* content_view_;
   OmniboxTextView* description_view_;
   OmniboxTextView* keyword_content_view_;
   OmniboxTextView* keyword_description_view_;
-  OmniboxTextView* separator_view_;
+  OmniboxTextView* separator_view_;  // e.g. A hyphen.
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
