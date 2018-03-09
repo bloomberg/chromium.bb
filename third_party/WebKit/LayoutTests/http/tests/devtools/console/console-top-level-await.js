@@ -59,6 +59,7 @@
   await test('p');
   await test('let q = 1, s = await 2');
   await test('s');
+  await test('await {...{foo: 42}}');
   await new Promise(resolve => ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(resolve));
   ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();

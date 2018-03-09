@@ -82,4 +82,6 @@ let q = 1, s = await 2
 undefined
 s
 2
+await {...{foo: 42}}
+{foo: 42}
 
