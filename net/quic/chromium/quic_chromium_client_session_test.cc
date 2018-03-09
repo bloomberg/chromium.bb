@@ -36,7 +36,7 @@
 #include "net/quic/core/quic_packet_writer.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
-#include "net/quic/platform/impl/quic_test_impl.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_promised_info_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"

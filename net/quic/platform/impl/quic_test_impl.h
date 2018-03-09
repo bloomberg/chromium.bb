@@ -10,21 +10,21 @@
 
 // When constructed, checks that all QUIC flags have their correct default
 // values and when destructed, restores those values.
-class QuicFlagSaver {
+class QuicFlagSaverImpl {
  public:
-  QuicFlagSaver();
-  ~QuicFlagSaver();
+  QuicFlagSaverImpl();
+  ~QuicFlagSaverImpl();
 };
 
 class QuicTestImpl : public ::testing::Test {
  private:
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+  QuicFlagSaverImpl flags_;  // Save/restore all QUIC flag values.
 };
 
 template <class T>
 class QuicTestWithParamImpl : public ::testing::TestWithParam<T> {
  private:
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+  QuicFlagSaverImpl flags_;  // Save/restore all QUIC flag values.
 };
 
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_

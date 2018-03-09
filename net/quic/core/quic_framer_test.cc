@@ -482,7 +482,6 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     return BuildUnsizedDataPacket(&framer_, header, frames, packet_size);
   }
 
-  QuicFlagSaver flags_;
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   ParsedQuicVersion version_;
