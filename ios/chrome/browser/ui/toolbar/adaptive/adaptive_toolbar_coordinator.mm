@@ -120,9 +120,7 @@
   BOOL isNTP = IsVisibleUrlNewTabPage(webState);
 
   [self.mediator updateConsumerForWebState:webState];
-  if (webState != self.webStateList->GetActiveWebState() || isNTP) {
-    [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];
-  }
+  [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];
 }
 
 - (void)resetToolbarAfterSideSwipeSnapshot {

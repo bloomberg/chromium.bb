@@ -30,7 +30,6 @@
 @property(nonatomic, readonly) UIColor* NTPBackgroundColor;
 
 // Background color of the toolbar.
-// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* backgroundColor;
 
 // Background color of the omnibox.

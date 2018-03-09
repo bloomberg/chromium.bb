@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
@@ -40,11 +41,16 @@
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
+  self.view.blur.hidden = YES;
+  self.view.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
   // TODO(crbug.com/804850): Have the correct background color for incognito
   // NTP.
 }
 
 - (void)resetAfterSideSwipeSnapshot {
+  self.view.blur.hidden = NO;
+  self.view.backgroundColor = [UIColor clearColor];
 }
 
 #pragma mark - UIViewController
