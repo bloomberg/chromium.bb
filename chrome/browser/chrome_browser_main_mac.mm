@@ -75,10 +75,6 @@ ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
 }
 
 int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
-  const int result = ChromeBrowserMainPartsPosix::PreEarlyInitialization();
-  if (result != content::RESULT_CODE_NORMAL_EXIT)
-    return result;
-
   if (base::mac::WasLaunchedAsLoginItemRestoreState()) {
     base::CommandLine* singleton_command_line =
         base::CommandLine::ForCurrentProcess();
@@ -103,11 +99,13 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   // If ui_task is not NULL, the app is actually a browser_test.
   if (!parameters().ui_task) {
     // The browser process only wants to support the language Cocoa will use,
-    // so force the app locale to be overriden with that value.
+    // so force the app locale to be overriden with that value. This must
+    // happen before the ResourceBundle is loaded, which happens in
+    // ChromeBrowserMainParts::PreEarlyInitialization().
     l10n_util::OverrideLocaleWithCocoaLocale();
   }
 
-  return content::RESULT_CODE_NORMAL_EXIT;
+  return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
