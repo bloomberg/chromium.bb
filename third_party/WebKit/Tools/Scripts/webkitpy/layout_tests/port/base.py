@@ -1732,6 +1732,10 @@ class Port(object):
 
     def _wpt_test_urls_matching_paths(self, paths):
         tests = []
+        # '/' is used throughout this function instead of filesystem.sep as the WPT manifest always
+        # uses '/' for paths (it is not OS dependent).
+        if self._filesystem.sep != '/':
+            paths = [path.replace(self._filesystem.sep, '/') for path in paths]
 
         for test_url_path in self._wpt_manifest().all_urls():
             if test_url_path[0] == '/':
@@ -1752,8 +1756,8 @@ class Port(object):
                 )
 
                 # Get a list of directories for both paths, filter empty strings
-                full_test_url_directories = filter(None, full_test_url_path.split(self._filesystem.sep))
-                path_directories = filter(None, path.split(self._filesystem.sep))
+                full_test_url_directories = filter(None, full_test_url_path.split('/'))
+                path_directories = filter(None, path.split('/'))
 
                 # For all other path matches within WPT
                 if matches_any_js_test or path_directories == full_test_url_directories[0:len(path_directories)]:
