@@ -784,7 +784,7 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_adds_subs_out_avx2(x1[31], x1[32], output[31], output[32]);
 }
 
-// 1D functions process process 16 pixels at one time.
+// 1D functions process 16 pixels at one time.
 static const transform_1d_avx2
     lowbd_txfm_all_1d_w16_arr[TX_SIZES][ITX_TYPES_1D] = {
       { NULL, NULL, NULL },
@@ -1200,27 +1200,27 @@ void av1_lowbd_inv_txfm2d_add_avx2(const int32_t *input, uint8_t *output,
                                    int eob) {
   switch (tx_size) {
     case TX_4X4:
-    case TX_8X8:  // 8x8 transform
+    case TX_8X8:
     case TX_4X8:
     case TX_8X4:
-    case TX_8X16:  // 8x16 transform
-    case TX_16X8:  // 16x8 transform
+    case TX_8X16:
+    case TX_16X8:
     case TX_4X16:
     case TX_16X4:
-    case TX_8X32:  // 8x32 transform
-    case TX_32X8:  // 32x8 transform
+    case TX_8X32:
+    case TX_32X8:
       av1_lowbd_inv_txfm2d_add_ssse3(input, output, stride, tx_type, tx_size,
                                      eob);
       break;
-    case TX_16X16:  // 16x16 transform
-    case TX_32X32:  // 32x32 transform
-    case TX_64X64:  // 64x64 transform
-    case TX_16X32:  // 16x32 transform
-    case TX_32X16:  // 32x16 transform
-    case TX_32X64:  // 32x64 transform
-    case TX_64X32:  // 64x32 transform
-    case TX_16X64:  // 16x64 transform
-    case TX_64X16:  // 64x16 transform
+    case TX_16X16:
+    case TX_32X32:
+    case TX_64X64:
+    case TX_16X32:
+    case TX_32X16:
+    case TX_32X64:
+    case TX_64X32:
+    case TX_16X64:
+    case TX_64X16:
     default:
       lowbd_inv_txfm2d_add_universe_avx2(input, output, stride, tx_type,
                                          tx_size, eob);
