@@ -24,7 +24,7 @@ SuggestionsContainerView::SuggestionsContainerView(
   layer()->SetFillsBoundsOpaquely(false);
 
   DCHECK(contents_view);
-  view_delegate_ = contents_view_->app_list_main_view()->view_delegate();
+  view_delegate_ = contents_view_->GetAppListMainView()->view_delegate();
   SetBackground(views::CreateSolidBackground(kLabelBackgroundColor));
 
   CreateAppsGrid(kNumStartPageTiles);

@@ -73,7 +73,7 @@ void AppListMainView::Init(int initial_apps_page,
 
 void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
-  contents_view_ = new ContentsView(this, app_list_view_);
+  contents_view_ = new ContentsView(app_list_view_);
   contents_view_->Init(model_);
   AddChildView(contents_view_);
 
@@ -93,7 +93,7 @@ void AppListMainView::ShowAppListWhenReady() {
 
 void AppListMainView::ResetForShow() {
   contents_view_->SetActiveState(ash::AppListState::kStateStart);
-  contents_view_->apps_container_view()->ResetForShowApps();
+  contents_view_->GetAppsContainerView()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
   search_box_view_->ClearSearch();
@@ -121,7 +121,7 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
 }
 
 PaginationModel* AppListMainView::GetAppsPaginationModel() {
-  return contents_view_->apps_container_view()
+  return contents_view_->GetAppsContainerView()
       ->apps_grid_view()
       ->pagination_model();
 }
@@ -153,7 +153,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
 }
 
 void AppListMainView::CancelDragInActiveFolder() {
-  contents_view_->apps_container_view()
+  contents_view_->GetAppsContainerView()
       ->app_list_folder_view()
       ->items_grid_view()
       ->EndDrag(true);

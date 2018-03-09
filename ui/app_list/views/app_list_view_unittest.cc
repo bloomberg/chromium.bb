@@ -426,14 +426,14 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   AppsGridView* apps_grid_view() {
     return main_view()
         ->contents_view()
-        ->apps_container_view()
+        ->GetAppsContainerView()
         ->apps_grid_view();
   }
 
   AppListFolderView* app_list_folder_view() {
     return main_view()
         ->contents_view()
-        ->apps_container_view()
+        ->GetAppsContainerView()
         ->app_list_folder_view();
   }
 
@@ -599,7 +599,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   SetAppListState(AppListViewState::FULLSCREEN_ALL_APPS);
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -746,7 +746,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   SetAppListState(AppListViewState::FULLSCREEN_ALL_APPS);
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -784,7 +784,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   SetAppListState(AppListViewState::FULLSCREEN_ALL_APPS);
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
 
   // Select the second page.
   app_list_folder_view()->items_grid_view()->pagination_model()->SelectPage(
@@ -850,7 +850,7 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   // Move focus to first suggestion app, then open the folder.
   folder_item_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 
   // Move focus to the first app, then transition to PEEKING state.
@@ -1516,19 +1516,19 @@ TEST_F(AppListViewTest, FolderViewToPeeking) {
   Show();
   AppsGridViewTestApi test_api(view_->app_list_main_view()
                                    ->contents_view()
-                                   ->apps_container_view()
+                                   ->GetAppsContainerView()
                                    ->apps_grid_view());
   test_api.PressItemAt(0);
   EXPECT_TRUE(view_->app_list_main_view()
                   ->contents_view()
-                  ->apps_container_view()
+                  ->GetAppsContainerView()
                   ->IsInFolderView());
 
   view_->SetState(AppListViewState::PEEKING);
 
   EXPECT_FALSE(view_->app_list_main_view()
                    ->contents_view()
-                   ->apps_container_view()
+                   ->GetAppsContainerView()
                    ->IsInFolderView());
 }
 
@@ -1542,7 +1542,7 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
   view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
   ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-  AppsContainerView* container_view = contents_view->apps_container_view();
+  AppsContainerView* container_view = contents_view->GetAppsContainerView();
   const gfx::Rect grid_view_bounds =
       container_view->apps_grid_view()->GetBoundsInScreen();
   gfx::Point target_point = grid_view_bounds.origin();

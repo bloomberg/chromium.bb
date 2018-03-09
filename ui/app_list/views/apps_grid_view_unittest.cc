@@ -132,7 +132,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     params.parent = parent;
     app_list_view_->Initialize(params);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
-    apps_grid_view_ = contents_view_->apps_container_view()->apps_grid_view();
+    apps_grid_view_ = contents_view_->GetAppsContainerView()->apps_grid_view();
     app_list_view_->GetWidget()->Show();
 
     model_ = delegate_->GetTestModel();
@@ -181,7 +181,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   }
 
   AppListFolderView* app_list_folder_view() const {
-    return contents_view_->apps_container_view()->app_list_folder_view();
+    return contents_view_->GetAppsContainerView()->app_list_folder_view();
   }
 
   // Points are in |apps_grid_view_|'s coordinates, and fixed for RTL.
@@ -750,7 +750,7 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
   model_->PopulateApps(5);
 
   // Select the first suggested app and launch it.
-  contents_view_->app_list_main_view()->ActivateApp(GetItemViewAt(0)->item(),
+  contents_view_->GetAppListMainView()->ActivateApp(GetItemViewAt(0)->item(),
                                                     0);
 
   // Test that histograms recorded that a regular app launched.
@@ -862,7 +862,7 @@ TEST_F(AppsGridViewTest,
 
 TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
   AppsContainerView* apps_container_view =
-      contents_view_->apps_container_view();
+      contents_view_->GetAppsContainerView();
 
   const size_t kTotalItems = kMaxFolderItemsPerPage;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);

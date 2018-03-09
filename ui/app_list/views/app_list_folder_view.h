@@ -27,7 +27,6 @@ class AppsContainerView;
 class AppsGridView;
 class AppListFolderItem;
 class AppListItemView;
-class AppListMainView;
 class AppListModel;
 class FolderHeaderView;
 class PageSwitcher;
@@ -39,7 +38,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
  public:
   AppListFolderView(AppsContainerView* container_view,
                     AppListModel* model,
-                    AppListMainView* app_list_main_view);
+                    ContentsView* contents_view);
   ~AppListFolderView() override;
 
   // An interface for the folder opening and closing animations.
@@ -132,7 +131,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   // Views below are not owned by views hierarchy.
   AppsContainerView* container_view_;
-  AppListMainView* app_list_main_view_;
+  ContentsView* contents_view_;
 
   // The view is used to draw a background with corner radius.
   views::View* background_view_;  // Owned by views hierarchy.

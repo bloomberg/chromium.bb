@@ -11,11 +11,7 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "base/macros.h"
-#include "ui/app_list/views/app_list_page.h"
-
-namespace gfx {
-class Rect;
-}
+#include "ui/app_list/views/horizontal_page.h"
 
 namespace app_list {
 
@@ -23,17 +19,17 @@ class AppsGridView;
 class ApplicationDragAndDropHost;
 class AppListFolderItem;
 class AppListFolderView;
-class AppListMainView;
 class AppListModel;
+class ContentsView;
 class FolderBackgroundView;
 class PageSwitcher;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder. Only one if them is visible to user at any time.
-class APP_LIST_EXPORT AppsContainerView : public AppListPage {
+class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
  public:
-  AppsContainerView(AppListMainView* app_list_main_view, AppListModel* model);
+  AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;
 
   // Shows the active folder content specified by |folder_item|.
@@ -78,16 +74,9 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
 
-  // AppListPage overrides:
-  void OnWillBeShown() override;
+  // HorizontalPage overrides:
   void OnWillBeHidden() override;
-  gfx::Rect GetSearchBoxBounds() const override;
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const override;
-  views::View* GetSelectedView() const override;
   views::View* GetFirstFocusableView() override;
-  views::View* GetLastFocusableView() override;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
@@ -105,11 +94,7 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
-  // Gets the final top padding of search box.
-  int GetSearchBoxFinalTopPadding() const;
-
-  // Gets the top padding of search box during dragging.
-  int GetSearchBoxTopPaddingDuringDragging() const;
+  ContentsView* contents_view_;  // Not owned.
 
   // The views below are owned by views hierarchy.
   AppsGridView* apps_grid_view_ = nullptr;
