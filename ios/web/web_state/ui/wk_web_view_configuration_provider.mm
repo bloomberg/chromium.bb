@@ -101,7 +101,8 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
   }
-  // Prevent callers from changing the internals of configuration.
+  // This is a shallow copy to prevent callers from changing the internals of
+  // configuration.
   return [configuration_ copy];
 }
 
