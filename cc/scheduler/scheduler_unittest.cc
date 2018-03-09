@@ -2555,7 +2555,10 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBeginFrameSourcePaused) {
   task_runner().RunPendingTasks();  // Run posted deadline.
 
   // Sync tree should be forced to activate.
-  EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
+  // Pausing the begin frame source aborts the draw. Then
+  // ProactiveBeginFrameWanted is no longer true, so the scheduler stops
+  // listening for begin frames.
+  EXPECT_ACTIONS("ScheduledActionActivateSyncTree", "RemoveObserver(this)");
 }
 
 // Tests to ensure frame sources can be successfully changed while drawing.
@@ -2977,7 +2980,10 @@ TEST_F(SchedulerTest, AbortEarlyIfNoDamage) {
   task_runner().RunPendingTasks();  // Run posted deadline.
   // Should not try to schedule a draw. (ScheduledActionDrawIfPossible should
   // not appear.)
-  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame");
+  // When the frame is aborted, the scheduler does not ask for a proactive begin
+  // frame, so stop listening for begin frames.
+  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame",
+                 "RemoveObserver(this)");
   EXPECT_EQ(0, client_->num_draws());
 
   scheduler_->SetNeedsRedraw();
