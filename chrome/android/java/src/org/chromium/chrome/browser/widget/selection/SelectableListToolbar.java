@@ -36,6 +36,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.ActionModeController;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -56,9 +57,9 @@ import javax.annotation.Nullable;
  *
  * @param <E> The type of the selectable items this toolbar interacts with.
  */
-public class SelectableListToolbar<E> extends Toolbar implements SelectionObserver<E>,
-        OnClickListener, OnEditorActionListener, DisplayStyleObserver {
-
+public class SelectableListToolbar<E>
+        extends Toolbar implements SelectionObserver<E>, OnClickListener, OnEditorActionListener,
+                                   DisplayStyleObserver, VrShellDelegate.VrModeObserver {
     /**
      * A delegate that handles searching the list of selectable items associated with this toolbar.
      */
@@ -116,6 +117,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private SearchDelegate mSearchDelegate;
     private boolean mIsLightTheme = true;
     private boolean mSelectableListHasItems;
+    private boolean mIsVrEnabled = false;
 
     protected NumberRollView mNumberRollView;
     private DrawerLayout mDrawerLayout;
@@ -158,6 +160,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
         mObservers.clear();
         UiUtils.hideKeyboard(mSearchEditText);
+        VrShellDelegate.unregisterVrModeObserver(this);
     }
 
     /**
@@ -222,6 +225,20 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         }
     }
 
+    @Override
+    public void onEnterVr() {
+        // TODO(https://crbug.com/817177): Editing text is not supported in VR, so we disable
+        // searching.
+        mIsVrEnabled = true;
+        if (mHasSearchView) updateSearchMenuItem();
+    }
+
+    @Override
+    public void onExitVr() {
+        mIsVrEnabled = false;
+        if (mHasSearchView) updateSearchMenuItem();
+    }
+
     /**
      * Inflates and initializes the search view.
      * @param searchDelegate The delegate that will handle performing searches.
@@ -274,6 +291,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
                     getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
                     mClearTextButton.getPaddingBottom());
         }
+
+        VrShellDelegate.registerVrModeObserver(this);
+        if (VrShellDelegate.isInVr()) onEnterVr();
     }
 
     @Override
@@ -450,9 +470,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     protected void onDataChanged(int numItems) {
         if (mHasSearchView) {
             mSelectableListHasItems = numItems != 0;
-            getMenu()
-                    .findItem(mSearchMenuItemId)
-                    .setVisible(!mIsSelectionEnabled && !mIsSearching && mSelectableListHasItems);
+            updateSearchMenuItem();
         }
     }
 
@@ -577,7 +595,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         getMenu().setGroupVisible(mSelectedGroupResId, false);
         if (mHasSearchView) {
             mSearchView.setVisibility(View.GONE);
-            getMenu().findItem(mSearchMenuItemId).setVisible(mSelectableListHasItems);
+            updateSearchMenuItem();
         }
 
         setNavigationButton(NAVIGATION_BUTTON_MENU);
@@ -624,6 +642,15 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         onThemeChanged(true);
         updateDisplayStyleIfNecessary();
+    }
+
+    private void updateSearchMenuItem() {
+        if (!mHasSearchView) return;
+        MenuItem searchMenuItem = getMenu().findItem(mSearchMenuItemId);
+        if (searchMenuItem != null) {
+            searchMenuItem.setVisible(mSelectableListHasItems && !mIsSelectionEnabled
+                    && !mIsSearching && !mIsVrEnabled);
+        }
     }
 
     protected void switchToNumberRollView(List<E> selectedItems, boolean wasSelectionEnabled) {
