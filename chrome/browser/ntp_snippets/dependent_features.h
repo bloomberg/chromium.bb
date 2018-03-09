@@ -9,6 +9,8 @@
 
 namespace ntp_snippets {
 
+bool AreNtpShortcutsEnabled();
+
 bool AreAssetDownloadsEnabled();
 bool AreOfflinePageDownloadsEnabled();
 bool IsDownloadsProviderEnabled();

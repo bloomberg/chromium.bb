@@ -2098,6 +2098,10 @@ const char kNtpModernLayoutName[] = "Modern NTP layout";
 const char kNtpModernLayoutDescription[] =
     "Show a modern layout on the New Tab Page.";
 
+const char kNtpShortcutsName[] = "NTP Shortcuts";
+const char kNtpShortcutsDescription[] =
+    "Show shortcuts for bookmarks and downloads on the New Tab Page.";
+
 const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";

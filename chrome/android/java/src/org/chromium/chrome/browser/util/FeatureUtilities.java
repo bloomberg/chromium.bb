@@ -207,7 +207,6 @@ public class FeatureUtilities {
      *
      * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
      */
-    @CalledByNative
     public static boolean isChromeHomeEnabled() {
         return false;
     }
@@ -281,8 +280,6 @@ public class FeatureUtilities {
      */
     @CalledByNative
     public static boolean isChromeModernDesignEnabled() {
-        if (isChromeHomeEnabled()) return true;
-
         if (sIsChromeModernDesignEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {

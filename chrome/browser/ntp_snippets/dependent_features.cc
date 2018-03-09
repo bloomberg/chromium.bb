@@ -18,15 +18,6 @@ namespace ntp_snippets {
 
 namespace {
 
-// All platforms proxy for chrome::android::GetIsChromeHomeEnabled.
-bool GetIsChromeHomeEnabled() {
-#if defined(OS_ANDROID)
-  return chrome::android::GetIsChromeHomeEnabled();
-#else
-  return false;
-#endif  // OS_ANDROID
-}
-
 bool IsPhysicalWebEnabled() {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(chrome::android::kPhysicalWebFeature);
@@ -37,14 +28,23 @@ bool IsPhysicalWebEnabled() {
 
 }  // namespace
 
+// All platforms proxy for whether NTP shortcuts are enabled.
+bool AreNtpShortcutsEnabled() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(chrome::android::kNTPShortcuts);
+#else
+  return false;
+#endif  // OS_ANDROID
+}
+
 bool AreAssetDownloadsEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              features::kAssetDownloadSuggestionsFeature);
 }
 
 bool AreOfflinePageDownloadsEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              features::kOfflinePageDownloadSuggestionsFeature);
 }
@@ -53,13 +53,13 @@ bool IsDownloadsProviderEnabled() {
 }
 
 bool IsBookmarkProviderEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kBookmarkSuggestionsFeature);
 }
 
 bool IsRecentTabProviderEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
          base::FeatureList::IsEnabled(
@@ -67,14 +67,14 @@ bool IsRecentTabProviderEnabled() {
 }
 
 bool IsPhysicalWebPageProviderEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kPhysicalWebPageSuggestionsFeature) &&
          IsPhysicalWebEnabled();
 }
 
 bool IsForeignSessionsProviderEnabled() {
-  return !GetIsChromeHomeEnabled() &&
+  return !AreNtpShortcutsEnabled() &&
          base::FeatureList::IsEnabled(
              ntp_snippets::kForeignSessionsSuggestionsFeature);
 }

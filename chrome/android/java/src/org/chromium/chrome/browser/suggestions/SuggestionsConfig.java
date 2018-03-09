@@ -38,7 +38,7 @@ public final class SuggestionsConfig {
         // The scroll to load feature does not work well for users who require accessibility mode.
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
 
-        return FeatureUtilities.isChromeHomeEnabled()
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHORTCUTS)
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
     }
