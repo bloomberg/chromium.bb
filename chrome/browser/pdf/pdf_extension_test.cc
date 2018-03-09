@@ -55,6 +55,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -885,6 +886,42 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
   GURL url(ftp_server.GetURL("/test.pdf"));
   ASSERT_TRUE(LoadPdf(url));
   EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MultipleDomains) {
+  for (const auto& url :
+       {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("c.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("d.com", "/pdf/test.pdf")}) {
+    ASSERT_TRUE(LoadPdf(url));
+  }
+  EXPECT_EQ(1, CountPDFProcesses());
+}
+
+class PDFIsolatedExtensionTest : public PDFExtensionTest {
+ public:
+  PDFIsolatedExtensionTest() {}
+  ~PDFIsolatedExtensionTest() override {}
+
+  void SetUp() override {
+    features_.InitAndEnableFeature(features::kPdfIsolation);
+    PDFExtensionTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFIsolatedExtensionTest, MultipleDomains) {
+  for (const auto& url :
+       {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("c.com", "/pdf/test.pdf"),
+        embedded_test_server()->GetURL("d.com", "/pdf/test.pdf")}) {
+    ASSERT_TRUE(LoadPdf(url));
+  }
+  EXPECT_EQ(4, CountPDFProcesses());
 }
 
 class PDFExtensionLinkClickTest : public PDFExtensionTest {
