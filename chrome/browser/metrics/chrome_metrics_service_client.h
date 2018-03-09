@@ -204,10 +204,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   PluginMetricsProvider* plugin_metrics_provider_;
 #endif
 
-  // The MemoryGrowthTracker instance that tracks memory usage growth in
-  // MemoryDetails.
-  MemoryGrowthTracker memory_growth_tracker_;
-
   // Callback to determine whether or not a cellular network is currently being
   // used.
   base::Callback<void(bool*)> cellular_callback_;
