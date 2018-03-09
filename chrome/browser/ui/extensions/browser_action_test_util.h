@@ -30,90 +30,84 @@ class TestToolbarActionsBarHelper {
 
 class BrowserActionTestUtil {
  public:
-  // Constructs a BrowserActionTestUtil that uses the |browser|'s default
-  // browser action container.
-  explicit BrowserActionTestUtil(Browser* browser);
-
   // Constructs a BrowserActionTestUtil which, if |is_real_window| is false,
   // will create its own browser actions container. This is useful in unit
   // tests, when the |browser|'s window doesn't create platform-specific views.
-  BrowserActionTestUtil(Browser* browser, bool is_real_window);
+  static std::unique_ptr<BrowserActionTestUtil> Create(
+      Browser* browser,
+      bool is_real_window = true);
 
-  ~BrowserActionTestUtil();
+  virtual ~BrowserActionTestUtil() {}
 
   // Returns the number of browser action buttons in the window toolbar.
-  int NumberOfBrowserActions();
+  virtual int NumberOfBrowserActions() = 0;
 
   // Returns the number of browser action currently visible.
-  int VisibleBrowserActions();
+  virtual int VisibleBrowserActions() = 0;
 
   // Inspects the extension popup for the action at the given index.
-  void InspectPopup(int index);
+  virtual void InspectPopup(int index) = 0;
 
   // Returns whether the browser action at |index| has a non-null icon. Note
   // that the icon is loaded asynchronously, in which case you can wait for it
   // to load by calling WaitForBrowserActionUpdated.
-  bool HasIcon(int index);
+  virtual bool HasIcon(int index) = 0;
 
   // Returns icon for the browser action at |index|.
-  gfx::Image GetIcon(int index);
+  virtual gfx::Image GetIcon(int index) = 0;
 
   // Simulates a user click on the browser action button at |index|.
-  void Press(int index);
+  virtual void Press(int index) = 0;
 
   // Returns the extension id of the extension at |index|.
-  std::string GetExtensionId(int index);
+  virtual std::string GetExtensionId(int index) = 0;
 
   // Returns the current tooltip for the browser action button.
-  std::string GetTooltip(int index);
+  virtual std::string GetTooltip(int index) = 0;
 
-  gfx::NativeView GetPopupNativeView();
+  virtual gfx::NativeView GetPopupNativeView() = 0;
 
   // Spins a RunLoop until the NativeWindow hosting |GetPopupNativeView()| is
-  // reported as active by the OS. Returns true if successful.
+  // reported as active by the OS. Returns true if successful. This method is
+  // strange: it's not overridden by subclasses, and instead the implementation
+  // is selected at compile-time depending on the windowing system in use.
   bool WaitForPopup();
 
   // Returns whether a browser action popup is being shown currently.
-  bool HasPopup();
+  virtual bool HasPopup() = 0;
 
   // Returns the size of the current browser action popup.
-  gfx::Size GetPopupSize();
+  virtual gfx::Size GetPopupSize() = 0;
 
   // Hides the given popup and returns whether the hide was successful.
-  bool HidePopup();
+  virtual bool HidePopup() = 0;
 
   // Tests that the button at the given |index| is displaying that it wants
   // to run.
-  bool ActionButtonWantsToRun(size_t index);
+  virtual bool ActionButtonWantsToRun(size_t index) = 0;
 
   // Sets the current width of the browser actions container without resizing
   // the underlying controller. This is to simulate e.g. when the browser window
   // is too small for the preferred width.
-  void SetWidth(int width);
+  virtual void SetWidth(int width) = 0;
 
   // Returns the ToolbarActionsBar.
-  ToolbarActionsBar* GetToolbarActionsBar();
+  virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
 
   // Creates and returns a BrowserActionTestUtil with an "overflow" container,
   // with this object's container as the main bar.
-  std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar();
+  virtual std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar() = 0;
 
   // Returns the minimum allowed size of an extension popup.
-  static gfx::Size GetMinPopupSize();
+  virtual gfx::Size GetMinPopupSize() = 0;
 
   // Returns the maximum allowed size of an extension popup.
-  static gfx::Size GetMaxPopupSize();
+  virtual gfx::Size GetMaxPopupSize() = 0;
+
+ protected:
+  BrowserActionTestUtil() {}
 
  private:
-  // A private constructor to create an overflow version.
-  BrowserActionTestUtil(Browser* browser, BrowserActionTestUtil* main_bar);
-
-  Browser* const browser_;  // weak
-
-  // Our test helper, which constructs and owns the views if we don't have a
-  // real browser window, or if this is an overflow version.
-  std::unique_ptr<TestToolbarActionsBarHelper> test_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionTestUtil);
 };
 

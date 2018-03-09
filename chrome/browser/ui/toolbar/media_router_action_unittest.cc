@@ -112,8 +112,7 @@ class MediaRouterActionUnitTest : public MediaRouterWebUITest {
 
     // browser() will only be valid once BrowserWithTestWindowTest::SetUp()
     // has run.
-    browser_action_test_util_.reset(
-        new BrowserActionTestUtil(browser(), false));
+    browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
     action_.reset(
         new TestMediaRouterAction(
             browser(),

@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   // Observe background page being created and closed after
   // the browser action is clicked.
   LazyBackgroundObserver page_complete;
-  BrowserActionTestUtil(browser()).Press(0);
+  BrowserActionTestUtil::Create(browser())->Press(0);
   page_complete.Wait();
 
   // Background page created a new tab before it closed.
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
   // Observe background page being created and closed after
   // the browser action is clicked.
   LazyBackgroundObserver page_complete;
-  BrowserActionTestUtil(browser()).Press(0);
+  BrowserActionTestUtil::Create(browser())->Press(0);
   page_complete.Wait();
 
   // Background page is closed after creating a new tab.
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
   {
     ExtensionTestMessageListener nacl_module_loaded("nacl_module_loaded",
                                                     false);
-    BrowserActionTestUtil(browser()).Press(0);
+    BrowserActionTestUtil::Create(browser())->Press(0);
     nacl_module_loaded.WaitUntilSatisfied();
     content::RunAllTasksUntilIdle();
     EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
   // down.
   {
     LazyBackgroundObserver page_complete;
-    BrowserActionTestUtil(browser()).Press(0);
+    BrowserActionTestUtil::Create(browser())->Press(0);
     page_complete.WaitUntilClosed();
   }
 
@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
     ExtensionTestMessageListener listener_incognito("waiting_incognito", false);
 
     LazyBackgroundObserver page_complete(browser()->profile());
-    BrowserActionTestUtil(browser()).Press(0);
+    BrowserActionTestUtil::Create(browser())->Press(0);
     page_complete.Wait();
 
     // Only the original event page received the message.
@@ -532,9 +532,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
 
   // The browser action has a new title.
-  BrowserActionTestUtil browser_action(browser());
-  ASSERT_EQ(1, browser_action.NumberOfBrowserActions());
-  EXPECT_EQ("Success", browser_action.GetTooltip(0));
+  auto browser_action = BrowserActionTestUtil::Create(browser());
+  ASSERT_EQ(1, browser_action->NumberOfBrowserActions());
+  EXPECT_EQ("Success", browser_action->GetTooltip(0));
 }
 
 // Tests that both a regular page and an event page will receive events when

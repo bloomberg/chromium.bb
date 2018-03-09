@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -27,8 +28,11 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/views/toolbar/browser_action_test_util_views.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -185,12 +189,51 @@ std::unique_ptr<ExtensionPopupTestManager> GetExtensionPopupTestManager() {
 
 }  // namespace
 
-BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser)
-    : BrowserActionTestUtil(browser, true) {
-}
+class BrowserActionTestUtilCocoa : public BrowserActionTestUtil {
+ public:
+  explicit BrowserActionTestUtilCocoa(Browser* browser);
+  BrowserActionTestUtilCocoa(Browser* browser, bool is_real_window);
 
-BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
-                                             bool is_real_window)
+  ~BrowserActionTestUtilCocoa() override;
+
+  // BrowserActionTestUtil:
+  int NumberOfBrowserActions() override;
+  int VisibleBrowserActions() override;
+  void InspectPopup(int index) override;
+  bool HasIcon(int index) override;
+  gfx::Image GetIcon(int index) override;
+  void Press(int index) override;
+  std::string GetExtensionId(int index) override;
+  std::string GetTooltip(int index) override;
+  gfx::NativeView GetPopupNativeView() override;
+  bool HasPopup() override;
+  gfx::Size GetPopupSize() override;
+  bool HidePopup() override;
+  bool ActionButtonWantsToRun(size_t index) override;
+  void SetWidth(int width) override;
+  ToolbarActionsBar* GetToolbarActionsBar() override;
+  std::unique_ptr<BrowserActionTestUtil> CreateOverflowBar() override;
+  gfx::Size GetMinPopupSize() override;
+  gfx::Size GetMaxPopupSize() override;
+
+ private:
+  friend class BrowserActionTestUtil;
+
+  BrowserActionTestUtilCocoa(Browser* browser,
+                             BrowserActionTestUtilCocoa* main_bar);
+
+  Browser* const browser_;  // weak
+
+  // Our test helper, which constructs and owns the views if we don't have a
+  // real browser window, or if this is an overflow version.
+  std::unique_ptr<TestToolbarActionsBarHelper> test_helper_;
+};
+
+BrowserActionTestUtilCocoa::BrowserActionTestUtilCocoa(Browser* browser)
+    : BrowserActionTestUtilCocoa(browser, true) {}
+
+BrowserActionTestUtilCocoa::BrowserActionTestUtilCocoa(Browser* browser,
+                                                       bool is_real_window)
     : browser_(browser) {
   if (!is_real_window)
     test_helper_.reset(new TestToolbarActionsBarHelperCocoa(browser, nullptr));
@@ -199,25 +242,25 @@ BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
   GetExtensionPopupTestManager()->DisableAnimations();
 }
 
-BrowserActionTestUtil::~BrowserActionTestUtil() {}
+BrowserActionTestUtilCocoa::~BrowserActionTestUtilCocoa() {}
 
-int BrowserActionTestUtil::NumberOfBrowserActions() {
+int BrowserActionTestUtilCocoa::NumberOfBrowserActions() {
   return [GetController(browser_, test_helper_.get()) buttonCount];
 }
 
-int BrowserActionTestUtil::VisibleBrowserActions() {
+int BrowserActionTestUtilCocoa::VisibleBrowserActions() {
   return [GetController(browser_, test_helper_.get()) visibleButtonCount];
 }
 
-void BrowserActionTestUtil::InspectPopup(int index) {
+void BrowserActionTestUtilCocoa::InspectPopup(int index) {
   NOTREACHED();
 }
 
-bool BrowserActionTestUtil::HasIcon(int index) {
+bool BrowserActionTestUtilCocoa::HasIcon(int index) {
   return [GetButton(browser_, test_helper_.get(), index) image] != nil;
 }
 
-gfx::Image BrowserActionTestUtil::GetIcon(int index) {
+gfx::Image BrowserActionTestUtilCocoa::GetIcon(int index) {
   NSImage* ns_image = [GetButton(browser_, test_helper_.get(), index) image];
   // gfx::Image takes ownership of the |ns_image| reference. We have to increase
   // the ref count so |ns_image| stays around when the image object is
@@ -226,45 +269,45 @@ gfx::Image BrowserActionTestUtil::GetIcon(int index) {
   return gfx::Image(ns_image);
 }
 
-void BrowserActionTestUtil::Press(int index) {
+void BrowserActionTestUtilCocoa::Press(int index) {
   NSButton* button = GetButton(browser_, test_helper_.get(), index);
   [button performClick:nil];
 }
 
-std::string BrowserActionTestUtil::GetExtensionId(int index) {
+std::string BrowserActionTestUtilCocoa::GetExtensionId(int index) {
   return
       [GetButton(browser_, test_helper_.get(), index) viewController]->GetId();
 }
 
-std::string BrowserActionTestUtil::GetTooltip(int index) {
+std::string BrowserActionTestUtilCocoa::GetTooltip(int index) {
   NSString* tooltip = [GetButton(browser_, test_helper_.get(), index) toolTip];
   return base::SysNSStringToUTF8(tooltip);
 }
 
-gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
+gfx::NativeView BrowserActionTestUtilCocoa::GetPopupNativeView() {
   ToolbarActionViewController* popup_owner =
       GetToolbarActionsBar()->popup_owner();
   return popup_owner ? popup_owner->GetPopupNativeView() : nil;
 }
 
-bool BrowserActionTestUtil::HasPopup() {
+bool BrowserActionTestUtilCocoa::HasPopup() {
   return GetPopupNativeView() != nil;
 }
 
-gfx::Size BrowserActionTestUtil::GetPopupSize() {
+gfx::Size BrowserActionTestUtilCocoa::GetPopupSize() {
   return GetExtensionPopupTestManager()->GetPopupSize(this);
 }
 
-bool BrowserActionTestUtil::HidePopup() {
+bool BrowserActionTestUtilCocoa::HidePopup() {
   GetExtensionPopupTestManager()->HidePopup(this);
   return !HasPopup();
 }
 
-bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
+bool BrowserActionTestUtilCocoa::ActionButtonWantsToRun(size_t index) {
   return [GetButton(browser_, test_helper_.get(), index) wantsToRunForTesting];
 }
 
-void BrowserActionTestUtil::SetWidth(int width) {
+void BrowserActionTestUtilCocoa::SetWidth(int width) {
   BrowserActionsContainerView* containerView =
       [GetController(browser_, test_helper_.get()) containerView];
   NSRect frame = [containerView frame];
@@ -272,30 +315,41 @@ void BrowserActionTestUtil::SetWidth(int width) {
   [containerView setFrame:frame];
 }
 
-ToolbarActionsBar* BrowserActionTestUtil::GetToolbarActionsBar() {
+ToolbarActionsBar* BrowserActionTestUtilCocoa::GetToolbarActionsBar() {
   return [GetController(browser_, test_helper_.get()) toolbarActionsBar];
 }
 
 std::unique_ptr<BrowserActionTestUtil>
-BrowserActionTestUtil::CreateOverflowBar() {
+BrowserActionTestUtilCocoa::CreateOverflowBar() {
   CHECK(!GetToolbarActionsBar()->in_overflow_mode())
       << "Only a main bar can create an overflow bar!";
-  return base::WrapUnique(new BrowserActionTestUtil(browser_, this));
+  return base::WrapUnique(new BrowserActionTestUtilCocoa(browser_, this));
 }
 
-// static
-gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
+gfx::Size BrowserActionTestUtilCocoa::GetMinPopupSize() {
   return GetExtensionPopupTestManager()->GetMinPopupSize();
 }
 
-// static
-gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
+gfx::Size BrowserActionTestUtilCocoa::GetMaxPopupSize() {
   return GetExtensionPopupTestManager()->GetMaxPopupSize();
 }
 
-BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
-                                             BrowserActionTestUtil* main_bar)
+BrowserActionTestUtilCocoa::BrowserActionTestUtilCocoa(
+    Browser* browser,
+    BrowserActionTestUtilCocoa* main_bar)
     : browser_(browser),
       test_helper_(new TestToolbarActionsBarHelperCocoa(
-          browser_, GetController(browser_, main_bar->test_helper_.get()))) {
+          browser_,
+          GetController(browser_, main_bar->test_helper_.get()))) {}
+
+// static
+std::unique_ptr<BrowserActionTestUtil> BrowserActionTestUtil::Create(
+    Browser* browser,
+    bool is_real_window) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return std::make_unique<BrowserActionTestUtilViews>(browser,
+                                                        is_real_window);
+#endif
+  return std::make_unique<BrowserActionTestUtilCocoa>(browser, is_real_window);
 }

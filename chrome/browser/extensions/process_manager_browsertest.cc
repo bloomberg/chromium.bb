@@ -391,14 +391,14 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   EXPECT_FALSE(pm->IsBackgroundHostClosing(popup->id()));
 
   // Simulate clicking on the action to open a popup.
-  BrowserActionTestUtil test_util(browser());
+  auto test_util = BrowserActionTestUtil::Create(browser());
   content::WindowedNotificationObserver frame_observer(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
   // Open popup in the first extension.
-  test_util.Press(0);
+  test_util->Press(0);
   frame_observer.Wait();
-  ASSERT_TRUE(test_util.HasPopup());
+  ASSERT_TRUE(test_util->HasPopup());
 
   // We now have a view, but still no background hosts.
   EXPECT_EQ(0u, pm->background_hosts().size());
