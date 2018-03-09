@@ -226,8 +226,8 @@ void MultiWindowResizeController::Show(aura::Window* window,
   }
 
   windows_ = windows;
-  windows_.window1->AddObserver(this);
-  windows_.window2->AddObserver(this);
+  StartObserving(windows_.window1);
+  StartObserving(windows_.window2);
   show_location_in_parent_ =
       ConvertPointToTarget(window, window->parent(), point_in_window);
   show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kShowDelayMS),
@@ -240,11 +240,11 @@ void MultiWindowResizeController::Hide() {
     return;  // Ignore hides while actively resizing.
 
   if (windows_.window1) {
-    windows_.window1->RemoveObserver(this);
+    StopObserving(windows_.window1);
     windows_.window1 = nullptr;
   }
   if (windows_.window2) {
-    windows_.window2->RemoveObserver(this);
+    StopObserving(windows_.window2);
     windows_.window2 = nullptr;
   }
 
@@ -254,7 +254,7 @@ void MultiWindowResizeController::Hide() {
     return;
 
   for (size_t i = 0; i < windows_.other_windows.size(); ++i)
-    windows_.other_windows[i]->RemoveObserver(this);
+    StopObserving(windows_.other_windows[i]);
   mouse_watcher_.reset();
   resize_widget_.reset();
   windows_ = ResizeWindows();
@@ -268,6 +268,16 @@ void MultiWindowResizeController::OnWindowDestroying(aura::Window* window) {
   // Have to explicitly reset the WindowResizer, otherwise Hide() does nothing.
   window_resizer_.reset();
   Hide();
+}
+
+void MultiWindowResizeController::OnPostWindowStateTypeChange(
+    wm::WindowState* window_state,
+    mojom::WindowStateType old_type) {
+  if (window_state->IsMaximized() || window_state->IsFullscreen() ||
+      window_state->IsMinimized()) {
+    window_resizer_.reset();
+    Hide();
+  }
 }
 
 MultiWindowResizeController::ResizeWindows
@@ -416,6 +426,16 @@ void MultiWindowResizeController::FindWindowsTouching(
   }
 }
 
+void MultiWindowResizeController::StartObserving(aura::Window* window) {
+  window->AddObserver(this);
+  wm::GetWindowState(window)->AddObserver(this);
+}
+
+void MultiWindowResizeController::StopObserving(aura::Window* window) {
+  window->RemoveObserver(this);
+  wm::GetWindowState(window)->RemoveObserver(this);
+}
+
 void MultiWindowResizeController::ShowIfValidMouseLocation() {
   if (DetermineWindowsFromScreenPoint(windows_.window1).Equals(windows_) ||
       DetermineWindowsFromScreenPoint(windows_.window2).Equals(windows_)) {
@@ -467,7 +487,7 @@ void MultiWindowResizeController::StartResize(
   FindWindowsTouching(windows_.window2, windows_.direction,
                       &windows_.other_windows);
   for (size_t i = 0; i < windows_.other_windows.size(); ++i) {
-    windows_.other_windows[i]->AddObserver(this);
+    StartObserving(windows_.other_windows[i]);
     windows.push_back(windows_.other_windows[i]);
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
@@ -510,7 +530,7 @@ void MultiWindowResizeController::CompleteResize() {
     // the |other_windows|. If we start another resize we'll recalculate the
     // |other_windows| and invoke AddObserver() as necessary.
     for (size_t i = 0; i < windows_.other_windows.size(); ++i)
-      windows_.other_windows[i]->RemoveObserver(this);
+      StopObserving(windows_.other_windows[i]);
     windows_.other_windows.clear();
 
     CreateMouseWatcher();
