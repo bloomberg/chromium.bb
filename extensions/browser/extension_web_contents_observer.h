@@ -78,7 +78,8 @@ class ExtensionWebContentsObserver
   content::BrowserContext* browser_context() { return browser_context_; }
 
   // Initializes a new render frame. Subclasses should invoke this
-  // implementation if extending.
+  // implementation if extending. Note: this should be called for both extension
+  // and non-extension frames.
   virtual void InitializeRenderFrame(
       content::RenderFrameHost* render_frame_host);
 

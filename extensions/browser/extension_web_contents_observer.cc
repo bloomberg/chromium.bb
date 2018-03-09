@@ -114,6 +114,8 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
   // looked up again on the IO thread for the webRequest API.
   ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(render_frame_host);
 
+  InitializeRenderFrame(render_frame_host);
+
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
     return;
@@ -146,8 +148,6 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
   // isolation is turned on.
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
       ->ActivateExtensionInProcess(*extension, render_frame_host->GetProcess());
-
-  InitializeRenderFrame(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::RenderFrameDeleted(
