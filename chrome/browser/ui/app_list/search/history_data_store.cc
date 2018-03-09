@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/history_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -123,8 +123,7 @@ HistoryDataStore::HistoryDataStore(
   Init(data_store_->cached_dict());
 }
 
-HistoryDataStore::~HistoryDataStore() {
-}
+HistoryDataStore::~HistoryDataStore() {}
 
 void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
   DCHECK(cached_dict);
@@ -143,8 +142,8 @@ void HistoryDataStore::Flush(
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
   if (data_store_.get()) {
-    data_store_->Load(base::Bind(
-        &HistoryDataStore::OnDictionaryLoadedCallback, this, on_loaded));
+    data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
+                                 this, on_loaded));
   } else {
     OnDictionaryLoadedCallback(on_loaded, cached_dict_->CreateDeepCopy());
   }

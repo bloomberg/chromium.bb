@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/arc/common/app.mojom.h"
-#include "ui/app_list/search_provider.h"
 
 class Profile;
 class AppListControllerDelegate;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 
 #include <utility>
 
@@ -10,10 +10,8 @@
 
 namespace app_list {
 
-SearchProvider::SearchProvider() {
-}
-SearchProvider::~SearchProvider() {
-}
+SearchProvider::SearchProvider() {}
+SearchProvider::~SearchProvider() {}
 
 void SearchProvider::Add(std::unique_ptr<SearchResult> result) {
   results_.emplace_back(std::move(result));

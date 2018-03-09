@@ -40,14 +40,12 @@ TEST(TokenizedStringTest, Basic) {
   {
     base::string16 text(base::UTF8ToUTF16("ScratchPad"));
     TokenizedString tokens(text);
-    EXPECT_EQ(base::UTF8ToUTF16("scratch{0,7} pad{7,10}"),
-              GetContent(tokens));
+    EXPECT_EQ(base::UTF8ToUTF16("scratch{0,7} pad{7,10}"), GetContent(tokens));
   }
   {
     base::string16 text(base::UTF8ToUTF16("Chess2.0"));
     TokenizedString tokens(text);
-    EXPECT_EQ(base::UTF8ToUTF16("chess{0,5} 2.0{5,8}"),
-              GetContent(tokens));
+    EXPECT_EQ(base::UTF8ToUTF16("chess{0,5} 2.0{5,8}"), GetContent(tokens));
   }
   {
     base::string16 text(base::UTF8ToUTF16("Cut the rope"));
@@ -70,8 +68,7 @@ TEST(TokenizedStringTest, Basic) {
   {
     base::string16 text(base::UTF8ToUTF16("Draw-It!"));
     TokenizedString tokens(text);
-    EXPECT_EQ(base::UTF8ToUTF16("draw{0,4} it{5,7}"),
-              GetContent(tokens));
+    EXPECT_EQ(base::UTF8ToUTF16("draw{0,4} it{5,7}"), GetContent(tokens));
   }
   {
     base::string16 text(base::UTF8ToUTF16("Faxing & Signing"));
@@ -82,8 +79,7 @@ TEST(TokenizedStringTest, Basic) {
   {
     base::string16 text(base::UTF8ToUTF16("!@#$%^&*()<<<**>>>"));
     TokenizedString tokens(text);
-    EXPECT_EQ(base::UTF8ToUTF16(""),
-              GetContent(tokens));
+    EXPECT_EQ(base::UTF8ToUTF16(""), GetContent(tokens));
   }
 }
 

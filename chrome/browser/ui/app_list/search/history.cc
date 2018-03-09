@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/history.h"
 
 #include <stddef.h>
 
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/search/history_data.h"
-#include "ui/app_list/search/history_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_data.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 

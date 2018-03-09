@@ -10,7 +10,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
-#include "ui/app_list/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;

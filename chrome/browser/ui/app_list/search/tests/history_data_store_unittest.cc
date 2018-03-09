@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/history_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/ui/app_list/search/dictionary_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/search/dictionary_data_store.h"
-#include "ui/app_list/search/history_data.h"
 
 namespace app_list {
 namespace test {
@@ -24,8 +24,7 @@ std::string GetDataContent(const HistoryData::Data& data) {
   std::string str = std::string("p:") + data.primary + ";s:";
   bool first = true;
   for (HistoryData::SecondaryDeque::const_iterator it = data.secondary.begin();
-       it != data.secondary.end();
-       ++it) {
+       it != data.secondary.end(); ++it) {
     if (first)
       first = false;
     else
@@ -46,9 +45,7 @@ class HistoryDataStoreTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   // testing::Test overrides:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
   void TearDown() override {
     // Release |store_| while ui loop is still running.
     store_ = NULL;

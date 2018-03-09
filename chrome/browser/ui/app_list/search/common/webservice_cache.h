@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/app_list/search/dictionary_data_store.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/app_list/search/dictionary_data_store.h"
 
 namespace base {
 class DictionaryValue;

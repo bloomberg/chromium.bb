@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/history_data.h"
+#include "chrome/browser/ui/app_list/search/history_data.h"
 
 #include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
-#include "ui/app_list/search/history_data_observer.h"
-#include "ui/app_list/search/history_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_data_observer.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 
@@ -32,11 +32,9 @@ bool EntrySortByTimeAscending(const EntrySortData& entry1,
 
 }  // namespace
 
-HistoryData::Data::Data() {
-}
+HistoryData::Data::Data() {}
 HistoryData::Data::Data(const Data& other) = default;
-HistoryData::Data::~Data() {
-}
+HistoryData::Data::~Data() {}
 
 HistoryData::HistoryData(HistoryDataStore* store,
                          size_t max_primary,
@@ -45,8 +43,7 @@ HistoryData::HistoryData(HistoryDataStore* store,
   store_->Load(base::Bind(&HistoryData::OnStoreLoaded, AsWeakPtr()));
 }
 
-HistoryData::~HistoryData() {
-}
+HistoryData::~HistoryData() {}
 
 void HistoryData::Add(const std::string& query, const std::string& result_id) {
   Associations::iterator assoc_it = associations_.find(query);
@@ -101,8 +98,7 @@ std::unique_ptr<KnownResults> HistoryData::GetKnownResults(
     const std::string& query) const {
   std::unique_ptr<KnownResults> results(new KnownResults);
   for (Associations::const_iterator assoc_it = associations_.lower_bound(query);
-       assoc_it != associations_.end();
-       ++assoc_it) {
+       assoc_it != associations_.end(); ++assoc_it) {
     // Break out of the loop if |query| is no longer a prefix.
     if (assoc_it->first.size() < query.size() ||
         strncmp(assoc_it->first.c_str(), query.c_str(), query.length()) != 0) {
@@ -119,8 +115,7 @@ std::unique_ptr<KnownResults> HistoryData::GetKnownResults(
     const HistoryData::SecondaryDeque& secondary = assoc_it->second.secondary;
     for (HistoryData::SecondaryDeque::const_iterator secondary_it =
              secondary.begin();
-         secondary_it != secondary.end();
-         ++secondary_it) {
+         secondary_it != secondary.end(); ++secondary_it) {
       const std::string& secondary_result_id = (*secondary_it);
 
       // Secondary match only gets added if there there is no primary match.
@@ -155,16 +150,13 @@ void HistoryData::TrimEntries() {
 
   std::vector<EntrySortData> entries;
   for (Associations::const_iterator it = associations_.begin();
-       it != associations_.end();
-       ++it) {
+       it != associations_.end(); ++it) {
     entries.push_back(EntrySortData(&it->first, &it->second.update_time));
   }
 
   const size_t entries_to_remove = associations_.size() - max_primary_;
-  std::partial_sort(entries.begin(),
-                    entries.begin() + entries_to_remove,
-                    entries.end(),
-                    &EntrySortByTimeAscending);
+  std::partial_sort(entries.begin(), entries.begin() + entries_to_remove,
+                    entries.end(), &EntrySortByTimeAscending);
 
   for (size_t i = 0; i < entries_to_remove; ++i) {
     const std::string& query = *entries[i].query;

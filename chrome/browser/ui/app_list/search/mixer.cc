@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/search_provider.h"
 
 namespace app_list {
 

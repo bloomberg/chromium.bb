@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
-#define UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
 
 #include <memory>
 #include <string>
@@ -14,19 +14,18 @@
 #include "base/files/important_file_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ui/app_list/app_list_export.h"
 
 namespace base {
 class DictionaryValue;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace app_list {
 
 // A simple JSON store to persist a dictionary. There must only be one
 // DictionaryDataStore instance per data file at a time (writes issued by
 // DictionaryDataStore instances bound to the same file would be racy).
-class APP_LIST_EXPORT DictionaryDataStore
+class DictionaryDataStore
     : public base::RefCountedThreadSafe<DictionaryDataStore>,
       public base::ImportantFileWriter::DataSerializer {
  public:
@@ -74,4 +73,4 @@ class APP_LIST_EXPORT DictionaryDataStore
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_

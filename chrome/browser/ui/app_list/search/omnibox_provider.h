@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
-#include "ui/app_list/search_provider.h"
 
 class AppListControllerDelegate;
 class AutocompleteController;

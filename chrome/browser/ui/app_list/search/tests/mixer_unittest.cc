@@ -16,12 +16,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/search/history_types.h"
-#include "ui/app_list/search_provider.h"
 
 class FakeAppListModelUpdater;
 
