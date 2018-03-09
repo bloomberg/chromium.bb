@@ -19,9 +19,10 @@
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/url_loader.h"
+#include "net/url_request/url_request_context_getter_observer.h"
+#include "services/network/network_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -106,50 +107,55 @@ class BrowserStateServiceManagerConnectionHolder
 
 }  // namespace
 
-class BrowserState::URLLoaderFactory : public network::mojom::URLLoaderFactory {
+// Class that owns a NetworkContext wrapping the BrowserState's
+// URLRequestContext.  This allows using the URLLoaderFactory and
+// NetworkContext APIs while still issuing requests with a URLRequestContext
+// created by a BrowserState subclass.
+//
+// Created on the UI thread by the BrowserState on first use, so the
+// BrowserState can own the NetworkContextOwner.  A task is then posted to the
+// IO thread to create the NetworkContext itself, which has to live on the IO
+// thread, since that's where the URLRequestContext lives.  Destroyed on the IO
+// thread during shutdown, to ensure the NetworkContext is destroyed on the
+// right thread.
+class BrowserState::NetworkContextOwner
+    : public net::URLRequestContextGetterObserver {
  public:
-  explicit URLLoaderFactory(net::URLRequestContextGetter* request_context)
-      : request_context_(request_context) {}
-
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& resource_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE,
-        base::BindOnce(URLLoaderFactory::CreateLoaderAndStartOnIO,
-                       request_context_, std::move(request), routing_id,
-                       request_id, options, resource_request,
-                       client.PassInterface(), traffic_annotation));
+  explicit NetworkContextOwner(net::URLRequestContextGetter* request_context)
+      : request_context_(request_context) {
+    DCHECK_CURRENTLY_ON(WebThread::UI);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    NOTREACHED() << "Clone shouldn't be called on iOS";
+  ~NetworkContextOwner() override {
+    DCHECK_CURRENTLY_ON(WebThread::IO);
+    if (request_context_)
+      request_context_->RemoveObserver(this);
+  }
+
+  void InitializeOnIOThread(
+      network::mojom::NetworkContextRequest network_context_request) {
+    DCHECK_CURRENTLY_ON(WebThread::IO);
+    DCHECK(!network_context_);
+
+    network_context_ = std::make_unique<network::NetworkContext>(
+        nullptr, std::move(network_context_request), request_context_);
+    request_context_->AddObserver(this);
+  }
+
+  // net::URLRequestContextGetterObserver implementation:
+  void OnContextShuttingDown() override {
+    DCHECK_CURRENTLY_ON(WebThread::IO);
+
+    // Cancels any pending requests owned by the NetworkContext.
+    network_context_.reset();
+
+    request_context_->RemoveObserver(this);
+    request_context_ = nullptr;
   }
 
  private:
-  static void CreateLoaderAndStartOnIO(
-      scoped_refptr<net::URLRequestContextGetter> request_getter,
-      network::mojom::URLLoaderRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtrInfo client_info,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-    // Object deletes itself when the pipe or the URLRequestContext goes away.
-    network::mojom::URLLoaderClientPtr client(std::move(client_info));
-    new network::URLLoader(
-        request_getter, nullptr, std::move(request), options, resource_request,
-        false, std::move(client),
-        static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation), 0,
-        nullptr, nullptr);
-  }
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  std::unique_ptr<network::NetworkContext> network_context_;
 };
 
 // static
@@ -182,6 +188,11 @@ BrowserState::~BrowserState() {
       << "Attempting to destroy a BrowserState that never called "
       << "Initialize()";
 
+  if (network_context_) {
+    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
+                               network_context_owner_.release());
+  }
+
   RemoveBrowserStateFromUserIdMap(this);
 
   // Delete the URLDataManagerIOSBackend instance on the IO thread if it has
@@ -199,8 +210,20 @@ BrowserState::~BrowserState() {
 
 network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
   if (!url_loader_factory_) {
-    url_loader_factory_ =
-        std::make_unique<URLLoaderFactory>(GetRequestContext());
+    DCHECK(!network_context_);
+    DCHECK(!network_context_owner_);
+
+    network_context_owner_ =
+        std::make_unique<NetworkContextOwner>(GetRequestContext());
+    WebThread::PostTask(
+        web::WebThread::IO, FROM_HERE,
+        base::BindOnce(&NetworkContextOwner::InitializeOnIOThread,
+                       // This is safe, since the NetworkContextOwner will be
+                       // deleted on the IO thread.
+                       base::Unretained(network_context_owner_.get()),
+                       mojo::MakeRequest(&network_context_)));
+    network_context_->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_), 0 /* process_id */);
   }
 
   return url_loader_factory_.get();
