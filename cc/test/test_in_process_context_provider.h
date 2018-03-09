@@ -60,9 +60,6 @@ class TestInProcessContextProvider
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   void AddObserver(viz::ContextLostObserver* obs) override {}
   void RemoveObserver(viz::ContextLostObserver* obs) override {}
-  void SetSupportTextureNorm16(bool support) {
-    capabilities_texture_norm16_ = support;
-  }
 
  protected:
   friend class base::RefCountedThreadSafe<TestInProcessContextProvider>;
@@ -76,8 +73,6 @@ class TestInProcessContextProvider
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
   base::Lock context_lock_;
-  bool capabilities_texture_norm16_ = false;
-  gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
 };
 

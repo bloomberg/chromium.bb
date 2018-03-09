@@ -72,18 +72,6 @@ TestInProcessContextProvider::TestInProcessContextProvider(
   cache_controller_.reset(new viz::ContextCacheController(
       context_->GetImplementation(), base::ThreadTaskRunnerHandle::Get()));
 
-  capabilities_.texture_rectangle = true;
-  capabilities_.sync_query = true;
-  capabilities_.texture_norm16 = true;
-  switch (viz::PlatformColor::Format()) {
-    case viz::PlatformColor::SOURCE_FORMAT_RGBA8:
-      capabilities_.texture_format_bgra8888 = false;
-      break;
-    case viz::PlatformColor::SOURCE_FORMAT_BGRA8:
-      capabilities_.texture_format_bgra8888 = true;
-      break;
-  }
-
   raster_implementation_ =
       std::make_unique<gpu::raster::RasterImplementationGLES>(
           context_->GetImplementation(), context_->GetImplementation(),
@@ -146,7 +134,7 @@ base::Lock* TestInProcessContextProvider::GetLock() {
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
     const {
-  return capabilities_;
+  return context_->GetCapabilities();
 }
 
 const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()
