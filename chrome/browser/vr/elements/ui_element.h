@@ -15,6 +15,7 @@
 #include "cc/animation/animation_target.h"
 #include "cc/animation/transform_operations.h"
 #include "chrome/browser/vr/animation.h"
+#include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
@@ -57,11 +58,11 @@ enum LayoutAlignment {
 struct EventHandlers {
   EventHandlers();
   ~EventHandlers();
-  base::Callback<void()> hover_enter;
-  base::Callback<void()> hover_leave;
-  base::Callback<void(const gfx::PointF&)> hover_move;
-  base::Callback<void()> button_down;
-  base::Callback<void()> button_up;
+  base::RepeatingCallback<void()> hover_enter;
+  base::RepeatingCallback<void()> hover_leave;
+  base::RepeatingCallback<void(const gfx::PointF&)> hover_move;
+  base::RepeatingCallback<void()> button_down;
+  base::RepeatingCallback<void()> button_up;
   base::RepeatingCallback<void(bool)> focus_change;
 };
 
@@ -443,6 +444,10 @@ class UiElement : public cc::AnimationTarget {
   // change your size based on your old size).
   gfx::SizeF stale_size() const;
 
+  // Set the sounds that play when an applicable handler is executed.  Elements
+  // that override element hover and click methods must manage their own sounds.
+  void SetSounds(SoundId hover, SoundId click, AudioDelegate* delegate);
+
  protected:
   Animation& animation() { return animation_; }
 
@@ -567,6 +572,10 @@ class UiElement : public cc::AnimationTarget {
   std::vector<std::unique_ptr<BindingBase>> bindings_;
 
   UpdatePhase phase_ = kClean;
+
+  AudioDelegate* audio_delegate_ = nullptr;
+  SoundId hover_sound_id_ = kSoundNone;
+  SoundId click_sound_id_ = kSoundNone;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

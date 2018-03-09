@@ -76,7 +76,7 @@ void UiTest::CreateSceneInternal(
   content_input_delegate_ = content_input_delegate.get();
   ui_ = std::make_unique<Ui>(std::move(browser_.get()),
                              std::move(content_input_delegate), nullptr,
-                             nullptr, state);
+                             nullptr, nullptr, state);
   scene_ = ui_->scene();
   model_ = ui_->model_for_test();
   model_->controller.transform.Translate3d(kStartControllerPosition);
