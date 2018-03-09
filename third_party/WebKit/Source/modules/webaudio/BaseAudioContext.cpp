@@ -1019,9 +1019,14 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
     AudioWorkletGlobalScope* global_scope =
         ToAudioWorkletGlobalScope(
               worklet_backing_worker_thread_->GlobalScope());
-    DCHECK(global_scope);
 
-    global_scope->SetCurrentFrame(CurrentSampleFrame());
+    // When BaseAudioContext is being torn down, AudioWorkletGlobalScope might
+    // be already gone at this point because it's destroyed on the main thread
+    // but the audio thread may not have stopped. So we check |global_scope|
+    // before we update it.
+    if (global_scope) {
+      global_scope->SetCurrentFrame(CurrentSampleFrame());
+    }
   }
 }
 
