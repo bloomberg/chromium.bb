@@ -525,8 +525,12 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.MoveMouseToInHost(2, 2);
   EXPECT_TRUE(ink_drop->is_hovered());
+  // Set ink-drop state to ACTIVATED to make sure that removing the container
+  // sets it back to HIDDEN.
+  ink_drop->AnimateToState(InkDropState::ACTIVATED);
   test_container.RemoveAllChildViews(false);
   EXPECT_FALSE(ink_drop->is_hovered());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   // Make sure hiding the ink drop happens even if the button is indirectly
   // being removed.
@@ -541,7 +545,11 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   EXPECT_FALSE(ink_drop->is_hovered());
   generator.MoveMouseToInHost(10, 10);
   EXPECT_TRUE(ink_drop->is_hovered());
+  // Set ink-drop state to ACTIVATED to make sure that removing the container
+  // sets it back to HIDDEN.
+  ink_drop->AnimateToState(InkDropState::ACTIVATED);
   parent_test_container.RemoveAllChildViews(false);
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
   EXPECT_FALSE(ink_drop->is_hovered());
 
   // Remove references to and delete button() which cannot be removed by owned

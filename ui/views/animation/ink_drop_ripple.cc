@@ -91,7 +91,7 @@ bool InkDropRipple::IsVisible() {
   return GetRootLayer()->visible();
 }
 
-void InkDropRipple::HideImmediately() {
+void InkDropRipple::SnapToHidden() {
   AbortAllAnimations();
   SetStateToHidden();
   target_ink_drop_state_ = InkDropState::HIDDEN;

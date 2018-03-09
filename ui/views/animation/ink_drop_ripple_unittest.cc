@@ -250,7 +250,7 @@ TEST_P(InkDropRippleTest, InkDropStatesPersistWhenCallingAnimateToState) {
             ink_drop_ripple_->target_ink_drop_state());
 }
 
-TEST_P(InkDropRippleTest, HideImmediatelyWithoutActiveAnimations) {
+TEST_P(InkDropRippleTest, SnapToHiddenWithoutActiveAnimations) {
   ink_drop_ripple_->AnimateToState(views::InkDropState::ACTION_PENDING);
   test_api_->CompleteAnimations();
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
@@ -259,7 +259,7 @@ TEST_P(InkDropRippleTest, HideImmediatelyWithoutActiveAnimations) {
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_NE(InkDropState::HIDDEN, ink_drop_ripple_->target_ink_drop_state());
 
-  ink_drop_ripple_->HideImmediately();
+  ink_drop_ripple_->SnapToHidden();
 
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_EQ(views::InkDropState::HIDDEN,
@@ -272,8 +272,8 @@ TEST_P(InkDropRippleTest, HideImmediatelyWithoutActiveAnimations) {
 }
 
 // Verifies all active animations are aborted and the InkDropState is set to
-// HIDDEN after invoking HideImmediately().
-TEST_P(InkDropRippleTest, HideImmediatelyWithActiveAnimations) {
+// HIDDEN after invoking SnapToHidden().
+TEST_P(InkDropRippleTest, SnapToHiddenWithActiveAnimations) {
   // TODO(bruthig): Re-enable! For some reason these tests fail on some win
   // trunk builds. See crbug.com/731811.
   if (!gfx::Animation::ShouldRenderRichAnimation())
@@ -284,7 +284,7 @@ TEST_P(InkDropRippleTest, HideImmediatelyWithActiveAnimations) {
   EXPECT_NE(InkDropState::HIDDEN, ink_drop_ripple_->target_ink_drop_state());
   EXPECT_EQ(1, observer_.last_animation_started_ordinal());
 
-  ink_drop_ripple_->HideImmediately();
+  ink_drop_ripple_->SnapToHidden();
 
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_EQ(views::InkDropState::HIDDEN,

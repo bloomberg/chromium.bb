@@ -2229,6 +2229,7 @@ class InkDropSpy : public views::InkDrop {
     ink_drop_->AnimateToState(ink_drop_state);
   }
   void SnapToActivated() override { ink_drop_->SnapToActivated(); }
+  void SnapToHidden() override { ink_drop_->SnapToHidden(); }
   void SetHovered(bool is_hovered) override {
     ink_drop_->SetHovered(is_hovered);
   }

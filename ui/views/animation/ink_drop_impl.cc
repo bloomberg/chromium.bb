@@ -343,7 +343,7 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::AnimationStarted(
     // TODO(bruthig): Investigate if the animation framework can address this
     // issue instead. See https://crbug.com/663335.
     if (GetInkDrop()->ink_drop_ripple_)
-      GetInkDrop()->ink_drop_ripple_->HideImmediately();
+      GetInkDrop()->ink_drop_ripple_->SnapToHidden();
     GetInkDrop()->SetHighlightState(
         state_factory()->CreateVisibleState(base::TimeDelta(), false));
   }
@@ -645,6 +645,13 @@ void InkDropImpl::SnapToActivated() {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
   ink_drop_ripple_->SnapToActivated();
+}
+
+void InkDropImpl::SnapToHidden() {
+  DestroyHiddenTargetedAnimations();
+  if (!ink_drop_ripple_)
+    return;
+  ink_drop_ripple_->SnapToHidden();
 }
 
 void InkDropImpl::SetHovered(bool is_hovered) {

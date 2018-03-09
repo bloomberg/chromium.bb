@@ -20,6 +20,8 @@ void InkDropStub::AnimateToState(InkDropState state) {}
 
 void InkDropStub::SnapToActivated() {}
 
+void InkDropStub::SnapToHidden() {}
+
 void InkDropStub::SetHovered(bool is_hovered) {}
 
 void InkDropStub::SetFocused(bool is_hovered) {}

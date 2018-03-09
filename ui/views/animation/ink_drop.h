@@ -36,11 +36,12 @@ class VIEWS_EXPORT InkDrop {
   // Animates from the current InkDropState to |ink_drop_state|.
   virtual void AnimateToState(InkDropState ink_drop_state) = 0;
 
-  // Immediately snaps the InkDropState to ACTIVATED. This more specific
-  // implementation of the non-existent SnapToState(InkDropState) function is
-  // the only one available because it was the only InkDropState that clients
-  // needed to skip animations for.
+  // Immediately snaps the InkDropState to ACTIVATED and HIDDEN specifically.
+  // These are more specific implementations of the non-existent
+  // SnapToState(InkDropState) function are the only ones available because they
+  // were the only InkDropState that clients needed to skip animations for.
   virtual void SnapToActivated() = 0;
+  virtual void SnapToHidden() = 0;
 
   // Enables or disables the hover state.
   virtual void SetHovered(bool is_hovered) = 0;
