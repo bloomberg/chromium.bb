@@ -632,10 +632,6 @@ typedef uint16_t aom_cdf_prob;
 
 #endif
 
-#define MAX_PROB 255
-
-#define BR_NODE 1
-
 static INLINE uint8_t get_prob(unsigned int num, unsigned int den) {
   assert(den != 0);
   {
