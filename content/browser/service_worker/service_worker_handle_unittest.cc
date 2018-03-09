@@ -325,7 +325,9 @@ TEST_F(ServiceWorkerHandleTest,
   EXPECT_EQ(remaining_time, version_->remaining_timeout());
 }
 
-TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
+// Constantly fails on Android/Linux CFI builder.  http://crbug.com/820620
+TEST_F(ServiceWorkerHandleTest,
+       DISABLED_DispatchExtendableMessageEvent_FromClient) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
@@ -381,7 +383,8 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
             events[0]->source_info_for_client->client_type);
 }
 
-TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
+// Constantly fails on Android/Linux CFI builder.  http://crbug.com/820620
+TEST_F(ServiceWorkerHandleTest, DISABLED_DispatchExtendableMessageEvent_Fail) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
