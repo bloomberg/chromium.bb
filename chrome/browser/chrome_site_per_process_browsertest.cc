@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -525,8 +524,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   ui_test_utils::NavigateToURL(browser(), mailto_main_frame_url);
 
   MailtoExternalProtocolHandlerDelegate delegate;
-  ChromeResourceDispatcherHostDelegate::
-      SetExternalProtocolHandlerDelegateForTesting(&delegate);
+  ExternalProtocolHandler::SetDelegateForTesting(&delegate);
 
   GURL mailto_subframe_url(
       embedded_test_server()->GetURL("c.com", "/page_with_mailto.html"));
@@ -540,8 +538,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(delegate.has_triggered_external_protocol());
   EXPECT_EQ(delegate.external_protocol_url(), GURL("mailto:mail@example.org"));
   EXPECT_EQ(active_web_contents, delegate.web_contents());
-  ChromeResourceDispatcherHostDelegate::
-      SetExternalProtocolHandlerDelegateForTesting(nullptr);
+  ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 }
 
 // Verify that a popup can be opened after navigating a remote frame.  This has

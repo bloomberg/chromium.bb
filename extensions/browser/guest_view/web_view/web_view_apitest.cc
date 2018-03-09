@@ -626,10 +626,6 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavigateAfterResize) {
   RunTest("testNavigateAfterResize", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNavigationToExternalProtocol) {
-  RunTest("testNavigationToExternalProtocol", "web_view/apitest");
-}
-
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,
                        TestContentInitiatedNavigationToDataUrlBlocked) {
   RunTest("testContentInitiatedNavigationToDataUrlBlocked", "web_view/apitest");

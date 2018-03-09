@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -712,9 +711,8 @@ void PrerenderInProcessBrowserTest::SetUpOnMainThread() {
                  base::Unretained(this)));
   if (autostart_test_server_)
     CHECK(embedded_test_server()->Start());
-  ChromeResourceDispatcherHostDelegate::
-      SetExternalProtocolHandlerDelegateForTesting(
-          external_protocol_handler_delegate_.get());
+  ExternalProtocolHandler::SetDelegateForTesting(
+      external_protocol_handler_delegate_.get());
 
   // Check that PrerenderManager exists, which is necessary to make sure
   // NoStatePrefetch can be enabled and perceived FCP metrics can be recorded.

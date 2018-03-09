@@ -65,12 +65,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       bool is_new_request,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles);
 
-  // Launches the url for the given tab. Returns true if an attempt to handle
-  // the url was made, e.g. by launching an app. Note that this does not
-  // guarantee that the app successfully handled it.
-  virtual bool HandleExternalProtocol(const GURL& url,
-                                      ResourceRequestInfo* info);
-
   // Returns true and sets |origin| if a Stream should be created for the
   // resource. If true is returned, a new Stream will be created and
   // OnStreamCreated() will be called with a StreamHandle instance for the

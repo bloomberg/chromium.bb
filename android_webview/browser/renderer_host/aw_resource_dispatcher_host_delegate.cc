@@ -404,15 +404,6 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
                  user_agent, content_disposition, mime_type, content_length));
 }
 
-bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(
-    const GURL& url,
-    content::ResourceRequestInfo* info) {
-  // The AwURLRequestJobFactory implementation should ensure this method never
-  // gets called.
-  NOTREACHED();
-  return false;
-}
-
 void AwResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceContext* resource_context,

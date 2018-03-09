@@ -255,6 +255,14 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   return new_request;
 }
 
+// Called for requests that we don't have a URLLoaderFactory for.
+void UnknownSchemeCallback(bool handled_externally,
+                           network::mojom::URLLoaderRequest request,
+                           network::mojom::URLLoaderClientPtr client) {
+  client->OnComplete(network::URLLoaderCompletionStatus(
+      handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
+}
+
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -277,6 +285,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       base::Optional<std::string> suggested_filename,
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
+      std::set<std::string> known_schemes,
       const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
       : handlers_(std::move(initial_handlers)),
         resource_request_(std::move(resource_request)),
@@ -289,6 +298,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         response_loader_binding_(this),
         proxied_factory_request_(std::move(proxied_factory_request)),
         proxied_factory_info_(std::move(proxied_factory_info)),
+        known_schemes_(std::move(known_schemes)),
         weak_factory_(this) {}
 
   ~URLLoaderRequestController() override {
@@ -575,18 +585,31 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           default_url_loader_factory_getter_->GetBlobFactory());
     } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
                !resource_request_->url.SchemeIs(url::kDataScheme)) {
-      network::mojom::URLLoaderFactoryPtr& non_network_factory =
-          non_network_url_loader_factories_[resource_request_->url.scheme()];
-      if (!non_network_factory.is_bound()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NavigationURLLoaderNetworkService ::
-                               BindNonNetworkURLLoaderFactoryRequest,
-                           owner_, frame_tree_node_id_, resource_request_->url,
-                           mojo::MakeRequest(&non_network_factory)));
+      if (known_schemes_.find(resource_request_->url.scheme()) ==
+          known_schemes_.end()) {
+        bool handled = GetContentClient()->browser()->HandleExternalProtocol(
+            resource_request_->url, web_contents_getter_,
+            ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
+            resource_request_->resource_type == RESOURCE_TYPE_MAIN_FRAME,
+            static_cast<ui::PageTransition>(resource_request_->transition_type),
+            resource_request_->has_user_gesture);
+        factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+            base::BindOnce(UnknownSchemeCallback, handled));
+      } else {
+        network::mojom::URLLoaderFactoryPtr& non_network_factory =
+            non_network_url_loader_factories_[resource_request_->url.scheme()];
+        if (!non_network_factory.is_bound()) {
+          BrowserThread::PostTask(
+              BrowserThread::UI, FROM_HERE,
+              base::BindOnce(&NavigationURLLoaderNetworkService ::
+                                 BindNonNetworkURLLoaderFactoryRequest,
+                             owner_, frame_tree_node_id_,
+                             resource_request_->url,
+                             mojo::MakeRequest(&non_network_factory)));
+        }
+        factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
+            non_network_factory.get());
       }
-      factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-          non_network_factory.get());
     } else {
       default_loader_used_ = true;
 
@@ -927,6 +950,10 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   network::mojom::URLLoaderFactoryRequest proxied_factory_request_;
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info_;
 
+  // The schemes that this loader can use. For anything else we'll try external
+  // protocol handlers.
+  std::set<std::string> known_schemes_;
+
   base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -976,7 +1003,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         request_info->begin_params->initiator_origin,
         request_info->common_params.suggested_filename,
         /* proxied_url_loader_factory_request */ nullptr,
-        /* proxied_url_loader_factory_info */ nullptr,
+        /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
         weak_factory_.GetWeakPtr());
 
     BrowserThread::PostTask(
@@ -1029,6 +1056,16 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   }
 
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
+  non_network_url_loader_factories_[url::kFileScheme] =
+      std::make_unique<FileURLLoaderFactory>(
+          partition->browser_context()->GetPath(),
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  std::set<std::string> known_schemes;
+  for (auto& iter : non_network_url_loader_factories_)
+    known_schemes.insert(iter.first);
+
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_handlers), std::move(new_request), resource_context,
@@ -1036,7 +1073,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       request_info->begin_params->initiator_origin,
       request_info->common_params.suggested_filename,
       std::move(proxied_factory_request), std::move(proxied_factory_info),
-      weak_factory_.GetWeakPtr());
+      std::move(known_schemes), weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -1047,13 +1084,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           std::move(request_info), std::move(navigation_ui_data),
           std::move(factory_for_webui), frame_tree_node_id,
           ServiceManagerConnection::GetForProcess()->GetConnector()->Clone()));
-
-  non_network_url_loader_factories_[url::kFileScheme] =
-      std::make_unique<FileURLLoaderFactory>(
-          partition->browser_context()->GetPath(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
