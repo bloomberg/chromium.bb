@@ -90,8 +90,9 @@
         -webkit-margin-start: 16px;
       }
 
-      /* Adjust the margin between the separator and the first button. */
-      .separator + paper-button {
+      /* Adjust the margin between the separator and the first button. Exclude
+       * .action-button since it has a background thus is visually different. */
+      .separator + paper-button:not(.action-button) {
         -webkit-margin-start: calc(var(--cr-button-edge-spacing) * -1);
       }
 
