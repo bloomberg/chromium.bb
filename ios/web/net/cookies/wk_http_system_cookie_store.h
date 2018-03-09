@@ -50,7 +50,10 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStore
       net::SystemCookieStore::SystemCookieCallbackForCookies callback,
       NSArray<NSHTTPCookie*>* cookies);
 
-  WKHTTPCookieStore* cookie_store_;
+  // cookie_store_ must be deleted in the UI thread, So by making it weak
+  // WKHTTPSystemCookieStore will not retain the WKHTTPCookieStore instance, and
+  // it will be deleted with the owning WKWebSiteDataStore.
+  __weak WKHTTPCookieStore* cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(WKHTTPSystemCookieStore);
 };
