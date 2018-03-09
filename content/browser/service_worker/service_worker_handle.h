@@ -16,15 +16,19 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
+class ServiceWorkerProviderHost;
 
-namespace service_worker_dispatcher_host_unittest {
-FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
-                     DispatchExtendableMessageEvent);
-}  // namespace service_worker_dispatcher_host_unittest
+namespace service_worker_handle_unittest {
+class ServiceWorkerHandleTest;
+}  // namespace service_worker_handle_unittest
 
 // Roughly corresponds to one WebServiceWorker object in the renderer process.
 //
@@ -71,9 +75,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
   ServiceWorkerVersion* version() { return version_.get(); }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
-      DispatchExtendableMessageEvent);
+  friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
 
   ServiceWorkerHandle(ServiceWorkerDispatcherHost* dispatcher_host,
                       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -81,7 +83,14 @@ class CONTENT_EXPORT ServiceWorkerHandle
                       ServiceWorkerVersion* version);
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
+  void PostMessage(::blink::TransferableMessage message,
+                   const url::Origin& source_origin) override;
   void TerminateForTesting(TerminateForTestingCallback callback) override;
+
+  void DispatchExtendableMessageEvent(
+      ::blink::TransferableMessage message,
+      const url::Origin& source_origin,
+      base::OnceCallback<void(ServiceWorkerStatusCode)> callback);
 
   base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
 

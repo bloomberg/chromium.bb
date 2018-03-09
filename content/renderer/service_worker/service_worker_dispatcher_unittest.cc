@@ -38,6 +38,10 @@ class MockServiceWorkerObjectHost
 
  private:
   // Implements blink::mojom::ServiceWorkerObjectHost.
+  void PostMessage(::blink::TransferableMessage message,
+                   const url::Origin& source_origin) override {
+    NOTREACHED();
+  }
   void TerminateForTesting(TerminateForTestingCallback callback) override {
     NOTREACHED();
   }

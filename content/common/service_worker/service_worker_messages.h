@@ -22,8 +22,6 @@
 #include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/common/message_port/transferable_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -82,15 +80,6 @@ IPC_STRUCT_TRAITS_END()
 
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
-
-// Sends ExtendableMessageEvent to a service worker (renderer->browser).
-IPC_MESSAGE_CONTROL4(
-    ServiceWorkerHostMsg_PostMessageToWorker,
-    int /* handle_id */,
-    int /* provider_id */,
-    scoped_refptr<
-        base::RefCountedData<blink::TransferableMessage>> /* message */,
-    url::Origin /* source_origin */)
 
 // Sends MessageEvent to a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(
