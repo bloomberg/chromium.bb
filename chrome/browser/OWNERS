@@ -87,7 +87,7 @@ per-file media_router_resources.grdp*=mfoltz@chromium.org
 
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
-per-file shell_integration_linux*=erg@chromium.org
+per-file shell_integration_linux*=thomasanderson@chromium.org
 
 per-file site_details*=creis@chromium.org
 per-file site_details*=nasko@chromium.org
