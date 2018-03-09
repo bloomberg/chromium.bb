@@ -39,13 +39,6 @@ class BrandedImageProvider {
   // the signin confirmation screen.
   virtual UIImage* GetSigninConfirmationPersonalizeServicesImage();
 
-  // Sets |image_id| to contain the resource id corresponding to the 24pt x 24pt
-  // image for the toolbar voice search button.  If this method returns false,
-  // |image_id| is invalid and callers should fall back to a default image.  The
-  // returned image should be used for all toolbar styles and all button states.
-  // Deprecated, use GetToolbarVoiceSearchButtonImages(bool) instead.
-  virtual bool GetToolbarVoiceSearchButtonImageId(int* image_id);
-
   // Returns two 24pt x 24pt images to use for toolbar voice search button. The
   // images corresponds to the normal and pressed state.
   virtual NSArray<UIImage*>* GetToolbarVoiceSearchButtonImages(bool incognito);
