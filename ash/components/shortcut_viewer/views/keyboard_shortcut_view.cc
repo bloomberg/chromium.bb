@@ -15,6 +15,7 @@
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -174,24 +175,44 @@ void KeyboardShortcutView::InitViews() {
   for (const auto& item : GetKeyboardShortcutItemList()) {
     for (auto category : item.categories) {
       shortcut_views_.emplace_back(
-          new KeyboardShortcutItemView(item, category));
+          std::make_unique<KeyboardShortcutItemView>(item, category));
+      shortcut_views_.back()->set_owned_by_client();
     }
   }
   std::sort(shortcut_views_.begin(), shortcut_views_.end(),
-            [](KeyboardShortcutItemView* lhs, KeyboardShortcutItemView* rhs) {
+            [](const auto& lhs, const auto& rhs) {
               if (lhs->category() != rhs->category())
                 return lhs->category() < rhs->category();
               return lhs->description_label_view()->text() <
                      rhs->description_label_view()->text();
             });
 
-  // Init views of TabbedPane and KeyboardShortcutItemListView.
-  tabbed_pane_ =
+  // Init views of |categories_tabbed_pane_| and KeyboardShortcutItemListViews.
+  categories_tabbed_pane_ =
       new views::TabbedPane(views::TabbedPane::Orientation::kVertical,
                             views::TabbedPane::TabStripStyle::kHighlight);
+  AddChildView(categories_tabbed_pane_);
+  InitCategoriesTabbedPane();
+}
+
+void KeyboardShortcutView::InitCategoriesTabbedPane() {
+  // If the tab count is 0, |GetSelectedTabIndex()| will return -1, which we do
+  // not want to cache.
+  active_tab_index_ =
+      std::max(0, categories_tabbed_pane_->GetSelectedTabIndex());
+  // Although we remove all child views, when the KeyboardShortcutItemView is
+  // added back to the |categories_tabbed_pane_|, because there is no width
+  // changes, it will not layout the KeyboardShortcutItemView again due to the
+  // |MaybeCalculateAndDoLayout()| optimization in KeyboardShortcutItemView.
+  // Cannot remove |tab_strip_| and |contents_|, child views of the
+  // |categories_tabbed_pane_|, because they are added in the ctor of
+  // TabbedPane.
+  categories_tabbed_pane_->child_at(0)->RemoveAllChildViews(true);
+  categories_tabbed_pane_->child_at(1)->RemoveAllChildViews(true);
+
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view;
-  for (auto* item_view : shortcut_views_) {
+  for (const auto& item_view : shortcut_views_) {
     const ShortcutCategory category = item_view->category();
     DCHECK_NE(ShortcutCategory::kUnknown, category);
     if (current_category != category) {
@@ -199,20 +220,26 @@ void KeyboardShortcutView::InitViews() {
       item_list_view = new KeyboardShortcutItemListView();
       views::ScrollView* const scroller = CreateScrollView();
       scroller->SetContents(item_list_view);
-      tabbed_pane_->AddTab(GetStringForCategory(current_category), scroller);
+      categories_tabbed_pane_->AddTab(GetStringForCategory(current_category),
+                                      scroller);
     }
     if (item_list_view->has_children())
       item_list_view->AddHorizontalSeparator();
-    item_list_view->AddChildView(item_view);
+    views::StyledLabel* description_label_view =
+        item_view->description_label_view();
+    // Clear any styles used to highlight matched search query in search mode.
+    description_label_view->ClearStyleRanges();
+    item_list_view->AddChildView(item_view.get());
+    // Remove the search query highlight.
+    description_label_view->Layout();
   }
-  AddChildView(tabbed_pane_);
 }
 
 void KeyboardShortcutView::RequestFocusForActiveTab() {
-  // Get the |tab_strip_| of the |tabbed_pane_| in order to set focus on
-  // the selected tab.
-  tabbed_pane_->child_at(0)
-      ->child_at(tabbed_pane_->GetSelectedTabIndex())
+  // Get the |tab_strip_| of the |categories_tabbed_pane_| in order to set focus
+  // on the selected tab.
+  categories_tabbed_pane_->child_at(0)
+      ->child_at(active_tab_index_)
       ->RequestFocus();
 }
 
@@ -252,9 +279,9 @@ void KeyboardShortcutView::Layout() {
   search_box_bounds.set_y(top + kSearchBoxTopPadding);
   search_box_view_->SetBoundsRect(search_box_bounds);
 
-  views::View* content_view =
-      tabbed_pane_->visible() ? tabbed_pane_ : search_results_container_;
-
+  views::View* content_view = categories_tabbed_pane_->visible()
+                                  ? categories_tabbed_pane_
+                                  : search_results_container_;
   const int search_box_used_height = search_box_bounds.height() +
                                      kSearchBoxTopPadding +
                                      kSearchBoxBottomPadding;
@@ -275,19 +302,71 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
     UpdateViewsLayout(/*is_search_box_active=*/true);
   }
 
+  debounce_timer_.Stop();
   // If search box is empty, do not show |search_results_container_|.
   if (query_empty)
     return;
 
+  // TODO(wutao): This timeout value is chosen based on subjective search
+  // latency tests on Minnie. Objective method or UMA is desired.
+  constexpr base::TimeDelta kTimeOut(base::TimeDelta::FromMilliseconds(250));
+  debounce_timer_.Start(
+      FROM_HERE, kTimeOut,
+      base::Bind(&KeyboardShortcutView::ShowSearchResults,
+                 base::Unretained(this), sender->search_box()->text()));
+}
+
+void KeyboardShortcutView::ActiveChanged(
+    search_box::SearchBoxViewBase* sender) {
+  const bool is_search_box_active = sender->is_search_box_active();
+  is_search_box_empty_ = sender->IsSearchBoxTrimmedQueryEmpty();
+  sender->ShowBackOrGoogleIcon(is_search_box_active);
+  if (is_search_box_active) {
+    base::RecordAction(
+        base::UserMetricsAction("KeyboardShortcutViewer.Search"));
+  }
+  UpdateViewsLayout(is_search_box_active);
+}
+
+void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
+  // 1. Search box is not active: show |categories_tabbed_pane_| and focus on
+  //    active tab.
+  // 2. Search box is active and empty: show |categories_tabbed_pane_| but focus
+  //    on search box.
+  // 3. Search box is not empty, show |search_results_container_|. Focus is on
+  //    search box.
+  const bool should_show_search_results =
+      is_search_box_active && !is_search_box_empty_;
+  if (!should_show_search_results) {
+    // Remove all child views, including horizontal separator lines, to prepare
+    // for showing search results next time.
+    search_results_container_->RemoveAllChildViews(true);
+    if (!categories_tabbed_pane_->visible()) {
+      // Repopulate |categories_tabbed_pane_| child views, which were removed
+      // when they were added to |search_results_container_|.
+      InitCategoriesTabbedPane();
+      // Select the category that was active before entering search mode.
+      categories_tabbed_pane_->SelectTabAt(active_tab_index_);
+    }
+    if (!is_search_box_active)
+      RequestFocusForActiveTab();
+  }
+  categories_tabbed_pane_->SetVisible(!should_show_search_results);
+  search_results_container_->SetVisible(should_show_search_results);
+  Layout();
+  SchedulePaint();
+}
+
+void KeyboardShortcutView::ShowSearchResults(
+    const base::string16& search_query) {
   search_results_container_->RemoveAllChildViews(true);
   auto* search_container_content_view = search_no_result_view_.get();
   auto found_items_list_view = std::make_unique<KeyboardShortcutItemListView>();
-  const base::string16& new_contents = sender->search_box()->text();
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(
-      new_contents);
+      search_query);
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   bool has_category_item = false;
-  for (auto* item_view : shortcut_views_) {
+  for (const auto& item_view : shortcut_views_) {
     base::string16 description_text =
         item_view->description_label_view()->text();
     base::string16 shortcut_text = item_view->shortcut_label_view()->text();
@@ -310,20 +389,22 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
         found_items_list_view->AddHorizontalSeparator();
       else
         has_category_item = true;
-      auto* matched_item_view =
-          new KeyboardShortcutItemView(*item_view->shortcut_item(), category);
       // Highlight matched query in |description_label_view_|.
       if (match_length > 0) {
         views::StyledLabel::RangeStyleInfo style;
         views::StyledLabel* description_label_view =
-            matched_item_view->description_label_view();
+            item_view->description_label_view();
+        // Clear previous styles.
+        description_label_view->ClearStyleRanges();
         style.custom_font = description_label_view->GetDefaultFontList().Derive(
             0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
         description_label_view->AddStyleRange(
             gfx::Range(match_index, match_index + match_length), style);
+        // Apply new styles to highlight matched search query.
+        description_label_view->Layout();
       }
 
-      found_items_list_view->AddChildView(matched_item_view);
+      found_items_list_view->AddChildView(item_view.get());
     }
   }
 
@@ -338,37 +419,8 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
     scroller->SetContents(found_items_list_view.release());
     search_container_content_view = scroller;
   }
+
   search_results_container_->AddChildView(search_container_content_view);
-  Layout();
-  SchedulePaint();
-}
-
-void KeyboardShortcutView::ActiveChanged(
-    search_box::SearchBoxViewBase* sender) {
-  const bool is_search_box_active = sender->is_search_box_active();
-  is_search_box_empty_ = sender->IsSearchBoxTrimmedQueryEmpty();
-  sender->ShowBackOrGoogleIcon(is_search_box_active);
-  if (is_search_box_active) {
-    base::RecordAction(
-        base::UserMetricsAction("KeyboardShortcutViewer.Search"));
-  }
-  UpdateViewsLayout(is_search_box_active);
-}
-
-void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
-  // 1. Search box is not active: show |tabbed_pane_| and focus on active tab.
-  // 2. Search box is active and empty: show |tabbed_pane_| but focus on search
-  //    box.
-  // 3. Search box is not empty, show |search_results_container_|. Focus is on
-  //    search box.
-  const bool should_show_search_results =
-      is_search_box_active && !is_search_box_empty_;
-  search_results_container_->SetVisible(should_show_search_results);
-  tabbed_pane_->SetVisible(!should_show_search_results);
-  if (!is_search_box_active) {
-    search_results_container_->RemoveAllChildViews(true);
-    RequestFocusForActiveTab();
-  }
   Layout();
   SchedulePaint();
 }
@@ -378,7 +430,12 @@ KeyboardShortcutView* KeyboardShortcutView::GetInstanceForTesting() {
 }
 
 int KeyboardShortcutView::GetTabCountForTesting() const {
-  return tabbed_pane_->GetTabCount();
+  return categories_tabbed_pane_->GetTabCount();
+}
+
+const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
+KeyboardShortcutView::GetShortcutViewsForTesting() const {
+  return shortcut_views_;
 }
 
 }  // namespace keyboard_shortcut_viewer

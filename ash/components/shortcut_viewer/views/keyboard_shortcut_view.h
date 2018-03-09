@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -48,6 +49,10 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
 
   void InitViews();
 
+  // Initialize |categories_tabbed_pane_| with category tabs and containers of
+  // |shortcut_views_|, called on construction and when exiting search mode.
+  void InitCategoriesTabbedPane();
+
   // Put focus on the active tab. Used when the first time to show the widget or
   // after exiting search mode.
   void RequestFocusForActiveTab();
@@ -55,11 +60,8 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // Update views' layout based on search box status.
   void UpdateViewsLayout(bool is_search_box_active);
 
-  static KeyboardShortcutView* GetInstanceForTesting();
-  int GetTabCountForTesting() const;
-  const std::vector<KeyboardShortcutItemView*>& GetShortcutViewsForTesting() {
-    return shortcut_views_;
-  }
+  // Show search results in |search_results_container_|.
+  void ShowSearchResults(const base::string16& search_query);
 
   // views::WidgetDelegate:
   bool CanMaximize() const override;
@@ -67,17 +69,25 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   bool CanResize() const override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
+  static KeyboardShortcutView* GetInstanceForTesting();
+  int GetTabCountForTesting() const;
+  const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
+  GetShortcutViewsForTesting() const;
+
   // Owned by views hierarchy.
-  views::TabbedPane* tabbed_pane_;
-  views::View* search_results_container_;
+  // The container for category tabs and lists of KeyboardShortcutItemViews.
+  views::TabbedPane* categories_tabbed_pane_ = nullptr;
+  // The container for KeyboardShortcutItemViews matching a user's query.
+  views::View* search_results_container_ = nullptr;
 
   // SearchBoxViewBase is a WidgetDelegateView, which owns itself and cannot be
   // deleted from the views hierarchy automatically.
   std::unique_ptr<KSVSearchBoxView> search_box_view_;
 
-  // Contains all the shortcut item views from all categories. This list is used
-  // for searching. The views are owned by the Views hierarchy.
-  std::vector<KeyboardShortcutItemView*> shortcut_views_;
+  // Contains all the shortcut item views from all categories. This list is also
+  // used for searching. The views are not owned by the Views hierarchy to avoid
+  // KeyboardShortcutItemView layout when switching between tabs and search.
+  std::vector<std::unique_ptr<KeyboardShortcutItemView>> shortcut_views_;
 
   // An illustration to indicate no search results found. Since this view need
   // to be added and removed frequently from the |search_results_container_|, it
@@ -87,6 +97,12 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // Cached value of search box text status. When the status changes, need to
   // update views' layout.
   bool is_search_box_empty_ = true;
+
+  // Cached value of active tab index before entering search mode.
+  int active_tab_index_ = 0;
+
+  // Debounce for search queries.
+  base::OneShotTimer debounce_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutView);
 };
