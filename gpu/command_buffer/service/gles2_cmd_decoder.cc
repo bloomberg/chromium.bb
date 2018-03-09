@@ -990,9 +990,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCommitOverlayPlanes();
 
-  // Wrapper for SwapInterval.
-  void DoSwapInterval(int interval);
-
   // Wrapper for CopyTexSubImage2D.
   void DoCopyTexSubImage2D(
       GLenum target,
@@ -16159,10 +16156,6 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes() {
   } else {
     FinishSwapBuffers(surface_->CommitOverlayPlanes(base::DoNothing()));
   }
-}
-
-void GLES2DecoderImpl::DoSwapInterval(int interval) {
-  context_->SetSwapInterval(interval);
 }
 
 error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(

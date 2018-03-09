@@ -1057,8 +1057,6 @@ void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
 
 void CommitOverlayPlanesCHROMIUM() override;
 
-void SwapInterval(GLint interval) override;
-
 void FlushDriverCachesCHROMIUM() override;
 
 GLuint GetLastFlushIdCHROMIUM() override;
