@@ -4,7 +4,7 @@
 
 #include "core/paint/TextPainter.h"
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextCombine.h"

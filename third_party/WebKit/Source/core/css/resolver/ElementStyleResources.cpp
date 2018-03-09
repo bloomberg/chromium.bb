@@ -23,10 +23,10 @@
 
 #include "core/css/resolver/ElementStyleResources.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSURIValue.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/TreeScope.h"
 #include "core/style/ComputedStyle.h"

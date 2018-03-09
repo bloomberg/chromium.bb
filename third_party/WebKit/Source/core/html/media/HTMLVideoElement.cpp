@@ -26,7 +26,7 @@
 #include "core/html/media/HTMLVideoElement.h"
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"

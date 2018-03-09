@@ -1102,12 +1102,12 @@ css_properties("make_core_generated_css_property_names") {
   script = "../build/scripts/make_css_property_names.py"
   other_inputs = [
     "../build/scripts/gperf.py",
-    "../build/scripts/templates/CSSPropertyNames.cpp.tmpl",
-    "../build/scripts/templates/CSSPropertyNames.h.tmpl",
+    "../build/scripts/templates/css_property_names.cc.tmpl",
+    "../build/scripts/templates/css_property_names.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/CSSPropertyNames.cpp",
-    "$blink_core_output_dir/CSSPropertyNames.h",
+    "$blink_core_output_dir/css_property_names.cc",
+    "$blink_core_output_dir/css_property_names.h",
   ]
 }
 

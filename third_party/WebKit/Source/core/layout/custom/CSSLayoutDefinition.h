@@ -5,8 +5,8 @@
 #ifndef CSSLayoutDefinition_h
 #define CSSLayoutDefinition_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css_property_names.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"

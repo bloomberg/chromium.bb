@@ -24,7 +24,7 @@
 
 #include "core/html/HTMLIFrameElement.h"
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLDocument.h"

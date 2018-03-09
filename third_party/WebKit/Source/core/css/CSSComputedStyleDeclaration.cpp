@@ -25,7 +25,6 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -36,6 +35,7 @@
 #include "core/css/StyleEngine.h"
 #include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"

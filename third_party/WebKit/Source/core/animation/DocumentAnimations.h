@@ -31,7 +31,7 @@
 #ifndef DocumentAnimations_h
 #define DocumentAnimations_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/wtf/Optional.h"

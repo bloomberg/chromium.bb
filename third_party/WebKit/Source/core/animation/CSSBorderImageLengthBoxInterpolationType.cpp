@@ -5,12 +5,12 @@
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/SideIndex.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 

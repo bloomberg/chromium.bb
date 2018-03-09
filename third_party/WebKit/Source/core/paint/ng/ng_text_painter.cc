@@ -4,7 +4,7 @@
 
 #include "core/paint/ng/ng_text_painter.h"
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/frame/Settings.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_unpositioned_float.h"

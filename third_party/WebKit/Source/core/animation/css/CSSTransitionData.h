@@ -6,8 +6,8 @@
 #define CSSTransitionData_h
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/animation/css/CSSTimingData.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 

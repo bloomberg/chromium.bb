@@ -28,9 +28,9 @@
 
 #include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleDeclaration.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"

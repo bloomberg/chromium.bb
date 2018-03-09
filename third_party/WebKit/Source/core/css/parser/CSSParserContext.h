@@ -5,9 +5,9 @@
 #ifndef CSSParserContext_h
 #define CSSParserContext_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/css_property_names.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/WebFeatureForward.h"
 #include "platform/heap/Handle.h"

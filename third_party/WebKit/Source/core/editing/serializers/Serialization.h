@@ -26,8 +26,8 @@
 #ifndef Serialization_h
 #define Serialization_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/Forward.h"
 #include "core/editing/serializers/HTMLInterchange.h"

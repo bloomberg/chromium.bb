@@ -23,9 +23,9 @@
 #ifndef CSSToStyleMap_h
 #define CSSToStyleMap_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/Timing.h"
 #include "core/animation/css/CSSTransitionData.h"
+#include "core/css_property_names.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Allocator.h"

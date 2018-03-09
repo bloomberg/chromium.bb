@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSPropertyValue.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css_property_names.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"

@@ -27,7 +27,6 @@
 
 #include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/CSSColorValue.h"
@@ -59,6 +58,7 @@
 #include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
+#include "core/css_property_names.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"

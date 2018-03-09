@@ -6,10 +6,10 @@
 #define CSSParser_h
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css_property_names.h"
 
 namespace blink {
 

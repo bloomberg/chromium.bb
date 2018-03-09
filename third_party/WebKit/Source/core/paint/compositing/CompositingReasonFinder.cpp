@@ -4,7 +4,7 @@
 
 #include "core/paint/compositing/CompositingReasonFinder.h"
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "bindings/core/v8/Iterable.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css_property_names.h"
 #include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {

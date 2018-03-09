@@ -25,7 +25,6 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
@@ -34,6 +33,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/style/CachedUAStyle.h"

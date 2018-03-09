@@ -44,8 +44,8 @@
 
 #include "core/paint/PaintLayer.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/PseudoStyleRequest.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/LocalFrame.h"

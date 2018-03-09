@@ -26,12 +26,12 @@
 
 #include "core/editing/EditingStyleUtilities.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_property_names.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"

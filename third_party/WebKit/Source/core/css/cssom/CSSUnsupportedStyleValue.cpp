@@ -4,8 +4,8 @@
 
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_property_names.h"
 
 namespace blink {
 

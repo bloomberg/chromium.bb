@@ -28,7 +28,6 @@
 #include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptRegexp.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -43,6 +42,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserObserver.h"
+#include "core/css_property_names.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

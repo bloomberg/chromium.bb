@@ -5,10 +5,10 @@
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/animation/BasicShapeInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css_property_names.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"

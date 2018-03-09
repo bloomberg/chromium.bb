@@ -24,8 +24,8 @@
 #define SVGAnimateElement_h
 
 #include <base/gtest_prod_util.h>
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg_names.h"
 #include "platform/heap/Handle.h"

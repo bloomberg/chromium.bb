@@ -5,7 +5,7 @@
 #ifndef CSSPropertyEquality_h
 #define CSSPropertyEquality_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"
 

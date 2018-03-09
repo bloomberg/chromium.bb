@@ -24,10 +24,10 @@
 #include "core/html/HTMLImageElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/MediaValuesDynamic.h"
 #include "core/css/parser/SizesAttributeParser.h"
+#include "core/css_property_names.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/NodeTraversal.h"

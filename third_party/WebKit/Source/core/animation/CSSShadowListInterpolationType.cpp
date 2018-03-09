@@ -5,13 +5,13 @@
 #include "core/animation/CSSShadowListInterpolationType.h"
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/ShadowInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/wtf/PtrUtil.h"
