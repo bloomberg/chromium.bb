@@ -61,6 +61,10 @@ class ExternalProtocolHandler {
   // UMA histogram metric names.
   static const char kHandleStateMetric[];
 
+  // Called on the UI thread. Allows switching out the
+  // ExternalProtocolHandler::Delegate for testing code.
+  static void SetDelegateForTesting(Delegate* delegate);
+
   // Returns whether we should block a given scheme.
   static BlockState GetBlockState(const std::string& scheme, Profile* profile);
 
@@ -76,13 +80,11 @@ class ExternalProtocolHandler {
   // LaunchUrlWithoutSecurityCheck is called on the io thread and the
   // application is launched.
   // Must run on the UI thread.
-  // Allowing use of a delegate to facilitate unit testing.
-  static void LaunchUrlWithDelegate(const GURL& url,
-                                    int render_process_host_id,
-                                    int render_view_routing_id,
-                                    ui::PageTransition page_transition,
-                                    bool has_user_gesture,
-                                    Delegate* delegate);
+  static void LaunchUrl(const GURL& url,
+                        int render_process_host_id,
+                        int render_view_routing_id,
+                        ui::PageTransition page_transition,
+                        bool has_user_gesture);
 
   // Starts a url using the external protocol handler with the help
   // of shellexecute. Should only be called if the protocol is whitelisted

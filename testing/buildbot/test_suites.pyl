@@ -1161,7 +1161,6 @@
     'network_service_extensions_browsertests': {
       'args': [
         '--enable-features=NetworkService',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter',
       ],
       'test': 'extensions_browsertests',
     },

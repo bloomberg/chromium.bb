@@ -161,7 +161,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
-  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, delegate.net_error());
+  EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
   EXPECT_FALSE(delegate.ssl_info().is_valid());
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }

@@ -46,6 +46,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 #include "chrome/browser/media/platform_verification_impl.h"
@@ -71,6 +72,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
+#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
@@ -834,6 +836,51 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
       permit_attestation->begin(), permit_attestation->end(),
       [&rp_id](const base::Value& v) { return v.GetString() == rp_id; });
 #endif
+}
+
+void LaunchURL(
+    const GURL& url,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
+  // If there is no longer a WebContents, the request may have raced with tab
+  // closing. Don't fire the external request. (It may have been a prerender.)
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
+    return;
+
+  // Do not launch external requests attached to unswapped prerenders.
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+    prerender::ReportPrerenderExternalURL();
+    return;
+  }
+
+  bool is_whitelisted = false;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PolicyBlacklistService* service =
+      PolicyBlacklistFactory::GetForProfile(profile);
+  if (service) {
+    const policy::URLBlacklist::URLBlacklistState url_state =
+        service->GetURLBlacklistState(url);
+    is_whitelisted =
+        url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
+  }
+
+  // If the URL is in whitelist, we launch it without asking the user and
+  // without any additional security checks. Since the URL is whitelisted,
+  // we assume it can be executed.
+  if (is_whitelisted) {
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
+  } else {
+    ExternalProtocolHandler::LaunchUrl(
+        url, web_contents->GetRenderViewHost()->GetProcess()->GetID(),
+        web_contents->GetRenderViewHost()->GetRoutingID(), page_transition,
+        has_user_gesture);
+  }
 }
 
 }  // namespace
@@ -3994,6 +4041,41 @@ ChromeContentBrowserClient::CreateLoginDelegate(
         auth_required_callback) {
   return CreateLoginPrompt(auth_info, web_contents_getter, is_main_frame, url,
                            auth_required_callback);
+}
+
+bool ChromeContentBrowserClient::HandleExternalProtocol(
+    const GURL& url,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    int child_id,
+    content::NavigationUIData* navigation_data,
+    bool is_main_frame,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // External protocols are disabled for guests. An exception is made for the
+  // "mailto" protocol, so that pages that utilize it work properly in a
+  // WebView.
+  ChromeNavigationUIData* chrome_data =
+      static_cast<ChromeNavigationUIData*>(navigation_data);
+  if ((extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) ||
+       (chrome_data &&
+        chrome_data->GetExtensionNavigationUIData()->is_web_view())) &&
+      !url.SchemeIs(url::kMailToScheme)) {
+    return false;
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if defined(OS_ANDROID)
+  // Main frame external protocols are handled by
+  // InterceptNavigationResourceThrottle.
+  if (is_main_frame)
+    return false;
+#endif  // defined(ANDROID)
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&LaunchURL, url, web_contents_getter,
+                                         page_transition, has_user_gesture));
+  return true;
 }
 
 // Static; handles rewriting Web UI URLs.

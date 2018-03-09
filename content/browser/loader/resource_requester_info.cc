@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -86,10 +87,10 @@ scoped_refptr<ResourceRequesterInfo>
 ResourceRequesterInfo::CreateForBrowserSideNavigation(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
-      RequesterType::BROWSER_SIDE_NAVIGATION, -1,
-      nullptr /* appcache_service */, nullptr /* blob_storage_context */,
-      nullptr /* file_system_context */, service_worker_context.get(),
-      GetContextsCallback()));
+      RequesterType::BROWSER_SIDE_NAVIGATION,
+      ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
+      nullptr /* blob_storage_context */, nullptr /* file_system_context */,
+      service_worker_context.get(), GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>
@@ -123,8 +124,9 @@ ResourceRequesterInfo::CreateForNavigationPreload(
   }
 
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
-      RequesterType::NAVIGATION_PRELOAD, -1, nullptr /* appcache_service */,
-      nullptr /* blob_storage_context */, nullptr /* file_system_context */,
+      RequesterType::NAVIGATION_PRELOAD, ChildProcessHost::kInvalidUniqueID,
+      nullptr /* appcache_service */, nullptr /* blob_storage_context */,
+      nullptr /* file_system_context */,
       original_request_info->service_worker_context(), get_contexts_callback));
 }
 
@@ -134,10 +136,10 @@ ResourceRequesterInfo::CreateForCertificateFetcherForSignedExchange(
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
-      RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE, -1,
-      nullptr /* appcache_service */, nullptr /* blob_storage_context */,
-      nullptr /* file_system_context */, nullptr /* service_worker_context */,
-      get_contexts_callback));
+      RequesterType::CERTIFICATE_FETCHER_FOR_SIGNED_EXCHANGE,
+      ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
+      nullptr /* blob_storage_context */, nullptr /* file_system_context */,
+      nullptr /* service_worker_context */, get_contexts_callback));
 }
 
 }  // namespace content

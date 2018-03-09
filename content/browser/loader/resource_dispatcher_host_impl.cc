@@ -586,9 +586,6 @@ scoped_refptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
 
 bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
                                                         const GURL& url) {
-  if (!delegate_)
-    return false;
-
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
 
   if (!IsResourceTypeFrame(info->GetResourceType()))
@@ -599,7 +596,10 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
-  return delegate_->HandleExternalProtocol(url, info);
+  return GetContentClient()->browser()->HandleExternalProtocol(
+      url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
+      info->GetNavigationUIData(), info->IsMainFrame(),
+      info->GetPageTransition(), info->HasUserGesture());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {

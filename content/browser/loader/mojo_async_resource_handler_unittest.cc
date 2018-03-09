@@ -132,13 +132,6 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "DownloadStarting should not be called.";
   }
 
-  bool HandleExternalProtocol(
-      const GURL& url,
-      ResourceRequestInfo* resource_request_info) override {
-    ADD_FAILURE() << "HandleExternalProtocol should not be called.";
-    return false;
-  }
-
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,
                                        const std::string& mime_type,
                                        GURL* origin,

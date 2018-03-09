@@ -1150,21 +1150,6 @@ function testLoadStartLoadRedirect() {
   document.body.appendChild(webview);
 }
 
-function testNavigationToExternalProtocol() {
-  var webview = document.createElement('webview');
-  webview.addEventListener('loadstop', function(e) {
-    webview.addEventListener('loadabort', function(e) {
-      embedder.test.assertEq('ERR_UNKNOWN_URL_SCHEME', e.reason);
-      embedder.test.succeed();
-    });
-    webview.executeScript({
-      code: 'window.location.href = "tel:+12223334444";'
-    }, function(results) {});
-  });
-  webview.setAttribute('src', 'data:text/html,navigate to external protocol');
-  document.body.appendChild(webview);
-}
-
 // This test ensures if the guest isn't there and we resize the guest (from JS),
 // it remembers the size correctly.
 function testNavigateAfterResize() {
@@ -1824,7 +1809,6 @@ embedder.test.testList = {
   'testLoadProgressEvent': testLoadProgressEvent,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testNavigateAfterResize': testNavigateAfterResize,
-  'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testNavOnConsecutiveSrcAttributeChanges':
       testNavOnConsecutiveSrcAttributeChanges,
   'testNavOnSrcAttributeChange': testNavOnSrcAttributeChange,

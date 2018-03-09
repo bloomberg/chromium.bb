@@ -66,8 +66,6 @@ class ChromeResourceDispatcherHostDelegate
                         bool is_new_request,
                         std::vector<std::unique_ptr<content::ResourceThrottle>>*
                             throttles) override;
-  bool HandleExternalProtocol(const GURL& url,
-                              content::ResourceRequestInfo* info) override;
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,
                                        const std::string& mime_type,
                                        GURL* origin,
@@ -90,11 +88,6 @@ class ChromeResourceDispatcherHostDelegate
       content::PreviewsState previews_to_allow) override;
   content::NavigationData* GetNavigationData(
       net::URLRequest* request) const override;
-
-  // Called on the UI thread. Allows switching out the
-  // ExternalProtocolHandler::Delegate for testing code.
-  static void SetExternalProtocolHandlerDelegateForTesting(
-      ExternalProtocolHandler::Delegate* delegate);
 
  protected:
   // Virtual for testing.

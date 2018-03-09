@@ -146,12 +146,13 @@ class ExternalProtocolHandlerTest : public testing::Test {
     EXPECT_FALSE(delegate_.has_prompted());
     EXPECT_FALSE(delegate_.has_launched());
     EXPECT_FALSE(delegate_.has_blocked());
-
+    ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    ExternalProtocolHandler::LaunchUrlWithDelegate(
-        url, 0, 0, ui::PAGE_TRANSITION_LINK, true, &delegate_);
+    ExternalProtocolHandler::LaunchUrl(url, 0, 0, ui::PAGE_TRANSITION_LINK,
+                                       true);
     content::RunAllTasksUntilIdle();
+    ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 
     EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
     EXPECT_EQ(expected_action == Action::LAUNCH, delegate_.has_launched());

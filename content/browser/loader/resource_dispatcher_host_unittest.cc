@@ -2145,15 +2145,47 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
   EXPECT_EQ(0, host_.pending_requests());
 }
 
+namespace {
+
+class ExternalProtocolBrowserClient : public TestContentBrowserClient {
+ public:
+  ExternalProtocolBrowserClient() {}
+
+  bool HandleExternalProtocol(
+      const GURL& url,
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      int child_id,
+      NavigationUIData* navigation_data,
+      bool is_main_frame,
+      ui::PageTransition page_transition,
+      bool has_user_gesture) override {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExternalProtocolBrowserClient);
+};
+
+}  // namespace
+
+// Verifies that if the embedder says that it didn't handle an unkonown protocol
+// the request is cancelled and net::ERR_ABORTED is returned. Otherwise it is
+// not aborted and net/ layer cancels it with net::ERR_UNKNOWN_URL_SCHEME.
 TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   EXPECT_EQ(0, host_.pending_requests());
 
   HandleScheme("http");
 
-  const GURL invalid_sheme_url = GURL("foo://bar");
-  const int expected_error_code = net::ERR_UNKNOWN_URL_SCHEME;
+  ExternalProtocolBrowserClient test_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&test_client);
 
-  CompleteFailingMainResourceRequest(invalid_sheme_url, expected_error_code);
+  const GURL invalid_scheme_url = GURL("foo://bar");
+  int expected_error_code = net::ERR_UNKNOWN_URL_SCHEME;
+  CompleteFailingMainResourceRequest(invalid_scheme_url, expected_error_code);
+  SetBrowserClientForTesting(old_client);
+
+  expected_error_code = net::ERR_ABORTED;
+  CompleteFailingMainResourceRequest(invalid_scheme_url, expected_error_code);
 }
 
 // Request a very large detachable resource and cancel part way. Some of the

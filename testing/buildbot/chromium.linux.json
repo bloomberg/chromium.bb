@@ -906,8 +906,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_extensions_browsertests",
         "swarming": {
@@ -1707,8 +1706,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_extensions_browsertests",
         "swarming": {
@@ -2348,8 +2346,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_extensions_browsertests",
         "swarming": {

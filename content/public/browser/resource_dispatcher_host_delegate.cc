@@ -35,12 +35,6 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     bool is_new_request,
     std::vector<std::unique_ptr<ResourceThrottle>>* throttles) {}
 
-bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
-    const GURL& url,
-    ResourceRequestInfo* info) {
-  return true;
-}
-
 bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     net::URLRequest* request,
     const std::string& mime_type,

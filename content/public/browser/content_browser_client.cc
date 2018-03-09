@@ -688,4 +688,15 @@ scoped_refptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
   return nullptr;
 }
 
+bool ContentBrowserClient::HandleExternalProtocol(
+    const GURL& url,
+    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    int child_id,
+    NavigationUIData* navigation_data,
+    bool is_main_frame,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
+  return true;
+}
+
 }  // namespace content

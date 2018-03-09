@@ -74,12 +74,6 @@
 -WebViewTests/WebViewTest.StoragePersistence/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
-
-# http://crbug.com/706030 handle external protocols
--ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
--WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
--WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
-
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions

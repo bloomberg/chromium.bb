@@ -142,8 +142,6 @@ using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
-ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate = NULL;
-
 void NotifyDownloadInitiatedOnUI(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
   content::WebContents* web_contents = wc_getter.Run();
@@ -184,51 +182,6 @@ void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
       GetPrerenderManager(web_contents);
   if (prerender_manager)
     prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
-}
-
-void LaunchURL(
-    const GURL& url,
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    ui::PageTransition page_transition,
-    bool has_user_gesture) {
-  // If there is no longer a WebContents, the request may have raced with tab
-  // closing. Don't fire the external request. (It may have been a prerender.)
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return;
-
-  // Do not launch external requests attached to unswapped prerenders.
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
-    prerender::ReportPrerenderExternalURL();
-    return;
-  }
-
-  bool is_whitelisted = false;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForProfile(profile);
-  if (service) {
-    const policy::URLBlacklist::URLBlacklistState url_state =
-        service->GetURLBlacklistState(url);
-    is_whitelisted =
-        url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
-  }
-
-  // If the URL is in whitelist, we launch it without asking the user and
-  // without any additional security checks. Since the URL is whitelisted,
-  // we assume it can be executed.
-  if (is_whitelisted) {
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
-  } else {
-    ExternalProtocolHandler::LaunchUrlWithDelegate(
-        url, web_contents->GetRenderViewHost()->GetProcess()->GetID(),
-        web_contents->GetRenderViewHost()->GetRoutingID(), page_transition,
-        has_user_gesture, g_external_protocol_handler_delegate);
-  }
 }
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -568,39 +521,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 #endif
 }
 
-bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
-    const GURL& url,
-    content::ResourceRequestInfo* info) {
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // External protocols are disabled for guests. An exception is made for the
-  // "mailto" protocol, so that pages that utilize it work properly in a
-  // WebView.
-  int child_id = info->GetChildID();
-  ChromeNavigationUIData* navigation_data =
-      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
-  if ((extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) ||
-      (navigation_data &&
-       navigation_data->GetExtensionNavigationUIData()->is_web_view())) &&
-      !url.SchemeIs(url::kMailToScheme)) {
-    return false;
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if defined(OS_ANDROID)
-  // Main frame external protocols are handled by
-  // InterceptNavigationResourceThrottle.
-  if (info->IsMainFrame())
-    return false;
-#endif  // defined(ANDROID)
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&LaunchURL, url, info->GetWebContentsGetterForRequest(),
-                     info->GetPageTransition(), info->HasUserGesture()));
-  return true;
-}
-
 void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
@@ -921,13 +841,6 @@ ChromeResourceDispatcherHostDelegate::DetermineEnabledPreviews(
       previews_state = content::PREVIEWS_OFF;
   }
   return previews_state;
-}
-
-// static
-void ChromeResourceDispatcherHostDelegate::
-    SetExternalProtocolHandlerDelegateForTesting(
-    ExternalProtocolHandler::Delegate* delegate) {
-  g_external_protocol_handler_delegate = delegate;
 }
 
 content::NavigationData*
