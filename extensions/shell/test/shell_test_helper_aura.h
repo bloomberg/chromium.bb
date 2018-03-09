@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 namespace test {
@@ -16,6 +17,8 @@ class AuraTestHelper;
 }  // namespace aura
 
 namespace extensions {
+
+class AppWindow;
 
 // A helper class that does common Aura initialization required for the shell.
 class ShellTestHelperAura {
@@ -28,6 +31,9 @@ class ShellTestHelperAura {
 
   // Cleans up.
   void TearDown();
+
+  // Initializes |app_window| for testing.
+  void InitAppWindow(AppWindow* app_window, const gfx::Rect& bounds = {});
 
  private:
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
