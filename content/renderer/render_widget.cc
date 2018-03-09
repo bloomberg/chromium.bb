@@ -768,8 +768,8 @@ void RenderWidget::SetWindowRectSynchronously(
   ResizeParams params;
   params.screen_info = screen_info_;
   params.new_size = new_window_rect.size();
-  params.compositor_viewport_pixel_size =
-      gfx::ScaleToCeiledSize(new_window_rect.size(), GetWebDeviceScaleFactor());
+  params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+      new_window_rect.size(), GetWebScreenInfo().device_scale_factor);
   params.visible_viewport_size = new_window_rect.size();
   params.is_fullscreen_granted = is_fullscreen_granted_;
   params.display_mode = display_mode_;
@@ -1356,8 +1356,10 @@ void RenderWidget::ResizeWebWidget() {
 }
 
 gfx::Size RenderWidget::GetSizeForWebWidget() const {
-  if (IsUseZoomForDSFEnabled())
-    return gfx::ScaleToCeiledSize(size_, GetOriginalDeviceScaleFactor());
+  if (IsUseZoomForDSFEnabled()) {
+    return gfx::ScaleToCeiledSize(size_,
+                                  GetOriginalScreenInfo().device_scale_factor);
+  }
 
   return size_;
 }
@@ -1432,9 +1434,9 @@ void RenderWidget::Resize(const ResizeParams& params) {
 
   WebSize visual_viewport_size;
   if (IsUseZoomForDSFEnabled()) {
-    visual_viewport_size = gfx::ScaleToCeiledSize(
-        params.visible_viewport_size,
-        GetOriginalDeviceScaleFactor());
+    visual_viewport_size =
+        gfx::ScaleToCeiledSize(params.visible_viewport_size,
+                               GetOriginalScreenInfo().device_scale_factor);
   } else {
     visual_viewport_size = visible_viewport_size_;
   }
@@ -1716,13 +1718,14 @@ void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
   blink::WebView* webview = current_frame ? current_frame->View() : nullptr;
   if (webview) {
     if (IsUseZoomForDSFEnabled())
-      webview->SetZoomFactorForDeviceScaleFactor(GetWebDeviceScaleFactor());
+      webview->SetZoomFactorForDeviceScaleFactor(
+          GetWebScreenInfo().device_scale_factor);
     else
-      webview->SetDeviceScaleFactor(GetWebDeviceScaleFactor());
+      webview->SetDeviceScaleFactor(GetWebScreenInfo().device_scale_factor);
 
     webview->GetSettings()->SetPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(compositor_deps_,
-                                   GetWebDeviceScaleFactor()));
+                                   GetWebScreenInfo().device_scale_factor));
   }
 }
 
@@ -1934,12 +1937,12 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     viz::LocalSurfaceId new_local_surface_id,
     const gfx::Size& new_compositor_viewport_pixel_size,
     const ScreenInfo& new_screen_info) {
-  bool screen_info_changed = screen_info_ != new_screen_info;
   bool orientation_changed =
       screen_info_.orientation_angle != new_screen_info.orientation_angle ||
       screen_info_.orientation_type != new_screen_info.orientation_type;
   bool web_device_scale_factor_changed =
       screen_info_.device_scale_factor != new_screen_info.device_scale_factor;
+  ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_ = new_local_surface_id;
   compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
@@ -1948,21 +1951,21 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   if (compositor_) {
     // Note carefully that the DSF specified in |new_screen_info| is not the
     // DSF used by the compositor during device emulation!
-    compositor_->SetViewportSizeAndScale(compositor_viewport_pixel_size_,
-                                         GetOriginalDeviceScaleFactor(),
-                                         local_surface_id_);
+    compositor_->SetViewportSizeAndScale(
+        compositor_viewport_pixel_size_,
+        GetOriginalScreenInfo().device_scale_factor, local_surface_id_);
   }
 
   if (orientation_changed)
     OnOrientationChange();
 
-  if (screen_info_changed) {
+  if (previous_original_screen_info != GetOriginalScreenInfo()) {
     for (auto& observer : render_frame_proxies_)
-      observer.OnScreenInfoChanged(screen_info_);
+      observer.OnScreenInfoChanged(GetOriginalScreenInfo());
 
     // Notify all embedded BrowserPlugins of the updated ScreenInfo.
     for (auto& observer : browser_plugins_)
-      observer.ScreenInfoChanged(screen_info_);
+      observer.ScreenInfoChanged(GetOriginalScreenInfo());
   }
 
   if (web_device_scale_factor_changed)
@@ -2170,7 +2173,7 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
 
 void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
   if (IsUseZoomForDSFEnabled()) {
-    float reverse = 1 / GetOriginalDeviceScaleFactor();
+    float reverse = 1 / GetOriginalScreenInfo().device_scale_factor;
     // TODO(oshima): We may need to allow pixel precision here as the the
     // anchor element can be placed at half pixel.
     gfx::Rect window_rect =
@@ -2184,10 +2187,10 @@ void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
 
 void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   if (IsUseZoomForDSFEnabled()) {
-    rect->x *= GetOriginalDeviceScaleFactor();
-    rect->y *= GetOriginalDeviceScaleFactor();
-    rect->width *= GetOriginalDeviceScaleFactor();
-    rect->height *= GetOriginalDeviceScaleFactor();
+    rect->x *= GetOriginalScreenInfo().device_scale_factor;
+    rect->y *= GetOriginalScreenInfo().device_scale_factor;
+    rect->width *= GetOriginalScreenInfo().device_scale_factor;
+    rect->height *= GetOriginalScreenInfo().device_scale_factor;
   }
 }
 
@@ -2382,7 +2385,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // calculation of |new_compositor_viewport_pixel_size| does not appear to
     // take into account device emulation.
     gfx::Size new_compositor_viewport_pixel_size =
-        gfx::ScaleToCeiledSize(size_, GetWebDeviceScaleFactor());
+        gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
                                new_compositor_viewport_pixel_size,
                                screen_info_);
@@ -2514,12 +2517,14 @@ void RenderWidget::ShowUnhandledTapUIIfNeeded(
                         !tapped_node.IsContentEditable() &&
                         !tapped_node.IsInsideFocusableElementOrARIAWidget();
   if (should_trigger) {
-    float x_px = IsUseZoomForDSFEnabled()
-                     ? tapped_position.x
-                     : tapped_position.x * GetWebDeviceScaleFactor();
-    float y_px = IsUseZoomForDSFEnabled()
-                     ? tapped_position.y
-                     : tapped_position.y * GetWebDeviceScaleFactor();
+    float x_px =
+        IsUseZoomForDSFEnabled()
+            ? tapped_position.x
+            : tapped_position.x * GetWebScreenInfo().device_scale_factor;
+    float y_px =
+        IsUseZoomForDSFEnabled()
+            ? tapped_position.y
+            : tapped_position.y * GetWebScreenInfo().device_scale_factor;
     Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_, x_px, y_px));
   }
 }
@@ -2644,15 +2649,14 @@ void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
                MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
 }
 
-float RenderWidget::GetWebDeviceScaleFactor() const {
-  return screen_info_.device_scale_factor;
+const ScreenInfo& RenderWidget::GetWebScreenInfo() const {
+  return screen_info_;
 }
 
-float RenderWidget::GetOriginalDeviceScaleFactor() const {
+const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
   return screen_metrics_emulator_
              ? screen_metrics_emulator_->original_screen_info()
-                   .device_scale_factor
-             : screen_info_.device_scale_factor;
+             : screen_info_;
 }
 
 gfx::PointF RenderWidget::ConvertWindowPointToViewport(

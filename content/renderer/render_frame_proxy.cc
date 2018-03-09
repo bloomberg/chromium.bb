@@ -237,7 +237,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
-  pending_resize_params_.screen_info = render_widget_->screen_info();
+  pending_resize_params_.screen_info = render_widget_->GetOriginalScreenInfo();
 
 #if defined(USE_AURA)
   if (features::IsMusEnabled()) {
@@ -716,7 +716,7 @@ void RenderFrameProxy::FrameRectsChanged(
   pending_resize_params_.screen_space_rect = gfx::Rect(screen_space_rect);
   pending_resize_params_.local_frame_size =
       gfx::Size(local_frame_rect.width, local_frame_rect.height);
-  pending_resize_params_.screen_info = render_widget_->screen_info();
+  pending_resize_params_.screen_info = render_widget_->GetOriginalScreenInfo();
   if (crashed_) {
     // Update the sad page to match the current size.
     compositing_helper_->ChildFrameGone(local_frame_size(),

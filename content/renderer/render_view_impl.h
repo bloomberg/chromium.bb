@@ -443,6 +443,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                            ScreenMetricsEmulationWithOriginalDSF1);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            ScreenMetricsEmulationWithOriginalDSF2);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
+                           DeviceEmulationWithOOPIF);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DecideNavigationPolicyHandlesAllTopLevel);
 #if defined(OS_MACOSX)
