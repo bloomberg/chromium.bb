@@ -32,7 +32,9 @@ mojom("mojom") {
 
   public_deps = [
     ":constants",
+    "//mojo/common:common_custom_types",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
   ]
 
   # The blink variant of the Device Service mojom are depended on by the

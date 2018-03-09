@@ -4,7 +4,7 @@
 
 module resource_coordinator.mojom;
 
-import "coordination_unit.mojom";
+import "services/resource_coordinator/public/mojom/coordination_unit.mojom";
 
 interface CoordinationUnitProvider {
   CreateFrameCoordinationUnit(FrameCoordinationUnit& request, CoordinationUnitID id);

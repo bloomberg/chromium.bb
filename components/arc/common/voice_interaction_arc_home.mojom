@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "gfx.mojom";
+import "components/arc/common/gfx.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 // Represents view structure to be passed to ARC. The view

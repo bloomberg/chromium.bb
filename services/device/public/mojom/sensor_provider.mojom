@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "sensor.mojom";
+import "services/device/public/mojom/sensor.mojom";
 
 struct SensorInitParams {
   // The Sensor interface.

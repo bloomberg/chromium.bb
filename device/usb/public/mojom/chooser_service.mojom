@@ -4,8 +4,8 @@
 
 module device.mojom;
 
-import "device.mojom";
-import "device_manager.mojom";
+import "device/usb/public/mojom/device.mojom";
+import "device/usb/public/mojom/device_manager.mojom";
 
 interface UsbChooserService {
   // Get permission from user to use the device.

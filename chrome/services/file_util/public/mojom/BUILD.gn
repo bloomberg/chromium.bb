@@ -10,10 +10,6 @@ mojom("mojom") {
     "constants.mojom",
   ]
 
-  if (is_chromeos) {
-    sources += [ "zip_file_creator.mojom" ]
-  }
-
   if (safe_browsing_mode == 1) {
     sources += [ "safe_archive_analyzer.mojom" ]
   }
@@ -21,4 +17,9 @@ mojom("mojom") {
   public_deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  if (is_chromeos) {
+    sources += [ "zip_file_creator.mojom" ]
+    public_deps += [ "//components/filesystem/public/interfaces" ]
+  }
 }

@@ -7,7 +7,7 @@
 
 module arc.mojom;
 
-import "video_common.mojom";
+import "components/arc/common/video_common.mojom";
 
 [Extensible]
 enum VideoPixelFormat {

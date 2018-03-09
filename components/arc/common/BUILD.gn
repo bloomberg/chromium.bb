@@ -57,7 +57,9 @@ if (is_chromeos) {
 
     public_deps = [
       ":media",
+      "//device/usb/public/mojom",
       "//mojo/common:common_custom_types",
+      "//mojo/public/mojom/base",
       "//ui/gfx/geometry/mojo",
     ]
   }

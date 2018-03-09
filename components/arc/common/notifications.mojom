@@ -6,8 +6,8 @@
 
 module arc.mojom;
 
-import "bitmap.mojom";
-import "gfx.mojom";
+import "components/arc/common/bitmap.mojom";
+import "components/arc/common/gfx.mojom";
 
 // These values must be matched with the NOTIFICATION_EVENT_* constants in
 // com.android.server.ArcNotificationListenerService.

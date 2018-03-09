@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "scale_factor.mojom";
+import "components/arc/common/scale_factor.mojom";
 
 // Describes the type of action to invoke.
 enum ActionType {

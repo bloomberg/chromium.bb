@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "gfx.mojom";
+import "components/arc/common/gfx.mojom";
 
 // Represents the type of text input field currently focused.
 [Extensible]

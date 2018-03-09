@@ -174,14 +174,7 @@ class MojomProcessor(object):
           MakeImportStackMessage(imported_filename_stack + [rel_filename.path])
       sys.exit(1)
 
-    pickle_path = _GetPicklePath(rel_filename, args.output_dir)
-    try:
-      with open(pickle_path, "rb") as f:
-        tree = cPickle.load(f)
-    except (IOError, cPickle.UnpicklingError) as e:
-      print "%s: Error: %s" % (pickle_path, str(e))
-      sys.exit(1)
-
+    tree = _UnpickleAST(_GetPicklePath(rel_filename, args.output_dir))
     dirname = os.path.dirname(rel_filename.path)
 
     # Process all our imports first and collect the module object for each.
@@ -273,6 +266,13 @@ def _PickleAST(ast, output_file):
     print "%s: Error: %s" % (output_file, str(e))
     sys.exit(1)
 
+def _UnpickleAST(input_file):
+    try:
+      with open(input_file, "rb") as f:
+        return cPickle.load(f)
+    except (IOError, cPickle.UnpicklingError) as e:
+      print "%s: Error: %s" % (input_file, str(e))
+      sys.exit(1)
 
 def _ParseFile(args, rel_filename):
   try:
@@ -288,7 +288,6 @@ def _ParseFile(args, rel_filename):
   except Error as e:
     print "%s: Error: %s" % (rel_filename.path, str(e))
     sys.exit(1)
-
   _PickleAST(tree, _GetPicklePath(rel_filename, args.output_dir))
 
 
@@ -305,7 +304,42 @@ def _Precompile(args, _):
   template_expander.PrecompileTemplates(generator_modules, args.output_dir)
   return 0
 
+def _VerifyImportDeps(args, __):
+  fileutil.EnsureDirectoryExists(args.gen_dir)
 
+  for filename in args.filename:
+    rel_path = RelativePath(filename, args.depth)
+    tree = _UnpickleAST(_GetPicklePath(rel_path, args.gen_dir))
+
+    mojom_imports = set(
+      parsed_imp.import_filename for parsed_imp in tree.import_list
+      )
+
+    # read the paths from the file
+    f_deps = open(args.deps_file, 'r')
+    deps_sources = set()
+    for deps_path in f_deps:
+      deps_path = deps_path.rstrip('\n')
+      f_sources = open(deps_path, 'r')
+
+      for source_file in f_sources:
+        source_dir = deps_path.split(args.gen_dir + "/", 1)[1]
+        full_source_path = os.path.dirname(source_dir) + "/" +  \
+          source_file
+        deps_sources.add(full_source_path.rstrip('\n'))
+
+    if (not deps_sources.issuperset(mojom_imports)):
+      print ">>> [%s] Missing dependencies for the following imports: %s" % ( \
+        args.filename[0], \
+        list(mojom_imports.difference(deps_sources)))
+      sys.exit(1)
+
+    source_filename, _ = os.path.splitext(rel_path.relative_path())
+    output_file = source_filename + '.v'
+    output_file_path = os.path.join(args.gen_dir, output_file)
+    WriteFile("", output_file_path)
+
+  return 0
 
 def main():
   parser = argparse.ArgumentParser(
@@ -424,6 +458,22 @@ def main():
       "-o", "--output_dir", dest="output_dir", default=".",
       help="output directory for precompiled templates")
   precompile_parser.set_defaults(func=_Precompile)
+
+  verify_parser = subparsers.add_parser("verify", description="Checks "
+      "the set of imports against the set of dependencies.")
+  verify_parser.add_argument("filename", nargs="+",
+      help="mojom input file")
+  verify_parser.add_argument("-f", "--file", dest="deps_file",
+      help="file containing paths to the sources files for "
+      "dependencies")
+  verify_parser.add_argument("-g", "--gen_dir",
+      dest="gen_dir",
+      help="directory with the syntax tree")
+  verify_parser.add_argument(
+      "-d", "--depth", dest="depth",
+      help="depth from source root")
+
+  verify_parser.set_defaults(func=_VerifyImportDeps)
 
   args, remaining_args = parser.parse_known_args()
   return args.func(args, remaining_args)

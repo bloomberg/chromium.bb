@@ -528,6 +528,11 @@ mojom("mojo_bindings") {
   # indexed_db.mojom uses a native typemap that is not available in Java.
   cpp_only = true
 
+  # imports vs deps check is disabled for this target to work around
+  # windows multiple definitions linker error caused by having
+  # both a direct and an indirect dependency on the same target
+  skip_deps_check = true
+
   sources = [
     "appcache.mojom",
     "associated_interfaces.mojom",
@@ -590,20 +595,27 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//content/public/common:interfaces",
+    "//content/public/common:resource_type_bindings",
     "//ipc:mojom_constants",
     "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//services/ui/public/interfaces",
+    "//services/ui/public/interfaces/ime",
     "//services/video_capture/public/mojom",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",
+    "//third_party/WebKit/public:web_feature_mojo_bindings",
     "//third_party/WebKit/public/mojom:mojom_core",
     "//ui/base/mojo:mojo_bindings",
+    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//ui/gfx/range/mojo",
+    "//ui/latency/mojo:interfaces",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

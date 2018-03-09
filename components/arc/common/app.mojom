@@ -6,8 +6,8 @@
 
 module arc.mojom;
 
-import "gfx.mojom";
-import "scale_factor.mojom";
+import "components/arc/common/gfx.mojom";
+import "components/arc/common/scale_factor.mojom";
 
 // Describes OrientationLock request.
 // Note: ChromeOS currently assumes the internal panel is always landscape.

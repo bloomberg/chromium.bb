@@ -15,8 +15,8 @@
 
 module arc.mojom;
 
-import "gfx.mojom";
-import "video_common.mojom";
+import "components/arc/common/gfx.mojom";
+import "components/arc/common/video_common.mojom";
 
 // Information of the bitstream buffer.
 struct BitstreamBuffer {

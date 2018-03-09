@@ -13,8 +13,8 @@
 
 module arc_oemcrypto.mojom;
 
-import "oemcrypto.mojom";
-import "protected_buffer_manager.mojom";
+import "components/arc/common/oemcrypto.mojom";
+import "components/arc/common/protected_buffer_manager.mojom";
 
 // OemCryptoHostDaemon is implemented by the OemCrypto daemon running in
 // Chrome OS and has Connect called from the Browser process in Chrome.

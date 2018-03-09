@@ -355,6 +355,24 @@ template("mojom") {
     }
   }
 
+  target_sources_list = "$target_gen_dir/$target_name.sources_list"
+  sources_list = []
+  if (defined(invoker.sources)) {
+    sources_list = invoker.sources
+  }
+  write_file(target_sources_list, sources_list)
+
+  # a target implicitly depends on its own sources
+  deps_sources = [ rebase_path(target_sources_list, root_build_dir) ]
+  foreach(d, all_deps) {
+    dep_dir = get_label_info("$d", "target_gen_dir")
+    dep_short_name = get_label_info("$d", "name")
+    deps_sources +=
+        [ rebase_path("$dep_dir/$dep_short_name.sources_list", root_build_dir) ]
+  }
+
+  write_file("$target_gen_dir/$target_name.deps_sources_list", deps_sources)
+
   if (defined(invoker.sources)) {
     parser_target_name = "${target_name}__parser"
     enabled_features = []
@@ -415,6 +433,38 @@ template("mojom") {
       # suffix to get the mojom dependency name.
       full_name = get_label_info("$d", "label_no_toolchain")
       public_deps += [ "${full_name}__parsed" ]
+    }
+  }
+
+  if (defined(invoker.sources)) {
+    verify_deps_target_names = []
+    if (!defined(invoker.skip_deps_check) || !invoker.skip_deps_check) {
+      verify_deps_target_name = "${target_name}__verify_deps"
+      verify_deps_target_names += [ ":$verify_deps_target_name" ]
+      source_file_name = target_name
+      action_foreach(verify_deps_target_name) {
+        script = mojom_generator_script
+        inputs = mojom_generator_sources
+        sources = invoker.sources
+        deps = [
+          ":$parsed_target_name",
+        ]
+        outputs = [
+          "{{source_gen_dir}}/{{source_name_part}}.v",
+        ]
+
+        args = [
+          "verify",
+          "{{source}}",
+          "-f",
+          rebase_path("$target_gen_dir/$source_file_name.deps_sources_list",
+                      root_build_dir),
+          "--gen_dir",
+          rebase_path(root_gen_dir, root_build_dir),
+          "--depth",
+          rebase_path("//", root_build_dir),
+        ]
+      }
     }
   }
 
@@ -522,9 +572,10 @@ template("mojom") {
       inputs = mojom_generator_sources
       sources = invoker.sources
       deps = [
-        ":$parsed_target_name",
-        "//mojo/public/tools/bindings:precompile_templates",
-      ]
+               ":$parsed_target_name",
+               "//mojo/public/tools/bindings:precompile_templates",
+             ] + verify_deps_target_names
+
       outputs = generator_shared_cpp_outputs
       args = common_generator_args
       args += [
@@ -695,10 +746,10 @@ template("mojom") {
         inputs = mojom_generator_sources
         sources = invoker.sources
         deps = [
-          ":$parsed_target_name",
-          ":$type_mappings_target_name",
-          "//mojo/public/tools/bindings:precompile_templates",
-        ]
+                 ":$parsed_target_name",
+                 ":$type_mappings_target_name",
+                 "//mojo/public/tools/bindings:precompile_templates",
+               ] + verify_deps_target_names
         outputs = generator_cpp_outputs
         args = common_generator_args
         args += [
@@ -946,10 +997,10 @@ template("mojom") {
           inputs = mojom_generator_sources
           sources = enabled_sources
           deps = [
-            ":$parsed_target_name",
-            ":$type_mappings_target_name",
-            "//mojo/public/tools/bindings:precompile_templates",
-          ]
+                   ":$parsed_target_name",
+                   ":$type_mappings_target_name",
+                   "//mojo/public/tools/bindings:precompile_templates",
+                 ] + verify_deps_target_names
           outputs = generator_java_outputs
           args = common_generator_args
           args += [
@@ -1033,9 +1084,9 @@ template("mojom") {
           sources += invoker.sources
         }
         deps = [
-          ":$parsed_target_name",
-          "//mojo/public/tools/bindings:precompile_templates",
-        ]
+                 ":$parsed_target_name",
+                 "//mojo/public/tools/bindings:precompile_templates",
+               ] + verify_deps_target_names
         outputs = generator_js_outputs
         args = common_generator_args
         args += [
