@@ -1017,6 +1017,7 @@ void PeopleHandler::MarkFirstSetupComplete() {
   // start syncing.
   sync_blocker_.reset();
   service->SetFirstSetupComplete();
+  FireWebUIListener("sync-settings-saved");
 }
 
 }  // namespace settings

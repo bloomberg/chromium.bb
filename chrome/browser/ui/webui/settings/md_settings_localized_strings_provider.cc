@@ -1499,6 +1499,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
     {"profileNameAndPicture", IDS_SETTINGS_PROFILE_NAME_AND_PICTURE},
     {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
+    {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
 #endif  // defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"peopleSignIn", IDS_SETTINGS_PEOPLE_SIGN_IN},

@@ -33,6 +33,7 @@
 <link rel="import" href="users_page.html">
 </if>
 <if expr="not chromeos">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="sync_account_control.html">
 <link rel="import" href="import_data_dialog.html">
 <link rel="import" href="manage_profile.html">
@@ -97,6 +98,19 @@
         /* Override the cr-dialog footer padding. */
         padding: 16px 0;
       }
+
+<if expr="not chromeos">
+      #toast {
+        color: white;
+        left: 0;
+        z-index: 1;
+      }
+
+      :host-context([dir='rtl']) #toast {
+        left: auto;
+        right: 0;
+      }
+</if>
     </style>
     <settings-animated-pages id="pages" section="people"
         focus-config="[[focusConfig_]]">
@@ -366,6 +380,11 @@
       </settings-import-data-dialog>
     </template>
 
+<if expr="not chromeos">
+    <cr-toast duration="3000" id="toast">
+      $i18n{syncSettingsSavedToast}
+    </cr-toast>
+</if>
   </template>
   <script src="people_page.js"></script>
 </dom-module>
