@@ -166,7 +166,7 @@ TEST_F(DialMediaSinkServiceImplTest,
   }
 }
 
-TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
+TEST_F(DialMediaSinkServiceImplTest, TestOnDeviceDescriptionRestartsTimer) {
   DialDeviceData device_data("first", GURL("http://127.0.0.1/dd.xml"),
                              base::Time::Now());
   ParsedDialDeviceDescription device_description;
@@ -194,6 +194,32 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
   EXPECT_TRUE(mock_timer_->IsRunning());
+}
+
+TEST_F(DialMediaSinkServiceImplTest, TestOnDialDeviceEventRestartsTimer) {
+  MediaSinkInternal dial_sink = CreateDialSink(1);
+  media_sink_service_->current_sinks_.insert_or_assign(dial_sink.sink().id(),
+                                                       dial_sink);
+
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(_));
+  media_sink_service_->OnDiscoveryComplete();
+
+  EXPECT_FALSE(mock_timer_->IsRunning());
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(std::vector<DialDeviceData>()));
+  media_sink_service_->OnDialDeviceEvent(std::vector<DialDeviceData>());
+  EXPECT_TRUE(mock_timer_->IsRunning());
+
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(std::vector<MediaSinkInternal>()));
+  mock_timer_->Fire();
+
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(std::vector<DialDeviceData>()));
+  media_sink_service_->OnDialDeviceEvent(std::vector<DialDeviceData>());
+  EXPECT_TRUE(mock_timer_->IsRunning());
+
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(_)).Times(0);
+  mock_timer_->Fire();
 }
 
 TEST_F(DialMediaSinkServiceImplTest, OnDialSinkAddedCallback) {

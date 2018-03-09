@@ -84,7 +84,10 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   friend class DialMediaSinkServiceImplTest;
   friend class MockDialMediaSinkServiceImpl;
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestStart);
-  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestTimer);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
+                           TestOnDeviceDescriptionRestartsTimer);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
+                           TestOnDialDeviceEventRestartsTimer);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            TestOnDeviceDescriptionAvailable);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,

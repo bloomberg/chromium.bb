@@ -53,11 +53,12 @@ void DialMediaSinkServiceImpl::Start() {
       base::BindRepeating(&DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
                           base::Unretained(this)));
 
+  MediaSinkServiceBase::StartTimer();
+
   dial_registry_ =
       test_dial_registry_ ? test_dial_registry_ : DialRegistry::GetInstance();
   dial_registry_->RegisterObserver(this);
   dial_registry_->OnListenerAdded();
-  MediaSinkServiceBase::StartTimer();
 }
 
 void DialMediaSinkServiceImpl::OnUserGesture() {
@@ -127,6 +128,9 @@ void DialMediaSinkServiceImpl::OnDialDeviceEvent(
   current_devices_ = devices;
 
   description_service_->GetDeviceDescriptions(devices);
+
+  // Makes sure the timer fires even if there is no device.
+  MediaSinkServiceBase::RestartTimer();
 }
 
 void DialMediaSinkServiceImpl::OnDialError(DialRegistry::DialErrorCode type) {
