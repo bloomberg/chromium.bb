@@ -82,7 +82,7 @@ void ExtensionViewMac::HandleKeyboardEvent(
   [event_window redispatchKeyEvent:event.os_event];
 }
 
-void ExtensionViewMac::DidStopLoading() {
+void ExtensionViewMac::OnLoaded() {
   ShowIfCompletelyLoaded();
 }
 

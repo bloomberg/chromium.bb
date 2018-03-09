@@ -60,7 +60,7 @@ class ExtensionViewViews : public views::WebView,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void DidStopLoading() override;
+  void OnLoaded() override;
 
   // views::WebView:
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
