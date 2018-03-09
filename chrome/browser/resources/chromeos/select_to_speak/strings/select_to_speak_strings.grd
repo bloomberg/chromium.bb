@@ -138,18 +138,6 @@
       <message desc="Label for the slowest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_SLOWEST">
         Slowest
       </message>
-      <message desc="Label for slow synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_SLOW">
-        Slow
-      </message>
-      <message desc="Label for a normal synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_NORMAL">
-        Normal
-      </message>
-      <message desc="Label for fast synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FAST">
-        Fast
-      </message>
-      <message desc="Label for faster synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTER">
-        Faster
-      </message>
       <message desc="Label for the fastest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTEST">
         Fastest
       </message>
