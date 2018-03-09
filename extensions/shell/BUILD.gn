@@ -95,6 +95,8 @@ source_set("app_shell_lib") {
     "browser/api/feedback_private/shell_feedback_private_delegate.h",
     "browser/api/identity/identity_api.cc",
     "browser/api/identity/identity_api.h",
+    "browser/api/runtime/shell_runtime_api_delegate.cc",
+    "browser/api/runtime/shell_runtime_api_delegate.h",
     "browser/default_shell_browser_main_delegate.cc",
     "browser/default_shell_browser_main_delegate.h",
     "browser/delegates/shell_kiosk_delegate.cc",
@@ -161,8 +163,6 @@ source_set("app_shell_lib") {
     "browser/shell_oauth2_token_service_delegate.h",
     "browser/shell_prefs.cc",
     "browser/shell_prefs.h",
-    "browser/shell_runtime_api_delegate.cc",
-    "browser/shell_runtime_api_delegate.h",
     "browser/shell_special_storage_policy.cc",
     "browser/shell_special_storage_policy.h",
     "browser/shell_speech_recognition_manager_delegate.cc",
@@ -456,6 +456,7 @@ if (is_mac) {
 source_set("browser_tests") {
   testonly = true
   sources = [
+    "browser/api/runtime/runtime_apitest.cc",
     "browser/geolocation/geolocation_apitest.cc",
     "browser/shell_browsertest.cc",
     "test/shell_apitest.cc",
@@ -473,15 +474,18 @@ source_set("browser_tests") {
     ":app_shell_lib",
     "//base",
     "//base/test:test_support",
+    "//components/keep_alive_registry",
     "//components/version_info",
     "//content/shell:content_shell_lib",
     "//content/test:test_support",
     "//extensions:test_support",
     "//extensions/browser",
+    "//extensions/browser:test_support",
     "//extensions/common",
   ]
 
   if (use_aura) {
+    sources += [ "browser/shell_desktop_controller_aura_browsertest.cc" ]
     deps += [ "//ui/aura" ]
   }
 }

@@ -23,13 +23,13 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/shell/browser/api/generated_api_registration.h"
+#include "extensions/shell/browser/api/runtime/shell_runtime_api_delegate.h"
 #include "extensions/shell/browser/delegates/shell_kiosk_delegate.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
-#include "extensions/shell/browser/shell_runtime_api_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"
@@ -229,7 +229,7 @@ void ShellExtensionsBrowserClient::RegisterExtensionInterfaces(
 std::unique_ptr<RuntimeAPIDelegate>
 ShellExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
-  return std::make_unique<ShellRuntimeAPIDelegate>();
+  return std::make_unique<ShellRuntimeAPIDelegate>(context);
 }
 
 const ComponentExtensionResourceManager*
