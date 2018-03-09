@@ -6,14 +6,11 @@
 
 #include <memory>
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/text/StringBuilder.h"
-
-#ifndef NDEBUG
-#include "platform/graphics/LoggingCanvas.h"
-#endif
 
 namespace blink {
 
@@ -1019,12 +1016,8 @@ void PaintController::ShowUnderInvalidationError(
   LOG(ERROR) << "New display item: " << new_item.AsDebugString();
   LOG(ERROR) << "Old display item: "
              << (old_item ? old_item->AsDebugString() : "None");
-#else
-  LOG(ERROR) << "Run a build with DCHECK on to get more details.";
-#endif
   LOG(ERROR) << "See http://crbug.com/619103.";
 
-#ifndef NDEBUG
   const PaintRecord* new_record = nullptr;
   if (new_item.IsDrawing()) {
     new_record =
@@ -1044,7 +1037,10 @@ void PaintController::ShowUnderInvalidationError(
                            : "None");
 
   ShowDebugData();
-#endif  // NDEBUG
+#else
+  LOG(ERROR) << "Run a build with DCHECK on to get more details.";
+  LOG(ERROR) << "See http://crbug.com/619103.";
+#endif
 }
 
 void PaintController::ShowSequenceUnderInvalidationError(
