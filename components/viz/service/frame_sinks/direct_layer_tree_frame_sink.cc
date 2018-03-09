@@ -198,6 +198,14 @@ mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
   hit_test_region_list->bounds.set_size(frame.size_in_pixels());
 
   for (const auto& render_pass : frame.render_pass_list) {
+    // Skip the render_pass if the transform is not invertible (i.e. it will not
+    // be able to receive events).
+    gfx::Transform transform_from_root_target;
+    if (!render_pass->transform_to_root_target.GetInverse(
+            &transform_from_root_target)) {
+      continue;
+    }
+
     for (const DrawQuad* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
         // Skip the quad if the transform is not invertible (i.e. it will not
@@ -217,7 +225,8 @@ mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
         hit_test_region->flags = mojom::kHitTestMouse | mojom::kHitTestTouch |
                                  mojom::kHitTestChildSurface;
         hit_test_region->rect = surface_quad->rect;
-        hit_test_region->transform = target_to_quad_transform;
+        hit_test_region->transform =
+            target_to_quad_transform * transform_from_root_target;
         hit_test_region_list->regions.push_back(std::move(hit_test_region));
       }
     }
