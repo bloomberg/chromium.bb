@@ -338,6 +338,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   bool texture_needs_rgb_conversion =
       !software_compositor &&
       output_resource_format == viz::ResourceFormat::RGBA_8888;
+
   size_t output_plane_count = media::VideoFrame::NumPlanes(input_frame_format);
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
@@ -348,6 +349,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     output_resource_format = viz::RGBA_8888;
     output_plane_count = 1;
     bits_per_channel = 8;
+
+    // The YUV to RGB conversion will be performed when we convert
+    // from single-channel textures to an RGBA texture via
+    // ConvertVideoFrameToRGBPixels below.
+    output_color_space = output_color_space.GetAsFullRangeRGB();
   }
 
   // Drop recycled resources that are the wrong format.
