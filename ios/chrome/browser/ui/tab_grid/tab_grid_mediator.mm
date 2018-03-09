@@ -9,13 +9,16 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/image/image.h"
@@ -158,8 +161,21 @@ NSArray* CreateItems(WebStateList* webStateList) {
 
 #pragma mark - GridCommands
 
-- (void)insertNewItemAtIndex:(NSInteger)index {
-  // TODO(crbug.com/804503) : Add alerts for unimplemented controls.
+- (void)addNewItem {
+  [self insertNewItemAtIndex:self.webStateList->count()];
+}
+
+- (void)insertNewItemAtIndex:(NSUInteger)index {
+  web::WebState::CreateParams params(self.tabModel.browserState);
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+  self.webStateList->InsertWebState(
+      base::checked_cast<int>(index), std::move(webState),
+      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+      WebStateOpener());
+  web::WebState::OpenURLParams openParams(
+      GURL(kChromeUINewTabURL), web::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false);
+  self.webStateList->GetWebStateAt(index)->OpenURL(openParams);
 }
 
 - (void)selectItemAtIndex:(NSUInteger)index {

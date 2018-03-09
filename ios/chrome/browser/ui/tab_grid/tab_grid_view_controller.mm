@@ -20,20 +20,6 @@
 NSString* const kTabGridDoneButtonAccessibilityID =
     @"TabGridDoneButtonAccessibilityID";
 
-namespace {
-// Temporary alert used while building this feature.
-UIAlertController* NotImplementedAlert() {
-  UIAlertController* alert =
-      [UIAlertController alertControllerWithTitle:@"Not implemented"
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  [alert addAction:[UIAlertAction actionWithTitle:@"OK"
-                                            style:UIAlertActionStyleCancel
-                                          handler:nil]];
-  return alert;
-}
-}  // namespace
-
 @interface TabGridViewController ()<GridViewControllerDelegate,
                                     UIScrollViewAccessibilityDelegate>
 // Child view controllers.
@@ -567,9 +553,19 @@ UIAlertController* NotImplementedAlert() {
 }
 
 - (void)newTabButtonTapped:(id)sender {
-  [self presentViewController:NotImplementedAlert()
-                     animated:YES
-                   completion:nil];
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      [self.incognitoTabsDelegate addNewItem];
+      [self.tabPresentationDelegate showActiveTab];
+      break;
+    case TabGridPageRegularTabs:
+      [self.regularTabsDelegate addNewItem];
+      [self.tabPresentationDelegate showActiveTab];
+      break;
+    case TabGridPageRemoteTabs:
+      // No-op. It is invalid to call insert new tab on remote tabs.
+      break;
+  }
 }
 
 @end
