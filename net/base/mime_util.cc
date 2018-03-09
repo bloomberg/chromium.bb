@@ -92,6 +92,7 @@ static const MimeInfo kPrimaryMappings[] = {
     {"image/gif", "gif"},
     {"image/jpeg", "jpeg,jpg"},
     {"image/png", "png"},
+    {"image/apng", "png"},
     {"image/webp", "webp"},
     {"multipart/related", "mht,mhtml"},
     {"text/css", "css"},

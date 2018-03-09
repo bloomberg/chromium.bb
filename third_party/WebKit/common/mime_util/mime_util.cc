@@ -29,6 +29,7 @@ const char* const kSupportedImageTypes[] = {"image/jpeg",
                                             "image/jpg",
                                             "image/webp",
                                             "image/png",
+                                            "image/apng",
                                             "image/gif",
                                             "image/bmp",
                                             "image/vnd.microsoft.icon",  // ico
