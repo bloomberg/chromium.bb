@@ -21,6 +21,15 @@
   _tableViewModel = [[TableViewModel alloc] init];
 }
 
+#pragma mark - ViewLifeCycle
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self.tableView setBackgroundColor:[UIColor whiteColor]];
+  [self.tableView setSeparatorColor:[UIColor grayColor]];
+  [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -54,7 +63,7 @@
   TableViewHeaderFooterItem* item =
       [self.tableViewModel headerForSection:section];
   if (!item)
-    return [super tableView:self.tableView viewForHeaderInSection:section];
+    return [[UIView alloc] initWithFrame:CGRectZero];
   Class headerFooterClass = [item cellClass];
   NSString* reuseIdentifier = NSStringFromClass(headerFooterClass);
   [self.tableView registerClass:headerFooterClass
@@ -70,7 +79,7 @@
   TableViewHeaderFooterItem* item =
       [self.tableViewModel footerForSection:section];
   if (!item)
-    return [super tableView:self.tableView viewForHeaderInSection:section];
+    return [[UIView alloc] initWithFrame:CGRectZero];
   Class headerFooterClass = [item cellClass];
   NSString* reuseIdentifier = NSStringFromClass(headerFooterClass);
   [self.tableView registerClass:headerFooterClass

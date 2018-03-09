@@ -31,6 +31,10 @@ const CGFloat kMargin = 16;
   TableViewTextHeaderFooterView* header =
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   header.textLabel.text = self.text;
+  // Set the contentView backgroundColor, not the header's.
+  header.contentView.backgroundColor = [UIColor whiteColor];
+  header.textLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 }
 
 @end
@@ -46,7 +50,6 @@ const CGFloat kMargin = 16;
     // Text Label, set font sizes using dynamic type.
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 
     // Container View.
     UIView* containerView = [[UIView alloc] init];
