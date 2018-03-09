@@ -94,14 +94,19 @@ int GetIPv4AddressFromIndex(int socket, uint32_t index, uint32_t* address) {
     return MapSystemError(errno);
   result = reinterpret_cast<sockaddr_in*>(&ifr.ifr_addr);
 #elif defined(OS_FUCHSIA)
-  netc_get_if_info_t netconfig;
-  int size = ioctl_netc_get_if_info(socket, &netconfig);
-  if (size < 0)
+  uint32_t num_ifs = 0;
+  if (ioctl_netc_get_num_ifs(socket, &num_ifs) < 0) {
+    PLOG(ERROR) << "ioctl_netc_get_num_ifs";
     return MapSystemError(errno);
-  for (size_t i = 0; i < netconfig.n_info; ++i) {
-    netc_if_info_t* interface = netconfig.info + i;
-    if (interface->index == index && interface->addr.ss_family == AF_INET) {
-      result = reinterpret_cast<sockaddr_in*>(&(interface->addr));
+  }
+  for (uint32_t i = 0; i < num_ifs; ++i) {
+    netc_if_info_t interface;
+    if (ioctl_netc_get_if_info_at(socket, &i, &interface) < 0) {
+      PLOG(WARNING) << "ioctl_netc_get_if_info_at";
+      continue;
+    }
+    if (interface.index == index && interface.addr.ss_family == AF_INET) {
+      result = reinterpret_cast<sockaddr_in*>(&(interface.addr));
       break;
     }
   }
