@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
@@ -30,6 +31,18 @@ const int kReloadMenuItems[]  = {
   IDS_RELOAD_MENU_HARD_RELOAD_ITEM,
   IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
 };
+
+// Returns true if the touch-optimized UI is enabled.
+bool IsTouchOptimized() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+}
+
+const gfx::VectorIcon& GetIconForMode(bool is_reload) {
+  if (IsTouchOptimized())
+    return is_reload ? kReloadTouchIcon : kNavigateStopTouchIcon;
+
+  return is_reload ? vector_icons::kReloadIcon : kNavigateStopIcon;
+}
 
 }  // namespace
 
@@ -224,8 +237,7 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
   const ui::ThemeProvider* tp = GetThemeProvider();
   // |tp| can be NULL in unit tests.
   if (tp) {
-    const gfx::VectorIcon& icon =
-        (mode == Mode::kReload) ? vector_icons::kReloadIcon : kNavigateStopIcon;
+    const gfx::VectorIcon& icon = GetIconForMode(mode == Mode::kReload);
     const SkColor normal_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     const SkColor disabled_color =

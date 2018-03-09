@@ -424,8 +424,17 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
   const int kNtpText = ThemeProperties::COLOR_NTP_TEXT;
   const int kLabelBackground =
       ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
+  const bool is_touch =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   switch (id) {
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+      // Touch-optimized UI uses different colors than gfx::kChromeIconGrey.
+      // They are two specific colors in normal and incognito modes which we
+      // can't get one from the other by HSLShift().
+      // TODO: This will break custom themes. https://crbug.com/820495.
+      if (is_touch)
+        break;
+
       return color_utils::HSLShift(
           gfx::kChromeIconGrey,
           GetTint(ThemeProperties::TINT_BUTTONS, incognito));
@@ -433,7 +442,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       // The active color is overridden in GtkUi.
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
-          0x33);
+          is_touch ? 0x6E : 0x33);
     case ThemeProperties::COLOR_LOCATION_BAR_BORDER:
       return SkColorSetA(SK_ColorBLACK, 0x4D);
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
@@ -460,8 +469,8 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
     case ThemeProperties::COLOR_BACKGROUND_TAB: {
       // Touch optimized color design uses different tab background colors.
       // TODO(malaykeshav) - This will break custom themes on touch optimized
-      // UI. Use tint shift instead.
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+      // UI. Use tint shift instead. https://crbug.com/820495.
+      if (is_touch)
         break;
 
       // The tints here serve a different purpose than TINT_BACKGROUND_TAB.

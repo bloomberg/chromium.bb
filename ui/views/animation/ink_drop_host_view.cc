@@ -168,6 +168,10 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
       gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
 }
 
+std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
+  return nullptr;
+}
+
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
     const gfx::Point& center_point,
     const gfx::Size& size) const {
@@ -276,10 +280,6 @@ void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
 SkColor InkDropHostView::GetInkDropBaseColor() const {
   NOTREACHED();
   return gfx::kPlaceholderColor;
-}
-
-std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
-  return nullptr;
 }
 
 bool InkDropHostView::HasInkDrop() const {

@@ -174,38 +174,33 @@ base::Optional<SkColor> MaybeGetDefaultColorForTouchOptimizedUi(
     return base::nullopt;
 
   switch (id) {
-    // Properties stored in theme pack.
     case ThemeProperties::COLOR_FRAME:
-      // Active frame colors.
       return incognito ? gfx::kGoogleGrey900 : kDefaultTouchUiColorActiveFrame;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-      // Inactive frame colors.
       return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
                        : kDefaultTouchUiColorInactiveFrame;
-
     case ThemeProperties::COLOR_TOOLBAR:
       return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
                        : kDefaultTouchUiColorToolbar;
+
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE:
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE:
+    case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
 
-    // Properties not stored in theme pack.
     case ThemeProperties::COLOR_BACKGROUND_TAB:
       return incognito ? kDefaultTouchUiColorTabBackgroundInactiveIncognito
                        : kDefaultTouchUiColorTabBackgroundInactive;
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE:
-      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
-    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
       return incognito ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
       return incognito ? gfx::kGoogleRedDark800 : gfx::kGoogleRed800;
-    case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleRed600;
     case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
