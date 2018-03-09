@@ -30,20 +30,24 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
     return priority_write_scheduler_.HasReadyStreams();
   }
 
-  bool HasWriteBlockedCryptoOrHeadersStream() const {
+  bool HasWriteBlockedSpecialStream() const {
     return crypto_stream_blocked_ || headers_stream_blocked_;
   }
 
-  size_t NumBlockedStreams() const {
-    size_t num_blocked = priority_write_scheduler_.NumReadyStreams();
+  size_t NumBlockedSpecialStreams() const {
+    size_t num_blocked = 0;
     if (crypto_stream_blocked_) {
       ++num_blocked;
     }
     if (headers_stream_blocked_) {
       ++num_blocked;
     }
-
     return num_blocked;
+  }
+
+  size_t NumBlockedStreams() const {
+    return NumBlockedSpecialStreams() +
+           priority_write_scheduler_.NumReadyStreams();
   }
 
   bool ShouldYield(QuicStreamId id) const {
@@ -155,9 +159,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
 
     return priority_write_scheduler_.IsStreamReady(stream_id);
   }
-
-  bool crypto_stream_blocked() const { return crypto_stream_blocked_; }
-  bool headers_stream_blocked() const { return headers_stream_blocked_; }
 
  private:
   QuicPriorityWriteScheduler priority_write_scheduler_;

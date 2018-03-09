@@ -77,6 +77,30 @@ class QuicFramerPeer {
                                             const QuicAckFrame& frame,
                                             QuicDataWriter* writer);
 
+  // Add/remove IETF-Format padding.
+  static bool AppendIetfPaddingFrame(QuicFramer* framer,
+                                     const QuicPaddingFrame& frame,
+                                     QuicDataWriter* writer);
+  static void ProcessIetfPaddingFrame(QuicFramer* framer,
+                                      QuicDataReader* reader,
+                                      QuicPaddingFrame* frame);
+
+  static bool ProcessIetfPathChallengeFrame(QuicFramer* framer,
+                                            QuicDataReader* reader,
+                                            QuicPathChallengeFrame* frame);
+  static bool ProcessIetfPathResponseFrame(QuicFramer* framer,
+                                           QuicDataReader* reader,
+                                           QuicPathResponseFrame* frame);
+
+  static bool AppendIetfPathChallengeFrameAndTypeByte(
+      QuicFramer* framer,
+      const QuicPathChallengeFrame& frame,
+      QuicDataWriter* writer);
+  static bool AppendIetfPathResponseFrameAndTypeByte(
+      QuicFramer* framer,
+      const QuicPathResponseFrame& frame,
+      QuicDataWriter* writer);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);
 };

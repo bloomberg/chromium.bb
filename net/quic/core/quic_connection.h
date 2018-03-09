@@ -262,7 +262,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the version negotiation is successful.
   virtual void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) {}
+      const ParsedQuicVersion& version) {}
 
   // Called when a CachedNetworkParameters is sent to the client.
   virtual void OnSendConnectionState(
@@ -356,7 +356,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void AdjustNetworkParameters(QuicBandwidth bandwidth, QuicTime::Delta rtt);
 
   // Returns the max pacing rate for the connection.
-  QuicBandwidth MaxPacingRate() const;
+  virtual QuicBandwidth MaxPacingRate() const;
 
   // Sets the number of active streams on the connection for congestion control.
   void SetNumOpenStreams(size_t num_streams);
@@ -764,6 +764,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   void SetRetransmittableOnWireAlarm();
 
+  // Sets the current per-packet options for the connection. The QuicConnection
+  // does not take ownership of |options|; |options| must live for as long as
+  // the QuicConnection is in use.
+  void set_per_packet_options(PerPacketOptions* options) {
+    per_packet_options_ = options;
+  }
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();
@@ -786,12 +793,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Returns the current per-packet options for the connection.
   PerPacketOptions* per_packet_options() { return per_packet_options_; }
-  // Sets the current per-packet options for the connection. The QuicConnection
-  // does not take ownership of |options|; |options| must live for as long as
-  // the QuicConnection is in use.
-  void set_per_packet_options(PerPacketOptions* options) {
-    per_packet_options_ = options;
-  }
 
   AddressChangeType active_peer_migration_type() {
     return active_peer_migration_type_;

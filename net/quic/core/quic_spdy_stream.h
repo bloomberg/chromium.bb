@@ -35,12 +35,6 @@ class QuicStreamPeer;
 
 class QuicSpdySession;
 
-// This is somewhat arbitrary.  It's possible, but unlikely, we will either fail
-// to set a priority client-side, or cancel a stream before stripping the
-// priority from the wire server-side.  In either case, start out with a
-// priority in the middle.
-const SpdyPriority kDefaultPriority = 3;
-
 // A QUIC stream that can send and receive HTTP2 (SPDY) headers.
 class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
  public:
@@ -164,12 +158,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // been received and there are no trailers.
   bool FinishedReadingTrailers() const;
 
-  SpdyPriority priority() const;
-
-  // Sets priority_ to priority.  This should only be called before bytes are
-  // written to the server.
-  void SetPriority(SpdyPriority priority);
-
   // Called when owning session is getting deleted to avoid subsequent
   // use of the spdy_session_ member.
   void ClearSession();
@@ -202,8 +190,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   Visitor* visitor_;
   // True if the headers have been completely decompressed.
   bool headers_decompressed_;
-  // The priority of the stream, once parsed.
-  SpdyPriority priority_;
   // Contains a copy of the decompressed header (name, value) pairs until they
   // are consumed via Readv.
   QuicHeaderList header_list_;

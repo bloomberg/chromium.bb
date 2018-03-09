@@ -60,9 +60,9 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
   // QuicPacketCreator::DelegateInterface methods:
   void OnSerializedPacket(SerializedPacket* serialized_packet) override {
     // Make a copy of the serialized packet to send later.
-    packets_.push_back(std::unique_ptr<QuicEncryptedPacket>(
+    packets_.emplace_back(
         new QuicEncryptedPacket(CopyBuffer(*serialized_packet),
-                                serialized_packet->encrypted_length, true)));
+                                serialized_packet->encrypted_length, true));
     serialized_packet->encrypted_buffer = nullptr;
     DeleteFrames(&(serialized_packet->retransmittable_frames));
     serialized_packet->retransmittable_frames.clear();
@@ -279,6 +279,8 @@ void QuicDispatcher::ProcessPacket(const QuicSocketAddress& self_address,
                                    const QuicReceivedPacket& packet) {
   current_self_address_ = self_address;
   current_peer_address_ = peer_address;
+  // GetClientAddress must be called after current_peer_address_ is set.
+  current_client_address_ = GetClientAddress();
   current_packet_ = &packet;
   // ProcessPacket will cause the packet to be dispatched in
   // OnUnauthenticatedPublicHeader, or sent to the time wait list manager
@@ -286,6 +288,8 @@ void QuicDispatcher::ProcessPacket(const QuicSocketAddress& self_address,
   framer_.ProcessPacket(packet);
   // TODO(rjshade): Return a status describing if/why a packet was dropped,
   //                and log somehow.  Maybe expose as a varz.
+  // TODO(wub): Consider invalidate the current_* variables so processing of the
+  //            next packet does not use them incorrectly.
 }
 
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
@@ -886,6 +890,7 @@ class StatelessRejectorProcessDoneCallback
   StatelessRejectorProcessDoneCallback(QuicDispatcher* dispatcher,
                                        ParsedQuicVersion first_version)
       : dispatcher_(dispatcher),
+        current_client_address_(dispatcher->current_client_address_),
         current_peer_address_(dispatcher->current_peer_address_),
         current_self_address_(dispatcher->current_self_address_),
         current_packet_(
@@ -894,12 +899,13 @@ class StatelessRejectorProcessDoneCallback
 
   void Run(std::unique_ptr<StatelessRejector> rejector) override {
     dispatcher_->OnStatelessRejectorProcessDone(
-        std::move(rejector), current_peer_address_, current_self_address_,
-        std::move(current_packet_), first_version_);
+        std::move(rejector), current_client_address_, current_peer_address_,
+        current_self_address_, std::move(current_packet_), first_version_);
   }
 
  private:
   QuicDispatcher* dispatcher_;
+  QuicSocketAddress current_client_address_;
   QuicSocketAddress current_peer_address_;
   QuicSocketAddress current_self_address_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
@@ -937,7 +943,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
       version.transport_version, GetSupportedTransportVersions(),
       crypto_config_, &compressed_certs_cache_, helper()->GetClock(),
       helper()->GetRandomGenerator(), current_packet_->length(),
-      GetClientAddress(), current_self_address_));
+      current_client_address_, current_self_address_));
   ChloValidator validator(session_helper_.get(), current_self_address_,
                           rejector.get());
   if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
@@ -982,6 +988,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
 
 void QuicDispatcher::OnStatelessRejectorProcessDone(
     std::unique_ptr<StatelessRejector> rejector,
+    const QuicSocketAddress& current_client_address,
     const QuicSocketAddress& current_peer_address,
     const QuicSocketAddress& current_self_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
@@ -1004,6 +1011,7 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
 
   // Reset current_* to correspond to the packet which initiated the stateless
   // reject logic.
+  current_client_address_ = current_client_address;
   current_peer_address_ = current_peer_address;
   current_self_address_ = current_self_address;
   current_packet_ = current_packet.get();

@@ -891,8 +891,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 
   MOCK_METHOD1(OnPacketHeader, void(const QuicPacketHeader& header));
 
-  MOCK_METHOD1(OnSuccessfulVersionNegotiation,
-               void(const QuicTransportVersion&));
+  MOCK_METHOD1(OnSuccessfulVersionNegotiation, void(const ParsedQuicVersion&));
 
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame&));
 

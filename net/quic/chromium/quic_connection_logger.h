@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) override;
+      const ParsedQuicVersion& version) override;
   void OnRttChanged(QuicTime::Delta rtt) const override;
 
   void OnCryptoHandshakeMessageReceived(const CryptoHandshakeMessage& message);

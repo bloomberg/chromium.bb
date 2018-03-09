@@ -117,6 +117,49 @@ bool QuicFramerPeer::ProcessIetfApplicationCloseFrame(
 }
 
 // static
+bool QuicFramerPeer::AppendIetfPaddingFrame(QuicFramer* framer,
+                                            const QuicPaddingFrame& frame,
+                                            QuicDataWriter* writer) {
+  return framer->AppendIetfPaddingFrame(frame, writer);
+}
+// static
+void QuicFramerPeer::ProcessIetfPaddingFrame(QuicFramer* framer,
+                                             QuicDataReader* reader,
+                                             QuicPaddingFrame* frame) {
+  framer->ProcessIetfPaddingFrame(reader, frame);
+}
+
+// static
+bool QuicFramerPeer::ProcessIetfPathChallengeFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    QuicPathChallengeFrame* frame) {
+  return framer->ProcessIetfPathChallengeFrame(reader, frame);
+}
+// static
+bool QuicFramerPeer::ProcessIetfPathResponseFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    QuicPathResponseFrame* frame) {
+  return framer->ProcessIetfPathResponseFrame(reader, frame);
+}
+
+// static
+bool QuicFramerPeer::AppendIetfPathChallengeFrameAndTypeByte(
+    QuicFramer* framer,
+    const QuicPathChallengeFrame& frame,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfPathChallengeFrameAndTypeByte(frame, writer);
+}
+// static
+bool QuicFramerPeer::AppendIetfPathResponseFrameAndTypeByte(
+    QuicFramer* framer,
+    const QuicPathResponseFrame& frame,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfPathResponseFrameAndTypeByte(frame, writer);
+}
+
+// static
 void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     framer1->encrypter_[i].swap(framer2->encrypter_[i]);

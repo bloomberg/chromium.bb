@@ -901,7 +901,7 @@ CryptoHandshakeMessage CreateCHLO(
       CryptoFramer::ConstructHandshakeMessage(msg, Perspective::IS_CLIENT));
   std::unique_ptr<CryptoHandshakeMessage> parsed(CryptoFramer::ParseMessage(
       bytes->AsStringPiece(), Perspective::IS_CLIENT));
-  CHECK(parsed.get());
+  CHECK(parsed);
 
   return *parsed;
 }

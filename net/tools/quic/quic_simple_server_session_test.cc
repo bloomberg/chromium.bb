@@ -522,14 +522,15 @@ class QuicSimpleServerSessionServerPushTest
       string body(body_size, 'a');
       response_cache_.AddSimpleResponse(resource_host, path, 200, body);
       push_resources.push_back(QuicHttpResponseCache::ServerPushInfo(
-          resource_url, SpdyHeaderBlock(), kDefaultPriority, body));
+          resource_url, SpdyHeaderBlock(), QuicStream::kDefaultPriority, body));
       // PUSH_PROMISED are sent for all the resources.
       EXPECT_CALL(*session_, WritePushPromiseMock(GetNthClientInitiatedId(0),
                                                   stream_id, _));
       if (i <= kMaxStreamsForTest) {
         // |kMaxStreamsForTest| promised responses should be sent.
         EXPECT_CALL(*session_,
-                    WriteHeadersMock(stream_id, _, false, kDefaultPriority, _));
+                    WriteHeadersMock(stream_id, _, false,
+                                     QuicStream::kDefaultPriority, _));
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
         EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
@@ -573,7 +574,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // After an open stream is marked draining, a new stream is expected to be
   // created and a response sent on the stream.
   EXPECT_CALL(*session_, WriteHeadersMock(next_out_going_stream_id, _, false,
-                                          kDefaultPriority, _));
+                                          QuicStream::kDefaultPriority, _));
   EXPECT_CALL(*connection_,
               SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
@@ -622,7 +623,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   QuicStreamId stream_not_reset = GetNthServerInitiatedId(kMaxStreamsForTest);
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
-                                          kDefaultPriority, _));
+                                          QuicStream::kDefaultPriority, _));
   EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   if (session_->use_control_frame_manager()) {
@@ -630,8 +631,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   } else {
     EXPECT_CALL(*connection_, SendBlocked(stream_not_reset));
   }
-  EXPECT_CALL(*session_,
-              WriteHeadersMock(stream_got_reset, _, false, kDefaultPriority, _))
+  EXPECT_CALL(*session_, WriteHeadersMock(stream_got_reset, _, false,
+                                          QuicStream::kDefaultPriority, _))
       .Times(0);
 
   session_->StreamDraining(GetNthServerInitiatedId(0));
@@ -657,8 +658,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     EXPECT_CALL(*connection_,
                 SendRstStream(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT, _));
   }
-  EXPECT_CALL(*session_,
-              WriteHeadersMock(stream_to_open, _, false, kDefaultPriority, _));
+  EXPECT_CALL(*session_, WriteHeadersMock(stream_to_open, _, false,
+                                          QuicStream::kDefaultPriority, _));
   EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
 

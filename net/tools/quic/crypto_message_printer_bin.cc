@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
   net::CryptoMessagePrinter printer(perspective);
   net::CryptoFramer framer;
   framer.set_visitor(&printer);
+  framer.set_process_truncated_messages(true);
   std::string input = net::QuicTextUtils::HexDecode(argv[1]);
   if (!framer.ProcessInput(input, perspective)) {
     return 1;

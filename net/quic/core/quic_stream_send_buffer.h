@@ -137,6 +137,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // not exist or has been acked.
   bool FreeMemSlices(QuicStreamOffset start, QuicStreamOffset end);
 
+  // Cleanup empty slices in order from buffered_slices_.
+  void CleanUpBufferedSlices();
+
   QuicDeque<BufferedSlice> buffered_slices_;
 
   // Offset of next inserted byte.
@@ -165,6 +168,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
   // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order.
   const bool free_mem_slice_out_of_order_;
+
+  // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order and
+  // quic_reloadable_flag_quic_fast_path_on_stream_data_acked.
+  const bool enable_fast_path_on_data_acked_;
 };
 
 }  // namespace net

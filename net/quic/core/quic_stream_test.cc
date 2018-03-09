@@ -123,7 +123,9 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
         .Times(AnyNumber());
     write_blocked_list_ =
         QuicSessionPeer::GetWriteBlockedStreams(session_.get());
-    write_blocked_list_->RegisterStream(kTestStreamId, kV3HighestPriority);
+    if (!session_->register_streams_early()) {
+      write_blocked_list_->RegisterStream(kTestStreamId, kV3HighestPriority);
+    }
   }
 
   bool fin_sent() { return QuicStreamPeer::FinSent(stream_); }
@@ -134,7 +136,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   }
 
   bool HasWriteBlockedStreams() {
-    return write_blocked_list_->HasWriteBlockedCryptoOrHeadersStream() ||
+    return write_blocked_list_->HasWriteBlockedSpecialStream() ||
            write_blocked_list_->HasWriteBlockedDataStreams();
   }
 

@@ -20,7 +20,6 @@ namespace net {
 
 namespace {
 
-static const SpdyPriority kDefaultPriority = 3;
 static const QuicStreamId kStreamId = 5;
 static const QuartcStreamInterface::WriteParameters kDefaultParam;
 
@@ -177,7 +176,10 @@ class QuartcStreamTest : public ::testing::Test,
         QuicMakeUnique<MockQuartcStreamDelegate>(kStreamId, &read_buffer_);
     stream_ = new QuartcStream(kStreamId, session_.get());
     stream_->SetDelegate(mock_stream_delegate_.get());
-    session_->RegisterReliableStream(stream_->stream_id(), kDefaultPriority);
+    if (!session_->register_streams_early()) {
+      session_->RegisterReliableStream(stream_->stream_id(),
+                                       QuicStream::kDefaultPriority);
+    }
     session_->ActivateReliableStream(std::unique_ptr<QuartcStream>(stream_));
   }
 

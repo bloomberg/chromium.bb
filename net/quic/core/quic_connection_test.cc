@@ -1339,6 +1339,31 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
 }
 
+TEST_P(QuicConnectionTest, WriteOutOfOrderQueuedPackets) {
+  // When the flag is false, this test will trigger a use-after-free, which
+  // often means crashes, but not always, i.e. it can't be reliably tested.
+  SetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash, true);
+  set_perspective(Perspective::IS_CLIENT);
+
+  BlockOnNextWrite();
+
+  QuicStreamId stream_id = 2;
+  connection_.SendStreamDataWithString(stream_id, "foo", 0, NO_FIN);
+
+  EXPECT_EQ(1u, connection_.NumQueuedPackets());
+
+  writer_->SetWritable();
+  connection_.SendConnectivityProbingPacket(writer_.get(),
+                                            connection_.peer_address());
+
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INTERNAL_ERROR,
+                                           "Packet written out of order.",
+                                           ConnectionCloseSource::FROM_SELF));
+  EXPECT_QUIC_BUG(connection_.OnCanWrite(),
+                  "Attempt to write packet:1 after:2");
+  EXPECT_FALSE(connection_.connected());
+}
+
 TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   set_perspective(Perspective::IS_SERVER);

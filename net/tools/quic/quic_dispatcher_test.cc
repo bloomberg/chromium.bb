@@ -139,6 +139,7 @@ class TestDispatcher : public QuicDispatcher {
   MOCK_METHOD1(ShouldCreateOrBufferPacketForConnection,
                bool(QuicConnectionId connection_id));
 
+  using QuicDispatcher::current_client_address;
   using QuicDispatcher::current_peer_address;
   using QuicDispatcher::current_self_address;
 };
@@ -1801,6 +1802,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
       : QuicDispatcherTest(
             std::unique_ptr<FakeProofSource>(new FakeProofSource())),
         client_addr_(QuicIpAddress::Loopback4(), 1234),
+        client_addr_2_(QuicIpAddress::Loopback4(), 1357),
         crypto_config_peer_(&crypto_config_),
         signed_config_(new QuicSignedServerConfig) {
     SetQuicReloadableFlag(enable_quic_stateless_reject_support, true);
@@ -1822,6 +1824,11 @@ class AsyncGetProofTest : public QuicDispatcherTest {
         signed_config_, QuicDispatcherPeer::GetCache(dispatcher_.get()),
         &full_chlo_);
 
+    crypto_test_utils::GenerateFullCHLO(
+        chlo_, &crypto_config_, server_addr_, client_addr_2_, version, clock_,
+        signed_config_, QuicDispatcherPeer::GetCache(dispatcher_.get()),
+        &full_chlo_2_);
+
     GetFakeProofSource()->Activate();
   }
 
@@ -1830,9 +1837,13 @@ class AsyncGetProofTest : public QuicDispatcherTest {
   }
 
   QuicString SerializeFullCHLO() {
-    return full_chlo_.GetSerialized(Perspective::IS_CLIENT)
-        .AsStringPiece()
-        .as_string();
+    return QuicString(
+        full_chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
+  }
+
+  QuicString SerializeFullCHLOForClient2() {
+    return QuicString(
+        full_chlo_2_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
   QuicString SerializeCHLO() {
@@ -1842,14 +1853,15 @@ class AsyncGetProofTest : public QuicDispatcherTest {
   }
 
   // Sets up a session, and crypto stream based on the test parameters.
-  QuicServerSessionBase* GetSession(QuicConnectionId connection_id) {
+  QuicServerSessionBase* GetSession(QuicConnectionId connection_id,
+                                    QuicSocketAddress client_address) {
     auto it = sessions_.find(connection_id);
     if (it != sessions_.end()) {
       return it->second.session;
     }
 
     TestQuicSpdyServerSession* session;
-    CreateSession(dispatcher_.get(), config_, connection_id, client_addr_,
+    CreateSession(dispatcher_.get(), config_, connection_id, client_address,
                   &mock_helper_, &mock_alarm_factory_, &crypto_config_,
                   QuicDispatcherPeer::GetCache(dispatcher_.get()), &session);
 
@@ -1870,6 +1882,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
 
  protected:
   const QuicSocketAddress client_addr_;
+  const QuicSocketAddress client_addr_2_;
 
  private:
   QuicCryptoServerConfigPeer crypto_config_peer_;
@@ -1877,7 +1890,8 @@ class AsyncGetProofTest : public QuicDispatcherTest {
   QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   const QuicClock* clock_;
   CryptoHandshakeMessage chlo_;
-  CryptoHandshakeMessage full_chlo_;
+  CryptoHandshakeMessage full_chlo_;    // CHLO for client_addr_
+  CryptoHandshakeMessage full_chlo_2_;  // CHLO for client_addr_2_
 
   struct SessionInfo {
     TestQuicSpdyServerSession* session;
@@ -1899,9 +1913,9 @@ TEST_F(AsyncGetProofTest, BasicAccept) {
     EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(conn_id));
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, client_addr_,
                                                 QuicStringPiece("HTTP/1")))
-        .WillOnce(testing::Return(GetSession(conn_id)));
+        .WillOnce(testing::Return(GetSession(conn_id, client_addr_)));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id)->connection()),
+                    GetSession(conn_id, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillOnce(WithArg<2>(
             Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
@@ -1910,7 +1924,7 @@ TEST_F(AsyncGetProofTest, BasicAccept) {
 
     EXPECT_CALL(check, Call(2));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id)->connection()),
+                    GetSession(conn_id, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillOnce(WithArg<2>(
             Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
@@ -1931,6 +1945,83 @@ TEST_F(AsyncGetProofTest, BasicAccept) {
   check.Call(2);
   // Verify that a data packet gets processed immediately.
   ProcessPacket(client_addr_, conn_id, true, "My name is Data");
+}
+
+TEST_F(AsyncGetProofTest, RestorePacketContext) {
+  QuicConnectionId conn_id_1 = 1;
+  QuicConnectionId conn_id_2 = 2;
+
+  testing::MockFunction<void(int check_point)> check;
+  {
+    InSequence s;
+    EXPECT_CALL(check, Call(1));
+    EXPECT_CALL(*dispatcher_,
+                ShouldCreateOrBufferPacketForConnection(conn_id_1));
+
+    EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_1, client_addr_,
+                                                QuicStringPiece("HTTP/1")))
+        .WillOnce(testing::Return(GetSession(conn_id_1, client_addr_)));
+    EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
+                    GetSession(conn_id_1, client_addr_)->connection()),
+                ProcessUdpPacket(_, _, _))
+        .WillRepeatedly(WithArg<2>(
+            Invoke([this, conn_id_1](const QuicEncryptedPacket& packet) {
+              ValidatePacket(conn_id_1, packet);
+            })));
+
+    EXPECT_CALL(check, Call(2));
+
+    EXPECT_CALL(*dispatcher_,
+                ShouldCreateOrBufferPacketForConnection(conn_id_2));
+    EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_2, client_addr_2_,
+                                                QuicStringPiece("HTTP/1")))
+        .WillOnce(testing::Return(GetSession(conn_id_2, client_addr_2_)));
+    EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
+                    GetSession(conn_id_2, client_addr_2_)->connection()),
+                ProcessUdpPacket(_, _, _))
+        .WillOnce(WithArg<2>(
+            Invoke([this, conn_id_2](const QuicEncryptedPacket& packet) {
+              ValidatePacket(conn_id_2, packet);
+            })));
+  }
+
+  // Send a CHLO that the StatelessRejector will accept.
+  ProcessPacket(client_addr_, conn_id_1, true, SerializeFullCHLO());
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
+
+  // Send another CHLO that the StatelessRejector will accept.
+  ProcessPacket(client_addr_2_, conn_id_2, true, SerializeFullCHLOForClient2());
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
+
+  // Complete the first ProofSource::GetProof call and verify that a session is
+  // created.
+  check.Call(1);
+
+  EXPECT_EQ(client_addr_2_, dispatcher_->current_client_address());
+  EXPECT_EQ(client_addr_2_, dispatcher_->current_peer_address());
+
+  // Runs the async proof callback for conn_id_1 from client_addr_.
+  GetFakeProofSource()->InvokePendingCallback(0);
+
+  EXPECT_EQ(client_addr_, dispatcher_->current_client_address());
+  EXPECT_EQ(client_addr_, dispatcher_->current_peer_address());
+
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
+
+  // Complete the second ProofSource::GetProof call and verify that a session is
+  // created.
+  check.Call(2);
+
+  EXPECT_EQ(client_addr_, dispatcher_->current_client_address());
+  EXPECT_EQ(client_addr_, dispatcher_->current_peer_address());
+
+  // Runs the async proof callback for conn_id_2 from client_addr_2_.
+  GetFakeProofSource()->InvokePendingCallback(0);
+
+  EXPECT_EQ(client_addr_2_, dispatcher_->current_client_address());
+  EXPECT_EQ(client_addr_2_, dispatcher_->current_peer_address());
+
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 0);
 }
 
 // Test a simple situation of connections which the StatelessRejector will
@@ -1988,9 +2079,9 @@ TEST_F(AsyncGetProofTest, MultipleAccept) {
                 ShouldCreateOrBufferPacketForConnection(conn_id_2));
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_2, client_addr_,
                                                 QuicStringPiece("HTTP/1")))
-        .WillOnce(testing::Return(GetSession(conn_id_2)));
+        .WillOnce(testing::Return(GetSession(conn_id_2, client_addr_)));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id_2)->connection()),
+                    GetSession(conn_id_2, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillOnce(WithArg<2>(
             Invoke([this, conn_id_2](const QuicEncryptedPacket& packet) {
@@ -1999,7 +2090,7 @@ TEST_F(AsyncGetProofTest, MultipleAccept) {
 
     EXPECT_CALL(check, Call(2));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id_2)->connection()),
+                    GetSession(conn_id_2, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillOnce(WithArg<2>(
             Invoke([this, conn_id_2](const QuicEncryptedPacket& packet) {
@@ -2013,9 +2104,9 @@ TEST_F(AsyncGetProofTest, MultipleAccept) {
     EXPECT_CALL(check, Call(4));
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_1, client_addr_,
                                                 QuicStringPiece("HTTP/1")))
-        .WillOnce(testing::Return(GetSession(conn_id_1)));
+        .WillOnce(testing::Return(GetSession(conn_id_1, client_addr_)));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id_1)->connection()),
+                    GetSession(conn_id_1, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillRepeatedly(WithArg<2>(
             Invoke([this, conn_id_1](const QuicEncryptedPacket& packet) {
@@ -2245,9 +2336,9 @@ TEST_F(AsyncGetProofTest, TimeWaitTimeout) {
     EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(conn_id));
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id, client_addr_,
                                                 QuicStringPiece("HTTP/1")))
-        .WillOnce(testing::Return(GetSession(conn_id)));
+        .WillOnce(testing::Return(GetSession(conn_id, client_addr_)));
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(
-                    GetSession(conn_id)->connection()),
+                    GetSession(conn_id, client_addr_)->connection()),
                 ProcessUdpPacket(_, _, _))
         .WillOnce(WithArg<2>(
             Invoke([this, conn_id](const QuicEncryptedPacket& packet) {

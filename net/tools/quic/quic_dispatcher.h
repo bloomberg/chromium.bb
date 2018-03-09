@@ -209,8 +209,13 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // and delivers any buffered packets for that connection id.
   void ProcessChlo();
 
-  // Returns client address used for stateless rejector to generate and validate
-  // source address token.
+  // Returns the actual client address of the current packet.
+  // This function should only be called once per packet at the very beginning
+  // of ProcessPacket(), its result is saved to |current_client_address_|, which
+  // is guaranteed to be valid even in the stateless rejector's callback(i.e.
+  // OnStatelessRejectorProcessDone).
+  // By default, this function returns |current_peer_address_|, subclasses have
+  // the option to override this function to return a different address.
   virtual const QuicSocketAddress GetClientAddress() const;
 
   // Return true if dispatcher wants to destroy session outside of
@@ -225,14 +230,19 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   const ParsedQuicVersionVector& GetSupportedVersions();
 
-  QuicConnectionId current_connection_id() { return current_connection_id_; }
-  const QuicSocketAddress& current_self_address() {
+  QuicConnectionId current_connection_id() const {
+    return current_connection_id_;
+  }
+  const QuicSocketAddress& current_self_address() const {
     return current_self_address_;
   }
-  const QuicSocketAddress& current_peer_address() {
+  const QuicSocketAddress& current_peer_address() const {
     return current_peer_address_;
   }
-  const QuicReceivedPacket& current_packet() { return *current_packet_; }
+  const QuicSocketAddress& current_client_address() const {
+    return current_client_address_;
+  }
+  const QuicReceivedPacket& current_packet() const { return *current_packet_; }
 
   const QuicConfig& config() const { return config_; }
 
@@ -327,8 +337,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Invoked when StatelessRejector::Process completes. |first_version| is the
   // version of the packet which initiated the stateless reject.
+  // WARNING: This function can be called when a async proof returns, i.e. not
+  // from a stack traceable to ProcessPacket().
   void OnStatelessRejectorProcessDone(
       std::unique_ptr<StatelessRejector> rejector,
+      const QuicSocketAddress& current_client_address,
       const QuicSocketAddress& current_peer_address,
       const QuicSocketAddress& current_self_address,
       std::unique_ptr<QuicReceivedPacket> current_packet,
@@ -388,6 +401,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   QuicConnectionIdSet temporarily_buffered_connections_;
 
   // Information about the packet currently being handled.
+
+  // Used for stateless rejector to generate and validate source address token.
+  QuicSocketAddress current_client_address_;
   QuicSocketAddress current_peer_address_;
   QuicSocketAddress current_self_address_;
   const QuicReceivedPacket* current_packet_;

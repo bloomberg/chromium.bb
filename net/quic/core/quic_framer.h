@@ -556,6 +556,24 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
                                      QuicDataWriter* writer);
 
+  // Add/remove IETF-Format padding.
+  bool AppendIetfPaddingFrame(const QuicPaddingFrame& frame,
+                              QuicDataWriter* writer);
+  void ProcessIetfPaddingFrame(QuicDataReader* reader, QuicPaddingFrame* frame);
+
+  // Quic IETF PATH Challenge/Response frames.
+  bool ProcessIetfPathChallengeFrame(QuicDataReader* reader,
+                                     QuicPathChallengeFrame* frame);
+  bool ProcessIetfPathResponseFrame(QuicDataReader* reader,
+                                    QuicPathResponseFrame* frame);
+
+  bool AppendIetfPathChallengeFrameAndTypeByte(
+      const QuicPathChallengeFrame& frame,
+      QuicDataWriter* writer);
+  bool AppendIetfPathResponseFrameAndTypeByte(
+      const QuicPathResponseFrame& frame,
+      QuicDataWriter* writer);
+
   bool RaiseError(QuicErrorCode error);
 
   void set_error(QuicErrorCode error) { error_ = error; }
