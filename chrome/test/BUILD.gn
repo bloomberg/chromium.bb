@@ -4413,6 +4413,7 @@ if (!is_android) {
       "//components/nacl/common:buildflags",
       "//components/os_crypt:test_support",
       "//content/public/browser:browser",
+      "//extensions/buildflags",
       "//skia",
       "//testing/gtest",
       "//third_party/WebKit/public:blink_headers",
@@ -4423,6 +4424,10 @@ if (!is_android) {
         "ppapi/ppapi_test.cc",
         "ppapi/ppapi_test.h",
       ]
+    }
+
+    if (enable_extensions) {
+      deps += [ "//extensions/browser" ]
     }
   }
 
