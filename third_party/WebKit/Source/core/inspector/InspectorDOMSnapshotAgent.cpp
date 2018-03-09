@@ -279,7 +279,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     DocumentType* doc_type = ToDocumentType(node);
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
-  } else if (node->IsInShadowTree()) {
+  }
+  if (node->IsInShadowTree()) {
     value->setShadowRootType(
         InspectorDOMAgent::GetShadowRootType(node->ContainingShadowRoot()));
   }

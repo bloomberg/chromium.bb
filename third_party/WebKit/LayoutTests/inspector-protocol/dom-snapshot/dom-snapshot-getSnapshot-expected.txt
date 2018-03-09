@@ -595,7 +595,8 @@ Tests DOMSnapshot.getSnapshot method.
       "backendNodeId": "<number>",
       "childNodeIndexes": [
         53
-      ]
+      ],
+      "shadowRootType": "open"
     },
     {
       "nodeType": 3,
@@ -625,7 +626,8 @@ Tests DOMSnapshot.getSnapshot method.
           "value": "font-family: ahem;"
         }
       ],
-      "layoutNodeIndex": 28
+      "layoutNodeIndex": 28,
+      "shadowRootType": "open"
     },
     {
       "nodeType": 1,
@@ -635,7 +637,8 @@ Tests DOMSnapshot.getSnapshot method.
       "childNodeIndexes": [
         57
       ],
-      "layoutNodeIndex": 29
+      "layoutNodeIndex": 29,
+      "shadowRootType": "open"
     },
     {
       "nodeType": 3,
