@@ -816,7 +816,6 @@ void SchedulerStateMachine::WillDrawInternal() {
 
   did_draw_ = true;
   active_tree_needs_first_draw_ = false;
-  did_draw_in_last_frame_ = true;
   last_frame_number_draw_performed_ = current_frame_number_;
 
   if (forced_redraw_state_ == ForcedRedrawOnTimeoutState::WAITING_FOR_DRAW)
@@ -863,6 +862,10 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
 void SchedulerStateMachine::WillDraw() {
   DCHECK(!did_draw_);
   WillDrawInternal();
+  // Set this to true to proactively request a new BeginFrame. We can't set this
+  // in WillDrawInternal because AbortDraw calls WillDrawInternal but shouldn't
+  // request another frame.
+  did_draw_in_last_frame_ = true;
 }
 
 void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
