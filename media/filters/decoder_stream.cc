@@ -739,7 +739,8 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                 fallback_weak_factory_.GetWeakPtr()));
+                 fallback_weak_factory_.GetWeakPtr()),
+      waiting_for_decryption_key_cb_);
 }
 
 template <DemuxerStream::Type StreamType>

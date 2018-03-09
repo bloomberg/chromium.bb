@@ -225,11 +225,13 @@ std::string FFmpegVideoDecoder::GetDisplayName() const {
   return "FFmpegVideoDecoder";
 }
 
-void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                    bool low_delay,
-                                    CdmContext* /* cdm_context */,
-                                    const InitCB& init_cb,
-                                    const OutputCB& output_cb) {
+void FFmpegVideoDecoder::Initialize(
+    const VideoDecoderConfig& config,
+    bool low_delay,
+    CdmContext* /* cdm_context */,
+    const InitCB& init_cb,
+    const OutputCB& output_cb,
+    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
   DCHECK(!output_cb.is_null());

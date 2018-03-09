@@ -395,11 +395,13 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
 class FailingVideoDecoder : public VideoDecoder {
  public:
   std::string GetDisplayName() const override { return "FailingVideoDecoder"; }
-  void Initialize(const VideoDecoderConfig& config,
-                  bool low_delay,
-                  CdmContext* cdm_context,
-                  const InitCB& init_cb,
-                  const OutputCB& output_cb) override {
+  void Initialize(
+      const VideoDecoderConfig& config,
+      bool low_delay,
+      CdmContext* cdm_context,
+      const InitCB& init_cb,
+      const OutputCB& output_cb,
+      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override {
     init_cb.Run(true);
   }
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,

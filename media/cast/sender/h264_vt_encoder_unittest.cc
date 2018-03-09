@@ -135,7 +135,8 @@ class EndToEndFrameChecker
         config, false, nullptr,
         base::Bind(&SaveDecoderInitResult, &decoder_init_result),
         base::Bind(&EndToEndFrameChecker::CompareFrameWithExpected,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        VideoDecoder::WaitingForDecryptionKeyCB());
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(decoder_init_result);
   }

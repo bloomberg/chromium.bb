@@ -68,11 +68,13 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
   return "D3D11VideoDecoder";
 }
 
-void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                   bool low_delay,
-                                   CdmContext* cdm_context,
-                                   const InitCB& init_cb,
-                                   const OutputCB& output_cb) {
+void D3D11VideoDecoder::Initialize(
+    const VideoDecoderConfig& config,
+    bool low_delay,
+    CdmContext* cdm_context,
+    const InitCB& init_cb,
+    const OutputCB& output_cb const
+        WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   bool is_h264 = config.profile() >= H264PROFILE_MIN &&
                  config.profile() <= H264PROFILE_MAX;
   if (!is_h264) {

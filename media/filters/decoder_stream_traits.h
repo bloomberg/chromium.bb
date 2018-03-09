@@ -7,23 +7,23 @@
 
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
+#include "media/base/audio_decoder.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/audio_timestamp_validator.h"
 
 namespace media {
 
 class AudioBuffer;
-class AudioDecoder;
 class AudioDecoderConfig;
 class CdmContext;
 class DecryptingAudioDecoder;
 class DecryptingVideoDecoder;
 class DemuxerStream;
-class VideoDecoder;
 class VideoDecoderConfig;
 class VideoFrame;
 
@@ -35,12 +35,13 @@ enum class PostDecodeAction { DELIVER, DROP };
 template <>
 class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
  public:
-  typedef AudioBuffer OutputType;
-  typedef AudioDecoder DecoderType;
-  typedef AudioDecoderConfig DecoderConfigType;
-  typedef DecryptingAudioDecoder DecryptingDecoderType;
-  typedef base::Callback<void(bool success)> InitCB;
-  typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
+  using OutputType = AudioBuffer;
+  using DecoderType = AudioDecoder;
+  using DecoderConfigType = AudioDecoderConfig;
+  using DecryptingDecoderType = DecryptingAudioDecoder;
+  using InitCB = AudioDecoder::InitCB;
+  using OutputCB = AudioDecoder::OutputCB;
+  using WaitingForDecryptionKeyCB = AudioDecoder::WaitingForDecryptionKeyCB;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -50,12 +51,14 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   explicit DecoderStreamTraits(MediaLog* media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
-  void InitializeDecoder(DecoderType* decoder,
-                         const DecoderConfigType& config,
-                         bool low_delay,
-                         CdmContext* cdm_context,
-                         const InitCB& init_cb,
-                         const OutputCB& output_cb);
+  void InitializeDecoder(
+      DecoderType* decoder,
+      const DecoderConfigType& config,
+      bool low_delay,
+      CdmContext* cdm_context,
+      const InitCB& init_cb,
+      const OutputCB& output_cb,
+      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
   void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);
@@ -73,12 +76,13 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
 template <>
 class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
  public:
-  typedef VideoFrame OutputType;
-  typedef VideoDecoder DecoderType;
-  typedef VideoDecoderConfig DecoderConfigType;
-  typedef DecryptingVideoDecoder DecryptingDecoderType;
-  typedef base::Callback<void(bool success)> InitCB;
-  typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
+  using OutputType = VideoFrame;
+  using DecoderType = VideoDecoder;
+  using DecoderConfigType = VideoDecoderConfig;
+  using DecryptingDecoderType = DecryptingVideoDecoder;
+  using InitCB = VideoDecoder::InitCB;
+  using OutputCB = VideoDecoder::OutputCB;
+  using WaitingForDecryptionKeyCB = VideoDecoder::WaitingForDecryptionKeyCB;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -88,12 +92,14 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   explicit DecoderStreamTraits(MediaLog* media_log);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
-  void InitializeDecoder(DecoderType* decoder,
-                         const DecoderConfigType& config,
-                         bool low_delay,
-                         CdmContext* cdm_context,
-                         const InitCB& init_cb,
-                         const OutputCB& output_cb);
+  void InitializeDecoder(
+      DecoderType* decoder,
+      const DecoderConfigType& config,
+      bool low_delay,
+      CdmContext* cdm_context,
+      const InitCB& init_cb,
+      const OutputCB& output_cb,
+      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
   void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
 
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);

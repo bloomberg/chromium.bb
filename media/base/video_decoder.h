@@ -36,6 +36,10 @@ class MEDIA_EXPORT VideoDecoder {
   // buffer to decode.
   using DecodeCB = base::Callback<void(DecodeStatus)>;
 
+  // Callback for whenever the key needed to decrypt the stream is not
+  // available. May be called at any time after Initialize().
+  using WaitingForDecryptionKeyCB = base::RepeatingClosure;
+
   VideoDecoder();
 
   // Returns the name of the decoder for logging and decoder selection purposes.
@@ -57,6 +61,9 @@ class MEDIA_EXPORT VideoDecoder {
   // |cdm_context| can be used to handle encrypted buffers. May be null if the
   // stream is not encrypted.
   //
+  // |waiting_for_decryption_key_cb| is called whenever the key needed to
+  // decrypt the stream is not available.
+  //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
@@ -66,11 +73,13 @@ class MEDIA_EXPORT VideoDecoder {
   // is ready (i.e. w/o thread trampolining) since it can strongly affect frame
   // delivery times with high-frame-rate material.  See Decode() for additional
   // notes.
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          bool low_delay,
-                          CdmContext* cdm_context,
-                          const InitCB& init_cb,
-                          const OutputCB& output_cb) = 0;
+  virtual void Initialize(
+      const VideoDecoderConfig& config,
+      bool low_delay,
+      CdmContext* cdm_context,
+      const InitCB& init_cb,
+      const OutputCB& output_cb,
+      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded
   // frame are returned via the provided callback. Some decoders may allow

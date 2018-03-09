@@ -48,11 +48,8 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
 class DecryptingVideoDecoderTest : public testing::Test {
  public:
   DecryptingVideoDecoderTest()
-      : decoder_(new DecryptingVideoDecoder(
-            message_loop_.task_runner(),
-            &media_log_,
-            base::Bind(&DecryptingVideoDecoderTest::OnWaitingForDecryptionKey,
-                       base::Unretained(this)))),
+      : decoder_(new DecryptingVideoDecoder(message_loop_.task_runner(),
+                                            &media_log_)),
         cdm_context_(new StrictMock<MockCdmContext>()),
         decryptor_(new StrictMock<MockDecryptor>()),
         num_decrypt_and_decode_calls_(0),
@@ -78,10 +75,12 @@ class DecryptingVideoDecoderTest : public testing::Test {
   // can succeed or fail.
   void InitializeAndExpectResult(const VideoDecoderConfig& config,
                                  bool success) {
-    decoder_->Initialize(config, false, cdm_context_.get(),
-                         NewExpectedBoolCB(success),
-                         base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                                    base::Unretained(this)));
+    decoder_->Initialize(
+        config, false, cdm_context_.get(), NewExpectedBoolCB(success),
+        base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                   base::Unretained(this)),
+        base::Bind(&DecryptingVideoDecoderTest::OnWaitingForDecryptionKey,
+                   base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
