@@ -242,12 +242,17 @@ class RemoteTryJob(object):
         'user' : self.user,
     })
 
+    parameters = {
+        'builder_name': 'Generic',
+        'properties': properties,
+    }
+
+    if self.swarming:
+      parameters['email_notify'] = [{'email': self.user_email}]
+
     return {
         'bucket': bucket,
-        'parameters_json': json.dumps({
-            'builder_name': 'Generic',
-            'properties': properties,
-        }, sort_keys=True),
+        'parameters_json': json.dumps(parameters, sort_keys=True),
         # These tags are indexed and searchable in buildbucket.
         'tags': ['%s:%s' % (k, tags[k]) for k in sorted(tags.keys())],
     }

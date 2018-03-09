@@ -146,6 +146,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
 
     self.assertEqual(parameters_parsed, {
         u'builder_name': u'Generic',
+        u'email_notify': [{u'email': u'explicit_email'}],
         u'properties': {
             u'bot': [u'amd64-generic-paladin', u'arm-generic-paladin'],
             u'cbb_branch': u'test-branch',
@@ -341,6 +342,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         ],
         {
             u'builder_name': u'Generic',
+            u'email_notify': [{u'email': u'explicit_email'}],
             u'properties': {
                 u'bot': [u'amd64-generic-paladin', u'arm-generic-paladin'],
                 u'cbb_branch': u'test-branch',
@@ -370,6 +372,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         ],
         {
             u'builder_name': u'Generic',
+            u'email_notify': [{u'email': u'explicit_email'}],
             u'properties': {
                 u'bot': [u'amd64-generic-paladin', u'arm-generic-paladin'],
                 u'cbb_branch': u'test-branch',
