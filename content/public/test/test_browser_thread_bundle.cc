@@ -39,8 +39,6 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   base::RunLoop().RunUntilIdle();
   io_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  process_launcher_thread_->Stop();
-  base::RunLoop().RunUntilIdle();
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
@@ -115,9 +113,6 @@ void TestBrowserThreadBundle::Init() {
 
 void TestBrowserThreadBundle::CreateBrowserThreads() {
   CHECK(!threads_created_);
-
-  process_launcher_thread_ = std::make_unique<TestBrowserThread>(
-      BrowserThread::PROCESS_LAUNCHER, base::MessageLoop::current());
 
   if (options_ & REAL_IO_THREAD) {
     io_thread_ = std::make_unique<TestBrowserThread>(BrowserThread::IO);

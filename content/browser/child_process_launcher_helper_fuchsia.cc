@@ -8,6 +8,7 @@
 #include "base/process/launch.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/sandbox_policy_fuchsia.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
@@ -17,7 +18,7 @@ namespace internal {
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
     const ChildProcessLauncherPriority& priority) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   // TODO(fuchsia): Implement this. (crbug.com/707031)
   NOTIMPLEMENTED();
 }
@@ -64,14 +65,14 @@ ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
 
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   return std::unique_ptr<FileMappedForLaunch>();
 }
 
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     const PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
   mojo::edk::PlatformChannelPair::PrepareToPassHandleToChildProcess(
       mojo_client_handle(), command_line(), &options->handles_to_transfer);
@@ -87,7 +88,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     std::unique_ptr<FileMappedForLaunch> files_to_register,
     bool* is_synchronous_launch,
     int* launch_result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   DCHECK(mojo_client_handle().is_valid());
 
   // TODO(750938): Implement sandboxed/isolated subprocess launching.
@@ -99,7 +100,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
 void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const ChildProcessLauncherHelper::Process& process,
     const base::LaunchOptions& options) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
   if (process.process.IsValid()) {
     // |mojo_client_handle_| has already been transferred to the child process
@@ -112,7 +113,7 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
 // static
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
     ChildProcessLauncherHelper::Process process) {
-  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   process.process.Terminate(RESULT_CODE_NORMAL_EXIT, true);
 }
 

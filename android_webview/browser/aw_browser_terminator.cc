@@ -17,6 +17,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -106,7 +107,7 @@ AwBrowserTerminator::~AwBrowserTerminator() {}
 void AwBrowserTerminator::OnChildStart(
     int process_host_id,
     content::PosixFileDescriptorInfo* mappings) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(content::CurrentlyOnProcessLauncherTaskRunner());
 
   base::AutoLock auto_lock(process_host_id_to_pipe_lock_);
   DCHECK(!ContainsKey(process_host_id_to_pipe_, process_host_id));

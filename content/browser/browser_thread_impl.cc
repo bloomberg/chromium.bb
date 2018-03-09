@@ -32,7 +32,6 @@ namespace {
 // Friendly names for the well-known threads.
 static const char* const g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
-  "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_IOThread",  // IO
 };
 
@@ -202,12 +201,6 @@ void BrowserThreadImpl::Init() {
     DCHECK(globals.task_runners[identifier_]->RunsTasksInCurrentSequence());
   }
 #endif  // DCHECK_IS_ON()
-
-  if (identifier_ == BrowserThread::PROCESS_LAUNCHER) {
-    // Nesting and task observers are not allowed on redirected threads.
-    base::RunLoop::DisallowNestingOnCurrentThread();
-    message_loop()->DisallowTaskObservers();
-  }
 }
 
 // We disable optimizations for this block of functions so the compiler doesn't
@@ -216,13 +209,6 @@ MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
 NOINLINE void BrowserThreadImpl::UIThreadRun(base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
-NOINLINE void BrowserThreadImpl::ProcessLauncherThreadRun(
-    base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
@@ -254,8 +240,6 @@ void BrowserThreadImpl::Run(base::RunLoop* run_loop) {
   switch (identifier_) {
     case BrowserThread::UI:
       return UIThreadRun(run_loop);
-    case BrowserThread::PROCESS_LAUNCHER:
-      return ProcessLauncherThreadRun(run_loop);
     case BrowserThread::IO:
       return IOThreadRun(run_loop);
     case BrowserThread::ID_COUNT:
