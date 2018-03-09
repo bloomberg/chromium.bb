@@ -16,7 +16,6 @@
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -28,7 +27,6 @@ class Version;
 
 namespace vr {
 
-class AudioDelegate;
 class VrInputConnection;
 class VrShell;
 class VrShellGl;
@@ -133,7 +131,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   std::unique_ptr<VrShellGl> vr_shell_gl_;
   std::unique_ptr<GvrKeyboardDelegate> keyboard_delegate_;
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
-  std::unique_ptr<AudioDelegate> audio_delegate_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<BrowserUiInterface> weak_browser_ui_;
