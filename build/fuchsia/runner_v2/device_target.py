@@ -40,6 +40,7 @@ class DeviceTarget(target.Target):
       self._host = host
       if port:
         self._port = port
+      self._new_instance = False
 
   def __Discover(self, node_name):
     """Returns the IP address and port of a Fuchsia instance discovered on

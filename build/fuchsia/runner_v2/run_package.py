@@ -22,7 +22,7 @@ PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
 
 def _Deploy(target, output_dir, archive_path):
   """Converts the FAR archive at |archive_path| into a Fuchsia package
-  and deploys it to |target|'s blobstore. If |incremental| is set,
+  and deploys it to |target|'s blobstore. If target.IsNewInstance() is not set,
   then the remote target's blobstore is queried and only the changed blobs
   are copied.
 
@@ -71,7 +71,7 @@ def _Deploy(target, output_dir, archive_path):
     existing_blobs = set()
     if not target.IsNewInstance():
       logging.debug('Querying the target blobstore\'s state.')
-      ls = target.RunCommandPiped(['ls', '/blobstore'], stdout=subprocess.PIPE)
+      ls = target.RunCommandPiped(['ls', '/blob'], stdout=subprocess.PIPE)
       for blob in ls.stdout:
         existing_blobs.add(blob.strip())
       ls.wait()
@@ -122,7 +122,6 @@ def _Deploy(target, output_dir, archive_path):
         'rm', '-rf', blob_tmpdir, '&&',
 
         'rm', '/tmp/meta.far'])
-
 
     if result != 0:
       raise Exception('Deployment failed.')
