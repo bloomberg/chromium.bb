@@ -24,18 +24,12 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
 
-namespace url {
-class Origin;
-}  // namespace url
-
 namespace content {
 
 class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
-class ServiceWorkerProviderHost;
-class ServiceWorkerVersion;
 
 namespace service_worker_dispatcher_host_unittest {
 class ServiceWorkerDispatcherHostTest;
@@ -126,48 +120,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       service_worker_dispatcher_host_unittest::BackgroundSyncManagerTest,
       RegisterWithoutLiveSWRegistration);
 
-  using StatusCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
   enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
   // Debugging for https://crbug.com/750267
   enum class Phase { kInitial, kAddedToContext, kRemovedFromContext };
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
-
-  // IPC Message handlers
-  void OnPostMessageToWorker(
-      int handle_id,
-      int provider_id,
-      const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
-          message,
-      const url::Origin& source_origin);
-
-  void DispatchExtendableMessageEvent(
-      scoped_refptr<ServiceWorkerVersion> worker,
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      int source_provider_id,
-      StatusCallback callback);
-  // A valid |source_service_worker_provider_id| is passed if the message source
-  // is a service worker, and otherwise |source_client_info| is passed.
-  void DispatchExtendableMessageEventInternal(
-      scoped_refptr<ServiceWorkerVersion> worker,
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      const base::Optional<base::TimeDelta>& timeout,
-      StatusCallback callback,
-      int source_service_worker_provider_id,
-      blink::mojom::ServiceWorkerClientInfoPtr source_client_info);
-  void DispatchExtendableMessageEventAfterStartWorker(
-      scoped_refptr<ServiceWorkerVersion> worker,
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      int source_service_worker_provider_id,
-      blink::mojom::ServiceWorkerClientInfoPtr source_client_info,
-      const base::Optional<base::TimeDelta>& timeout,
-      StatusCallback callback,
-      ServiceWorkerStatusCode status);
 
   ServiceWorkerContextCore* GetContext();
 

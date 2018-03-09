@@ -42,7 +42,6 @@
 namespace blink {
 
 class WebSecurityOrigin;
-class WebServiceWorkerProvider;
 class WebServiceWorkerProxy;
 
 class WebServiceWorker {
@@ -71,11 +70,7 @@ class WebServiceWorker {
     return mojom::ServiceWorkerState::kUnknown;
   }
 
-  // The message is only valid during this method call, unless callee calls
-  // EnsureDataIsOwned on the message.
-  virtual void PostMessageToWorker(WebServiceWorkerProvider*,
-                                   TransferableMessage,
-                                   const WebSecurityOrigin&) = 0;
+  virtual void PostMessage(TransferableMessage, const WebSecurityOrigin&) = 0;
 
   using TerminateForTestingCallback = WebCallbacks<void, void>;
   virtual void TerminateForTesting(

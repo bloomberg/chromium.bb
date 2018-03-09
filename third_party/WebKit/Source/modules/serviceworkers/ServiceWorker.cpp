@@ -78,8 +78,8 @@ void ServiceWorker::postMessage(ScriptState* script_state,
     return;
   }
 
-  handle_->ServiceWorker()->PostMessageToWorker(
-      client->Provider(), ToTransferableMessage(std::move(msg)),
+  handle_->ServiceWorker()->PostMessage(
+      ToTransferableMessage(std::move(msg)),
       WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()));
 }
 
