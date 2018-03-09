@@ -116,6 +116,7 @@ DISABLED_aomdec_av1_webm_less_than_50_frames() {
 }
 
 aomdec_tests="aomdec_av1_webm
+              aomdec_av1_webm_error_resilient
               aomdec_aom_ivf_pipe_input
               DISABLED_aomdec_av1_webm_less_than_50_frames"
 
