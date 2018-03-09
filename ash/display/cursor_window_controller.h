@@ -14,6 +14,10 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 
+namespace cursor {
+class CursorView;
+}
+
 namespace ash {
 
 class CursorWindowControllerTest;
@@ -64,14 +68,18 @@ class ASH_EXPORT CursorWindowController {
   // Closes the cursor window if |container| is NULL.
   void SetContainer(aura::Window* container);
 
-  // Sets the bounds of the container in screen coordinates.
-  void SetBoundsInScreen(const gfx::Rect& bounds);
+  // Sets the bounds of the container in screen coordinates and rotation.
+  void SetBoundsInScreenAndRotation(const gfx::Rect& bounds,
+                                    display::Display::Rotation rotation);
 
   // Updates cursor image based on current cursor state.
   void UpdateCursorImage();
 
   // Hides/shows cursor window based on current cursor state.
   void UpdateCursorVisibility();
+
+  // Updates cursor view based on current cursor state.
+  void UpdateCursorView();
 
   const gfx::ImageSkia& GetCursorImageForTest() const;
 
@@ -82,6 +90,9 @@ class ASH_EXPORT CursorWindowController {
 
   // The bounds of the container in screen coordinates.
   gfx::Rect bounds_in_screen_;
+
+  // The rotation of the container.
+  display::Display::Rotation rotation_ = display::Display::ROTATE_0;
 
   // The native_type of the cursor, see definitions in cursor.h
   ui::CursorType cursor_type_ = ui::CursorType::kNone;
@@ -100,6 +111,9 @@ class ASH_EXPORT CursorWindowController {
 
   std::unique_ptr<aura::Window> cursor_window_;
   std::unique_ptr<CursorWindowDelegate> delegate_;
+  std::unique_ptr<cursor::CursorView> cursor_view_;
+
+  const bool is_cursor_motion_blur_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorWindowController);
 };

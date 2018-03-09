@@ -10,4 +10,7 @@ specific_include_rules = {
   "screen_orientation_controller_(chromeos|test_api)\.h": [
     "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   ],
+  "cursor_window_controller.cc": [
+    "+ash/components/cursor",
+  ],
 }

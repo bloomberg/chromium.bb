@@ -226,6 +226,9 @@ void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {
       gfx::PointF(confined_bounds_.right() - 1, confined_bounds_.bottom() - 1));
 
   location_ = clamped_location;
+#if defined(OS_CHROMEOS)
+  ui::CursorController::GetInstance()->SetCursorLocation(location_);
+#endif
 }
 
 void DrmCursor::SendCursorShowLocked() {

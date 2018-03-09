@@ -244,6 +244,9 @@ extern const char kEnableCaptivePortalRandomUrlDescription[];
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
+extern const char kEnableCursorMotionBlurName[];
+extern const char kEnableCursorMotionBlurDescription[];
+
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 

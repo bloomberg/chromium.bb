@@ -160,7 +160,7 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                    base::TimeDelta presentation_delay,
                                    base::TimeDelta stationary_point_delay,
                                    aura::Window* container)
-    : FastInkView(container),
+    : FastInkView(container, PresentationCallback()),
       laser_points_(life_duration),
       predicted_laser_points_(life_duration),
       presentation_delay_(presentation_delay),
