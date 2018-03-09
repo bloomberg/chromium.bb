@@ -22,9 +22,11 @@
 // Factory used to create the buttons.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 
-// Content view in which the view that might have vibrancy effect should be
-// added.
+// ContentView of the vibrancy effect if there is one, self otherwise.
 @property(nonatomic, strong) UIView* contentView;
+
+// The blur visual effect view, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIVisualEffectView* blur;
 
 // Container for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* locationBarContainer;
@@ -149,6 +151,7 @@
   self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
   self.blur.contentView.backgroundColor =
       self.buttonFactory.toolbarConfiguration.blurEffectBackgroundColor;
+  [self addSubview:self.blur];
 
   self.contentView = self;
 
@@ -157,12 +160,11 @@
     UIVisualEffectView* vibrancyView =
         [[UIVisualEffectView alloc] initWithEffect:vibrancy];
     self.contentView = vibrancyView.contentView;
-    [self.blur.contentView addSubview:vibrancyView];
+    [self addSubview:vibrancyView];
     vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameConstraints(self.blur, vibrancyView);
+    AddSameConstraints(self, vibrancyView);
   }
 
-  [self addSubview:self.blur];
 
   self.blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.blur, self);

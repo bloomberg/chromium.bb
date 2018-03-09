@@ -22,6 +22,9 @@
 // Progress bar displayed below the toolbar.
 @property(nonatomic, strong, readonly) MDCProgressView* progressBar;
 
+// The blur visual effect view.
+@property(nonatomic, strong, readonly) UIVisualEffectView* blur;
+
 // Button to navigate back.
 @property(nonatomic, strong, readonly) ToolbarButton* backButton;
 // Buttons to navigate forward.

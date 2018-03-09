@@ -57,8 +57,13 @@
 
 - (UIColor*)backgroundColor {
   if (IsUIRefreshPhase1Enabled()) {
-    NOTREACHED();
-    return nil;
+    switch (self.style) {
+      case NORMAL:
+        return
+            [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
+      case INCOGNITO:
+        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+    }
   } else {
     switch (self.style) {
       case NORMAL:
