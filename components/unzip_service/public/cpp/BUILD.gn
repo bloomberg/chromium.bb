@@ -16,3 +16,18 @@ source_set("cpp") {
     "//services/service_manager/public/cpp",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_unzip_service.cc",
+    "test_unzip_service.h",
+  ]
+
+  deps = [
+    ":cpp",
+    "//base",
+    "//components/unzip_service:lib",
+    "//services/service_manager/public/cpp/test:test_support",
+  ]
+}
