@@ -1668,7 +1668,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
+// Flaky failures of IsHelpAvailableOnDetailMenu(). Possible race condition
+// with session state. https://crbug.com/819987
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
+                       DISABLED_CheckMenuVisibilityOnDetailMenu) {
   // Except help & settings, others should be kept the same
   // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
   EXPECT_TRUE(CreateDetailedMenu());
