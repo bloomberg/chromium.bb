@@ -194,7 +194,6 @@ void SurfaceAggregator::HandleSurfaceQuad(
     bool* damage_rect_in_quad_space_valid) {
   SurfaceId primary_surface_id = surface_quad->primary_surface_id;
   Surface* primary_surface = manager_->GetSurfaceForId(primary_surface_id);
-
   if (primary_surface && primary_surface->HasActiveFrame()) {
     EmitSurfaceContent(primary_surface, parent_device_scale_factor,
                        surface_quad->shared_quad_state, surface_quad->rect,
@@ -328,7 +327,10 @@ void SurfaceAggregator::EmitSurfaceContent(
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
-  bool merge_pass = source_sqs->opacity == 1.f && copy_requests.empty();
+  gfx::Transform combined_transform = scaled_quad_to_target_transform;
+  combined_transform.ConcatTransform(target_transform);
+  bool merge_pass = source_sqs->opacity == 1.f && copy_requests.empty() &&
+                    combined_transform.Preserves2dAxisAlignment();
 
   const RenderPassList& referenced_passes = render_pass_list;
   // TODO(fsamuel): Move this to a separate helper function.
