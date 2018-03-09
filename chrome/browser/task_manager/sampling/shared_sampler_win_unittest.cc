@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <numeric>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -133,9 +134,16 @@ TEST_F(SharedSamplerTest, PhysicalMemory) {
 
   int64_t initial_value = physical_bytes();
 
-  // Allocate a large continuos block of memory.
+  // Allocate a large continuous block of memory.
   const int allocated_size = 4 * 1024 * 1024;
   std::vector<uint8_t> memory_block(allocated_size);
+
+  // It appears the allocation is not counted when allocated, but when actually
+  // accessed. vector's constructor does access the memory to initialize it,
+  // but if the memory then isn't read the compiler might optimize away the
+  // initialization. So read the memory to prevent that.
+  uint8_t sum = std::accumulate(memory_block.begin(), memory_block.end(), 0);
+  EXPECT_EQ(0, sum);
 
   StartRefresh(REFRESH_TYPE_PHYSICAL_MEMORY);
   WaitUntilRefreshDone();
