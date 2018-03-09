@@ -43,10 +43,10 @@ MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
 MojoWatcher::~MojoWatcher() = default;
 
 MojoResult MojoWatcher::cancel() {
-  if (!watcher_handle_.is_valid())
+  if (!trap_handle_.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  watcher_handle_.reset();
+  trap_handle_.reset();
   return MOJO_RESULT_OK;
 }
 
@@ -86,12 +86,12 @@ MojoResult MojoWatcher::Watch(mojo::Handle handle,
     signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
   MojoResult result =
-      mojo::CreateWatcher(&MojoWatcher::OnHandleReady, &watcher_handle_);
+      mojo::CreateTrap(&MojoWatcher::OnHandleReady, &trap_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, result);
 
-  result = MojoWatch(watcher_handle_.get().value(), handle.value(), signals,
-                     MOJO_WATCH_CONDITION_SATISFIED,
-                     reinterpret_cast<uintptr_t>(this));
+  result = MojoAddTrigger(trap_handle_.get().value(), handle.value(), signals,
+                          MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                          reinterpret_cast<uintptr_t>(this), nullptr);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -111,10 +111,10 @@ MojoResult MojoWatcher::Watch(mojo::Handle handle,
     return MOJO_RESULT_OK;
   }
 
-  // If MojoWatch succeeds but Arm does not, that means another thread closed
-  // the watched handle in between. Treat it like we'd treat a MojoWatch trying
-  // to watch an invalid handle.
-  watcher_handle_.reset();
+  // If MojoAddTrigger succeeds but Arm does not, that means another thread
+  // closed the watched handle in between. Treat it like we'd treat
+  // MojoAddTrigger trying to watch an invalid handle.
+  trap_handle_.reset();
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
@@ -128,8 +128,8 @@ MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
   MojoResult local_ready_result;
   MojoHandleSignalsState ready_signals;
   MojoResult result =
-      MojoArmWatcher(watcher_handle_.get().value(), &num_ready_contexts,
-                     &ready_context, &local_ready_result, &ready_signals);
+      MojoArmTrap(trap_handle_.get().value(), nullptr, &num_ready_contexts,
+                  &ready_context, &local_ready_result, &ready_signals);
   if (result == MOJO_RESULT_OK)
     return MOJO_RESULT_OK;
 
@@ -143,19 +143,17 @@ MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
   return result;
 }
 
-void MojoWatcher::OnHandleReady(uintptr_t context,
-                                MojoResult result,
-                                MojoHandleSignalsState,
-                                MojoWatcherNotificationFlags) {
-  // It is safe to assume the MojoWatcher still exists. It stays alive at least
-  // as long as |m_handle| is valid, and |m_handle| is only reset after we
+// static
+void MojoWatcher::OnHandleReady(const MojoTrapEvent* event) {
+  // It is safe to assume the MojoWathcer still exists. It stays alive at least
+  // as long as |handle_| is valid, and |handle_| is only reset after we
   // dispatch a |MOJO_RESULT_CANCELLED| notification. That is always the last
   // notification received by this callback.
-  MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(context);
+  MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(event->trigger_context);
   PostCrossThreadTask(
       *watcher->task_runner_, FROM_HERE,
       CrossThreadBind(&MojoWatcher::RunReadyCallback,
-                      WrapCrossThreadWeakPersistent(watcher), result));
+                      WrapCrossThreadWeakPersistent(watcher), event->result));
 }
 
 void MojoWatcher::RunReadyCallback(MojoResult result) {
@@ -164,23 +162,23 @@ void MojoWatcher::RunReadyCallback(MojoResult result) {
     handle_ = mojo::Handle();
 
     // Only dispatch to the callback if this cancellation was implicit due to
-    // |m_handle| closure. If it was explicit, |m_watcherHandle| has already
-    // been reset.
-    if (watcher_handle_.is_valid()) {
-      watcher_handle_.reset();
+    // |handle_| closure. If it was explicit, |trap_handlde_| has already been
+    // reset.
+    if (trap_handle_.is_valid()) {
+      trap_handle_.reset();
       callback_->InvokeAndReportException(this, result);
     }
     return;
   }
 
   // Ignore callbacks if not watching.
-  if (!watcher_handle_.is_valid())
+  if (!trap_handle_.is_valid())
     return;
 
   callback_->InvokeAndReportException(this, result);
 
   // The user callback may have canceled watching.
-  if (!watcher_handle_.is_valid())
+  if (!trap_handle_.is_valid())
     return;
 
   // Rearm the watcher so another notification can fire.

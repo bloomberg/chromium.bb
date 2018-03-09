@@ -36,9 +36,9 @@ RequestContext::~RequestContext() {
     // since we're starting over at the bottom of the stack.
     tls_context_->Set(nullptr);
 
-    MojoWatcherNotificationFlags flags = MOJO_WATCHER_NOTIFICATION_FLAG_NONE;
-    if (source_ == Source::SYSTEM)
-      flags |= MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM;
+    MojoTrapEventFlags flags = MOJO_TRAP_EVENT_FLAG_NONE;
+    if (source_ == Source::LOCAL_API_CALL)
+      flags |= MOJO_TRAP_EVENT_FLAG_WITHIN_API_CALL;
 
     // We send all cancellation notifications first. This is necessary because
     // it's possible that cancelled watches have other pending notifications

@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/handle_signals_state.h"
+#include "mojo/public/c/system/trap.h"
 
 namespace mojo {
 namespace edk {
@@ -31,7 +32,7 @@ class Watch : public base::RefCountedThreadSafe<Watch> {
         const scoped_refptr<Dispatcher>& dispatcher,
         uintptr_t context,
         MojoHandleSignals signals,
-        MojoWatchCondition condition);
+        MojoTriggerCondition condition);
 
   // Notifies the Watch of a potential state change.
   //
@@ -60,7 +61,7 @@ class Watch : public base::RefCountedThreadSafe<Watch> {
   // down into the WatcherDispatcher to do the actual notification call.
   void InvokeCallback(MojoResult result,
                       const HandleSignalsState& state,
-                      MojoWatcherNotificationFlags flags);
+                      MojoTrapEventFlags flags);
 
   const scoped_refptr<Dispatcher>& dispatcher() const { return dispatcher_; }
   uintptr_t context() const { return context_; }
@@ -96,7 +97,7 @@ class Watch : public base::RefCountedThreadSafe<Watch> {
   const scoped_refptr<Dispatcher> dispatcher_;
   const uintptr_t context_;
   const MojoHandleSignals signals_;
-  const MojoWatchCondition condition_;
+  const MojoTriggerCondition condition_;
 
   // The result code with which this Watch would notify if currently armed,
   // based on the last known signaling state of |dispatcher_|. Guarded by the

@@ -14,12 +14,12 @@ HandleSignalTracker::HandleSignalTracker(Handle handle,
     : high_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL),
       low_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL) {
   MojoResult rv = high_watcher_.Watch(
-      handle, signals, MOJO_WATCH_CONDITION_SATISFIED,
+      handle, signals, MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
       base::Bind(&HandleSignalTracker::OnNotify, base::Unretained(this)));
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
   rv = low_watcher_.Watch(
-      handle, signals, MOJO_WATCH_CONDITION_NOT_SATISFIED,
+      handle, signals, MOJO_TRIGGER_CONDITION_SIGNALS_UNSATISFIED,
       base::Bind(&HandleSignalTracker::OnNotify, base::Unretained(this)));
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 

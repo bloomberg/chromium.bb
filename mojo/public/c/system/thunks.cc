@@ -138,34 +138,40 @@ MojoResult MojoUnmapBuffer(void* buffer) {
   return g_thunks.UnmapBuffer(buffer);
 }
 
-MojoResult MojoCreateWatcher(MojoWatcherCallback callback,
-                             MojoHandle* watcher_handle) {
-  assert(g_thunks.CreateWatcher);
-  return g_thunks.CreateWatcher(callback, watcher_handle);
+MojoResult MojoCreateTrap(MojoTrapEventHandler handler,
+                          const MojoCreateTrapOptions* options,
+                          MojoHandle* trap_handle) {
+  assert(g_thunks.CreateTrap);
+  return g_thunks.CreateTrap(handler, options, trap_handle);
 }
 
-MojoResult MojoWatch(MojoHandle watcher_handle,
-                     MojoHandle handle,
-                     MojoHandleSignals signals,
-                     MojoWatchCondition condition,
-                     uintptr_t context) {
-  assert(g_thunks.Watch);
-  return g_thunks.Watch(watcher_handle, handle, signals, condition, context);
+MojoResult MojoAddTrigger(MojoHandle trap_handle,
+                          MojoHandle handle,
+                          MojoHandleSignals signals,
+                          MojoTriggerCondition condition,
+                          uintptr_t context,
+                          const MojoAddTriggerOptions* options) {
+  assert(g_thunks.AddTrigger);
+  return g_thunks.AddTrigger(trap_handle, handle, signals, condition, context,
+                             options);
 }
 
-MojoResult MojoCancelWatch(MojoHandle watcher_handle, uintptr_t context) {
-  assert(g_thunks.CancelWatch);
-  return g_thunks.CancelWatch(watcher_handle, context);
+MojoResult MojoRemoveTrigger(MojoHandle trap_handle,
+                             uintptr_t context,
+                             const MojoRemoveTriggerOptions* options) {
+  assert(g_thunks.RemoveTrigger);
+  return g_thunks.RemoveTrigger(trap_handle, context, options);
 }
 
-MojoResult MojoArmWatcher(MojoHandle watcher_handle,
-                          uint32_t* num_ready_contexts,
-                          uintptr_t* ready_contexts,
-                          MojoResult* ready_results,
-                          MojoHandleSignalsState* ready_signals_states) {
-  assert(g_thunks.ArmWatcher);
-  return g_thunks.ArmWatcher(watcher_handle, num_ready_contexts, ready_contexts,
-                             ready_results, ready_signals_states);
+MojoResult MojoArmTrap(MojoHandle trap_handle,
+                       const MojoArmTrapOptions* options,
+                       uint32_t* num_ready_triggers,
+                       uintptr_t* ready_triggers,
+                       MojoResult* ready_results,
+                       MojoHandleSignalsState* ready_signals_states) {
+  assert(g_thunks.ArmTrap);
+  return g_thunks.ArmTrap(trap_handle, options, num_ready_triggers,
+                          ready_triggers, ready_results, ready_signals_states);
 }
 
 MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {

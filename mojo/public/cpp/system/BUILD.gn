@@ -44,12 +44,12 @@ component("system") {
     "string_data_pipe_producer.cc",
     "string_data_pipe_producer.h",
     "system_export.h",
+    "trap.cc",
+    "trap.h",
     "wait.cc",
     "wait.h",
     "wait_set.cc",
     "wait_set.h",
-    "watcher.cc",
-    "watcher.h",
   ]
 
   public_deps = [

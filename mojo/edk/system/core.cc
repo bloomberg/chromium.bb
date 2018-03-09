@@ -432,51 +432,70 @@ MojoResult Core::QueryHandleSignalsState(
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::CreateWatcher(MojoWatcherCallback callback,
-                               MojoHandle* watcher_handle) {
-  RequestContext request_context;
-  if (!watcher_handle)
+MojoResult Core::CreateTrap(MojoTrapEventHandler handler,
+                            const MojoCreateTrapOptions* options,
+                            MojoHandle* trap_handle) {
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  *watcher_handle = AddDispatcher(new WatcherDispatcher(callback));
-  if (*watcher_handle == MOJO_HANDLE_INVALID)
+
+  RequestContext request_context;
+  if (!trap_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  *trap_handle = AddDispatcher(new WatcherDispatcher(handler));
+  if (*trap_handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::Watch(MojoHandle watcher_handle,
-                       MojoHandle handle,
-                       MojoHandleSignals signals,
-                       MojoWatchCondition condition,
-                       uintptr_t context) {
+MojoResult Core::AddTrigger(MojoHandle trap_handle,
+                            MojoHandle handle,
+                            MojoHandleSignals signals,
+                            MojoTriggerCondition condition,
+                            uintptr_t context,
+                            const MojoAddTriggerOptions* options) {
+  if (options && options->struct_size != sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   RequestContext request_context;
-  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(trap_handle);
   if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
     return MOJO_RESULT_INVALID_ARGUMENT;
+
   scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
+
   return watcher->WatchDispatcher(std::move(dispatcher), signals, condition,
                                   context);
 }
 
-MojoResult Core::CancelWatch(MojoHandle watcher_handle, uintptr_t context) {
+MojoResult Core::RemoveTrigger(MojoHandle trap_handle,
+                               uintptr_t context,
+                               const MojoRemoveTriggerOptions* options) {
+  if (options && options->struct_size != sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   RequestContext request_context;
-  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(trap_handle);
   if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
     return MOJO_RESULT_INVALID_ARGUMENT;
   return watcher->CancelWatch(context);
 }
 
-MojoResult Core::ArmWatcher(MojoHandle watcher_handle,
-                            uint32_t* num_ready_contexts,
-                            uintptr_t* ready_contexts,
-                            MojoResult* ready_results,
-                            MojoHandleSignalsState* ready_signals_states) {
+MojoResult Core::ArmTrap(MojoHandle trap_handle,
+                         const MojoArmTrapOptions* options,
+                         uint32_t* num_ready_triggers,
+                         uintptr_t* ready_triggers,
+                         MojoResult* ready_results,
+                         MojoHandleSignalsState* ready_signals_states) {
+  if (options && options->struct_size != sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   RequestContext request_context;
-  scoped_refptr<Dispatcher> watcher = GetDispatcher(watcher_handle);
+  scoped_refptr<Dispatcher> watcher = GetDispatcher(trap_handle);
   if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return watcher->Arm(num_ready_contexts, ready_contexts, ready_results,
+  return watcher->Arm(num_ready_triggers, ready_triggers, ready_results,
                       ready_signals_states);
 }
 

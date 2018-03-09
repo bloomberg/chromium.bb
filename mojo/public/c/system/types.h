@@ -77,7 +77,7 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //       the resource being invalidated.
 //   |MOJO_RESULT_SHOULD_WAIT| - The request cannot currently be completed
 //       (e.g., if the data requested is not yet available). The caller should
-//       wait for it to be feasible using a watcher.
+//       wait for it to be feasible using a trap.
 //
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
@@ -191,49 +191,6 @@ struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
 MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
                    "MojoHandleSignalsState has wrong size");
 
-// |MojoWatcherNotificationFlags|: Passed to a callback invoked by a watcher
-// when some observed signals are raised or a watched handle is closed. May take
-// on any combination of the following values:
-//
-//   |MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM| - The callback is being
-//       invoked as a result of a system-level event rather than a direct API
-//       call from user code. This may be used as an indication that user code
-//       is safe to call without fear of reentry.
-
-typedef uint32_t MojoWatcherNotificationFlags;
-
-#ifdef __cplusplus
-const MojoWatcherNotificationFlags MOJO_WATCHER_NOTIFICATION_FLAG_NONE = 0;
-const MojoWatcherNotificationFlags MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM =
-    1 << 0;
-#else
-#define MOJO_WATCHER_NOTIFICATION_FLAG_NONE ((MojoWatcherNotificationFlags)0)
-#define MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM \
-  ((MojoWatcherNotificationFlags)1 << 0);
-#endif
-
-// |MojoWatchCondition|: Given to |MojoWatch()| to indicate whether the
-// watched signals should trigger a notification when becoming satisfied or
-// becoming not-satisfied.
-//
-//   |MOJO_WATCH_CONDITION_NOT_SATISFIED| - A watch added with this setting will
-//       trigger a notification when any of the watched signals transition from
-//       being not-satisfied to being satisfied.
-//   |MOJO_WATCH_CONDITION_SATISFIED| - A watch added with this setting will
-//       trigger a notification when any of the watched signals transition from
-//       being satisfied to being not-satisfied, or when none of the watched
-//       signals can ever be satisfied again.
-
-typedef uint32_t MojoWatchCondition;
-
-#ifdef __cplusplus
-const MojoWatchCondition MOJO_WATCH_CONDITION_NOT_SATISFIED = 0;
-const MojoWatchCondition MOJO_WATCH_CONDITION_SATISFIED = 1;
-#else
-#define MOJO_WATCH_CONDITION_NOT_SATISFIED ((MojoWatchCondition)0)
-#define MOJO_WATCH_CONDITION_SATISFIED ((MojoWatchCondition)1)
-#endif
-
 // |MojoPropertyType|: Property types that can be passed to |MojoGetProperty()|
 // to retrieve system properties. May take the following values:
 //   |MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED| - Whether making synchronous calls
@@ -247,5 +204,10 @@ const MojoPropertyType MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED = 0;
 #else
 #define MOJO_PROPERTY_TYPE_SYNC_CALL_ALLOWED ((MojoPropertyType)0)
 #endif
+
+// TODO(https://crbug.com/819046): Remove these aliases.
+#define MOJO_WATCH_CONDITION_SATISFIED MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED
+#define MOJO_WATCH_CONDITION_NOT_SATISFIED \
+  MOJO_TRIGGER_CONDITION_SIGNALS_UNSATISFIED
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_TYPES_H_

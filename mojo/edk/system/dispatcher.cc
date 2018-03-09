@@ -25,7 +25,7 @@ Dispatcher::DispatcherInTransit::~DispatcherInTransit() {}
 
 MojoResult Dispatcher::WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                                        MojoHandleSignals signals,
-                                       MojoWatchCondition condition,
+                                       MojoTriggerCondition condition,
                                        uintptr_t context) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }

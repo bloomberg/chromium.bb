@@ -16,8 +16,8 @@ component("system") {
     "system_export.h",
     "thunks.cc",
     "thunks.h",
+    "trap.h",
     "types.h",
-    "watcher.h",
   ]
 
   defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]

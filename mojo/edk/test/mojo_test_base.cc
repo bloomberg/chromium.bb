@@ -14,7 +14,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
-#include "mojo/public/c/system/watcher.h"
+#include "mojo/public/c/system/trap.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -298,7 +298,7 @@ MojoHandleSignalsState MojoTestBase::GetSignalsState(MojoHandle handle) {
 // static
 MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
                                         MojoHandleSignals signals,
-                                        MojoWatchCondition condition,
+                                        MojoTriggerCondition condition,
                                         MojoHandleSignalsState* state) {
   return Wait(Handle(handle), signals, condition, state);
 }
@@ -307,7 +307,8 @@ MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
 MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
                                         MojoHandleSignals signals,
                                         MojoHandleSignalsState* state) {
-  return Wait(Handle(handle), signals, MOJO_WATCH_CONDITION_SATISFIED, state);
+  return Wait(Handle(handle), signals, MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+              state);
 }
 
 }  // namespace test
