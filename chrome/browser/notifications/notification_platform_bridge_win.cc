@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/hash.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -87,6 +89,7 @@ void ForwardNotificationOperationOnUiThread(
     const std::string& profile_id,
     bool incognito,
     const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
     const base::Optional<bool>& by_user) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!g_browser_process)
@@ -96,7 +99,7 @@ void ForwardNotificationOperationOnUiThread(
       profile_id, incognito,
       base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
                  operation, notification_type, origin, notification_id,
-                 action_index, /*reply=*/base::nullopt, by_user));
+                 action_index, reply, by_user));
 }
 
 }  // namespace
@@ -497,7 +500,8 @@ class NotificationPlatformBridgeWinImpl
         base::BindOnce(&ForwardNotificationOperationOnUiThread, operation,
                        launch_id.notification_type(), launch_id.origin_url(),
                        launch_id.notification_id(), launch_id.profile_id(),
-                       launch_id.incognito(), action_index, by_user));
+                       launch_id.incognito(), action_index,
+                       /*reply=*/base::nullopt, by_user));
   }
 
   base::Optional<int> ParseActionIndex(
@@ -732,13 +736,21 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
 }
 
 // static
-bool NotificationPlatformBridgeWin::HandleActivation(
-    const std::string& launch_id_str) {
+bool NotificationPlatformBridgeWin::HandleActivation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string launch_id_str =
+      command_line->GetSwitchValueASCII(switches::kNotificationLaunchId);
   NotificationLaunchId launch_id(launch_id_str);
   if (!launch_id.is_valid())
     return false;
+
+  base::Optional<base::string16> reply;
+  base::string16 inline_reply =
+      command_line->GetSwitchValueNative(switches::kNotificationInlineReply);
+  if (!inline_reply.empty())
+    reply = inline_reply;
 
   NotificationCommon::Operation operation = launch_id.is_for_context_menu()
                                                 ? NotificationCommon::SETTINGS
@@ -747,7 +759,7 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   ForwardNotificationOperationOnUiThread(
       operation, launch_id.notification_type(), launch_id.origin_url(),
       launch_id.notification_id(), launch_id.profile_id(),
-      launch_id.incognito(), launch_id.button_index(), /*by_user=*/true);
+      launch_id.incognito(), launch_id.button_index(), reply, /*by_user=*/true);
 
   return true;
 }

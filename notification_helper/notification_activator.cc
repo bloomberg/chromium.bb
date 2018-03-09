@@ -13,6 +13,13 @@
 #include "notification_helper/notification_helper_util.h"
 #include "notification_helper/trace_util.h"
 
+namespace {
+
+// The response entered by the user while interacting with the toast.
+const wchar_t kUserResponse[] = L"userResponse";
+
+}  // namespace
+
 namespace notification_helper {
 
 NotificationActivator::~NotificationActivator() = default;
@@ -55,6 +62,16 @@ HRESULT NotificationActivator::Activate(
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchNative(switches::kNotificationLaunchId,
                                   invoked_args);
+
+  // Check to see if a user response (inline reply) is also supplied.
+  for (ULONG i = 0; i < count; ++i) {
+    if (lstrcmpW(kUserResponse, data[i].Key) == 0) {
+      command_line.AppendSwitchNative(switches::kNotificationInlineReply,
+                                      data[i].Value);
+      break;
+    }
+  }
+
   base::string16 params(command_line.GetCommandLineString());
 
   SHELLEXECUTEINFO info;
