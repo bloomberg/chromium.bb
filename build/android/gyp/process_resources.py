@@ -339,8 +339,6 @@ def _CreateRJavaFile(package, resources_by_type, shared_resources,
   # Keep these assignments all on one line to make diffing against regular
   # aapt-generated files easier.
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
-  create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] ^='
-                   ' packageIdTransform;')
   # Here we diverge from what aapt does. Because we have so many
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
   # Java imposes. For this reason we split onResourcesLoaded into different
@@ -362,6 +360,13 @@ public final class R {
     }
     {% endfor %}
     {% if shared_resources %}
+    public static void transfromArray(int[] array, int packageIdTransform) {
+        for (int i=0; i < array.length; i++) {
+            if ((array[i] >>> 24) == 0x7f) {
+                array[i] ^= packageIdTransform;
+            }
+        }
+    }
     public static void onResourcesLoaded(int packageId) {
         assert !sResourcesDidLoad;
         sResourcesDidLoad = true;
@@ -370,9 +375,7 @@ public final class R {
         onResourcesLoaded{{ resource_type|title }}(packageIdTransform);
         {% for e in non_final_resources[resource_type] %}
         {% if e.java_type == 'int[]' %}
-        for(int i = 0; i < {{ e.resource_type }}.{{ e.name }}.length; ++i) {
-            """ + create_id_arr + """
-        }
+        transfromArray({{ e.resource_type }}.{{ e.name }}, packageIdTransform);
         {% endif %}
         {% endfor %}
         {% endfor %}
