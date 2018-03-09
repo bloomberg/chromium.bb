@@ -14,6 +14,8 @@
 #include "net/quic/core/frames/quic_goaway_frame.h"
 #include "net/quic/core/frames/quic_mtu_discovery_frame.h"
 #include "net/quic/core/frames/quic_padding_frame.h"
+#include "net/quic/core/frames/quic_path_challenge_frame.h"
+#include "net/quic/core/frames/quic_path_response_frame.h"
 #include "net/quic/core/frames/quic_ping_frame.h"
 #include "net/quic/core/frames/quic_rst_stream_frame.h"
 #include "net/quic/core/frames/quic_stop_waiting_frame.h"

@@ -529,8 +529,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
   if (debug_visitor_ != nullptr) {
-    debug_visitor_->OnSuccessfulVersionNegotiation(
-        received_version.transport_version);
+    debug_visitor_->OnSuccessfulVersionNegotiation(received_version);
   }
   QUIC_DLOG(INFO) << ENDPOINT << "version negotiated "
                   << ParsedQuicVersionToString(received_version);
@@ -1446,7 +1445,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
 
-  // Ensure the time coming from the packet reader is within a minute of now.
+  // Ensure the time coming from the packet reader is within 2 minutes of now.
   if (std::abs((packet.receipt_time() - clock_->ApproximateNow()).ToSeconds()) >
       2 * 60) {
     QUIC_BUG << "Packet receipt time:"
@@ -1634,7 +1633,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(version());
         if (debug_visitor_ != nullptr) {
-          debug_visitor_->OnSuccessfulVersionNegotiation(transport_version());
+          debug_visitor_->OnSuccessfulVersionNegotiation(version());
         }
       }
     } else {
@@ -1645,7 +1644,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
       if (debug_visitor_ != nullptr) {
-        debug_visitor_->OnSuccessfulVersionNegotiation(transport_version());
+        debug_visitor_->OnSuccessfulVersionNegotiation(version());
       }
     }
   }
@@ -1673,12 +1672,40 @@ void QuicConnection::WriteQueuedPackets() {
 
   UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsBeforeWrite",
                             queued_packets_.size());
-  QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
-  while (packet_iterator != queued_packets_.end() &&
-         WritePacket(&(*packet_iterator))) {
-    delete[] packet_iterator->encrypted_buffer;
-    ClearSerializedPacket(&(*packet_iterator));
-    packet_iterator = queued_packets_.erase(packet_iterator);
+  if (GetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash)) {
+    while (!queued_packets_.empty()) {
+      // WritePacket() can potentially clear all queued packets, so we need to
+      // save the first queued packet to a local variable before calling it.
+      SerializedPacket packet(std::move(queued_packets_.front()));
+      queued_packets_.pop_front();
+
+      const bool write_result = WritePacket(&packet);
+
+      if (connected_ && !write_result) {
+        // Write failed but connection is open, re-insert |packet| into the
+        // front of the queue, it will be retried later.
+        queued_packets_.emplace_front(std::move(packet));
+        break;
+      }
+
+      delete[] packet.encrypted_buffer;
+      ClearSerializedPacket(&packet);
+      if (!connected_) {
+        DCHECK(queued_packets_.empty()) << "Queued packets should have been "
+                                           "cleared while closing connection";
+        break;
+      }
+
+      // Continue to send the next packet in queue.
+    }
+  } else {
+    QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
+    while (packet_iterator != queued_packets_.end() &&
+           WritePacket(&(*packet_iterator))) {
+      delete[] packet_iterator->encrypted_buffer;
+      ClearSerializedPacket(&(*packet_iterator));
+      packet_iterator = queued_packets_.erase(packet_iterator);
+    }
   }
 }
 
@@ -1829,8 +1856,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     }
     // Copy the buffer so it's owned in the future.
     char* buffer_copy = CopyBuffer(*packet);
-    termination_packets_->push_back(std::unique_ptr<QuicEncryptedPacket>(
-        new QuicEncryptedPacket(buffer_copy, encrypted_length, true)));
+    termination_packets_->emplace_back(
+        new QuicEncryptedPacket(buffer_copy, encrypted_length, true));
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
     if (writer_->IsWriteBlocked()) {
@@ -1899,7 +1926,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     return false;
   }
 
-  if (result.status != WRITE_STATUS_ERROR && debug_visitor_ != nullptr) {
+  if (debug_visitor_ != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
                                  packet->transmission_type, packet_send_time);

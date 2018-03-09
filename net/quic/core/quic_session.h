@@ -200,6 +200,15 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   virtual void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message);
 
+  // Called by the stream on creation to set priority in the write blocked list.
+  virtual void RegisterStreamPriority(QuicStreamId id, SpdyPriority priority);
+  // Called by the stream on deletion to clear priority crom the write blocked
+  // list.
+  virtual void UnregisterStreamPriority(QuicStreamId id);
+  // Called by the stream on SetPriority to update priority on the write blocked
+  // list.
+  virtual void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
+
   // Returns mutable config for this session. Returned config is owned
   // by QuicSession.
   QuicConfig* config();
@@ -303,6 +312,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   bool can_use_slices() const { return can_use_slices_; }
 
   bool session_unblocks_stream() const { return session_unblocks_stream_; }
+
+  bool register_streams_early() const { return register_streams_early_; }
 
   bool use_control_frame_manager() const;
 
@@ -474,8 +485,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // May be null.
   Visitor* visitor_;
 
-  ClosedStreams closed_streams_;
+  // A list of streams which need to write more data.  Stream register
+  // themselves in their constructor, and unregisterm themselves in their
+  // destructors, so the write blocked list must outlive all streams.
+  QuicWriteBlockedList write_blocked_streams_;
 
+  ClosedStreams closed_streams_;
   // Streams which are closed, but need to be kept alive. Currently, the only
   // reason is the stream's sent data (including FIN) does not get fully acked.
   ZombieStreamMap zombie_streams_;
@@ -506,9 +521,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // but the stream object still exists because not all the received data has
   // been consumed.
   QuicUnorderedSet<QuicStreamId> draining_streams_;
-
-  // A list of streams which need to write more data.
-  QuicWriteBlockedList write_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
 
@@ -551,6 +563,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session2.
   const bool session_unblocks_stream_;
+
+  // Latched value of quic_reloadable_flag_quic_register_streams_early.
+  const bool register_streams_early_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

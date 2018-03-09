@@ -101,7 +101,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
         &framer_, source_stream_frame, last_frame_bit, &writer));
     // better have something in the packet buffer.
     EXPECT_NE(0u, writer.length());
-    // now set up a reader to read in the thing in.
+    // now set up a reader to read in the frame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
     // read in the frame type
@@ -157,7 +157,6 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     QuicAckFrame transmit_frame = InitAckFrame(frame->ranges);
     transmit_frame.ack_delay_time =
         QuicTime::Delta::FromMicroseconds(frame->delay_time);
-    QUIC_LOG(INFO) << "XXXXXXXXXX transmit frame is " << transmit_frame;
 
     // write the frame to the packet buffer.
     EXPECT_TRUE(QuicFramerPeer::AppendIetfAckFrameAndTypeByte(
@@ -165,7 +164,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // better have something in the packet buffer.
     EXPECT_NE(0u, writer.length());
 
-    // now set up a reader to read in the thing in.
+    // now set up a reader to read in the frame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
     // read in the frame type
@@ -179,7 +178,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_TRUE(QuicFramerPeer::ProcessIetfAckFrame(
         &framer_, &reader, received_frame_type, &receive_frame));
 
-    // Now check that things are correct
+    // Now check that the received frame matches the sent frame.
     EXPECT_EQ(transmit_frame.largest_acked, receive_frame.largest_acked);
     // The ~0x7 needs some explaining.  The ack frame format down shifts the
     // delay time by 3 (divide by 8) to allow for greater ranges in delay time.
@@ -202,6 +201,82 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
       xmit_itr++;
       recv_itr++;
     }
+    return true;
+  }
+
+  // encode, decode, and check a Path Challenge frame.
+  bool TryPathChallengeFrame(char* packet_buffer,
+                             size_t packet_buffer_size,
+                             const QuicPathFrameBuffer& data) {
+    // Make a writer so that the serialized packet is placed in
+    // packet_buffer.
+    QuicDataWriter writer(packet_buffer_size, packet_buffer,
+                          NETWORK_BYTE_ORDER);
+
+    QuicPathChallengeFrame transmit_frame(0, data);
+
+    // write the frame to the packet buffer.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathChallengeFrameAndTypeByte(
+        &framer_, transmit_frame, &writer));
+
+    // Check for correct length in the packet buffer.
+    EXPECT_EQ(kQuicPathChallengeFrameSize, writer.length());
+
+    // now set up a reader to read in the frame.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+
+    // read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_PATH_CHALLENGE);
+
+    QuicPathChallengeFrame receive_frame;
+
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfPathChallengeFrame(&framer_, &reader,
+                                                              &receive_frame));
+
+    // Now check that the received frame matches the sent frame.
+    EXPECT_EQ(
+        0, memcmp(transmit_frame.data_buffer.data(),
+                  receive_frame.data_buffer.data(), kQuicPathFrameBufferSize));
+    return true;
+  }
+
+  // encode, decode, and check a Path Response frame.
+  bool TryPathResponseFrame(char* packet_buffer,
+                            size_t packet_buffer_size,
+                            const QuicPathFrameBuffer& data) {
+    // Make a writer so that the serialized packet is placed in
+    // packet_buffer.
+    QuicDataWriter writer(packet_buffer_size, packet_buffer,
+                          NETWORK_BYTE_ORDER);
+
+    QuicPathResponseFrame transmit_frame(0, data);
+
+    // Write the frame to the packet buffer.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfPathResponseFrameAndTypeByte(
+        &framer_, transmit_frame, &writer));
+
+    // Check for correct length in the packet buffer.
+    EXPECT_EQ(kQuicPathResponseFrameSize, writer.length());
+
+    // Set up a reader to read in the frame.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+
+    // Read in the frame type
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_PATH_RESPONSE);
+
+    QuicPathResponseFrame receive_frame;
+
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfPathResponseFrame(&framer_, &reader,
+                                                             &receive_frame));
+
+    // Now check that the received frame matches the sent frame.
+    EXPECT_EQ(
+        0, memcmp(transmit_frame.data_buffer.data(),
+                  receive_frame.data_buffer.data(), kQuicPathFrameBufferSize));
     return true;
   }
 
@@ -393,7 +468,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose1) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -434,7 +509,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose2) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -476,7 +551,7 @@ TEST_F(QuicIetfFramerTest, ConnectionClose3) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -513,7 +588,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose1) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -551,7 +626,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose2) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -592,7 +667,7 @@ TEST_F(QuicIetfFramerTest, ApplicationClose3) {
   // better have something in the packet buffer.
   EXPECT_NE(0u, writer.length());
 
-  // now set up a reader to read in the thing in.
+  // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
   // read in the frame type
@@ -627,12 +702,156 @@ struct ack_frame ack_frame_variants[] = {
 TEST_F(QuicIetfFramerTest, AckFrame) {
   char packet_buffer[kNormalPacketBufferSize];
   for (auto ack_frame_variant : ack_frame_variants) {
-    QUIC_LOG(INFO) << "Doing an ack, delay = " << ack_frame_variant.delay_time;
     EXPECT_TRUE(
         TryAckFrame(packet_buffer, sizeof(packet_buffer), &ack_frame_variant));
   }
 }
 
+TEST_F(QuicIetfFramerTest, PaddingEntirePacket) {
+  char packet_buffer[kNormalPacketBufferSize];
+
+  // ensure that buffer is not all 0 prior to the test.
+  memset(packet_buffer, 0xff, sizeof(packet_buffer));
+
+  // Set up the writer and transmit QuicPaddingFrame
+  QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                        NETWORK_BYTE_ORDER);
+  QuicPaddingFrame transmit_frame(sizeof(packet_buffer));
+
+  // Fill buffer with padding.
+  EXPECT_TRUE(QuicFramerPeer::AppendIetfPaddingFrame(&framer_, transmit_frame,
+                                                     &writer));
+
+  // better have written to the entire packet buffer.
+  EXPECT_EQ(kNormalPacketBufferSize, writer.length());
+
+  // see if entire buffer is 0
+  for (auto i = 0; i != sizeof(packet_buffer); i++) {
+    EXPECT_EQ(0, packet_buffer[i])
+        << "Packet_buffer[" << i << "] is " << packet_buffer[i] << " not 0x00";
+  }
+
+  // set up reader and empty receive QuicPaddingFrame.
+  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicPaddingFrame receive_frame;
+
+  // read in the frame type
+  uint8_t received_frame_type;
+  EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+  EXPECT_EQ(received_frame_type, 0u);
+
+  // deframe it
+  QuicFramerPeer::ProcessIetfPaddingFrame(&framer_, &reader, &receive_frame);
+
+  // Now check that received == sent
+  EXPECT_EQ(transmit_frame.num_padding_bytes, receive_frame.num_padding_bytes);
+  int packet_buffer_size = static_cast<int>(sizeof(packet_buffer));
+  EXPECT_EQ(packet_buffer_size, receive_frame.num_padding_bytes);
+  EXPECT_EQ(packet_buffer_size, transmit_frame.num_padding_bytes);
+}
+
+// Place a padding frame between two non-padding frames:
+//    app_close
+//    padding
+//    connection_close
+// we do a loop, with different amounts of padding in each.
+TEST_F(QuicIetfFramerTest, PaddingSandwich) {
+  int pad_lengths[] = {1, 2, 5, 10, 20, 50, 100, 200, 500, 0};
+  int* pad_length = pad_lengths;
+  while (*pad_length) {
+    char packet_buffer[kNormalPacketBufferSize];
+
+    // ensure that buffer is not all 0 prior to the test.
+    memset(packet_buffer, 0xff, sizeof(packet_buffer));
+
+    // Set up the writer and transmit Quic...Frames
+    QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+    QuicPaddingFrame transmit_pad_frame(*pad_length);
+    QuicString app_close_test_string = "Ich Bin Ein Jelly Donut?";
+    QuicConnectionCloseFrame transmit_app_close_frame;
+    transmit_app_close_frame.error_code = static_cast<QuicErrorCode>(0);
+    transmit_app_close_frame.error_details = app_close_test_string;
+
+    QuicString conn_close_test_string = "I am a Berliner?";
+    QuicConnectionCloseFrame transmit_conn_close_frame;
+    transmit_conn_close_frame.error_code = static_cast<QuicErrorCode>(0);
+    transmit_conn_close_frame.error_details = conn_close_test_string;
+
+    // Put in the frames. App close first.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfApplicationCloseFrame(
+        &framer_, transmit_app_close_frame, &writer));
+
+    size_t pre_padding_len = writer.length();
+    // padding next.
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfPaddingFrame(
+        &framer_, transmit_pad_frame, &writer));
+    size_t post_padding_len = writer.length();
+    EXPECT_EQ(static_cast<int>(post_padding_len - pre_padding_len),
+              *pad_length);
+
+    // finally, connection close
+    EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
+        &framer_, transmit_conn_close_frame, &writer));
+
+    // see if buffer from offset pre_padding_len, for *pad_len, is 0
+    for (auto i = pre_padding_len; i != pre_padding_len + (*pad_length); i++) {
+      EXPECT_EQ(0, packet_buffer[i]) << "Packet_buffer[" << i << "] is "
+                                     << packet_buffer[i] << " not 0x00";
+    }
+
+    // set up reader and empty receive QuicFrames.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicPaddingFrame receive_pad_frame;
+    QuicConnectionCloseFrame receive_app_close_frame;
+    QuicConnectionCloseFrame receive_conn_close_frame;
+
+    // read in the frame type and data for the app-close frame
+    uint8_t received_frame_type;
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_APPLICATION_CLOSE);
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfApplicationCloseFrame(
+        &framer_, &reader, received_frame_type, &receive_app_close_frame));
+
+    // Now the padding.
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_PADDING);
+    QuicFramerPeer::ProcessIetfPaddingFrame(&framer_, &reader,
+                                            &receive_pad_frame);
+    // check that pad size is correct
+    EXPECT_EQ(receive_pad_frame.num_padding_bytes, *pad_length);
+
+    // Now get the connection close frame.
+    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
+    EXPECT_EQ(received_frame_type, IETF_CONNECTION_CLOSE);
+    EXPECT_TRUE(QuicFramerPeer::ProcessIetfConnectionCloseFrame(
+        &framer_, &reader, received_frame_type, &receive_conn_close_frame));
+
+    pad_length++;
+  }
+}
+
+TEST_F(QuicIetfFramerTest, PathChallengeFrame) {
+  QuicPathFrameBuffer buffer0 = {0, 0, 0, 0, 0, 0, 0, 0};
+  QuicPathFrameBuffer buffer1 = {0x80, 0x91, 0xa2, 0xb3,
+                                 0xc4, 0xd5, 0xe5, 0xf7};
+  char packet_buffer[kNormalPacketBufferSize];
+  EXPECT_TRUE(
+      TryPathChallengeFrame(packet_buffer, sizeof(packet_buffer), buffer0));
+  EXPECT_TRUE(
+      TryPathChallengeFrame(packet_buffer, sizeof(packet_buffer), buffer1));
+}
+
+TEST_F(QuicIetfFramerTest, PathResponseFrame) {
+  QuicPathFrameBuffer buffer0 = {0, 0, 0, 0, 0, 0, 0, 0};
+  QuicPathFrameBuffer buffer1 = {0x80, 0x91, 0xa2, 0xb3,
+                                 0xc4, 0xd5, 0xe5, 0xf7};
+  char packet_buffer[kNormalPacketBufferSize];
+  EXPECT_TRUE(
+      TryPathResponseFrame(packet_buffer, sizeof(packet_buffer), buffer0));
+  EXPECT_TRUE(
+      TryPathResponseFrame(packet_buffer, sizeof(packet_buffer), buffer1));
+}
 }  // namespace
 }  // namespace test
 }  // namespace net

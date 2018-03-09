@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_fallthrough.h"
+#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string.h"
@@ -45,7 +46,11 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
 }  // namespace
 
 CryptoFramer::CryptoFramer()
-    : visitor_(nullptr), error_detail_(""), num_entries_(0), values_len_(0) {
+    : visitor_(nullptr),
+      error_detail_(""),
+      num_entries_(0),
+      values_len_(0),
+      process_truncated_messages_(false) {
   Clear();
 }
 
@@ -302,11 +307,20 @@ QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
     }
     case STATE_READING_VALUES:
       if (reader.BytesRemaining() < values_len_) {
-        break;
+        if (!process_truncated_messages_) {
+          break;
+        }
+        QUIC_LOG(ERROR) << "Trunacted message. Missing "
+                        << values_len_ - reader.BytesRemaining() << " bytes.";
       }
       for (const std::pair<QuicTag, size_t>& item : tags_and_lengths_) {
         QuicStringPiece value;
-        reader.ReadStringPiece(&value, item.second);
+        if (!reader.ReadStringPiece(&value, item.second)) {
+          DCHECK(process_truncated_messages_);
+          // Store an empty value.
+          message_.SetStringPiece(item.first, "");
+          continue;
+        }
         message_.SetStringPiece(item.first, value);
       }
       visitor_->OnHandshakeMessage(message_);

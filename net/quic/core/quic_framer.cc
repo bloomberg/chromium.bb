@@ -1593,8 +1593,8 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
     last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
 
     ack_frame->received_packet_times.reserve(num_received_packets);
-    ack_frame->received_packet_times.push_back(
-        std::make_pair(seq_num, creation_time_ + last_timestamp_));
+    ack_frame->received_packet_times.emplace_back(
+        seq_num, creation_time_ + last_timestamp_);
 
     for (uint8_t i = 1; i < num_received_packets; ++i) {
       if (!reader->ReadUInt8(&delta_from_largest_observed)) {
@@ -1614,8 +1614,8 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
 
       last_timestamp_ = last_timestamp_ + QuicTime::Delta::FromMicroseconds(
                                               incremental_time_delta_us);
-      ack_frame->received_packet_times.push_back(
-          std::make_pair(seq_num, creation_time_ + last_timestamp_));
+      ack_frame->received_packet_times.emplace_back(
+          seq_num, creation_time_ + last_timestamp_);
     }
   }
   return true;
@@ -2973,6 +2973,78 @@ bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
   }
   frame->error_details = phrase.as_string();
 
+  return true;
+}
+
+// IETF-format Padding frames.
+// Padding is just N bytes of 0x00. There is no varint62/etc
+// encoding required.
+bool QuicFramer::AppendIetfPaddingFrame(const QuicPaddingFrame& frame,
+                                        QuicDataWriter* writer) {
+  DCHECK_GT(version_.transport_version, QUIC_VERSION_37);
+  // The base AppendPaddingFrame assumes that the type byte has
+  // been written. It will actually write num_padding_bytes-1
+  // bytes. This takes care of that issue.
+  if (!writer->WriteUInt8(0)) {
+    set_detailed_error("Can not write close frame type byte");
+    return false;
+  }
+  return AppendPaddingFrame(frame, writer);
+}
+// Read the padding. Has to do it one byte at a time, stopping
+// when we either A) reach the end of the buffer or B) reach a
+// non-0x00 byte.
+void QuicFramer::ProcessIetfPaddingFrame(QuicDataReader* reader,
+                                         QuicPaddingFrame* frame) {
+  DCHECK_GT(version_.transport_version, QUIC_VERSION_37);
+  ProcessPaddingFrame(reader, frame);
+}
+
+// IETF Quic Path Challenge/Response frames.
+bool QuicFramer::ProcessIetfPathChallengeFrame(QuicDataReader* reader,
+                                               QuicPathChallengeFrame* frame) {
+  if (!reader->ReadBytes(frame->data_buffer.data(), kQuicPathFrameBufferSize)) {
+    set_detailed_error("Can not read path Challenge data");
+    return false;
+  }
+  return true;
+}
+bool QuicFramer::ProcessIetfPathResponseFrame(QuicDataReader* reader,
+                                              QuicPathResponseFrame* frame) {
+  if (!reader->ReadBytes(frame->data_buffer.data(), kQuicPathFrameBufferSize)) {
+    set_detailed_error("Can not read path Response data");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendIetfPathChallengeFrameAndTypeByte(
+    const QuicPathChallengeFrame& frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_PATH_CHALLENGE)) {
+    set_detailed_error("Can not write Path Challenge frame type byte");
+    return false;
+  }
+
+  if (!writer->WriteBytes(frame.data_buffer.data(), kQuicPathFrameBufferSize)) {
+    set_detailed_error("Writing Path Challenge data failed.");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendIetfPathResponseFrameAndTypeByte(
+    const QuicPathResponseFrame& frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_PATH_RESPONSE)) {
+    set_detailed_error("Can not write Path Response frame type byte");
+    return false;
+  }
+
+  if (!writer->WriteBytes(frame.data_buffer.data(), kQuicPathFrameBufferSize)) {
+    set_detailed_error("Writing Path Response data failed.");
+    return false;
+  }
   return true;
 }
 

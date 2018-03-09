@@ -349,8 +349,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     if (it->in_flight) {
-      packets_acked_.push_back(
-          AckedPacket(packet_number, it->bytes_sent, QuicTime::Zero()));
+      packets_acked_.emplace_back(packet_number, it->bytes_sent,
+                                  QuicTime::Zero());
     } else {
       // Unackable packets are skipped earlier.
       largest_newly_acked_ = packet_number;

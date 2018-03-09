@@ -84,6 +84,11 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
       const CryptoHandshakeMessage& message,
       Perspective perspective);
 
+  // Debug only method which permits processing truncated messages.
+  void set_process_truncated_messages(bool process_truncated_messages) {
+    process_truncated_messages_ = process_truncated_messages;
+  }
+
  private:
   // Clears per-message state.  Does not clear the visitor.
   void Clear();
@@ -123,6 +128,8 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
   std::vector<std::pair<QuicTag, size_t>> tags_and_lengths_;
   // Cumulative length of all values in the message currently being parsed.
   size_t values_len_;
+  // Set to true to allow of processing of truncated messages for debugging.
+  bool process_truncated_messages_;
 };
 
 }  // namespace net

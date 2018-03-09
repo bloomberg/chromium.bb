@@ -251,6 +251,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetSessionNotifier(SessionNotifierInterface* session_notifier);
 
+  QuicPacketCount initial_congestion_window() const {
+    return initial_congestion_window_;
+  }
+
   QuicPacketNumber largest_packet_peer_knows_is_acked() const {
     return largest_packet_peer_knows_is_acked_;
   }

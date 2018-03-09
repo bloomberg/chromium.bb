@@ -13,6 +13,8 @@
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string.h"
 
+using net::SpdyPriority;
+
 namespace net {
 
 #define ENDPOINT \
@@ -40,10 +42,14 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 }  // namespace
 
+// static
+const SpdyPriority QuicStream::kDefaultPriority;
+
 QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
     : sequencer_(this, session->connection()->clock()),
       id_(id),
       session_(session),
+      priority_(kDefaultPriority),
       stream_bytes_read_(0),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
@@ -75,6 +81,9 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       buffered_data_threshold_(
           GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
   SetFromConfig();
+  if (session_->register_streams_early()) {
+    session_->RegisterStreamPriority(id, priority_);
+  }
 }
 
 QuicStream::~QuicStream() {
@@ -84,6 +93,9 @@ QuicStream::~QuicStream() {
         << " gets destroyed while waiting for acks. stream_bytes_outstanding = "
         << send_buffer_.stream_bytes_outstanding()
         << ", fin_outstanding: " << fin_outstanding_;
+  }
+  if (session_ != nullptr && session_->register_streams_early()) {
+    session_->UnregisterStreamPriority(id());
   }
 }
 
@@ -213,6 +225,16 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
                                             const QuicString& details) {
   session()->connection()->CloseConnection(
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+}
+
+SpdyPriority QuicStream::priority() const {
+  return priority_;
+}
+
+void QuicStream::SetPriority(SpdyPriority priority) {
+  DCHECK_EQ(0u, stream_bytes_written());
+  priority_ = priority;
+  session_->UpdateStreamPriority(id(), priority);
 }
 
 void QuicStream::WriteOrBufferData(

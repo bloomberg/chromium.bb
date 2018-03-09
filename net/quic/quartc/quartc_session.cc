@@ -14,10 +14,6 @@ namespace net {
 
 namespace {
 
-// Default priority for incoming QUIC streams.
-// TODO(zhihuang): Determine if this value is correct.
-static const SpdyPriority kDefaultPriority = 3;
-
 // Arbitrary server port number for net::QuicCryptoClientConfig.
 const int kQuicServerPort = 0;
 
@@ -165,8 +161,10 @@ QuicCryptoStream* QuartcSession::GetMutableCryptoStream() {
 }
 
 QuartcStream* QuartcSession::CreateOutgoingDynamicStream() {
-  return ActivateDataStream(
-      CreateDataStream(GetNextOutgoingStreamId(), kDefaultPriority));
+  // Use default priority for incoming QUIC streams.
+  // TODO(zhihuang): Determine if this value is correct.
+  return ActivateDataStream(CreateDataStream(GetNextOutgoingStreamId(),
+                                             QuicStream::kDefaultPriority));
 }
 
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -186,7 +184,9 @@ void QuartcSession::CloseStream(QuicStreamId stream_id) {
     // QuicStream::OnClose), the stream is already closed so return.
     return;
   }
-  write_blocked_streams()->UnregisterStream(stream_id);
+  if (!register_streams_early()) {
+    write_blocked_streams()->UnregisterStream(stream_id);
+  }
   QuicSession::CloseStream(stream_id);
 }
 
@@ -319,7 +319,7 @@ void QuartcSession::SetServerCryptoConfig(
 }
 
 QuicStream* QuartcSession::CreateIncomingDynamicStream(QuicStreamId id) {
-  return ActivateDataStream(CreateDataStream(id, kDefaultPriority));
+  return ActivateDataStream(CreateDataStream(id, QuicStream::kDefaultPriority));
 }
 
 std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
@@ -334,7 +334,11 @@ std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     // Register the stream to the QuicWriteBlockedList. |priority| is clamped
     // between 0 and 7, with 0 being the highest priority and 7 the lowest
     // priority.
-    write_blocked_streams()->RegisterStream(stream->id(), priority);
+    if (!register_streams_early()) {
+      write_blocked_streams()->RegisterStream(stream->id(), priority);
+    } else {
+      write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
+    }
 
     if (IsIncomingStream(id)) {
       DCHECK(session_delegate_);

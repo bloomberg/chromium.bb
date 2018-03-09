@@ -1575,7 +1575,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
 
 void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
     const ParsedQuicVersion& version) {
-  logger_->OnSuccessfulVersionNegotiation(version.transport_version);
+  logger_->OnSuccessfulVersionNegotiation(version);
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
@@ -2727,7 +2727,7 @@ bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
       // push promise headers are received, send a PRIORITY frame for the
       // promised stream ID. Send |kDefaultPriority| since that will be the
       // initial SpdyPriority of the push promise stream when created.
-      const SpdyPriority priority = kDefaultPriority;
+      const SpdyPriority priority = QuicStream::kDefaultPriority;
       SpdyStreamId parent_stream_id = 0;
       int weight = 0;
       bool exclusive = false;

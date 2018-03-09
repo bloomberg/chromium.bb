@@ -711,10 +711,10 @@ void QuicConnectionLogger::OnConnectionClosed(QuicErrorCode error,
 }
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
-    const QuicTransportVersion& version) {
+    const ParsedQuicVersion& version) {
   if (!net_log_is_capturing_)
     return;
-  string quic_version = QuicVersionToString(version);
+  string quic_version = QuicVersionToString(version.transport_version);
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_VERSION_NEGOTIATED,
                     NetLog::StringCallback("version", &quic_version));
 }

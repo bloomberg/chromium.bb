@@ -110,22 +110,20 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
     if (!crypto_framer.ProcessInput(data, Perspective::IS_SERVER)) {
       return false;
     }
-    if (FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags) {
-      // Interrogate the crypto framer and see if there are any
-      // intersecting tags between what we saw in the maybe-CHLO and the
-      // indicator set.
-      for (const QuicTag tag : create_session_tag_indicators_) {
-        if (crypto_framer.HasTag(tag)) {
-          chlo_contains_tags_ = true;
-        }
+    // Interrogate the crypto framer and see if there are any
+    // intersecting tags between what we saw in the maybe-CHLO and the
+    // indicator set.
+    for (const QuicTag tag : create_session_tag_indicators_) {
+      if (crypto_framer.HasTag(tag)) {
+        chlo_contains_tags_ = true;
       }
-      if (chlo_contains_tags_ && delegate_) {
-        // Unfortunately, because this is a partial CHLO,
-        // OnHandshakeMessage was never called, so the ALPN was never
-        // extracted. Fake it up a bit and send it to the delegate so that
-        // the correct dispatch can happen.
-        crypto_framer.ForceHandshake();
-      }
+    }
+    if (chlo_contains_tags_ && delegate_) {
+      // Unfortunately, because this is a partial CHLO,
+      // OnHandshakeMessage was never called, so the ALPN was never
+      // extracted. Fake it up a bit and send it to the delegate so that
+      // the correct dispatch can happen.
+      crypto_framer.ForceHandshake();
     }
   }
 

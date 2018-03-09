@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // This file intentionally does not have header guards, it's included
-// inside a macro to generate values.
+// inside a macro to generate values. The following line silences a
+// presubmit warning that would otherwise be triggered by this:
+// no-include-guard-because-multiply-included
 
 // This file contains the list of QUIC protocol flags.
 
@@ -126,10 +128,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_streams_unblocked_by_session2,
           false)
 
-// If true, inspects CHLO packets for indicator tags to allow early session
-// creation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags, true)
-
 // When true, ignore the specified ack delay if it causes the RTT sample to be
 // less than min_rtt.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, true)
@@ -146,7 +144,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_session_on_too_many_outstanding_sent_packets,
-    false)
+    true)
 
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
@@ -187,4 +185,20 @@ QUIC_FLAG(bool,
 // If true, Http2FrameDecoderAdapter will pass decoded HTTP/2 SETTINGS through
 // the SpdyFramerVisitorInterface callback OnSetting(), which will also accept
 // unknown SETTINGS IDs.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_http2_propagate_unknown_settings, true)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_http2_propagate_unknown_settings, false)
+
+// If true, enable fast path in QuicStream::OnStreamDataAcked.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fast_path_on_stream_data_acked,
+          false)
+
+// If true, fix a use-after-free bug caused by writing an out-of-order queued
+// packet.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash,
+    false)
+
+// If true, QUIC streams are registered in the QuicStream constructor instead
+// of in the QuicSpdyStream constructor.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early, false)

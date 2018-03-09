@@ -26,12 +26,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
+using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -423,7 +423,8 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
   string request_path = "/foo";
   string body = "Yummm";
   QuicHttpResponseCache::ServerPushInfo push_info(
-      QuicUrl(host, "/bar"), SpdyHeaderBlock(), kDefaultPriority, "Push body");
+      QuicUrl(host, "/bar"), SpdyHeaderBlock(), QuicStream::kDefaultPriority,
+      "Push body");
   std::list<QuicHttpResponseCache::ServerPushInfo> push_resources;
   push_resources.push_back(push_info);
   response_cache_.AddSimpleResponseWithServerPushResources(
