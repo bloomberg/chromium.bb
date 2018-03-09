@@ -434,10 +434,12 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   if (!origin.unique()) {
     // Prefer to use the scheme of |origin| rather than |url|, to correctly
     // cover blob: and filesystem: URIs (see also https://crbug.com/697111).
-    DCHECK(origin.GetURL().has_scheme()) << origin;
-    return GURL(origin.GetURL().scheme() + ":");
-  } else if (url.has_scheme())
+    DCHECK(!origin.scheme().empty());
+    return GURL(origin.scheme() + ":");
+  } else if (url.has_scheme()) {
+    DCHECK(!url.scheme().empty());
     return GURL(url.scheme() + ":");
+  }
 
   // Otherwise the URL should be invalid; return an empty site.
   DCHECK(!url.is_valid()) << url;
