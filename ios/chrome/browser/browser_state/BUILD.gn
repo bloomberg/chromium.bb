@@ -10,13 +10,17 @@ source_set("browser_state") {
     "chrome_browser_state.mm",
     "chrome_browser_state_manager.h",
   ]
+
+  public_deps = [
+    "//ios/web",
+    "//net",
+  ]
+
   deps = [
     "//base",
     "//components/prefs",
     "//components/sync_preferences",
     "//ios/chrome/browser/net:net_types",
-    "//ios/web",
-    "//net",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -138,6 +142,7 @@ source_set("unit_tests") {
     "test_chrome_browser_state_manager_unittest.cc",
   ]
   deps = [
+    ":browser_state",
     ":test_support",
     "//base",
     "//ios/web/public/test",
@@ -156,8 +161,12 @@ source_set("test_support") {
     "test_chrome_browser_state_manager.cc",
     "test_chrome_browser_state_manager.h",
   ]
-  deps = [
+
+  public_deps = [
     ":browser_state",
+  ]
+
+  deps = [
     ":browser_state_impl",
     "//base",
     "//components/bookmarks/browser",

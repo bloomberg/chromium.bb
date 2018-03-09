@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 
 namespace base {
@@ -98,7 +100,7 @@ class BrowserState : public base::SupportsUserData {
                          const base::FilePath& path);
 
  private:
-  class URLLoaderFactory;
+  class NetworkContextOwner;
   friend class URLDataManagerIOS;
   friend class URLRequestChromeJob;
 
@@ -108,7 +110,12 @@ class BrowserState : public base::SupportsUserData {
   // Not intended for usage outside of //web.
   URLDataManagerIOSBackend* GetURLDataManagerIOSBackendOnIOThread();
 
-  std::unique_ptr<URLLoaderFactory> url_loader_factory_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  network::mojom::NetworkContextPtr network_context_;
+
+  // Owns the network::NetworkContext that backs |url_loader_factory_|. Created
+  // on the UI thread, destroyed on the IO thread.
+  std::unique_ptr<NetworkContextOwner> network_context_owner_;
 
   // The URLDataManagerIOSBackend instance associated with this BrowserState.
   // Created and destroyed on the IO thread, and should be accessed only from
