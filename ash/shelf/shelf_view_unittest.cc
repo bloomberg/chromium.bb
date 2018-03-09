@@ -18,6 +18,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/back_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_bubble_view_test_api.h"
@@ -682,47 +683,27 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTextDirectionTest);
 };
 
-// Checks that the ideal item icon bounds match the view's bounds in the screen
-// in both LTR and RTL.
-TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
-  ShelfID id = AddApp();
-  ShelfButton* button = GetButtonByID(id);
-  gfx::Rect item_bounds = button->GetBoundsInScreen();
-  gfx::Point icon_offset = button->GetIconBounds().origin();
-  item_bounds.Offset(icon_offset.OffsetFromOrigin());
-  gfx::Rect ideal_bounds = shelf_view_->GetIdealBoundsOfItemIcon(id);
-  gfx::Point screen_origin;
-  views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
-  ideal_bounds.Offset(screen_origin.x(), screen_origin.y());
-  EXPECT_EQ(item_bounds.x(), ideal_bounds.x());
-  EXPECT_EQ(item_bounds.y(), ideal_bounds.y());
-}
+// Check the ideal bounds of several items in LTR and RTL UI.
+TEST_P(ShelfViewTextDirectionTest, GetIdealBoundsOfItemIcon) {
+  ShelfID id_1 = AddAppShortcut();
+  AddButtonsUntilOverflow();
+  ShelfID id_2 = AddAppShortcut();
+  ShelfID id_3 = AddAppShortcut();
 
-// Check that items in the overflow area are returning the overflow button as
-// ideal bounds.
-TEST_F(ShelfViewTest, OverflowButtonBounds) {
-  ShelfID first_id = AddApp();
-  ShelfID overflow_id = AddApp();
-  int items_added = 0;
-  while (!test_api_->IsOverflowButtonVisible()) {
-    // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(overflow_id)->visible());
-    overflow_id = AddApp();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-  ShelfID last_id = AddApp();
+  const gfx::Rect bounds_1 = shelf_view_->GetIdealBoundsOfItemIcon(id_1);
+  const gfx::Rect bounds_2 = shelf_view_->GetIdealBoundsOfItemIcon(id_2);
+  const gfx::Rect bounds_3 = shelf_view_->GetIdealBoundsOfItemIcon(id_3);
 
-  gfx::Rect first_bounds = shelf_view_->GetIdealBoundsOfItemIcon(first_id);
-  gfx::Rect overflow_bounds =
-      shelf_view_->GetIdealBoundsOfItemIcon(overflow_id);
-  gfx::Rect last_bounds = shelf_view_->GetIdealBoundsOfItemIcon(last_id);
+  EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kAppListId)),
+            shelf_view_->GetAppListButton()->GetMirroredBounds());
+  EXPECT_EQ(shelf_view_->GetIdealBoundsOfItemIcon(ShelfID(kBackButtonId)),
+            shelf_view_->GetBackButton()->GetMirroredBounds());
 
-  // Check that all items have the same size and that the overflow items are
-  // identical whereas the first one does not match either of them.
-  EXPECT_EQ(first_bounds.size().ToString(), last_bounds.size().ToString());
-  EXPECT_NE(first_bounds.ToString(), last_bounds.ToString());
-  EXPECT_EQ(overflow_bounds.ToString(), last_bounds.ToString());
+  // Just items in the overflow area return the overflow button's ideal bounds.
+  EXPECT_NE(bounds_1, test_api_->overflow_button()->GetMirroredBounds());
+  EXPECT_TRUE(GetButtonByID(id_1)->GetMirroredBounds().Contains(bounds_1));
+  EXPECT_EQ(bounds_2, test_api_->overflow_button()->GetMirroredBounds());
+  EXPECT_EQ(bounds_3, test_api_->overflow_button()->GetMirroredBounds());
 }
 
 // Checks that shelf view contents are considered in the correct drag group.

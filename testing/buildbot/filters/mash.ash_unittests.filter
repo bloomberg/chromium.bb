@@ -193,10 +193,6 @@
 -ResizeShadowAndCursorTest.MouseHover
 -ResizeShadowAndCursorTest.Touch
 
-# shelf_view.cc(366) Check failed: TYPE_APP_LIST != model_->items()[index].type
-# http://crbug.com/814015
--RootWindowControllerTest.MoveWindows_Basic
-
 # TODO: Triage
 -ShelfLayoutManagerTest.SwipingUpOnShelfInLaptopModeForFullscreenAppList
 -ShelfLayoutManagerTest.SwipingUpOnShelfInTabletModeForFullscreenAppList

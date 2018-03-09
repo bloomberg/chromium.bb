@@ -352,19 +352,19 @@ void ShelfView::OnShelfAlignmentChanged() {
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
   int index = model_->ItemIndexByID(id);
-  if (index < 0 || last_visible_index_ < 0)
+  if (index < 0 || last_visible_index_ < 0 || index >= view_model_->view_size())
     return gfx::Rect();
-  // Map all items from overflow area to the overflow button. Note that the
-  // section between last_index_hidden_ and model_->FirstPanelIndex() is the
-  // list of invisible panel items. However, these items are currently nowhere
-  // represented and get dropped instead - see (crbug.com/378907). As such there
-  // is no way to address them or place them. We therefore move them over the
-  // overflow button.
+
+  // Map items in the overflow bubble to the overflow button.
   if (index > last_visible_index_ && index < model_->FirstPanelIndex())
-    index = last_visible_index_ + 1;
+    return GetMirroredRect(overflow_button_->bounds());
+
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
-  DCHECK_NE(TYPE_APP_LIST, model_->items()[index].type);
   views::View* view = view_model_->view_at(index);
+  // The app list and back button are not ShelfButton subclass instances.
+  if (view == GetAppListButton() || view == GetBackButton())
+    return GetMirroredRect(ideal_bounds);
+
   CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
   ShelfButton* button = static_cast<ShelfButton*>(view);
   gfx::Rect icon_bounds = button->GetIconBounds();
