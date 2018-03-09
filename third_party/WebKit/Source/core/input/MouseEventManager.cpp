@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingUtilities.h"
@@ -925,7 +926,8 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
 }
 
 DataTransfer* MouseEventManager::CreateDraggingDataTransfer() const {
-  return DataTransfer::Create(DataTransfer::kDragAndDrop, kDataTransferWritable,
+  return DataTransfer::Create(DataTransfer::kDragAndDrop,
+                              DataTransferAccessPolicy::kWritable,
                               DataObject::Create());
 }
 
@@ -964,7 +966,7 @@ bool MouseEventManager::TryStartDrag(
   // The drag image can still be changed as we drag, but not the pasteboard
   // data.
   GetDragState().drag_data_transfer_->SetAccessPolicy(
-      kDataTransferImageWritable);
+      DataTransferAccessPolicy::kImageWritable);
 
   if (mouse_down_may_start_drag_) {
     // Dispatching the event could cause Page to go away. Make sure it's still
@@ -1035,7 +1037,8 @@ void MouseEventManager::ClearDragDataTransfer() {
     return;
   if (GetDragState().drag_data_transfer_) {
     GetDragState().drag_data_transfer_->ClearDragImage();
-    GetDragState().drag_data_transfer_->SetAccessPolicy(kDataTransferNumb);
+    GetDragState().drag_data_transfer_->SetAccessPolicy(
+        DataTransferAccessPolicy::kNumb);
   }
 }
 

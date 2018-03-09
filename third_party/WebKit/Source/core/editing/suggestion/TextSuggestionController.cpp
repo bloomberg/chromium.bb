@@ -4,6 +4,7 @@
 
 #include "core/editing/suggestion/TextSuggestionController.h"
 
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -612,7 +613,7 @@ void TextSuggestionController::ReplaceRangeWithText(const EphemeralRange& range,
 
   DataTransfer* const data_transfer = DataTransfer::Create(
       DataTransfer::DataTransferType::kInsertReplacementText,
-      DataTransferAccessPolicy::kDataTransferReadable,
+      DataTransferAccessPolicy::kReadable,
       DataObject::CreateFromString(replacement));
 
   const bool is_canceled =

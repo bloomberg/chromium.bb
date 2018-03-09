@@ -224,13 +224,14 @@ void DragController::DragExited(DragData* drag_data, LocalFrame& local_root) {
 
   LocalFrameView* frame_view(local_root.View());
   if (frame_view) {
-    DataTransferAccessPolicy policy = kDataTransferTypesReadable;
+    DataTransferAccessPolicy policy = DataTransferAccessPolicy::kTypesReadable;
     DataTransfer* data_transfer = CreateDraggingDataTransfer(policy, drag_data);
     data_transfer->SetSourceOperation(drag_data->DraggingSourceOperationMask());
     local_root.GetEventHandler().CancelDragAndDrop(CreateMouseEvent(drag_data),
                                                    data_transfer);
     data_transfer->SetAccessPolicy(
-        kDataTransferNumb);  // invalidate clipboard here for security
+        DataTransferAccessPolicy::kNumb);  // invalidate clipboard here for
+                                           // security
   }
   MouseMovedIntoDocument(nullptr);
   if (file_input_element_under_mouse_)
@@ -250,8 +251,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     bool prevented_default = false;
     if (local_root.View()) {
       // Sending an event can result in the destruction of the view and part.
-      DataTransfer* data_transfer =
-          CreateDraggingDataTransfer(kDataTransferReadable, drag_data);
+      DataTransfer* data_transfer = CreateDraggingDataTransfer(
+          DataTransferAccessPolicy::kReadable, drag_data);
       data_transfer->SetSourceOperation(
           drag_data->DraggingSourceOperationMask());
       EventHandler& event_handler = local_root.GetEventHandler();
@@ -270,7 +271,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       }
 
       // Invalidate clipboard here for security.
-      data_transfer->SetAccessPolicy(kDataTransferNumb);
+      data_transfer->SetAccessPolicy(DataTransferAccessPolicy::kNumb);
     }
     if (prevented_default) {
       document_under_mouse_ = nullptr;
@@ -762,7 +763,7 @@ bool DragController::TryDHTMLDrag(DragData* drag_data,
   if (!local_root.View())
     return false;
 
-  DataTransferAccessPolicy policy = kDataTransferTypesReadable;
+  DataTransferAccessPolicy policy = DataTransferAccessPolicy::kTypesReadable;
   DataTransfer* data_transfer = CreateDraggingDataTransfer(policy, drag_data);
   DragOperation src_op_mask = drag_data->DraggingSourceOperationMask();
   data_transfer->SetSourceOperation(src_op_mask);
@@ -771,7 +772,8 @@ bool DragController::TryDHTMLDrag(DragData* drag_data,
   if (local_root.GetEventHandler().UpdateDragAndDrop(event, data_transfer) ==
       WebInputEventResult::kNotHandled) {
     data_transfer->SetAccessPolicy(
-        kDataTransferNumb);  // invalidate clipboard here for security
+        DataTransferAccessPolicy::kNumb);  // invalidate clipboard here for
+                                           // security
     return false;
   }
 
@@ -784,7 +786,8 @@ bool DragController::TryDHTMLDrag(DragData* drag_data,
   }
 
   data_transfer->SetAccessPolicy(
-      kDataTransferNumb);  // invalidate clipboard here for security
+      DataTransferAccessPolicy::kNumb);  // invalidate clipboard here for
+                                         // security
   return true;
 }
 

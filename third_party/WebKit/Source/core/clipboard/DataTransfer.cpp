@@ -29,6 +29,7 @@
 
 #include "build/build_config.h"
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
 #include "core/editing/EphemeralRange.h"
@@ -218,8 +219,8 @@ static String NormalizeType(const String& type,
 }
 
 DataTransfer* DataTransfer::Create() {
-  DataTransfer* data =
-      Create(kCopyAndPaste, kDataTransferWritable, DataObject::Create());
+  DataTransfer* data = Create(
+      kCopyAndPaste, DataTransferAccessPolicy::kWritable, DataObject::Create());
   data->drop_effect_ = "none";
   data->effect_allowed_ = "none";
   return data;
@@ -533,27 +534,29 @@ void DataTransfer::WriteSelection(const FrameSelection& selection) {
 
 void DataTransfer::SetAccessPolicy(DataTransferAccessPolicy policy) {
   // once you go numb, can never go back
-  DCHECK(policy_ != kDataTransferNumb || policy == kDataTransferNumb);
+  DCHECK(policy_ != DataTransferAccessPolicy::kNumb ||
+         policy == DataTransferAccessPolicy::kNumb);
   policy_ = policy;
 }
 
 bool DataTransfer::CanReadTypes() const {
-  return policy_ == kDataTransferReadable ||
-         policy_ == kDataTransferTypesReadable ||
-         policy_ == kDataTransferWritable;
+  return policy_ == DataTransferAccessPolicy::kReadable ||
+         policy_ == DataTransferAccessPolicy::kTypesReadable ||
+         policy_ == DataTransferAccessPolicy::kWritable;
 }
 
 bool DataTransfer::CanReadData() const {
-  return policy_ == kDataTransferReadable || policy_ == kDataTransferWritable;
+  return policy_ == DataTransferAccessPolicy::kReadable ||
+         policy_ == DataTransferAccessPolicy::kWritable;
 }
 
 bool DataTransfer::CanWriteData() const {
-  return policy_ == kDataTransferWritable;
+  return policy_ == DataTransferAccessPolicy::kWritable;
 }
 
 bool DataTransfer::CanSetDragImage() const {
-  return policy_ == kDataTransferImageWritable ||
-         policy_ == kDataTransferWritable;
+  return policy_ == DataTransferAccessPolicy::kImageWritable ||
+         policy_ == DataTransferAccessPolicy::kWritable;
 }
 
 DragOperation DataTransfer::SourceOperation() const {
