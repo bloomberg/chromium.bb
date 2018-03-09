@@ -897,17 +897,15 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         (DescendantsHaveSameLineHeightAndBaseline() && HasTextDescendants())) {
       if (!set_line_top) {
         set_line_top = true;
-        line_top = LayoutUnit(PixelSnappedLogicalTop());
+        line_top = LogicalTop();
         line_top_including_margins = line_top;
       } else {
-        line_top = std::min(line_top, LayoutUnit(PixelSnappedLogicalTop()));
+        line_top = std::min(line_top, LogicalTop());
         line_top_including_margins =
             std::min(line_top, line_top_including_margins);
       }
-      selection_bottom =
-          std::max(selection_bottom, LayoutUnit(PixelSnappedLogicalBottom()));
-      line_bottom =
-          std::max(line_bottom, LayoutUnit(PixelSnappedLogicalBottom()));
+      selection_bottom = std::max(selection_bottom, LogicalBottom());
+      line_bottom = std::max(line_bottom, LogicalBottom());
       line_bottom_including_margins =
           std::max(line_bottom, line_bottom_including_margins);
     }

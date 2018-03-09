@@ -259,10 +259,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     else
       SetY(left);
   }
-  int PixelSnappedLogicalLeft() const { return LogicalLeft().ToInt(); }
-  int PixelSnappedLogicalRight() const { return LogicalRight().Ceil(); }
-  int PixelSnappedLogicalTop() const { return LogicalTop().ToInt(); }
-  int PixelSnappedLogicalBottom() const { return LogicalBottom().Ceil(); }
 
   // The logicalTop[ position is the top edge of the line box in a horizontal
   // line and the left edge in a vertical line.
