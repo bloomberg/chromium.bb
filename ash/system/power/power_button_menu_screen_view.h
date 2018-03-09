@@ -19,7 +19,10 @@ class PowerButtonMenuView;
 class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
                                              public display::DisplayObserver {
  public:
-  PowerButtonMenuScreenView();
+  // |show_animation_done| is a callback for when the animation that shows the
+  // power menu has finished.
+  explicit PowerButtonMenuScreenView(
+      base::RepeatingClosure show_animation_done);
   ~PowerButtonMenuScreenView() override;
 
   PowerButtonMenuView* power_button_menu_view() const {

@@ -72,6 +72,8 @@ class PowerButtonControllerTestApi {
 
   void SetTurnScreenOffForTap(bool turn_screen_off_for_tap);
 
+  void SetShowMenuAnimationDone(bool show_menu_animation_done);
+
  private:
   PowerButtonController* controller_;  // Not owned.
 

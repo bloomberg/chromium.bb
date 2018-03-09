@@ -97,7 +97,6 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   void TappingPowerButtonWhenScreenIsIdleOff() {
     SendBrightnessChange(0, kUserCause);
     PressPowerButton();
-    EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
     EXPECT_FALSE(power_manager_client_->backlights_forced_off());
     SendBrightnessChange(kNonZeroBrightness, kUserCause);
     ReleasePowerButton();
@@ -168,12 +167,34 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
   EXPECT_FALSE(turn_screen_off_for_tap_);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   PressPowerButton();
+  power_button_test_api_->SetShowMenuAnimationDone(false);
+  // Start the showing power menu animation immediately as pressing the
+  // clamshell power button.
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  // Start the dimissing power menu animation immediately as releasing the
+  // clamsehll power button if showing animation hasn't finished.
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 
   AdvanceClockToAvoidIgnoring();
   // Should turn screen on if screen is off.
   TappingPowerButtonWhenScreenIsIdleOff();
+
+  AdvanceClockToAvoidIgnoring();
+  // Should not start the dismissing menu animation if showing menu animation
+  // has finished.
+  PressPowerButton();
+  // Start the showing power menu animation immediately as pressing the
+  // clamshell power button.
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  power_button_test_api_->SetShowMenuAnimationDone(true);
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  // Power button menu should keep opened if showing animation has finished.
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that tapping power button of a device that has tablet mode switch.
@@ -182,15 +203,30 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   // shown.
   EXPECT_TRUE(turn_screen_off_for_tap_);
   PressPowerButton();
+  // Showing power menu animation hasn't started as power menu timer is running.
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
   ReleasePowerButton();
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 
   // Should turn screen on if screen is off.
   AdvanceClockToAvoidIgnoring();
   TappingPowerButtonWhenScreenIsIdleOff();
+
+  // Showing power menu animation should start until power menu timer is
+  // timeout.
+  PressPowerButton();
+  power_button_test_api_->SetShowMenuAnimationDone(false);
+  EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  ReleasePowerButton();
+  // Showing animation will continue until show the power button menu even
+  // release the power button.
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 
   // Should not turn screen off if clamshell-like power button behavior is
   // requested.
@@ -200,8 +236,15 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   EXPECT_FALSE(turn_screen_off_for_tap_);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   PressPowerButton();
+  power_button_test_api_->SetShowMenuAnimationDone(false);
+  // Forced clamshell power button device should start showing menu animation
+  // immediately as pressing the power button.
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  // Forced clamshell power button device should start dismissing menu animation
+  // immediately as releasing the power button.
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that release power button after menu is opened but before trigger

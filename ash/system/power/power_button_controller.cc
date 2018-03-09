@@ -30,10 +30,13 @@
 namespace ash {
 namespace {
 
-// Time that power button should be pressed before starting to show the power
-// button menu animation.
-constexpr base::TimeDelta kStartPowerButtonMenuAnimationTimeout =
+// Amount of time power button must be held to start the power menu animation
+// for convertible/slate/detachable devices. This differs depending on whether
+// the screen is on or off when the power button is initially pressed.
+constexpr base::TimeDelta kShowMenuWhenScreenOnTimeout =
     base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kShowMenuWhenScreenOffTimeout =
+    base::TimeDelta::FromMilliseconds(2000);
 
 // Time that power button should be pressed before starting to shutdown.
 constexpr base::TimeDelta kStartShutdownTimeout =
@@ -136,6 +139,7 @@ void PowerButtonController::OnPowerButtonEvent(
   }
 
   if (down) {
+    show_menu_animation_done_ = false;
     if (turn_screen_off_for_tap_) {
       force_off_on_button_up_ = true;
 
@@ -160,9 +164,17 @@ void PowerButtonController::OnPowerButtonEvent(
     screen_off_when_power_button_down_ = !display_controller_->IsScreenOn();
     display_controller_->SetBacklightsForcedOff(false);
 
-    power_button_menu_timer_.Start(
-        FROM_HERE, kStartPowerButtonMenuAnimationTimeout, this,
-        &PowerButtonController::OnPowerButtonMenuTimeout);
+    if (!turn_screen_off_for_tap_) {
+      StartPowerMenuAnimation();
+    } else {
+      base::TimeDelta timeout = screen_off_when_power_button_down_
+                                    ? kShowMenuWhenScreenOffTimeout
+                                    : kShowMenuWhenScreenOnTimeout;
+
+      power_button_menu_timer_.Start(
+          FROM_HERE, timeout, this,
+          &PowerButtonController::StartPowerMenuAnimation);
+    }
 
     shutdown_timer_.Start(FROM_HERE, kStartShutdownTimeout, this,
                           &PowerButtonController::OnShutdownTimeout);
@@ -182,6 +194,13 @@ void PowerButtonController::OnPowerButtonEvent(
         force_off_on_button_up_) {
       display_controller_->SetBacklightsForcedOff(true);
       LockScreenIfRequired();
+    }
+
+    // Cancel the menu animation if it's still ongoing when the button is
+    // released on a clamshell device.
+    if (!turn_screen_off_for_tap_ && !show_menu_animation_done_) {
+      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+          ->ScheduleShowHideAnimation(false);
     }
   }
 }
@@ -305,7 +324,8 @@ void PowerButtonController::OnBacklightsForcedOffChanged(bool forced_off) {
 
 void PowerButtonController::OnScreenStateChanged(
     BacklightsForcedOffSetter::ScreenState screen_state) {
-  DismissMenu();
+  if (screen_state != BacklightsForcedOffSetter::ScreenState::ON)
+    DismissMenu();
 }
 
 void PowerButtonController::OnTabletModeStarted() {
@@ -332,10 +352,12 @@ void PowerButtonController::StopTimersAndDismissMenu() {
   DismissMenu();
 }
 
-void PowerButtonController::OnPowerButtonMenuTimeout() {
+void PowerButtonController::StartPowerMenuAnimation() {
   if (!menu_widget_)
     menu_widget_ = CreateMenuWidget();
-  menu_widget_->SetContentsView(new PowerButtonMenuScreenView());
+  menu_widget_->SetContentsView(new PowerButtonMenuScreenView(
+      base::BindRepeating(&PowerButtonController::SetShowMenuAnimationDone,
+                          base::Unretained(this))));
   menu_widget_->Show();
 
   // Hide cursor, but let it reappear if the mouse moves.
@@ -381,6 +403,10 @@ void PowerButtonController::LockScreenIfRequired() {
       !lock_state_controller_->LockRequested()) {
     lock_state_controller_->LockWithoutAnimation();
   }
+}
+
+void PowerButtonController::SetShowMenuAnimationDone() {
+  show_menu_animation_done_ = true;
 }
 
 }  // namespace ash
