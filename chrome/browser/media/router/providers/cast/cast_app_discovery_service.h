@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -68,7 +69,10 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
 
   // Updates the availability result for |sink_id| and |app_id| with |result|,
   // and notifies callbacks with updated sink query results.
-  void UpdateAppAvailability(const MediaSink::Id& sink_id,
+  // |start_time| is the time when the app availability request was made, and
+  // is used for metrics.
+  void UpdateAppAvailability(base::TimeTicks start_time,
+                             const MediaSink::Id& sink_id,
                              const std::string& app_id,
                              cast_channel::GetAppAvailabilityResult result);
 
