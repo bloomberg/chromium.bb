@@ -294,9 +294,8 @@ void OffsetMapper::PruneEquivalencesAndSortBySource(
       // Shrink all equivalences that overlap with |current|. These are all
       // worse than |current| since no reaper is found.
       for (auto reduced = current + 1; reduced != next; ++reduced) {
-        offset_t delta =
-            std::min(reduced->length, current->src_end() - reduced->src_offset);
-        reduced->length -= delta;
+        offset_t delta = current->src_end() - reduced->src_offset;
+        reduced->length -= std::min(reduced->length, delta);
         reduced->src_offset += delta;
         reduced->dst_offset += delta;
         DCHECK_EQ(reduced->src_offset, current->src_end());
@@ -458,9 +457,8 @@ void EquivalenceMap::Prune(
     } else {
       // Shrinks all overlapping candidates following and worse than |current|.
       for (auto reduced = current + 1; reduced != next; ++reduced) {
-        offset_t delta = std::min(
-            reduced->eq.length, current->eq.dst_end() - reduced->eq.dst_offset);
-        reduced->eq.length -= delta;
+        offset_t delta = current->eq.dst_end() - reduced->eq.dst_offset;
+        reduced->eq.length -= std::min(reduced->eq.length, delta);
         reduced->eq.src_offset += delta;
         reduced->eq.dst_offset += delta;
         reduced->similarity = GetEquivalenceSimilarity(
