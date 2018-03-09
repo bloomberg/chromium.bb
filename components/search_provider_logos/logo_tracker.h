@@ -90,7 +90,7 @@ class LogoTracker : public net::URLFetcherDelegate {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       std::unique_ptr<LogoDelegate> delegate,
       std::unique_ptr<LogoCache> logo_cache,
-      std::unique_ptr<base::Clock> clock);
+      base::Clock* clock);
 
   ~LogoTracker() override;
 
@@ -227,7 +227,7 @@ class LogoTracker : public net::URLFetcherDelegate {
   std::unique_ptr<LogoCache, base::OnTaskRunnerDeleter> logo_cache_;
 
   // Clock used to determine current time. Can be overridden in tests.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // The URLRequestContextGetter used for network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

@@ -85,7 +85,7 @@ LogoTracker::LogoTracker(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     std::unique_ptr<LogoDelegate> delegate,
     std::unique_ptr<LogoCache> logo_cache,
-    std::unique_ptr<base::Clock> clock)
+    base::Clock* clock)
     : is_idle_(true),
       is_cached_logo_valid_(false),
       logo_delegate_(std::move(delegate)),
@@ -94,7 +94,7 @@ LogoTracker::LogoTracker(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       logo_cache_(logo_cache.release(),
                   base::OnTaskRunnerDeleter(cache_task_runner_)),
-      clock_(std::move(clock)),
+      clock_(clock),
       request_context_getter_(request_context_getter),
       weak_ptr_factory_(this) {}
 

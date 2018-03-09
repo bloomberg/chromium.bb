@@ -96,7 +96,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
   return std::make_unique<SuggestionsServiceImpl>(
       identity_manager, sync_service, browser_state->GetRequestContext(),
       std::move(suggestions_store), std::move(thumbnail_manager),
-      std::move(blacklist_store), std::make_unique<base::DefaultTickClock>());
+      std::move(blacklist_store), base::DefaultTickClock::GetInstance());
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(

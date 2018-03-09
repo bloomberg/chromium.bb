@@ -123,7 +123,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
     std::unique_ptr<SuggestionsStore> suggestions_store,
     std::unique_ptr<ImageManager> thumbnail_manager,
     std::unique_ptr<BlacklistStore> blacklist_store,
-    std::unique_ptr<base::TickClock> tick_clock)
+    base::TickClock* tick_clock)
     : identity_manager_(identity_manager),
       sync_service_(sync_service),
       sync_service_observer_(this),
@@ -132,9 +132,9 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       suggestions_store_(std::move(suggestions_store)),
       thumbnail_manager_(std::move(thumbnail_manager)),
       blacklist_store_(std::move(blacklist_store)),
-      tick_clock_(std::move(tick_clock)),
-      blacklist_upload_backoff_(&kBlacklistBackoffPolicy, tick_clock_.get()),
-      blacklist_upload_timer_(tick_clock_.get()),
+      tick_clock_(tick_clock),
+      blacklist_upload_backoff_(&kBlacklistBackoffPolicy, tick_clock_),
+      blacklist_upload_timer_(tick_clock_),
       weak_ptr_factory_(this) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
   if (sync_service_) {

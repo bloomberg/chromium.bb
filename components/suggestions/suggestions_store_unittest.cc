@@ -89,16 +89,14 @@ class SuggestionsStoreTest : public testing::Test {
     SuggestionsStore::RegisterProfilePrefs(pref_service_->registry());
     suggestions_store_.reset(new SuggestionsStore(pref_service_.get()));
 
-    base::SimpleTestClock* test_clock(new base::SimpleTestClock());
-    current_time = base::Time::FromInternalValue(13063394337546738);
-    test_clock->SetNow(current_time);
-    suggestions_store_->SetClockForTesting(base::WrapUnique(test_clock));
+    test_clock_.SetNow(base::Time::FromInternalValue(13063394337546738));
+    suggestions_store_->SetClockForTesting(&test_clock_);
   }
 
  protected:
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<SuggestionsStore> suggestions_store_;
-  base::Time current_time;
+  base::SimpleTestClock test_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStoreTest);
 };
@@ -106,7 +104,7 @@ class SuggestionsStoreTest : public testing::Test {
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, LoadAllExpired) {
   SuggestionsProfile suggestions =
-      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 0);
+      CreateTestSuggestionsProfileWithExpiry(test_clock_.Now(), 5, 0);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.
@@ -118,7 +116,7 @@ TEST_F(SuggestionsStoreTest, LoadAllExpired) {
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, LoadValidAndExpired) {
   SuggestionsProfile suggestions =
-      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 3);
+      CreateTestSuggestionsProfileWithExpiry(test_clock_.Now(), 5, 3);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.
@@ -130,7 +128,7 @@ TEST_F(SuggestionsStoreTest, LoadValidAndExpired) {
 // Tests LoadSuggestions function to filter expired suggestions.
 TEST_F(SuggestionsStoreTest, CheckStoreAfterLoadExpired) {
   SuggestionsProfile suggestions =
-      CreateTestSuggestionsProfileWithExpiry(current_time, 5, 3);
+      CreateTestSuggestionsProfileWithExpiry(test_clock_.Now(), 5, 3);
   SuggestionsProfile filtered_suggestions;
 
   // Store and load. Expired suggestions should not be loaded.

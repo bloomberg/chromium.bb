@@ -284,8 +284,8 @@ void LogoServiceImpl::SetLogoCacheForTests(std::unique_ptr<LogoCache> cache) {
   logo_cache_for_test_ = std::move(cache);
 }
 
-void LogoServiceImpl::SetClockForTests(std::unique_ptr<base::Clock> clock) {
-  clock_for_test_ = std::move(clock);
+void LogoServiceImpl::SetClockForTests(base::Clock* clock) {
+  clock_for_test_ = clock;
 }
 
 void LogoServiceImpl::InitializeLogoTrackerIfNecessary() {
@@ -298,15 +298,15 @@ void LogoServiceImpl::InitializeLogoTrackerIfNecessary() {
     logo_cache = std::make_unique<LogoCache>(cache_directory_);
   }
 
-  std::unique_ptr<base::Clock> clock = std::move(clock_for_test_);
+  base::Clock* clock = clock_for_test_;
   if (!clock) {
-    clock = std::make_unique<base::DefaultClock>();
+    clock = base::DefaultClock::GetInstance();
   }
 
   logo_tracker_ = std::make_unique<LogoTracker>(
       request_context_getter_,
       std::make_unique<LogoDelegateImpl>(std::move(image_decoder_)),
-      std::move(logo_cache), std::move(clock));
+      std::move(logo_cache), clock);
 }
 
 void LogoServiceImpl::SigninStatusChanged() {
