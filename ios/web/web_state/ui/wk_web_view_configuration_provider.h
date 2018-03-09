@@ -28,9 +28,10 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   static web::WKWebViewConfigurationProvider& FromBrowserState(
       web::BrowserState* browser_state);
 
-  // Returns an autoreleased copy of WKWebViewConfiguration associated with
-  // browser state. Lazily creates the config. Configuration's |preferences|
-  // will have scriptCanOpenWindowsAutomatically property set to YES.
+  // Returns an autoreleased shallow copy of WKWebViewConfiguration associated
+  // with browser state. Lazily creates the config. Configuration's
+  // |preferences| will have scriptCanOpenWindowsAutomatically property set to
+  // YES.
   // Must be used instead of [[WKWebViewConfiguration alloc] init].
   // Callers must not retain the returned object.
   WKWebViewConfiguration* GetWebViewConfiguration();
