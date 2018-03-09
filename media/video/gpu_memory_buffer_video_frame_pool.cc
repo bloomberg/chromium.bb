@@ -16,6 +16,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -117,25 +118,35 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
     base::TimeTicks last_use_time_;
   };
 
+  // Struct to keep track of requested videoframe copies.
+  struct VideoFrameCopyRequest {
+    VideoFrameCopyRequest(scoped_refptr<VideoFrame> video_frame,
+                          FrameReadyCB frame_ready_cb)
+        : video_frame(video_frame), frame_ready_cb(std::move(frame_ready_cb)) {}
+    scoped_refptr<VideoFrame> video_frame;
+    FrameReadyCB frame_ready_cb;
+  };
+
+  // Start the copy of a video_frame on the worker_task_runner_.
+  // It assumes there are currently no in-flight copies.
+  void StartCopy(const scoped_refptr<VideoFrame>& video_frame);
+
   // Copy |video_frame| data into |frame_resources| and calls |frame_ready_cb|
   // when done.
   void CopyVideoFrameToGpuMemoryBuffers(
       const scoped_refptr<VideoFrame>& video_frame,
-      FrameResources* frame_resources,
-      FrameReadyCB frame_ready_cb);
+      FrameResources* frame_resources);
 
   // Called when all the data has been copied.
   void OnCopiesDone(const scoped_refptr<VideoFrame>& video_frame,
-                    FrameResources* frame_resources,
-                    FrameReadyCB frame_ready_cb);
+                    FrameResources* frame_resources);
 
   // Prepares GL resources, mailboxes and calls |frame_ready_cb| with the new
   // VideoFrame. This has to be run on |media_task_runner_| where
-  // |frame_ready_cb| will also be run.
+  // |frame_ready_cb| associated with video_frame will also be run.
   void BindAndCreateMailboxesHardwareFrameResources(
       const scoped_refptr<VideoFrame>& video_frame,
-      FrameResources* frame_resources,
-      FrameReadyCB frame_ready_cb);
+      FrameResources* frame_resources);
 
   // Return true if |resources| can be used to represent a frame for
   // specific |format| and |size|.
@@ -179,6 +190,9 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // |tick_clock_| is always a DefaultTickClock outside of testing.
   base::TickClock* tick_clock_;
 
+  // Queued up video frames for copies. The front is the currently
+  // in-flight copy, new copies are added at the end.
+  base::circular_deque<VideoFrameCopyRequest> frame_copy_requests_;
   bool in_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
@@ -563,19 +577,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       return;
   }
 
-  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
-  // Acquire resources. Incompatible ones will be dropped from the pool.
-  FrameResources* frame_resources =
-      GetOrCreateFrameResources(coded_size, output_format_);
-  if (!frame_resources) {
-    std::move(frame_ready_cb).Run(video_frame);
-    return;
-  }
-
-  worker_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PoolImpl::CopyVideoFrameToGpuMemoryBuffers,
-                                this, video_frame, frame_resources,
-                                base::Passed(&frame_ready_cb)));
+  frame_copy_requests_.emplace_back(video_frame, std::move(frame_ready_cb));
+  if (frame_copy_requests_.size() == 1u)
+    StartCopy(video_frame);
 }
 
 bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
@@ -623,8 +627,7 @@ bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
 
 void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     const scoped_refptr<VideoFrame>& video_frame,
-    FrameResources* frame_resources,
-    FrameReadyCB frame_ready_cb) {
+    FrameResources* frame_resources) {
   for (const auto& plane_resource : frame_resources->plane_resources) {
     if (plane_resource.gpu_memory_buffer) {
       plane_resource.gpu_memory_buffer->Unmap();
@@ -639,8 +642,27 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
   media_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PoolImpl::BindAndCreateMailboxesHardwareFrameResources,
-                     this, video_frame, frame_resources,
-                     base::Passed(&frame_ready_cb)));
+                     this, video_frame, frame_resources));
+}
+
+void GpuMemoryBufferVideoFramePool::PoolImpl::StartCopy(
+    const scoped_refptr<VideoFrame>& video_frame) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(!frame_copy_requests_.empty());
+
+  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
+  // Acquire resources. Incompatible ones will be dropped from the pool.
+  FrameResources* frame_resources =
+      GetOrCreateFrameResources(coded_size, output_format_);
+  if (!frame_resources) {
+    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
+    frame_copy_requests_.pop_front();
+    return;
+  }
+
+  worker_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PoolImpl::CopyVideoFrameToGpuMemoryBuffers,
+                                this, video_frame, frame_resources));
 }
 
 // Copies |video_frame| into |frame_resources| asynchronously, posting n tasks
@@ -648,8 +670,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
 // After the barrier is passed OnCopiesDone will be called.
 void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
     const scoped_refptr<VideoFrame>& video_frame,
-    FrameResources* frame_resources,
-    FrameReadyCB frame_ready_cb) {
+    FrameResources* frame_resources) {
   // Compute the number of tasks to post and create the barrier.
   const size_t num_planes = VideoFrame::NumPlanes(VideoFormat(output_format_));
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
@@ -666,8 +687,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
   }
 
   const base::Closure copies_done =
-      base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources,
-                 base::Passed(&frame_ready_cb));
+      base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources);
   const base::RepeatingClosure barrier =
       base::BarrierClosure(copies, copies_done);
 
@@ -763,13 +783,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
 void GpuMemoryBufferVideoFramePool::PoolImpl::
     BindAndCreateMailboxesHardwareFrameResources(
         const scoped_refptr<VideoFrame>& video_frame,
-        FrameResources* frame_resources,
-        FrameReadyCB frame_ready_cb) {
+        FrameResources* frame_resources) {
   std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
       gpu_factories_->GetGLContextLock());
   if (!lock) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
-    std::move(frame_ready_cb).Run(video_frame);
+    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
+    frame_copy_requests_.pop_front();
     return;
   }
   gpu::gles2::GLES2Interface* gles2 = lock->ContextGL();
@@ -824,7 +844,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   if (!frame) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
     release_mailbox_callback.Run(gpu::SyncToken());
-    std::move(frame_ready_cb).Run(video_frame);
+    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
+    frame_copy_requests_.pop_front();
     return;
   }
 
@@ -864,7 +885,15 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
                                 true);
 
-  std::move(frame_ready_cb).Run(frame);
+  lock.reset();  // Release the lock to avoid deadlocks.
+  DCHECK(!frame_copy_requests_.empty());
+  std::move(frame_copy_requests_.front().frame_ready_cb).Run(frame);
+  frame_copy_requests_.pop_front();
+
+  if (!frame_copy_requests_.empty()) {
+    VideoFrameCopyRequest& copy_request = frame_copy_requests_.front();
+    StartCopy(copy_request.video_frame);
+  }
 }
 
 // Destroy all the resources posting one task per FrameResources
@@ -899,7 +928,6 @@ GpuMemoryBufferVideoFramePool::PoolImpl::FrameResources*
 GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::Size& size,
     GpuVideoAcceleratorFactories::OutputFormat format) {
-  DCHECK(!in_shutdown_);
 
   auto it = resources_pool_.begin();
   while (it != resources_pool_.end()) {

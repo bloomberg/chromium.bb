@@ -414,4 +414,30 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, StaleFramesAreExpired) {
   EXPECT_EQ(3u, gles2_->deleted_textures_count());
 }
 
+// Test when we request two copies in a row, there should be at most one frame
+// copy in flight at any time.
+TEST_F(GpuMemoryBufferVideoFramePoolTest, AtMostOneCopyInFlight) {
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::UYVY);
+
+  scoped_refptr<VideoFrame> software_frame_1 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_1,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_1));
+
+  scoped_refptr<VideoFrame> software_frame_2 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_2,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_2));
+
+  media_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1u, copy_task_runner_->NumPendingTasks());
+  copy_task_runner_->RunUntilIdle();
+  media_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1u, copy_task_runner_->NumPendingTasks());
+  RunUntilIdle();
+}
+
 }  // namespace media
