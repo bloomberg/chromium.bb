@@ -720,12 +720,23 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 
+  element =
+      Create<UiElement>(k2dBrowsingVisibilityControlForPrompt, kPhaseNone);
+  VR_BIND_VISIBILITY(
+      element,
+      model->active_modal_prompt_type == kModalPromptTypeNone ||
+          model->active_modal_prompt_type ==
+              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission ||
+          model->active_modal_prompt_type == kModalPromptTypeUpdateKeyboard);
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
+
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                               kPhaseNone);
   VR_BIND_VISIBILITY(element, model->active_modal_prompt_type !=
                                   kModalPromptTypeExitVRForSiteInfo);
 
-  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
+  scene_->AddUiElement(k2dBrowsingVisibilityControlForPrompt,
+                       std::move(element));
 
   element = Create<UiElement>(k2dBrowsingOpacityControlForAudioPermissionPrompt,
                               kPhaseNone);
