@@ -47,9 +47,7 @@ unsigned int aom_variance16x16_avx2(const uint8_t *src, int src_stride,
                                     unsigned int *sse) {
   int sum;
   unsigned int variance;
-  variance_avx2(src, src_stride, ref, ref_stride, 16, 16, sse, &sum,
-                aom_get16x16var_avx2, 16);
-
+  aom_get16x16var_avx2(src, src_stride, ref, ref_stride, sse, &sum);
   variance = *sse - (((uint32_t)((int64_t)sum * sum)) >> 8);
   _mm256_zeroupper();
   return variance;
@@ -64,57 +62,28 @@ unsigned int aom_mse16x16_avx2(const uint8_t *src, int src_stride,
   return *sse;
 }
 
-unsigned int aom_variance32x16_avx2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  unsigned int variance;
-  variance_avx2(src, src_stride, ref, ref_stride, 32, 16, sse, &sum,
-                aom_get32x32var_avx2, 32);
+#define AOM_VAR_AVX2(bw, bh, w, bits)                                         \
+  unsigned int aom_variance##bw##x##bh##_avx2(                                \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
+      unsigned int *sse) {                                                    \
+    int sum;                                                                  \
+    unsigned int variance;                                                    \
+    variance_avx2(src, src_stride, ref, ref_stride, bw, bh, sse, &sum,        \
+                  aom_get##w##x##w##var_avx2, w);                             \
+    variance = *sse - (uint32_t)(((int64_t)sum * sum) >> bits);               \
+    _mm256_zeroupper();                                                       \
+    return variance;                                                          \
+  }
 
-  variance = *sse - (uint32_t)(((int64_t)sum * sum) >> 9);
-  _mm256_zeroupper();
-  return variance;
-}
-
-unsigned int aom_variance32x32_avx2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  unsigned int variance;
-  variance_avx2(src, src_stride, ref, ref_stride, 32, 32, sse, &sum,
-                aom_get32x32var_avx2, 32);
-
-  variance = *sse - (uint32_t)(((int64_t)sum * sum) >> 10);
-  _mm256_zeroupper();
-  return variance;
-}
-
-unsigned int aom_variance64x64_avx2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  unsigned int variance;
-  variance_avx2(src, src_stride, ref, ref_stride, 64, 64, sse, &sum,
-                aom_get32x32var_avx2, 32);
-
-  variance = *sse - (uint32_t)(((int64_t)sum * sum) >> 12);
-  _mm256_zeroupper();
-  return variance;
-}
-
-unsigned int aom_variance64x32_avx2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  unsigned int variance;
-  variance_avx2(src, src_stride, ref, ref_stride, 64, 32, sse, &sum,
-                aom_get32x32var_avx2, 32);
-
-  variance = *sse - (uint32_t)(((int64_t)sum * sum) >> 11);
-  _mm256_zeroupper();
-  return variance;
-}
+AOM_VAR_AVX2(32, 16, 16, 9);
+AOM_VAR_AVX2(32, 32, 32, 10);
+AOM_VAR_AVX2(64, 64, 32, 12);
+AOM_VAR_AVX2(64, 32, 32, 11);
+AOM_VAR_AVX2(128, 128, 32, 14);
+AOM_VAR_AVX2(128, 64, 32, 13);
+AOM_VAR_AVX2(64, 128, 32, 13);
+AOM_VAR_AVX2(128, 32, 32, 12);
+AOM_VAR_AVX2(32, 128, 32, 12);
 
 unsigned int aom_sub_pixel_variance32xh_avx2(const uint8_t *src, int src_stride,
                                              int x_offset, int y_offset,

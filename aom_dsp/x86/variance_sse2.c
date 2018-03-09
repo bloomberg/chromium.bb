@@ -249,71 +249,29 @@ unsigned int aom_variance16x16_sse2(const unsigned char *src, int src_stride,
   return *sse - ((uint32_t)((int64_t)sum * sum) >> 8);
 }
 
-unsigned int aom_variance32x32_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 32, 32, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 32 * 32);
-  assert(sum >= -255 * 32 * 32);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 10);
-}
+#define AOM_VAR_16_SSE2(bw, bh, bits)                                         \
+  unsigned int aom_variance##bw##x##bh##_sse2(                                \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
+      unsigned int *sse) {                                                    \
+    int sum;                                                                  \
+    variance_sse2(src, src_stride, ref, ref_stride, bw, bh, sse, &sum,        \
+                  aom_get16x16var_sse2, 16);                                  \
+    assert(sum <= 255 * bw * bh);                                             \
+    assert(sum >= -255 * bw * bh);                                            \
+    return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
+  }
 
-unsigned int aom_variance32x16_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 32, 16, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 32 * 16);
-  assert(sum >= -255 * 32 * 16);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 9);
-}
-
-unsigned int aom_variance16x32_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 16, 32, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 32 * 16);
-  assert(sum >= -255 * 32 * 16);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 9);
-}
-
-unsigned int aom_variance64x64_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 64, 64, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 64 * 64);
-  assert(sum >= -255 * 64 * 64);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 12);
-}
-
-unsigned int aom_variance64x32_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 64, 32, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 64 * 32);
-  assert(sum >= -255 * 64 * 32);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 11);
-}
-
-unsigned int aom_variance32x64_sse2(const uint8_t *src, int src_stride,
-                                    const uint8_t *ref, int ref_stride,
-                                    unsigned int *sse) {
-  int sum;
-  variance_sse2(src, src_stride, ref, ref_stride, 32, 64, sse, &sum,
-                aom_get16x16var_sse2, 16);
-  assert(sum <= 255 * 64 * 32);
-  assert(sum >= -255 * 64 * 32);
-  return *sse - (unsigned int)(((int64_t)sum * sum) >> 11);
-}
+AOM_VAR_16_SSE2(32, 32, 10);
+AOM_VAR_16_SSE2(32, 16, 9);
+AOM_VAR_16_SSE2(16, 32, 9);
+AOM_VAR_16_SSE2(64, 64, 12);
+AOM_VAR_16_SSE2(64, 32, 11);
+AOM_VAR_16_SSE2(32, 64, 11);
+AOM_VAR_16_SSE2(128, 128, 14);
+AOM_VAR_16_SSE2(128, 64, 13);
+AOM_VAR_16_SSE2(64, 128, 13);
+AOM_VAR_16_SSE2(128, 32, 12);
+AOM_VAR_16_SSE2(32, 128, 12);
 
 unsigned int aom_mse8x8_sse2(const uint8_t *src, int src_stride,
                              const uint8_t *ref, int ref_stride,
