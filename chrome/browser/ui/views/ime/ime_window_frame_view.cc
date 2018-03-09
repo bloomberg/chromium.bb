@@ -8,10 +8,12 @@
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -57,6 +59,8 @@ void ImeWindowFrameView::Init() {
                           rb.GetImageSkiaNamed(IDR_IME_WINDOW_CLOSE_C));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   title_icon_ = new views::ImageView();
