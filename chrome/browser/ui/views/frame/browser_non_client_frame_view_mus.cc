@@ -225,6 +225,11 @@ void BrowserNonClientFrameViewMus::UpdateMinimumSize() {
   }
 }
 
+int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
+  return BrowserNonClientFrameView::GetTabStripLeftInset() +
+         frame_values().normal_insets.left();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
@@ -378,15 +383,6 @@ void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
 void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
   tab_strip_->RemoveObserver(this);
   tab_strip_ = nullptr;
-}
-
-int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
-  const int avatar_right =
-      profile_indicator_icon()
-          ? (kAvatarIconPadding + GetIncognitoAvatarIcon().width())
-          : 0;
-  return avatar_right + kAvatarIconPadding +
-         frame_values().normal_insets.left();
 }
 
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {

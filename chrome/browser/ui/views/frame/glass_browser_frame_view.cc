@@ -139,7 +139,7 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
-  const int x = incognito_bounds_.right() + kAvatarIconPadding;
+  const int x = GetTabStripLeftInset();
   int end_x = width() - ClientBorderThickness(false);
   if (!CaptionButtonsOnLeadingEdge()) {
     end_x = std::min(MinimizeButtonX(), end_x) -
@@ -216,6 +216,10 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   }
 
   return min_size;
+}
+
+int GlassBrowserFrameView::GetTabStripLeftInset() const {
+  return incognito_bounds_.right() + GetAvatarIconPadding();
 }
 
 void GlassBrowserFrameView::OnBrowserViewInitViewsComplete() {
@@ -754,9 +758,9 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
                                   : 0);
   }
   const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                     kAvatarIconPadding;
+                     GetAvatarIconPadding();
   incognito_bounds_.SetRect(
-      x + (profile_indicator_icon() ? kAvatarIconPadding : 0),
+      x + (profile_indicator_icon() ? GetAvatarIconPadding() : 0),
       bottom - size.height(), profile_indicator_icon() ? size.width() : 0,
       size.height());
   if (profile_indicator_icon())

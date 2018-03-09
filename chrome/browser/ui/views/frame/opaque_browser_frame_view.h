@@ -55,6 +55,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  int GetTabStripLeftInset() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

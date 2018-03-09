@@ -58,6 +58,11 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
   }
 }
 
+// static
+int BrowserNonClientFrameView::GetAvatarIconPadding() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 8 : 4;
+}
+
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   UpdateMinimumSize();
 }
@@ -89,6 +94,12 @@ views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
 void BrowserNonClientFrameView::UpdateClientArea() {}
 
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
+
+int BrowserNonClientFrameView::GetTabStripLeftInset() const {
+  return profile_indicator_icon()
+             ? 2 * GetAvatarIconPadding() + GetIncognitoAvatarIcon().width()
+             : 4;
+}
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
   if (child == GetProfileSwitcherView()) {
@@ -200,9 +211,12 @@ void BrowserNonClientFrameView::UpdateProfileIcons() {
   gfx::Image icon;
   if (is_incognito) {
     icon = gfx::Image(GetIncognitoAvatarIcon());
+    profile_indicator_icon_->set_stroke_color(SK_ColorTRANSPARENT);
   } else {
 #if defined(OS_CHROMEOS)
     AvatarMenu::GetImageForMenuButton(profile->GetPath(), &icon);
+    // Draw a stroke around the profile icon only for the avatar.
+    profile_indicator_icon_->set_stroke_color(GetToolbarTopSeparatorColor());
 #else
     NOTREACHED();
 #endif
@@ -219,12 +233,12 @@ void BrowserNonClientFrameView::LayoutIncognitoButton() {
 #endif
   gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
   int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                      kAvatarIconPadding;
+                      GetAvatarIconPadding();
   int avatar_y = avatar_bottom - incognito_icon.height();
   int avatar_height = incognito_icon.height();
+  gfx::Rect avatar_bounds(GetAvatarIconPadding(), avatar_y,
+                          incognito_icon.width(), avatar_height);
 
-  gfx::Rect avatar_bounds(kAvatarIconPadding, avatar_y, incognito_icon.width(),
-                          avatar_height);
   profile_indicator_icon()->SetBoundsRect(avatar_bounds);
   profile_indicator_icon()->SetVisible(true);
 }

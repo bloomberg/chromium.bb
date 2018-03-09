@@ -36,6 +36,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  int GetTabStripLeftInset() const override;
   void OnBrowserViewInitViewsComplete() override;
 
   // views::NonClientFrameView:

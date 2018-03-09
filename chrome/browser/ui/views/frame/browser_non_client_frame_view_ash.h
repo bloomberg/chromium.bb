@@ -108,9 +108,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   friend class BrowserFrameHeaderAsh;
 
-  // Distance between the left edge of the NonClientFrameView and the tab strip.
-  int GetTabStripLeftInset() const;
-
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
   int GetTabStripRightInset() const;
@@ -119,8 +116,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // the header used for packaged apps. Packaged apps use a different color
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
-
-  void LayoutProfileIndicatorIcon();
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.

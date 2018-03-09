@@ -55,6 +55,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   gfx::Size GetMinimumSize(int available_width) const;
 
+  // Distance between the left edge of the NonClientFrameView and the tab strip.
+  int GetTabStripLeftInset() const;
+
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.
   gfx::Rect GetWindowBoundsForClientBounds(

@@ -352,7 +352,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   frame_header_->SetHeaderHeightForPainting(painted_height);
 
   if (profile_indicator_icon())
-    LayoutProfileIndicatorIcon();
+    LayoutIncognitoButton();
   BrowserNonClientFrameView::Layout();
   const bool immersive =
       browser_view()->immersive_mode_controller()->IsEnabled();
@@ -499,14 +499,6 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
-int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  const int avatar_right =
-      profile_indicator_icon()
-          ? (kAvatarIconPadding + GetIncognitoAvatarIcon().width())
-          : 0;
-  return avatar_right + kAvatarIconPadding;
-}
-
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   return kTabstripRightSpacing +
       caption_button_container_->GetPreferredSize().width();
@@ -517,21 +509,6 @@ bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
   const Browser* const browser = browser_view()->browser();
   return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
          browser->is_app();
-}
-
-void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {
-  DCHECK(profile_indicator_icon());
-
-  const gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
-  const int avatar_bottom = GetTopInset(false) +
-                            browser_view()->GetTabStripHeight() -
-                            kAvatarIconPadding;
-  int avatar_y = avatar_bottom - incognito_icon.height();
-
-  const int avatar_height = avatar_bottom - avatar_y;
-  profile_indicator_icon()->SetBounds(kAvatarIconPadding, avatar_y,
-                                      incognito_icon.width(), avatar_height);
-  profile_indicator_icon()->SetVisible(true);
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
