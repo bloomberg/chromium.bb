@@ -99,6 +99,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
       scoped_refptr<ThreadSafeSender> sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~ServiceWorkerContextClient() override;
 
