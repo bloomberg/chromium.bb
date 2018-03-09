@@ -22,15 +22,6 @@ struct MediaStatus {
   // For a Presentation API route, it is the presentation page title.
   string title;
 
-  // Text describing the media, or a secondary title. For example, in a
-  // MediaStatus representing a YouTube Cast session, this could be "YouTube".
-  //
-  // DEPRECATED.  This is used to override MediaRoute.description (defined in
-  // media_router.mojom) in the Media Router UX.  We will be using
-  // MediaRoute.description exclusively once all MRPs have been updated.
-  // TODO(crbug.com/786208): Remove this when that is done.
-  string description;
-
   // If this is true, the media can be played and paused through its
   // MediaController.
   bool can_play_pause;
