@@ -149,8 +149,8 @@ public final class AwBrowserProcess {
 
     private static void tryObtainingDataDirLock() {
         // Many existing apps rely on this even though it's known to be unsafe.
-        // Make it fatal for apps that target P or higher.
-        boolean dieOnFailure = BuildInfo.targetsAtLeastP();
+        // Make it fatal when on P for apps that target P or higher
+        boolean dieOnFailure = BuildInfo.isAtLeastP() && BuildInfo.targetsAtLeastP();
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
