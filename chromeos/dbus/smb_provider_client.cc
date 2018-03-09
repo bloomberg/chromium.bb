@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -43,6 +44,16 @@ smbprovider::ErrorType GetErrorAndProto(
     return smbprovider::ERROR_DBUS_PARSE_FAILED;
   }
   return smbprovider::ERROR_OK;
+}
+
+bool ParseDeleteList(const base::ScopedFD& fd,
+                     int32_t bytes_written,
+                     smbprovider::DeleteListProto* delete_list) {
+  DCHECK(delete_list);
+  std::vector<uint8_t> buffer(bytes_written);
+  return base::ReadFromFD(fd.get(), reinterpret_cast<char*>(buffer.data()),
+                          buffer.size()) &&
+         delete_list->ParseFromArray(buffer.data(), buffer.size());
 }
 
 class SmbProviderClientImpl : public SmbProviderClient {
@@ -208,6 +219,16 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallDefaultMethod(smbprovider::kCopyEntryMethod, options, &callback);
   }
 
+  void GetDeleteList(int32_t mount_id,
+                     const base::FilePath& entry_path,
+                     GetDeleteListCallback callback) override {
+    smbprovider::GetDeleteListOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_entry_path(entry_path.value());
+    CallMethod(smbprovider::kGetDeleteListMethod, options,
+               &SmbProviderClientImpl::HandleGetDeleteListCallback, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -333,6 +354,39 @@ class SmbProviderClientImpl : public SmbProviderClient {
       return;
     }
     std::move(callback).Run(smbprovider::ERROR_OK, fd);
+  }
+
+  // Handles D-Bus callback for GetDeleteList.
+  void HandleGetDeleteListCallback(GetDeleteListCallback callback,
+                                   dbus::Response* response) {
+    base::ScopedFD fd;
+    smbprovider::DeleteListProto delete_list;
+    if (!response) {
+      LOG(ERROR) << "GetDeleteList: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              delete_list);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    smbprovider::ErrorType error = GetErrorFromReader(&reader);
+    if (error != smbprovider::ERROR_OK) {
+      std::move(callback).Run(error, delete_list);
+      return;
+    }
+
+    int32_t bytes_written;
+    bool success = reader.PopFileDescriptor(&fd) &&
+                   reader.PopInt32(&bytes_written) &&
+                   ParseDeleteList(fd, bytes_written, &delete_list);
+    if (!success) {
+      LOG(ERROR) << "GetDeleteList: parse failure.";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED,
+                              delete_list);
+      return;
+    }
+
+    std::move(callback).Run(smbprovider::ERROR_OK, delete_list);
   }
 
   // Default callback handler for D-Bus calls.

@@ -34,6 +34,9 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   using StatusCallback = base::OnceCallback<void(smbprovider::ErrorType error)>;
   using ReadFileCallback = base::OnceCallback<void(smbprovider::ErrorType error,
                                                    const base::ScopedFD& fd)>;
+  using GetDeleteListCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error,
+                              const smbprovider::DeleteListProto& delete_list)>;
 
   ~SmbProviderClient() override;
 
@@ -143,6 +146,13 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                          const base::FilePath& source_path,
                          const base::FilePath& target_path,
                          StatusCallback callback) = 0;
+
+  // Calls GetDeleteList. Using the corresponding |mount_id|, this generates an
+  // ordered list of individual entries that must be deleted in order to delete
+  // |entry_path|. This operations does not modify the filesystem.
+  virtual void GetDeleteList(int32_t mount_id,
+                             const base::FilePath& entry_path,
+                             GetDeleteListCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
