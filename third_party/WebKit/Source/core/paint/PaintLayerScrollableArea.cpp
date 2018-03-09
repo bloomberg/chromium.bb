@@ -874,10 +874,19 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {
-  if (overflow_rect_.Size() != GetLayoutBox()->LayoutOverflowRect().Size())
+  LayoutRect new_overflow_rect = GetLayoutBox()->LayoutOverflowRect();
+  GetLayoutBox()->FlipForWritingMode(new_overflow_rect);
+
+  // The layout viewport can be larger than the document's layout overflow when
+  // top controls are hidden.  Expand the overflow here to ensure that our
+  // contents size >= visible size.
+  new_overflow_rect.Unite(
+      LayoutRect(new_overflow_rect.Location(),
+                 LayoutContentRect(kExcludeScrollbars).Size()));
+
+  if (overflow_rect_.Size() != new_overflow_rect.Size())
     ContentsResized();
-  overflow_rect_ = GetLayoutBox()->LayoutOverflowRect();
-  GetLayoutBox()->FlipForWritingMode(overflow_rect_);
+  overflow_rect_ = new_overflow_rect;
   UpdateScrollOrigin();
 }
 

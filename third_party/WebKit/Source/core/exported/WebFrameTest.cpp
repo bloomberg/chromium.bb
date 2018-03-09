@@ -11974,6 +11974,39 @@ TEST_P(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
   ASSERT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
 }
 
+TEST_P(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
+  // This test fails without RLS (but doesn't cause visible paint clipping due
+  // to differences in composited layer geometry logic).
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
+  WebView().GetSettings()->SetViewportEnabled(true);
+  WebView().GetSettings()->SetViewportMetaEnabled(true);
+
+  WebView().ResizeWithBrowserControls(WebSize(400, 540), 60, 0, true);
+  WebView().SetDefaultPageScaleLimits(0.25f, 2);
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <meta name='viewport' content='width=device-width, minimum-scale=1'>
+    <body style='margin: 0; height: 95vh'>
+  )HTML");
+
+  Compositor().BeginFrame();
+  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ASSERT_EQ(540, area->VisibleHeight());
+  ASSERT_EQ(IntSize(400, 570), area->ContentsSize());
+
+  // Hide browser controls, growing layout viewport without affecting ICB.
+  WebView().ResizeWithBrowserControls(WebSize(400, 600), 60, 0, false);
+  Compositor().BeginFrame();
+
+  // ContentsSize() should grow to accomodate new visible size.
+  ASSERT_EQ(600, area->VisibleHeight());
+  ASSERT_EQ(IntSize(400, 600), area->ContentsSize());
+}
+
 TEST_P(WebFrameSimTest, NamedLookupIgnoresEmptyNames) {
   SimRequest main_resource("https://example.com/main.html", "text/html");
   LoadURL("https://example.com/main.html");
