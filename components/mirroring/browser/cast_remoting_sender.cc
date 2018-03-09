@@ -362,7 +362,7 @@ void CastRemotingSender::OnInputTaskComplete() {
   // Always force a post task to prevent the stack from growing too deep.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CastRemotingSender::ProcessNextInputTask,
-                                base::Unretained(this)));
+                                weak_factory_.GetWeakPtr()));
 }
 
 void CastRemotingSender::ReadFrame(uint32_t size) {
