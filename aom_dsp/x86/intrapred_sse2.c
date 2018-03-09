@@ -652,77 +652,60 @@ void aom_v_predictor_16x32_sse2(uint8_t *dst, ptrdiff_t stride,
   dc_store_16xh(&row, 32, dst, stride);
 }
 
-void aom_v_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
-                                const uint8_t *above, const uint8_t *left) {
+static INLINE void v_predictor_32xh(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *above, int height) {
   const __m128i row0 = _mm_load_si128((__m128i const *)above);
   const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
-  (void)left;
-  int i;
-  for (i = 0; i < 16; ++i) {
+  for (int i = 0; i < height; ++i) {
     _mm_store_si128((__m128i *)dst, row0);
     _mm_store_si128((__m128i *)(dst + 16), row1);
     dst += stride;
   }
 }
 
+void aom_v_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  (void)left;
+  v_predictor_32xh(dst, stride, above, 16);
+}
+
 void aom_v_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
                                 const uint8_t *above, const uint8_t *left) {
+  (void)left;
+  v_predictor_32xh(dst, stride, above, 64);
+}
+
+static INLINE void v_predictor_64xh(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *above, int height) {
   const __m128i row0 = _mm_load_si128((__m128i const *)above);
   const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
-  (void)left;
-  for (int i = 0; i < 64; ++i) {
+  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
+  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
+  for (int i = 0; i < height; ++i) {
     _mm_store_si128((__m128i *)dst, row0);
     _mm_store_si128((__m128i *)(dst + 16), row1);
+    _mm_store_si128((__m128i *)(dst + 32), row2);
+    _mm_store_si128((__m128i *)(dst + 48), row3);
     dst += stride;
   }
 }
 
 void aom_v_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
                                 const uint8_t *above, const uint8_t *left) {
-  const __m128i row0 = _mm_load_si128((__m128i const *)above);
-  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
-  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
-  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
   (void)left;
-  for (int i = 0; i < 64; ++i) {
-    _mm_store_si128((__m128i *)dst, row0);
-    _mm_store_si128((__m128i *)(dst + 16), row1);
-    _mm_store_si128((__m128i *)(dst + 32), row2);
-    _mm_store_si128((__m128i *)(dst + 48), row3);
-    dst += stride;
-  }
+  v_predictor_64xh(dst, stride, above, 64);
 }
 
 void aom_v_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
                                 const uint8_t *above, const uint8_t *left) {
-  const __m128i row0 = _mm_load_si128((__m128i const *)above);
-  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
-  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
-  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
   (void)left;
-  for (int i = 0; i < 32; ++i) {
-    _mm_store_si128((__m128i *)dst, row0);
-    _mm_store_si128((__m128i *)(dst + 16), row1);
-    _mm_store_si128((__m128i *)(dst + 32), row2);
-    _mm_store_si128((__m128i *)(dst + 48), row3);
-    dst += stride;
-  }
+  v_predictor_64xh(dst, stride, above, 32);
 }
 
 void aom_v_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
                                 const uint8_t *above, const uint8_t *left) {
-  const __m128i row0 = _mm_load_si128((__m128i const *)above);
-  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
-  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
-  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
   (void)left;
-  for (int i = 0; i < 16; ++i) {
-    _mm_store_si128((__m128i *)dst, row0);
-    _mm_store_si128((__m128i *)(dst + 16), row1);
-    _mm_store_si128((__m128i *)(dst + 32), row2);
-    _mm_store_si128((__m128i *)(dst + 48), row3);
-    dst += stride;
-  }
+  v_predictor_64xh(dst, stride, above, 16);
 }
 
 // -----------------------------------------------------------------------------
