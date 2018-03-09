@@ -5,7 +5,6 @@
 #include "core/fetch/BytesConsumerForDataConsumerHandle.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/location.h"
 #include "core/dom/ExecutionContext.h"

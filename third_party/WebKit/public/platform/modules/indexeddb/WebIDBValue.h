@@ -5,8 +5,8 @@
 #ifndef WebIDBValue_h
 #define WebIDBValue_h
 
-#include <string>
-#include <vector>
+#include <memory>
+#include <utility>
 
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebCommon.h"

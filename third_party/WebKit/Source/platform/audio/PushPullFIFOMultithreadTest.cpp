@@ -5,7 +5,6 @@
 #include "platform/audio/PushPullFIFO.h"
 
 #include <memory>
-#include <vector>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
