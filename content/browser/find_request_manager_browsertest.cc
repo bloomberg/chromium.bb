@@ -230,12 +230,8 @@ bool ExecuteScriptAndExtractRect(FrameTreeNode* frame,
 // Basic test that a search result is actually brought into view.
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
   LoadAndWait("/find_in_page_desktop.html");
-  if (GetParam()) {
-    // TODO(bokan): The OOPIF version of this test is currently broken due to
-    // bug https://crbug.com/810291.
-    // MakeChildFrameCrossProcess();
-    return;
-  }
+  if (GetParam())
+    MakeChildFrameCrossProcess();
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
