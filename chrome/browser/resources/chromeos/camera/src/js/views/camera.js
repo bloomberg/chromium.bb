@@ -18,6 +18,7 @@ camera.views = camera.views || {};
  * Creates the Camera view controller.
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
+ * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
 camera.views.Camera = function(context, router) {
@@ -775,6 +776,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
     // Acquire the gallery model.
     camera.models.Gallery.getInstance(function(model) {
       this.model_ = model;
+      this.model_.addObserver(this);
+      this.updateAlbumButton_();
       callback();
     }.bind(this), function() {
       // TODO(mtomasz): Add error handling.
@@ -812,6 +815,7 @@ camera.views.Camera.prototype.onActivate = function() {
   this.scrollTracker_.start();
   if (document.activeElement != document.body)
     document.querySelector('#take-picture').focus();
+  this.updateAlbumButton_();
 };
 
 /**
@@ -1135,6 +1139,14 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
 };
 
 /**
+ * Updates the album-button UI for enabled/disabled state.
+ * @private
+ */
+camera.views.Camera.prototype.updateAlbumButton_ = function() {
+  document.querySelector('#album-enter').disabled = this.model_.length == 0;
+};
+
+/**
  * Enables the audio track for audio capturing.
  *
  * @param {boolean} enabled True to enable audio track, false to disable.
@@ -1315,8 +1327,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'G':  // G key for the gallery.
-      if (this.model_)
-        this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
+      document.querySelector('#album-enter').click();
       event.preventDefault();
       break;
   }
@@ -2556,5 +2567,21 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   this.frame_++;
   finishFrameMeasuring();
   this.lastFrameTime_ = this.video_.currentTime;
+};
+
+/**
+ * @override
+ */
+camera.views.Camera.prototype.onPictureDeleting = function(picture) {
+  // No-op here (right before deleting a picure) as no picture would be deleted
+  // when camera view is active and onActivate() already handles updating the
+  // album-button.
+};
+
+/**
+ * @override
+ */
+camera.views.Camera.prototype.onPictureAdded = function(picture) {
+  this.updateAlbumButton_();
 };
 
