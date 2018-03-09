@@ -27,6 +27,11 @@ namespace media {
 
 namespace {
 
+// JPEG format uses 2 bytes to denote the size of a segment, and the size
+// includes the 2 bytes used for specifying it. Therefore, maximum data size
+// allowed is: 65535 - 2 = 65533.
+const size_t kMaxExifSizeAllowed = 65533;
+
 // UMA results that the VaapiJpegEncodeAccelerator class reports.
 // These values are persisted to logs, and should therefore never be renumbered
 // nor reused.
@@ -43,11 +48,15 @@ static void ReportToUMA(VAJEAEncoderResult result) {
 }  // namespace
 
 VaapiJpegEncodeAccelerator::EncodeRequest::EncodeRequest(
+    int32_t buffer_id,
     scoped_refptr<media::VideoFrame> video_frame,
-    std::unique_ptr<SharedMemoryRegion> shm,
+    std::unique_ptr<SharedMemoryRegion> exif_shm,
+    std::unique_ptr<SharedMemoryRegion> output_shm,
     int quality)
-    : video_frame(std::move(video_frame)),
-      shm(std::move(shm)),
+    : buffer_id(buffer_id),
+      video_frame(std::move(video_frame)),
+      exif_shm(std::move(exif_shm)),
+      output_shm(std::move(output_shm)),
       quality(quality) {}
 
 VaapiJpegEncodeAccelerator::EncodeRequest::~EncodeRequest() {}
@@ -55,8 +64,8 @@ VaapiJpegEncodeAccelerator::EncodeRequest::~EncodeRequest() {}
 class VaapiJpegEncodeAccelerator::Encoder {
  public:
   Encoder(scoped_refptr<VaapiWrapper> vaapi_wrapper,
-          base::RepeatingCallback<void(int, size_t)> video_frame_ready_cb,
-          base::RepeatingCallback<void(int, Status)> notify_error_cb);
+          base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb,
+          base::RepeatingCallback<void(int32_t, Status)> notify_error_cb);
   ~Encoder();
 
   // Processes one encode |request|.
@@ -73,8 +82,8 @@ class VaapiJpegEncodeAccelerator::Encoder {
   std::unique_ptr<VaapiJpegEncoder> jpeg_encoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  base::RepeatingCallback<void(int, size_t)> video_frame_ready_cb_;
-  base::RepeatingCallback<void(int, Status)> notify_error_cb_;
+  base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb_;
+  base::RepeatingCallback<void(int32_t, Status)> notify_error_cb_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -83,8 +92,8 @@ class VaapiJpegEncodeAccelerator::Encoder {
 
 VaapiJpegEncodeAccelerator::Encoder::Encoder(
     scoped_refptr<VaapiWrapper> vaapi_wrapper,
-    base::RepeatingCallback<void(int, size_t)> video_frame_ready_cb,
-    base::RepeatingCallback<void(int, Status)> notify_error_cb)
+    base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb,
+    base::RepeatingCallback<void(int32_t, Status)> notify_error_cb)
     : cached_output_buffer_size_(0),
       jpeg_encoder_(new VaapiJpegEncoder(vaapi_wrapper)),
       vaapi_wrapper_(std::move(vaapi_wrapper)),
@@ -103,13 +112,13 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   TRACE_EVENT0("jpeg", "EncodeTask");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const int video_frame_id = request->video_frame->unique_id();
+  const int buffer_id = request->buffer_id;
   gfx::Size input_size = request->video_frame->coded_size();
   std::vector<VASurfaceID> va_surfaces;
   if (!vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, input_size, 1,
                                       &va_surfaces)) {
     VLOGF(1) << "Failed to create VA surface";
-    notify_error_cb_.Run(video_frame_id, PLATFORM_FAILURE);
+    notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
     return;
   }
   VASurfaceID va_surface_id = va_surfaces[0];
@@ -117,7 +126,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   if (!vaapi_wrapper_->UploadVideoFrameToSurface(request->video_frame,
                                                  va_surface_id)) {
     VLOGF(1) << "Failed to upload video frame to VA surface";
-    notify_error_cb_.Run(video_frame_id, PLATFORM_FAILURE);
+    notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
     return;
   }
 
@@ -132,17 +141,24 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     if (!vaapi_wrapper_->CreateCodedBuffer(max_coded_buffer_size,
                                            &output_buffer_id)) {
       VLOGF(1) << "Failed to create VA buffer for encoding output";
-      notify_error_cb_.Run(video_frame_id, PLATFORM_FAILURE);
+      notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
       return;
     }
     cached_output_buffer_size_ = max_coded_buffer_size;
     cached_output_buffer_id_ = output_buffer_id;
   }
 
-  if (!jpeg_encoder_->Encode(input_size, request->quality, va_surface_id,
+  uint8_t* exif_buffer = nullptr;
+  size_t exif_buffer_size = 0;
+  if (request->exif_shm) {
+    exif_buffer = static_cast<uint8_t*>(request->exif_shm->memory());
+    exif_buffer_size = request->exif_shm->size();
+  }
+  if (!jpeg_encoder_->Encode(input_size, exif_buffer, exif_buffer_size,
+                             request->quality, va_surface_id,
                              cached_output_buffer_id_)) {
     VLOGF(1) << "Encode JPEG failed";
-    notify_error_cb_.Run(video_frame_id, PLATFORM_FAILURE);
+    notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
     return;
   }
 
@@ -151,13 +167,13 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   size_t encoded_size = 0;
   if (!vaapi_wrapper_->DownloadFromCodedBuffer(
           cached_output_buffer_id_, va_surface_id,
-          static_cast<uint8_t*>(request->shm->memory()), request->shm->size(),
-          &encoded_size)) {
+          static_cast<uint8_t*>(request->output_shm->memory()),
+          request->output_shm->size(), &encoded_size)) {
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
-    notify_error_cb_.Run(video_frame_id, PLATFORM_FAILURE);
+    notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
   }
 
-  video_frame_ready_cb_.Run(request->video_frame->unique_id(), encoded_size);
+  video_frame_ready_cb_.Run(buffer_id, encoded_size);
 }
 
 VaapiJpegEncodeAccelerator::VaapiJpegEncodeAccelerator(
@@ -177,22 +193,21 @@ VaapiJpegEncodeAccelerator::~VaapiJpegEncodeAccelerator() {
   encoder_task_runner_->DeleteSoon(FROM_HERE, std::move(encoder_));
 }
 
-void VaapiJpegEncodeAccelerator::NotifyError(int video_frame_id,
-                                             Status status) {
+void VaapiJpegEncodeAccelerator::NotifyError(int32_t buffer_id, Status status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  VLOGF(1) << "video_frame_id=" << video_frame_id << ", status=" << status;
+  VLOGF(1) << "output_buffer_id=" << buffer_id << ", status=" << status;
   DCHECK(client_);
-  client_->NotifyError(video_frame_id, status);
+  client_->NotifyError(buffer_id, status);
 }
 
-void VaapiJpegEncodeAccelerator::VideoFrameReady(int video_frame_id,
+void VaapiJpegEncodeAccelerator::VideoFrameReady(int32_t buffer_id,
                                                  size_t encoded_picture_size) {
-  DVLOGF(4) << "video_frame_id=" << video_frame_id
+  DVLOGF(4) << "output_buffer_id=" << buffer_id
             << ", size=" << encoded_picture_size;
   DCHECK(task_runner_->BelongsToCurrentThread());
   ReportToUMA(VAJEAEncoderResult::VAAPI_SUCCESS);
 
-  client_->VideoFrameReady(video_frame_id, encoded_picture_size);
+  client_->VideoFrameReady(buffer_id, encoded_picture_size);
 }
 
 JpegEncodeAccelerator::Status VaapiJpegEncodeAccelerator::Initialize(
@@ -240,35 +255,58 @@ size_t VaapiJpegEncodeAccelerator::GetMaxCodedBufferSize(
 void VaapiJpegEncodeAccelerator::Encode(
     scoped_refptr<media::VideoFrame> video_frame,
     int quality,
-    const BitstreamBuffer& bitstream_buffer) {
+    const BitstreamBuffer* exif_buffer,
+    const BitstreamBuffer& output_buffer) {
   DVLOGF(4);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  int video_frame_id = video_frame->unique_id();
-  TRACE_EVENT1("jpeg", "Encode", "input_id", video_frame_id);
+  int32_t buffer_id = output_buffer.id();
+  TRACE_EVENT1("jpeg", "Encode", "output_buffer_id", buffer_id);
 
   // TODO(shenghao): support other YUV formats.
   if (video_frame->format() != VideoPixelFormat::PIXEL_FORMAT_I420) {
     VLOGF(1) << "Unsupported input format: " << video_frame->format();
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VaapiJpegEncodeAccelerator::NotifyError,
-                              weak_this_, video_frame_id, INVALID_ARGUMENT));
+        FROM_HERE, base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError,
+                                  weak_this_, buffer_id, INVALID_ARGUMENT));
     return;
   }
 
-  // SharedMemoryRegion will take ownership of the |bitstream_buffer.handle()|.
-  auto shm = std::make_unique<SharedMemoryRegion>(bitstream_buffer, false);
-  if (!shm->Map()) {
+  std::unique_ptr<SharedMemoryRegion> exif_shm;
+  if (exif_buffer) {
+    // |exif_shm| will take ownership of the |exif_buffer->handle()|.
+    exif_shm = std::make_unique<SharedMemoryRegion>(*exif_buffer, true);
+    if (!exif_shm->Map()) {
+      VLOGF(1) << "Failed to map exif buffer";
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError,
+                                    weak_this_, buffer_id, PLATFORM_FAILURE));
+      return;
+    }
+    if (exif_shm->size() > kMaxExifSizeAllowed) {
+      VLOGF(1) << "Exif buffer too big: " << exif_shm->size();
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError,
+                                    weak_this_, buffer_id, INVALID_ARGUMENT));
+      return;
+    }
+  }
+
+  // |output_shm| will take ownership of the |output_buffer.handle()|.
+  auto output_shm = std::make_unique<SharedMemoryRegion>(output_buffer, false);
+  if (!output_shm->Map()) {
     VLOGF(1) << "Failed to map output buffer";
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VaapiJpegEncodeAccelerator::NotifyError, weak_this_,
-                   video_frame_id, INACCESSIBLE_OUTPUT_BUFFER));
+                   buffer_id, INACCESSIBLE_OUTPUT_BUFFER));
     return;
   }
 
-  auto request = std::make_unique<EncodeRequest>(std::move(video_frame),
-                                                 std::move(shm), quality);
+  auto request = std::make_unique<EncodeRequest>(
+      buffer_id, std::move(video_frame), std::move(exif_shm),
+      std::move(output_shm), quality);
+
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VaapiJpegEncodeAccelerator::Encoder::EncodeTask,

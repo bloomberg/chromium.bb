@@ -44,7 +44,8 @@ enum JpegMarker {
   JPEG_SOS = 0xDA,    // start of scan
   JPEG_DQT = 0xDB,    // define quantization table
   JPEG_DRI = 0xDD,    // define restart internal
-  JPEG_APP0 = 0xE0,   // start of application segment
+  JPEG_APP0 = 0xE0,   // start of application segment (APP0)
+  JPEG_APP1 = 0xE1,   // start of application segment (APP1)
   JPEG_MARKER_PREFIX = 0xFF,  // jpeg marker prefix
 };
 
