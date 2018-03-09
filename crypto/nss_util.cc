@@ -176,11 +176,11 @@ class ChromeOSUserData {
   }
 
   ScopedPK11Slot GetPrivateSlot(
-      const base::Callback<void(ScopedPK11Slot)>& callback) {
+      base::OnceCallback<void(ScopedPK11Slot)> callback) {
     if (private_slot_)
       return ScopedPK11Slot(PK11_ReferenceSlot(private_slot_.get()));
     if (!callback.is_null())
-      tpm_ready_callback_list_.push_back(callback);
+      tpm_ready_callback_list_.push_back(std::move(callback));
     return ScopedPK11Slot();
   }
 
@@ -193,7 +193,8 @@ class ChromeOSUserData {
     for (SlotReadyCallbackList::iterator i = callback_list.begin();
          i != callback_list.end();
          ++i) {
-      (*i).Run(ScopedPK11Slot(PK11_ReferenceSlot(private_slot_.get())));
+      std::move(*i).Run(
+          ScopedPK11Slot(PK11_ReferenceSlot(private_slot_.get())));
     }
   }
 
@@ -211,7 +212,7 @@ class ChromeOSUserData {
 
   bool private_slot_initialization_started_;
 
-  typedef std::vector<base::Callback<void(ScopedPK11Slot)> >
+  typedef std::vector<base::OnceCallback<void(ScopedPK11Slot)>>
       SlotReadyCallbackList;
   SlotReadyCallbackList tpm_ready_callback_list_;
 };
@@ -292,7 +293,7 @@ class NSSInitSingleton {
 
   void InitializeTPMTokenAndSystemSlot(
       int system_slot_id,
-      const base::Callback<void(bool)>& callback) {
+      base::OnceCallback<void(bool)> callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
     // Should not be called while there is already an initialization in
     // progress.
@@ -300,7 +301,7 @@ class NSSInitSingleton {
     // If EnableTPMTokenForNSS hasn't been called, return false.
     if (!tpm_token_enabled_for_nss_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, false));
+          FROM_HERE, base::BindOnce(std::move(callback), false));
       return;
     }
 
@@ -308,8 +309,8 @@ class NSSInitSingleton {
     // Note that only |tpm_slot_| is checked, since |chaps_module_| could be
     // nullptr in tests while |tpm_slot_| has been set to the test DB.
     if (tpm_slot_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    base::Bind(callback, true));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), true));
       return;
     }
 
@@ -325,7 +326,7 @@ class NSSInitSingleton {
                        system_slot_id, tpm_args_ptr),
         base::BindOnce(&NSSInitSingleton::OnInitializedTPMTokenAndSystemSlot,
                        base::Unretained(this),  // NSSInitSingleton is leaky
-                       callback, std::move(tpm_args)));
+                       std::move(callback), std::move(tpm_args)));
     initializing_tpm_token_ = true;
   }
 
@@ -361,7 +362,7 @@ class NSSInitSingleton {
   }
 
   void OnInitializedTPMTokenAndSystemSlot(
-      const base::Callback<void(bool)>& callback,
+      base::OnceCallback<void(bool)> callback,
       std::unique_ptr<TPMModuleAndSlot> tpm_args) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DVLOG(2) << "Loaded chaps: " << !!tpm_args->chaps_module
@@ -379,7 +380,7 @@ class NSSInitSingleton {
     if (tpm_slot_)
       RunAndClearTPMReadyCallbackList();
 
-    callback.Run(!!tpm_slot_);
+    std::move(callback).Run(!!tpm_slot_);
   }
 
   void RunAndClearTPMReadyCallbackList() {
@@ -388,11 +389,11 @@ class NSSInitSingleton {
     for (TPMReadyCallbackList::iterator i = callback_list.begin();
          i != callback_list.end();
          ++i) {
-      i->Run();
+      std::move(*i).Run();
     }
   }
 
-  bool IsTPMTokenReady(const base::Closure& callback) {
+  bool IsTPMTokenReady(base::OnceClosure callback) {
     if (!callback.is_null()) {
       // Cannot DCHECK in the general case yet, but since the callback is
       // a new addition to the API, DCHECK to make sure at least the new uses
@@ -408,7 +409,7 @@ class NSSInitSingleton {
       return true;
 
     if (!callback.is_null())
-      tpm_ready_callback_list_.push_back(callback);
+      tpm_ready_callback_list_.push_back(std::move(callback));
 
     return false;
   }
@@ -531,21 +532,22 @@ class NSSInitSingleton {
 
   ScopedPK11Slot GetPrivateSlotForChromeOSUser(
       const std::string& username_hash,
-      const base::Callback<void(ScopedPK11Slot)>& callback) {
+      base::OnceCallback<void(ScopedPK11Slot)> callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (username_hash.empty()) {
       DVLOG(2) << "empty username_hash";
       if (!callback.is_null()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(callback, ScopedPK11Slot()));
+            FROM_HERE, base::BindOnce(std::move(callback), ScopedPK11Slot()));
       }
       return ScopedPK11Slot();
     }
 
     DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
 
-    return chromeos_user_map_[username_hash]->GetPrivateSlot(callback);
+    return chromeos_user_map_[username_hash]->GetPrivateSlot(
+        std::move(callback));
   }
 
   void CloseChromeOSUserForTesting(const std::string& username_hash) {
@@ -583,26 +585,26 @@ class NSSInitSingleton {
 
 #if defined(OS_CHROMEOS)
   void GetSystemNSSKeySlotCallback(
-      const base::Callback<void(ScopedPK11Slot)>& callback) {
-    callback.Run(ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_.get())));
+      base::OnceCallback<void(ScopedPK11Slot)> callback) {
+    std::move(callback).Run(
+        ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_.get())));
   }
 
   ScopedPK11Slot GetSystemNSSKeySlot(
-      const base::Callback<void(ScopedPK11Slot)>& callback) {
+      base::OnceCallback<void(ScopedPK11Slot)> callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
     // TODO(mattm): chromeos::TPMTokenloader always calls
     // InitializeTPMTokenAndSystemSlot with slot 0.  If the system slot is
     // disabled, tpm_slot_ will be the first user's slot instead. Can that be
     // detected and return nullptr instead?
 
-    base::Closure wrapped_callback;
+    base::OnceClosure wrapped_callback;
     if (!callback.is_null()) {
-      wrapped_callback =
-          base::Bind(&NSSInitSingleton::GetSystemNSSKeySlotCallback,
-                     base::Unretained(this) /* singleton is leaky */,
-                     callback);
+      wrapped_callback = base::BindOnce(
+          &NSSInitSingleton::GetSystemNSSKeySlotCallback,
+          base::Unretained(this) /* singleton is leaky */, std::move(callback));
     }
-    if (IsTPMTokenReady(wrapped_callback))
+    if (IsTPMTokenReady(std::move(wrapped_callback)))
       return ScopedPK11Slot(PK11_ReferenceSlot(tpm_slot_.get()));
     return ScopedPK11Slot();
   }
@@ -731,7 +733,7 @@ class NSSInitSingleton {
 
   bool tpm_token_enabled_for_nss_;
   bool initializing_tpm_token_;
-  typedef std::vector<base::Closure> TPMReadyCallbackList;
+  typedef std::vector<base::OnceClosure> TPMReadyCallbackList;
   TPMReadyCallbackList tpm_ready_callback_list_;
   SECMODModule* chaps_module_;
   crypto::ScopedPK11Slot tpm_slot_;
@@ -792,8 +794,8 @@ AutoSECMODListReadLock::~AutoSECMODListReadLock() {
 
 #if defined(OS_CHROMEOS)
 ScopedPK11Slot GetSystemNSSKeySlot(
-    const base::Callback<void(ScopedPK11Slot)>& callback) {
-  return g_nss_singleton.Get().GetSystemNSSKeySlot(callback);
+    base::OnceCallback<void(ScopedPK11Slot)> callback) {
+  return g_nss_singleton.Get().GetSystemNSSKeySlot(std::move(callback));
 }
 
 void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {
@@ -808,15 +810,14 @@ bool IsTPMTokenEnabledForNSS() {
   return g_nss_singleton.Get().IsTPMTokenEnabledForNSS();
 }
 
-bool IsTPMTokenReady(const base::Closure& callback) {
-  return g_nss_singleton.Get().IsTPMTokenReady(callback);
+bool IsTPMTokenReady(base::OnceClosure callback) {
+  return g_nss_singleton.Get().IsTPMTokenReady(std::move(callback));
 }
 
-void InitializeTPMTokenAndSystemSlot(
-    int token_slot_id,
-    const base::Callback<void(bool)>& callback) {
+void InitializeTPMTokenAndSystemSlot(int token_slot_id,
+                                     base::OnceCallback<void(bool)> callback) {
   g_nss_singleton.Get().InitializeTPMTokenAndSystemSlot(token_slot_id,
-                                                        callback);
+                                                        std::move(callback));
 }
 
 bool InitializeNSSForChromeOSUser(const std::string& username_hash,
@@ -852,9 +853,9 @@ ScopedPK11Slot GetPublicSlotForChromeOSUser(const std::string& username_hash) {
 
 ScopedPK11Slot GetPrivateSlotForChromeOSUser(
     const std::string& username_hash,
-    const base::Callback<void(ScopedPK11Slot)>& callback) {
-  return g_nss_singleton.Get().GetPrivateSlotForChromeOSUser(username_hash,
-                                                             callback);
+    base::OnceCallback<void(ScopedPK11Slot)> callback) {
+  return g_nss_singleton.Get().GetPrivateSlotForChromeOSUser(
+      username_hash, std::move(callback));
 }
 
 void CloseChromeOSUserForTesting(const std::string& username_hash) {
