@@ -40,7 +40,9 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
       link_status_(false),
       link_count_(0),
       active_transform_feedback_count_(0),
-      info_valid_(true) {
+      info_valid_(true),
+      required_transform_feedback_buffer_count_(0),
+      required_transform_feedback_buffer_count_after_next_link_(0) {
   SetObject(ctx->ContextGL()->CreateProgram());
 }
 
@@ -138,6 +140,10 @@ void WebGLProgram::CacheInfoIfNeeded(WebGLRenderingContextBase* context) {
   gpu::gles2::GLES2Interface* gl = context->ContextGL();
   link_status_ = 0;
   gl->GetProgramiv(object_, GL_LINK_STATUS, &link_status_);
+  if (link_status_ == GL_TRUE) {
+    required_transform_feedback_buffer_count_ =
+        required_transform_feedback_buffer_count_after_next_link_;
+  }
   info_valid_ = true;
 }
 

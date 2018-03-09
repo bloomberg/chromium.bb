@@ -49,6 +49,7 @@ class WebGLTransformFeedback : public WebGLContextObject {
   bool SetBoundIndexedTransformFeedbackBuffer(GLuint index, WebGLBuffer*);
   bool GetBoundIndexedTransformFeedbackBuffer(GLuint index,
                                               WebGLBuffer** outBuffer) const;
+  bool HasEnoughBuffers(GLuint num_required) const;
 
   bool IsBufferBoundToTransformFeedback(WebGLBuffer*);
 
@@ -56,6 +57,20 @@ class WebGLTransformFeedback : public WebGLContextObject {
 
   virtual void Trace(blink::Visitor*);
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+
+  bool active() const { return active_; }
+  bool paused() const { return paused_; }
+
+  void SetActive(bool active) {
+    active_ = active;
+    DCHECK(active_ || !paused_);
+  }
+  void SetPaused(bool paused) {
+    paused_ = paused;
+    DCHECK(active_ || !paused_);
+  }
+
+  bool ValidateProgramForResume(WebGLProgram*) const;
 
  protected:
   explicit WebGLTransformFeedback(WebGL2RenderingContextBase*, TFType);
@@ -75,6 +90,9 @@ class WebGLTransformFeedback : public WebGLContextObject {
       bound_indexed_transform_feedback_buffers_;
 
   Member<WebGLProgram> program_;
+  unsigned program_link_count_;
+  bool active_;
+  bool paused_;
 };
 
 }  // namespace blink

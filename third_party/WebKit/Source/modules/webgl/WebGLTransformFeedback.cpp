@@ -21,7 +21,9 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx,
       object_(0),
       type_(type),
       target_(0),
-      program_(nullptr) {
+      program_(nullptr),
+      active_(false),
+      paused_(false) {
   GLint max_attribs = ctx->GetMaxTransformFeedbackSeparateAttribs();
   DCHECK_GE(max_attribs, 0);
   bound_indexed_transform_feedback_buffers_.resize(max_attribs);
@@ -80,6 +82,13 @@ void WebGLTransformFeedback::SetTarget(GLenum target) {
 
 void WebGLTransformFeedback::SetProgram(WebGLProgram* program) {
   program_ = program;
+  program_link_count_ = program->LinkCount();
+}
+
+bool WebGLTransformFeedback::ValidateProgramForResume(
+    WebGLProgram* program) const {
+  return program && program_ == program &&
+         program->LinkCount() == program_link_count_;
 }
 
 void WebGLTransformFeedback::SetBoundTransformFeedbackBuffer(
@@ -118,6 +127,16 @@ bool WebGLTransformFeedback::GetBoundIndexedTransformFeedbackBuffer(
   if (index >= bound_indexed_transform_feedback_buffers_.size())
     return false;
   *outBuffer = bound_indexed_transform_feedback_buffers_[index].Get();
+  return true;
+}
+
+bool WebGLTransformFeedback::HasEnoughBuffers(GLuint num_required) const {
+  if (num_required > bound_indexed_transform_feedback_buffers_.size())
+    return false;
+  for (GLuint i = 0; i < num_required; i++) {
+    if (!bound_indexed_transform_feedback_buffers_[i])
+      return false;
+  }
   return true;
 }
 

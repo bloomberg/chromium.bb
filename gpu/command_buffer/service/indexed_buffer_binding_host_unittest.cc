@@ -19,7 +19,12 @@ const GLuint kBufferServiceId = 987;
 class IndexedBufferBindingHostTest : public GpuServiceTest {
  public:
   IndexedBufferBindingHostTest()
-      : host_(new IndexedBufferBindingHost(kMaxBindings, true)),
+      : uniform_host_(new IndexedBufferBindingHost(kMaxBindings,
+                                                   GL_UNIFORM_BUFFER,
+                                                   true)),
+        tf_host_(new IndexedBufferBindingHost(kMaxBindings,
+                                              GL_TRANSFORM_FEEDBACK_BUFFER,
+                                              true)),
         buffer_manager_(new BufferManager(nullptr, nullptr)) {
     buffer_manager_->CreateBuffer(kBufferClientId, kBufferServiceId);
     buffer_ = buffer_manager_->GetBuffer(kBufferClientId);
@@ -34,7 +39,8 @@ class IndexedBufferBindingHostTest : public GpuServiceTest {
   }
 
   void TearDown() override {
-    host_->RemoveBoundBuffer(buffer_.get());
+    uniform_host_->RemoveBoundBuffer(buffer_.get());
+    tf_host_->RemoveBoundBuffer(buffer_.get());
     buffer_ = nullptr;
     buffer_manager_->MarkContextLost();
     buffer_manager_->Destroy();
@@ -47,7 +53,8 @@ class IndexedBufferBindingHostTest : public GpuServiceTest {
         buffer_.get(), target, size, GL_STATIC_DRAW, false);
   }
 
-  scoped_refptr<IndexedBufferBindingHost> host_;
+  scoped_refptr<IndexedBufferBindingHost> uniform_host_;
+  scoped_refptr<IndexedBufferBindingHost> tf_host_;
   std::unique_ptr<BufferManager> buffer_manager_;
   scoped_refptr<Buffer> buffer_;
 };
@@ -62,15 +69,15 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeUninitializedBuffer) {
       .Times(1)
       .RetiresOnSaturation();
 
-  host_->DoBindBufferRange(kTarget, kIndex, buffer_.get(), kOffset, kSize);
+  tf_host_->DoBindBufferRange(kIndex, buffer_.get(), kOffset, kSize);
 
   for (uint32_t index = 0; index < kMaxBindings; ++index) {
     if (index != kIndex) {
-      EXPECT_EQ(nullptr, host_->GetBufferBinding(index));
+      EXPECT_EQ(nullptr, tf_host_->GetBufferBinding(index));
     } else {
-      EXPECT_EQ(buffer_.get(), host_->GetBufferBinding(index));
-      EXPECT_EQ(kSize, host_->GetBufferSize(index));
-      EXPECT_EQ(kOffset, host_->GetBufferStart(index));
+      EXPECT_EQ(buffer_.get(), tf_host_->GetBufferBinding(index));
+      EXPECT_EQ(kSize, tf_host_->GetBufferSize(index));
+      EXPECT_EQ(kOffset, tf_host_->GetBufferStart(index));
     }
   }
 }
@@ -91,15 +98,15 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeBufferWithoutEnoughSize) {
       .Times(1)
       .RetiresOnSaturation();
 
-  host_->DoBindBufferRange(kTarget, kIndex, buffer_.get(), kOffset, kSize);
+  tf_host_->DoBindBufferRange(kIndex, buffer_.get(), kOffset, kSize);
 
   for (uint32_t index = 0; index < kMaxBindings; ++index) {
     if (index != kIndex) {
-      EXPECT_EQ(nullptr, host_->GetBufferBinding(index));
+      EXPECT_EQ(nullptr, tf_host_->GetBufferBinding(index));
     } else {
-      EXPECT_EQ(buffer_.get(), host_->GetBufferBinding(index));
-      EXPECT_EQ(kSize, host_->GetBufferSize(index));
-      EXPECT_EQ(kOffset, host_->GetBufferStart(index));
+      EXPECT_EQ(buffer_.get(), tf_host_->GetBufferBinding(index));
+      EXPECT_EQ(kSize, tf_host_->GetBufferSize(index));
+      EXPECT_EQ(kOffset, tf_host_->GetBufferStart(index));
     }
   }
 
@@ -110,7 +117,7 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeBufferWithoutEnoughSize) {
       .RetiresOnSaturation();
 
   SetBufferSize(kTarget, kOffset + kSize);
-  host_->OnBufferData(kTarget, buffer_.get());
+  tf_host_->OnBufferData(buffer_.get());
 }
 
 TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
@@ -128,29 +135,29 @@ TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
   EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, kBufferServiceId))
       .Times(1)
       .RetiresOnSaturation();
-  host_->DoBindBufferBase(kTarget, kIndex, buffer_.get());
+  uniform_host_->DoBindBufferBase(kIndex, buffer_.get());
   // Set up the second host
   scoped_refptr<IndexedBufferBindingHost> other =
-      new IndexedBufferBindingHost(kMaxBindings, true);
+      new IndexedBufferBindingHost(kMaxBindings, GL_UNIFORM_BUFFER, true);
   EXPECT_CALL(*gl_, BindBufferRange(kTarget, kOtherIndex, kBufferServiceId,
                                     kOffset, clamped_size))
       .Times(1)
       .RetiresOnSaturation();
-  other->DoBindBufferRange(kTarget, kOtherIndex, buffer_.get(), kOffset, kSize);
+  other->DoBindBufferRange(kOtherIndex, buffer_.get(), kOffset, kSize);
 
   {
-    // Switching from |other| to |host_|.
+    // Switching from |other| to |uniform_host_|.
     EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, kBufferServiceId))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindBufferBase(kTarget, kOtherIndex, 0))
         .Times(1)
         .RetiresOnSaturation();
-    host_->RestoreBindings(other.get());
+    uniform_host_->RestoreBindings(other.get());
   }
 
   {
-    // Switching from |host_| to |other|.
+    // Switching from |uniform_host_| to |other|.
     EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, 0))
         .Times(1)
         .RetiresOnSaturation();
@@ -158,7 +165,7 @@ TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
                                       kOffset, clamped_size))
         .Times(1)
         .RetiresOnSaturation();
-    other->RestoreBindings(host_.get());
+    other->RestoreBindings(uniform_host_.get());
   }
 }
 

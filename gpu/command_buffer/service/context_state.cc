@@ -401,7 +401,8 @@ void ContextState::RestoreProgramSettings(
                                               : 0);
   if (flag) {
     if (bound_transform_feedback.get()) {
-      bound_transform_feedback->DoBindTransformFeedback(GL_TRANSFORM_FEEDBACK);
+      bound_transform_feedback->DoBindTransformFeedback(
+          GL_TRANSFORM_FEEDBACK, bound_transform_feedback.get());
     } else {
       api()->glBindTransformFeedbackFn(GL_TRANSFORM_FEEDBACK, 0);
     }
@@ -645,32 +646,61 @@ void ContextState::UpdateUnpackParameters() const {
 }
 
 void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
+  bool do_refcounting = feature_info_->IsWebGL2OrES3Context();
   switch (target) {
     case GL_ARRAY_BUFFER:
+      if (do_refcounting && bound_array_buffer)
+        bound_array_buffer->OnUnbind(target);
       bound_array_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
       vertex_attrib_manager->SetElementArrayBuffer(buffer);
       break;
     case GL_COPY_READ_BUFFER:
+      if (do_refcounting && bound_copy_read_buffer)
+        bound_copy_read_buffer->OnUnbind(target);
       bound_copy_read_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       break;
     case GL_COPY_WRITE_BUFFER:
+      if (do_refcounting && bound_copy_write_buffer)
+        bound_copy_write_buffer->OnUnbind(target);
       bound_copy_write_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       break;
     case GL_PIXEL_PACK_BUFFER:
+      if (do_refcounting && bound_pixel_pack_buffer)
+        bound_pixel_pack_buffer->OnUnbind(target);
       bound_pixel_pack_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       UpdatePackParameters();
       break;
     case GL_PIXEL_UNPACK_BUFFER:
+      if (do_refcounting && bound_pixel_unpack_buffer)
+        bound_pixel_unpack_buffer->OnUnbind(target);
       bound_pixel_unpack_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       UpdateUnpackParameters();
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
+      if (do_refcounting && bound_transform_feedback_buffer)
+        bound_transform_feedback_buffer->OnUnbind(target);
       bound_transform_feedback_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       break;
     case GL_UNIFORM_BUFFER:
+      if (do_refcounting && bound_uniform_buffer)
+        bound_uniform_buffer->OnUnbind(target);
       bound_uniform_buffer = buffer;
+      if (do_refcounting && buffer)
+        buffer->OnBind(target);
       break;
     default:
       NOTREACHED();
@@ -680,32 +710,47 @@ void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
 
 void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   DCHECK(buffer);
+  bool do_refcounting = feature_info_->IsWebGL2OrES3Context();
   vertex_attrib_manager->Unbind(buffer);
   if (bound_array_buffer.get() == buffer) {
     bound_array_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_ARRAY_BUFFER);
   }
   if (bound_copy_read_buffer.get() == buffer) {
     bound_copy_read_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_COPY_READ_BUFFER);
   }
   if (bound_copy_write_buffer.get() == buffer) {
     bound_copy_write_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_COPY_WRITE_BUFFER);
   }
   if (bound_pixel_pack_buffer.get() == buffer) {
     bound_pixel_pack_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_PIXEL_PACK_BUFFER);
     UpdatePackParameters();
   }
   if (bound_pixel_unpack_buffer.get() == buffer) {
     bound_pixel_unpack_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_PIXEL_UNPACK_BUFFER);
     UpdateUnpackParameters();
   }
   if (bound_transform_feedback_buffer.get() == buffer) {
     bound_transform_feedback_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_TRANSFORM_FEEDBACK_BUFFER);
   }
   if (bound_transform_feedback.get()) {
     bound_transform_feedback->RemoveBoundBuffer(buffer);
   }
   if (bound_uniform_buffer.get() == buffer) {
     bound_uniform_buffer = nullptr;
+    if (do_refcounting && buffer)
+      buffer->OnUnbind(GL_UNIFORM_BUFFER);
   }
 }
 

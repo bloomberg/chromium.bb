@@ -38,7 +38,7 @@ class VertexAttribManagerTest : public GpuServiceTest {
           .RetiresOnSaturation();
     }
 
-    manager_ = new VertexAttribManager();
+    manager_ = new VertexAttribManager(false);
     manager_->Initialize(kNumVertexAttribs, true);
   }
 

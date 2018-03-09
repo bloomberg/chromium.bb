@@ -37,9 +37,11 @@ scoped_refptr<VertexAttribManager>
 VertexArrayManager::CreateVertexAttribManager(GLuint client_id,
                                               GLuint service_id,
                                               uint32_t num_vertex_attribs,
-                                              bool client_visible) {
+                                              bool client_visible,
+                                              bool do_buffer_refcounting) {
   scoped_refptr<VertexAttribManager> vertex_attrib_manager(
-    new VertexAttribManager(this, service_id, num_vertex_attribs));
+      new VertexAttribManager(this, service_id, num_vertex_attribs,
+                              do_buffer_refcounting));
 
   if (client_visible) {
     std::pair<VertexAttribManagerMap::iterator, bool> result =

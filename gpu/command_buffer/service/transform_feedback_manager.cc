@@ -15,6 +15,7 @@ TransformFeedback::TransformFeedback(TransformFeedbackManager* manager,
                                      GLuint service_id)
     : IndexedBufferBindingHost(
           manager->max_transform_feedback_separate_attribs(),
+          GL_TRANSFORM_FEEDBACK_BUFFER,
           manager->needs_emulation()),
       manager_(manager),
       client_id_(client_id),
@@ -35,16 +36,23 @@ TransformFeedback::~TransformFeedback() {
   }
 }
 
-void TransformFeedback::DoBindTransformFeedback(GLenum target) {
+void TransformFeedback::DoBindTransformFeedback(
+    GLenum target,
+    TransformFeedback* last_bound_transform_feedback) {
   DCHECK_LT(0u, service_id_);
   glBindTransformFeedback(target, service_id_);
   has_been_bound_ = true;
-  OnBindHost(target);
   if (active_ && !paused_) {
     // This could only happen during virtual context switching.
     // Otherwise the validation should generate a GL error without calling
     // into this function.
     glResumeTransformFeedback();
+  }
+  if (last_bound_transform_feedback != this) {
+    if (last_bound_transform_feedback) {
+      last_bound_transform_feedback->SetIsBound(false);
+    }
+    SetIsBound(true);
   }
 }
 
@@ -77,9 +85,9 @@ void TransformFeedback::DoResumeTransformFeedback() {
   paused_ = false;
 }
 
-
 TransformFeedbackManager::TransformFeedbackManager(
-    GLuint max_transform_feedback_separate_attribs, bool needs_emulation)
+    GLuint max_transform_feedback_separate_attribs,
+    bool needs_emulation)
     : max_transform_feedback_separate_attribs_(
           max_transform_feedback_separate_attribs),
       needs_emulation_(needs_emulation),

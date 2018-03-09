@@ -496,7 +496,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
 
-  void useProgram(WebGLProgram*);
+  virtual void useProgram(WebGLProgram*);
   void validateProgram(WebGLProgram*);
 
   void vertexAttrib1f(GLuint index, GLfloat x);
