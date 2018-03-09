@@ -64,6 +64,7 @@ enum UiElementName {
   kOmniboxOuterLayoutSpacer,
   kOmniboxShadow,
   k2dBrowsingVisibiltyControlForVoice,
+  k2dBrowsingVisibilityControlForPrompt,
   k2dBrowsingVisibiltyControlForSiteInfoPrompt,
   k2dBrowsingOpacityControlForAudioPermissionPrompt,
   k2dBrowsingOpacityControlForNativeDialogPrompt,

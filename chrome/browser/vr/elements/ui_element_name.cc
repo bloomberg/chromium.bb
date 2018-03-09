@@ -65,6 +65,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOmniboxOuterLayoutSpacer",
     "kOmniboxShadow",
     "k2dBrowsingVisibiltyControlForVoice",
+    "k2dBrowsingVisibilityControlForPrompt",
     "k2dBrowsingVisibiltyControlForSiteInfoPrompt",
     "k2dBrowsingOpacityControlForAudioPermissionPrompt",
     "k2dBrowsingOpacityControlForNativeDialogPrompt",

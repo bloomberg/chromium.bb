@@ -201,6 +201,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_X:
         ui_->OnAppButtonClicked();
         break;
+      case ui::DomCode::US_Q:
+        model_->active_modal_prompt_type =
+            kModalPromptTypeGenericUnsupportedFeature;
+        break;
       default:
         break;
     }
