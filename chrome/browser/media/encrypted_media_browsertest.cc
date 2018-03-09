@@ -385,6 +385,17 @@ class EncryptedMediaTestExperimentalCdmInterface
                           expected_title);
   }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  void TestMP4EncryptionPlayback(const std::string& key_system,
+                                 const std::string& media_file,
+                                 const std::string& expected_title) {
+    // MP4 playback is only supported with MSE.
+    RunEncryptedMediaTest(kDefaultEmePlayer, media_file, kMP4VideoOnly,
+                          key_system, SrcType::MSE, kNoSessionToLoad, false,
+                          PlayCount::ONCE, expected_title);
+  }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -653,6 +664,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4", kMP4VideoOnly);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_MDAT) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-640x360-v_frag-cenc-mdat.mp4", kMP4VideoOnly);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
@@ -826,5 +846,33 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
       &num_received_message_types));
   EXPECT_EQ(3, num_received_message_types);
 }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+// ClearKey key system is covered in
+// content/browser/media/encrypted_media_browsertest.cc.
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
+                       Playback_Encryption_CENC) {
+  TestMP4EncryptionPlayback(kExternalClearKeyKeySystem,
+                            "bear-640x360-v_frag-cenc.mp4", media::kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
+                       Playback_Encryption_CBC1) {
+  TestMP4EncryptionPlayback(kExternalClearKeyKeySystem,
+                            "bear-640x360-v_frag-cbc1.mp4", media::kError);
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
+                       Playback_Encryption_CENS) {
+  TestMP4EncryptionPlayback(kExternalClearKeyKeySystem,
+                            "bear-640x360-v_frag-cens.mp4", media::kError);
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
+                       Playback_Encryption_CBCS) {
+  TestMP4EncryptionPlayback(kExternalClearKeyKeySystem,
+                            "bear-640x360-v_frag-cbcs.mp4", media::kError);
+}
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
