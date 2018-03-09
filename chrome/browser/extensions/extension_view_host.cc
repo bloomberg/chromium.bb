@@ -114,7 +114,7 @@ void ExtensionViewHost::UnhandledKeyboardEvent(
 // ExtensionHost overrides:
 
 void ExtensionViewHost::OnDidStopFirstLoad() {
-  view_->DidStopLoading();
+  view_->OnLoaded();
 }
 
 void ExtensionViewHost::LoadInitialURL() {

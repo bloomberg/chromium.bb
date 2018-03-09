@@ -47,7 +47,7 @@ class ExtensionView {
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Method for the ExtensionHost to notify that the extension page has loaded.
-  virtual void DidStopLoading() = 0;
+  virtual void OnLoaded() = 0;
 };
 
 }  // namespace extensions

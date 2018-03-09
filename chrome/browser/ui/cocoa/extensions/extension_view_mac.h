@@ -62,7 +62,7 @@ class ExtensionViewMac : public extensions::ExtensionView {
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void DidStopLoading() override;
+  void OnLoaded() override;
 
  private:
   content::RenderViewHost* render_view_host() const;
