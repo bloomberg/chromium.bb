@@ -113,23 +113,7 @@
   if (!self.hidden && previouslyHidden != self.hidden && self.guideName) {
     // The button is appearing. At this point, if it has a layout guide
     // associated, it should constraint it to itself.
-    UILayoutGuide* guide = [NamedGuide guideWithName:self.guideName view:self];
-    if (!guide)
-      return;
-
-    // Removes the layout guide from its superview and re-add it to deactivate
-    // all constraints associated with this layout guide. As the layout guide is
-    // supposed to be associated only with this button and all components using
-    // those layout guide should close themselves when size class is changing,
-    // it should work.
-    UIView* guideOwner = guide.owningView;
-    [guideOwner removeLayoutGuide:guide];
-    [guideOwner addLayoutGuide:guide];
-
-    AddSameConstraints(guide, self);
-
-    // Make sure the constraints are taken into account.
-    [guideOwner layoutIfNeeded];
+    [NamedGuide guideWithName:self.guideName view:self].constrainedView = self;
   }
 }
 
