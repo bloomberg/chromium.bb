@@ -83,6 +83,12 @@ cr.define('settings_people_page', function() {
 
       teardown(function() { peoplePage.remove(); });
 
+      test('Toast', function() {
+        assertFalse(peoplePage.$.toast.open);
+        cr.webUIListenerCallback('sync-settings-saved');
+        assertTrue(peoplePage.$.toast.open);
+      });
+
       // This makes sure UI meant for DICE-enabled profiles are not leaked to
       // non-dice profiles.
       // TODO(scottchen): This should be removed once all profiles are fully

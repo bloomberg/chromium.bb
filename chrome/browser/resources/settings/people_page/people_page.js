@@ -158,6 +158,11 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+    // <if expr="not chromeos">
+    this.addWebUIListener('sync-settings-saved', () => {
+      /** @type {!CrToastElement} */ (this.$.toast).show();
+    });
+    // </if>
   },
 
   /** @protected */
