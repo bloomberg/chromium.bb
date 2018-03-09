@@ -293,24 +293,12 @@ const extensions::Extension* GetExtensionForOrigin(
 // Browser, CreateParams:
 
 Browser::CreateParams::CreateParams(Profile* profile, bool user_gesture)
-    : type(TYPE_TABBED),
-      profile(profile),
-      trusted_source(false),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false),
-      user_gesture(user_gesture),
-      window(NULL) {}
+    : CreateParams(TYPE_TABBED, profile, user_gesture) {}
 
 Browser::CreateParams::CreateParams(Type type,
                                     Profile* profile,
                                     bool user_gesture)
-    : type(type),
-      profile(profile),
-      trusted_source(false),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false),
-      user_gesture(user_gesture),
-      window(NULL) {}
+    : type(type), profile(profile), user_gesture(user_gesture) {}
 
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
@@ -448,6 +436,9 @@ Browser::Browser(const CreateParams& params)
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
   ProfileMetrics::LogProfileLaunch(profile_);
+
+  if (params.skip_window_init_for_testing)
+    return;
 
   window_ = params.window ? params.window
                           : CreateBrowserWindow(this, params.user_gesture);

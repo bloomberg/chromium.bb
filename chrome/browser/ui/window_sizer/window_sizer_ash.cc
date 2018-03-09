@@ -21,6 +21,9 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
   if (ash_util::IsRunningInMash() || !browser_)
     return false;
 
+  // This should not be called on a Browser that already has a window.
+  DCHECK(!browser_->window());
+
   bool determined = false;
   if (bounds->IsEmpty()) {
     if (browser_->is_type_tabbed()) {
@@ -102,14 +105,8 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
     return;
   }
 
-  // The |browser_window| is non NULL when this is called after
-  // browser's aura window is created.
-  aura::Window* browser_window =
-      browser_->window() ? browser_->window()->GetNativeWindow() : NULL;
-
   ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      browser_window, is_saved_bounds, passed_show_state, bounds_in_screen,
-      show_state);
+      is_saved_bounds, passed_show_state, bounds_in_screen, show_state);
 }
 
 gfx::Rect WindowSizer::GetDefaultWindowBoundsAsh(

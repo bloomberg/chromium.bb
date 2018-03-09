@@ -26,13 +26,26 @@
 #include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
-using WindowSizerAshTest = ash::AshTestBase;
+class WindowSizerAshTest : public ash::AshTestBase {
+ public:
+  WindowSizerAshTest() = default;
+  ~WindowSizerAshTest() override = default;
+
+  // The window sizing code only works when the window hasn't yet been created.
+  std::unique_ptr<Browser> CreateWindowlessBrowser(
+      Browser::CreateParams params) {
+    params.skip_window_init_for_testing = true;
+    return std::make_unique<Browser>(params);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowSizerAshTest);
+};
 
 namespace {
 
-using util = WindowSizerTestUtil;
-
 // Shorten identifiers to improve line wrapping.
+using util = WindowSizerTestUtil;
 const int kDesktopBorderSize = WindowSizer::kDesktopBorderSize;
 const int kMaximumWindowWidth = WindowSizer::kMaximumWindowWidth;
 
@@ -379,16 +392,13 @@ TEST_F(WindowSizerAshTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 TEST_F(WindowSizerAshTest, PlaceNewWindows) {
   // Create a browser to pass into the util::GetWindowBounds function.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
-  // Creating a popup handler here to make sure it does not interfere with the
-  // existing windows.
   Browser::CreateParams native_params(profile.get(), true);
-  std::unique_ptr<Browser> browser(
-      CreateBrowserWithTestWindowForParams(&native_params));
+  auto browser = CreateWindowlessBrowser(native_params);
 
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
   Browser::CreateParams params2(profile.get(), true);
-  std::unique_ptr<Browser> browser2(CreateTestBrowser(
+  std::unique_ptr<Browser> browser2 = (CreateTestBrowser(
       CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params2));
   BrowserWindow* browser_window = browser2->window();
 
@@ -405,11 +415,16 @@ TEST_F(WindowSizerAshTest, PlaceNewWindows) {
                         gfx::Rect(32, 48, 256, 512), &params_panel));
 
   browser_window->Show();
-  { // Make sure that popups do not get changed.
+
+  // Make sure that popups do not get changed.
+  {
+    Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(),
+                                       true);
+    auto new_popup = CreateWindowlessBrowser(params_popup);
     gfx::Rect window_bounds;
     util::GetWindowBounds(p1600x1200, p1600x1200, gfx::Rect(),
                           gfx::Rect(50, 100, 300, 150), bottom_s1600x1200,
-                          PERSISTED, browser_popup.get(), gfx::Rect(),
+                          PERSISTED, new_popup.get(), gfx::Rect(),
                           &window_bounds);
     EXPECT_EQ("50,100 300x150", window_bounds.ToString());
   }
@@ -450,8 +465,7 @@ TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
   // function.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get(), true);
-  std::unique_ptr<Browser> browser(
-      CreateBrowserWithTestWindowForParams(&native_params));
+  auto browser = CreateWindowlessBrowser(native_params);
 
   // A common screen size for Chrome OS devices where this behavior is
   // desirable.
@@ -543,8 +557,7 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
 
   // Creating a new window to verify the new placement.
   Browser::CreateParams new_params(profile.get(), true);
-  std::unique_ptr<Browser> new_browser(CreateTestBrowser(
-      CreateTestWindowInShellWithId(0), gfx::Rect(), &new_params));
+  auto new_browser = CreateWindowlessBrowser(new_params);
 
   // Make sure the primary root is active.
   ASSERT_EQ(ash::Shell::GetPrimaryRootWindow(),
@@ -612,14 +625,11 @@ TEST_F(WindowSizerAshTest, TestShowState) {
 
   // Creating a browser & window to play with.
   Browser::CreateParams params(Browser::TYPE_TABBED, profile.get(), true);
-  std::unique_ptr<Browser> browser(CreateTestBrowser(
-      CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
+  auto browser = CreateWindowlessBrowser(params);
 
   // Create also a popup browser since that behaves different.
   Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(), true);
-  std::unique_ptr<Browser> browser_popup(
-      CreateTestBrowser(CreateTestWindowInShellWithId(1),
-                        gfx::Rect(16, 32, 640, 320), &params_popup));
+  auto browser_popup = CreateWindowlessBrowser(params_popup);
 
   // Tabbed windows should retrieve the saved window state - since there is a
   // top window.
@@ -671,15 +681,11 @@ TEST_F(WindowSizerAshTest, TestShowState) {
   int min_size = ash::WindowPositioner::GetForceMaximizedWidthLimit() / 2;
   if (min_size > 0) {
     const gfx::Rect tiny_screen(0, 0, min_size, min_size);
-    EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
-              util::GetWindowShowState(
-                  ui::SHOW_STATE_MAXIMIZED, ui::SHOW_STATE_DEFAULT, BOTH,
-                  browser.get(), tiny_screen, tiny_screen));
-    browser->window()->Hide();
+    browser2->window()->Hide();
     EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
               util::GetWindowShowState(
                   ui::SHOW_STATE_MAXIMIZED, ui::SHOW_STATE_DEFAULT, BOTH,
-                  browser2.get(), tiny_screen, tiny_screen));
+                  browser.get(), tiny_screen, tiny_screen));
   }
 }
 
@@ -689,15 +695,12 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
   Browser::CreateParams params(Browser::TYPE_TABBED, profile.get(), true);
-  std::unique_ptr<Browser> browser(CreateTestBrowser(
-      CreateTestWindowInShellWithId(0), gfx::Rect(16, 32, 640, 320), &params));
+  auto browser = CreateWindowlessBrowser(params);
 
   // Create also a popup browser since that behaves slightly different for
   // defaults.
   Browser::CreateParams params_popup(Browser::TYPE_POPUP, profile.get(), true);
-  std::unique_ptr<Browser> browser_popup(
-      CreateTestBrowser(CreateTestWindowInShellWithId(1),
-                        gfx::Rect(16, 32, 128, 256), &params_popup));
+  auto browser_popup = CreateWindowlessBrowser(params_popup);
 
   // Check that a browser creation state always get used if not given as
   // SHOW_STATE_DEFAULT.
@@ -744,8 +747,7 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   // Create a browser to pass into the util::GetWindowBounds function.
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get(), true);
-  std::unique_ptr<Browser> browser(
-      CreateBrowserWithTestWindowForParams(&native_params));
+  auto browser = CreateWindowlessBrowser(native_params);
 
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
@@ -812,9 +814,7 @@ TEST_F(WindowSizerAshTest, TrustedPopupBehavior) {
                                                     profile.get(), true);
   trusted_popup_create_params.trusted_source = true;
 
-  std::unique_ptr<Browser> trusted_popup(CreateTestBrowser(
-      CreateTestWindowInShellWithId(1), gfx::Rect(16, 32, 640, 320),
-      &trusted_popup_create_params));
+  auto trusted_popup = CreateWindowlessBrowser(trusted_popup_create_params);
   // Trusted popup windows should follow the saved show state and ignore the
   // last show state.
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT,

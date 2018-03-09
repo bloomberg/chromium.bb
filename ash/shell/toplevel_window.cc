@@ -82,7 +82,7 @@ bool ToplevelWindow::GetSavedWindowPlacement(
     bounds->SetRect(10, 150, 300, 300);
   }
   WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      nullptr, is_saved_bounds, *show_state, bounds, show_state);
+      is_saved_bounds, *show_state, bounds, show_state);
   return true;
 }
 
