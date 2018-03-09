@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "gfx.mojom";
+import "components/arc/common/gfx.mojom";
 
 // There is another copy of the VoiceInteractionState definition in
 // //ash/public/interfaces/voice_interaction_controller.mojom

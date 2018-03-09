@@ -11,12 +11,13 @@ mojom("mojom") {
     "pdf_to_pwg_raster_converter.mojom",
   ]
 
-  if (is_win) {
-    sources += [ "pdf_to_emf_converter.mojom" ]
-  }
-
   deps = [
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
+
+  if (is_win) {
+    sources += [ "pdf_to_emf_converter.mojom" ]
+    deps += [ "//mojo/public/mojom/base" ]
+  }
 }

@@ -788,6 +788,7 @@ mojom("mojo_bindings") {
     "//components/payments/mojom",
     "//device/bluetooth/public/mojom",
     "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
@@ -835,6 +836,7 @@ mojom("android_mojo_bindings") {
   public_deps = [
     "//components/payments/mojom",
     "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]

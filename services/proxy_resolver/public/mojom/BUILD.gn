@@ -9,7 +9,6 @@ mojom("mojom") {
     "proxy_resolver.mojom",
   ]
   deps = [
-    "//mojo/common:common_custom_types",
     "//net/interfaces",
     "//url/mojom:url_mojom_gurl",
   ]

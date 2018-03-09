@@ -15,7 +15,7 @@
 module arc.mojom;
 
 // For gfx::Size.
-import "video_common.mojom";
+import "components/arc/common/video_common.mojom";
 
 // Implemented by Chrome in order to allow requesting of permissions to perform
 // desktop capture as well as creating a session for it.

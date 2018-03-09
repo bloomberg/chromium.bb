@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "network_change_manager.mojom";
+import "services/network/public/mojom/network_change_manager.mojom";
 
 [Native]
 struct CertVerifyResult;

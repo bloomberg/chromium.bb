@@ -6,7 +6,7 @@
 
 module shape_detection.mojom;
 
-import "facedetection.mojom";
+import "services/shape_detection/public/mojom/facedetection.mojom";
 
 interface FaceDetectionProvider {
   CreateFaceDetection(FaceDetection& request, FaceDetectorOptions options);

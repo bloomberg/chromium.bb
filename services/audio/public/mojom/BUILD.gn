@@ -15,6 +15,7 @@ mojom("mojom") {
   public_deps = [
     ":constants",
     "//media/mojo/interfaces",
+    "//mojo/common:common_custom_types",
   ]
 }
 

@@ -13,6 +13,7 @@ mojom("mojom") {
 
   deps = [
     "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
   ]
 
   # USB Mojom interfaces are exposed publicly to layout tests which use

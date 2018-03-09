@@ -365,6 +365,11 @@ mojom("interfaces") {
     "//extensions/common:mojo_blink",
   ]
 
+  # imports vs deps check is disabled for this target to work around
+  # windows multiple definitions linker error caused by having
+  # both a direct and an indirect dependency on the same target
+  skip_deps_check = true
+
   sources = [
     "appcache_info.mojom",
     "fullscreen_video_element.mojom",
