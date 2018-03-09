@@ -3468,12 +3468,13 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       }
     }
 
-    x->tx_rd_record.num = x->tx_rd_record.index_start = 0;
-    av1_zero(x->tx_size_rd_record_8X8);
-    av1_zero(x->tx_size_rd_record_16X16);
-    av1_zero(x->tx_size_rd_record_32X32);
-    av1_zero(x->tx_size_rd_record_64X64);
-    av1_zero(x->tx_size_rd_record_intra);
+    x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
+
+    av1_zero(x->txb_rd_record_8X8);
+    av1_zero(x->txb_rd_record_16X16);
+    av1_zero(x->txb_rd_record_32X32);
+    av1_zero(x->txb_rd_record_64X64);
+    av1_zero(x->txb_rd_record_intra);
 
     av1_zero(x->pred_mv);
     pc_root->index = 0;
@@ -3592,11 +3593,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           }
         }
 
-        x->tx_rd_record.num = x->tx_rd_record.index_start = 0;
-        av1_zero(x->tx_size_rd_record_8X8);
-        av1_zero(x->tx_size_rd_record_16X16);
-        av1_zero(x->tx_size_rd_record_32X32);
-        av1_zero(x->tx_size_rd_record_64X64);
+        x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
+        av1_zero(x->txb_rd_record_8X8);
+        av1_zero(x->txb_rd_record_16X16);
+        av1_zero(x->txb_rd_record_32X32);
+        av1_zero(x->txb_rd_record_64X64);
+        av1_zero(x->txb_rd_record_intra);
         av1_zero(x->pred_mv);
         pc_root->index = 0;
 
@@ -3747,7 +3749,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-  av1_crc_calculator_init(&td->mb.tx_rd_record.crc_calculator, 24, 0x5D6DCB);
+  av1_crc_calculator_init(&td->mb.mb_rd_record.crc_calculator, 24, 0x5D6DCB);
 
   td->intrabc_used_this_tile = 0;
 

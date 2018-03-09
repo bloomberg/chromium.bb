@@ -108,15 +108,15 @@ typedef struct {
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   RD_STATS rd_stats;
   uint32_t hash_value;
-} TX_RD_INFO;
+} MB_RD_INFO;
 
 #define RD_RECORD_BUFFER_LEN 8
 typedef struct {
-  TX_RD_INFO tx_rd_info[RD_RECORD_BUFFER_LEN];  // Circular buffer.
+  MB_RD_INFO tx_rd_info[RD_RECORD_BUFFER_LEN];  // Circular buffer.
   int index_start;
   int num;
   CRC_CALCULATOR crc_calculator;  // Hash function.
-} TX_RD_RECORD;
+} MB_RD_RECORD;
 
 typedef struct {
   int64_t dist;
@@ -128,27 +128,24 @@ typedef struct {
   uint8_t txb_entropy_ctx;
   uint8_t valid;
   uint8_t fast;  // This is not being used now.
-} TX_SIZE_RD_INFO;
+} TXB_RD_INFO;
 
 #define TX_SIZE_RD_RECORD_BUFFER_LEN 256
 typedef struct {
   uint32_t hash_vals[TX_SIZE_RD_RECORD_BUFFER_LEN];
-  TX_SIZE_RD_INFO tx_rd_info[TX_SIZE_RD_RECORD_BUFFER_LEN];
+  TXB_RD_INFO tx_rd_info[TX_SIZE_RD_RECORD_BUFFER_LEN];
   int index_start;
   int num;
-} TX_SIZE_RD_RECORD;
+} TXB_RD_RECORD;
 
 typedef struct tx_size_rd_info_node {
-  TX_SIZE_RD_INFO *rd_info_array;  // Points to array of size TX_TYPES.
+  TXB_RD_INFO *rd_info_array;  // Points to array of size TX_TYPES.
   struct tx_size_rd_info_node *children[4];
-} TX_SIZE_RD_INFO_NODE;
+} TXB_RD_INFO_NODE;
 
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
-
-  // Save the transform RD search info.
-  TX_RD_RECORD tx_rd_record;
 
   // Determine if one would go with reduced complexity transform block
   // search model to select prediction modes, or full complexity model
@@ -163,17 +160,17 @@ struct macroblock {
   // Activate constrained coding block partition search range.
   int use_cb_search_range;
 
-  // Also save RD info on the TX size search level for square TX sizes.
-  TX_SIZE_RD_RECORD
-  tx_size_rd_record_8X8[(MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)];
-  TX_SIZE_RD_RECORD
-  tx_size_rd_record_16X16[(MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)];
-  TX_SIZE_RD_RECORD
-  tx_size_rd_record_32X32[(MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)];
-  TX_SIZE_RD_RECORD
-  tx_size_rd_record_64X64[(MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)];
+  // Inter macroblock RD search info.
+  MB_RD_RECORD mb_rd_record;
 
-  TX_SIZE_RD_RECORD tx_size_rd_record_intra;
+  // Inter transform block RD search info. for square TX sizes.
+  TXB_RD_RECORD txb_rd_record_8X8[(MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)];
+  TXB_RD_RECORD txb_rd_record_16X16[(MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)];
+  TXB_RD_RECORD txb_rd_record_32X32[(MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)];
+  TXB_RD_RECORD txb_rd_record_64X64[(MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)];
+
+  // Intra transform block RD search info. for square TX sizes.
+  TXB_RD_RECORD txb_rd_record_intra;
 
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;
