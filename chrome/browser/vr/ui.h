@@ -17,7 +17,6 @@
 #include "chrome/browser/vr/ui_element_renderer.h"
 
 namespace vr {
-class AudioDelegate;
 class BrowserUiInterface;
 class ContentInputDelegate;
 class ContentInputForwarder;
@@ -52,16 +51,14 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      ContentInputForwarder* content_input_forwarder,
-     KeyboardDelegate* keyboard_delegate,
-     TextInputDelegate* text_input_delegate,
-     AudioDelegate* audio_delegate,
+     vr::KeyboardDelegate* keyboard_delegate,
+     vr::TextInputDelegate* text_input_delegate,
      const UiInitialState& ui_initial_state);
 
   Ui(UiBrowserInterface* browser,
      std::unique_ptr<ContentInputDelegate> content_input_delegate,
-     KeyboardDelegate* keyboard_delegate,
-     TextInputDelegate* text_input_delegate,
-     AudioDelegate* audio_delegate,
+     vr::KeyboardDelegate* keyboard_delegate,
+     vr::TextInputDelegate* text_input_delegate,
      const UiInitialState& ui_initial_state);
 
   ~Ui() override;
@@ -74,7 +71,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   UiRenderer* ui_renderer() { return ui_renderer_.get(); }
   UiInputManager* input_manager() { return input_manager_.get(); }
 
-  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
+  base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
 
   // BrowserUiInterface
   void SetWebVrMode(bool enabled, bool show_toast) override;
@@ -168,15 +165,13 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   UiBrowserInterface* browser_;
 
   // This state may be further abstracted into a SkiaUi object.
-  std::unique_ptr<UiScene> scene_;
-  std::unique_ptr<Model> model_;
-  std::unique_ptr<ContentInputDelegate> content_input_delegate_;
-  std::unique_ptr<UiElementRenderer> ui_element_renderer_;
-  std::unique_ptr<UiInputManager> input_manager_;
-  std::unique_ptr<UiRenderer> ui_renderer_;
+  std::unique_ptr<vr::UiScene> scene_;
+  std::unique_ptr<vr::Model> model_;
+  std::unique_ptr<vr::ContentInputDelegate> content_input_delegate_;
+  std::unique_ptr<vr::UiElementRenderer> ui_element_renderer_;
+  std::unique_ptr<vr::UiInputManager> input_manager_;
+  std::unique_ptr<vr::UiRenderer> ui_renderer_;
   std::unique_ptr<SkiaSurfaceProvider> provider_;
-
-  AudioDelegate* audio_delegate_ = nullptr;
 
   base::WeakPtrFactory<Ui> weak_ptr_factory_;
 

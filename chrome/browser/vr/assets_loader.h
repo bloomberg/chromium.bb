@@ -22,7 +22,7 @@ class Version;
 
 namespace vr {
 
-constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 2;
+constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 1;
 
 class MetricsHelper;
 struct AssetsLoaderSingletonTrait;

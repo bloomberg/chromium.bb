@@ -21,8 +21,7 @@ constexpr float kIconScaleFactor = 0.5f;
 }  // namespace
 
 DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
-                       const gfx::VectorIcon& icon,
-                       AudioDelegate* audio_delegate)
+                       const gfx::VectorIcon& icon)
     : Button(click_handler) {
   auto vector_icon = std::make_unique<VectorIcon>(512);
   vector_icon->SetType(kTypeButtonForeground);
@@ -36,8 +35,6 @@ DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
   auto target = RemoveChild(hit_plane());
   vector_icon->AddChild(std::move(target));
   AddChild(std::move(vector_icon));
-
-  SetSounds(kSoundButtonHover, kSoundBackButtonClick, audio_delegate);
 }
 
 DiscButton::~DiscButton() = default;

@@ -29,7 +29,6 @@ class UiSceneCreator {
                  ContentInputDelegate* content_input_delegate,
                  KeyboardDelegate* keyboard_delegate,
                  TextInputDelegate* text_input_delegate,
-                 AudioDelegate* audio_delegate,
                  Model* model);
   ~UiSceneCreator();
 
@@ -67,7 +66,6 @@ class UiSceneCreator {
   ContentInputDelegate* content_input_delegate_;
   KeyboardDelegate* keyboard_delegate_;
   TextInputDelegate* text_input_delegate_;
-  AudioDelegate* audio_delegate_;
   Model* model_;
 
   DISALLOW_COPY_AND_ASSIGN(UiSceneCreator);

@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/model/camera_model.h"
-#include "chrome/browser/vr/model/sound_id.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -140,9 +139,6 @@ void UiElement::Render(UiElementRenderer* renderer,
 void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
 void UiElement::OnHoverEnter(const gfx::PointF& position) {
-  if (hover_sound_id_ != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(hover_sound_id_);
-  }
   if (event_handlers_.hover_enter) {
     event_handlers_.hover_enter.Run();
   } else if (parent() && bubble_events()) {
@@ -167,9 +163,6 @@ void UiElement::OnMove(const gfx::PointF& position) {
 }
 
 void UiElement::OnButtonDown(const gfx::PointF& position) {
-  if (hover_sound_id_ != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(click_sound_id_);
-  }
   if (event_handlers_.button_down) {
     event_handlers_.button_down.Run();
   } else if (parent() && bubble_events()) {
@@ -533,14 +526,6 @@ void UiElement::DumpGeometry(std::ostringstream* os) const {
   DumpTransformOperations(layout_offset_, os);
 }
 #endif
-
-void UiElement::SetSounds(SoundId hover,
-                          SoundId click,
-                          AudioDelegate* delegate) {
-  hover_sound_id_ = hover;
-  click_sound_id_ = click;
-  audio_delegate_ = delegate;
-}
 
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 

@@ -29,10 +29,6 @@ struct Assets {
   std::unique_ptr<SkBitmap> incognito_gradient;
   std::unique_ptr<SkBitmap> fullscreen_gradient;
 
-  std::unique_ptr<std::string> button_hover_sound;
-  std::unique_ptr<std::string> button_click_sound;
-  std::unique_ptr<std::string> back_button_click_sound;
-
   base::Version version;
 };
 
