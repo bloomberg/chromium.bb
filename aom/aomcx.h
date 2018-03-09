@@ -352,8 +352,8 @@ enum aome_enc_control_id {
 
   /*!\brief Codec control function to set CDF update mode.
    *
-   *  0: no update                  1: update all the time
-   *  2: update half of the time    3: update quarter of the time
+   *  0: no update          1: update on every frame
+   *  2: selectively update
    */
   AV1E_SET_CDF_UPDATE_MODE,
 
