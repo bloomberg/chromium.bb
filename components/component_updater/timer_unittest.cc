@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -27,9 +28,9 @@ class ComponentUpdaterTimerTest : public testing::Test {
 };
 
 TEST_F(ComponentUpdaterTimerTest, Start) {
-  class TimerClientFake {
+  class TimerClientMock {
    public:
-    TimerClientFake(int max_count, base::OnceClosure quit_closure)
+    TimerClientMock(int max_count, base::OnceClosure quit_closure)
         : max_count_(max_count),
           quit_closure_(std::move(quit_closure)),
           count_(0) {}
@@ -50,13 +51,14 @@ TEST_F(ComponentUpdaterTimerTest, Start) {
   };
 
   base::RunLoop run_loop;
-  TimerClientFake timer_client_fake(3, run_loop.QuitClosure());
+  TimerClientMock timer_client_fake(3, run_loop.QuitClosure());
   EXPECT_EQ(0, timer_client_fake.count());
 
   Timer timer;
   const base::TimeDelta delay(base::TimeDelta::FromMilliseconds(1));
-  timer.Start(delay, delay, base::Bind(&TimerClientFake::OnTimerEvent,
-                                       base::Unretained(&timer_client_fake)));
+  timer.Start(delay, delay,
+              base::BindRepeating(&TimerClientMock::OnTimerEvent,
+                                  base::Unretained(&timer_client_fake)));
   run_loop.Run();
   timer.Stop();
 

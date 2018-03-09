@@ -119,7 +119,7 @@ class Component {
   std::string session_id() const;
 
  private:
-  friend class FakePingManagerImpl;
+  friend class MockPingManagerImpl;
   friend class UpdateCheckerTest;
 
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, SendPing);

@@ -114,10 +114,10 @@ class MockUpdateClient : public UpdateClient {
   ~MockUpdateClient() override {}
 };
 
-class FakeInstallerPolicy : public ComponentInstallerPolicy {
+class MockInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  FakeInstallerPolicy() {}
-  ~FakeInstallerPolicy() override {}
+  MockInstallerPolicy() {}
+  ~MockInstallerPolicy() override {}
 
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& dir) const override {
@@ -274,7 +274,7 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
   EXPECT_CALL(update_client(), Stop()).Times(1);
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<FakeInstallerPolicy>());
+      std::make_unique<MockInstallerPolicy>());
   installer->Register(component_updater(), base::OnceClosure());
 
   RunThreads();
@@ -301,7 +301,7 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
 // Tests that the unpack path is removed when the install succeeded.
 TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<FakeInstallerPolicy>());
+      std::make_unique<MockInstallerPolicy>());
 
   Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
@@ -329,7 +329,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
 // Tests that the unpack path is removed when the install failed.
 TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
   auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<FakeInstallerPolicy>());
+      std::make_unique<MockInstallerPolicy>());
 
   Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
