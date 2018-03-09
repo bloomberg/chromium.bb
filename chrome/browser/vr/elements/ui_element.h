@@ -223,6 +223,12 @@ class UiElement : public cc::AnimationTarget {
   void SetSize(float width, float hight);
   virtual void OnSetSize(const gfx::SizeF& size);
 
+  // Elements may report a different size to parents that resize to contain
+  // their children. Eg, for shadows.
+  // TODO(crbug.com/820507): change this to LayoutSize and update all layout
+  // code to make use of this instead of size().
+  virtual gfx::SizeF ContributedSize() const;
+
   gfx::PointF local_origin() const { return local_origin_; }
 
   // These are convenience functions for setting the transform operations. They

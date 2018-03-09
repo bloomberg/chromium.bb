@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/model/reticle_model.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {

@@ -80,6 +80,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   int last_drag_y_pixels_ = 0;
   gfx::Point last_mouse_point_;
   bool touchpad_pressed_ = false;
+  gfx::PointF touchpad_touch_position_;
 
   float view_scale_factor_ = 1.f;
 
@@ -90,6 +91,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool incognito_ = false;
   bool show_web_vr_splash_screen_ = false;
   bool voice_search_enabled_ = false;
+  bool touching_touchpad_ = false;
   base::TimeTicks page_load_start_;
 
   ControllerModel last_controller_model_;

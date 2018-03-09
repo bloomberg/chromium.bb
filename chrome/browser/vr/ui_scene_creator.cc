@@ -33,6 +33,7 @@
 #include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
+#include "chrome/browser/vr/elements/resizer.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 #include "chrome/browser/vr/elements/spinner.h"
@@ -473,6 +474,7 @@ std::unique_ptr<UiElement> CreatePrompt(UiElementName name,
   auto scaler = Create<ScaledDepthAdjuster>(name, kPhaseNone, kPromptDistance);
   scaler->SetType(kTypeScaledDepthAdjuster);
   scaler->AddChild(std::move(backplane));
+  scaler->set_contributes_to_parent_bounds(false);
   return scaler;
 }
 
@@ -706,6 +708,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   auto repositioner = Create<Repositioner>(k2dBrowsingRepositioner, kPhaseNone);
+  repositioner->set_bounds_contain_children(true);
   repositioner->AddBinding(
       VR_BIND_FUNC(bool, Model, model_, model->reposition_window_enabled(),
                    Repositioner, repositioner.get(), SetEnabled));
@@ -718,10 +721,12 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
 
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
+  element->set_bounds_contain_children(true);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 
   element =
       Create<UiElement>(k2dBrowsingVisibilityControlForPrompt, kPhaseNone);
+  element->set_bounds_contain_children(true);
   VR_BIND_VISIBILITY(
       element,
       model->active_modal_prompt_type == kModalPromptTypeNone ||
@@ -732,6 +737,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                               kPhaseNone);
+  element->set_bounds_contain_children(true);
   VR_BIND_VISIBILITY(element, model->active_modal_prompt_type !=
                                   kModalPromptTypeExitVRForSiteInfo);
 
@@ -740,6 +746,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingOpacityControlForAudioPermissionPrompt,
                               kPhaseNone);
+  element->set_bounds_contain_children(true);
   element->AddBinding(
       VR_BIND(bool, Model, model_,
               model->active_modal_prompt_type !=
@@ -751,6 +758,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingOpacityControlForNativeDialogPrompt,
                               kPhaseNone);
+  element->set_bounds_contain_children(true);
   element->SetTransitionedProperties({OPACITY});
   element->AddBinding(VR_BIND(
       bool, Model, model_, !model->native_ui.hosted_ui_enabled, UiElement,
@@ -760,6 +768,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
                               kPhaseNone);
+  element->set_bounds_contain_children(true);
   element->SetTransitionedProperties({OPACITY});
   element->AddBinding(
       VR_BIND(bool, Model, model_,
@@ -770,6 +779,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
                        std::move(element));
 
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
+  element->set_bounds_contain_children(true);
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
@@ -780,8 +790,8 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
-  element->SetSize(kContentWidth, kContentHeight);
   element->SetTransitionedProperties({TRANSFORM});
+  element->set_bounds_contain_children(true);
   element->AddBinding(
       VR_BIND(bool, Model, model_, model->fullscreen_enabled(), UiElement,
               element.get(),
@@ -866,6 +876,7 @@ void UiSceneCreator::CreateSystemIndicators() {
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
                                  kIndicatorDistanceOffset);
   indicator_layout->set_margin(kIndicatorGap);
+  indicator_layout->set_contributes_to_parent_bounds(false);
   VR_BIND_VISIBILITY(indicator_layout, !model->fullscreen_enabled());
 
   for (const auto& indicator : indicators) {
@@ -912,7 +923,22 @@ void UiSceneCreator::CreateContentQuad() {
   // reticle roughly planar with the content if near content.
   auto hit_plane = Create<InvisibleHitTarget>(kBackplane, kPhaseForeground);
   hit_plane->SetSize(kBackplaneSize, kSceneHeight);
+  hit_plane->set_contributes_to_parent_bounds(false);
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
+
+  auto resizer = Create<Resizer>(kContentResizer, kPhaseNone);
+  resizer->AddBinding(VR_BIND_FUNC(bool, Model, model_,
+                                   model->reposition_window_enabled(), Resizer,
+                                   resizer.get(), SetEnabled));
+  resizer->AddBinding(VR_BIND_FUNC(gfx::PointF, Model, model_,
+                                   model->controller.touchpad_touch_position,
+                                   Resizer, resizer.get(), set_touch_position));
+  resizer->AddBinding(VR_BIND_FUNC(bool, Model, model_,
+                                   model->controller.touching_touchpad, Resizer,
+                                   resizer.get(), SetTouchingTouchpad));
+  resizer->AddBinding(VR_BIND(bool, Model, model_, model->controller.recentered,
+                              Resizer, resizer.get(),
+                              if (value) { view->Reset(); }));
 
   auto shadow = Create<Shadow>(kContentQuadShadow, kPhaseForeground);
   shadow->set_intensity(kContentShadowIntesity);
@@ -983,7 +1009,8 @@ void UiSceneCreator::CreateContentQuad() {
                         const EditedText& value) { e->UpdateInput(value); },
                      base::Unretained(main_content.get()))));
   shadow->AddChild(std::move(main_content));
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(shadow));
+  resizer->AddChild(std::move(shadow));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(resizer));
 
   // Limit reticle distance to a sphere based on maximum content distance.
   scene_->set_background_distance(kFullscreenDistance *
@@ -1271,12 +1298,14 @@ void UiSceneCreator::CreateViewportAwareRoot() {
 
   element = std::make_unique<ViewportAwareRoot>();
   element->SetName(k2dBrowsingViewportAwareRoot);
+  element->set_contributes_to_parent_bounds(false);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 }
 
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
   auto speech_recognition_root = std::make_unique<UiElement>();
   speech_recognition_root->SetName(kSpeechRecognitionRoot);
+  speech_recognition_root->set_contributes_to_parent_bounds(false);
   speech_recognition_root->SetTranslate(0.f, 0.f, -kContentDistance);
   speech_recognition_root->SetTransitionedProperties({OPACITY});
   speech_recognition_root->SetTransitionDuration(
@@ -1494,6 +1523,7 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   label_background->set_corner_radius(kRepositionLabelBackgroundCornerRadius);
   label_background->set_padding(kRepositionLabelBackgroundPadding,
                                 kRepositionLabelBackgroundPadding);
+  label_background->set_contributes_to_parent_bounds(false);
   VR_BIND_COLOR(model_, label_background.get(),
                 &ColorScheme::reposition_label_background, &Rect::SetColor);
   VR_BIND_VISIBILITY(label_background, model->reposition_window_enabled());
@@ -1515,14 +1545,16 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   auto content_toggle =
       Create<UiElement>(kContentRepositionVisibilityToggle, kPhaseNone);
   content_toggle->SetTransitionedProperties({OPACITY});
+  content_toggle->set_bounds_contain_children(true);
   content_toggle->AddBinding(VR_BIND_FUNC(
       float, Model, model_,
       model->reposition_window_enabled() ? kRepositionContentOpacity : 1.0f,
       UiElement, content_toggle.get(), SetOpacity));
-  scene_->AddParentUiElement(kContentQuadShadow, std::move(content_toggle));
+  scene_->AddParentUiElement(kContentResizer, std::move(content_toggle));
 
   auto hit_plane =
       Create<InvisibleHitTarget>(kContentRepositionHitPlane, kPhaseForeground);
+  hit_plane->set_contributes_to_parent_bounds(false);
   hit_plane->SetSize(kSceneSize, kSceneSize);
   hit_plane->SetTranslate(0.0f, 0.0f, -kContentDistance);
   EventHandlers event_handlers;
@@ -1625,6 +1657,7 @@ void UiSceneCreator::CreateController() {
 void UiSceneCreator::CreateKeyboard() {
   auto visibility_control_root =
       Create<UiElement>(kKeyboardVisibilityControlForVoice, kPhaseNone);
+  visibility_control_root->set_contributes_to_parent_bounds(false);
   BIND_VISIBILITY_CONTROL_FOR_VOICE(visibility_control_root.get(), model_,
                                     editing_enabled());
 
@@ -1657,12 +1690,18 @@ void UiSceneCreator::CreateKeyboard() {
 }
 
 void UiSceneCreator::CreateUrlBar() {
+  auto positioner = Create<UiElement>(kUrlBarPositioner, kPhaseNone);
+  positioner->set_y_anchoring(BOTTOM);
+  positioner->SetTranslate(0, kUrlBarRelativeOffset, 0);
+  positioner->set_contributes_to_parent_bounds(false);
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(positioner));
+
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kUrlBarDistance);
   scaler->SetName(kUrlBarDmmRoot);
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(scaler));
+  scaler->set_contributes_to_parent_bounds(false);
+  scene_->AddUiElement(kUrlBarPositioner, std::move(scaler));
 
   auto url_bar = Create<UiElement>(kUrlBar, kPhaseNone);
-  url_bar->SetTranslate(0, kUrlBarVerticalOffsetDMM, 0);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
@@ -1826,6 +1865,7 @@ void UiSceneCreator::CreateSnackbars() {
 void UiSceneCreator::CreateOmnibox() {
   auto visibility_control_root =
       Create<UiElement>(kOmniboxVisibiltyControlForVoice, kPhaseNone);
+  visibility_control_root->set_contributes_to_parent_bounds(false);
 
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kUrlBarDistance);
   scaler->SetName(kOmniboxDmmRoot);
@@ -2149,6 +2189,7 @@ void UiSceneCreator::CreateCloseButton() {
   std::unique_ptr<DiscButton> element =
       Create<DiscButton>(kCloseButton, kPhaseForeground, click_handler,
                          vector_icons::kClose16Icon);
+  element->set_contributes_to_parent_bounds(false);
   element->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);
@@ -2190,6 +2231,7 @@ void UiSceneCreator::CreateExitPrompt() {
   auto backplane = std::make_unique<InvisibleHitTarget>();
   backplane->SetDrawPhase(kPhaseForeground);
   backplane->SetName(kExitPromptBackplane);
+  backplane->set_contributes_to_parent_bounds(false);
   backplane->SetSize(kBackplaneSize, kBackplaneSize);
   backplane->SetTranslate(0.0,
                           kContentVerticalOffset + kExitPromptVerticalOffset,
@@ -2368,6 +2410,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
 void UiSceneCreator::CreateFullscreenToast() {
   auto parent = CreateTransientParent(kExclusiveScreenToastTransientParent,
                                       kToastTimeoutSeconds, false);
+  parent->set_contributes_to_parent_bounds(false);
   VR_BIND_VISIBILITY(parent, model->fullscreen_enabled());
   scene_->AddUiElement(k2dBrowsingForeground, std::move(parent));
 

@@ -56,6 +56,10 @@ static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
 static constexpr float kUrlBarDistance = 2.4f;
 static constexpr float kUrlBarWidthDMM = 0.672f;
 static constexpr float kUrlBarHeightDMM = 0.088f;
+// This is the non-DMM relative offset of the URL bar. It is used to position
+// the DMM root of the URL bar.
+static constexpr float kUrlBarRelativeOffset = -0.45f;
+// This is the absolute offset of the URL bar's neutral position in DMM.
 static constexpr float kUrlBarVerticalOffsetDMM = -0.516f;
 static constexpr float kUrlBarRotationRad = gfx::DegToRad(-10.0f);
 static constexpr float kUrlBarFontHeightDMM = 0.027f;
@@ -298,6 +302,9 @@ static constexpr float kPromptHeightDMM = 0.218f;
 static constexpr float kPromptVerticalOffsetDMM = -0.1f;
 static constexpr float kPromptShadowOffsetDMM = 0.1f;
 static constexpr float kPromptDistance = 2.4f;
+
+static constexpr float kMinResizerScale = 0.5f;
+static constexpr float kMaxResizerScale = 1.5f;
 
 }  // namespace vr
 

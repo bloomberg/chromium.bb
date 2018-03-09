@@ -248,6 +248,10 @@ void UiElement::SetSize(float width, float height) {
 
 void UiElement::OnSetSize(const gfx::SizeF& size) {}
 
+gfx::SizeF UiElement::ContributedSize() const {
+  return size();
+}
+
 void UiElement::SetVisible(bool visible) {
   SetOpacity(visible ? opacity_when_visible_ : 0.0);
 }
@@ -665,13 +669,13 @@ void UiElement::DoLayOutChildren() {
 
   gfx::RectF bounds;
   for (auto& child : children_) {
-    if (!child->IsVisible() || child->size().IsEmpty() ||
+    gfx::SizeF size = child->ContributedSize();
+    if (!child->IsVisible() || size.IsEmpty() ||
         !child->contributes_to_parent_bounds()) {
       continue;
     }
     gfx::Point3F child_center(child->local_origin());
-    gfx::Vector3dF corner_offset(child->size().width(), child->size().height(),
-                                 0);
+    gfx::Vector3dF corner_offset(size.width(), size.height(), 0);
     corner_offset.Scale(-0.5);
     gfx::Point3F child_upper_left = child_center + corner_offset;
     gfx::Point3F child_lower_right = child_center - corner_offset;

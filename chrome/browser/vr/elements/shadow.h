@@ -25,6 +25,8 @@ class Shadow : public UiElement {
   void LayOutChildren() override;
   void set_intensity(float intensity) { intensity_ = intensity; }
 
+  gfx::SizeF ContributedSize() const override;
+
   class Renderer : public BaseQuadRenderer {
    public:
     Renderer();
@@ -55,6 +57,7 @@ class Shadow : public UiElement {
  private:
   float depth_;
   float intensity_ = 1.0f;
+  gfx::SizeF contributed_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
