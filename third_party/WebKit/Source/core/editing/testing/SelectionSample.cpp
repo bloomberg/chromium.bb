@@ -5,7 +5,6 @@
 #include "core/editing/testing/SelectionSample.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "core/dom/Attribute.h"
 #include "core/dom/CharacterData.h"

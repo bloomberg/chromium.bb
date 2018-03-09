@@ -19,7 +19,6 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
-#include <string>
 #include <unicode/uchar.h>
 
 // HACK: for reading pattern file

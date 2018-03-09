@@ -27,7 +27,6 @@
 #define CSSSelectorList_h
 
 #include <memory>
-#include <vector>
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 

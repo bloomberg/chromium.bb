@@ -4,8 +4,6 @@
 
 #include "third_party/WebKit/public/common/origin_trials/trial_token.h"
 
-#include <vector>
-
 #include "base/base64.h"
 #include "base/big_endian.h"
 #include "base/json/json_reader.h"

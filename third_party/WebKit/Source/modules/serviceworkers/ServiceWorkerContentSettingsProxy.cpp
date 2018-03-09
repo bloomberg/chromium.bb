@@ -5,7 +5,6 @@
 #include "modules/serviceworkers/ServiceWorkerContentSettingsProxy.h"
 
 #include <memory>
-#include <string>
 
 namespace blink {
 

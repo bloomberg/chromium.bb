@@ -27,7 +27,6 @@
 #include "core/frame/LocalDOMWindow.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "bindings/core/v8/BindingSecurity.h"

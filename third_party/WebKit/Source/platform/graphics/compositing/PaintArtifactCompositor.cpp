@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"

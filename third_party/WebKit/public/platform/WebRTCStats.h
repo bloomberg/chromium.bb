@@ -5,13 +5,12 @@
 #ifndef WebRTCStats_h
 #define WebRTCStats_h
 
+#include <memory>
+
 #include "WebCommon.h"
 #include "WebString.h"
 #include "WebVector.h"
 
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace blink {
 
