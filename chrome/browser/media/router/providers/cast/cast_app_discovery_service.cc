@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 
+#include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -109,14 +110,17 @@ void CastAppDiscoveryService::RequestAppAvailability(
   message_handler_->RequestAppAvailability(
       socket, app_id,
       base::BindOnce(&CastAppDiscoveryService::UpdateAppAvailability,
-                     weak_ptr_factory_.GetWeakPtr(), sink_id));
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                     sink_id));
 }
 
 void CastAppDiscoveryService::UpdateAppAvailability(
+    base::TimeTicks start_time,
     const MediaSink::Id& sink_id,
     const std::string& app_id,
     cast_channel::GetAppAvailabilityResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RecordAppAvailabilityResult(result, base::TimeTicks::Now() - start_time);
   if (!base::ContainsKey(sinks_, sink_id))
     return;
 
