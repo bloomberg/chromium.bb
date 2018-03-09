@@ -307,8 +307,9 @@ class ASH_EXPORT WallpaperController
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
 
   // Sets wallpaper info for |account_id| and saves it to local state if
-  // |is_ephemeral| is false.
-  void SetUserWallpaperInfo(const AccountId& account_id,
+  // |is_ephemeral| is false. Returns false if it fails (which happens if local
+  // state is not available).
+  bool SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
                             bool is_ephemeral);
 
@@ -319,8 +320,8 @@ class ASH_EXPORT WallpaperController
                             bool is_ephemeral) const;
 
   // Initializes wallpaper info for the user to default and saves it to local
-  // state if |is_ephemeral| is false.
-  void InitializeUserWallpaperInfo(const AccountId& account_id,
+  // state if |is_ephemeral| is false. Returns false if initialization fails.
+  bool InitializeUserWallpaperInfo(const AccountId& account_id,
                                    bool is_ephemeral);
 
   // TODO(crbug.com/776464): This method is a temporary workaround during the

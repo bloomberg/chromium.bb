@@ -931,18 +931,18 @@ bool WallpaperController::IsBlurEnabled() const {
              switches::kAshDisableLoginDimAndBlur);
 }
 
-void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
+bool WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
                                                const WallpaperInfo& info,
                                                bool is_ephemeral) {
   if (is_ephemeral) {
     ephemeral_users_wallpaper_info_[account_id] = info;
-    return;
+    return true;
   }
 
   PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
   // Local state can be null in tests.
   if (!local_state)
-    return;
+    return false;
   WallpaperInfo old_info;
   if (GetUserWallpaperInfo(account_id, &old_info, is_ephemeral)) {
     // Remove the color cache of the previous wallpaper if it exists.
@@ -962,6 +962,7 @@ void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
   wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
   wallpaper_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
                                             std::move(wallpaper_info_dict));
+  return true;
 }
 
 bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
@@ -1013,13 +1014,13 @@ bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
   return true;
 }
 
-void WallpaperController::InitializeUserWallpaperInfo(
+bool WallpaperController::InitializeUserWallpaperInfo(
     const AccountId& account_id,
     bool is_ephemeral) {
   const wallpaper::WallpaperInfo info = {
       std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(account_id, info, is_ephemeral);
+  return SetUserWallpaperInfo(account_id, info, is_ephemeral);
 }
 
 void WallpaperController::SetArcWallpaper(
@@ -1145,14 +1146,17 @@ void WallpaperController::SetOnlineWallpaper(
 
   gfx::ImageSkia online_wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(image);
   if (online_wallpaper.isNull()) {
-    SetDefaultWallpaperImpl(user_info->account_id, user_info->type,
-                            show_wallpaper);
+    LOG(ERROR) << "The client provided an empty wallpaper image.";
     return;
   }
 
   WallpaperInfo info = {url, layout, wallpaper::ONLINE,
                         base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
+  if (!SetUserWallpaperInfo(user_info->account_id, info,
+                            user_info->is_ephemeral)) {
+    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
+                  "except in tests.";
+  }
   if (show_wallpaper)
     ShowWallpaperImage(online_wallpaper, info, false /*preview_mode=*/);
 
@@ -1175,10 +1179,12 @@ void WallpaperController::SetDefaultWallpaper(
   const user_manager::UserType type = user_info->type;
 
   RemoveUserWallpaper(std::move(user_info), wallpaper_files_id);
-  InitializeUserWallpaperInfo(account_id, is_ephemeral);
-  if (show_wallpaper) {
-    SetDefaultWallpaperImpl(account_id, type, true /*show_wallpaper=*/);
+  if (!InitializeUserWallpaperInfo(account_id, is_ephemeral)) {
+    LOG(ERROR) << "Initializing user wallpaper info fails. This should never "
+                  "happen except in tests.";
   }
+  if (show_wallpaper)
+    SetDefaultWallpaperImpl(account_id, type, true /*show_wallpaper=*/);
 }
 
 void WallpaperController::SetCustomizedDefaultWallpaperPaths(
@@ -1272,7 +1278,11 @@ void WallpaperController::UpdateCustomWallpaperLayout(
     return;
 
   info.layout = layout;
-  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
+  if (!SetUserWallpaperInfo(user_info->account_id, info,
+                            user_info->is_ephemeral)) {
+    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
+                  "except in tests.";
+  }
   ShowUserWallpaper(std::move(user_info));
 }
 
@@ -1294,20 +1304,20 @@ void WallpaperController::ShowUserWallpaper(
   const AccountId account_id = current_user_->account_id;
   const bool is_ephemeral = current_user_->is_ephemeral;
   // Guest user or regular user in ephemeral mode.
-  // TODO(wzang/xdai): Check if the wallpaper info for ephemeral users should
-  // be saved to local state.
   if ((is_ephemeral && current_user_->has_gaia_account) ||
       current_user_->type == user_manager::USER_TYPE_GUEST) {
-    InitializeUserWallpaperInfo(account_id, is_ephemeral);
+    if (!InitializeUserWallpaperInfo(account_id, is_ephemeral))
+      return;
     SetDefaultWallpaperImpl(account_id, current_user_->type,
                             true /*show_wallpaper=*/);
-    LOG(ERROR) << "User is ephemeral or guest! Fallback to default wallpaper.";
+    VLOG(1) << "User is ephemeral. Fallback to default wallpaper.";
     return;
   }
 
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info, is_ephemeral)) {
-    InitializeUserWallpaperInfo(account_id, is_ephemeral);
+    if (!InitializeUserWallpaperInfo(account_id, is_ephemeral))
+      return;
     GetUserWallpaperInfo(account_id, &info, is_ephemeral);
   }
 
@@ -1318,8 +1328,7 @@ void WallpaperController::ShowUserWallpaper(
   }
 
   if (info.location.empty()) {
-    // Uses default built-in wallpaper when file is empty. Eventually, we
-    // will only ship one built-in wallpaper in ChromeOS image.
+    // Uses default wallpaper when file is empty.
     SetDefaultWallpaperImpl(account_id, current_user_->type,
                             true /*show_wallpaper=*/);
     return;
@@ -1685,6 +1694,18 @@ void WallpaperController::SaveAndSetWallpaper(
     return;
   }
 
+  const std::string relative_path =
+      base::FilePath(wallpaper_files_id).Append(file_name).value();
+  // User's custom wallpaper path is determined by relative path and the
+  // appropriate wallpaper resolution.
+  WallpaperInfo info = {relative_path, layout, type,
+                        base::Time::Now().LocalMidnight()};
+  if (!SetUserWallpaperInfo(user_info->account_id, info,
+                            user_info->is_ephemeral)) {
+    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
+                  "except in tests.";
+  }
+
   base::FilePath wallpaper_path =
       GetCustomWallpaperPath(WallpaperController::kOriginalWallpaperSubDir,
                              wallpaper_files_id, file_name);
@@ -1710,13 +1731,6 @@ void WallpaperController::SaveAndSetWallpaper(
                        layout, base::Passed(std::move(deep_copy))));
   }
 
-  const std::string relative_path =
-      base::FilePath(wallpaper_files_id).Append(file_name).value();
-  // User's custom wallpaper path is determined by relative path and the
-  // appropriate wallpaper resolution.
-  WallpaperInfo info = {relative_path, layout, type,
-                        base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   if (show_wallpaper)
     ShowWallpaperImage(image, info, false /*preview_mode=*/);
 

@@ -14,6 +14,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -25,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -390,19 +392,19 @@ class WallpaperControllerTest : public AshTestBase {
     wallpaper::WallpaperInfo info = {
         relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED, wallpaper::CUSTOMIZED,
         base::Time::Now().LocalMidnight()};
-    controller_->SetUserWallpaperInfo(account_id, info,
-                                      false /*is_ephemeral=*/);
+    ASSERT_TRUE(controller_->SetUserWallpaperInfo(account_id, info,
+                                                  false /*is_ephemeral=*/));
   }
 
   // Simulates setting a custom wallpaper by directly setting the wallpaper
   // info.
   void SimulateSettingCustomWallpaper(const AccountId& account_id) {
-    controller_->SetUserWallpaperInfo(
+    ASSERT_TRUE(controller_->SetUserWallpaperInfo(
         account_id,
         wallpaper::WallpaperInfo("dummy_file_location", WALLPAPER_LAYOUT_CENTER,
                                  wallpaper::CUSTOMIZED,
                                  base::Time::Now().LocalMidnight()),
-        false /*is_ephemeral=*/);
+        false /*is_ephemeral=*/));
   }
 
   // Initializes default wallpaper paths "*default_*file" and writes JPEG
@@ -1190,21 +1192,20 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
 }
 
 TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
+  SetBypassDecode();
   gfx::ImageSkia image = CreateImage(640, 480, kWallpaperColor);
   SimulateUserLogin(user_1);
 
-  // Simulate setting a policy wallpaper by setting the wallpaper info.
-  // TODO(crbug.com/776464): Replace this with a real |SetPolicyWallpaper| call.
-  wallpaper::WallpaperInfo policy_wallpaper_info(
-      "dummy_file_location", WALLPAPER_LAYOUT_CENTER, wallpaper::POLICY,
-      base::Time::Now().LocalMidnight());
-  controller_->SetUserWallpaperInfo(account_id_1, policy_wallpaper_info,
-                                    false /*is_ephemeral=*/);
+  // Set a policy wallpaper for the user. Verify the user is policy controlled.
+  controller_->SetPolicyWallpaper(InitializeUser(account_id_1),
+                                  wallpaper_files_id_1,
+                                  std::string() /*data=*/);
+  RunAllTasksUntilIdle();
   EXPECT_TRUE(
       controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
 
   // Verify that |SetCustomWallpaper| doesn't set wallpaper when policy is
-  // enforced, and |account_id|'s wallpaper info is not updated.
+  // enforced, and the user wallpaper info is not updated.
   controller_->SetCustomWallpaper(
       InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
       WALLPAPER_LAYOUT_CENTER, *image.bitmap(), false /*preview_mode=*/);
@@ -1213,10 +1214,16 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
                                                 false /*is_ephemeral=*/));
+  wallpaper::WallpaperInfo policy_wallpaper_info(
+      base::FilePath(wallpaper_files_id_1)
+          .Append("policy-controlled.jpeg")
+          .value(),
+      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED, wallpaper::POLICY,
+      base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
 
   // Verify that |SetOnlineWallpaper| doesn't set wallpaper when policy is
-  // enforced, and |account_id|'s wallpaper info is not updated.
+  // enforced, and the user wallpaper info is not updated.
   controller_->SetOnlineWallpaper(InitializeUser(account_id_1), *image.bitmap(),
                                   "dummy_url", WALLPAPER_LAYOUT_CENTER,
                                   true /*show_wallpaper=*/);
@@ -1227,7 +1234,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
 
   // Verify that |SetDefaultWallpaper| doesn't set wallpaper when policy is
-  // enforced, and |account_id|'s wallpaper info is not updated.
+  // enforced, and the user wallpaper info is not updated.
   controller_->SetDefaultWallpaper(InitializeUser(account_id_1),
                                    wallpaper_files_id_1,
                                    true /*show_wallpaper=*/);
@@ -1902,6 +1909,75 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaperDuringPreview) {
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
   EXPECT_EQ(user_wallpaper_info, sync_wallpaper_info);
+}
+
+// A test wallpaper controller client class.
+class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
+ public:
+  TestWallpaperControllerClient() : binding_(this) {}
+  ~TestWallpaperControllerClient() override = default;
+
+  int ready_to_set_wallpaper_count() const {
+    return ready_to_set_wallpaper_count_;
+  }
+
+  mojom::WallpaperControllerClientPtr CreateInterfacePtr() {
+    mojom::WallpaperControllerClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+  // mojom::WallpaperControllerClient:
+  void OnReadyToSetWallpaper() override { ++ready_to_set_wallpaper_count_; }
+  void OpenWallpaperPicker() override {}
+  void OnFirstWallpaperAnimationFinished() override {}
+
+ private:
+  int ready_to_set_wallpaper_count_ = 0;
+  mojo::Binding<mojom::WallpaperControllerClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
+};
+
+// Tests for cases when local state is not available.
+class WallpaperControllerDisableLocalStateTest
+    : public WallpaperControllerTest {
+ public:
+  WallpaperControllerDisableLocalStateTest() = default;
+  ~WallpaperControllerDisableLocalStateTest() override = default;
+
+  void SetUp() override {
+    disable_provide_local_state();
+    WallpaperControllerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerDisableLocalStateTest);
+};
+
+TEST_F(WallpaperControllerDisableLocalStateTest, IgnoreShowUserWallpaper) {
+  TestWallpaperControllerClient client;
+  controller_->SetClientForTesting(client.CreateInterfacePtr());
+  SimulateUserLogin(user_1);
+
+  // When local state is not available, verify |ShowUserWallpaper| request is
+  // ignored.
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(0, client.ready_to_set_wallpaper_count());
+
+  // Make local state available, verify |ShowUserWallpaper| successfully shows
+  // the wallpaper, and |OnReadyToSetWallpaper| is invoked.
+  std::unique_ptr<TestingPrefServiceSimple> local_state =
+      std::make_unique<TestingPrefServiceSimple>();
+  Shell::RegisterLocalStatePrefs(local_state->registry());
+  ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
+
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(1, client.ready_to_set_wallpaper_count());
 }
 
 }  // namespace ash
