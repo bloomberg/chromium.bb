@@ -1559,6 +1559,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
     public void testLongPressGestureFollowedByTapDoesntSelect()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -2186,9 +2187,9 @@ public class ContextualSearchManagerTest {
     @Test
     @LargeTest
     @Feature({"ContextualSearch"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/818897")
     public void testTapALot() throws InterruptedException, TimeoutException {
-        // TODO(donnd): bump up to 50 or 100 once Mojo race fixed.  See https://crbug.com/818897.
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             clickToTriggerPrefetch();
             assertSearchTermRequested();
         }
