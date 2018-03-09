@@ -1390,6 +1390,9 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
 }
 
 void av1_setup_motion_field(AV1_COMMON *cm) {
+  memset(cm->ref_frame_side, -1, sizeof(cm->ref_frame_side));
+  if (!cm->seq_params.enable_order_hint) return;
+
   int cur_frame_index = cm->cur_frame->cur_frame_offset;
   int alt_frame_index = 0, gld_frame_index = 0;
   int bwd_frame_index = 0, alt2_frame_index = 0;
@@ -1423,7 +1426,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     alt2_frame_index =
         cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
 
-  memset(cm->ref_frame_side, 0, sizeof(cm->ref_frame_side));
   for (int ref_frame = LAST_FRAME; ref_frame <= INTER_REFS_PER_FRAME;
        ++ref_frame) {
     int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
