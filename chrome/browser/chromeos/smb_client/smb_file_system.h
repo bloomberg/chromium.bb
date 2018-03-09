@@ -213,6 +213,17 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
                                      smbprovider::ErrorType error,
                                      const base::ScopedFD& fd) const;
 
+  void HandleGetDeleteListCallback(
+      storage::AsyncFileUtil::StatusCallback callback,
+      smbprovider::ErrorType list_error,
+      const smbprovider::DeleteListProto& delete_list);
+
+  void HandleDeleteEntryCallback(
+      storage::AsyncFileUtil::StatusCallback callback,
+      smbprovider::ErrorType list_error,
+      bool is_last_entry,
+      smbprovider::ErrorType delete_error) const;
+
   int32_t GetMountId() const;
 
   SmbProviderClient* GetSmbProviderClient() const;

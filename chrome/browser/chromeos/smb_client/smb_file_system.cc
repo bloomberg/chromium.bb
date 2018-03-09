@@ -288,9 +288,9 @@ AbortCallback SmbFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  GetSmbProviderClient()->DeleteEntry(
-      GetMountId(), entry_path, recursive,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
+  GetSmbProviderClient()->GetDeleteList(
+      GetMountId(), entry_path,
+      base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
@@ -439,6 +439,43 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
   }
 
   callback.Run(TranslateError(error), entry_list, false /* has_more */);
+}
+
+void SmbFileSystem::HandleGetDeleteListCallback(
+    storage::AsyncFileUtil::StatusCallback callback,
+    smbprovider::ErrorType list_error,
+    const smbprovider::DeleteListProto& delete_list) {
+  if (delete_list.entries_size() == 0) {
+    // There are no entries to delete.
+    DCHECK_NE(smbprovider::ERROR_OK, list_error);
+    callback.Run(TranslateError(list_error));
+    return;
+  }
+
+  for (int i = 0; i < delete_list.entries_size(); ++i) {
+    const base::FilePath entry_path(delete_list.entries(i));
+    bool is_last_entry = (i == delete_list.entries_size() - 1);
+
+    GetSmbProviderClient()->DeleteEntry(
+        GetMountId(), entry_path, false /* recursive */,
+        base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback, list_error,
+                       is_last_entry));
+  }
+}
+
+void SmbFileSystem::HandleDeleteEntryCallback(
+    storage::AsyncFileUtil::StatusCallback callback,
+    smbprovider::ErrorType list_error,
+    bool is_last_entry,
+    smbprovider::ErrorType delete_error) const {
+  if (is_last_entry) {
+    // Only run the callback once.
+    if (list_error != smbprovider::ERROR_OK) {
+      delete_error = list_error;
+    }
+    callback.Run(TranslateError(delete_error));
+  }
 }
 
 void SmbFileSystem::HandleRequestGetMetadataEntryCallback(
