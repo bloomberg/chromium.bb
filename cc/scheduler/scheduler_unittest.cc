@@ -3063,49 +3063,6 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
-  scheduler_settings_.using_synchronous_renderer_compositor = true;
-  SetUpScheduler(EXTERNAL_BFS);
-
-  scheduler_->SetNeedsBeginMainFrame();
-  EXPECT_ACTIONS("AddObserver(this)");
-  client_->Reset();
-
-  // Next vsync.
-  AdvanceFrame();
-  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
-  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  client_->Reset();
-
-  scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
-  EXPECT_NO_ACTION();
-
-  scheduler_->NotifyReadyToCommit();
-  EXPECT_ACTIONS("ScheduledActionCommit");
-  client_->Reset();
-
-  scheduler_->NotifyReadyToActivate();
-  EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
-  client_->Reset();
-
-  // Ask for another commit.
-  scheduler_->SetNeedsBeginMainFrame();
-
-  AdvanceFrame();
-  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
-                 "ScheduledActionInvalidateLayerTreeFrameSink");
-  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  client_->Reset();
-
-  scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
-  EXPECT_NO_ACTION();
-
-  // Allow new commit even though previous commit hasn't been drawn.
-  scheduler_->NotifyReadyToCommit();
-  EXPECT_ACTIONS("ScheduledActionCommit");
-  client_->Reset();
-}
-
 class SchedulerClientSetNeedsPrepareTilesOnDraw : public FakeSchedulerClient {
  public:
   SchedulerClientSetNeedsPrepareTilesOnDraw() : FakeSchedulerClient() {}
