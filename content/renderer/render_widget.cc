@@ -621,7 +621,7 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
       emulator->original_screen_rect().origin();
-  UpdateSurfaceAndScreenInfo(local_surface_id_, physical_backing_size_,
+  UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
                              emulator->original_screen_info());
 }
 
@@ -652,15 +652,16 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
       content_source_id != current_content_source_id_ ? viz::LocalSurfaceId()
                                                       : local_surface_id;
   // TODO(ccameron): If there is a meaningful distinction between |size_| and
-  // |physical_backing_size_| is it okay to ignore that distinction here, and
-  // assume that |physical_backing_size_| is just |size_| in pixels? Also note
-  // that the computation of |new_physical_backing_size| does not appear to
-  // take into account device emulation.
+  // |compositor_viewport_pixel_size_| is it okay to ignore that distinction
+  // here, and assume that |compositor_viewport_pixel_size_| is just |size_| in
+  // pixels? Also note that the computation of
+  // |new_compositor_viewport_pixel_size| does not appear to take into account
+  // device emulation.
   float new_device_scale_factor = screen_info.device_scale_factor;
-  gfx::Size new_physical_backing_size =
+  gfx::Size new_compositor_viewport_pixel_size =
       gfx::ScaleToCeiledSize(size_, new_device_scale_factor);
-  UpdateSurfaceAndScreenInfo(new_local_surface_id, new_physical_backing_size,
-                             screen_info);
+  UpdateSurfaceAndScreenInfo(new_local_surface_id,
+                             new_compositor_viewport_pixel_size, screen_info);
 }
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
@@ -767,7 +768,7 @@ void RenderWidget::SetWindowRectSynchronously(
   ResizeParams params;
   params.screen_info = screen_info_;
   params.new_size = new_window_rect.size();
-  params.physical_backing_size =
+  params.compositor_viewport_pixel_size =
       gfx::ScaleToCeiledSize(new_window_rect.size(), GetWebDeviceScaleFactor());
   params.visible_viewport_size = new_window_rect.size();
   params.is_fullscreen_granted = is_fullscreen_granted_;
@@ -857,7 +858,8 @@ void RenderWidget::OnEnableDeviceEmulation(
     ResizeParams resize_params;
     resize_params.screen_info = screen_info_;
     resize_params.new_size = size_;
-    resize_params.physical_backing_size = physical_backing_size_;
+    resize_params.compositor_viewport_pixel_size =
+        compositor_viewport_pixel_size_;
     resize_params.local_surface_id = local_surface_id_;
     resize_params.content_source_id = current_content_source_id_;
     resize_params.visible_viewport_size = visible_viewport_size_;
@@ -1397,7 +1399,8 @@ void RenderWidget::Resize(const ResizeParams& params) {
       params.content_source_id == current_content_source_id_) {
     new_local_surface_id = *params.local_surface_id;
   }
-  UpdateSurfaceAndScreenInfo(new_local_surface_id, params.physical_backing_size,
+  UpdateSurfaceAndScreenInfo(new_local_surface_id,
+                             params.compositor_viewport_pixel_size,
                              params.screen_info);
   if (compositor_) {
     // If surface synchronization is enabled, then this will use the provided
@@ -1440,7 +1443,8 @@ void RenderWidget::Resize(const ResizeParams& params) {
   // When resizing, we want to wait to paint before ACK'ing the resize.  This
   // ensures that we only resize as fast as we can paint.  We only need to
   // send an ACK if we are resized to a non-empty rect.
-  if (params.new_size.IsEmpty() || params.physical_backing_size.IsEmpty()) {
+  if (params.new_size.IsEmpty() ||
+      params.compositor_viewport_pixel_size.IsEmpty()) {
     // In this case there is no paint/composite and therefore no
     // ViewHostMsg_ResizeOrRepaint_ACK to send the resize ack with. We'd need to
     // send the ack through a fake ViewHostMsg_ResizeOrRepaint_ACK or a
@@ -1506,7 +1510,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
     reset_next_paint_is_resize_ack();
   }
 
-  UpdateSurfaceAndScreenInfo(local_surface_id_, physical_backing_size_,
+  UpdateSurfaceAndScreenInfo(local_surface_id_, compositor_viewport_pixel_size_,
                              screen_info_);
   compositor_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
@@ -1928,7 +1932,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
 
 void RenderWidget::UpdateSurfaceAndScreenInfo(
     viz::LocalSurfaceId new_local_surface_id,
-    const gfx::Size& new_physical_backing_size,
+    const gfx::Size& new_compositor_viewport_pixel_size,
     const ScreenInfo& new_screen_info) {
   bool screen_info_changed = screen_info_ != new_screen_info;
   bool orientation_changed =
@@ -1938,13 +1942,13 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
       screen_info_.device_scale_factor != new_screen_info.device_scale_factor;
 
   local_surface_id_ = new_local_surface_id;
-  physical_backing_size_ = new_physical_backing_size;
+  compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
   screen_info_ = new_screen_info;
 
   if (compositor_) {
     // Note carefully that the DSF specified in |new_screen_info| is not the
     // DSF used by the compositor during device emulation!
-    compositor_->SetViewportSizeAndScale(physical_backing_size_,
+    compositor_->SetViewportSizeAndScale(compositor_viewport_pixel_size_,
                                          GetOriginalDeviceScaleFactor(),
                                          local_surface_id_);
   }
@@ -2374,12 +2378,13 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     }
 
     // TODO(ccameron): Note that this destroys any information differentiating
-    // |size_| from |physical_backing_size_|. Also note that the calculation of
-    // |new_physical_backing_size| does not appear to take into account device
-    // emulation.
-    gfx::Size new_physical_backing_size =
+    // |size_| from |compositor_viewport_pixel_size_|. Also note that the
+    // calculation of |new_compositor_viewport_pixel_size| does not appear to
+    // take into account device emulation.
+    gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebDeviceScaleFactor());
-    UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(), new_physical_backing_size,
+    UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
+                               new_compositor_viewport_pixel_size,
                                screen_info_);
 
     if (!resizing_mode_selector_->is_synchronous_mode()) {
@@ -2698,8 +2703,8 @@ void RenderWidget::DidNavigate() {
     return;
   compositor_->SetContentSourceId(++current_content_source_id_);
 
-  UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(), physical_backing_size_,
-                             screen_info_);
+  UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
+                             compositor_viewport_pixel_size_, screen_info_);
 
   // If surface synchronization is on, navigation implicitly acks any resize
   // that has happened so far so we can get the next ResizeParams containing the

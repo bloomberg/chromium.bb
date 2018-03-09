@@ -30,6 +30,7 @@
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
+-SitePerProcessBrowserTest.CompositorViewportPixelSizeTest
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
@@ -39,7 +40,6 @@
 -SitePerProcessBrowserTest.ScrollLocalSubframeInOOPIF
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously
 -SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
--SitePerProcessBrowserTest.PhysicalBackingSizeTest
 -SitePerProcessHitTestBrowserTest.AsynchronousHitTestChildTimeout*
 -SitePerProcessHitTestBrowserTest.CancelWheelScrollBubblingOnWheelTargetDeletion*
 -SitePerProcessHitTestBrowserTest.CreateContextMenuTest*

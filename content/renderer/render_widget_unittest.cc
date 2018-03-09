@@ -392,7 +392,7 @@ TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
   ResizeParams resize_params;
   resize_params.screen_info = ScreenInfo();
   resize_params.new_size = size;
-  resize_params.physical_backing_size = size;
+  resize_params.compositor_viewport_pixel_size = size;
   resize_params.visible_viewport_size = size;
   resize_params.content_source_id = widget()->GetContentSourceId();
   resize_params.needs_resize_ack = true;

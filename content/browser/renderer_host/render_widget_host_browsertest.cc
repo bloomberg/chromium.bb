@@ -62,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   // Create a simulated-from-renderer CompositorFrame with a CopyOutputRequest.
   viz::CompositorFrame frame;
   std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  const gfx::Rect& output_rect = gfx::Rect(view->GetPhysicalBackingSize());
+  const gfx::Rect output_rect =
+      gfx::Rect(view->GetCompositorViewportPixelSize());
   pass->SetNew(1 /* render pass id */, output_rect, output_rect,
                gfx::Transform());
   bool did_receive_aborted_copy_result = false;
