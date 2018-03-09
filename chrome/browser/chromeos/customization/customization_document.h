@@ -17,6 +17,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -31,14 +32,8 @@ namespace extensions {
 class ExternalLoader;
 }
 
-namespace network {
-class SimpleURLLoader;
-}
-
-namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}
+namespace net {
+class URLFetcher;
 }
 
 namespace user_prefs {
@@ -146,7 +141,8 @@ class StartupCustomizationDocument : public CustomizationDocument {
 // outside this class by calling StartFetching() or EnsureCustomizationApplied()
 // methods.
 // User of the file should check IsReady before use it.
-class ServicesCustomizationDocument : public CustomizationDocument {
+class ServicesCustomizationDocument : public CustomizationDocument,
+                                      private net::URLFetcherDelegate {
  public:
   static ServicesCustomizationDocument* GetInstance();
 
@@ -204,11 +200,6 @@ class ServicesCustomizationDocument : public CustomizationDocument {
     return wallpaper_downloader_.get();
   }
 
-  void SetURLLoaderFactoryForTesting(
-      network::mojom::URLLoaderFactory* url_loader_factory) {
-    url_loader_factory_ = url_loader_factory;
-  }
-
  private:
   friend struct base::DefaultSingletonTraits<ServicesCustomizationDocument>;
   FRIEND_TEST_ALL_PREFIXES(CustomizationWallpaperDownloaderBrowserTest,
@@ -236,7 +227,8 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   // Overriden from CustomizationDocument:
   bool LoadManifestFromString(const std::string& manifest) override;
 
-  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  // Overriden from net::URLFetcherDelegate:
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Initiate file fetching. Wait for online status.
   void StartFileFetch();
@@ -301,6 +293,9 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   // Services customization manifest URL.
   GURL url_;
 
+  // URLFetcher instance.
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+
   // How many times we already tried to fetch customization manifest file.
   int num_retries_;
 
@@ -314,7 +309,6 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   ExternalLoaders external_loaders_;
 
   std::unique_ptr<CustomizationWallpaperDownloader> wallpaper_downloader_;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // This is barrier until customization is applied.
   // When number of finished tasks match number of started - customization is
@@ -326,9 +320,6 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   // If it matches number of tasks finished - customization is applied
   // successfully.
   size_t apply_tasks_success_;
-
-  // Only used for unit tests. Not owned.
-  network::mojom::URLLoaderFactory* url_loader_factory_;
 
   // Weak factory for callbacks.
   base::WeakPtrFactory<ServicesCustomizationDocument> weak_ptr_factory_;
