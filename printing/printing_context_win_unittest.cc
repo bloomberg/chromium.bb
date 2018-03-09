@@ -148,11 +148,9 @@ TEST_F(PrintingContextTest, PrintAll) {
 
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
-      123,
-      false,
-      false,
-      base::Bind(&PrintingContextTest::PrintSettingsCallback,
-                 base::Unretained(this)));
+      123, false, false,
+      base::BindOnce(&PrintingContextTest::PrintSettingsCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(PrintingContext::OK, result());
   PrintSettings settings = context.settings();
   EXPECT_EQ(0u, settings.ranges().size());
