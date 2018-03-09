@@ -1962,6 +1962,17 @@ public class ChromeTabbedActivity
         }
     }
 
+    @Override
+    public boolean moveTaskToBack(boolean nonRoot) {
+        try {
+            return super.moveTaskToBack(nonRoot);
+        } catch (NullPointerException e) {
+            // Work around framework bug described in https://crbug.com/817567.
+            finish();
+            return true;
+        }
+    }
+
     /**
      * Launch a URL from an intent.
      *
