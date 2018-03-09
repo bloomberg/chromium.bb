@@ -53,6 +53,19 @@
     out1 = _mm_subs_epi16(_in0, _in1);                  \
   } while (0)
 
+static INLINE void round_shift_16bit_ssse3(__m128i *in, int size, int bit) {
+  if (bit < 0) {
+    const __m128i scale = _mm_set1_epi16(1 << (15 + bit));
+    for (int i = 0; i < size; ++i) {
+      in[i] = _mm_mulhrs_epi16(in[i], scale);
+    }
+  } else if (bit > 0) {
+    for (int i = 0; i < size; ++i) {
+      in[i] = _mm_slli_epi16(in[i], bit);
+    }
+  }
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
