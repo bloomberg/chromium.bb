@@ -37,20 +37,16 @@ TEST(TokenizedStringMatchTest, NotMatch) {
     const char* text;
     const char* query;
   } kTestCases[] = {
-    { "", "" },
-    { "", "query" },
-    { "text", "" },
-    { "!", "!@#$%^&*()<<<**>>>" },
-    { "abd", "abcd"},
-    { "cd", "abcd"},
+      {"", ""},        {"", "query"},
+      {"text", ""},    {"!", "!@#$%^&*()<<<**>>>"},
+      {"abd", "abcd"}, {"cd", "abcd"},
   };
 
   TokenizedStringMatch match;
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
     EXPECT_FALSE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text))
-        << "Test case " << i
-        << " : text=" << kTestCases[i].text
+        << "Test case " << i << " : text=" << kTestCases[i].text
         << ", query=" << kTestCases[i].query;
   }
 }
@@ -61,17 +57,17 @@ TEST(TokenizedStringMatchTest, Match) {
     const char* query;
     const char* expect;
   } kTestCases[] = {
-    { "ScratchPad", "pad", "Scratch[Pad]" },
-    { "ScratchPad", "sp", "[S]cratch[P]ad" },
-    { "Chess2", "che", "[Che]ss2" },
-    { "Chess2", "c2", "[C]hess[2]" },
-    { "Cut the rope", "cut ro", "[Cut] the [ro]pe" },
-    { "Cut the rope", "cr", "[C]ut the [r]ope" },
-    { "John Doe", "jdoe", "[J]ohn [Doe]" },
-    { "John Doe", "johnd", "[John D]oe" },
-    { "Secure Shell", "she", "Secure [She]ll" },
-    { "Simple Secure Shell", "sish", "[Si]mple Secure [Sh]ell" },
-    { "Netflix", "flix", "Net[flix]" },
+      {"ScratchPad", "pad", "Scratch[Pad]"},
+      {"ScratchPad", "sp", "[S]cratch[P]ad"},
+      {"Chess2", "che", "[Che]ss2"},
+      {"Chess2", "c2", "[C]hess[2]"},
+      {"Cut the rope", "cut ro", "[Cut] the [ro]pe"},
+      {"Cut the rope", "cr", "[C]ut the [r]ope"},
+      {"John Doe", "jdoe", "[J]ohn [Doe]"},
+      {"John Doe", "johnd", "[John D]oe"},
+      {"Secure Shell", "she", "Secure [She]ll"},
+      {"Simple Secure Shell", "sish", "[Si]mple Secure [Sh]ell"},
+      {"Netflix", "flix", "Net[flix]"},
   };
 
   TokenizedStringMatch match;
@@ -88,21 +84,21 @@ TEST(TokenizedStringMatchTest, Relevance) {
     const char* query_low;
     const char* query_high;
   } kTestCases[] = {
-    // More matched chars are better.
-    { "Google Chrome", "g", "go" },
-    { "Google Chrome", "go", "goo" },
-    { "Google Chrome", "goo", "goog" },
-    { "Google Chrome", "c", "ch" },
-    { "Google Chrome", "ch", "chr" },
-    // Acronym match is better than something in the middle.
-    { "Google Chrome", "ch", "gc" },
-    // Prefix match is better than middle match and acronym match.
-    { "Google Chrome", "ch", "go" },
-    { "Google Chrome", "gc", "go" },
-    // Substring match has the lowest score.
-    { "Google Chrome", "oo", "gc" },
-    { "Google Chrome", "oo", "go" },
-    { "Google Chrome", "oo", "ch" },
+      // More matched chars are better.
+      {"Google Chrome", "g", "go"},
+      {"Google Chrome", "go", "goo"},
+      {"Google Chrome", "goo", "goog"},
+      {"Google Chrome", "c", "ch"},
+      {"Google Chrome", "ch", "chr"},
+      // Acronym match is better than something in the middle.
+      {"Google Chrome", "ch", "gc"},
+      // Prefix match is better than middle match and acronym match.
+      {"Google Chrome", "ch", "go"},
+      {"Google Chrome", "gc", "go"},
+      // Substring match has the lowest score.
+      {"Google Chrome", "oo", "gc"},
+      {"Google Chrome", "oo", "go"},
+      {"Google Chrome", "oo", "ch"},
   };
 
   TokenizedStringMatch match_low;
@@ -114,8 +110,7 @@ TEST(TokenizedStringMatchTest, Relevance) {
     EXPECT_TRUE(match_high.Calculate(
         base::UTF8ToUTF16(kTestCases[i].query_high), text));
     EXPECT_LT(match_low.relevance(), match_high.relevance())
-        << "Test case " << i
-        << " : text=" << kTestCases[i].text
+        << "Test case " << i << " : text=" << kTestCases[i].text
         << ", query_low=" << kTestCases[i].query_low
         << ", query_high=" << kTestCases[i].query_high;
   }

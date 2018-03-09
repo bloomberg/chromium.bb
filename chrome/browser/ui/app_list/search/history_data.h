@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_HISTORY_DATA_H_
-#define UI_APP_LIST_SEARCH_HISTORY_DATA_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_H_
 
 #include <stddef.h>
 
@@ -16,8 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/app_list/app_list_export.h"
-#include "ui/app_list/search/history_types.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
 
 namespace app_list {
 
@@ -33,12 +32,12 @@ class HistoryDataStore;
 // secondary. However, if a secondary association is added twice in a row, it
 // is promoted to primary and the current primary mapping is demoted into
 // secondary.
-class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
+class HistoryData : public base::SupportsWeakPtr<HistoryData> {
  public:
   using SecondaryDeque = base::circular_deque<std::string>;
 
   // Defines data to be associated with a query.
-  struct APP_LIST_EXPORT Data {
+  struct Data {
     Data();
     Data(const Data& other);
     ~Data();
@@ -94,4 +93,4 @@ class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_HISTORY_DATA_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_DATA_H_

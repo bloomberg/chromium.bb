@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_HISTORY_H_
-#define UI_APP_LIST_SEARCH_HISTORY_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_H_
 
 #include <map>
 #include <memory>
@@ -11,10 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/ui/app_list/search/history_data_observer.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/app_list/app_list_export.h"
-#include "ui/app_list/search/history_data_observer.h"
-#include "ui/app_list/search/history_types.h"
 
 namespace app_list {
 
@@ -31,8 +30,7 @@ class SearchHistoryTest;
 // primary and secondary associations. See HistoryData comments to see how
 // they are built. The learning data is sent to the mixer to boost results that
 // have been launched before.
-class APP_LIST_EXPORT History : public KeyedService,
-                                public HistoryDataObserver {
+class History : public KeyedService, public HistoryDataObserver {
  public:
   explicit History(scoped_refptr<HistoryDataStore> store);
   ~History() override;
@@ -62,4 +60,4 @@ class APP_LIST_EXPORT History : public KeyedService,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_HISTORY_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_H_

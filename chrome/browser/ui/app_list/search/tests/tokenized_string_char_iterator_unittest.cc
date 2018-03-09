@@ -22,11 +22,9 @@ namespace {
 // the current char in terms of the original text of the TokenizedString. The
 // last one is optional and only shows up when IsFirstCharOfToken returns true.
 std::string GetIterateState(const TokenizedStringCharIterator& iter) {
-  return base::StringPrintf("%s%d%s",
-                            base::UTF16ToUTF8(
-                                base::string16(1, iter.Get())).c_str(),
-                            iter.GetArrayPos(),
-                            iter.IsFirstCharOfToken() ? "!" : "");
+  return base::StringPrintf(
+      "%s%d%s", base::UTF16ToUTF8(base::string16(1, iter.Get())).c_str(),
+      iter.GetArrayPos(), iter.IsFirstCharOfToken() ? "!" : "");
 }
 
 void TestBeyondTheEnd(TokenizedStringCharIterator* iter) {

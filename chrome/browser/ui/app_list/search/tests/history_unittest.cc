@@ -13,13 +13,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/ui/app_list/search/dictionary_data_store.h"
+#include "chrome/browser/ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/history_data.h"
+#include "chrome/browser/ui/app_list/search/history_data_observer.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/search/dictionary_data_store.h"
-#include "ui/app_list/search/history.h"
-#include "ui/app_list/search/history_data.h"
-#include "ui/app_list/search/history_data_observer.h"
-#include "ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 namespace test {
@@ -35,7 +35,7 @@ const size_t kMaxSecondary = 2;
 // has passed.
 class HistoryDataLoadWaiter : public HistoryDataObserver {
  public:
-  explicit HistoryDataLoadWaiter(HistoryData* data) : data_(data)  {}
+  explicit HistoryDataLoadWaiter(HistoryData* data) : data_(data) {}
   ~HistoryDataLoadWaiter() override {}
 
   void Wait() {
@@ -75,9 +75,7 @@ class StoreFlushWaiter {
   }
 
  private:
-  void OnFlushed() {
-    run_loop_->Quit();
-  }
+  void OnFlushed() { run_loop_->Quit(); }
 
   HistoryDataStore* store_;  // Not owned.
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -99,9 +97,7 @@ class SearchHistoryTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     CreateHistory();
   }
-  void TearDown() override {
-    Flush();
-  }
+  void TearDown() override { Flush(); }
 
   void CreateHistory() {
     const char kStoreDataFileName[] = "app-launcher-test";
@@ -121,9 +117,7 @@ class SearchHistoryTest : public testing::Test {
     ASSERT_TRUE(history_->IsReady());
   }
 
-  void Flush() {
-    StoreFlushWaiter(history_->store_.get()).Wait();
-  }
+  void Flush() { StoreFlushWaiter(history_->store_.get()).Wait(); }
 
   size_t GetKnownResults(const std::string& query) {
     known_results_ = history()->GetKnownResults(query);

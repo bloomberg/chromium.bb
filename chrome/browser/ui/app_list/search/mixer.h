@@ -12,7 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "ui/app_list/search/history_types.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
 
 class AppListModelUpdater;
 

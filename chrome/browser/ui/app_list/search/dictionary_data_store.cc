@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/dictionary_data_store.h"
+#include "chrome/browser/ui/app_list/search/dictionary_data_store.h"
 
 #include <set>
 #include <utility>

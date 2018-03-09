@@ -16,9 +16,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/search/history.h"
-#include "ui/app_list/search_provider.h"
 
 namespace app_list {
 

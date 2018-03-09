@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_PROVIDER_H_
-#define UI_APP_LIST_SEARCH_PROVIDER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_
 
 #include <memory>
 #include <vector>
@@ -11,13 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/app_list/app_list_export.h"
 
 namespace app_list {
 
 class SearchResult;
 
-class APP_LIST_EXPORT SearchProvider {
+class SearchProvider {
  public:
   using Results = std::vector<std::unique_ptr<SearchResult>>;
   using ResultChangedCallback = base::Closure;
@@ -56,4 +55,4 @@ class APP_LIST_EXPORT SearchProvider {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_PROVIDER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_PROVIDER_H_

@@ -6,11 +6,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/ui/app_list/search/dictionary_data_store.h"
+#include "chrome/browser/ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "ui/app_list/search/dictionary_data_store.h"
-#include "ui/app_list/search/history.h"
-#include "ui/app_list/search/history_data_store.h"
 
 namespace app_list {
 
