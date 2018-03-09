@@ -43,6 +43,11 @@ class PRINTING_EXPORT PrintedDocument
                   int cookie);
 
 #if defined(OS_WIN)
+  // Indicates that the PDF has been generated and the document is waiting for
+  // conversion for printing. This is needed on Windows so that the print job
+  // is not cancelled if the web contents dies before PDF conversion finishes.
+  void SetConvertingPdf();
+
   // Sets a page's data. 0-based. Note: locks for a short amount of time.
   void SetPage(int page_number,
                std::unique_ptr<MetafilePlayer> metafile,
@@ -78,7 +83,7 @@ class PRINTING_EXPORT PrintedDocument
 
   // Returns true if all the necessary pages for the settings are already
   // rendered.
-  // Note: locks while parsing the whole tree.
+  // Note: This function always locks and may parse the whole tree.
   bool IsComplete() const;
 
   // Sets the number of pages in the document to be rendered. Can only be set
@@ -153,6 +158,9 @@ class PRINTING_EXPORT PrintedDocument
     // Contains the pages' representation. This is a collection of PrintedPage.
     // Warning: Lock must be held when accessing this member.
     PrintedPages pages_;
+
+    // Whether the PDF is being converted for printing.
+    bool converting_pdf_ = false;
 #else
     std::unique_ptr<MetafilePlayer> metafile_;
 #endif

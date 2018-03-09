@@ -131,6 +131,11 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
 PrintedDocument::~PrintedDocument() = default;
 
 #if defined(OS_WIN)
+void PrintedDocument::SetConvertingPdf() {
+  base::AutoLock lock(lock_);
+  mutable_.converting_pdf_ = true;
+}
+
 void PrintedDocument::SetPage(int page_number,
                               std::unique_ptr<MetafilePlayer> metafile,
                               float shrink,
@@ -195,6 +200,9 @@ bool PrintedDocument::IsComplete() const {
   if (!mutable_.page_count_)
     return false;
 #if defined(OS_WIN)
+  if (mutable_.converting_pdf_)
+    return true;
+
   PageNumber page(immutable_.settings_, mutable_.page_count_);
   if (page == PageNumber::npos())
     return false;

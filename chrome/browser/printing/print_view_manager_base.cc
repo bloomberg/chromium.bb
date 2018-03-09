@@ -191,6 +191,11 @@ void PrintViewManagerBase::PrintDocument(
     print_job_->StartPdfToEmfConversion(print_data, page_size, content_area,
                                         print_text_with_gdi);
   }
+  // Indicate that the PDF is fully rendered and we no longer need the renderer
+  // and web contents, so the print job does not need to be cancelled if they
+  // die. This is needed on Windows because the PrintedDocument will not be
+  // considered complete until PDF conversion finishes.
+  document->SetConvertingPdf();
 #else
   std::unique_ptr<PdfMetafileSkia> metafile =
       std::make_unique<PdfMetafileSkia>();
@@ -518,17 +523,17 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   if (!print_job_.get() || !print_job_->is_job_pending())
     return false;
 
+  // Is the document already complete?
+  if (print_job_->document() && print_job_->document()->IsComplete()) {
+    printing_succeeded_ = true;
+    return true;
+  }
+
   // We can't print if there is no renderer.
   if (!web_contents() ||
       !web_contents()->GetRenderViewHost() ||
       !web_contents()->GetRenderViewHost()->IsRenderViewLive()) {
     return false;
-  }
-
-  // Is the document already complete?
-  if (print_job_->document() && print_job_->document()->IsComplete()) {
-    printing_succeeded_ = true;
-    return true;
   }
 
   // WebContents is either dying or a second consecutive request to print
