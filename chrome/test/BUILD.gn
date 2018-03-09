@@ -2124,10 +2124,7 @@ group("telemetry_perf_tests_experimental") {
 group("performance_test_suite") {
   testonly = true
   deps = [
-    # Comment this in when testing on a trybot so it does
-    # not have to rebuild chrome each time.
-    "//chrome/test:telemetry_perf_tests_experimental",
-    #"//chrome/test:telemetry_perf_tests",
+    "//chrome/test:telemetry_perf_tests",
   ]
 
   data = [
