@@ -132,7 +132,7 @@
 - (void)setUpToolbarButtons {
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];
-  self.tabSwitchStripButton = [self.buttonFactory tabSwitcherStripButton];
+  self.tabSwitchStripButton = [self.buttonFactory stackViewButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
   self.shareButton = [self.buttonFactory shareButton];
   self.reloadButton = [self.buttonFactory reloadButton];

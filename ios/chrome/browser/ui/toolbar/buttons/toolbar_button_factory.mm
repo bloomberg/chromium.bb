@@ -140,33 +140,10 @@ const int styleCount = 2;
 }
 
 - (ToolbarTabGridButton*)tabGridButton {
-  int tabGridButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
-      TOOLBAR_IDR_THREE_STATE(OVERVIEW);
-  ToolbarTabGridButton* tabGridButton = nil;
-  if (IsUIRefreshPhase1Enabled()) {
-    tabGridButton = [ToolbarTabGridButton
-        toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_switcher"]];
-    [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
-  } else {
-    tabGridButton = [ToolbarTabGridButton
-        toolbarButtonWithImageForNormalState:NativeImage(
-                                                 tabGridButtonImages[self.style]
-                                                                    [DEFAULT])
-                    imageForHighlightedState:NativeImage(
-                                                 tabGridButtonImages[self.style]
-                                                                    [PRESSED])
-                       imageForDisabledState:
-                           NativeImage(
-                               tabGridButtonImages[self.style][DISABLED])];
-    [self configureButton:tabGridButton width:kToolbarButtonWidth];
-    [tabGridButton
-        setTitleColor:[self.toolbarConfiguration buttonTitleNormalColor]
-             forState:UIControlStateNormal];
-    [tabGridButton
-        setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
-             forState:UIControlStateHighlighted];
-  }
-  DCHECK(tabGridButton);
+  DCHECK(IsUIRefreshPhase1Enabled());
+  ToolbarTabGridButton* tabGridButton = [ToolbarTabGridButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_switcher"]];
+  [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
   SetA11yLabelAndUiAutomationName(tabGridButton, IDS_IOS_TOOLBAR_SHOW_TABS,
                                   kToolbarStackButtonIdentifier);
 
@@ -186,19 +163,44 @@ const int styleCount = 2;
   return tabGridButton;
 }
 
-- (ToolbarButton*)tabSwitcherStripButton {
-  return [self tabGridButton];
-}
+- (ToolbarButton*)stackViewButton {
+  DCHECK(!IsUIRefreshPhase1Enabled());
+  int stackViewButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
+      TOOLBAR_IDR_THREE_STATE(OVERVIEW);
+  ToolbarButton* stackViewButton = [ToolbarButton
+      toolbarButtonWithImageForNormalState:NativeImage(
+                                               stackViewButtonImages[self.style]
+                                                                    [DEFAULT])
+                  imageForHighlightedState:NativeImage(
+                                               stackViewButtonImages[self.style]
+                                                                    [PRESSED])
+                     imageForDisabledState:
+                         NativeImage(
+                             stackViewButtonImages[self.style][DISABLED])];
+  [self configureButton:stackViewButton width:kToolbarButtonWidth];
+  [stackViewButton
+      setTitleColor:[self.toolbarConfiguration buttonTitleNormalColor]
+           forState:UIControlStateNormal];
+  [stackViewButton
+      setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
+           forState:UIControlStateHighlighted];
+  SetA11yLabelAndUiAutomationName(stackViewButton, IDS_IOS_TOOLBAR_SHOW_TABS,
+                                  kToolbarStackButtonIdentifier);
 
-- (ToolbarButton*)tabSwitcherGridButton {
-  ToolbarButton* tabSwitcherGridButton =
-      [ToolbarButton toolbarButtonWithImageForNormalState:
-                         [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
-                                 imageForHighlightedState:nil
-                                    imageForDisabledState:nil];
-  tabSwitcherGridButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SHOW_TAB_GRID);
-  return tabSwitcherGridButton;
+  // TODO(crbug.com/799601): Delete this once its not needed.
+  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
+    [stackViewButton addTarget:self.dispatcher
+                        action:@selector(navigateToMemexTabSwitcher)
+              forControlEvents:UIControlEventTouchUpInside];
+  } else {
+    [stackViewButton addTarget:self.dispatcher
+                        action:@selector(displayTabSwitcher)
+              forControlEvents:UIControlEventTouchUpInside];
+  }
+
+  stackViewButton.visibilityMask =
+      self.visibilityConfiguration.tabGridButtonVisibility;
+  return stackViewButton;
 }
 
 - (ToolbarToolsMenuButton*)toolsMenuButton {
