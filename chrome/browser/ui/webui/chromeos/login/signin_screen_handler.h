@@ -407,6 +407,7 @@ class SigninScreenHandler
   void HandleLogRemoveUserWarningShown();
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
+  void HandleSendFeedback();
   void HandleSendFeedbackAndResyncUserData();
   void HandleRequestNewNoteAction(const std::string& request_type);
   void HandleNewNoteLaunchAnimationDone();
@@ -452,6 +453,10 @@ class SigninScreenHandler
 
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
+
+  // Callback invoked after the feedback sent from the unrecoverable cryptohome
+  // page is finished.
+  void OnUnrecoverableCryptohomeFeedbackFinished();
 
   // Called when the cros property controlling allowed input methods changes.
   void OnAllowedInputMethodsChanged();

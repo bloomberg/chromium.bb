@@ -58,6 +58,7 @@
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_BOOTSTRAPPING_SLAVE = "bootstrapping_slave";
 /** @const */ var ACCELERATOR_DEMO_MODE = "demo_mode";
+/** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -447,6 +448,8 @@ cr.define('cr.ui.login', function() {
             -1) {
           chrome.send('setupDemoMode');
         }
+      } else if (name == ACCELERATOR_SEND_FEEDBACK) {
+        chrome.send('sendFeedback');
       }
     },
 
