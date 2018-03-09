@@ -118,7 +118,8 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
     """Run something after sync/reexec."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
-    self._RunStage(test_stages.CidbIntegrationTestStage)
+    # TODO(crbug.com/820305): Enable after the flake issue is fixed.
+    # self._RunStage(test_stages.CidbIntegrationTestStage)
 
 
 class VMInformationalBuilder(simple_builders.SimpleBuilder):
