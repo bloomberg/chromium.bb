@@ -25,7 +25,8 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
     return GetView()->GetTabCountForTesting();
   }
 
-  const std::vector<KeyboardShortcutItemView*>& GetShortcutViews() {
+  const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
+  GetShortcutViews() {
     DCHECK(GetView());
     return GetView()->GetShortcutViewsForTesting();
   }
@@ -55,7 +56,7 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
 
   int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
-  for (auto* item_view : GetShortcutViews()) {
+  for (const auto& item_view : GetShortcutViews()) {
     const ShortcutCategory category = item_view->category();
     if (current_category != category) {
       DCHECK(current_category < category);
@@ -74,7 +75,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
   // Showing the widget.
   views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
 
-  for (auto* item_view : GetShortcutViews()) {
+  for (const auto& item_view : GetShortcutViews()) {
     DCHECK(item_view->child_count() == 2);
 
     // The top lines in both |description_label_view_| and

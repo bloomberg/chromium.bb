@@ -139,6 +139,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
+  // Clears all the styles applied to the label.
+  void ClearStyleRanges();
+
  private:
   struct StyleRange {
     StyleRange(const gfx::Range& range,

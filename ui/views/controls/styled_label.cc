@@ -274,6 +274,11 @@ void StyledLabel::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   SchedulePaint();
 }
 
+void StyledLabel::ClearStyleRanges() {
+  style_ranges_.clear();
+  PreferredSizeChanged();
+}
+
 int StyledLabel::GetDefaultLineHeight() const {
   return specified_line_height_ > 0
              ? specified_line_height_
