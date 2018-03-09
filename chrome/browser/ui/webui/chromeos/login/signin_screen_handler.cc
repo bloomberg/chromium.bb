@@ -532,6 +532,7 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleFirstIncorrectPasswordAttempt);
   AddCallback("maxIncorrectPasswordAttempts",
               &SigninScreenHandler::HandleMaxIncorrectPasswordAttempts);
+  AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
   AddCallback("sendFeedbackAndResyncUserData",
               &SigninScreenHandler::HandleSendFeedbackAndResyncUserData);
   AddCallback("setupDemoMode", &SigninScreenHandler::HandleSetupDemoMode);
@@ -1551,16 +1552,27 @@ void SigninScreenHandler::HandleMaxIncorrectPasswordAttempts(
   RecordReauthReason(account_id, ReauthReason::INCORRECT_PASSWORD_ENTERED);
 }
 
+void SigninScreenHandler::HandleSendFeedback() {
+  login_feedback_ =
+      std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));
+  login_feedback_->Request(
+      std::string(), base::BindOnce(&SigninScreenHandler::OnFeedbackFinished,
+                                    weak_factory_.GetWeakPtr()));
+}
+
 void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
   const std::string description = base::StringPrintf(
       "Auto generated feedback for http://crbug.com/547857.\n"
       "(uniquifier:%s)",
       base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
 
-  login_feedback_.reset(new LoginFeedback(Profile::FromWebUI(web_ui())));
-  login_feedback_->Request(description,
-                           base::Bind(&SigninScreenHandler::OnFeedbackFinished,
-                                      weak_factory_.GetWeakPtr()));
+  login_feedback_ =
+      std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));
+  login_feedback_->Request(
+      description,
+      base::BindOnce(
+          &SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished,
+          weak_factory_.GetWeakPtr()));
 }
 
 void SigninScreenHandler::HandleRequestNewNoteAction(
@@ -1659,10 +1671,16 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
 }
 
 void SigninScreenHandler::OnFeedbackFinished() {
+  login_feedback_.reset();
+}
+
+void SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished() {
   CallJS("login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
 
   // Recreate user's cryptohome after the feedback is attempted.
   HandleResyncUserData();
+
+  login_feedback_.reset();
 }
 
 void SigninScreenHandler::OnAllowedInputMethodsChanged() {
