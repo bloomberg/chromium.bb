@@ -61,7 +61,16 @@ group("perf_experimental") {
     "//tools/json_comment_eater/",
     "//tools/json_to_struct/",
 
-    # For Pylib used by benchmarks
+    # For blink_perf benchmarks.
+    "//third_party/WebKit/PerformanceTests/",
+
+    # For smoothness.tough_canvas_cases
+    "//chrome/test/data/perf/",
+
+    # For image_decoding.measurement
+    "//chrome/test/data/image_decoding/",
+
+    # For Pylib used by VR tests
     "//build/android/pylib/",
   ]
 }
