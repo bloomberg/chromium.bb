@@ -91,6 +91,12 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
     virtual void OnDownloadCreated(DownloadManager* manager,
                                    download::DownloadItem* item) {}
 
+    // Called when the download manager intercepted a download navigation but
+    // didn't create the download item. Possible reasons:
+    // 1. |delegate| is null.
+    // 2. |delegate| doesn't allow the download.
+    virtual void OnDownloadDropped(DownloadManager* manager) {}
+
     // Called when the download manager has finished loading the data.
     virtual void OnManagerInitialized() {}
 

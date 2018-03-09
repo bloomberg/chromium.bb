@@ -885,8 +885,11 @@ void DownloadManagerImpl::InterceptNavigation(
     net::CertStatus cert_status,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!delegate_)
+  if (!delegate_) {
+    for (auto& observer : observers_)
+      observer.OnDownloadDropped(this);
     return;
+  }
 
   const GURL& url = resource_request->url;
   const std::string& method = resource_request->method;
@@ -1133,8 +1136,11 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
-  if (!is_download_allowed)
+  if (!is_download_allowed) {
+    for (auto& observer : observers_)
+      observer.OnDownloadDropped(this);
     return;
+  }
 
   int render_process_id = -1;
   int render_frame_id = -1;
