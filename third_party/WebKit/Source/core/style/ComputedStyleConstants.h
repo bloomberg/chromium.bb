@@ -28,8 +28,8 @@
 #ifndef ComputedStyleConstants_h
 #define ComputedStyleConstants_h
 
-#include "core/ComputedStyleBaseConstants.h"
 #include <cstddef>
+#include "core/computed_style_base_constants.h"
 
 namespace blink {
 

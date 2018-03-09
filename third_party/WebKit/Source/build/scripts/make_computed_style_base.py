@@ -553,14 +553,14 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
         self._include_paths = _get_include_paths(self._properties)
         self._outputs = {
-            'ComputedStyleBase.h': self.generate_base_computed_style_h,
-            'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
-            'ComputedStyleBaseConstants.h':
+            'computed_style_base.h': self.generate_base_computed_style_h,
+            'computed_style_base.cc': self.generate_base_computed_style_cpp,
+            'computed_style_base_constants.h':
                 self.generate_base_computed_style_constants,
         }
 
     @template_expander.use_jinja(
-        'templates/ComputedStyleBase.h.tmpl', tests={'in': lambda a, b: a in b})
+        'templates/computed_style_base.h.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_h(self):
         return {
             'input_files': self._input_files,
@@ -572,7 +572,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'templates/ComputedStyleBase.cpp.tmpl',
+        'templates/computed_style_base.cc.tmpl',
         tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_cpp(self):
         return {
@@ -584,7 +584,7 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
             'diff_functions_map': self._diff_functions_map,
         }
 
-    @template_expander.use_jinja('templates/ComputedStyleBaseConstants.h.tmpl')
+    @template_expander.use_jinja('templates/computed_style_base_constants.h.tmpl')
     def generate_base_computed_style_constants(self):
         return {
             'input_files': self._input_files,
