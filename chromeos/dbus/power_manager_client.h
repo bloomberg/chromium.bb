@@ -21,6 +21,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace power_manager {
+class BacklightBrightnessChange;
 class PowerSupplyProperties;
 class ScreenIdleState;
 }
@@ -56,14 +57,12 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     virtual void PowerManagerRestarted() {}
 
     // Called when the screen brightness is changed.
-    // |level| is of the range [0, 100].
-    // |user_initiated| is true if the action is initiated by the user.
-    virtual void BrightnessChanged(int level, bool user_initiated) {}
+    virtual void ScreenBrightnessChanged(
+        const power_manager::BacklightBrightnessChange& change) {}
 
     // Called when the keyboard brightness is changed.
-    // |level| is of the range [0, 100].
-    // |user_initiated| is true if the action is initiated by the user.
-    virtual void KeyboardBrightnessChanged(int level, bool user_initiated) {}
+    virtual void KeyboardBrightnessChanged(
+        const power_manager::BacklightBrightnessChange& change) {}
 
     // Called when screen-related inactivity timeouts are triggered or reset.
     virtual void ScreenIdleStateChanged(

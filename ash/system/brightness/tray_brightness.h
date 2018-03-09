@@ -44,7 +44,8 @@ class ASH_EXPORT TrayBrightness
   bool ShouldShowShelf() const override;
 
   // Overriden from PowerManagerClient::Observer.
-  void BrightnessChanged(int level, bool user_initiated) override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   void HandleBrightnessChanged(double percent, bool user_initiated);
 

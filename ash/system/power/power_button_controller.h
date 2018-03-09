@@ -98,7 +98,8 @@ class ASH_EXPORT PowerButtonController
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // chromeos::PowerManagerClient::Observer:
-  void BrightnessChanged(int level, bool user_initiated) override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
