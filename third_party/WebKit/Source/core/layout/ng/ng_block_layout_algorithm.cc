@@ -973,12 +973,18 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     if (!PositionWithBfcOffset(layout_result->BfcOffset().value(),
                                &child_bfc_offset))
       return false;
-  } else if (container_builder_.BfcOffset()) {
-    child_bfc_offset =
-        PositionWithParentBfc(child, *child_space, child_data, *layout_result,
-                              &empty_block_affected_by_clearance);
-  } else
+  } else {
+    // Layout wasn't able to determine the BFC offset of the child. This has to
+    // mean that the child is empty (block-size-wise).
     DCHECK(is_empty_block);
+    if (container_builder_.BfcOffset()) {
+      // Since we know our own BFC offset, though, we can calculate that of the
+      // child as well.
+      child_bfc_offset = PositionEmptyChildWithParentBfc(
+          child, *child_space, child_data, *layout_result,
+          &empty_block_affected_by_clearance);
+    }
+  }
 
   // We need to re-layout a child if it was affected by clearance in order to
   // produce a new margin strut. For example:
@@ -1194,12 +1200,12 @@ bool NGBlockLayoutAlgorithm::PositionWithBfcOffset(
   return true;
 }
 
-NGBfcOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
+NGBfcOffset NGBlockLayoutAlgorithm::PositionEmptyChildWithParentBfc(
     const NGLayoutInputNode& child,
-    const NGConstraintSpace& space,
+    const NGConstraintSpace& child_space,
     const NGInflowChildData& child_data,
     const NGLayoutResult& layout_result,
-    bool* empty_block_affected_by_clearance) {
+    bool* has_clearance) const {
   DCHECK(IsEmptyBlock(child, layout_result));
 
   // The child must be an in-flow zero-block-size fragment, use its end margin
@@ -1217,8 +1223,8 @@ NGBfcOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
                                child_available_size_.inline_size);
   }
 
-  *empty_block_affected_by_clearance =
-      AdjustToClearance(space.ClearanceOffset(), &child_bfc_offset);
+  *has_clearance =
+      AdjustToClearance(child_space.ClearanceOffset(), &child_bfc_offset);
 
   return child_bfc_offset;
 }

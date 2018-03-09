@@ -82,23 +82,22 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       bool empty_block_affected_by_clearance);
 
   // Positions the fragment that knows its BFC offset.
-  WTF::Optional<NGBfcOffset> PositionWithBfcOffset(
-      const NGBfcOffset& bfc_offset);
   bool PositionWithBfcOffset(const NGBfcOffset& bfc_offset,
                              WTF::Optional<NGBfcOffset>* child_bfc_offset);
 
-  // Positions using the parent BFC offset.
-  // Fragment doesn't know its offset but we can still calculate its BFC
+  // Position an empty child using the parent BFC offset.
+  // The fragment doesn't know its offset, but we can still calculate its BFC
   // position because the parent fragment's BFC is known.
   // Example:
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
-  //     <div id="empty-div" style="margins: 1px"></div>
-  NGBfcOffset PositionWithParentBfc(const NGLayoutInputNode& child,
-                                    const NGConstraintSpace&,
-                                    const NGInflowChildData& child_data,
-                                    const NGLayoutResult&,
-                                    bool* empty_block_affected_by_clearance);
+  //     <div id="empty-div" style="margin: 1px"></div>
+  NGBfcOffset PositionEmptyChildWithParentBfc(
+      const NGLayoutInputNode& child,
+      const NGConstraintSpace& child_space,
+      const NGInflowChildData& child_data,
+      const NGLayoutResult&,
+      bool* has_clearance) const;
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
