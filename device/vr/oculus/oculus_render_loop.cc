@@ -224,8 +224,12 @@ base::WeakPtr<OculusRenderLoop> OculusRenderLoop::GetWeakPtr() {
 
 void OculusRenderLoop::GetVSync(
     mojom::VRPresentationProvider::GetVSyncCallback callback) {
-  int16_t frame = next_frame_id_++;
   DCHECK(is_presenting_);
+  int16_t frame = next_frame_id_;
+  next_frame_id_ += 1;
+  if (next_frame_id_ < 0) {
+    next_frame_id_ = 0;
+  }
 
   auto predicted_time =
       ovr_GetPredictedDisplayTime(session_, ovr_frame_index_ + 1);
