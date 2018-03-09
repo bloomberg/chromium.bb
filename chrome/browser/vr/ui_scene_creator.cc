@@ -132,6 +132,7 @@ void OnSuggestionModelAdded(UiScene* scene,
                             UiBrowserInterface* browser,
                             Ui* ui,
                             Model* model,
+                            AudioDelegate* audio_delegate,
                             SuggestionBinding* element_binding) {
   auto icon = std::make_unique<VectorIcon>(100);
   icon->SetDrawPhase(kPhaseForeground);
@@ -197,6 +198,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
   background->set_hover_offset(0.0);
+  background->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate);
   VR_BIND_BUTTON_COLORS(model, background.get(),
                         &ColorScheme::suggestion_button_colors,
                         &Button::SetButtonColors);
@@ -592,6 +594,7 @@ UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
                                ContentInputDelegate* content_input_delegate,
                                KeyboardDelegate* keyboard_delegate,
                                TextInputDelegate* text_input_delegate,
+                               AudioDelegate* audio_delegate,
                                Model* model)
     : browser_(browser),
       scene_(scene),
@@ -599,6 +602,7 @@ UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
       content_input_delegate_(content_input_delegate),
       keyboard_delegate_(keyboard_delegate),
       text_input_delegate_(text_input_delegate),
+      audio_delegate_(audio_delegate),
       model_(model) {}
 
 UiSceneCreator::~UiSceneCreator() {}
@@ -1130,7 +1134,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       Create<DiscButton>(kWebVrTimeoutMessageButton, kPhaseForeground,
                          base::BindRepeating(&UiBrowserInterface::ExitPresent,
                                              base::Unretained(browser_)),
-                         vector_icons::kClose16Icon);
+                         vector_icons::kClose16Icon, audio_delegate_);
   button->SetVisible(false);
   button->SetTranslate(0, -kTimeoutMessageTextWidthDMM, 0);
   button->SetRotate(1, 0, 0, kTimeoutButtonRotationRad);
@@ -1403,7 +1407,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       kSpeechRecognitionListeningCloseButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
                           base::Unretained(browser_), false),
-      vector_icons::kClose16Icon);
+      vector_icons::kClose16Icon, audio_delegate_);
   close_button->SetSize(kVoiceSearchCloseButtonDiameter,
                         kVoiceSearchCloseButtonDiameter);
   close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
@@ -1448,7 +1452,7 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
       base::BindRepeating(
           [](Model* model) { model->push_mode(kModeRepositionWindow); },
           base::Unretained(model_)),
-      kRepositionIcon);
+      kRepositionIcon, audio_delegate_);
   reposition_button->SetSize(kRepositionButtonDiameter,
                              kRepositionButtonDiameter);
   reposition_button->set_y_anchoring(BOTTOM);
@@ -1463,6 +1467,7 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   reposition_button->background()->SetTransitionedProperties(
       {BACKGROUND_COLOR, TRANSFORM});
   reposition_button->SetOpacity(kRepositionButtonMinOpacity);
+  reposition_button->SetSounds(kSoundNone, kSoundNone, nullptr);
   reposition_button->AddBinding(std::make_unique<Binding<float>>(
       VR_BIND_LAMBDA(
           [](Model* model, Button* button) {
@@ -1681,6 +1686,7 @@ void UiSceneCreator::CreateUrlBar() {
   back_button->SetCornerRadii(
       {kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2, 0});
   back_button->set_hover_offset(0.0f);
+  back_button->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate_);
   back_button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                        model->can_navigate_back, Button,
                                        back_button.get(), set_enabled));
@@ -2043,6 +2049,8 @@ void UiSceneCreator::CreateOmnibox() {
   mic_icon_box->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                         kOmniboxTextFieldIconButtonSizeDMM);
   mic_icon_box->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
+  mic_icon_box->SetSounds(kSoundButtonHover, kSoundButtonClick,
+                          audio_delegate_);
   VR_BIND_VISIBILITY(mic_icon_box,
                      model->speech.has_or_can_request_audio_permission &&
                          !model->incognito &&
@@ -2072,10 +2080,10 @@ void UiSceneCreator::CreateOmnibox() {
   text_field_layout->AddChild(std::move(right_spacer));
 
   // Set up the vector binding to manage suggestions dynamically.
-  SuggestionSetBinding::ModelAddedCallback added_callback =
-      base::BindRepeating(&OnSuggestionModelAdded, base::Unretained(scene_),
-                          base::Unretained(browser_), base::Unretained(ui_),
-                          base::Unretained(model_));
+  SuggestionSetBinding::ModelAddedCallback added_callback = base::BindRepeating(
+      &OnSuggestionModelAdded, base::Unretained(scene_),
+      base::Unretained(browser_), base::Unretained(ui_),
+      base::Unretained(model_), base::Unretained(audio_delegate_));
   SuggestionSetBinding::ModelRemovedCallback removed_callback =
       base::BindRepeating(&OnSuggestionModelRemoved, base::Unretained(scene_));
 
@@ -2097,7 +2105,7 @@ void UiSceneCreator::CreateOmnibox() {
       base::BindRepeating(
           [](Model* model) { model->pop_mode(kModeEditingOmnibox); },
           base::Unretained(model_)),
-      vector_icons::kBackArrowIcon);
+      vector_icons::kBackArrowIcon, audio_delegate_);
   close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
                         kOmniboxCloseButtonDiameterDMM);
   close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
@@ -2148,7 +2156,7 @@ void UiSceneCreator::CreateCloseButton() {
       base::Unretained(model_), base::Unretained(browser_));
   std::unique_ptr<DiscButton> element =
       Create<DiscButton>(kCloseButton, kPhaseForeground, click_handler,
-                         vector_icons::kClose16Icon);
+                         vector_icons::kClose16Icon, audio_delegate_);
   element->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);

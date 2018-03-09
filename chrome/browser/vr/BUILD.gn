@@ -183,6 +183,8 @@ static_library("vr_common") {
     "service/vr_service_impl.h",
     "sliding_average.cc",
     "sliding_average.h",
+    "sounds_manager_audio_delegate.cc",
+    "sounds_manager_audio_delegate.h",
     "speech_recognizer.cc",
     "speech_recognizer.h",
     "target_property.cc",

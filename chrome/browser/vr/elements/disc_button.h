@@ -22,7 +22,8 @@ class VectorIcon;
 class DiscButton : public Button {
  public:
   DiscButton(base::RepeatingCallback<void()> click_handler,
-             const gfx::VectorIcon& icon);
+             const gfx::VectorIcon& icon,
+             AudioDelegate* audio_delegate);
   ~DiscButton() override;
 
   VectorIcon* foreground() const { return foreground_; }
