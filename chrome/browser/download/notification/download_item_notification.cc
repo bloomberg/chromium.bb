@@ -321,6 +321,9 @@ std::string DownloadItemNotification::GetNotificationId() const {
 }
 
 void DownloadItemNotification::CloseNotification() {
+  if (closed_)
+    return;
+
   NotificationDisplayServiceFactory::GetForProfile(profile())->Close(
       NotificationHandler::Type::TRANSIENT, GetNotificationId());
 }
@@ -347,6 +350,17 @@ void DownloadItemNotification::Update() {
 void DownloadItemNotification::UpdateNotificationData(bool display,
                                                       bool bump_priority) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (item_->GetState() == download::DownloadItem::CANCELLED) {
+    // Confirms that a download is cancelled by user action.
+    DCHECK(item_->GetLastReason() ==
+               download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
+           item_->GetLastReason() ==
+               download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
+
+    CloseNotification();
+    return;
+  }
 
   DownloadItemModel model(item_);
   DownloadCommands command(item_);
@@ -382,14 +396,9 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
         notification_->set_progress(100);
         break;
       case download::DownloadItem::CANCELLED:
-        // Confirms that a download is cancelled by user action.
-        DCHECK(item_->GetLastReason() ==
-                   download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
-               item_->GetLastReason() ==
-                   download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
-
-        CloseNotification();
-        return;  // Skips the remaining since the notification has closed.
+        // Handled above.
+        NOTREACHED();
+        return;
       case download::DownloadItem::INTERRUPTED:
         // Shows a notifiation as progress type once so the visible content will
         // be updated. (same as the case of type = COMPLETE)
