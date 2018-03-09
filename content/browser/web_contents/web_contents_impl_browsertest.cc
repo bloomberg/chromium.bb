@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -41,6 +42,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -75,6 +77,8 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    host_resolver()->AddRuleWithLatency("slow.com", "127.0.0.1",
+                                        1000 * 60 * 60 /* ms */);
     // Setup the server to allow serving separate sites, so we can perform
     // cross-process navigation.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -1685,6 +1689,115 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateTargetURL) {
       subframe, "document.getElementById('cross_site_link').focus();"));
   EXPECT_EQ(GURL("http://foo.com/title2.html"),
             target_url_waiter.WaitForUpdatedTargetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
+  // Controlled responses for image requests made in the test. They will
+  // alternate being the "most interesting" for the purposes of notifying the
+  // WebContents.
+  auto a_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/a_img");
+  auto slow_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/slow_img");
+  auto c_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/c_img");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // This is a hack to ensure that the resource scheduler has at least one
+  // loading client for the duration of the test. Could alternatively delay some
+  // subresources on the main target page, but it would require care to ensure
+  // *all* other resources are completed before the test properly gets started.
+  Shell* popup = CreateBrowser();
+  const GURL kPopupUrl(embedded_test_server()->GetURL("/title1.html"));
+  TestNavigationManager popup_delayer(popup->web_contents(), kPopupUrl);
+  popup->LoadURL(kPopupUrl);
+  EXPECT_TRUE(popup_delayer.WaitForResponse());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b(c))")));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* a_frame = web_contents->GetFrameTree()->root();
+  FrameTreeNode* slow_frame = a_frame->child_at(0);
+  FrameTreeNode* c_frame = slow_frame->child_at(0);
+
+  // Start loading the respective resources in each frame.
+  auto load_resource = [](FrameTreeNode* frame, const std::string url) {
+    std::string partial_script = R"(
+      var img = new Image();
+      img.src = '%s';
+      document.body.appendChild(img);
+    )";
+    std::string script =
+        base::StringPrintf(partial_script.c_str(), url.c_str());
+    EXPECT_TRUE(ExecuteScript(frame, script));
+  };
+
+  // Blocks until the img element in |frame| finishes.
+  auto wait_for_img_finished = [](FrameTreeNode* frame) {
+    bool finished = false;
+    std::string script = R"(
+      var img = document.getElementsByTagName('img')[0];
+      if (img.complete)
+        window.domAutomationController.send(true);
+      else
+        img.onload = img.onerror = window.domAutomationController.send(true);
+    )";
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(frame, script.c_str(), &finished));
+  };
+
+  // Requests a load state notification from the RDHI and waits until the update
+  // is posted back on the UI thread. Due to PostTaskAndReply, relies on
+  // UpdateLoadInfo synchronously posting a task to the WebContents.
+  auto update_load_state_and_wait = []() {
+    base::RunLoop run_loop;
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ResourceDispatcherHostImpl::UpdateLoadInfo,
+                       base::Unretained(ResourceDispatcherHostImpl::Get())),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  };
+
+  // There should be no outgoing requests, so the load state should be empty.
+  update_load_state_and_wait();
+  EXPECT_TRUE(web_contents->GetLoadStateHost().empty());
+  EXPECT_EQ(url_formatter::IDNToUnicode(kPopupUrl.host()),
+            popup->web_contents()->GetLoadStateHost());
+
+  load_resource(a_frame, "/a_img");
+  a_response->WaitForRequest();
+  update_load_state_and_wait();
+  EXPECT_EQ(url_formatter::IDNToUnicode("a.com"),
+            web_contents->GetLoadStateHost());
+
+  // slow_img should never get past DNS resolution for the remainder of the
+  // test. Ensure that a_img is further along (and therefore more interesting).
+  load_resource(slow_frame, "http://slow.com/slow_img");
+  update_load_state_and_wait();
+  EXPECT_EQ(url_formatter::IDNToUnicode("a.com"),
+            web_contents->GetLoadStateHost());
+
+  // Finish a_img and start c_img, ensure it passes slow_img.
+  a_response->Done();
+  load_resource(c_frame, "/c_img");
+  wait_for_img_finished(a_frame);
+  c_response->WaitForRequest();
+  update_load_state_and_wait();
+  EXPECT_EQ(url_formatter::IDNToUnicode("c.com"),
+            web_contents->GetLoadStateHost());
+
+  // Finish c_img and ensure slow_img (the last outgoing request) is the most
+  // interesting.
+  c_response->Done();
+  wait_for_img_finished(c_frame);
+  update_load_state_and_wait();
+  EXPECT_EQ(url_formatter::IDNToUnicode("slow.com"),
+            web_contents->GetLoadStateHost());
 }
 
 }  // namespace content
