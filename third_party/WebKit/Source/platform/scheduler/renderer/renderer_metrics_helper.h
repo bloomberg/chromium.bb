@@ -119,6 +119,10 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
   using TaskDurationPerTaskTypeMetricReporter =
       TaskDurationMetricReporter<TaskType>;
   TaskDurationPerTaskTypeMetricReporter per_task_type_duration_reporter;
+  TaskDurationPerTaskTypeMetricReporter
+      foreground_per_task_type_duration_reporter;
+  TaskDurationPerTaskTypeMetricReporter
+      background_per_task_type_duration_reporter;
 
   MainThreadTaskLoadState main_thread_task_load_state;
 
