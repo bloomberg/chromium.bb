@@ -560,7 +560,6 @@ static void setup_ref_mv_list(
     int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
     int mi_row, int mi_col, int16_t *mode_context, int compound_search) {
-#if CONFIG_TMV
   const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   const int tmi_row = mi_row & 0xfffe;
   const int tmi_col = mi_col & 0xfffe;
@@ -569,15 +568,6 @@ static void setup_ref_mv_list(
           ? cm->prev_frame->mvs + (tmi_row >> 1) * prev_frame_mvs_stride +
                 (tmi_col >> 1)
           : NULL;
-#else
-  const int prev_frame_mvs_stride = cm->mi_cols;
-  const MV_REF *const prev_frame_mvs_base =
-      cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs +
-                (((mi_row >> 1) << 1) + 1) * prev_frame_mvs_stride +
-                ((mi_col >> 1) << 1) + 1
-          : NULL;
-#endif  // CONFIG_TMV
 
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
