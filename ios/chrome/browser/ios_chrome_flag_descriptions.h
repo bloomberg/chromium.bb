@@ -76,16 +76,6 @@ extern const char kMemexTabSwitcherDescription[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
 extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
 
-// Title and description for the flag to enable hiding the URL scheme in
-// omnibox URL suggestions.
-extern const char kOmniboxUIHideSuggestionUrlSchemeName[];
-extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
-
-// Title and description for the flag to enable hiding trivial subdomains
-// (www, m) in omnibox URL suggestions.
-extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
-extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
-
 // Title and description for the flag to enable the ability to export passwords
 // from the password settings.
 extern const char kPasswordExportName[];

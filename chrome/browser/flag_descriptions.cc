@@ -1035,17 +1035,6 @@ const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[] =
     "In the Omnibox, hide the scheme and trivial subdomains from steady state "
     "displayed URLs. Hidden portions are restored during editing.";
 
-const char kOmniboxUIHideSuggestionUrlSchemeName[] =
-    "Omnibox UI Hide Suggestion URL Scheme";
-const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
-    "Elides the schemes of suggested URLs in the Omnibox dropdown.";
-
-const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[] =
-    "Omnibox UI Hide Suggestion URL Trivial Subdomains";
-const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[] =
-    "Elides trivially informative subdomains from suggested URLs in the "
-    "Omnibox dropdown (e.g. www. and m.).";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 
