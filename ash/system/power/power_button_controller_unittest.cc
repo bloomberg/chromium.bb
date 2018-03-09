@@ -8,14 +8,17 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller_test_api.h"
+#include "ash/system/power/power_button_menu_view.h"
 #include "ash/system/power/power_button_test_base.h"
 #include "ash/test_media_client.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/test_session_state_animator.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -24,6 +27,7 @@
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
 
 using PowerManagerClient = chromeos::PowerManagerClient;
 
@@ -813,6 +817,40 @@ TEST_F(PowerButtonControllerTest, SuspendWithMenuOn) {
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
   power_manager_client_->SendSuspendDone();
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+}
+
+// Tests that the menu is inactive by default.
+TEST_F(PowerButtonControllerTest, InactivePowerMenuByDefault) {
+  aura::Window* window = CreateTestWindowInShellWithId(0);
+  wm::ActivateWindow(window);
+  ASSERT_EQ(window, wm::GetActiveWindow());
+
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+  ReleasePowerButton();
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  EXPECT_EQ(window, wm::GetActiveWindow());
+  EXPECT_FALSE(
+      wm::IsActiveWindow(power_button_test_api_->GetPowerButtonMenuView()
+                             ->GetWidget()
+                             ->GetNativeWindow()));
+}
+
+// Tests that cursor is hidden after show the menu and should reappear if mouse
+// moves.
+TEST_F(PowerButtonControllerTest, HideCursorAfterShowMenu) {
+  // Cursor is hidden after show the menu.
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
+  ReleasePowerButton();
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  EXPECT_FALSE(cursor_manager->IsCursorVisible());
+
+  // Cursor reappears if mouse moves.
+  GenerateMouseMoveEvent();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
 
 }  // namespace ash

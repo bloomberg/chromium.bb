@@ -44,6 +44,8 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.keep_on_top = true;
+  params.accept_events = true;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PowerButtonMenuWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
@@ -331,6 +333,11 @@ void PowerButtonController::OnPowerButtonMenuTimeout() {
     menu_widget_ = CreateMenuWidget();
   menu_widget_->SetContentsView(new PowerButtonMenuScreenView());
   menu_widget_->Show();
+
+  // Hide cursor, but let it reappear if the mouse moves.
+  Shell* shell = Shell::Get();
+  if (shell->cursor_manager())
+    shell->cursor_manager()->HideCursor();
 
   static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
       ->ScheduleShowHideAnimation(true);
