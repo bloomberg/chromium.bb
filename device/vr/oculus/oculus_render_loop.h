@@ -20,6 +20,8 @@
 
 namespace device {
 
+const int kMaxOculusRenderLoopInputId = (ovrControllerType_Remote + 1);
+
 class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
  public:
   OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid);
@@ -52,6 +54,15 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
 
   mojom::VRPosePtr GetPose();
 
+  std::vector<mojom::XRInputSourceStatePtr> GetInputState(
+      const ovrTrackingState& tracking_state);
+
+  device::mojom::XRInputSourceStatePtr GetTouchData(
+      ovrControllerType type,
+      const ovrPoseStatef& pose,
+      const ovrInputState& input_state,
+      ovrHandType hand);
+
 #if defined(OS_WIN)
   D3D11TextureHelper texture_helper_;
 #endif
@@ -70,6 +81,9 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   ovrTextureSwapChain texture_swap_chain_ = 0;
   double sensor_time_;
   mojo::Binding<mojom::VRPresentationProvider> binding_;
+  bool report_webxr_input_ = false;
+  bool primary_input_pressed[kMaxOculusRenderLoopInputId];
+
   base::WeakPtrFactory<OculusRenderLoop> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OculusRenderLoop);
