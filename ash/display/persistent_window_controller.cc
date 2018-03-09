@@ -5,7 +5,7 @@
 #include "ash/display/persistent_window_controller.h"
 
 #include "ash/display/persistent_window_info.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -30,10 +30,8 @@ MruWindowTracker::WindowList GetWindowList() {
 // Returns true when window cycle list can be processed to perform save/restore
 // operations on observing display changes.
 bool ShouldProcessWindowList() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnablePersistentWindowBounds)) {
+  if (!features::IsPersistentWindowBoundsEnabled())
     return false;
-  }
 
   // Window cycle list exists in active user session only.
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())

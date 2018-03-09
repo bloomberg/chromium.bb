@@ -7,13 +7,11 @@
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -29,10 +27,11 @@ class PersistentWindowControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDisplayMoveWindowAccels);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnablePersistentWindowBounds);
+    // Explicitly enable persistent window bounds and displays move window
+    // accels features for the tests.
+    scoped_feature_list_.InitWithFeatures(
+        {features::kPersistentWindowBounds, features::kDisplayMoveWindowAccels},
+        {});
     AshTestBase::SetUp();
   }
 
