@@ -198,7 +198,8 @@ class ObjectPaintPropertyTreeBuilder {
   ContextForFragment(const Optional<LayoutRect>& fragment_clip,
                      LayoutUnit logical_top_in_flow_thread) const;
   ALWAYS_INLINE void CreateFragmentContexts(bool needs_paint_properties);
-  ALWAYS_INLINE void UpdateFragments();
+  // Returns whether ObjectPaintProperties were allocated or deleted.
+  ALWAYS_INLINE bool UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
   ALWAYS_INLINE void UpdateRepeatingPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();

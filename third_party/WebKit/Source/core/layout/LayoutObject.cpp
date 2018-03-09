@@ -2006,19 +2006,13 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
+  // In SPv175 mode, if property nodes are added or removed as a result of these
+  // style changes, PaintPropertyTreeBuilder will call SetNeedsRepaint
+  // to cause re-generation of PaintChunks.
   if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
                     diff.ZIndexChanged() || diff.FilterChanged() ||
-                    diff.BackdropFilterChanged() || diff.CssClipChanged())) {
+                    diff.BackdropFilterChanged() || diff.CssClipChanged()))
     SetNeedsPaintPropertyUpdate();
-
-    // We don't need to invalidate paint of objects on SPv175 when only paint
-    // property or paint order change. Mark the painting layer needing repaint
-    // for changed paint property or paint order. Raster invalidation will be
-    // issued if needed during paint.
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        !ShouldDoFullPaintInvalidation())
-      ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
-  }
 }
 
 void LayoutObject::StyleWillChange(StyleDifference diff,
