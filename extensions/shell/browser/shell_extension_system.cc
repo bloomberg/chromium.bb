@@ -70,6 +70,10 @@ void ShellExtensionSystem::LaunchApp(const ExtensionId& extension_id) {
   apps::LaunchPlatformApp(browser_context_, extension, SOURCE_UNTRACKED);
 }
 
+void ShellExtensionSystem::ReloadExtension(const ExtensionId& extension_id) {
+  extension_loader_->ReloadExtension(extension_id);
+}
+
 void ShellExtensionSystem::Shutdown() {
   extension_loader_.reset();
 }

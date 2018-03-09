@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -161,10 +162,15 @@ ShellDesktopControllerAura::~ShellDesktopControllerAura() {
 }
 
 void ShellDesktopControllerAura::Run() {
+  KeepAliveRegistry::GetInstance()->AddObserver(this);
+
   base::RunLoop run_loop;
   run_loop_ = &run_loop;
   run_loop.Run();
   run_loop_ = nullptr;
+
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(true);
+  KeepAliveRegistry::GetInstance()->RemoveObserver(this);
 }
 
 void ShellDesktopControllerAura::AddAppWindow(AppWindow* app_window,
@@ -198,9 +204,7 @@ void ShellDesktopControllerAura::CloseRootWindowController(
   TearDownRootWindowController(it->second.get());
   root_window_controllers_.erase(it);
 
-  // run_loop_ may be null in tests.
-  if (run_loop_ && root_window_controllers_.empty())
-    run_loop_->QuitWhenIdle();
+  MaybeQuit();
 }
 
 #if defined(OS_CHROMEOS)
@@ -233,6 +237,15 @@ ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
   // triggered the event. See ash::WindowTreeHostManager for example.
   return GetPrimaryHost()->DispatchKeyEventPostIME(key_event);
 }
+
+void ShellDesktopControllerAura::OnKeepAliveStateChanged(
+    bool is_keeping_alive) {
+  if (!is_keeping_alive)
+    MaybeQuit();
+}
+
+void ShellDesktopControllerAura::OnKeepAliveRestartStateChanged(
+    bool can_restart) {}
 
 aura::WindowTreeHost* ShellDesktopControllerAura::GetPrimaryHost() {
   if (root_window_controllers_.empty())
@@ -335,6 +348,19 @@ void ShellDesktopControllerAura::TearDownRootWindowController(
   root->host()->window()->RemovePreTargetHandler(
       root_window_event_filter_.get());
   root->host()->window()->RemovePreTargetHandler(focus_controller_.get());
+}
+
+void ShellDesktopControllerAura::MaybeQuit() {
+  // run_loop_ may be null in tests.
+  if (!run_loop_)
+    return;
+
+  // Quit if there are no app windows open and no keep-alives waiting for apps
+  // to relaunch.
+  if (root_window_controllers_.empty() &&
+      !KeepAliveRegistry::GetInstance()->IsKeepingAlive()) {
+    run_loop_->QuitWhenIdle();
+  }
 }
 
 #if defined(OS_CHROMEOS)

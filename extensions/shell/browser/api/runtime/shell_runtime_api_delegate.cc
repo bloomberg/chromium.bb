@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/shell_runtime_api_delegate.h"
+#include "extensions/shell/browser/api/runtime/shell_runtime_api_delegate.h"
 
 #include "build/build_config.h"
 #include "extensions/common/api/runtime.h"
+#include "extensions/shell/browser/shell_extension_system.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -17,19 +18,21 @@ using extensions::api::runtime::PlatformInfo;
 
 namespace extensions {
 
-ShellRuntimeAPIDelegate::ShellRuntimeAPIDelegate() {
+ShellRuntimeAPIDelegate::ShellRuntimeAPIDelegate(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
+  DCHECK(browser_context_);
 }
 
-ShellRuntimeAPIDelegate::~ShellRuntimeAPIDelegate() {
-}
+ShellRuntimeAPIDelegate::~ShellRuntimeAPIDelegate() = default;
 
-void ShellRuntimeAPIDelegate::AddUpdateObserver(UpdateObserver* observer) {
-}
+void ShellRuntimeAPIDelegate::AddUpdateObserver(UpdateObserver* observer) {}
 
-void ShellRuntimeAPIDelegate::RemoveUpdateObserver(UpdateObserver* observer) {
-}
+void ShellRuntimeAPIDelegate::RemoveUpdateObserver(UpdateObserver* observer) {}
 
 void ShellRuntimeAPIDelegate::ReloadExtension(const std::string& extension_id) {
+  static_cast<ShellExtensionSystem*>(ExtensionSystem::Get(browser_context_))
+      ->ReloadExtension(extension_id);
 }
 
 bool ShellRuntimeAPIDelegate::CheckForUpdates(
@@ -38,8 +41,7 @@ bool ShellRuntimeAPIDelegate::CheckForUpdates(
   return false;
 }
 
-void ShellRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
-}
+void ShellRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {}
 
 bool ShellRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 #if defined(OS_CHROMEOS)

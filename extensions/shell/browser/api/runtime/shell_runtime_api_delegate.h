@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_RUNTIME_API_DELEGATE_H_
-#define EXTENSIONS_SHELL_BROWSER_SHELL_RUNTIME_API_DELEGATE_H_
+#ifndef EXTENSIONS_SHELL_BROWSER_API_RUNTIME_SHELL_RUNTIME_API_DELEGATE_H_
+#define EXTENSIONS_SHELL_BROWSER_API_RUNTIME_SHELL_RUNTIME_API_DELEGATE_H_
 
 #include "base/macros.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace extensions {
 
 class ShellRuntimeAPIDelegate : public RuntimeAPIDelegate {
  public:
-  ShellRuntimeAPIDelegate();
+  explicit ShellRuntimeAPIDelegate(content::BrowserContext* browser_context);
   ~ShellRuntimeAPIDelegate() override;
 
   // RuntimeAPIDelegate implementation.
@@ -26,9 +30,11 @@ class ShellRuntimeAPIDelegate : public RuntimeAPIDelegate {
   bool RestartDevice(std::string* error_message) override;
 
  private:
+  content::BrowserContext* browser_context_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellRuntimeAPIDelegate);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_RUNTIME_API_DELEGATE_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_API_RUNTIME_SHELL_RUNTIME_API_DELEGATE_H_

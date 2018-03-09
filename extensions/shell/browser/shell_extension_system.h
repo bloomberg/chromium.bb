@@ -52,6 +52,9 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Launch the app with id |extension_id|.
   void LaunchApp(const ExtensionId& extension_id);
 
+  // Reloads the extension with id |extension_id|.
+  void ReloadExtension(const ExtensionId& extension_id);
+
   // KeyedService implementation:
   void Shutdown() override;
 
