@@ -4327,6 +4327,11 @@ test("unit_tests") {
   if (is_win || is_mac || (is_linux && !is_chromeos)) {
     sources += [ "../browser/password_manager/password_store_signin_notifier_impl_unittest.cc" ]
   }
+
+  # TODO(crbug.com/349182): Replace "is_chrome_branded" with "enable_widevine".
+  if (is_chrome_branded && is_win) {
+    sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
+  }
 }
 
 static_library("test_support_unit") {

@@ -93,7 +93,6 @@ class D3D11CdmProxyTest : public ::testing::Test {
     EXPECT_CALL(create_device_mock_,
                 Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
         .WillOnce(DoAll(SetArgPointee<7>(device_mock_.Get()),
-                        SetArgPointee<8>(D3D_FEATURE_LEVEL_11_1),
                         SetArgPointee<9>(device_context_mock_.Get()),
                         Return(S_OK)));
 

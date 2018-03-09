@@ -9,13 +9,19 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/child/child_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
 #include "media/cdm/library_cdm/clear_key_cdm/clear_key_cdm_proxy.h"
-#endif
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_WIN)
+#include "chrome/gpu/widevine_cdm_proxy_factory.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
@@ -94,10 +100,14 @@ std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
   if (cdm_guid == media::kClearKeyCdmGuid)
     return std::make_unique<media::ClearKeyCdmProxy>();
 
-  // TODO(rkuroiwa): Support creating Widevine specific CDM proxy here.
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_WIN)
+  if (cdm_guid == kWidevineCdmGuid)
+    return CreateWidevineCdmProxy();
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_WIN)
+
   return nullptr;
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_CHROMEOS)
 void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
