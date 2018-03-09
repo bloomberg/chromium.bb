@@ -119,7 +119,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
           "name": "name",
           "value": "user-agent-custom-assign-slot"
         }
-      ]
+      ],
+      "shadowRootType": "user-agent"
     },
     {
       "nodeType": 1,
@@ -205,6 +206,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
         16
       ],
       "layoutNodeIndex": 7,
+      "shadowRootType": "user-agent",
       "isClickable": true
     },
     {
@@ -418,6 +420,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
         31
       ],
       "layoutNodeIndex": 22,
+      "shadowRootType": "user-agent",
       "isClickable": true
     },
     {
