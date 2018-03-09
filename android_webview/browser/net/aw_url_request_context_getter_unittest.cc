@@ -16,7 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/url_request/url_request_failed_job.h"

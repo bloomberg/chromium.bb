@@ -16,7 +16,7 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 

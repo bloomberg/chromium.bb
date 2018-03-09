@@ -11,7 +11,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "ios/web/public/web_thread.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 
 // static
 std::unique_ptr<net::ProxyConfigService>

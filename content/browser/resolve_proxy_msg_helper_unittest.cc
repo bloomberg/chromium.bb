@@ -13,7 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

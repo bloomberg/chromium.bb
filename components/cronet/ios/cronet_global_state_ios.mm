@@ -13,7 +13,7 @@
 #include "ios/web/public/global_state/ios_global_state_configuration.h"
 #include "ios/web/public/user_agent.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "url/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
