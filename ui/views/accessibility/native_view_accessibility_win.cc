@@ -23,6 +23,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
@@ -100,12 +101,14 @@ NativeViewAccessibilityWin::GetTargetForNativeAccessibilityEvent() {
   return HWNDForView(view());
 }
 
-gfx::RectF NativeViewAccessibilityWin::GetBoundsInScreen() const {
-  gfx::RectF bounds = gfx::RectF(view()->GetBoundsInScreen());
-  gfx::NativeView native_view = view()->GetWidget()->GetNativeView();
-  float device_scale = ui::GetScaleFactorForNativeView(native_view);
-  bounds.Scale(device_scale);
-  return bounds;
+gfx::Rect NativeViewAccessibilityWin::GetClippedScreenBoundsRect() const {
+  // We could optionally add clipping here if ever needed.
+  return GetUnclippedScreenBoundsRect();
+}
+
+gfx::Rect NativeViewAccessibilityWin::GetUnclippedScreenBoundsRect() const {
+  gfx::Rect bounds = view()->GetBoundsInScreen();
+  return display::win::ScreenWin::DIPToScreenRect(HWNDForView(view()), bounds);
 }
 
 }  // namespace views
