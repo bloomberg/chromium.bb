@@ -42,7 +42,7 @@ class SuggestionsStore {
   // Register SuggestionsStore related prefs in the Profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
  protected:
   // Test seam. For simplicity of mock creation.
@@ -51,8 +51,8 @@ class SuggestionsStore {
  private:
   // The pref service used to persist the suggestions data.
   PrefService* pref_service_;
-  // Can be set for testing.
-  std::unique_ptr<base::Clock> clock_;
+  // Can be overridden for testing.
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStore);
 

@@ -20,7 +20,7 @@
 namespace suggestions {
 
 SuggestionsStore::SuggestionsStore(PrefService* profile_prefs)
-    : pref_service_(profile_prefs), clock_(new base::DefaultClock()) {
+    : pref_service_(profile_prefs), clock_(base::DefaultClock::GetInstance()) {
   DCHECK(profile_prefs);
 }
 
@@ -29,9 +29,8 @@ SuggestionsStore::SuggestionsStore() {
 
 SuggestionsStore::~SuggestionsStore() {}
 
-void SuggestionsStore::SetClockForTesting(
-    std::unique_ptr<base::Clock> test_clock) {
-  this->clock_ = std::move(test_clock);
+void SuggestionsStore::SetClockForTesting(base::Clock* test_clock) {
+  this->clock_ = test_clock;
 }
 
 bool SuggestionsStore::LoadSuggestions(SuggestionsProfile* suggestions) {
