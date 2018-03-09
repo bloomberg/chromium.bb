@@ -19,6 +19,42 @@
 #include "url/gurl.h"
 
 namespace password_manager {
+namespace {
+
+// Auxiliary class to automatically set and reset the HSTS state for a given
+// host.
+class HSTSStateManager {
+ public:
+  HSTSStateManager(net::TransportSecurityState* state,
+                   bool is_hsts,
+                   std::string host);
+  ~HSTSStateManager();
+
+ private:
+  net::TransportSecurityState* state_;
+  const bool is_hsts_;
+  const std::string host_;
+
+  DISALLOW_COPY_AND_ASSIGN(HSTSStateManager);
+};
+
+HSTSStateManager::HSTSStateManager(net::TransportSecurityState* state,
+                                   bool is_hsts,
+                                   std::string host)
+    : state_(state), is_hsts_(is_hsts), host_(std::move(host)) {
+  if (is_hsts_) {
+    base::Time expiry = base::Time::Max();
+    bool include_subdomains = false;
+    state_->AddHSTS(host_, expiry, include_subdomains);
+  }
+}
+
+HSTSStateManager::~HSTSStateManager() {
+  if (is_hsts_)
+    state_->DeleteDynamicDataForHost(host_);
+}
+
+}  // namespace
 
 class HSTSQueryTest : public testing::Test {
  public:
