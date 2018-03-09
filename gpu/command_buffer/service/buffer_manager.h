@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -101,6 +102,27 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
   void RemoveMappedRange();
   const MappedRange* GetMappedRange() const {
     return mapped_range_.get();
+  }
+
+  void OnBind(GLenum target) {
+    ++binding_count_;
+    if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+      ++transform_feedback_binding_count_;
+    }
+  }
+
+  void OnUnbind(GLenum target) {
+    --binding_count_;
+    if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+      --transform_feedback_binding_count_;
+    }
+    DCHECK(binding_count_ >= 0);
+    DCHECK(transform_feedback_binding_count_ >= 0);
+  }
+
+  bool IsBoundForTransformFeedbackAndOther() const {
+    return transform_feedback_binding_count_ > 0 &&
+           transform_feedback_binding_count_ != binding_count_;
   }
 
  private:
@@ -191,6 +213,13 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Whether or not this Buffer is not uploaded to the GPU but just
   // sitting in local memory.
   bool is_client_side_array_;
+
+  // Keeps track of whether this buffer is currently bound for transform
+  // feedback in a WebGL context. Used as an optimization when validating WebGL
+  // draw calls for compliance with binding restrictions.
+  // http://crbug.com/696345
+  int binding_count_;
+  int transform_feedback_binding_count_;
 
   // Service side buffer id.
   GLuint service_id_;
@@ -320,7 +349,8 @@ class GPU_GLES2_EXPORT BufferManager
   bool RequestBufferAccess(ErrorState* error_state,
                            Buffer* buffer,
                            const char* func_name,
-                           const char* error_message_format, ...);
+                           const char* error_message_format,
+                           ...);
   // Generates INVALID_OPERATION if offset + size is out of range.
   bool RequestBufferAccess(ErrorState* error_state,
                            Buffer* buffer,
@@ -331,13 +361,12 @@ class GPU_GLES2_EXPORT BufferManager
   // Returns false and generates INVALID_OPERATION if buffer at binding |ii|
   // doesn't exist, is mapped, or smaller than |variable_sizes[ii]| * |count|.
   // Return true otherwise.
-  bool RequestBuffersAccess(
-      ErrorState* error_state,
-      const IndexedBufferBindingHost* bindings,
-      const std::vector<GLsizeiptr>& variable_sizes,
-      GLsizei count,
-      const char* func_name,
-      const char* message_tag);
+  bool RequestBuffersAccess(ErrorState* error_state,
+                            const IndexedBufferBindingHost* bindings,
+                            const std::vector<GLsizeiptr>& variable_sizes,
+                            GLsizei count,
+                            const char* func_name,
+                            const char* message_tag);
 
  private:
   friend class Buffer;

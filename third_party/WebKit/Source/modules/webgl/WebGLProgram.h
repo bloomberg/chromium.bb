@@ -57,6 +57,15 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   void IncreaseActiveTransformFeedbackCount();
   void DecreaseActiveTransformFeedbackCount();
 
+  void SetRequiredTransformFeedbackBufferCount(int count) {
+    required_transform_feedback_buffer_count_after_next_link_ = count;
+  }
+  int GetRequiredTransformFeedbackBufferCount(
+      WebGLRenderingContextBase* context) {
+    CacheInfoIfNeeded(context);
+    return required_transform_feedback_buffer_count_;
+  }
+
   WebGLShader* GetAttachedShader(GLenum);
   bool AttachShader(WebGLShader*);
   bool DetachShader(WebGLShader*);
@@ -88,6 +97,10 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   TraceWrapperMember<WebGLShader> fragment_shader_;
 
   bool info_valid_;
+
+  // The number of transform feedback buffers this program will write to.
+  int required_transform_feedback_buffer_count_;
+  int required_transform_feedback_buffer_count_after_next_link_;
 };
 
 }  // namespace blink

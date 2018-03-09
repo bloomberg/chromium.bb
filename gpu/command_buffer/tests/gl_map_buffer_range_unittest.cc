@@ -459,7 +459,6 @@ TEST_F(ES3MapBufferRangeTest, TransformFeedback) {
   glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 6, GL_MAP_READ_BIT);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 
-  glDrawArrays(GL_TRIANGLES, 0, 6);
   glEndTransformFeedback();
   GLTestHelper::CheckGLError("no errors", __LINE__);
 

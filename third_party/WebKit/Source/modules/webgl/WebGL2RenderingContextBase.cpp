@@ -4268,6 +4268,13 @@ void WebGL2RenderingContextBase::bindTransformFeedback(
     return;
   }
 
+  if (transform_feedback_binding_->active() &&
+      !transform_feedback_binding_->paused()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "bindTransformFeedback",
+                      "transform feedback is active and not paused");
+    return;
+  }
+
   WebGLTransformFeedback* feedback_to_be_bound;
   if (feedback) {
     feedback_to_be_bound = feedback;
@@ -4287,22 +4294,50 @@ void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitive_mode) {
   if (!ValidateTransformFeedbackPrimitiveMode("beginTransformFeedback",
                                               primitive_mode))
     return;
+  if (!current_program_) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "beginTransformFeedback",
+                      "no program object is active");
+    return;
+  }
+  if (transform_feedback_binding_->active()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "beginTransformFeedback",
+                      "transform feedback is already active");
+    return;
+  }
+  int required_buffer_count =
+      current_program_->GetRequiredTransformFeedbackBufferCount(this);
+  if (required_buffer_count == 0) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "beginTransformFeedback",
+                      "current active program does not specify any transform "
+                      "feedback varyings to record");
+    return;
+  }
+  if (!transform_feedback_binding_->HasEnoughBuffers(required_buffer_count)) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "beginTransformFeedback",
+                      "not enough transform feedback buffers bound");
+    return;
+  }
 
   ContextGL()->BeginTransformFeedback(primitive_mode);
-
-  if (current_program_)
-    current_program_->IncreaseActiveTransformFeedbackCount();
-
-  if (transform_feedback_binding_)
-    transform_feedback_binding_->SetProgram(current_program_);
+  current_program_->IncreaseActiveTransformFeedbackCount();
+  transform_feedback_binding_->SetProgram(current_program_);
+  transform_feedback_binding_->SetActive(true);
+  transform_feedback_binding_->SetPaused(false);
 }
 
 void WebGL2RenderingContextBase::endTransformFeedback() {
   if (isContextLost())
     return;
+  if (!transform_feedback_binding_->active()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "endTransformFeedback",
+                      "transform feedback is not active");
+    return;
+  }
 
   ContextGL()->EndTransformFeedback();
 
+  transform_feedback_binding_->SetPaused(false);
+  transform_feedback_binding_->SetActive(false);
   if (current_program_)
     current_program_->DecreaseActiveTransformFeedbackCount();
 }
@@ -4339,6 +4374,9 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
     keep_alive.push_back(varyings[i].Ascii());
     varying_strings.push_back(keep_alive.back().data());
   }
+
+  program->SetRequiredTransformFeedbackBufferCount(
+      buffer_mode == GL_INTERLEAVED_ATTRIBS ? 1 : varyings.size());
 
   ContextGL()->TransformFeedbackVaryings(ObjectOrZero(program), varyings.size(),
                                          varying_strings.data(), buffer_mode);
@@ -4391,6 +4429,18 @@ void WebGL2RenderingContextBase::pauseTransformFeedback() {
   if (isContextLost())
     return;
 
+  if (!transform_feedback_binding_->active()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "pauseTransformFeedback",
+                      "transform feedback is not active");
+    return;
+  }
+  if (transform_feedback_binding_->paused()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "pauseTransformFeedback",
+                      "transform feedback is already paused");
+    return;
+  }
+
+  transform_feedback_binding_->SetPaused(true);
   ContextGL()->PauseTransformFeedback();
 }
 
@@ -4398,13 +4448,21 @@ void WebGL2RenderingContextBase::resumeTransformFeedback() {
   if (isContextLost())
     return;
 
-  if (transform_feedback_binding_ &&
-      transform_feedback_binding_->GetProgram() != current_program_) {
+  if (!transform_feedback_binding_->ValidateProgramForResume(
+          current_program_)) {
     SynthesizeGLError(GL_INVALID_OPERATION, "resumeTransformFeedback",
-                      "the program object is not active");
+                      "the current program is not the same as when "
+                      "beginTransformFeedback was called");
+    return;
+  }
+  if (!transform_feedback_binding_->active() ||
+      !transform_feedback_binding_->paused()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "resumeTransformFeedback",
+                      "transform feedback is not active or not paused");
     return;
   }
 
+  transform_feedback_binding_->SetPaused(false);
   ContextGL()->ResumeTransformFeedback();
 }
 
@@ -4436,6 +4494,12 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target,
                       "attempt to bind a deleted buffer");
     return;
   }
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
+      transform_feedback_binding_->active()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase",
+                      "transform feedback is active");
+    return;
+  }
   if (!ValidateAndUpdateBufferBindBaseTarget("bindBufferBase", target, index,
                                              buffer))
     return;
@@ -4456,6 +4520,12 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target,
   if (deleted) {
     SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferRange",
                       "attempt to bind a deleted buffer");
+    return;
+  }
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER &&
+      transform_feedback_binding_->active()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase",
+                      "transform feedback is active");
     return;
   }
   if (!ValidateValueFitNonNegInt32("bindBufferRange", "offset", offset) ||
@@ -5039,32 +5109,6 @@ bool WebGL2RenderingContextBase::ValidateCapability(const char* function_name,
   }
 }
 
-bool WebGL2RenderingContextBase::IsBufferBoundToTransformFeedback(
-    WebGLBuffer* buffer) {
-  DCHECK(buffer);
-  return transform_feedback_binding_->IsBufferBoundToTransformFeedback(buffer);
-}
-
-bool WebGL2RenderingContextBase::IsBufferBoundToNonTransformFeedback(
-    WebGLBuffer* buffer) {
-  DCHECK(buffer);
-
-  if (bound_array_buffer_ == buffer ||
-      bound_vertex_array_object_->BoundElementArrayBuffer() == buffer ||
-      bound_copy_read_buffer_ == buffer || bound_copy_write_buffer_ == buffer ||
-      bound_pixel_pack_buffer_ == buffer ||
-      bound_pixel_unpack_buffer_ == buffer || bound_uniform_buffer_ == buffer) {
-    return true;
-  }
-
-  for (size_t i = 0; i <= max_bound_uniform_buffer_index_; ++i) {
-    if (bound_indexed_uniform_buffers_[i] == buffer)
-      return true;
-  }
-
-  return false;
-}
-
 bool WebGL2RenderingContextBase::ValidateBufferTargetCompatibility(
     const char* function_name,
     GLenum target,
@@ -5104,20 +5148,6 @@ bool WebGL2RenderingContextBase::ValidateBufferTargetCompatibility(
       break;
     default:
       break;
-  }
-
-  if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
-    if (IsBufferBoundToNonTransformFeedback(buffer)) {
-      SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                        "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not "
-                        "be bound to any other targets");
-      return false;
-    }
-  } else if (IsBufferBoundToTransformFeedback(buffer)) {
-    SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                      "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be "
-                      "bound to any other targets");
-    return false;
   }
 
   return true;
@@ -5812,6 +5842,16 @@ void WebGL2RenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
 void WebGL2RenderingContextBase::RestoreCurrentFramebuffer() {
   bindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_binding_.Get());
   bindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer_binding_.Get());
+}
+
+void WebGL2RenderingContextBase::useProgram(WebGLProgram* program) {
+  if (transform_feedback_binding_->active() &&
+      !transform_feedback_binding_->paused()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "useProgram",
+                      "transform feedback is active and not paused");
+    return;
+  }
+  WebGLRenderingContextBase::useProgram(program);
 }
 
 GLint WebGL2RenderingContextBase::GetMaxTransformFeedbackSeparateAttribs()

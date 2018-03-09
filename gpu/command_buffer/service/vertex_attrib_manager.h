@@ -130,8 +130,6 @@ class GPU_GLES2_EXPORT VertexAttrib {
     divisor_ = divisor;
   }
 
-  void Unbind(Buffer* buffer);
-
   // The index of this attrib.
   GLuint index_;
 
@@ -185,7 +183,7 @@ class GPU_GLES2_EXPORT VertexAttribManager
  public:
   typedef std::list<VertexAttrib*> VertexAttribList;
 
-  VertexAttribManager();
+  explicit VertexAttribManager(bool do_buffer_refcounting);
 
   void Initialize(uint32_t num_vertex_attribs, bool init_attribs);
 
@@ -256,8 +254,12 @@ class GPU_GLES2_EXPORT VertexAttribManager
       if (type == GL_FIXED) {
         ++num_fixed_attribs_;
       }
+      if (do_buffer_refcounting_ && is_bound_ && attrib->buffer_)
+        attrib->buffer_->OnUnbind(GL_ARRAY_BUFFER);
       attrib->SetInfo(buffer, size, type, normalized, gl_stride, real_stride,
                       offset, integer);
+      if (do_buffer_refcounting_ && is_bound_ && buffer)
+        buffer->OnBind(GL_ARRAY_BUFFER);
     }
   }
 
@@ -300,6 +302,8 @@ class GPU_GLES2_EXPORT VertexAttribManager
       bool instanced,
       GLsizei primcount);
 
+  void SetIsBound(bool is_bound);
+
  private:
   friend class VertexArrayManager;
   friend class VertexArrayManagerTest;
@@ -308,7 +312,8 @@ class GPU_GLES2_EXPORT VertexAttribManager
   // Used when creating from a VertexArrayManager
   VertexAttribManager(VertexArrayManager* manager,
                       GLuint service_id,
-                      uint32_t num_vertex_attribs);
+                      uint32_t num_vertex_attribs,
+                      bool do_buffer_refcounting);
 
   ~VertexAttribManager();
 
@@ -345,6 +350,14 @@ class GPU_GLES2_EXPORT VertexAttribManager
 
   // True if deleted.
   bool deleted_;
+
+  // True if this is the currently bound VAO.
+  bool is_bound_;
+
+  // Whether or not to call Buffer::OnBind/OnUnbind whenever bindings change.
+  // This is only necessary for WebGL contexts to implement
+  // https://crbug.com/696345
+  bool do_buffer_refcounting_;
 
   // Service side vertex array object id.
   GLuint service_id_;

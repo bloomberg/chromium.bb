@@ -35,7 +35,8 @@ class GPU_GLES2_EXPORT VertexArrayManager {
       GLuint client_id,
       GLuint service_id,
       uint32_t num_vertex_attribs,
-      bool client_visible);
+      bool client_visible,
+      bool do_buffer_refcounting);
 
   // Gets the vertex attrib manager for the given vertex array.
   VertexAttribManager* GetVertexAttribManager(GLuint client_id);

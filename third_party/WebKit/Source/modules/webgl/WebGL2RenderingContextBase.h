@@ -971,6 +971,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLenum type,
                   MaybeShared<DOMArrayBufferView> pixels) override;
   void RestoreCurrentFramebuffer() override;
+  void useProgram(WebGLProgram*) override;
 
   /* Helpers */
   GLint GetMaxTransformFeedbackSeparateAttribs() const;

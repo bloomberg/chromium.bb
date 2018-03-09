@@ -1280,7 +1280,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLuint service_id,
       bool client_visible) {
     return vertex_array_manager()->CreateVertexAttribManager(
-        client_id, service_id, group_->max_vertex_attribs(), client_visible);
+        client_id, service_id, group_->max_vertex_attribs(), client_visible,
+        feature_info_->IsWebGL2OrES3Context());
   }
 
   void DoBindAttribLocation(GLuint client_id,
@@ -3416,9 +3417,12 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     api()->glBindTransformFeedbackFn(GL_TRANSFORM_FEEDBACK,
                                      default_transform_feedback);
     state_.bound_transform_feedback = state_.default_transform_feedback.get();
+    state_.bound_transform_feedback->SetIsBound(true);
   }
-  state_.indexed_uniform_buffer_bindings = new IndexedBufferBindingHost(
-      group_->max_uniform_buffer_bindings(), needs_emulation);
+  state_.indexed_uniform_buffer_bindings =
+      new IndexedBufferBindingHost(group_->max_uniform_buffer_bindings(),
+                                   GL_UNIFORM_BUFFER, needs_emulation);
+  state_.indexed_uniform_buffer_bindings->SetIsBound(true);
 
   state_.InitGenericAttribs(group_->max_vertex_attribs());
   vertex_array_manager_.reset(new VertexArrayManager());
@@ -4517,7 +4521,7 @@ void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
         // Bind to the default transform feedback.
         DCHECK(state_.default_transform_feedback.get());
         state_.default_transform_feedback->DoBindTransformFeedback(
-            GL_TRANSFORM_FEEDBACK);
+            GL_TRANSFORM_FEEDBACK, state_.bound_transform_feedback.get());
         state_.bound_transform_feedback =
             state_.default_transform_feedback.get();
       }
@@ -5817,10 +5821,10 @@ void GLES2DecoderImpl::BindIndexedBufferImpl(
   DCHECK(bindings);
   switch (function_type) {
     case kBindBufferBase:
-      bindings->DoBindBufferBase(target, index, buffer);
+      bindings->DoBindBufferBase(index, buffer);
       break;
     case kBindBufferRange:
-      bindings->DoBindBufferRange(target, index, buffer, offset, size);
+      bindings->DoBindBufferRange(index, buffer, offset, size);
       break;
     default:
       NOTREACHED();
@@ -6255,7 +6259,8 @@ void GLES2DecoderImpl::DoBindTransformFeedback(
     return;
   }
   LogClientServiceForInfo(transform_feedback, client_id, function_name);
-  transform_feedback->DoBindTransformFeedback(target);
+  transform_feedback->DoBindTransformFeedback(
+      target, state_.bound_transform_feedback.get());
   state_.bound_transform_feedback = transform_feedback;
 }
 
@@ -16926,7 +16931,11 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
 
   // Only set the VAO state if it's changed
   if (state_.vertex_attrib_manager.get() != vao) {
+    if (state_.vertex_attrib_manager)
+      state_.vertex_attrib_manager->SetIsBound(false);
     state_.vertex_attrib_manager = vao;
+    if (vao)
+      vao->SetIsBound(true);
     if (!features().native_vertex_array_object) {
       EmulateVertexArrayState();
     } else {

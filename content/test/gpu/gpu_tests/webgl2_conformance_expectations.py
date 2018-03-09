@@ -414,6 +414,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia', 'intel'], bug=630800)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', 'nvidia', 'intel'], bug=630800)
+    self.Fail('deqp/functional/gles3/negativeshaderapi.html',
+        ['mac', 'amd', 'intel'], bug=811614)
+
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/shaderindexing/mat_01.html',

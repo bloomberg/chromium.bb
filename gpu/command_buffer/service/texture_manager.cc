@@ -2616,6 +2616,12 @@ bool TextureManager::ValidateTexImage(
           "pixel unpack buffer should not be mapped to client memory");
       return false;
     }
+    if (buffer->IsBoundForTransformFeedbackAndOther()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer is simultaneously bound for transform feedback");
+      return error::kNoError;
+    }
     base::CheckedNumeric<uint32_t> size = args.pixels_size;
     GLuint offset = ToGLuint(args.pixels);
     size += offset;
@@ -2911,6 +2917,12 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
           error_state, GL_INVALID_OPERATION, function_name,
           "pixel unpack buffer should not be mapped to client memory");
       return false;
+    }
+    if (buffer->IsBoundForTransformFeedbackAndOther()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer is simultaneously bound for transform feedback");
+      return error::kNoError;
     }
     base::CheckedNumeric<uint32_t> size = args.pixels_size;
     GLuint offset = ToGLuint(args.pixels);

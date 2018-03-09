@@ -22,13 +22,16 @@ class TransformFeedbackManager;
 // Info about TransformFeedbacks currently in the system.
 class GPU_GLES2_EXPORT TransformFeedback : public IndexedBufferBindingHost {
  public:
-  TransformFeedback(
-      TransformFeedbackManager* manager, GLuint client_id, GLuint service_id);
+  TransformFeedback(TransformFeedbackManager* manager,
+                    GLuint client_id,
+                    GLuint service_id);
 
   // All the following functions do state update and call the underlying GL
   // function.  All validations have been done already and the GL function is
   // guaranteed to succeed.
-  void DoBindTransformFeedback(GLenum target);
+  void DoBindTransformFeedback(
+      GLenum target,
+      TransformFeedback* last_bound_transform_feedback);
   void DoBeginTransformFeedback(GLenum primitive_mode);
   void DoEndTransformFeedback();
   void DoPauseTransformFeedback();
