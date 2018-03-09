@@ -1,9 +1,13 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file contains an implementation of picture allocation for the
+// X11 window system used by VaapiVideoDecodeAccelerator to produce
+// output pictures.
 
-#ifndef MEDIA_GPU_VAAPI_VAAPI_PICTURE_TFP_H_
-#define MEDIA_GPU_VAAPI_VAAPI_PICTURE_TFP_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
+#define MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
 
 #include <stdint.h>
 
@@ -21,8 +25,7 @@ namespace media {
 
 class VaapiWrapper;
 
-// Implementation of VaapiPicture for the X11 backends with Texture-From-Pixmap
-// extension.
+// Implementation of VaapiPicture for the X11 backed chromium.
 class VaapiTFPPicture : public VaapiPicture {
  public:
   VaapiTFPPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
@@ -36,11 +39,11 @@ class VaapiTFPPicture : public VaapiPicture {
 
   ~VaapiTFPPicture() override;
 
-  // VaapiPicture implementation.
   bool Allocate(gfx::BufferFormat format) override;
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
+
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
 
  private:
@@ -56,4 +59,4 @@ class VaapiTFPPicture : public VaapiPicture {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VAAPI_PICTURE_TFP_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
