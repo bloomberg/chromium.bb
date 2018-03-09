@@ -26,8 +26,10 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -46,6 +48,9 @@ public class PopupTest {
 
     private static final String POPUP_HTML_PATH = "/chrome/test/data/android/popup_test.html";
 
+    private static final String METADATA_FOR_ABUSIVE_ENFORCEMENT =
+            "{\"matches\":[{\"threat_type\":\"13\",\"sf_absv\":\"\"}]}";
+
     private String mPopupHtmlUrl;
     private EmbeddedTestServer mTestServer;
 
@@ -55,6 +60,10 @@ public class PopupTest {
 
     @Before
     public void setUp() throws Exception {
+        // Create a new temporary instance to ensure the Class is loaded. Otherwise we will get a
+        // ClassNotFoundException when trying to instantiate during startup.
+        SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
+                new MockSafeBrowsingApiHandler().getClass());
         mActivityTestRule.startMainActivityOnBlankPage();
 
         ThreadUtils.runOnUiThread(() -> Assert.assertTrue(getNumInfobarsShowing() == 0));
@@ -66,6 +75,7 @@ public class PopupTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        MockSafeBrowsingApiHandler.clearMockResponses();
     }
 
     @Test
@@ -74,6 +84,38 @@ public class PopupTest {
     public void testPopupInfobarAppears() throws Exception {
         mActivityTestRule.loadUrl(mPopupHtmlUrl);
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Popup"})
+    public void testSafeGestureTabNotBlocked() throws Exception {
+        final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
+
+        String url = mTestServer.getURL("/chrome/test/data/android/popup_on_click.html");
+
+        mActivityTestRule.loadUrl(url);
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "link");
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Popup"})
+    public void testAbusiveGesturePopupBlocked() throws Exception {
+        final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
+
+        String url = mTestServer.getURL("/chrome/test/data/android/popup_on_click.html");
+        MockSafeBrowsingApiHandler.addMockResponse(url, METADATA_FOR_ABUSIVE_ENFORCEMENT);
+
+        mActivityTestRule.loadUrl(url);
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "link");
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
+        Assert.assertEquals(1, selector.getTotalTabCount());
     }
 
     @Test
