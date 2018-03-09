@@ -38,11 +38,14 @@ MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
       context_(context),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
+  DVLOG(1) << __func__;
   DCHECK(cdm_factory_);
   // |context_| can be null.
 }
 
 MojoCdmService::~MojoCdmService() {
+  DVLOG(1) << __func__;
+
   if (!context_ || cdm_id_ == CdmContext::kInvalidCdmId)
     return;
 
