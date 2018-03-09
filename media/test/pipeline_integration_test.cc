@@ -1848,7 +1848,7 @@ TEST_P(MSEPipelineIntegrationTest, ConfigChange_MP4) {
 
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_Encrypted_MP4_CENC_VideoOnly)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc.mp4", kMP4Video,
+  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kMP4Video,
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -1948,7 +1948,7 @@ TEST_P(MSEPipelineIntegrationTest,
 // Config changes from encrypted to clear are not currently supported.
 MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
                  MAYBE_EME(ConfigChange_EncryptedThenClear_MP4_CENC)) {
-  MockMediaSource source("bear-640x360-v_frag-cenc.mp4", kMP4Video,
+  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kMP4Video,
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2191,6 +2191,25 @@ MAYBE_EME_TEST_P(
   MockMediaSource source("bear-1280x720-a_frag-cenc_clear-all.mp4", kMP4Audio,
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
+  EXPECT_EQ(PIPELINE_OK,
+            StartPipelineWithEncryptedMedia(&source, &encrypted_media));
+
+  source.EndOfStream();
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
+// Older packagers saved sample encryption auxiliary information in the
+// beginning of mdat box.
+MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
+                 MAYBE_EME(EncryptedPlayback_MP4_CENC_MDAT_Video)) {
+  MockMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kMP4Video,
+                         kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
 
