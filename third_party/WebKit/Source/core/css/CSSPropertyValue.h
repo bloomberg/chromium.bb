@@ -21,9 +21,9 @@
 #ifndef CSSPropertyValue_h
 #define CSSPropertyValue_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
 #include "core/css/properties/CSSProperty.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

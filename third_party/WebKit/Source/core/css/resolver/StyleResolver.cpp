@@ -30,7 +30,6 @@
 
 #include "core/css/resolver/StyleResolver.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/CSSInterpolationTypesMap.h"
@@ -74,6 +73,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
+#include "core/css_property_names.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeComputedStyle.h"

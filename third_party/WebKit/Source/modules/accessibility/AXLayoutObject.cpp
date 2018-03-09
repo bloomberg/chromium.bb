@@ -29,7 +29,7 @@
 #include "modules/accessibility/AXLayoutObject.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Range.h"

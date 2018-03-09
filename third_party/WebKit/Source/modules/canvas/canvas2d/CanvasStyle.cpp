@@ -29,9 +29,9 @@
 #include "modules/canvas/canvas2d/CanvasStyle.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_property_names.h"
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "modules/canvas/canvas2d/CanvasGradient.h"

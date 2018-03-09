@@ -26,7 +26,7 @@
 #ifndef RemoveCSSPropertyCommand_h
 #define RemoveCSSPropertyCommand_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/editing/commands/EditCommand.h"
 
 namespace blink {

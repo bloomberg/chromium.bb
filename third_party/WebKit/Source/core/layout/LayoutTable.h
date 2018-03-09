@@ -27,8 +27,8 @@
 #define LayoutTable_h
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/layout/LayoutBlock.h"
 #include "platform/wtf/Vector.h"
 

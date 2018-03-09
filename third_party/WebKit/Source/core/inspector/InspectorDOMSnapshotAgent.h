@@ -6,7 +6,7 @@
 #define InspectorDOMSnapshotAgent_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/DOMSnapshot.h"
 #include "platform/wtf/HashMap.h"

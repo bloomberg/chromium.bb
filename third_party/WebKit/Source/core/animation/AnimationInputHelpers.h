@@ -5,8 +5,8 @@
 #ifndef AnimationInputHelpers_h
 #define AnimationInputHelpers_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 

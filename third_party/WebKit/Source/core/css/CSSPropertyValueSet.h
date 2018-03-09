@@ -22,12 +22,12 @@
 #define CSSPropertyValueSet_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyValue.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"

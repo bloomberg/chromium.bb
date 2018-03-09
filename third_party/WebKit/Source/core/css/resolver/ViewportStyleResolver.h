@@ -30,9 +30,9 @@
 #ifndef ViewportStyleResolver_h
 #define ViewportStyleResolver_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/RuleSet.h"
+#include "core/css_property_names.h"
 #include "platform/Length.h"
 
 namespace blink {

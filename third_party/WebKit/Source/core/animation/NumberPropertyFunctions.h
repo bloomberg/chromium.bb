@@ -5,7 +5,7 @@
 #ifndef NumberPropertyFunctions_h
 #define NumberPropertyFunctions_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

@@ -6,8 +6,8 @@
 #define Deprecation_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/frame/UseCounter.h"
 #include "platform/wtf/BitVector.h"
 

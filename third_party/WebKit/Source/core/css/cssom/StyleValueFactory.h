@@ -5,8 +5,8 @@
 #ifndef StyleValueFactory_h
 #define StyleValueFactory_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

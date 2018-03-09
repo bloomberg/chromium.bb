@@ -22,8 +22,8 @@
 #define CSSStyleDeclaration_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"

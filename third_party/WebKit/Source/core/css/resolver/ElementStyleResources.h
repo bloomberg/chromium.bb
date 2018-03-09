@@ -25,8 +25,8 @@
 #define ElementStyleResources_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyIDTemplates.h"
+#include "core/css_property_names.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"

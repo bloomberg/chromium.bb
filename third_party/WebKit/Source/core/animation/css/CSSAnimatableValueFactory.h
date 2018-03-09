@@ -32,9 +32,9 @@
 #define CSSAnimatableValueFactory_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/css/properties/CSSProperty.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

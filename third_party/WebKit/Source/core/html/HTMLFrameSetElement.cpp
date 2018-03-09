@@ -24,8 +24,8 @@
 #include "core/html/HTMLFrameSetElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/StyleChangeReason.h"
+#include "core/css_property_names.h"
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
 #include "core/events/MouseEvent.h"

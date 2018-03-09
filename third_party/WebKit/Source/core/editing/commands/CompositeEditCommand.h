@@ -26,8 +26,8 @@
 #ifndef CompositeEditCommand_h
 #define CompositeEditCommand_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "core/editing/Forward.h"
 #include "core/editing/commands/EditCommand.h"
 #include "core/editing/commands/EditingState.h"

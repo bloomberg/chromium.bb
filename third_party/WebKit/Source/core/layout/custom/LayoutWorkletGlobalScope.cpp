@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/V8ObjectParser.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/MainThreadDebugger.h"

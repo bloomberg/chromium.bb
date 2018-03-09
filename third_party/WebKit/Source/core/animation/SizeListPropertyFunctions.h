@@ -5,7 +5,7 @@
 #ifndef SizeListPropertyFunctions_h
 #define SizeListPropertyFunctions_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/style/FillLayer.h"
 #include "platform/wtf/Vector.h"
 

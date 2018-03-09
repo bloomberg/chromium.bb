@@ -5,7 +5,7 @@
 #ifndef ImageListPropertyFunctions_h
 #define ImageListPropertyFunctions_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/heap/Handle.h"
 

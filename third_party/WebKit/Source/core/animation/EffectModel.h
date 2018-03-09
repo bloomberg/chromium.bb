@@ -31,9 +31,9 @@
 #ifndef EffectModel_h
 #define EffectModel_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/PropertyHandle.h"
+#include "core/css_property_names.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 

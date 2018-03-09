@@ -5,10 +5,10 @@
 #include "core/animation/CSSPaintInterpolationType.h"
 
 #include <memory>
-#include "core/CSSPropertyNames.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/css/StyleColor.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 

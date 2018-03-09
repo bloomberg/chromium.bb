@@ -5,7 +5,7 @@
 #ifndef CSSParserLocalContext_h
 #define CSSParserLocalContext_h
 
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

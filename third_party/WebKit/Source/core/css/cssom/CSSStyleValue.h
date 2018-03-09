@@ -6,9 +6,9 @@
 #define CSSStyleValue_h
 
 #include "base/macros.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
+#include "core/css_property_names.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"

@@ -21,8 +21,8 @@
 
 #include "core/svg/SVGImageElement.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/StyleChangeReason.h"
+#include "core/css_property_names.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"

@@ -8,12 +8,13 @@ import template_expander
 
 class CSSPropertyNamesWriter(json5_generator.Writer):
     class_name = "CSSPropertyNames"
+    file_basename = "css_property_names"
 
     def __init__(self, json5_file_path):
         super(CSSPropertyNamesWriter, self).__init__(json5_file_path)
         self._outputs = {
-            (self.class_name + ".h"): self.generate_header,
-            (self.class_name + ".cpp"): self.generate_implementation,
+            (self.file_basename + ".h"): self.generate_header,
+            (self.file_basename + ".cc"): self.generate_implementation,
         }
         self._css_properties = css_properties.CSSProperties(json5_file_path)
 
@@ -24,7 +25,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
         return "    static_cast<CSSPropertyID>(%(enum_value)s), " \
             "// %(property_id)s" % property_
 
-    @template_expander.use_jinja('templates/CSSPropertyNames.h.tmpl')
+    @template_expander.use_jinja('templates/css_property_names.h.tmpl')
     def generate_header(self):
         return {
             'alias_offset': self._css_properties.alias_offset,
@@ -44,7 +45,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
                 max(map(len, self._css_properties.properties_by_id)),
         }
 
-    @gperf.use_jinja_gperf_template('templates/CSSPropertyNames.cpp.tmpl',
+    @gperf.use_jinja_gperf_template('templates/css_property_names.cc.tmpl',
                                     ['-Q', 'CSSPropStringPool'])
     def generate_implementation(self):
         enum_value_to_name = {}
@@ -67,6 +68,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
 
         return {
             'class_name': 'CSSPropertyNames',
+            'file_basename': self.file_basename,
             'property_names': property_names,
             'property_offsets': property_offsets,
             'property_to_enum_map':

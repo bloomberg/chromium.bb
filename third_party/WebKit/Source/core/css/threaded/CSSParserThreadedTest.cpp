@@ -5,9 +5,9 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/threaded/MultiThreadedTestUtil.h"
+#include "core/css_property_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

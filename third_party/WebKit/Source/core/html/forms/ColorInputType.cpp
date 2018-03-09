@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "core/CSSPropertyNames.h"
+#include "core/css_property_names.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/MouseEvent.h"

@@ -5,8 +5,8 @@
 #ifndef V8ObjectParser_h
 #define V8ObjectParser_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "v8/include/v8.h"

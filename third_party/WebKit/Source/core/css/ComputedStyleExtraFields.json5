@@ -865,7 +865,7 @@
       type_name: "Vector<CSSPropertyID>",
       field_group: "*->will-change",
       default_value: "Vector<CSSPropertyID>()",
-      include_paths: ["platform/wtf/Vector.h", "core/CSSPropertyNames.h"],
+      include_paths: ["platform/wtf/Vector.h", "core/css_property_names.h"],
     },
     {
       name: "WillChangeContents",
