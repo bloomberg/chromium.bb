@@ -60,8 +60,6 @@ class CORE_EXPORT V8GCController {
 
   static void TraceDOMWrappers(v8::Isolate*, Visitor*);
   static bool HasPendingActivity(v8::Isolate*, ExecutionContext*);
-
-  static v8::HeapProfiler::RetainerInfos GetRetainerInfos(v8::Isolate*);
 };
 
 }  // namespace blink
