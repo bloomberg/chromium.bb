@@ -281,7 +281,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
     mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
         ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
 
-    ASSERT_TRUE(window_manager_state()->event_dispatcher()->AddAccelerator(
+    ASSERT_TRUE(window_manager_state()->event_processor()->AddAccelerator(
         accelerator_id, std::move(matcher)));
   }
   TestChangeTracker* tracker = wm_client()->tracker();
@@ -351,7 +351,7 @@ TEST_F(WindowManagerStateTest, AckWithProperties) {
     mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
         ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
 
-    ASSERT_TRUE(window_manager_state()->event_dispatcher()->AddAccelerator(
+    ASSERT_TRUE(window_manager_state()->event_processor()->AddAccelerator(
         accelerator_id, std::move(matcher)));
   }
   TestChangeTracker* tracker = wm_client()->tracker();
@@ -881,11 +881,11 @@ TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {
   // Setup steps already do hit-test for mouse cursor update so this should go
   // to the queue in EventTargeter.
   EventTargeterTestApi event_targeter_test_api(
-      EventDispatcherTestApi(window_manager_state()->event_dispatcher())
+      EventProcessorTestApi(window_manager_state()->event_processor())
           .event_targeter());
   EXPECT_TRUE(event_targeter_test_api.HasPendingQueries());
   // But no events have been generated, so IsProcessingEvent() should be false.
-  EXPECT_FALSE(window_manager_state()->event_dispatcher()->IsProcessingEvent());
+  EXPECT_FALSE(window_manager_state()->event_processor()->IsProcessingEvent());
   child_window->SetVisible(true);
   child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
   child_window->parent()->SetCursor(ui::CursorData(ui::CursorType::kCopy));
@@ -899,7 +899,7 @@ TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {
   EXPECT_TRUE(test_api.is_event_tasks_empty());
   window_manager_state()->ProcessEvent(&move, 0);
   EXPECT_FALSE(test_api.tree_awaiting_input_ack());
-  EXPECT_TRUE(window_manager_state()->event_dispatcher()->IsProcessingEvent());
+  EXPECT_TRUE(window_manager_state()->event_processor()->IsProcessingEvent());
   EXPECT_TRUE(test_api.is_event_tasks_empty());
   task_runner_->RunUntilIdle();
   EXPECT_TRUE(test_api.is_event_tasks_empty());

@@ -306,12 +306,12 @@ TEST_F(WindowTreeTest, EventDispatcherMouseCursorSourceWindowResetOnRemove) {
 
   WindowManagerState* wms =
       display()->window_manager_display_root()->window_manager_state();
-  EXPECT_EQ(window, wms->event_dispatcher()->mouse_cursor_source_window());
+  EXPECT_EQ(window, wms->event_processor()->mouse_cursor_source_window());
 
   window->parent()->Remove(window);
   // The remove should reset the mouse_cursor_source_window(). The important
   // thing is it changes to something other than |window|.
-  EXPECT_NE(window, wms->event_dispatcher()->mouse_cursor_source_window());
+  EXPECT_NE(window, wms->event_processor()->mouse_cursor_source_window());
 }
 
 // Verifies SetChildModalParent() works correctly.
@@ -780,8 +780,7 @@ TEST_F(WindowTreeTest, ModalTypeSystemToModalTypeNone) {
   WindowManagerState* wms =
       display()->window_manager_display_root()->window_manager_state();
   ModalWindowControllerTestApi modal_window_controller_test_api(
-      EventDispatcherTestApi(wms->event_dispatcher())
-          .modal_window_controller());
+      EventProcessorTestApi(wms->event_processor()).modal_window_controller());
   EXPECT_EQ(test_window,
             modal_window_controller_test_api.GetActiveSystemModalWindow());
   EXPECT_TRUE(wm_tree()->SetModalType(test_window_id, MODAL_TYPE_NONE));
@@ -800,8 +799,7 @@ TEST_F(WindowTreeTest, ModalTypeSystemUnparentedThenParented) {
   WindowManagerState* wms =
       display()->window_manager_display_root()->window_manager_state();
   ModalWindowControllerTestApi modal_window_controller_test_api(
-      EventDispatcherTestApi(wms->event_dispatcher())
-          .modal_window_controller());
+      EventProcessorTestApi(wms->event_processor()).modal_window_controller());
   EXPECT_EQ(nullptr,
             modal_window_controller_test_api.GetActiveSystemModalWindow());
   EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, test_window_id));

@@ -769,9 +769,9 @@ void WindowServer::UpdateNativeCursorFromMouseLocation(
   if (!display_root)
     return;
 
-  EventDispatcher* event_dispatcher =
-      display_root->window_manager_state()->event_dispatcher();
-  event_dispatcher->UpdateCursorProviderByLastKnownLocation();
+  EventProcessor* event_processor =
+      display_root->window_manager_state()->event_processor();
+  event_processor->UpdateCursorProviderByLastKnownLocation();
 }
 
 void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
@@ -780,12 +780,12 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
   if (!display_root)
     return;
 
-  EventDispatcher* event_dispatcher =
-      display_root->window_manager_state()->event_dispatcher();
-  if (window != event_dispatcher->GetWindowForMouseCursor())
+  EventProcessor* event_processor =
+      display_root->window_manager_state()->event_processor();
+  if (window != event_processor->GetWindowForMouseCursor())
     return;
 
-  event_dispatcher->UpdateNonClientAreaForCurrentWindow();
+  event_processor->UpdateNonClientAreaForCurrentWindow();
 }
 
 void WindowServer::HandleTemporaryReferenceForNewSurface(

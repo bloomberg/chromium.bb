@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_EVENT_DISPATCHER_H_
-#define SERVICES_UI_WS_EVENT_DISPATCHER_H_
+#ifndef SERVICES_UI_WS_EVENT_PROCESSOR_H_
+#define SERVICES_UI_WS_EVENT_PROCESSOR_H_
 
 #include <stdint.h>
 
@@ -40,20 +40,23 @@ class Accelerator;
 class DragController;
 class DragSource;
 class DragTargetConnection;
-class EventDispatcherDelegate;
+class EventProcessorDelegate;
 class ServerWindow;
 class ServerWindowDrawnTracker;
 
 struct EventLocation;
 
 namespace test {
-class EventDispatcherTestApi;
+class EventProcessorTestApi;
 }
 
-// Handles dispatching events to the right location as well as updating focus.
-class EventDispatcher : public ServerWindowDrawnTrackerObserver,
-                        public DragCursorUpdater,
-                        public EventTargeterDelegate {
+// Processes events sent to the Window Service from the native platform. Updates
+// internale state associated with events (such as mouse, keyboard state,
+// capture, focus...). EventProcessorDelegate handles dispatching to the
+// appropriate client.
+class EventProcessor : public ServerWindowDrawnTrackerObserver,
+                       public DragCursorUpdater,
+                       public EventTargeterDelegate {
  public:
   enum class AcceleratorMatchPhase {
     // Both pre and post should be considered.
@@ -64,8 +67,8 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
     POST_ONLY,
   };
 
-  explicit EventDispatcher(EventDispatcherDelegate* delegate);
-  ~EventDispatcher() override;
+  explicit EventProcessor(EventProcessorDelegate* delegate);
+  ~EventProcessor() override;
 
   ModalWindowController* modal_window_controller() {
     return &modal_window_controller_;
@@ -175,7 +178,7 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
       const viz::FrameSinkId& frame_sink_id) override;
 
  private:
-  friend class test::EventDispatcherTestApi;
+  friend class test::EventProcessorTestApi;
 
   // Keeps track of state associated with an active pointer.
   struct PointerTarget {
@@ -248,7 +251,7 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
                                  const EventLocation& event_location,
                                  const DeepestWindow& target);
 
-  // EventDispatcher provides the following logic for events:
+  // EventProcessor provides the following logic for events:
   // . wheel events go to the current target of the associated pointer. If
   //   there is no target, they go to the deepest window.
   // . move (not drag) events go to the deepest window.
@@ -351,7 +354,7 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
   // DragCursorUpdater:
   void OnDragCursorUpdated() override;
 
-  EventDispatcherDelegate* delegate_;
+  EventProcessorDelegate* delegate_;
 
   ServerWindow* capture_window_;
   ClientSpecificId capture_window_client_id_;
@@ -401,10 +404,10 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
       AcceleratorMatchPhase::ANY;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(EventProcessor);
 };
 
 }  // namespace ws
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_EVENT_DISPATCHER_H_
+#endif  // SERVICES_UI_WS_EVENT_PROCESSOR_H_

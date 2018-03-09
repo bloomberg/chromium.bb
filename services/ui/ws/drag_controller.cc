@@ -11,7 +11,6 @@
 #include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/drag_target_connection.h"
-#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/server_window.h"
 #include "ui/base/cursor/cursor.h"
 
