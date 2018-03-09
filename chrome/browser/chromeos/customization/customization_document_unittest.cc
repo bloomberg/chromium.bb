@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -202,7 +203,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     }
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
-    ServicesCustomizationDocument::RegisterPrefs(local_state_.registry());
+    RegisterLocalState(local_state_.registry());
   }
 
   void TearDown() override {
@@ -265,7 +266,11 @@ class ServicesCustomizationDocumentTest : public testing::Test {
         factory.CreateSyncable(registry.get()));
     RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(std::move(prefs));
-    return profile_builder.Build();
+    std::unique_ptr<TestingProfile> profile = profile_builder.Build();
+    // Make sure we have a Profile Manager.
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(
+        new ProfileManagerWithoutInit(profile->GetPath()));
+    return profile;
   }
 
   network::TestURLLoaderFactory factory_;
