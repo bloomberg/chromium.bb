@@ -23,6 +23,6 @@ FAIL abort: throwing getter should cause abort() and closed to reject assert_thr
       throw error1;
     }
   })" did not throw
-PASS abort: throwing method should cause abort() and closed to reject
+FAIL abort: throwing method should cause abort() and closed to reject assert_throws: closed should reject with abortReason function "function() { throw e }" threw object "TypeError: The stream is in the process of being aborted" ("TypeError") expected object "Error: different string" ("Error")
 Harness: the test ran to completion.
 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 92 tests; 49 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 68 tests; 25 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Entries API: IDL
 PASS File interface: attribute webkitRelativePath
 PASS Unscopable handled correctly for webkitRelativePath property on File
@@ -12,12 +12,6 @@ PASS HTMLInputElement interface: document.createElement("input") must inherit pr
 PASS HTMLInputElement interface: document.createElement("input") must inherit property "webkitEntries" with the proper type
 PASS DataTransferItem interface: operation webkitGetAsEntry()
 PASS Unscopable handled correctly for webkitGetAsEntry() on DataTransferItem
-PASS ErrorCallback interface: existence and properties of interface object
-PASS ErrorCallback interface: existence and properties of interface prototype object
-PASS ErrorCallback interface: existence and properties of interface prototype object's "constructor" property
-PASS ErrorCallback interface: existence and properties of interface prototype object's @@unscopables property
-PASS ErrorCallback interface: operation handleEvent(DOMException)
-PASS Unscopable handled correctly for handleEvent(DOMException) on ErrorCallback
 FAIL FileSystemEntry interface: existence and properties of interface object assert_own_property: self does not have own property "FileSystemEntry" expected property "FileSystemEntry" missing
 FAIL FileSystemEntry interface object length assert_own_property: self does not have own property "FileSystemEntry" expected property "FileSystemEntry" missing
 FAIL FileSystemEntry interface object name assert_own_property: self does not have own property "FileSystemEntry" expected property "FileSystemEntry" missing
@@ -48,12 +42,6 @@ FAIL FileSystemDirectoryEntry interface: operation getFile(USVString, FileSystem
 PASS Unscopable handled correctly for getFile(USVString, FileSystemFlags, FileSystemEntryCallback, ErrorCallback) on FileSystemDirectoryEntry
 FAIL FileSystemDirectoryEntry interface: operation getDirectory(USVString, FileSystemFlags, FileSystemEntryCallback, ErrorCallback) assert_own_property: self does not have own property "FileSystemDirectoryEntry" expected property "FileSystemDirectoryEntry" missing
 PASS Unscopable handled correctly for getDirectory(USVString, FileSystemFlags, FileSystemEntryCallback, ErrorCallback) on FileSystemDirectoryEntry
-PASS FileSystemEntryCallback interface: existence and properties of interface object
-PASS FileSystemEntryCallback interface: existence and properties of interface prototype object
-PASS FileSystemEntryCallback interface: existence and properties of interface prototype object's "constructor" property
-PASS FileSystemEntryCallback interface: existence and properties of interface prototype object's @@unscopables property
-PASS FileSystemEntryCallback interface: operation handleEvent(FileSystemEntry)
-PASS Unscopable handled correctly for handleEvent(FileSystemEntry) on FileSystemEntryCallback
 FAIL FileSystemDirectoryReader interface: existence and properties of interface object assert_own_property: self does not have own property "FileSystemDirectoryReader" expected property "FileSystemDirectoryReader" missing
 FAIL FileSystemDirectoryReader interface object length assert_own_property: self does not have own property "FileSystemDirectoryReader" expected property "FileSystemDirectoryReader" missing
 FAIL FileSystemDirectoryReader interface object name assert_own_property: self does not have own property "FileSystemDirectoryReader" expected property "FileSystemDirectoryReader" missing
@@ -62,12 +50,6 @@ FAIL FileSystemDirectoryReader interface: existence and properties of interface 
 FAIL FileSystemDirectoryReader interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "FileSystemDirectoryReader" expected property "FileSystemDirectoryReader" missing
 FAIL FileSystemDirectoryReader interface: operation readEntries(FileSystemEntriesCallback, ErrorCallback) assert_own_property: self does not have own property "FileSystemDirectoryReader" expected property "FileSystemDirectoryReader" missing
 PASS Unscopable handled correctly for readEntries(FileSystemEntriesCallback, ErrorCallback) on FileSystemDirectoryReader
-PASS FileSystemEntriesCallback interface: existence and properties of interface object
-PASS FileSystemEntriesCallback interface: existence and properties of interface prototype object
-PASS FileSystemEntriesCallback interface: existence and properties of interface prototype object's "constructor" property
-PASS FileSystemEntriesCallback interface: existence and properties of interface prototype object's @@unscopables property
-PASS FileSystemEntriesCallback interface: operation handleEvent([object Object])
-PASS Unscopable handled correctly for handleEvent([object Object]) on FileSystemEntriesCallback
 FAIL FileSystemFileEntry interface: existence and properties of interface object assert_own_property: self does not have own property "FileSystemFileEntry" expected property "FileSystemFileEntry" missing
 FAIL FileSystemFileEntry interface object length assert_own_property: self does not have own property "FileSystemFileEntry" expected property "FileSystemFileEntry" missing
 FAIL FileSystemFileEntry interface object name assert_own_property: self does not have own property "FileSystemFileEntry" expected property "FileSystemFileEntry" missing
@@ -76,12 +58,6 @@ FAIL FileSystemFileEntry interface: existence and properties of interface protot
 FAIL FileSystemFileEntry interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "FileSystemFileEntry" expected property "FileSystemFileEntry" missing
 FAIL FileSystemFileEntry interface: operation file(FileCallback, ErrorCallback) assert_own_property: self does not have own property "FileSystemFileEntry" expected property "FileSystemFileEntry" missing
 PASS Unscopable handled correctly for file(FileCallback, ErrorCallback) on FileSystemFileEntry
-PASS FileCallback interface: existence and properties of interface object
-PASS FileCallback interface: existence and properties of interface prototype object
-PASS FileCallback interface: existence and properties of interface prototype object's "constructor" property
-PASS FileCallback interface: existence and properties of interface prototype object's @@unscopables property
-PASS FileCallback interface: operation handleEvent(File)
-PASS Unscopable handled correctly for handleEvent(File) on FileCallback
 FAIL FileSystem interface: existence and properties of interface object assert_own_property: self does not have own property "FileSystem" expected property "FileSystem" missing
 FAIL FileSystem interface object length assert_own_property: self does not have own property "FileSystem" expected property "FileSystem" missing
 FAIL FileSystem interface object name assert_own_property: self does not have own property "FileSystem" expected property "FileSystem" missing
