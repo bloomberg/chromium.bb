@@ -49,6 +49,7 @@
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
+#include "core/editing/commands/ClipboardCommands.h"
 #include "core/editing/commands/CreateLinkCommand.h"
 #include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/EditorCommandNames.h"
@@ -740,7 +741,8 @@ static bool ExecuteBackColor(LocalFrame& frame,
                            CSSPropertyBackgroundColor, value);
 }
 
-static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
+bool ClipboardCommands::CanWriteClipboard(LocalFrame& frame,
+                                          EditorCommandSource source) {
   if (source == EditorCommandSource::kMenuOrKeyBinding)
     return true;
   Settings* settings = frame.GetSettings();
@@ -752,8 +754,9 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
 }
 
-static Element* FindEventTargetForClipboardEvent(LocalFrame& frame,
-                                                 EditorCommandSource source) {
+Element* ClipboardCommands::FindEventTargetForClipboardEvent(
+    LocalFrame& frame,
+    EditorCommandSource source) {
   // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
   //  "Set target to be the element that contains the start of the selection in
   //   document order, or the body element if there is no selection or cursor."
@@ -767,11 +770,11 @@ static Element* FindEventTargetForClipboardEvent(LocalFrame& frame,
 }
 
 // Returns true if Editor should continue with default processing.
-static bool DispatchClipboardEvent(LocalFrame& frame,
-                                   const AtomicString& event_type,
-                                   DataTransferAccessPolicy policy,
-                                   EditorCommandSource source,
-                                   PasteMode paste_mode) {
+bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
+                                               const AtomicString& event_type,
+                                               DataTransferAccessPolicy policy,
+                                               EditorCommandSource source,
+                                               PasteMode paste_mode) {
   Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return true;
@@ -795,9 +798,9 @@ static bool DispatchClipboardEvent(LocalFrame& frame,
   return !no_default_processing;
 }
 
-static bool DispatchCopyOrCutEvent(LocalFrame& frame,
-                                   EditorCommandSource source,
-                                   const AtomicString& event_type) {
+bool ClipboardCommands::DispatchCopyOrCutEvent(LocalFrame& frame,
+                                               EditorCommandSource source,
+                                               const AtomicString& event_type) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -815,7 +818,7 @@ static bool CanSmartCopyOrDelete(LocalFrame& frame) {
          frame.Selection().Granularity() == TextGranularity::kWord;
 }
 
-static void WriteSelectionToPasteboard(LocalFrame& frame) {
+void ClipboardCommands::WriteSelectionToPasteboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
   const String plain_text = frame.SelectedTextForClipboard();
@@ -823,10 +826,10 @@ static void WriteSelectionToPasteboard(LocalFrame& frame) {
                                              CanSmartCopyOrDelete(frame));
 }
 
-static bool ExecuteCopy(LocalFrame& frame,
-                        Event*,
-                        EditorCommandSource source,
-                        const String&) {
+bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource source,
+                                    const String&) {
   // To support |allowExecutionWhenDisabled|, we need to check clipboard
   // accessibility here rather than |Editor::Command::execute()|.
   // TODO(yosin) We should move checking |canWriteClipboard()| to
@@ -881,7 +884,7 @@ static bool ExecuteCreateLink(LocalFrame& frame,
   return CreateLinkCommand::Create(*frame.GetDocument(), value)->Apply();
 }
 
-static bool CanDeleteRange(const EphemeralRange& range) {
+bool ClipboardCommands::CanDeleteRange(const EphemeralRange& range) {
   if (range.IsCollapsed())
     return false;
 
@@ -894,10 +897,10 @@ static bool CanDeleteRange(const EphemeralRange& range) {
   return HasEditableStyle(*start_container) && HasEditableStyle(*end_container);
 }
 
-static bool ExecuteCut(LocalFrame& frame,
-                       Event*,
-                       EditorCommandSource source,
-                       const String&) {
+bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
+                                   Event*,
+                                   EditorCommandSource source,
+                                   const String&) {
   // To support |allowExecutionWhenDisabled|, we need to check clipboard
   // accessibility here rather than |Editor::Command::execute()|.
   // TODO(yosin) We should move checking |canWriteClipboard()| to
@@ -2029,7 +2032,8 @@ static bool ExecuteToggleOverwrite(LocalFrame& frame,
   return true;
 }
 
-static bool CanReadClipboard(LocalFrame& frame, EditorCommandSource source) {
+bool ClipboardCommands::CanReadClipboard(LocalFrame& frame,
+                                         EditorCommandSource source) {
   if (source == EditorCommandSource::kMenuOrKeyBinding)
     return true;
   Settings* settings = frame.GetSettings();
@@ -2042,15 +2046,16 @@ static bool CanReadClipboard(LocalFrame& frame, EditorCommandSource source) {
       default_value);
 }
 
-static bool CanSmartReplaceWithPasteboard(LocalFrame& frame,
-                                          Pasteboard* pasteboard) {
+bool ClipboardCommands::CanSmartReplaceWithPasteboard(LocalFrame& frame,
+                                                      Pasteboard* pasteboard) {
   return frame.GetEditor().SmartInsertDeleteEnabled() &&
          pasteboard->CanSmartReplace();
 }
 
-static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
-                                           Pasteboard* pasteboard,
-                                           EditorCommandSource source) {
+void ClipboardCommands::PasteAsPlainTextWithPasteboard(
+    LocalFrame& frame,
+    Pasteboard* pasteboard,
+    EditorCommandSource source) {
   Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return;
@@ -2059,19 +2064,19 @@ static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
       CanSmartReplaceWithPasteboard(frame, pasteboard)));
 }
 
-static bool DispatchPasteEvent(LocalFrame& frame,
-                               PasteMode paste_mode,
-                               EditorCommandSource source) {
+bool ClipboardCommands::DispatchPasteEvent(LocalFrame& frame,
+                                           PasteMode paste_mode,
+                                           EditorCommandSource source) {
   return DispatchClipboardEvent(frame, EventTypeNames::paste,
                                 DataTransferAccessPolicy::kReadable, source,
                                 paste_mode);
 }
 
-static void PasteAsFragment(LocalFrame& frame,
-                            DocumentFragment* pasting_fragment,
-                            bool smart_replace,
-                            bool match_style,
-                            EditorCommandSource source) {
+void ClipboardCommands::PasteAsFragment(LocalFrame& frame,
+                                        DocumentFragment* pasting_fragment,
+                                        bool smart_replace,
+                                        bool match_style,
+                                        EditorCommandSource source) {
   Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return;
@@ -2079,9 +2084,9 @@ static void PasteAsFragment(LocalFrame& frame,
       frame.DomWindow(), pasting_fragment, smart_replace, match_style));
 }
 
-static void PasteWithPasteboard(LocalFrame& frame,
-                                Pasteboard* pasteboard,
-                                EditorCommandSource source) {
+void ClipboardCommands::PasteWithPasteboard(LocalFrame& frame,
+                                            Pasteboard* pasteboard,
+                                            EditorCommandSource source) {
   DocumentFragment* fragment = nullptr;
   bool chose_plain_text = false;
 
@@ -2123,7 +2128,7 @@ static void PasteWithPasteboard(LocalFrame& frame,
                   chose_plain_text, source);
 }
 
-static void Paste(LocalFrame& frame, EditorCommandSource source) {
+void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   DCHECK(frame.GetDocument());
   if (!DispatchPasteEvent(frame, PasteMode::kAllMimeTypes, source))
     return;
@@ -2170,10 +2175,10 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
                                  source);
 }
 
-static bool ExecutePaste(LocalFrame& frame,
-                         Event*,
-                         EditorCommandSource source,
-                         const String&) {
+bool ClipboardCommands::ExecutePaste(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source,
+                                     const String&) {
   // To support |allowExecutionWhenDisabled|, we need to check clipboard
   // accessibility here rather than |Editor::Command::execute()|.
   // TODO(yosin) We should move checking |canReadClipboard()| to
@@ -2185,10 +2190,10 @@ static bool ExecutePaste(LocalFrame& frame,
   return true;
 }
 
-static bool ExecutePasteGlobalSelection(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource source,
-                                        const String&) {
+bool ClipboardCommands::ExecutePasteGlobalSelection(LocalFrame& frame,
+                                                    Event*,
+                                                    EditorCommandSource source,
+                                                    const String&) {
   // To support |allowExecutionWhenDisabled|, we need to check clipboard
   // accessibility here rather than |Editor::Command::execute()|.
   // TODO(yosin) We should move checking |canReadClipboard()| to
@@ -2207,10 +2212,10 @@ static bool ExecutePasteGlobalSelection(LocalFrame& frame,
   return true;
 }
 
-static bool ExecutePasteAndMatchStyle(LocalFrame& frame,
-                                      Event*,
-                                      EditorCommandSource source,
-                                      const String&) {
+bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
+                                                  Event*,
+                                                  EditorCommandSource source,
+                                                  const String&) {
   if (!DispatchPasteEvent(frame, PasteMode::kPlainTextOnly, source))
     return false;
   if (!frame.GetEditor().CanPaste())
@@ -2617,7 +2622,7 @@ static bool Supported(LocalFrame*) {
   return true;
 }
 
-static bool PasteSupported(LocalFrame* frame) {
+bool ClipboardCommands::PasteSupported(LocalFrame* frame) {
   const Settings* const settings = frame->GetSettings();
   const bool default_value = settings &&
                              settings->GetJavaScriptCanAccessClipboard() &&
@@ -2690,14 +2695,18 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
 // because we allow elements that are not normally selectable to implement
 // copy/paste (like divs, or a document body).
 
-static bool EnabledCopy(LocalFrame& frame, Event*, EditorCommandSource source) {
+bool ClipboardCommands::EnabledCopy(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
   return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecopy) ||
          frame.GetEditor().CanCopy();
 }
 
-static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
+bool ClipboardCommands::EnabledCut(LocalFrame& frame,
+                                   Event*,
+                                   EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
@@ -2749,9 +2758,9 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
          selection.RootEditableElement();
 }
 
-static bool EnabledPaste(LocalFrame& frame,
-                         Event*,
-                         EditorCommandSource source) {
+bool ClipboardCommands::EnabledPaste(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource source) {
   if (!CanReadClipboard(frame, source))
     return false;
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
@@ -3014,15 +3023,15 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kBold, ExecuteToggleBold, Supported,
        EnabledInRichlyEditableText, StateBold, ValueStateOrNull,
        kNotTextInsertion, kDoNotAllowExecutionWhenDisabled},
-      {WebEditingCommandType::kCopy, ExecuteCopy, Supported, EnabledCopy,
-       StateNone, ValueStateOrNull, kNotTextInsertion,
-       kAllowExecutionWhenDisabled},
+      {WebEditingCommandType::kCopy, ClipboardCommands::ExecuteCopy, Supported,
+       ClipboardCommands::EnabledCopy, StateNone, ValueStateOrNull,
+       kNotTextInsertion, kAllowExecutionWhenDisabled},
       {WebEditingCommandType::kCreateLink, ExecuteCreateLink, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, kDoNotAllowExecutionWhenDisabled},
-      {WebEditingCommandType::kCut, ExecuteCut, Supported, EnabledCut,
-       StateNone, ValueStateOrNull, kNotTextInsertion,
-       kAllowExecutionWhenDisabled},
+      {WebEditingCommandType::kCut, ClipboardCommands::ExecuteCut, Supported,
+       ClipboardCommands::EnabledCut, StateNone, ValueStateOrNull,
+       kNotTextInsertion, kAllowExecutionWhenDisabled},
       {WebEditingCommandType::kDefaultParagraphSeparator,
        ExecuteDefaultParagraphSeparator, Supported, Enabled, StateNone,
        ValueDefaultParagraphSeparator, kNotTextInsertion,
@@ -3346,14 +3355,17 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kOverWrite, ExecuteToggleOverwrite,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, kDoNotAllowExecutionWhenDisabled},
-      {WebEditingCommandType::kPaste, ExecutePaste, PasteSupported,
-       EnabledPaste, StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kPaste, ClipboardCommands::ExecutePaste,
+       ClipboardCommands::PasteSupported, ClipboardCommands::EnabledPaste,
+       StateNone, ValueStateOrNull, kNotTextInsertion,
        kAllowExecutionWhenDisabled},
-      {WebEditingCommandType::kPasteAndMatchStyle, ExecutePasteAndMatchStyle,
-       Supported, EnabledPaste, StateNone, ValueStateOrNull, kNotTextInsertion,
-       kAllowExecutionWhenDisabled},
+      {WebEditingCommandType::kPasteAndMatchStyle,
+       ClipboardCommands::ExecutePasteAndMatchStyle, Supported,
+       ClipboardCommands::EnabledPaste, StateNone, ValueStateOrNull,
+       kNotTextInsertion, kAllowExecutionWhenDisabled},
       {WebEditingCommandType::kPasteGlobalSelection,
-       ExecutePasteGlobalSelection, SupportedFromMenuOrKeyBinding, EnabledPaste,
+       ClipboardCommands::ExecutePasteGlobalSelection,
+       SupportedFromMenuOrKeyBinding, ClipboardCommands::EnabledPaste,
        StateNone, ValueStateOrNull, kNotTextInsertion,
        kAllowExecutionWhenDisabled},
       {WebEditingCommandType::kPrint, ExecutePrint, Supported, Enabled,
