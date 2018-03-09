@@ -16,6 +16,10 @@
 
 class CommandUpdater;
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 struct VectorIcon;
 }
@@ -28,6 +32,11 @@ class BubbleDialogDelegateView;
 // TODO(spqchan): Convert this to subclass Button.
 class BubbleIconView : public views::InkDropHostView {
  public:
+  class Delegate {
+   public:
+    virtual content::WebContents* GetWebContentsForBubbleIconView() = 0;
+  };
+
   void Init();
 
   // Invoked when a bubble for this icon is created. The BubbleIconView changes
@@ -37,6 +46,10 @@ class BubbleIconView : public views::InkDropHostView {
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
 
+  // Updates the icon state and associated bubble when the WebContents changes.
+  // Returns true if there was a change.
+  virtual bool Refresh();
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
@@ -44,11 +57,17 @@ class BubbleIconView : public views::InkDropHostView {
     EXECUTE_SOURCE_GESTURE,
   };
 
-  BubbleIconView(CommandUpdater* command_updater, int command_id);
+  BubbleIconView(CommandUpdater* command_updater,
+                 int command_id,
+                 Delegate* delegate = nullptr);
   ~BubbleIconView() override;
 
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const;
+
+  // Enables or disables the associated command.
+  // Returns true if the command is enabled.
+  bool SetCommandEnabled(bool enabled) const;
 
   // Sets the image that should be displayed in |image_|.
   void SetImage(const gfx::ImageSkia* image_skia);
@@ -108,6 +127,9 @@ class BubbleIconView : public views::InkDropHostView {
   // "call to action" color.
   void SetActiveInternal(bool active);
 
+  // Returns the associated web contents from the delegate.
+  content::WebContents* GetWebContents() const;
+
   bool active() const { return active_; }
 
  private:
@@ -140,6 +162,9 @@ class BubbleIconView : public views::InkDropHostView {
 
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;
+
+  // Delegate for access to associated state.
+  Delegate* delegate_;
 
   // The command ID executed when the user clicks this icon.
   const int command_id_;

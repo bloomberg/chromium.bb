@@ -6,17 +6,20 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-ManagePasswordsIconViews::ManagePasswordsIconViews(CommandUpdater* updater)
-    : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
+ManagePasswordsIconViews::ManagePasswordsIconViews(
+    CommandUpdater* updater,
+    BubbleIconView::Delegate* delegate)
+    : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE, delegate),
       state_(password_manager::ui::INACTIVE_STATE) {
+  DCHECK(delegate);
 #if defined(OS_MACOSX)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
@@ -56,6 +59,20 @@ void ManagePasswordsIconViews::UpdateUiForState() {
   parent()->Layout();
 }
 
+views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
+  return PasswordBubbleViewBase::manage_password_bubble();
+}
+
+bool ManagePasswordsIconViews::Refresh() {
+  if (!GetWebContents())
+    return false;
+
+  const bool was_visible = visible();
+  ManagePasswordsUIController::FromWebContents(GetWebContents())
+      ->UpdateIconAndBubbleState(this);
+  return was_visible != visible();
+}
+
 void ManagePasswordsIconViews::OnExecuting(
     BubbleIconView::ExecuteSource source) {}
 
@@ -77,10 +94,6 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
   return BubbleIconView::OnKeyPressed(event);
-}
-
-views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
-  return PasswordBubbleViewBase::manage_password_bubble();
 }
 
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {

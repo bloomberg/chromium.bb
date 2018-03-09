@@ -20,13 +20,18 @@ class SaveCardBubbleControllerImpl;
 // it.
 class SaveCardIconView : public BubbleIconView {
  public:
-  SaveCardIconView(CommandUpdater* command_updater, Browser* browser);
+  SaveCardIconView(CommandUpdater* command_updater,
+                   Browser* browser,
+                   BubbleIconView::Delegate* delegate);
   ~SaveCardIconView() override;
+
+  // BubbleIconView:
+  views::BubbleDialogDelegateView* GetBubble() const override;
+  bool Refresh() override;
 
  protected:
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
-  views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
