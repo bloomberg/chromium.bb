@@ -101,6 +101,11 @@ typedef pthread_mutex_t* MutexHandle;
 #include <android/log.h>
 #endif
 
+#if defined(OS_FUCHSIA)
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#endif
+
 namespace logging {
 
 namespace {
@@ -161,6 +166,11 @@ LogMessageHandlerFunction log_message_handler = nullptr;
 int32_t CurrentProcessId() {
 #if defined(OS_WIN)
   return GetCurrentProcessId();
+#elif defined(OS_FUCHSIA)
+  zx_info_handle_basic_t basic = {};
+  zx_object_get_info(zx_process_self(), ZX_INFO_HANDLE_BASIC, &basic,
+                     sizeof(basic), nullptr, nullptr);
+  return basic.koid;
 #elif defined(OS_POSIX)
   return getpid();
 #endif
@@ -171,6 +181,9 @@ uint64_t TickCount() {
   return GetTickCount();
 #elif defined(OS_MACOSX)
   return mach_absolute_time();
+#elif defined(OS_FUCHSIA)
+  return zx_clock_get(ZX_CLOCK_MONOTONIC) /
+         static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
 #elif defined(OS_NACL)
   // NaCl sadly does not have _POSIX_TIMERS enabled in sys/features.h
   // So we have to use clock() for now.
