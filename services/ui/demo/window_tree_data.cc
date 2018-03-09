@@ -70,7 +70,7 @@ void WindowTreeData::Init(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   window_tree_host->Show();
   // Take ownership of the WTH.
-  window_tree_host_ = std::move(window_tree_host);
+  SetWindowTreeHost(std::move(window_tree_host));
 
   // Initialize the window for the bitmap.
   window_delegate_ = new aura_extra::ImageWindowDelegate();
