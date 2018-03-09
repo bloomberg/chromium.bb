@@ -69,11 +69,6 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
       const DisplayItemList&,
       cc::DisplayItemList::UsageHint,
       RasterUnderInvalidationCheckingParams* = nullptr);
-
-  static IntRect MapRectFromChunkToLayer(const FloatRect&,
-                                         const PaintChunk&,
-                                         const PropertyTreeState& layer_state,
-                                         const gfx::Vector2dF& layer_offset);
 };
 
 }  // namespace blink

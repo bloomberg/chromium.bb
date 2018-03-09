@@ -30,44 +30,6 @@ void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
   }
 }
 
-IntRect CompositedLayerRasterInvalidator::MapRectFromChunkToLayer(
-    const FloatRect& r,
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) const {
-  return ClipByLayerBounds(PaintChunksToCcLayer::MapRectFromChunkToLayer(
-      r, chunk, layer_state, layer_bounds_.OffsetFromOrigin()));
-}
-
-TransformationMatrix CompositedLayerRasterInvalidator::ChunkToLayerTransform(
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) const {
-  auto matrix = GeometryMapper::SourceToDestinationProjection(
-      chunk.properties.property_tree_state.Transform(),
-      layer_state.Transform());
-  matrix.Translate(-layer_bounds_.x(), -layer_bounds_.y());
-  return matrix;
-}
-
-// Returns the clip rect when we know it is precise (no radius, no complex
-// transform, no pixel moving filter, etc.)
-FloatClipRect CompositedLayerRasterInvalidator::ChunkToLayerClip(
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) const {
-  FloatClipRect clip_rect;
-  if (chunk.properties.property_tree_state.Effect() != layer_state.Effect()) {
-    // Don't bother GeometryMapper because we don't need the rect when it's not
-    // tight because of the effect nodes.
-    clip_rect.ClearIsTight();
-  } else {
-    clip_rect = GeometryMapper::LocalToAncestorClipRect(
-        chunk.properties.property_tree_state.GetPropertyTreeState(),
-        layer_state);
-    if (clip_rect.IsTight())
-      clip_rect.MoveBy(FloatPoint(-layer_bounds_.x(), -layer_bounds_.y()));
-  }
-  return clip_rect;
-}
-
 size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
     const PaintChunk& new_chunk,
     size_t old_index) {
@@ -141,15 +103,18 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
 // is slightly larger than O(n).
 void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     const Vector<const PaintChunk*>& new_chunks,
-    const Vector<PaintChunkInfo>& new_chunks_info,
-    const PropertyTreeState& layer_state) {
+    const PropertyTreeState& layer_state,
+    Vector<PaintChunkInfo>& new_chunks_info) {
+  ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin());
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
   size_t max_matched_old_index = 0;
   for (size_t new_index = 0; new_index < new_chunks.size(); ++new_index) {
     const auto& new_chunk = *new_chunks[new_index];
-    const auto& new_chunk_info = new_chunks_info[new_index];
+    mapper.SwitchToChunk(new_chunk);
+    const auto& new_chunk_info =
+        new_chunks_info.emplace_back(*this, mapper, new_chunk);
 
     if (!new_chunk.is_cacheable) {
       FullyInvalidateNewChunk(new_chunk_info,
@@ -191,7 +156,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
         IncrementallyInvalidateChunk(old_chunk_info, new_chunk_info);
 
       // Add the raster invalidations found by PaintController within the chunk.
-      AddDisplayItemRasterInvalidations(new_chunk, layer_state);
+      AddDisplayItemRasterInvalidations(new_chunk, mapper);
     }
 
     old_index = matched_old_index + 1;
@@ -213,14 +178,17 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
 
 void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
     const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) {
+    const ChunkToLayerMapper& mapper) {
   DCHECK(chunk.raster_invalidation_tracking.IsEmpty() ||
          chunk.raster_invalidation_rects.size() ==
              chunk.raster_invalidation_tracking.size());
 
+  if (chunk.raster_invalidation_rects.IsEmpty())
+    return;
+
   for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
-    auto rect = MapRectFromChunkToLayer(chunk.raster_invalidation_rects[i],
-                                        chunk, layer_state);
+    auto rect = ClipByLayerBounds(
+        mapper.MapVisualRect(chunk.raster_invalidation_rects[i]));
     if (rect.IsEmpty())
       continue;
     raster_invalidation_function_(rect);
@@ -300,26 +268,34 @@ void CompositedLayerRasterInvalidator::Generate(
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureTracking();
 
-  bool layer_bounds_was_empty = layer_bounds_.IsEmpty();
-  layer_bounds_ = layer_bounds;
-
-  Vector<PaintChunkInfo> new_chunks_info;
-  new_chunks_info.ReserveCapacity(paint_chunks.size());
-  for (const auto* chunk : paint_chunks) {
-    new_chunks_info.push_back(PaintChunkInfo(
-        MapRectFromChunkToLayer(chunk->bounds, *chunk, layer_state),
-        ChunkToLayerTransform(*chunk, layer_state),
-        ChunkToLayerClip(*chunk, layer_state), *chunk));
-    if (tracking_info_) {
+  if (tracking_info_) {
+    for (const auto* chunk : paint_chunks) {
       tracking_info_->new_client_debug_names.insert(
           &chunk->id.client, chunk->id.client.DebugName());
     }
   }
 
-  if (!layer_bounds_was_empty && !layer_bounds_.IsEmpty())
-    GenerateRasterInvalidations(paint_chunks, new_chunks_info, layer_state);
+  bool layer_bounds_was_empty = layer_bounds_.IsEmpty();
+  layer_bounds_ = layer_bounds;
+
+  Vector<PaintChunkInfo> new_chunks_info;
+  new_chunks_info.ReserveCapacity(paint_chunks.size());
+
+  if (layer_bounds_was_empty || layer_bounds_.IsEmpty()) {
+    // No raster invalidation is needed if either the old bounds or the new
+    // bounds is empty, but we still need to update new_chunks_info for the
+    // next cycle.
+    ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin());
+    for (const auto* chunk : paint_chunks) {
+      mapper.SwitchToChunk(*chunk);
+      new_chunks_info.emplace_back(*this, mapper, *chunk);
+    }
+  } else {
+    GenerateRasterInvalidations(paint_chunks, layer_state, new_chunks_info);
+  }
 
   paint_chunks_info_ = std::move(new_chunks_info);
+
   if (tracking_info_) {
     tracking_info_->old_client_debug_names =
         std::move(tracking_info_->new_client_debug_names);
