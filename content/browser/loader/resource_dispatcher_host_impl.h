@@ -359,6 +359,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoSamePriority);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoUploadProgress);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoTwoRenderViews);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, UpdateLoadState);
 
   struct OustandingRequestsStats {
     int memory_cost;
@@ -521,8 +522,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static std::unique_ptr<LoadInfoMap> PickMoreInterestingLoadInfos(
       std::unique_ptr<LoadInfoList> infos);
 
-  // Gets all the LoadInfos for each pending request.
-  std::unique_ptr<LoadInfoList> GetLoadInfoForAllRoutes();
+  // Gets the most interesting LoadInfos for each GlobalFrameRoutingIds.
+  // Includes the LoadInfo for all navigation requests, which may not have valid
+  // frame ids.
+  //
+  // We aggregate per-frame on the IO thread, and per-WebContents on the UI
+  // thread. The IO thread aggregation is used to avoid copying state for every
+  // request across threads.
+  std::unique_ptr<LoadInfoList> GetInterestingPerFrameLoadInfos();
 
   // Checks all pending requests and updates the load info if necessary.
   void UpdateLoadInfo();

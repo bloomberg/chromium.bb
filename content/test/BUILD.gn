@@ -870,6 +870,7 @@ test("content_browsertests") {
     "//components/discardable_memory/service",
     "//components/network_session_configurator/common",
     "//components/payments/mojom",
+    "//components/url_formatter:url_formatter",
     "//components/viz/test:test_support",
     "//content:resources",
     "//content/app:both_for_content_tests",
