@@ -30,7 +30,8 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
     : public views::View,
       public ui::ImplicitAnimationObserver {
  public:
-  PowerButtonMenuBackgroundView() {
+  PowerButtonMenuBackgroundView(base::RepeatingClosure show_animation_done)
+      : show_animation_done_(show_animation_done) {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetColor(kShieldColor);
   }
@@ -38,15 +39,20 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   ~PowerButtonMenuBackgroundView() override = default;
 
   void OnImplicitAnimationsCompleted() override {
+    PowerButtonController* power_button_controller =
+        Shell::Get()->power_button_controller();
     if (layer()->opacity() == 0.f) {
       SetVisible(false);
-      Shell::Get()->power_button_controller()->DismissMenu();
+      power_button_controller->DismissMenu();
     }
+
+    if (layer()->opacity() == kPowerButtonMenuOpacity)
+      show_animation_done_.Run();
   }
 
   void ScheduleShowHideAnimation(bool show) {
-    layer()->GetAnimator()->StopAnimating();
-    layer()->SetOpacity(show ? 0.f : kPowerButtonMenuOpacity);
+    layer()->GetAnimator()->AbortAllAnimations();
+    layer()->SetOpacity(show ? 0.f : layer()->opacity());
 
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.AddObserver(this);
@@ -59,11 +65,16 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   }
 
  private:
+  // A callback for when the animation that shows the power menu has finished.
+  base::RepeatingClosure show_animation_done_;
+
   DISALLOW_COPY_AND_ASSIGN(PowerButtonMenuBackgroundView);
 };
 
-PowerButtonMenuScreenView::PowerButtonMenuScreenView() {
-  power_button_screen_background_shield_ = new PowerButtonMenuBackgroundView();
+PowerButtonMenuScreenView::PowerButtonMenuScreenView(
+    base::RepeatingClosure show_animation_done) {
+  power_button_screen_background_shield_ =
+      new PowerButtonMenuBackgroundView(show_animation_done);
   AddChildView(power_button_screen_background_shield_);
 
   power_button_menu_view_ = new PowerButtonMenuView();

@@ -1026,6 +1026,10 @@ class PreferredReservedAcceleratorsTest : public AshTestBase {
     AshTestBase::SetUp();
     Shell::Get()->lock_state_controller()->set_animator_for_test(
         new TestSessionStateAnimator);
+    Shell::Get()->power_button_controller()->OnGetSwitchStates(
+        chromeos::PowerManagerClient::SwitchStates{
+            chromeos::PowerManagerClient::LidState::OPEN,
+            chromeos::PowerManagerClient::TabletMode::ON});
   }
 
  private:

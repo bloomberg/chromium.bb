@@ -135,8 +135,9 @@ class ASH_EXPORT PowerButtonController
   // button menu.
   void StopTimersAndDismissMenu();
 
-  // Called by |power_button_menu_timer_| to start showing power button menu.
-  void OnPowerButtonMenuTimeout();
+  // Starts the power menu animation. Called when a clamshell device's power
+  // button is pressed or when |power_button_menu_timer_| fires.
+  void StartPowerMenuAnimation();
 
   // Called by |shutdown_timer_| to turn the screen off and request shutdown.
   void OnShutdownTimeout();
@@ -153,6 +154,9 @@ class ASH_EXPORT PowerButtonController
   // set and locking is possible.
   void LockScreenIfRequired();
 
+  // Sets |show_menu_animation_done_| to true.
+  void SetShowMenuAnimationDone();
+
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
   bool lock_button_down_ = false;
@@ -164,6 +168,9 @@ class ASH_EXPORT PowerButtonController
   // for Chrome OS's docked mode, where a Chromebook's lid is closed while an
   // external display is connected).
   bool internal_display_off_and_external_display_on_ = false;
+
+  // True after the animation that shows the power menu has finished.
+  bool show_menu_animation_done_ = false;
 
   // Saves the button type for this power button.
   ButtonType button_type_ = ButtonType::NORMAL;
@@ -213,8 +220,9 @@ class ASH_EXPORT PowerButtonController
   // Runs OnShutdownTimeout() to start shutdown.
   base::OneShotTimer shutdown_timer_;
 
-  // Started when the power button is pressed and stopped when it's released.
-  // Runs OnPowerButtonMenuTimeout() to show the power button menu.
+  // Started when the power button of convertible/slate/detachable devices is
+  // pressed and stopped when it's released. Runs StartPowerMenuAnimation() to
+  // show the power button menu.
   base::OneShotTimer power_button_menu_timer_;
 
   // The fullscreen widget of power button menu.

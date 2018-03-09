@@ -102,4 +102,9 @@ void PowerButtonControllerTestApi::SetTurnScreenOffForTap(
   controller_->turn_screen_off_for_tap_ = turn_screen_off_for_tap;
 }
 
+void PowerButtonControllerTestApi::SetShowMenuAnimationDone(
+    bool show_menu_animation_done) {
+  controller_->show_menu_animation_done_ = show_menu_animation_done;
+}
+
 }  // namespace ash

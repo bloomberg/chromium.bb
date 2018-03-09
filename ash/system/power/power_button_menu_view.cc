@@ -38,12 +38,12 @@ PowerButtonMenuView::PowerButtonMenuView() {
 PowerButtonMenuView::~PowerButtonMenuView() = default;
 
 void PowerButtonMenuView::ScheduleShowHideAnimation(bool show) {
-  // Stop any previous animation.
-  layer()->GetAnimator()->StopAnimating();
+  // Cancel any previous animation.
+  layer()->GetAnimator()->AbortAllAnimations();
 
   // Set initial state.
   SetVisible(true);
-  layer()->SetOpacity(show ? 0.f : 1.0f);
+  layer()->SetOpacity(show ? 0.f : layer()->opacity());
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
   animation.AddObserver(this);
