@@ -104,8 +104,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
  private:
   class MojoNetLog;
 
-  friend class NetworkService;
-
   // service_manager::Service implementation.
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
