@@ -43,7 +43,7 @@
 #include "core/messaging/MessagePort.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebBlobInfo.h"

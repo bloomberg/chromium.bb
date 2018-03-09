@@ -15,7 +15,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"

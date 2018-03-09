@@ -11,7 +11,7 @@
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

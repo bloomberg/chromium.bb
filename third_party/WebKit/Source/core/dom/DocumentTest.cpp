@@ -49,7 +49,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/heap/Handle.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"

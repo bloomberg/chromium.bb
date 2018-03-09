@@ -19,7 +19,7 @@
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/DragImage.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

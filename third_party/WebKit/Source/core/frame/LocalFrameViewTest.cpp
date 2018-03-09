@@ -13,7 +13,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #include "core/paint/PaintPropertyTreePrinter.h"

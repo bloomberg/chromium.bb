@@ -5,7 +5,7 @@
 #include "platform/graphics/CanvasColorParams.h"
 
 #include "platform/graphics/ColorCorrectionTestUtils.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "ui/gfx/color_space.h"

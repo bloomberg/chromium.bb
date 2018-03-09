@@ -5,10 +5,10 @@
 #include "build/build_config.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

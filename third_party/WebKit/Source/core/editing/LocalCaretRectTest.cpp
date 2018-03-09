@@ -10,7 +10,7 @@
 #include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

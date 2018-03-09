@@ -11,7 +11,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
