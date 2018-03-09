@@ -2044,7 +2044,6 @@ void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
 void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const base::string16& message,
     const base::string16& default_prompt,
-    const GURL& frame_url,
     JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
   if (dialog_type == JavaScriptDialogType::JAVASCRIPT_DIALOG_TYPE_ALERT)
@@ -2071,7 +2070,6 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
 }
 
 void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
-    const GURL& frame_url,
     bool is_reload,
     IPC::Message* reply_msg) {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnRunBeforeUnloadConfirm",

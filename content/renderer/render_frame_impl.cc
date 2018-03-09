@@ -2581,7 +2581,6 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
 bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                                           const base::string16& message,
                                           const base::string16& default_value,
-                                          const GURL& frame_url,
                                           base::string16* result) {
   // Don't allow further dialogs if we are waiting to swap out, since the
   // ScopedPageLoadDeferrer in our stack prevents it.
@@ -2603,7 +2602,7 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
     result = &result_temp;
 
   Send(new FrameHostMsg_RunJavaScriptDialog(routing_id_, message, default_value,
-                                            frame_url, type, &success, result));
+                                            type, &success, result));
   return success;
 }
 
@@ -4676,13 +4675,12 @@ bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
 
 void RenderFrameImpl::RunModalAlertDialog(const blink::WebString& message) {
   RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_ALERT, message.Utf16(),
-                      base::string16(), frame_->GetDocument().Url(), nullptr);
+                      base::string16(), nullptr);
 }
 
 bool RenderFrameImpl::RunModalConfirmDialog(const blink::WebString& message) {
   return RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_CONFIRM, message.Utf16(),
-                             base::string16(), frame_->GetDocument().Url(),
-                             nullptr);
+                             base::string16(), nullptr);
 }
 
 bool RenderFrameImpl::RunModalPromptDialog(
@@ -4691,8 +4689,7 @@ bool RenderFrameImpl::RunModalPromptDialog(
     blink::WebString* actual_value) {
   base::string16 result;
   bool ok = RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_PROMPT, message.Utf16(),
-                                default_value.Utf16(),
-                                frame_->GetDocument().Url(), &result);
+                                default_value.Utf16(), &result);
   if (ok)
     *actual_value = WebString::FromUTF16(result);
   return ok;
@@ -4708,9 +4705,8 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptDialog.
   base::string16 ignored_result;
-  Send(new FrameHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, frame_->GetDocument().Url(), is_reload, &success,
-      &ignored_result));
+  Send(new FrameHostMsg_RunBeforeUnloadConfirm(routing_id_, is_reload, &success,
+                                               &ignored_result));
   return success;
 }
 
