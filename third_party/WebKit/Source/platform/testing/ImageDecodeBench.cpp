@@ -40,11 +40,13 @@ scoped_refptr<SharedBuffer> ReadFile(const char* name) {
   }
 
   file.seekg(0, std::ios::end);
-  size_t file_size = file.tellg();
+  int file_size = file.tellg();
   file.seekg(0, std::ios::beg);
 
-  if (!file || !file_size)
-    return SharedBuffer::Create();
+  if (!file || file_size <= 0) {
+    fprintf(stderr, "Error seeking file %s\n", name);
+    exit(2);
+  }
 
   Vector<char> buffer(file_size);
   if (!file.read(buffer.data(), file_size)) {
@@ -126,21 +128,11 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
   class WebPlatform : public Platform {};
   Platform::Initialize(new WebPlatform());
 
-  // Read entire file content to data, and consolidate the SharedBuffer data
-  // segments into one, contiguous block of memory.
+  // Read entire file content into |data| (a contiguous block of memory) then
+  // decode it to verify the image and record its ImageMeta data.
 
+  ImageMeta image = {argv[1], 0, 0, 0, 0};
   scoped_refptr<SharedBuffer> data = ReadFile(argv[1]);
-  if (!data.get() || !data->size()) {
-    fprintf(stderr, "Error reading image %s\n", argv[1]);
-    exit(2);
-  }
-
-  data->Data();
-
-  // Warm-up: throw out the first iteration for more consistent results.
-
-  ImageMeta image;
-  image.name = argv[1];
   DecodeImageData(data.get(), &image);
 
   // Image decode bench for decode_iterations.
