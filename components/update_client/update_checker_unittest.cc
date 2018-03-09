@@ -138,7 +138,7 @@ class UpdateCheckerTest : public testing::Test,
   scoped_refptr<UpdateContext> update_context_;
 
  private:
-  scoped_refptr<UpdateContext> MakeFakeUpdateContext() const;
+  scoped_refptr<UpdateContext> MakeMockUpdateContext() const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::OnceClosure quit_closure_;
@@ -171,7 +171,7 @@ void UpdateCheckerTest::SetUp() {
 
   error_ = 0;
   retry_after_sec_ = 0;
-  update_context_ = MakeFakeUpdateContext();
+  update_context_ = MakeMockUpdateContext();
 }
 
 void UpdateCheckerTest::TearDown() {
@@ -204,7 +204,7 @@ void UpdateCheckerTest::UpdateCheckComplete(int error, int retry_after_sec) {
   Quit();
 }
 
-scoped_refptr<UpdateContext> UpdateCheckerTest::MakeFakeUpdateContext() const {
+scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
   return base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>(),
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
