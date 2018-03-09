@@ -7743,9 +7743,22 @@ Called by update_net_error_codes.py.-->
   <int value="50" label="0.5: Slowest"/>
   <int value="75" label="0.75: Slow"/>
   <int value="100" label="1.0: Normal"/>
-  <int value="125" label="1.25: Fast"/>
-  <int value="150" label="1.5: Faster"/>
-  <int value="200" label="2.0: Fastest"/>
+  <int value="125" label="1.25"/>
+  <int value="150" label="1.5"/>
+  <int value="175" label="1.75"/>
+  <int value="200" label="2.0"/>
+  <int value="225" label="2.25"/>
+  <int value="250" label="2.5"/>
+  <int value="275" label="2.75"/>
+  <int value="300" label="3.0"/>
+  <int value="325" label="3.25"/>
+  <int value="350" label="3.5"/>
+  <int value="375" label="3.75"/>
+  <int value="400" label="4.0"/>
+  <int value="425" label="4.25"/>
+  <int value="450" label="4.5"/>
+  <int value="475" label="4.75"/>
+  <int value="500" label="5.0: Fastest"/>
 </enum>
 
 <enum name="CrosSelectToSpeakStartSpeechMethod">
