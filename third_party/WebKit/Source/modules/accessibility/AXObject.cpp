@@ -1819,6 +1819,10 @@ AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   return const_cast<AXObject*>(this);
 }
 
+int AXObject::ChildCount() const {
+  return static_cast<int>(Children().size());
+}
+
 const AXObject::AXObjectVector& AXObject::Children() const {
   return const_cast<AXObject*>(this)->Children();
 }
@@ -1827,6 +1831,36 @@ const AXObject::AXObjectVector& AXObject::Children() {
   UpdateChildrenIfNecessary();
 
   return children_;
+}
+
+AXObject* AXObject::FirstChild() const {
+  return ChildCount() ? *Children().begin() : nullptr;
+}
+
+AXObject* AXObject::LastChild() const {
+  return ChildCount() ? *(Children().end() - 1) : nullptr;
+}
+
+AXObject* AXObject::DeepestFirstChild() const {
+  if (!ChildCount())
+    return nullptr;
+
+  AXObject* deepest_child = FirstChild();
+  while (deepest_child->ChildCount())
+    deepest_child = deepest_child->FirstChild();
+
+  return deepest_child;
+}
+
+AXObject* AXObject::DeepestLastChild() const {
+  if (!ChildCount())
+    return nullptr;
+
+  AXObject* deepest_child = LastChild();
+  while (deepest_child->ChildCount())
+    deepest_child = deepest_child->LastChild();
+
+  return deepest_child;
 }
 
 bool AXObject::IsAncestorOf(const AXObject& descendant) const {
@@ -1838,6 +1872,59 @@ bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
   while (parent && parent != &ancestor)
     parent = parent->ParentObject();
   return !!parent;
+}
+
+AXObject* AXObject::NextSibling() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent)
+    return nullptr;
+
+  if (IndexInParent() < parent->ChildCount() - 1)
+    return *(parent->Children().begin() + IndexInParent() + 1);
+
+  return nullptr;
+}
+
+AXObject* AXObject::PreviousSibling() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent)
+    return nullptr;
+
+  if (IndexInParent() > 0)
+    return *(parent->Children().begin() + IndexInParent() - 1);
+
+  return nullptr;
+}
+
+AXObject* AXObject::NextInTreeObject(bool can_wrap_to_first_element) const {
+  if (ChildCount())
+    return FirstChild();
+
+  if (NextSibling())
+    return NextSibling();
+  AXObject* current_object = const_cast<AXObject*>(this);
+  while (current_object->ParentObjectUnignored()) {
+    current_object = current_object->ParentObjectUnignored();
+    AXObject* sibling = current_object->NextSibling();
+    if (sibling)
+      return sibling;
+  }
+
+  return can_wrap_to_first_element ? current_object : nullptr;
+}
+
+AXObject* AXObject::PreviousInTreeObject(bool can_wrap_to_last_element) const {
+  AXObject* sibling = PreviousSibling();
+  if (!sibling) {
+    if (ParentObjectUnignored())
+      return ParentObjectUnignored();
+    return can_wrap_to_last_element ? DeepestLastChild() : nullptr;
+  }
+
+  if (sibling->ChildCount())
+    return sibling->DeepestLastChild();
+
+  return sibling;
 }
 
 AXObject* AXObject::ParentObject() const {
