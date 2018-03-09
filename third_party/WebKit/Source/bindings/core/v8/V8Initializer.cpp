@@ -31,7 +31,6 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ReferrerScriptInfo.h"
 #include "bindings/core/v8/RejectedPromises.h"
-#include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -636,9 +635,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
 
   if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
-    profiler->SetWrapperClassInfoProvider(
-        WrapperTypeInfo::kNodeClassId, &RetainedDOMInfo::CreateRetainedDOMInfo);
-    profiler->SetGetRetainerInfosCallback(&V8GCController::GetRetainerInfos);
     profiler->SetBuildEmbedderGraphCallback(
         &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback);
   }

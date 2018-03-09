@@ -59,8 +59,6 @@ bindings_core_v8_files =
                     "core/v8/RejectedPromises.h",
                     "core/v8/RemoteWindowProxy.cpp",
                     "core/v8/RemoteWindowProxy.h",
-                    "core/v8/RetainedDOMInfo.cpp",
-                    "core/v8/RetainedDOMInfo.h",
                     "core/v8/RetainedObjectInfo.h",
                     "core/v8/ScheduledAction.cpp",
                     "core/v8/ScheduledAction.h",
