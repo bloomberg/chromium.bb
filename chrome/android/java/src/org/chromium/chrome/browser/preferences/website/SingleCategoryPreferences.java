@@ -531,9 +531,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
             }
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
+            // This should only be used for settings that have host-pattern based exceptions.
             if (mCategory.showAutoplaySites() || mCategory.showBackgroundSyncSites()
-                    || mCategory.showJavaScriptSites() || mCategory.showSoundSites()
-                    || mCategory.showClipboardSites()) {
+                    || mCategory.showJavaScriptSites() || mCategory.showSoundSites()) {
                 if ((boolean) newValue) {
                     Preference addException = getPreferenceScreen().findPreference(
                             ADD_EXCEPTION_KEY);
@@ -566,10 +566,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
             resource = R.string.website_settings_add_site_description_autoplay;
         } else if (mCategory.showBackgroundSyncSites()) {
             resource = R.string.website_settings_add_site_description_background_sync;
-        } else if (mCategory.showClipboardSites()) {
-            resource = PrefServiceBridge.getInstance().isClipboardEnabled()
-                    ? R.string.website_settings_add_site_description_clipboard_block
-                    : R.string.website_settings_add_site_description_clipboard_allow;
         } else if (mCategory.showJavaScriptSites()) {
             resource = R.string.website_settings_add_site_description_javascript;
         } else if (mCategory.showSoundSites()) {
@@ -643,7 +639,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if ((mCategory.showAutoplaySites() && !PrefServiceBridge.getInstance().isAutoplayEnabled())
                 || (mCategory.showJavaScriptSites()
                            && !PrefServiceBridge.getInstance().javaScriptEnabled())
-                || mCategory.showSoundSites() || mCategory.showClipboardSites()
+                || mCategory.showSoundSites()
                 || (mCategory.showBackgroundSyncSites()
                            && !PrefServiceBridge.getInstance().isBackgroundSyncAllowed())) {
             getPreferenceScreen().addPreference(
