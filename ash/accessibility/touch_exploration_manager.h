@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TOUCH_EXPLORATION_MANAGER_CHROMEOS_H_
-#define ASH_TOUCH_EXPLORATION_MANAGER_CHROMEOS_H_
+#ifndef ASH_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
+#define ASH_ACCESSIBILITY_TOUCH_EXPLORATION_MANAGER_H_
 
 #include <memory>
 
@@ -29,11 +29,14 @@ class KeyboardController;
 namespace ash {
 class RootWindowController;
 
-// Responsible for initializing TouchExplorationController when spoken
-// feedback is on for ChromeOS only. This class implements
-// TouchExplorationControllerDelegate which allows touch gestures to manipulate
-// the system.
-class ASH_EXPORT AshTouchExplorationManager
+// Responsible for initializing TouchExplorationController when spoken feedback
+// is on. Implements TouchExplorationControllerDelegate which allows touch
+// gestures to manipulate the system.
+//
+// TODO(jamescook): Move the TouchExplorationControllerDelegate methods into
+// TouchExplorationController. I suspect the delegate was added to support ash
+// on Windows, which we don't ship anymore.
+class ASH_EXPORT TouchExplorationManager
     : public AccessibilityObserver,
       public TouchExplorationControllerDelegate,
       public TouchAccessibilityEnablerDelegate,
@@ -42,9 +45,9 @@ class ASH_EXPORT AshTouchExplorationManager
       public keyboard::KeyboardControllerObserver,
       public ShellObserver {
  public:
-  explicit AshTouchExplorationManager(
+  explicit TouchExplorationManager(
       RootWindowController* root_window_controller);
-  ~AshTouchExplorationManager() override;
+  ~TouchExplorationManager() override;
 
   // AccessibilityObserver overrides:
   void OnAccessibilityStatusChanged(
@@ -100,7 +103,7 @@ class ASH_EXPORT AshTouchExplorationManager
                  keyboard::KeyboardControllerObserver>
       keyboard_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshTouchExplorationManager);
+  DISALLOW_COPY_AND_ASSIGN(TouchExplorationManager);
 };
 
 }  // namespace ash

@@ -11,8 +11,8 @@
 
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/accessibility/touch_exploration_controller.h"
+#include "ash/accessibility/touch_exploration_manager.h"
 #include "ash/ash_constants.h"
-#include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -704,12 +704,13 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     shell->OnRootWindowAdded(root_window);
   }
 
-  // TODO: AshTouchExplorationManager doesn't work with mus.
+  // TODO: TouchExplorationManager doesn't work with mash.
   // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode) &&
       Shell::GetAshConfig() != Config::MASH) {
-    touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
+    touch_exploration_manager_ =
+        std::make_unique<TouchExplorationManager>(this);
   }
 }
 
