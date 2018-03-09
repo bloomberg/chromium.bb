@@ -26,6 +26,7 @@
 
 #include "core/editing/spellcheck/SpellChecker.h"
 
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -517,8 +518,7 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 
   DataTransfer* const data_transfer = DataTransfer::Create(
       DataTransfer::DataTransferType::kInsertReplacementText,
-      DataTransferAccessPolicy::kDataTransferReadable,
-      DataObject::CreateFromString(text));
+      DataTransferAccessPolicy::kReadable, DataObject::CreateFromString(text));
 
   const bool cancel = DispatchBeforeInputDataTransfer(
                           target, InputEvent::InputType::kInsertReplacementText,

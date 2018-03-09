@@ -27,7 +27,6 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/clipboard/DataObject.h"
-#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/DragActions.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -46,6 +45,8 @@ class LocalFrame;
 class Node;
 class PaintRecordBuilder;
 class PropertyTreeState;
+
+enum class DataTransferAccessPolicy;
 
 // Used for drag and drop and copy/paste.
 // Drag and Drop:

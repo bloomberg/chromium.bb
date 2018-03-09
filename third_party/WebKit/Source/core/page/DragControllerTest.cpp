@@ -6,6 +6,7 @@
 
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -396,7 +397,8 @@ TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   drag_state.drag_type_ = kDragSourceActionSelection;
   drag_state.drag_src_ = GetDocument().getElementById("drag");
   drag_state.drag_data_transfer_ = DataTransfer::Create(
-      DataTransfer::kDragAndDrop, kDataTransferWritable, DataObject::Create());
+      DataTransfer::kDragAndDrop, DataTransferAccessPolicy::kWritable,
+      DataObject::Create());
   GetFrame().GetPage()->GetDragController().StartDrag(
       &GetFrame(), drag_state, mouse_event, IntPoint(5, 10));
 
@@ -439,7 +441,8 @@ TEST_P(DragControllerTest, DragLinkWithPageScaleFactor) {
   drag_state.drag_type_ = kDragSourceActionLink;
   drag_state.drag_src_ = GetDocument().getElementById("drag");
   drag_state.drag_data_transfer_ = DataTransfer::Create(
-      DataTransfer::kDragAndDrop, kDataTransferWritable, DataObject::Create());
+      DataTransfer::kDragAndDrop, DataTransferAccessPolicy::kWritable,
+      DataObject::Create());
   GetFrame().GetPage()->GetDragController().StartDrag(
       &GetFrame(), drag_state, mouse_event, IntPoint(5, 10));
 

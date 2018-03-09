@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -777,20 +778,20 @@ static bool DispatchClipboardEvent(LocalFrame& frame,
 
   DataTransfer* const data_transfer =
       DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
-                           policy == kDataTransferWritable
+                           policy == DataTransferAccessPolicy::kWritable
                                ? DataObject::Create()
                                : DataObject::CreateFromPasteboard(paste_mode));
 
   Event* const evt = ClipboardEvent::Create(event_type, data_transfer);
   target->DispatchEvent(evt);
   const bool no_default_processing = evt->defaultPrevented();
-  if (no_default_processing && policy == kDataTransferWritable) {
+  if (no_default_processing && policy == DataTransferAccessPolicy::kWritable) {
     Pasteboard::GeneralPasteboard()->WriteDataObject(
         data_transfer->GetDataObject());
   }
 
   // Invalidate clipboard here for security.
-  data_transfer->SetAccessPolicy(kDataTransferNumb);
+  data_transfer->SetAccessPolicy(DataTransferAccessPolicy::kNumb);
   return !no_default_processing;
 }
 
@@ -804,8 +805,9 @@ static bool DispatchCopyOrCutEvent(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
 
-  return DispatchClipboardEvent(frame, event_type, kDataTransferWritable,
-                                source, PasteMode::kAllMimeTypes);
+  return DispatchClipboardEvent(frame, event_type,
+                                DataTransferAccessPolicy::kWritable, source,
+                                PasteMode::kAllMimeTypes);
 }
 
 static bool CanSmartCopyOrDelete(LocalFrame& frame) {
@@ -2061,7 +2063,8 @@ static bool DispatchPasteEvent(LocalFrame& frame,
                                PasteMode paste_mode,
                                EditorCommandSource source) {
   return DispatchClipboardEvent(frame, EventTypeNames::paste,
-                                kDataTransferReadable, source, paste_mode);
+                                DataTransferAccessPolicy::kReadable, source,
+                                paste_mode);
 }
 
 static void PasteAsFragment(LocalFrame& frame,
@@ -2145,9 +2148,9 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
                                    : PasteMode::kPlainTextOnly;
 
   if (source == EditorCommandSource::kMenuOrKeyBinding) {
-    DataTransfer* data_transfer =
-        DataTransfer::Create(DataTransfer::kCopyAndPaste, kDataTransferReadable,
-                             DataObject::CreateFromPasteboard(paste_mode));
+    DataTransfer* data_transfer = DataTransfer::Create(
+        DataTransfer::kCopyAndPaste, DataTransferAccessPolicy::kReadable,
+        DataObject::CreateFromPasteboard(paste_mode));
 
     if (DispatchBeforeInputDataTransfer(
             FindEventTargetForClipboardEvent(frame, source),

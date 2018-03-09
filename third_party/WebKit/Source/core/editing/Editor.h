@@ -30,7 +30,6 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/EditingBehavior.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/Forward.h"

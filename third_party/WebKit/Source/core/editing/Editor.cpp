@@ -30,6 +30,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
@@ -380,9 +381,9 @@ bool Editor::ReplaceSelectionAfterDraggingWithEvents(
     return true;
 
   // Dispatch 'beforeinput'.
-  DataTransfer* data_transfer =
-      DataTransfer::Create(DataTransfer::kDragAndDrop, kDataTransferReadable,
-                           drag_data->PlatformData());
+  DataTransfer* data_transfer = DataTransfer::Create(
+      DataTransfer::kDragAndDrop, DataTransferAccessPolicy::kReadable,
+      drag_data->PlatformData());
   data_transfer->SetSourceOperation(drag_data->DraggingSourceOperationMask());
   const bool should_insert =
       DispatchBeforeInputDataTransfer(

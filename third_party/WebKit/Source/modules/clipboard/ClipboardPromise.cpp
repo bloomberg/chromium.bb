@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
 #include "core/dom/ExecutionContext.h"
@@ -155,8 +156,7 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
 
   const DataTransfer::DataTransferType type =
       DataTransfer::DataTransferType::kCopyAndPaste;
-  const DataTransferAccessPolicy access =
-      DataTransferAccessPolicy::kDataTransferReadable;
+  const DataTransferAccessPolicy access = DataTransferAccessPolicy::kReadable;
   DataObject* data = DataObject::CreateFromString(plain_text);
   DataTransfer* dt = DataTransfer::Create(type, access, data);
   script_promise_resolver_->Resolve(dt);
