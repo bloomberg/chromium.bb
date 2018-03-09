@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -462,11 +463,17 @@ class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
 // Tests that when a GURL is opened after startup, it replaces the NTP.
 IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
                        ReplaceNTPAfterStartup) {
+  // Depending on network connectivity, the NTP URL can either be
+  // chrome://newtab/ or chrome-search://local-ntp/local-ntp.html. See
+  // local_ntp_test_utils::GetFinalNtpUrl for more details.
+  std::string expected_url =
+      local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()).spec();
+
   // Ensure that there is exactly 1 tab showing, and the tab is the NTP.
-  GURL ntp(chrome::kChromeUINewTabURL);
+  GURL ntp(expected_url);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   browser()->tab_strip_model()->GetActiveWebContents()->GetController().LoadURL(
-      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+      GURL(expected_url), content::Referrer(),
       ui::PageTransition::PAGE_TRANSITION_LINK, std::string());
 
   // Wait for one navigation on the active web contents.
