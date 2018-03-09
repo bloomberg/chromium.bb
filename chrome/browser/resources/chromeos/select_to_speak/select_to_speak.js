@@ -202,7 +202,7 @@ SelectToSpeak.prototype = {
     this.trackingMouse_ = true;
     this.didTrackMouse_ = true;
     this.mouseStart_ = {x: evt.screenX, y: evt.screenY};
-    this.cancelIfSpeaking_();
+    this.cancelIfSpeaking_(false /* don't clear the focus ring */);
 
     // Fire a hit test event on click to warm up the cache.
     this.desktop_.hitTest(evt.screenX, evt.screenY, EventType.MOUSE_PRESSED);
@@ -345,7 +345,7 @@ SelectToSpeak.prototype = {
       if (this.isSelectionKeyDown_ && this.keysPressedTogether_.size == 2 &&
           this.keysPressedTogether_.has(evt.keyCode) &&
           this.keysPressedTogether_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
-        this.cancelIfSpeaking_();
+        this.cancelIfSpeaking_(true /* clear the focus ring */);
         chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
       }
       this.isSelectionKeyDown_ = false;
@@ -367,7 +367,7 @@ SelectToSpeak.prototype = {
         this.keysPressedTogether_.has(evt.keyCode) &&
         this.keysPressedTogether_.size == 1) {
       this.trackingMouse_ = false;
-      this.cancelIfSpeaking_();
+      this.cancelIfSpeaking_(true /* clear the focus ring */);
     }
 
     this.keysCurrentlyDown_.delete(evt.keyCode);
@@ -750,7 +750,7 @@ SelectToSpeak.prototype = {
    * Prepares for speech. Call once before chrome.tts.speak is called.
    */
   prepareForSpeech_: function() {
-    this.cancelIfSpeaking_();
+    this.cancelIfSpeaking_(true /* clear the focus ring */);
     if (this.intervalRef_ !== undefined) {
       clearInterval(this.intervalRef_);
     }
@@ -798,10 +798,17 @@ SelectToSpeak.prototype = {
    * record a cancel event if speech was in progress. We must cancel
    * before the callback (rather than in it) to avoid race conditions
    * where cancel is called twice.
+   * @param {boolean} clearFocusRing Whether to clear the focus ring
+   *    as well.
    */
-  cancelIfSpeaking_: function() {
+  cancelIfSpeaking_: function(clearFocusRing) {
     chrome.tts.isSpeaking(this.recordCancelIfSpeaking_.bind(this));
-    this.stopAll_();
+    if (clearFocusRing) {
+      this.stopAll_();
+    } else {
+      // Just stop speech
+      chrome.tts.stop();
+    }
   },
 
   /**
