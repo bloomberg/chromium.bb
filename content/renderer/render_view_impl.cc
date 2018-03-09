@@ -580,9 +580,10 @@ void RenderViewImpl::Initialize(
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params->main_frame_routing_id,
         std::move(main_frame_interface_provider),
-        params->main_frame_widget_routing_id, params->hidden, screen_info(),
-        compositor_deps_, opener_frame, params->devtools_main_frame_token,
-        params->replicated_frame_state, params->has_committed_real_load);
+        params->main_frame_widget_routing_id, params->hidden,
+        GetWebScreenInfo(), compositor_deps_, opener_frame,
+        params->devtools_main_frame_token, params->replicated_frame_state,
+        params->has_committed_real_load);
   }
 
   // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See
@@ -1824,7 +1825,7 @@ gfx::Size RenderViewImpl::GetSize() const {
 }
 
 float RenderViewImpl::GetDeviceScaleFactor() const {
-  return GetWebDeviceScaleFactor();
+  return GetWebScreenInfo().device_scale_factor;
 }
 
 float RenderViewImpl::GetZoomLevel() const {
@@ -1914,8 +1915,10 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
 
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size, GetWebDeviceScaleFactor()),
-        gfx::ScaleToCeiledSize(max_size, GetWebDeviceScaleFactor()));
+        gfx::ScaleToCeiledSize(min_size,
+                               GetWebScreenInfo().device_scale_factor),
+        gfx::ScaleToCeiledSize(max_size,
+                               GetWebScreenInfo().device_scale_factor));
   } else {
     webview()->EnableAutoResizeMode(min_size, max_size);
   }
@@ -1964,8 +1967,10 @@ void RenderViewImpl::OnSetLocalSurfaceIdForAutoResize(
 
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
-        gfx::ScaleToCeiledSize(min_size, GetWebDeviceScaleFactor()),
-        gfx::ScaleToCeiledSize(max_size, GetWebDeviceScaleFactor()));
+        gfx::ScaleToCeiledSize(min_size,
+                               GetWebScreenInfo().device_scale_factor),
+        gfx::ScaleToCeiledSize(max_size,
+                               GetWebScreenInfo().device_scale_factor));
   } else {
     webview()->EnableAutoResizeMode(min_size, max_size);
   }
@@ -2295,7 +2300,8 @@ bool RenderViewImpl::DidTapMultipleTargets(
 
   // The touch_rect, target_rects and zoom_rect are in the outer viewport
   // reference frame.
-  float to_pix = IsUseZoomForDSFEnabled() ? 1 : GetWebDeviceScaleFactor();
+  float to_pix =
+      IsUseZoomForDSFEnabled() ? 1 : GetWebScreenInfo().device_scale_factor;
   gfx::Rect zoom_rect;
   float new_total_scale =
       DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
@@ -2338,7 +2344,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
         // device scale will be applied in WebKit
         // --> zoom_rect doesn't include device scale,
         //     but WebKit will still draw on zoom_rect *
-        //     GetWebDeviceScaleFactor()
+        //     GetWebScreenInfo().device_scale_factor
         canvas.scale(new_total_scale / to_pix, new_total_scale / to_pix);
         canvas.translate(-zoom_rect.x() * to_pix, -zoom_rect.y() * to_pix);
 

@@ -212,9 +212,6 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidgetOwnerDelegate* owner_delegate() const { return owner_delegate_; }
 
-  // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
-  ScreenInfo screen_info() const { return screen_info_; }
-
   // Sets whether this RenderWidget has been swapped out to be displayed by
   // a RenderWidget in a different process.  If so, no new IPC messages will be
   // sent (only ACKs) and the process is free to exit when there are no other
@@ -411,12 +408,12 @@ class CONTENT_EXPORT RenderWidget
     return mouse_lock_dispatcher_.get();
   }
 
-  // Returns the device scale factor exposed to Blink. In device emulation, this
-  // may not match the compositor device scale factor.
-  float GetWebDeviceScaleFactor() const;
+  // Returns the ScreenInfo exposed to Blink. In device emulation, this
+  // may not match the compositor ScreenInfo.
+  const ScreenInfo& GetWebScreenInfo() const;
 
-  // When emulated, this returns original (non-emulated) device scale factor.
-  float GetOriginalDeviceScaleFactor() const;
+  // When emulated, this returns the original (non-emulated) ScreenInfo.
+  const ScreenInfo& GetOriginalScreenInfo() const;
 
   // Helper to convert |point| using ConvertWindowToViewport().
   gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);

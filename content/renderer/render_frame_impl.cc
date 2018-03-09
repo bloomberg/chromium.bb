@@ -1202,9 +1202,12 @@ void RenderFrameImpl::CreateFrame(
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->Parent());
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
+    // TODO(fsamuel): It's not clear if we should be passing in the
+    // web ScreenInfo or the original ScreenInfo here.
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
         widget_params.routing_id, widget_params.hidden,
-        render_frame->render_view_->screen_info(), compositor_deps, web_frame);
+        render_frame->render_view_->GetWebScreenInfo(), compositor_deps,
+        web_frame);
   }
 
   if (has_committed_real_load)
@@ -1585,10 +1588,12 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
       base::Bind(&RenderViewImpl::ShowCreatedFullscreenWidget,
                  render_view()->GetWeakPtr());
 
+  // TODO(fsamuel): It's not clear if we should be passing in the
+  // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, show_callback,
       GetRenderWidget()->compositor_deps(), plugin, active_url,
-      GetRenderWidget()->screen_info(), std::move(widget_channel_request));
+      GetRenderWidget()->GetWebScreenInfo(), std::move(widget_channel_request));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the

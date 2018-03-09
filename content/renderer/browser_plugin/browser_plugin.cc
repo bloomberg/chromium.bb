@@ -389,7 +389,7 @@ gfx::Rect BrowserPlugin::FrameRectInPixels() const {
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
-  return embedding_render_widget_->GetOriginalDeviceScaleFactor();
+  return embedding_render_widget_->GetOriginalScreenInfo().device_scale_factor;
 }
 
 void BrowserPlugin::UpdateInternalInstanceId() {
@@ -461,7 +461,8 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
           ->GetRenderWidget();
-  pending_resize_params_.screen_info = embedding_render_widget_->screen_info();
+  pending_resize_params_.screen_info =
+      embedding_render_widget_->GetOriginalScreenInfo();
   embedding_render_widget_->RegisterBrowserPlugin(this);
 
   return true;
@@ -540,7 +541,8 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
   }
 
   pending_resize_params_.frame_rect = frame_rect;
-  pending_resize_params_.screen_info = embedding_render_widget_->screen_info();
+  pending_resize_params_.screen_info =
+      embedding_render_widget_->GetOriginalScreenInfo();
   if (guest_crashed_) {
     // Update the sad page to match the current ScreenInfo.
     compositing_helper_->ChildFrameGone(frame_rect.size(),

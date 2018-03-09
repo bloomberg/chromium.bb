@@ -449,8 +449,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     params.needs_resize_ack = false;
     params.content_source_id = view()->GetContentSourceId();
     view()->OnResize(params);
-    ASSERT_EQ(dsf, view()->GetWebDeviceScaleFactor());
-    ASSERT_EQ(dsf, view()->GetOriginalDeviceScaleFactor());
+    ASSERT_EQ(dsf, view()->GetWebScreenInfo().device_scale_factor);
+    ASSERT_EQ(dsf, view()->GetOriginalScreenInfo().device_scale_factor);
   }
 
   void TestEmulatedSizeDprDsf(int width, int height, float dpr,
@@ -800,6 +800,61 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
 
   CloseRenderView(new_view);
+}
+
+// This test verifies that when device emulation is enabled, RenderFrameProxy
+// continues to receive the original ScreenInfo and not the emualted
+// ScreenInfo.
+TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
+  DoSetUp();
+
+  // This test should only run with --site-per-process.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const float device_scale = 2.0f;
+  float compositor_dsf = IsUseZoomForDSFEnabled() ? 1.f : device_scale;
+  SetDeviceScaleFactor(device_scale);
+
+  LoadHTML(
+      "<body style='min-height:1000px;'>"
+      "  <iframe src='data:text/html,frame 1'></iframe>"
+      "</body>");
+
+  WebFrame* web_frame = frame()->GetWebFrame();
+  ASSERT_TRUE(web_frame->FirstChild()->IsWebLocalFrame());
+  TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
+      RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
+  ASSERT_TRUE(child_frame);
+
+  child_frame->SwapOut(kProxyRoutingId + 1, true,
+                       ReconstructReplicationStateForTesting(child_frame));
+  EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
+  RenderFrameProxy* child_proxy = RenderFrameProxy::FromWebFrame(
+      web_frame->FirstChild()->ToWebRemoteFrame());
+  ASSERT_TRUE(child_proxy);
+
+  // Verify that the system device scale factor has propagated into the
+  // RenderFrameProxy.
+  EXPECT_EQ(device_scale,
+            view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+  EXPECT_EQ(device_scale,
+            view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+  EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
+
+  TestEmulatedSizeDprDsf(640, 480, 3.f, compositor_dsf);
+
+  // Verify that the RenderFrameProxy device scale factor is still the same.
+  EXPECT_EQ(3.f, view()->GetWidget()->GetWebScreenInfo().device_scale_factor);
+  EXPECT_EQ(device_scale,
+            view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+  EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
+
+  view()->OnDisableDeviceEmulation();
+
+  blink::WebDeviceEmulationParams params;
+  view()->OnEnableDeviceEmulation(params);
+  // Don't disable here to test that emulation is being shutdown properly.
 }
 
 // Verify that security origins are replicated properly to RenderFrameProxies

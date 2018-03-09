@@ -209,7 +209,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   gfx::PointF point_in_pixel(point);
   if (IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
-        widget_->GetOriginalDeviceScaleFactor(), point_in_pixel);
+        widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
   blink::WebNode result_node = widget_->GetWebWidget()
                                    ->HitTestResultAt(blink::WebPoint(
