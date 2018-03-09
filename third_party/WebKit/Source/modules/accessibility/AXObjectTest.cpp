@@ -36,4 +36,46 @@ TEST_F(AccessibilityTest, IsAncestorOf) {
   EXPECT_FALSE(button->IsAncestorOf(*root));
 }
 
+TEST_F(AccessibilityTest, SimpleTreeNavigation) {
+  SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
+                   R"<p id='paragraph'>hello<br id='br'>there</p>"
+                   R"<button id='button'>button</button>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  const AXObject* input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, input);
+  const AXObject* paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, paragraph);
+  const AXObject* br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, br);
+  const AXObject* button = GetAXObjectByElementId("button");
+  ASSERT_NE(nullptr, button);
+
+  EXPECT_EQ(input, root->FirstChild());
+  EXPECT_EQ(button, root->LastChild());
+  EXPECT_EQ(button, root->DeepestLastChild());
+
+  ASSERT_NE(nullptr, paragraph->FirstChild());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+            paragraph->FirstChild()->RoleValue());
+  ASSERT_NE(nullptr, paragraph->LastChild());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+            paragraph->LastChild()->RoleValue());
+  ASSERT_NE(nullptr, paragraph->DeepestFirstChild());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+            paragraph->DeepestFirstChild()->RoleValue());
+  ASSERT_NE(nullptr, paragraph->DeepestLastChild());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+            paragraph->DeepestLastChild()->RoleValue());
+
+  // There is a static text element in between the input and the paragraph.
+  EXPECT_EQ(paragraph->PreviousSibling(), input->NextSibling());
+  ASSERT_NE(nullptr, br->NextSibling());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole, br->NextSibling()->RoleValue());
+  ASSERT_NE(nullptr, br->PreviousSibling());
+  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+            br->PreviousSibling()->RoleValue());
+}
+
 }  // namespace blink
