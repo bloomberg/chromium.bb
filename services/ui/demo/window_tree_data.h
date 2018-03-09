@@ -27,10 +27,16 @@ class WindowTreeData {
 
   // Initializes the window tree host and start drawing frames.
   void Init(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
-  bool IsInitialized() const { return !!window_tree_host_; }
+  bool IsInitialized() const { return !!window_delegate_; }
 
   const aura::WindowTreeHostMus* WindowTreeHost() const {
     return window_tree_host_.get();
+  }
+
+ protected:
+  void SetWindowTreeHost(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
+    window_tree_host_ = std::move(window_tree_host);
   }
 
  private:
