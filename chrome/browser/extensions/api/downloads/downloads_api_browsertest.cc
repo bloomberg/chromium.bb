@@ -4321,7 +4321,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       base::Bind(&OnDangerPromptCreated);
   DownloadsAcceptDangerFunction::OnPromptCreatedForTesting(
       &callback);
-  BrowserActionTestUtil(browser()).Press(0);
+  BrowserActionTestUtil::Create(browser())->Press(0);
   observer->WaitForFinished();
 }
 

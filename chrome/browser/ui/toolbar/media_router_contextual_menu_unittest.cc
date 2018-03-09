@@ -49,8 +49,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
     signin_manager_ =
         SigninManagerFactory::GetInstance()->GetForProfile(profile());
-    browser_action_test_util_ =
-        std::make_unique<BrowserActionTestUtil>(browser(), false);
+    browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
     action_ = std::make_unique<MediaRouterAction>(
         browser(), browser_action_test_util_->GetToolbarActionsBar());
 

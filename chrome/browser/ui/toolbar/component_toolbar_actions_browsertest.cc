@@ -39,26 +39,26 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
 // and can receive click events properly.
 IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
                        ComponentToolbarActionsShowUpAndRespondToClicks) {
-  BrowserActionTestUtil browser_actions_bar(browser());
+  auto browser_actions_bar = BrowserActionTestUtil::Create(browser());
   toolbar_model_->AddComponentAction(
       MockComponentToolbarActionsFactory::kActionIdForTesting);
 
   // There should be only one component action view.
-  ASSERT_EQ(1, browser_actions_bar.NumberOfBrowserActions());
+  ASSERT_EQ(1, browser_actions_bar->NumberOfBrowserActions());
 
   // Even though the method says "ExtensionId", this actually refers to any id
   // for the action.
   EXPECT_EQ(MockComponentToolbarActionsFactory::kActionIdForTesting,
-            browser_actions_bar.GetExtensionId(0));
+            browser_actions_bar->GetExtensionId(0));
 
   const std::vector<ToolbarActionViewController*>& actions =
-      browser_actions_bar.GetToolbarActionsBar()->GetActions();
+      browser_actions_bar->GetToolbarActionsBar()->GetActions();
   TestToolbarActionViewController* mock_component_action =
       static_cast<TestToolbarActionViewController* const>(actions[0]);
   ASSERT_TRUE(mock_component_action);
 
   // Test that clicking on the component action works.
   EXPECT_EQ(0, mock_component_action->execute_action_count());
-  browser_actions_bar.Press(0);
+  browser_actions_bar->Press(0);
   EXPECT_EQ(1, mock_component_action->execute_action_count());
 }

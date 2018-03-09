@@ -74,7 +74,7 @@ void BrowserActionsBarBrowserTest::SetUpCommandLine(
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
-  browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
+  browser_actions_bar_ = BrowserActionTestUtil::Create(browser());
   toolbar_model_ = ToolbarActionsModel::Get(profile());
 }
 

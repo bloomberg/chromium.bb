@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoPopup) {
       embedded_test_server()->GetURL("/extensions/test_file.html"));
 
   // Simulate the incognito's browser action being clicked.
-  BrowserActionTestUtil(incognito_browser).Press(0);
+  BrowserActionTestUtil::Create(incognito_browser)->Press(0);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

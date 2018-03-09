@@ -131,7 +131,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
  protected:
   BrowserActionTestUtil* GetBrowserActionsBar() {
     if (!browser_action_test_util_)
-      browser_action_test_util_.reset(new BrowserActionTestUtil(browser()));
+      browser_action_test_util_ = BrowserActionTestUtil::Create(browser());
     return browser_action_test_util_.get();
   }
 
@@ -419,9 +419,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
 
   // The extension's popup's size grows by |growFactor| each click.
   const int growFactor = 500;
-  gfx::Size minSize = BrowserActionTestUtil::GetMinPopupSize();
+  gfx::Size minSize = actions_bar->GetMinPopupSize();
   gfx::Size middleSize = gfx::Size(growFactor, growFactor);
-  gfx::Size maxSize = BrowserActionTestUtil::GetMaxPopupSize();
+  gfx::Size maxSize = actions_bar->GetMaxPopupSize();
 
   // Ensure that two clicks will exceed the maximum allowed size.
   ASSERT_GT(minSize.height() + growFactor * 2, maxSize.height());
@@ -551,8 +551,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile, true));
 
-  ASSERT_EQ(0,
-            BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
+  ASSERT_EQ(0, BrowserActionTestUtil::Create(incognito_browser)
+                   ->NumberOfBrowserActions());
 
   // Now enable the extension in incognito mode, and test that the browser
   // action shows up.
@@ -564,8 +564,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
       extension->id(), browser()->profile(), true);
   registry_observer.WaitForExtensionLoaded();
 
-  ASSERT_EQ(1,
-            BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
+  ASSERT_EQ(1, BrowserActionTestUtil::Create(incognito_browser)
+                   ->NumberOfBrowserActions());
 
   // TODO(mpcomplete): simulate a click and have it do the right thing in
   // incognito.
@@ -587,8 +587,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
   base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   // Navigate just to have a tab in this window, otherwise wonky things happen.
   OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
-  ASSERT_EQ(1,
-            BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
+  ASSERT_EQ(1, BrowserActionTestUtil::Create(incognito_browser)
+                   ->NumberOfBrowserActions());
 
   // A click in the regular profile should open a tab in the regular profile.
   ExecuteExtensionAction(browser(), extension);

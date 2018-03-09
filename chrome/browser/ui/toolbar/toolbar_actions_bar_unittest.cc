@@ -167,7 +167,7 @@ void ToolbarActionsBarUnitTest::SetUp() {
   material_design_state_.reset(
       new ui::test::MaterialDesignControllerTestAPI(GetParam()));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
+  browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
 
   overflow_browser_action_test_util_ =
       browser_action_test_util_->CreateOverflowBar();
