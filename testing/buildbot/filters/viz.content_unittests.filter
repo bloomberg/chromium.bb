@@ -1,5 +1,4 @@
--RenderWidgetHostInputEventRouterTest.DoNotCoalesceGestureEvents
--RenderWidgetHostInputEventRouterTest.DoNotCoalesceTouchEvents
+# Legacy SubmitCompositorFrame tests
 -RenderWidgetHostViewAuraSurfaceSynchronizationTest.CompositorFrameSinkChange
 -RenderWidgetHostViewAuraSurfaceSynchronizationTest.DiscardDelegatedFrames
 -RenderWidgetHostViewAuraSurfaceSynchronizationTest.DropFallbackWhenHidden
@@ -10,13 +9,18 @@
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
 -RenderWidgetHostViewAuraTest.HitTestRegionListSubmitted
 -RenderWidgetHostViewAuraTest.OutputSurfaceIdChange
--RenderWidgetHostViewAuraTest.TwoOutputSurfaces
--RenderWidgetHostViewChildFrameTest.FrameEviction
 -RenderWidgetHostViewChildFrameTest.SwapCompositorFrame
 -RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
 
+# Legacy using TestImageTransportFactory::GetFrameSinkManager
+-RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
+-RenderWidgetHostViewAuraTest.TwoOutputSurfaces
+-RenderWidgetHostViewChildFrameTest.FrameEviction
+
 # Not finding the correct target crbug.com/796605
 -RenderWidgetHostInputEventRouterTest.DoNotChangeTargetViewDuringTouchScrollGesture
+-RenderWidgetHostInputEventRouterTest.DoNotCoalesceGestureEvents
+-RenderWidgetHostInputEventRouterTest.DoNotCoalesceTouchEvents
 
 # TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
 -ReflectorImplTest.*
