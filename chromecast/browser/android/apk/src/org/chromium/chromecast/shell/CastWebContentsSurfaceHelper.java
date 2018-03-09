@@ -81,8 +81,6 @@ class CastWebContentsSurfaceHelper {
                 CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
         mHandler = new Handler();
         mAudioManager = CastAudioManager.getAudioManager(getActivity());
-        mAudioManager.requestAudioFocusWhen(
-                mResumedState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
         mHasWebContentsState.watch(() -> {
