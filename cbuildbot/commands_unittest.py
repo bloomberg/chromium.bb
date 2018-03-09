@@ -10,8 +10,10 @@ from __future__ import print_function
 import base64
 import datetime as dt
 import json
+import hashlib
 import mock
 import os
+import struct
 from StringIO import StringIO
 from os.path import join as pathjoin
 from os.path import abspath as abspath
@@ -1246,6 +1248,54 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     find_exclude_expected = self.findFilesWithPatternExpectedResults(
         search_files_root, ['file1', 'test1', 'file2', 'dir2/file2'])
     self.assertEquals(set(find_exclude), set(find_exclude_expected))
+
+  def testGenerateUploadJSON(self):
+    """Verifies GenerateUploadJSON"""
+    archive = os.path.join(self.tempdir, 'archive')
+    osutils.SafeMakedirs(archive)
+
+    # Text file.
+    text_str = "Happiness equals reality minus expectations.\n"
+    osutils.WriteFile(os.path.join(archive, 'file1.txt'), text_str)
+
+    # JSON file.
+    json_str = json.dumps([{'Salt': 'Pepper', 'Pots': 'Pans',
+                            'Cloak': 'Dagger', 'Shoes': 'Socks'}])
+    osutils.WriteFile(os.path.join(archive, 'file2.json'), json_str)
+
+    # Binary file.
+    bin_blob = struct.pack('6B', 228, 39, 123, 87, 2, 168)
+    with open(os.path.join(archive, 'file3.bin'), "wb") as f:
+      f.write(bin_blob)
+
+    # Directory.
+    osutils.SafeMakedirs(os.path.join(archive, 'dir'))
+
+    # List of files in archive.
+    uploaded = os.path.join(self.tempdir, 'uploaded')
+    osutils.WriteFile(uploaded, "file1.txt\nfile2.json\nfile3.bin\ndir\n")
+
+    upload_file = os.path.join(self.tempdir, 'upload.json')
+    commands.GenerateUploadJSON(upload_file, archive, uploaded)
+    parsed = json.loads(osutils.ReadFile(upload_file))
+
+    # Directory should be ignored.
+    test_content = {'file1.txt': text_str,
+                    'file2.json': json_str,
+                    'file3.bin': bin_blob}
+
+    self.assertEquals(set(parsed.keys()), set(test_content.keys()))
+
+    # Verify the math.
+    for filename, content in test_content.iteritems():
+      entry = parsed[filename]
+      size = len(content)
+      sha1 = base64.b64encode(hashlib.sha1(content).digest())
+      sha256 = base64.b64encode(hashlib.sha256(content).digest())
+
+      self.assertEquals(entry['size'], size)
+      self.assertEquals(entry['sha1'], sha1)
+      self.assertEquals(entry['sha256'], sha256)
 
   def testGenerateHtmlIndexTuple(self):
     """Verifies GenerateHtmlIndex gives us something sane (input: tuple)"""

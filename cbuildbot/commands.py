@@ -37,6 +37,7 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+from chromite.lib.paygen import filelib
 from chromite.scripts import pushimage
 
 site_config = config_lib.GetConfig()
@@ -1638,6 +1639,27 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
 
   return os.path.basename(debug_tarball)
 
+def GenerateUploadJSON(filepath, archive_path, uploaded):
+  """Generate upload.json file given a set of filenames.
+
+  The JSON is a dictionary keyed by filename, with entries for size, and hashes.
+
+  Args:
+    filepath: complete output filepath as string.
+    archive_path: location of files.
+    uploaded: file with list of uploaded filepaths, relative to archive_path.
+  """
+  result = {}
+  files = osutils.ReadFile(uploaded).splitlines()
+  for f in files:
+    path = os.path.join(archive_path, f)
+    # Ignore directories.
+    if os.path.isdir(path):
+      continue
+    size = os.path.getsize(path)
+    sha1, sha256 = filelib.ShaSums(path)
+    result[f] = {'size': size, 'sha1': sha1, 'sha256': sha256}
+  osutils.WriteFile(filepath, json.dumps(result, indent=2, sort_keys=True))
 
 def GenerateHtmlIndex(index, files, title='Index', url_base=None):
   """Generate a simple index.html file given a set of filenames

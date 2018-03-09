@@ -653,7 +653,7 @@ class ReportStage(generic_stages.BuilderStage,
                                   extra_fields=extra_fields)
 
   def _LinkArtifacts(self, builder_run):
-    """Upload an HTML index for the artifacts at remote archive location.
+    """Upload an HTML index and uploaded.json for artifacts.
 
     If there are no artifacts in the archive then do nothing.
 
@@ -680,6 +680,13 @@ class ReportStage(generic_stages.BuilderStage,
       return
 
     logging.PrintBuildbotSetBuildProperty('artifact_link', archive.upload_url)
+
+    uploaded_json = 'uploaded.json'
+    commands.GenerateUploadJSON(os.path.join(archive_path, uploaded_json),
+                                archive_path, uploaded)
+    commands.UploadArchivedFile(
+        archive_path, [archive.upload_url], uploaded_json,
+        debug=self._run.debug, acl=self.acl)
 
     if builder_run.config.internal:
       # Internal builds simply link to pantheon directories, which require
