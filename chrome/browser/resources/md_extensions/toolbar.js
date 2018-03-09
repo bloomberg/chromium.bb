@@ -59,6 +59,12 @@ cr.define('extensions', function() {
        * @private
        */
       toastLabel_: String,
+
+      /**
+       * Prevents initiating update while update is in progress.
+       * @private
+       */
+      isUpdating_: {type: Boolean, value: false}
     },
 
     behaviors: [I18nBehavior],
@@ -136,9 +142,11 @@ cr.define('extensions', function() {
 
     /** @private */
     onUpdateNowTap_: function() {
-      const updateButton = this.$.updateNow;
-      assert(!updateButton.disabled);
-      updateButton.disabled = true;
+      // If already updating, do not initiate another update.
+      if (this.isUpdating_)
+        return;
+
+      this.isUpdating_ = true;
       const toastElement = this.$$('cr-toast');
       this.toastLabel_ = this.i18n('toolbarUpdatingToast');
       toastElement.show();
@@ -149,10 +157,10 @@ cr.define('extensions', function() {
             this.fire('iron-announce', {text: doneText});
             this.toastLabel_ = doneText;
             toastElement.show();
-            updateButton.disabled = false;
+            this.isUpdating_ = false;
           })
           .catch(function() {
-            updateButton.disabled = false;
+            this.isUpdating_ = false;
           });
     },
   });

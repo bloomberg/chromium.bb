@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{resolver: !PromiseResolver,
+ *            callCount: number}}
+ */
+let MethodData;
+
+/**
  * A base class for all test browser proxies to inherit from. Provides helper
  * methods for allowing tests to track when a method was called.
  *
@@ -36,10 +42,10 @@ class TestBrowserProxy {
    *     need to be tracked.
    */
   constructor(methodNames) {
-    /** @private {!Map<string, !PromiseResolver>} */
+    /** @private {!Map<string, !MethodData>} */
     this.resolverMap_ = new Map();
     methodNames.forEach(methodName => {
-      this.resolverMap_.set(methodName, new PromiseResolver());
+      this.createMethodData_(methodName);
     });
   }
 
@@ -53,7 +59,10 @@ class TestBrowserProxy {
    * @protected
    */
   methodCalled(methodName, opt_arg) {
-    this.getResolver_(methodName).resolve(opt_arg);
+    const methodData = this.resolverMap_.get(methodName);
+    methodData.callCount += 1;
+    this.resolverMap_.set(methodName, methodData);
+    methodData.resolver.resolve(opt_arg);
   }
 
   /**
@@ -62,7 +71,7 @@ class TestBrowserProxy {
    *     is called.
    */
   whenCalled(methodName) {
-    return this.getResolver_(methodName).promise;
+    return this.getMethodData_(methodName).resolver.promise;
   }
 
   /**
@@ -70,8 +79,8 @@ class TestBrowserProxy {
    * @param {string} methodName
    */
   resetResolver(methodName) {
-    assert(!!this.resolverMap_.get(methodName), `'${methodName}' not found`);
-    this.resolverMap_.set(methodName, new PromiseResolver());
+    this.getMethodData_(methodName);
+    this.createMethodData_(methodName);
   }
 
   /**
@@ -79,19 +88,42 @@ class TestBrowserProxy {
    */
   reset() {
     this.resolverMap_.forEach((value, methodName) => {
-      this.resolverMap_.set(methodName, new PromiseResolver());
+      this.createMethodData_(methodName);
     });
+  }
+
+  /**
+   * Get number of times method is called.
+   * @param {string} methodName
+   * @return {!boolean}
+   */
+  getCallCount(methodName) {
+    return this.getMethodData_(methodName).callCount;
   }
 
   /**
    * Try to give programmers help with mistyped methodNames.
    * @param {string} methodName
+   * @return {!MethodData}
    * @private
    */
-  getResolver_(methodName) {
-    let method = this.resolverMap_.get(methodName);
+  getMethodData_(methodName) {
     // Tip: check that the |methodName| is being passed to |this.constructor|.
-    assert(!!method, `Method '${methodName}' not found in TestBrowserProxy.`);
-    return method;
+    const methodData = this.resolverMap_.get(methodName);
+    assert(
+        !!methodData,
+        `Method '${methodName}' not found in TestBrowserProxy.`);
+    return methodData;
+  }
+
+  /**
+   * Creates a new |MethodData| for |methodName|.
+   * @param {string} methodName
+   * @private
+   */
+  createMethodData_(methodName) {
+    this.resolverMap_.set(
+        methodName,
+        {resolver: new PromiseResolver(), callCount: 0});
   }
 }

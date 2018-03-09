@@ -93,19 +93,14 @@ cr.define('extension_toolbar_tests', function() {
           })
           .then(function() {
             assertFalse(toolbar.$$('cr-toast').open);
-            assertFalse(toolbar.$.updateNow.disabled);
-            toolbar.$.updateNow.disabled = true;
             MockInteractions.tap(toolbar.$.updateNow);
-            assertTrue(toolbar.$.updateNow.disabled);
-            toolbar.$.updateNow.disabled = false;
-            assertFalse(toolbar.$$('cr-toast').open);
+            // Simulate user rapidly clicking update button multiple times.
             MockInteractions.tap(toolbar.$.updateNow);
-            assertTrue(toolbar.$.updateNow.disabled);
             assertTrue(toolbar.$$('cr-toast').open);
             return mockDelegate.whenCalled('updateAllExtensions');
           })
           .then(function() {
-            assertFalse(toolbar.$.updateNow.disabled);
+            assertEquals(1, mockDelegate.getCallCount('updateAllExtensions'));
             const whenTapped = test_util.eventToPromise('pack-tap', toolbar);
             MockInteractions.tap(toolbar.$.packExtensions);
             return whenTapped;
