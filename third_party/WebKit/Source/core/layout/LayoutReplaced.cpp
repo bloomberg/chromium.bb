@@ -30,9 +30,13 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_logical_size.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ReplacedPainter.h"
+#include "core/paint/ng/ng_paint_fragment.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -875,14 +879,62 @@ void LayoutReplaced::ComputePreferredLogicalWidths() {
   ClearPreferredLogicalWidthsDirty();
 }
 
+static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
+    const LayoutReplaced& layout_replaced) {
+  // TODO(layout-dev): This code is buggy if the replaced element is relative
+  // positioned.
+
+  // The fallback answer when we can't find the containing line box of
+  // |layout_replaced|.
+  const std::pair<LayoutUnit, LayoutUnit> fallback(
+      layout_replaced.LogicalTop(), layout_replaced.LogicalBottom());
+
+  const NGPaintFragment* inline_container =
+      layout_replaced.IsInline()
+          ? NGPaintFragment::GetForInlineContainer(&layout_replaced)
+          : nullptr;
+  if (inline_container) {
+    // Step 1: Find the line box containing |layout_replaced|.
+    const NGPaintFragment* inline_fragment =
+        *NGPaintFragment::InlineFragmentsFor(&layout_replaced).begin();
+    if (!inline_fragment)
+      return fallback;
+    const NGPaintFragment* line_box_container =
+        inline_fragment->ContainerLineBox();
+    if (!line_box_container)
+      return fallback;
+
+    // Step 2: Return the logical top and bottom of the line box.
+    // TODO(layout-dev): Use selection top & bottom instead of line's, or decide
+    // if we still want to distinguish line and selection heights in NG.
+    const ComputedStyle& line_style = line_box_container->Style();
+    const WritingMode writing_mode = line_style.GetWritingMode();
+    const TextDirection text_direction = line_style.Direction();
+    const NGPhysicalOffset line_box_offset =
+        line_box_container->InlineOffsetToContainerBox();
+    const NGPhysicalSize line_box_size = line_box_container->Size();
+    const NGLogicalOffset logical_offset = line_box_offset.ConvertToLogical(
+        writing_mode, text_direction, inline_container->Size(),
+        line_box_container->Size());
+    const NGLogicalSize logical_size =
+        line_box_size.ConvertToLogical(writing_mode);
+    return {logical_offset.block_offset,
+            logical_offset.block_offset + logical_size.block_size};
+  }
+
+  InlineBox* box = layout_replaced.InlineBoxWrapper();
+  RootInlineBox* root_box = box ? &box->Root() : nullptr;
+  if (!root_box)
+    return fallback;
+
+  return {root_box->SelectionTop(), root_box->SelectionBottom()};
+}
+
 PositionWithAffinity LayoutReplaced::PositionForPoint(
     const LayoutPoint& point) const {
-  // FIXME: This code is buggy if the replaced element is relative positioned.
-  InlineBox* box = InlineBoxWrapper();
-  RootInlineBox* root_box = box ? &box->Root() : nullptr;
-
-  LayoutUnit top = root_box ? root_box->SelectionTop() : LogicalTop();
-  LayoutUnit bottom = root_box ? root_box->SelectionBottom() : LogicalBottom();
+  LayoutUnit top;
+  LayoutUnit bottom;
+  std::tie(top, bottom) = SelectionTopAndBottom(*this);
 
   LayoutUnit block_direction_position = IsHorizontalWritingMode()
                                             ? point.Y() + Location().Y()

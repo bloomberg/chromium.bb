@@ -193,4 +193,15 @@ LayoutRect NGPaintFragment::PartialInvalidationRect() const {
   return block_fragment->VisualRect();
 }
 
+const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
+  DCHECK(PhysicalFragment().IsInline());
+  for (const NGPaintFragment* runner = this; runner;
+       runner = runner->Parent()) {
+    if (runner->PhysicalFragment().IsLineBox())
+      return runner;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace blink
