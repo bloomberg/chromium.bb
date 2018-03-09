@@ -445,8 +445,8 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
 void av1_set_mvcost(MACROBLOCK *x, int ref, int ref_mv_idx) {
   (void)ref;
   (void)ref_mv_idx;
-  x->mvcost = x->mv_cost_stack[0];
-  x->nmvjointcost = x->nmv_vec_cost[0];
+  x->mvcost = x->mv_cost_stack;
+  x->nmvjointcost = x->nmv_vec_cost;
 }
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
@@ -549,7 +549,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   RD_OPT *const rd = &cpi->rd;
-  int nmv_ctx;
 
   aom_clear_system_state();
 
@@ -559,29 +558,25 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
 #if CONFIG_AMVR
-    if (cm->cur_frame_force_integer_mv) {
-      av1_build_nmv_cost_table(x->nmv_vec_cost[nmv_ctx], x->nmvcost[nmv_ctx],
-                               &cm->fc->nmvc[nmv_ctx], MV_SUBPEL_NONE);
-    } else {
-      av1_build_nmv_cost_table(
-          x->nmv_vec_cost[nmv_ctx],
-          cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
-                                      : x->nmvcost[nmv_ctx],
-          &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
-    }
-
-#else
+  if (cm->cur_frame_force_integer_mv) {
+    av1_build_nmv_cost_table(x->nmv_vec_cost, x->nmvcost, &cm->fc->nmvc,
+                             MV_SUBPEL_NONE);
+  } else {
     av1_build_nmv_cost_table(
-        x->nmv_vec_cost[nmv_ctx],
-        cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
-                                    : x->nmvcost[nmv_ctx],
-        &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
-#endif
+        x->nmv_vec_cost,
+        cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
+        cm->allow_high_precision_mv);
   }
-  x->mvcost = x->mv_cost_stack[0];
-  x->nmvjointcost = x->nmv_vec_cost[0];
+#else
+  av1_build_nmv_cost_table(x->nmv_vec_cost[nmv_ctx],
+                           cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
+                                                       : x->nmvcost[nmv_ctx],
+                           &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
+#endif
+
+  x->mvcost = x->mv_cost_stack;
+  x->nmvjointcost = x->nmv_vec_cost;
 
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       cpi->oxcf.pass != 1) {

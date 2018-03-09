@@ -135,7 +135,7 @@ typedef struct frame_contexts {
   aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
-  nmv_context nmvc[NMV_CONTEXTS];
+  nmv_context nmvc;
   nmv_context ndvc;
   aom_cdf_prob intrabc_cdf[CDF_SIZE(2)];
   int initialized;

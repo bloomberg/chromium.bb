@@ -1115,18 +1115,18 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (mode == NEWMV || mode == NEW_NEWMV) {
       int_mv ref_mv;
       for (ref = 0; ref < 1 + is_compound; ++ref) {
-        nmv_context *nmvc = &ec_ctx->nmvc[0];
+        nmv_context *nmvc = &ec_ctx->nmvc;
         ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
         av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
                       allow_hp);
       }
     } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
-      nmv_context *nmvc = &ec_ctx->nmvc[0];
+      nmv_context *nmvc = &ec_ctx->nmvc;
       av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv,
                     &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv, nmvc,
                     allow_hp);
     } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
-      nmv_context *nmvc = &ec_ctx->nmvc[0];
+      nmv_context *nmvc = &ec_ctx->nmvc;
       av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
                     &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv, nmvc,
                     allow_hp);

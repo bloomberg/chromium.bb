@@ -205,10 +205,10 @@ struct macroblock {
   int pred_mv_sad[TOTAL_REFS_PER_FRAME];
 
   int *nmvjointcost;
-  int nmv_vec_cost[NMV_CONTEXTS][MV_JOINTS];
-  int *nmvcost[NMV_CONTEXTS][2];
-  int *nmvcost_hp[NMV_CONTEXTS][2];
-  int **mv_cost_stack[NMV_CONTEXTS];
+  int nmv_vec_cost[MV_JOINTS];
+  int *nmvcost[2];
+  int *nmvcost_hp[2];
+  int **mv_cost_stack;
   int **mvcost;
 
   int32_t *wsrc_buf;

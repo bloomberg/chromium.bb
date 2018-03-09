@@ -119,10 +119,7 @@ MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
 }
 
 void av1_init_mv_probs(AV1_COMMON *cm) {
-  int i;
-  for (i = 0; i < NMV_CONTEXTS; ++i) {
-    // NB: this sets CDFs too
-    cm->fc->nmvc[i] = default_nmv_context;
-  }
+  // NB: this sets CDFs too
+  cm->fc->nmvc = default_nmv_context;
   cm->fc->ndvc = default_nmv_context;
 }

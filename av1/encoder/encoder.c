@@ -264,10 +264,8 @@ static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
   const int copy_hp = cpi->common.allow_high_precision_mv;
 #endif
-  int *(*src)[2] = copy_hp ? mb->nmvcost_hp : mb->nmvcost;
-  for (int i = 0; i < NMV_CONTEXTS; ++i) {
-    mb->mv_cost_stack[i] = src[i];
-  }
+  int *(*src)[2] = copy_hp ? &mb->nmvcost_hp : &mb->nmvcost;
+  mb->mv_cost_stack = *src;
 }
 
 static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
@@ -560,17 +558,14 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 static void save_coding_context(AV1_COMP *cpi) {
   CODING_CONTEXT *const cc = &cpi->coding_context;
   AV1_COMMON *cm = &cpi->common;
-  int i;
 
   // Stores a snapshot of key state variables which can subsequently be
   // restored with a call to av1_restore_coding_context. These functions are
   // intended for use in a re-code loop in av1_compress_frame where the
   // quantizer value is adjusted between loop iterations.
-  for (i = 0; i < NMV_CONTEXTS; ++i) {
-    av1_copy(cc->nmv_vec_cost[i], cpi->td.mb.nmv_vec_cost[i]);
-    av1_copy(cc->nmv_costs, cpi->nmv_costs);
-    av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
-  }
+  av1_copy(cc->nmv_vec_cost, cpi->td.mb.nmv_vec_cost);
+  av1_copy(cc->nmv_costs, cpi->nmv_costs);
+  av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
 
   av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
   av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
@@ -581,15 +576,12 @@ static void save_coding_context(AV1_COMP *cpi) {
 static void restore_coding_context(AV1_COMP *cpi) {
   CODING_CONTEXT *const cc = &cpi->coding_context;
   AV1_COMMON *cm = &cpi->common;
-  int i;
 
   // Restore key state variables to the snapshot state stored in the
   // previous call to av1_save_coding_context.
-  for (i = 0; i < NMV_CONTEXTS; ++i) {
-    av1_copy(cpi->td.mb.nmv_vec_cost[i], cc->nmv_vec_cost[i]);
-    av1_copy(cpi->nmv_costs, cc->nmv_costs);
-    av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
-  }
+  av1_copy(cpi->td.mb.nmv_vec_cost, cc->nmv_vec_cost);
+  av1_copy(cpi->nmv_costs, cc->nmv_costs);
+  av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
 
   av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
   av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
@@ -2623,10 +2615,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   realloc_segmentation_maps(cpi);
 
-  for (i = 0; i < NMV_CONTEXTS; ++i) {
-    memset(cpi->nmv_costs, 0, sizeof(cpi->nmv_costs));
-    memset(cpi->nmv_costs_hp, 0, sizeof(cpi->nmv_costs_hp));
-  }
+  memset(cpi->nmv_costs, 0, sizeof(cpi->nmv_costs));
+  memset(cpi->nmv_costs_hp, 0, sizeof(cpi->nmv_costs_hp));
 
   for (i = 0; i < (sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]));
        i++) {
@@ -2690,12 +2680,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   cpi->first_time_stamp_ever = INT64_MAX;
 
-  for (i = 0; i < NMV_CONTEXTS; ++i) {
-    cpi->td.mb.nmvcost[i][0] = &cpi->nmv_costs[i][0][MV_MAX];
-    cpi->td.mb.nmvcost[i][1] = &cpi->nmv_costs[i][1][MV_MAX];
-    cpi->td.mb.nmvcost_hp[i][0] = &cpi->nmv_costs_hp[i][0][MV_MAX];
-    cpi->td.mb.nmvcost_hp[i][1] = &cpi->nmv_costs_hp[i][1][MV_MAX];
-  }
+  cpi->td.mb.nmvcost[0] = &cpi->nmv_costs[0][MV_MAX];
+  cpi->td.mb.nmvcost[1] = &cpi->nmv_costs[1][MV_MAX];
+  cpi->td.mb.nmvcost_hp[0] = &cpi->nmv_costs_hp[0][MV_MAX];
+  cpi->td.mb.nmvcost_hp[1] = &cpi->nmv_costs_hp[1][MV_MAX];
 
 #ifdef OUTPUT_YUV_SKINMAP
   yuv_skinmap_file = fopen("skinmap.yuv", "ab");

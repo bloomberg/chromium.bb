@@ -1193,7 +1193,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   switch (mode) {
     case NEWMV: {
       for (int i = 0; i < 1 + is_compound; ++i) {
-        nmv_context *const nmvc = &ec_ctx->nmvc[0];
+        nmv_context *const nmvc = &ec_ctx->nmvc;
         read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
         ret = ret && is_mv_valid(&mv[i].as_mv);
 
@@ -1245,7 +1245,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     case NEW_NEWMV: {
       assert(is_compound);
       for (int i = 0; i < 2; ++i) {
-        nmv_context *const nmvc = &ec_ctx->nmvc[0];
+        nmv_context *const nmvc = &ec_ctx->nmvc;
         read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
         ret = ret && is_mv_valid(&mv[i].as_mv);
       }
@@ -1264,7 +1264,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEW_NEARESTMV: {
-      nmv_context *const nmvc = &ec_ctx->nmvc[0];
+      nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
       ret = ret && is_mv_valid(&mv[0].as_mv);
@@ -1272,7 +1272,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEAREST_NEWMV: {
-      nmv_context *const nmvc = &ec_ctx->nmvc[0];
+      nmv_context *const nmvc = &ec_ctx->nmvc;
       mv[0].as_int = nearest_mv[0].as_int;
       read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
@@ -1280,7 +1280,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEAR_NEWMV: {
-      nmv_context *const nmvc = &ec_ctx->nmvc[0];
+      nmv_context *const nmvc = &ec_ctx->nmvc;
       mv[0].as_int = near_mv[0].as_int;
       read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
@@ -1289,7 +1289,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEW_NEARMV: {
-      nmv_context *const nmvc = &ec_ctx->nmvc[0];
+      nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
       ret = ret && is_mv_valid(&mv[0].as_mv);
