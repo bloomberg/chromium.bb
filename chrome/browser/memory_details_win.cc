@@ -78,11 +78,6 @@ void MemoryDetails::CollectProcessData(
                             ? content::PROCESS_TYPE_BROWSER
                             : content::PROCESS_TYPE_UNKNOWN;
 
-    std::unique_ptr<base::ProcessMetrics> metrics =
-        base::ProcessMetrics::CreateProcessMetrics(process_handle.Get());
-    metrics->GetCommittedKBytes(&info.committed);
-    metrics->GetWorkingSetKBytes(&info.working_set);
-
     // Get Version Information.
     info.version = base::ASCIIToUTF16(version_info::GetVersionNumber());
     // Check if this is one of the child processes whose data we collected

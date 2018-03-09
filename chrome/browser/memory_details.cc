@@ -32,6 +32,8 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -96,7 +98,7 @@ ProcessMemoryInformation::ProcessMemoryInformation()
       num_open_fds(-1),
       open_fds_soft_limit(-1),
       renderer_type(RENDERER_UNKNOWN),
-      phys_footprint(0) {}
+      private_memory_footprint_kb(0) {}
 
 ProcessMemoryInformation::ProcessMemoryInformation(
     const ProcessMemoryInformation& other) = default;
@@ -105,7 +107,7 @@ ProcessMemoryInformation::~ProcessMemoryInformation() {}
 
 bool ProcessMemoryInformation::operator<(
     const ProcessMemoryInformation& rhs) const {
-  return working_set.priv < rhs.working_set.priv;
+  return private_memory_footprint_kb < rhs.private_memory_footprint_kb;
 }
 
 ProcessData::ProcessData() {}
@@ -175,13 +177,8 @@ std::string MemoryDetails::ToLogString() {
       }
       log += "]";
     }
-    log += StringPrintf(" %d MB private, %d MB shared",
-                        static_cast<int>(iter1->working_set.priv) / 1024,
-                        static_cast<int>(iter1->working_set.shared) / 1024);
-#if defined(OS_CHROMEOS)
-    log += StringPrintf(", %d MB swapped",
-                        static_cast<int>(iter1->working_set.swapped) / 1024);
-#endif
+    log += StringPrintf(
+        " %d MB", static_cast<int>(iter1->private_memory_footprint_kb) / 1024);
     if (iter1->num_open_fds != -1 || iter1->open_fds_soft_limit != -1) {
       log += StringPrintf(", %d FDs open of %d", iter1->num_open_fds,
                           iter1->open_fds_soft_limit);
@@ -358,6 +355,32 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   auto& vector = chrome_browser->processes;
   vector.erase(std::remove_if(vector.begin(), vector.end(), is_unknown),
                vector.end());
+
+  // Grab a memory dump for all processes.
+  // Using AdaptCallbackForRepeating allows for an easier transition to
+  // OnceCallbacks for https://crbug.com/714018.
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->RequestGlobalDump(std::vector<std::string>(),
+                          base::AdaptCallbackForRepeating(base::BindOnce(
+                              &MemoryDetails::DidReceiveMemoryDump, this)));
+}
+
+void MemoryDetails::DidReceiveMemoryDump(
+    bool success,
+    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> global_dump) {
+  ProcessData* const chrome_browser = ChromeBrowser();
+  if (success) {
+    for (const memory_instrumentation::GlobalMemoryDump::ProcessDump& dump :
+         global_dump->process_dumps()) {
+      base::ProcessId dump_pid = dump.pid();
+      for (ProcessMemoryInformation& pmi : chrome_browser->processes) {
+        if (pmi.pid == dump_pid) {
+          pmi.private_memory_footprint_kb = dump.os_dump().private_footprint_kb;
+          break;
+        }
+      }
+    }
+  }
 
   OnDetailsAvailable();
 }
