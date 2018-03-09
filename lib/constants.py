@@ -326,9 +326,15 @@ DEFAULT_CTS_TEST_XML_MAP = {
 DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
 DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
 
+ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
+ANDROID_PI_BUILD_BRANCH = 'git_pi-arc-dev'
+ANDROID_GTS_BUILD_TARGETS = {
+    # "gts_arm64" is the build maintained by GMS team.
+    'XTS': ('linux-gts_arm64', r'\.zip$'),
+}
 ANDROID_MST_BUILD_TARGETS = {
     'ARM': ('linux-cheets_arm-user', r'\.zip$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
@@ -337,9 +343,6 @@ ANDROID_MST_BUILD_TARGETS = {
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
-
-ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
-
 ANDROID_NYC_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
     # get rid of this.
@@ -356,10 +359,15 @@ ANDROID_NYC_BUILD_TARGETS = {
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
-ANDROID_GTS_BUILD_TARGETS = {
-    # "gts_arm64" is the build maintained by GMS team.
-    'XTS': ('linux-gts_arm64', r'\.zip$'),
+ANDROID_PI_BUILD_TARGETS = {
+    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
+    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
+
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',

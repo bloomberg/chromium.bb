@@ -470,6 +470,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
+    # Test that all PI targets have their ACLS set.
+    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_PI_BUILD_BRANCH).keys():
+      self.assertTrue(t in acls)
 
   def testMakeBuildTargetDictMST(self):
     """Test generation of MST build target dictionary.
@@ -502,6 +506,22 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for target in constants.ANDROID_NYC_BUILD_TARGETS:
       self.assertEquals(targets[target],
                         constants.ANDROID_NYC_BUILD_TARGETS[target])
+
+  def testMakeBuildTargetDictPI(self):
+    """Test generation of PI build target dictionary.
+
+    If the number of targets is correct and PI-specific targets are
+    present, then the dictionary is correct.
+    """
+    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_PI_BUILD_BRANCH)
+    # Test the number of targets.
+    self.assertEquals(len(targets),
+                      len(constants.ANDROID_PI_BUILD_TARGETS))
+    # Test that all PI-specific targets are in the dictionary.
+    for target in constants.ANDROID_PI_BUILD_TARGETS:
+      self.assertEquals(targets[target],
+                        constants.ANDROID_PI_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictException(self):
     """Test that passing invalid branch names throws ValueError exception."""
