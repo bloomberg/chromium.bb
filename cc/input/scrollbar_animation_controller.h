@@ -84,6 +84,8 @@ class CC_EXPORT ScrollbarAnimationController {
   // ScrollableArea::showOverlayScrollbars).
   void DidRequestShowFromMainThread();
 
+  void UpdateTickmarksVisibility(bool show);
+
   // These methods are public for testing.
   bool MouseIsOverScrollbarThumb(ScrollbarOrientation orientation) const;
   bool MouseIsNearScrollbarThumb(ScrollbarOrientation orientation) const;
@@ -113,6 +115,10 @@ class CC_EXPORT ScrollbarAnimationController {
 
   SingleScrollbarAnimationControllerThinning& GetScrollbarAnimationController(
       ScrollbarOrientation) const;
+
+  // Any scrollbar state update would show scrollbar hen post the delay fade out
+  // if needed.
+  void UpdateScrollbarState();
 
   // Returns how far through the animation we are as a progress value from
   // 0 to 1.
@@ -155,6 +161,8 @@ class CC_EXPORT ScrollbarAnimationController {
   const bool need_thinning_animation_;
 
   bool is_mouse_down_;
+
+  bool tickmarks_showing_;
 
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>
       vertical_controller_;

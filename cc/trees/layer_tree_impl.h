@@ -551,6 +551,8 @@ class CC_EXPORT LayerTreeImpl {
   void ClearLayerList();
 
   void BuildLayerListForTesting();
+
+  void HandleTickmarksVisibilityChange();
   void HandleScrollbarShowRequestsFromMain();
 
   void InvalidateRegionForImages(

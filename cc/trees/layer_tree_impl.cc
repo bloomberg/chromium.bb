@@ -505,7 +505,31 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->has_ever_been_drawn_ = false;
 
   // Note: this needs to happen after SetPropertyTrees.
+  target_tree->HandleTickmarksVisibilityChange();
   target_tree->HandleScrollbarShowRequestsFromMain();
+}
+
+void LayerTreeImpl::HandleTickmarksVisibilityChange() {
+  if (!host_impl_->ViewportMainScrollLayer())
+    return;
+
+  ScrollbarAnimationController* controller =
+      host_impl_->ScrollbarAnimationControllerForElementId(
+          OuterViewportScrollLayer()->element_id());
+
+  if (!controller)
+    return;
+
+  for (ScrollbarLayerImplBase* scrollbar : controller->Scrollbars()) {
+    if (scrollbar->orientation() != VERTICAL)
+      continue;
+
+    // Android Overlay Scrollbar don't have FindInPage Tickmarks.
+    if (scrollbar->GetScrollbarAnimator() != LayerTreeSettings::AURA_OVERLAY)
+      DCHECK(!scrollbar->HasFindInPageTickmarks());
+
+    controller->UpdateTickmarksVisibility(scrollbar->HasFindInPageTickmarks());
+  }
 }
 
 void LayerTreeImpl::HandleScrollbarShowRequestsFromMain() {
