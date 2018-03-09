@@ -22,11 +22,7 @@ class Version;
 
 namespace vr {
 
-// Major component version we need to support all features.
-constexpr uint32_t kTargetMajorVrAssetsComponentVersion = 2;
-// Minimum major component version we are able to use with potentially reduced
-// set of features.
-constexpr uint32_t kMinMajorVrAssetsComponentVersion = 1;
+constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 2;
 
 class MetricsHelper;
 struct AssetsLoaderSingletonTrait;
