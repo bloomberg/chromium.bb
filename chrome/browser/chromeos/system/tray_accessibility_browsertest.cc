@@ -344,54 +344,6 @@ class TrayAccessibilityTest
     return tray()->detailed_menu_->tap_dragging_enabled_;
   }
 
-  bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->spoken_feedback_view_;
-  }
-
-  bool IsHighContrastMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->high_contrast_view_;
-  }
-
-  bool IsScreenMagnifierMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->screen_magnifier_view_;
-  }
-
-  bool IsLargeCursorMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->large_cursor_view_;
-  }
-
-  bool IsAutoclickMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->autoclick_view_;
-  }
-
-  bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->virtual_keyboard_view_;
-  }
-
-  bool IsMonoAudioMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->mono_audio_view_;
-  }
-
-  bool IsCaretHighlightMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->caret_highlight_view_;
-  }
-
-  bool IsHighlightMouseCursorMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->highlight_mouse_cursor_view_;
-  }
-
-  bool IsHighlightKeyboardFocusMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->highlight_keyboard_focus_view_;
-  }
-
-  bool IsStickyKeysMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->sticky_keys_view_;
-  }
-
-  bool IsTapDraggingMenuShownOnDetailMenu() const {
-    return tray()->detailed_menu_->tap_dragging_view_;
-  }
-
   // In material design we show the help button but theme it as disabled if
   // it is not possible to load the help page.
   static bool IsHelpAvailableOnDetailMenu() {
@@ -994,6 +946,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 }
 
+// TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   // Enables high contrast mode.
   EnableHighContrast(true);
@@ -1158,6 +1111,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 }
 
+// TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
@@ -1668,82 +1622,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 }
 
-// Flaky failures of IsHelpAvailableOnDetailMenu(). Possible race condition
-// with session state. https://crbug.com/819987
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
-                       DISABLED_CheckMenuVisibilityOnDetailMenu) {
-  // Except help & settings, others should be kept the same
-  // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
-  EXPECT_TRUE(CreateDetailedMenu());
-  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsSelectToSpeakEnabledOnDetailMenu());
-  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHelpAvailableOnDetailMenu());
-  EXPECT_TRUE(IsSettingsAvailableOnDetailMenu());
-  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
-  CloseDetailMenu();
-
-  // Simulate screen lock.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-  // Flush to ensure the session state reaches ash and updates login status.
-  SessionControllerClient::FlushForTesting();
-  EXPECT_TRUE(CreateDetailedMenu());
-  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsSelectToSpeakEnabledOnDetailMenu());
-  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
-  EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
-  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
-  CloseDetailMenu();
-
-  // Simulate adding multiprofile user.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOGIN_SECONDARY);
-  // Flush to ensure the session state reaches ash and updates login status.
-  SessionControllerClient::FlushForTesting();
-  EXPECT_TRUE(CreateDetailedMenu());
-  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsSelectToSpeakEnabledOnDetailMenu());
-  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
-  EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
-  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
-  CloseDetailMenu();
-}
-
 // Verify that the accessiblity system detailed menu remains open when an item
 // is selected or deselected.
+// TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DetailMenuRemainsOpen) {
   EXPECT_TRUE(CreateDetailedMenu());
-  ASSERT_TRUE(IsAutoclickMenuShownOnDetailMenu());
 
   ClickAutoclickOnDetailMenu();
   EXPECT_TRUE(IsAutoclickEnabledOnDetailMenu());

@@ -34,7 +34,101 @@ void SetLargeCursorEnabledFromSettings(bool enabled) {
       ->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
 }
 
-using TrayAccessibilityTest = AshTestBase;
+}  // namespace
+
+class TrayAccessibilityTest : public AshTestBase {
+ public:
+  TrayAccessibilityTest() = default;
+  ~TrayAccessibilityTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    tray_item_ = SystemTrayTestApi(Shell::Get()->GetPrimarySystemTray())
+                     .tray_accessibility();
+  }
+
+  // These functions are members so TrayAccessibility can friend the test.
+  bool CreateDetailedMenu() {
+    tray_item_->ShowDetailedView(0);
+    return tray_item_->detailed_menu_ != nullptr;
+  }
+
+  void CloseDetailMenu() {
+    ASSERT_TRUE(tray_item_->detailed_menu_);
+    tray_item_->OnDetailedViewDestroyed();
+    ASSERT_FALSE(tray_item_->detailed_menu_);
+  }
+
+  bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->spoken_feedback_view_;
+  }
+
+  bool IsSelectToSpeakShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->select_to_speak_view_;
+  }
+
+  bool IsHighContrastMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->high_contrast_view_;
+  }
+
+  bool IsScreenMagnifierMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->screen_magnifier_view_;
+  }
+
+  bool IsLargeCursorMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->large_cursor_view_;
+  }
+
+  bool IsAutoclickMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->autoclick_view_;
+  }
+
+  bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->virtual_keyboard_view_;
+  }
+
+  bool IsMonoAudioMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->mono_audio_view_;
+  }
+
+  bool IsCaretHighlightMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->caret_highlight_view_;
+  }
+
+  bool IsHighlightMouseCursorMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->highlight_mouse_cursor_view_;
+  }
+
+  bool IsHighlightKeyboardFocusMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->highlight_keyboard_focus_view_;
+  }
+
+  bool IsStickyKeysMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->sticky_keys_view_;
+  }
+
+  bool IsTapDraggingMenuShownOnDetailMenu() const {
+    return tray_item_->detailed_menu_->tap_dragging_view_;
+  }
+
+  // In material design we show the help button but theme it as disabled if
+  // it is not possible to load the help page.
+  bool IsHelpAvailableOnDetailMenu() {
+    return tray_item_->detailed_menu_->help_view_->state() ==
+           views::Button::STATE_NORMAL;
+  }
+
+  // In material design we show the settings button but theme it as disabled if
+  // it is not possible to load the settings page.
+  bool IsSettingsAvailableOnDetailMenu() {
+    return tray_item_->detailed_menu_->settings_view_->state() ==
+           views::Button::STATE_NORMAL;
+  }
+
+ private:
+  TrayAccessibility* tray_item_;
+};
 
 // Tests that the icon becomes visible when the tray menu toggles a feature.
 TEST_F(TrayAccessibilityTest, VisibilityFromMenu) {
@@ -134,5 +228,68 @@ TEST_F(TrayAccessibilityTest, ShowNotificationOnBrailleDisplayStateChanged) {
   EXPECT_EQ(kChromeVoxEnabled, (*notifications.begin())->message());
 }
 
-}  // namespace
+TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
+  // Except help & settings, others should be kept the same
+  // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHelpAvailableOnDetailMenu());
+  EXPECT_TRUE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
+  CloseDetailMenu();
+
+  // Simulate screen lock.
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
+  EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
+  CloseDetailMenu();
+  UnblockUserSession();
+
+  // Simulate adding multiprofile user.
+  BlockUserSession(BLOCKED_BY_USER_ADDING_SCREEN);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
+  EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
+  CloseDetailMenu();
+  UnblockUserSession();
+}
+
 }  // namespace ash
