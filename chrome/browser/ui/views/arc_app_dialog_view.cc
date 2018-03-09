@@ -219,16 +219,6 @@ void ArcAppDialogView::OnAppImageUpdated(const std::string& app_id,
 void ArcAppDialogView::Show() {
   initial_setup_ = false;
 
-  // The parent window was killed before the icon was loaded.
-  // TODO(lgcheng@) : Remove this since the dialog is not parented to applist
-  // anymore.
-  if (controller_ && !AppListService::Get()->IsAppListVisible()) {
-    g_current_arc_app_dialog_view = nullptr;
-    Cancel();
-    DialogDelegateView::DeleteDelegate();
-    return;
-  }
-
   if (controller_)
     controller_->OnShowChildDialog();
 
