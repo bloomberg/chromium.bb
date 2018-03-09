@@ -217,7 +217,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   if (show_system_dialog) {
     PrintingContext::Result result = PrintingContext::FAILED;
     AskUserForSettings(page_count, false, false,
-                       base::Bind(&AssignResult, &result));
+                       base::BindOnce(&AssignResult, &result));
     return result;
   }
   // Set printer then refresh printer settings.
