@@ -249,7 +249,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kCredentialsEnableAutosignin, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(prefs::kWasObsoleteHttpDataCleaned, false);
   registry->RegisterStringPref(prefs::kSyncPasswordHash, std::string(),
                                PrefRegistry::NO_REGISTRATION_FLAGS);
   registry->RegisterStringPref(prefs::kSyncPasswordLengthAndHashSalt,
