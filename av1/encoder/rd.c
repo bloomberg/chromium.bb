@@ -443,12 +443,10 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
 }
 
 void av1_set_mvcost(MACROBLOCK *x, int ref, int ref_mv_idx) {
-  MB_MODE_INFO_EXT *mbmi_ext = x->mbmi_ext;
-  int8_t rf_type = av1_ref_frame_type(x->e_mbd.mi[0]->mbmi.ref_frame);
-  int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                            mbmi_ext->ref_mv_stack[rf_type], ref, ref_mv_idx);
-  x->mvcost = x->mv_cost_stack[nmv_ctx];
-  x->nmvjointcost = x->nmv_vec_cost[nmv_ctx];
+  (void)ref;
+  (void)ref_mv_idx;
+  x->mvcost = x->mv_cost_stack[0];
+  x->nmvjointcost = x->nmv_vec_cost[0];
 }
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
