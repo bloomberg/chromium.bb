@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
@@ -17,8 +18,10 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -348,6 +351,57 @@ TEST_F(MultiWindowResizeControllerTest, ClickOutside) {
   EXPECT_FALSE(resize_widget_bounds_in_screen.Contains(w1_center_in_screen));
   generator.MoveMouseTo(w1_center_in_screen);
   generator.ClickLeftButton();
+  EXPECT_FALSE(IsShowing());
+}
+
+// Tests that if the resized window is maximized/fullscreen/minimized, the
+// resizer widget should be dismissed.
+TEST_F(MultiWindowResizeControllerTest, WindowStateChange) {
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, gfx::Rect(0, 0, 100, 100)));
+  delegate1.set_window_component(HTRIGHT);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, -2, gfx::Rect(100, 0, 100, 100)));
+  delegate2.set_window_component(HTLEFT);
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point w1_center_in_screen = w1->GetBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(w1_center_in_screen);
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // Maxmize one window should dismiss the resizer.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_FALSE(IsShowing());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  generator.MoveMouseTo(w1_center_in_screen);
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // Entering Fullscreen should dismiss the resizer.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_FALSE(IsShowing());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  generator.MoveMouseTo(w1_center_in_screen);
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // Minimize one window should dimiss the resizer.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(IsShowing());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  generator.MoveMouseTo(w1_center_in_screen);
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // When entering tablet mode, the windows will be maximized, thus the resizer
+  // widget should be dismissed.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_FALSE(IsShowing());
 }
 

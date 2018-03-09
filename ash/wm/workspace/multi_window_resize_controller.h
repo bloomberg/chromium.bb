@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
@@ -34,7 +35,8 @@ enum Direction {
 // MultiWindowResizeController is driven by WorkspaceEventFilter.
 class ASH_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public wm::WindowStateObserver {
  public:
   MultiWindowResizeController();
   ~MultiWindowResizeController() override;
@@ -46,11 +48,15 @@ class ASH_EXPORT MultiWindowResizeController
   // Hides the resize widget.
   void Hide();
 
-  // MouseWatcherListenre overrides:
+  // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
-  // WindowObserver overrides:
+  // WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
+
+  // wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   mojom::WindowStateType old_type) override;
 
  private:
   friend class MultiWindowResizeControllerTest;
@@ -111,6 +117,10 @@ class ASH_EXPORT MultiWindowResizeController
   void FindWindowsTouching(aura::Window* start,
                            Direction direction,
                            std::vector<aura::Window*>* others) const;
+
+  // Starts/Stops observing |window|.
+  void StartObserving(aura::Window* window);
+  void StopObserving(aura::Window* window);
 
   // Shows the resizer if the mouse is still at a valid location. This is called
   // from the |show_timer_|.
