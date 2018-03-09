@@ -6,25 +6,23 @@ package org.chromium.ui;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.util.Log;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
-import android.widget.ListPopupWindow;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import org.chromium.base.ApiCompatibilityUtils;
-
-import java.lang.reflect.Method;
+import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * The dropdown list popup window.
  */
-public class DropdownPopupWindow {
+public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
     private final Context mContext;
     private final View mAnchorView;
     private boolean mRtl;
@@ -32,8 +30,10 @@ public class DropdownPopupWindow {
     private OnLayoutChangeListener mLayoutChangeListener;
     private PopupWindow.OnDismissListener mOnDismissListener;
     private CharSequence mDescription;
-    private ListPopupWindow mListPopupWindow;
+    private AnchoredPopupWindow mAnchoredPopupWindow;
     ListAdapter mAdapter;
+    private ListView mListView;
+    private Drawable mBackground;
 
     /**
      * Creates an DropdownPopupWindow with specified parameters.
@@ -41,7 +41,6 @@ public class DropdownPopupWindow {
      * @param anchorView Popup view to be anchored.
      */
     public DropdownPopupWindow(Context context, View anchorView) {
-        mListPopupWindow = new ListPopupWindow(context, null, 0, R.style.DropdownPopupWindow);
         mContext = context;
         mAnchorView = anchorView;
 
@@ -57,7 +56,7 @@ public class DropdownPopupWindow {
         };
         mAnchorView.addOnLayoutChangeListener(mLayoutChangeListener);
 
-        mListPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+        PopupWindow.OnDismissListener onDismissLitener = new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
                 if (mOnDismissListener != null) {
@@ -66,12 +65,16 @@ public class DropdownPopupWindow {
                 mAnchorView.removeOnLayoutChangeListener(mLayoutChangeListener);
                 mAnchorView.setTag(null);
             }
-        });
-
-        mListPopupWindow.setAnchorView(mAnchorView);
-        Rect originalPadding = new Rect();
-        mListPopupWindow.getBackground().getPadding(originalPadding);
-        mListPopupWindow.setVerticalOffset(-originalPadding.top);
+        };
+        mListView = new ListView(context);
+        ViewRectProvider rectProvider = new ViewRectProvider(mAnchorView);
+        rectProvider.setIncludePadding(true);
+        mBackground = ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.dropdown_popup_background);
+        mAnchoredPopupWindow =
+                new AnchoredPopupWindow(context, mAnchorView, mBackground, mListView, rectProvider);
+        mAnchoredPopupWindow.addOnDismissListener(onDismissLitener);
+        mAnchoredPopupWindow.setLayoutObserver(this);
     }
 
     /**
@@ -82,9 +85,20 @@ public class DropdownPopupWindow {
      */
     public void setAdapter(ListAdapter adapter) {
         mAdapter = adapter;
-        mListPopupWindow.setAdapter(adapter);
+        mListView.setAdapter(adapter);
+        mAnchoredPopupWindow.onRectChanged();
     }
 
+    @Override
+    public void onPreLayoutChange(
+            boolean positionBelow, int x, int y, int width, int height, Rect anchorRect) {
+        mBackground.setBounds(anchorRect);
+        mAnchoredPopupWindow.setBackgroundDrawable(positionBelow
+                        ? ApiCompatibilityUtils.getDrawable(mContext.getResources(),
+                                  R.drawable.dropdown_popup_background_down)
+                        : ApiCompatibilityUtils.getDrawable(mContext.getResources(),
+                                  R.drawable.dropdown_popup_background_up));
+    }
 
     public void setInitialSelection(int initialSelection) {
         mInitialSelection = initialSelection;
@@ -94,37 +108,23 @@ public class DropdownPopupWindow {
      * Shows the popup. The adapter should be set before calling this method.
      */
     public void show() {
-        // An ugly hack to keep the popup from expanding on top of the keyboard.
-        mListPopupWindow.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
-
         assert mAdapter != null : "Set the adapter before showing the popup.";
-        final int contentWidth = UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);
-        final float anchorWidth = mAnchorView.getLayoutParams().width;
-        assert anchorWidth > 0;
-        Rect padding = new Rect();
-        mListPopupWindow.getBackground().getPadding(padding);
-        if (contentWidth + padding.left + padding.right > anchorWidth) {
-            mListPopupWindow.setContentWidth(contentWidth);
-            final Rect displayFrame = new Rect();
-            mAnchorView.getWindowVisibleDisplayFrame(displayFrame);
-            if (mListPopupWindow.getWidth() > displayFrame.width()) {
-                mListPopupWindow.setWidth(displayFrame.width());
-            }
-        } else {
-            mListPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        boolean wasShowing = mListPopupWindow.isShowing();
-        mListPopupWindow.show();
-        mListPopupWindow.getListView().setDividerHeight(0);
-        ApiCompatibilityUtils.setLayoutDirection(mListPopupWindow.getListView(),
-                mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        boolean wasShowing = mAnchoredPopupWindow.isShowing();
+        mAnchoredPopupWindow.setVerticalOverlapAnchor(false);
+        mAnchoredPopupWindow.setHorizontalOverlapAnchor(true);
+        mAnchoredPopupWindow.setMaxWidth(measureContentWidth()
+                + mContext.getResources().getDimensionPixelSize(
+                          R.dimen.dropdown_item_label_margin));
+        mAnchoredPopupWindow.show();
+        mListView.setDividerHeight(0);
+        ApiCompatibilityUtils.setLayoutDirection(
+                mListView, mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         if (!wasShowing) {
-            mListPopupWindow.getListView().setContentDescription(mDescription);
-            mListPopupWindow.getListView().sendAccessibilityEvent(
-                    AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+            mListView.setContentDescription(mDescription);
+            mListView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
         }
         if (mInitialSelection >= 0) {
-            mListPopupWindow.getListView().setSelection(mInitialSelection);
+            mListView.setSelection(mInitialSelection);
             mInitialSelection = -1;
         }
     }
@@ -151,19 +151,7 @@ public class DropdownPopupWindow {
      * will not hide the popup.
      */
     public void disableHideOnOutsideTap() {
-        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
-        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
-        // API. This allows the C++ controller to completely control showing/hiding the popup.
-        // See http://crbug.com/400601
-        try {
-            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
-                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
-            setForceIgnoreOutsideTouch.invoke(mListPopupWindow, new Object[] {true});
-        } catch (Exception e) {
-            Log.e("AutofillPopup",
-                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
-                    e);
-        }
+        mAnchoredPopupWindow.setDismissOnTouchInteraction(false);
     }
 
     /**
@@ -181,7 +169,7 @@ public class DropdownPopupWindow {
      * @param clickListener Listener to register
      */
     public void setOnItemClickListener(AdapterView.OnItemClickListener clickListener) {
-        mListPopupWindow.setOnItemClickListener(clickListener);
+        mListView.setOnItemClickListener(clickListener);
     }
 
     /**
@@ -189,28 +177,28 @@ public class DropdownPopupWindow {
      * Post a {@link #show()} call to the UI thread.
      */
     public void postShow() {
-        mListPopupWindow.postShow();
+        mAnchoredPopupWindow.show();
     }
 
     /**
      * Disposes of the popup window.
      */
     public void dismiss() {
-        mListPopupWindow.dismiss();
+        mAnchoredPopupWindow.dismiss();
     }
 
     /**
      * @return The {@link ListView} displayed within the popup window.
      */
     public ListView getListView() {
-        return mListPopupWindow.getListView();
+        return mListView;
     }
 
     /**
      * @return Whether the popup is currently showing.
      */
     public boolean isShowing() {
-        return mListPopupWindow.isShowing();
+        return mAnchoredPopupWindow.isShowing();
     }
 
     /**
