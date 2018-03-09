@@ -730,7 +730,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     scoped_opt_in_tracker_ = std::make_unique<ScopedOptInFlowTracker>();
   }
 
-  if (!IsArcTermsOfServiceNegotiationNeeded()) {
+  if (!IsArcTermsOfServiceNegotiationNeeded(profile_)) {
     // Moves to next state, Android management check, immediately, as if
     // Terms of Service negotiation is done successfully.
     StartAndroidManagementCheck();
@@ -781,33 +781,6 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   // Terms were accepted.
   profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
   StartAndroidManagementCheck();
-}
-
-bool ArcSessionManager::IsArcTermsOfServiceNegotiationNeeded() const {
-  DCHECK(profile_);
-
-  // Skip to show UI asking users to set up ARC OptIn preferences, if all of
-  // them are managed by the admin policy. Note that the ToS agreement is anyway
-  // not shown in the case of the managed ARC.
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile_)) {
-    VLOG(1) << "All opt-in preferences are under managed. "
-            << "Skip ARC Terms of Service negotiation.";
-    return false;
-  }
-
-  // If it is marked that the Terms of service is accepted already,
-  // just skip the negotiation with user, and start Android management
-  // check directly.
-  // This happens, e.g., when a user accepted the Terms of service on Opt-in
-  // flow, but logged out before ARC sign in procedure was done. Then, logs
-  // in again.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-    VLOG(1) << "The user already accepts ARC Terms of Service.";
-    return false;
-  }
-
-  return true;
 }
 
 void ArcSessionManager::StartAndroidManagementCheck() {

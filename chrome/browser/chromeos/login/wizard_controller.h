@@ -299,9 +299,6 @@ class WizardController : public BaseScreenDelegate,
   // detected or not.
   bool IsRemoraPairingOobe() const;
 
-  // Returns true if arc terms of service should be shown.
-  bool ShouldShowArcTerms() const;
-
   // Returns true if voice interaction value prop should be shown.
   bool ShouldShowVoiceInteractionValueProp() const;
 

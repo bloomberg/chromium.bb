@@ -604,7 +604,7 @@ void WizardController::ShowSyncConsentScreen() {
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
-  if (ShouldShowArcTerms()) {
+  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     VLOG(1) << "Showing ARC Terms of Service screen.";
     UpdateStatusAreaVisibilityForScreen(
         OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
@@ -1663,38 +1663,6 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 bool WizardController::IsRemoraPairingOobe() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHostPairingOobe);
-}
-
-bool WizardController::ShouldShowArcTerms() const {
-  if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    VLOG(1) << "Skip ARC Terms of Service screen because user is not "
-            << "logged in.";
-    return false;
-  }
-
-  const Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!arc::IsArcAllowedForProfile(profile)) {
-    VLOG(1) << "Skip ARC Terms of Service screen because ARC is not allowed.";
-    return false;
-  }
-  if (profile->GetPrefs()->IsManagedPreference(arc::prefs::kArcEnabled) &&
-      !profile->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled)) {
-    VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
-    return false;
-  }
-
-  if (!arc::IsPlayStoreAvailable()) {
-    VLOG(1) << "Skip ARC Terms of Service screen because Play Store is not "
-               "available on the device.";
-    return false;
-  }
-
-  if (arc::IsActiveDirectoryUserForProfile(profile)) {
-    VLOG(1) << "Skip ARC Terms of Service screen because it does not apply to "
-               "Active Directory users.";
-    return false;
-  }
-  return true;
 }
 
 bool WizardController::ShouldShowVoiceInteractionValueProp() const {
