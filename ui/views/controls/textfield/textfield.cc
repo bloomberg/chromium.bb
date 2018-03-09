@@ -1190,11 +1190,18 @@ bool Textfield::CanStartDragForView(View* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, WordLookupClient overrides:
 
-bool Textfield::GetDecoratedWordAtPoint(const gfx::Point& point,
-                                        gfx::DecoratedText* decorated_word,
-                                        gfx::Point* baseline_point) {
-  return GetRenderText()->GetDecoratedWordAtPoint(point, decorated_word,
-                                                  baseline_point);
+bool Textfield::GetWordLookupDataAtPoint(const gfx::Point& point,
+                                         gfx::DecoratedText* decorated_word,
+                                         gfx::Point* baseline_point) {
+  return GetRenderText()->GetWordLookupDataAtPoint(point, decorated_word,
+                                                   baseline_point);
+}
+
+bool Textfield::GetWordLookupDataFromSelection(
+    gfx::DecoratedText* decorated_text,
+    gfx::Point* baseline_point) {
+  return GetRenderText()->GetLookupDataForRange(GetRenderText()->selection(),
+                                                decorated_text, baseline_point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1291,10 +1298,20 @@ void Textfield::DestroyTouchSelection() {
 // Textfield, ui::SimpleMenuModel::Delegate overrides:
 
 bool Textfield::IsCommandIdChecked(int command_id) const {
+  if (text_services_context_menu_ &&
+      text_services_context_menu_->SupportsCommand(command_id)) {
+    return text_services_context_menu_->IsCommandIdChecked(command_id);
+  }
+
   return true;
 }
 
 bool Textfield::IsCommandIdEnabled(int command_id) const {
+  if (text_services_context_menu_ &&
+      text_services_context_menu_->SupportsCommand(command_id)) {
+    return text_services_context_menu_->IsCommandIdEnabled(command_id);
+  }
+
   return Textfield::IsTextEditCommandEnabled(
       GetTextEditCommandFromMenuCommand(command_id, HasSelection()));
 }
@@ -1328,6 +1345,12 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 }
 
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
+  if (text_services_context_menu_ &&
+      text_services_context_menu_->SupportsCommand(command_id)) {
+    text_services_context_menu_->ExecuteCommand(command_id);
+    return;
+  }
+
   Textfield::ExecuteTextEditCommand(
       GetTextEditCommandFromMenuCommand(command_id, HasSelection()));
 }
@@ -2087,6 +2110,14 @@ void Textfield::OnCaretBoundsChanged() {
     GetInputMethod()->OnCaretBoundsChanged(this);
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
+
+#if defined(OS_MACOSX)
+  // On Mac, the context menu contains a look up item which displays the
+  // selected text. As such, the menu needs to be updated if the selection has
+  // changed.
+  context_menu_contents_.reset();
+#endif
+
   // Screen reader users don't expect notifications about unfocused textfields.
   if (HasFocus())
     NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
