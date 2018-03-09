@@ -254,9 +254,8 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   void StartEncode(int32_t bitstream_buffer_id);
 
   // JpegEncodeAccelerator::Client implementation.
-  void VideoFrameReady(int video_frame_id,
-                       size_t encoded_picture_size) override;
-  void NotifyError(int video_frame_id,
+  void VideoFrameReady(int32_t buffer_id, size_t encoded_picture_size) override;
+  void NotifyError(int32_t buffer_id,
                    JpegEncodeAccelerator::Status status) override;
 
  private:
@@ -283,10 +282,8 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   // JpegClient doesn't own |test_image_files_|.
   const std::vector<TestImageFile*>& test_image_files_;
 
-  // A map that stores HW encoding start timestamp for each video frame id.
-  std::map<int, base::TimeTicks> video_frame_id_to_start_time_;
-
-  std::map<int, TestImageFile*> video_frame_id_to_image_;
+  // A map that stores HW encoding start timestamp for each output buffer id.
+  std::map<int, base::TimeTicks> buffer_id_to_start_time_;
 
   std::unique_ptr<JpegEncodeAccelerator> encoder_;
   ClientState state_;
@@ -311,7 +308,6 @@ class JpegClient : public JpegEncodeAccelerator::Client {
 JpegClient::JpegClient(const std::vector<TestImageFile*>& test_image_files,
                        ClientStateNotification<ClientState>* note)
     : test_image_files_(test_image_files),
-      video_frame_id_to_image_(),
       state_(ClientState::CREATED),
       note_(note) {}
 
@@ -344,12 +340,12 @@ void JpegClient::DestroyJpegEncoder() {
   encoder_.reset();
 }
 
-void JpegClient::VideoFrameReady(int video_frame_id, size_t hw_encoded_size) {
+void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
   base::TimeTicks hw_encode_end = base::TimeTicks::Now();
   base::TimeDelta elapsed_hw =
-      hw_encode_end - video_frame_id_to_start_time_[video_frame_id];
+      hw_encode_end - buffer_id_to_start_time_[buffer_id];
 
-  TestImageFile* test_image = video_frame_id_to_image_[video_frame_id];
+  TestImageFile* test_image = test_image_files_[buffer_id];
   size_t sw_encoded_size = 0;
   base::TimeDelta elapsed_sw;
   LOG_ASSERT(GetSoftwareEncodeResult(test_image->visible_size.width(),
@@ -457,10 +453,10 @@ double JpegClient::GetMeanAbsoluteDifference(uint8_t* hw_yuv_result,
   return total_difference / yuv_size;
 }
 
-void JpegClient::NotifyError(int video_frame_id,
+void JpegClient::NotifyError(int32_t buffer_id,
                              JpegEncodeAccelerator::Status status) {
-  LOG(ERROR) << "Notifying of error " << status << " for video frame id "
-             << video_frame_id;
+  LOG(ERROR) << "Notifying of error " << status << " for output buffer id "
+             << buffer_id;
   SetState(ClientState::ERROR);
   encoded_buffer_.reset(nullptr);
 }
@@ -537,10 +533,9 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
 
   LOG_ASSERT(input_frame_.get());
 
-  video_frame_id_to_image_[input_frame_->unique_id()] = image_file;
-  video_frame_id_to_start_time_[input_frame_->unique_id()] =
-      base::TimeTicks::Now();
-  encoder_->Encode(input_frame_, kJpegDefaultQuality, *encoded_buffer_);
+  buffer_id_to_start_time_[bitstream_buffer_id] = base::TimeTicks::Now();
+  encoder_->Encode(input_frame_, kJpegDefaultQuality, nullptr,
+                   *encoded_buffer_);
 }
 
 class JpegEncodeAcceleratorTest : public ::testing::Test {

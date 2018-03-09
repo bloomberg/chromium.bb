@@ -48,11 +48,10 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
    public:
     // Callback called after each successful Encode().
     // Parameters:
-    //  |video_frame_id| is |VideoFrame.unique_id()| of the input VideoFrame in
-    //  corresponding Encode() call.
+    //  |buffer_id| is |output_buffer.id()| of the corresponding Encode() call.
     //  |encoded_picture_size| is the actual size of encoded JPEG image in
     //  the BitstreamBuffer provided through encode().
-    virtual void VideoFrameReady(int video_frame_id,
+    virtual void VideoFrameReady(int32_t buffer_id,
                                  size_t encoded_picture_size) = 0;
 
     // Callback to notify errors. Client is responsible for destroying JEA when
@@ -60,10 +59,10 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
     // is informed about the buffer that failed to encode and may continue
     // using the same instance of JEA.
     // Parameters:
-    //  |video_frame_id| is |video_frame_id.unique_id()| of the input VideoFrame
+    //  |buffer_id| is |output_buffer.id()| of the corresponding Encode() call
     //  that resulted in the error.
     //  |status| would be one of the values of Status except ENCODE_OK.
-    virtual void NotifyError(int video_frame_id, Status status) = 0;
+    virtual void NotifyError(int32_t buffer_id, Status status) = 0;
 
    protected:
     virtual ~Client() {}
@@ -88,18 +87,21 @@ class MEDIA_EXPORT JpegEncodeAccelerator {
 
   // Encodes the given |video_frame| that contains a YUV image. Client will
   // receive the encoded result in Client::VideoFrameReady() callback with the
-  // corresponding |unique_id_| in |video_frame|, or receive
+  // corresponding |output_buffer.id()|, or receive
   // Client::NotifyError() callback.
   // Parameters:
   //  |video_frame| contains the YUV image to be encoded.
   //  |quality| of JPEG image.
-  //  |bitstream_buffer| that contains output buffer for encoded result. Clients
+  //  |exif_buffer| contains Exif data to be inserted into JPEG image. If it's
+  //  nullptr, the JFIF APP0 segment will be inserted.
+  //  |output_buffer| that contains output buffer for encoded result. Clients
   //  should call GetMaxCodedBufferSize() and allocate the buffer accordingly.
   //  The buffer needs to be valid until VideoFrameReady() or NotifyError() is
   //  called.
   virtual void Encode(scoped_refptr<media::VideoFrame> video_frame,
                       int quality,
-                      const BitstreamBuffer& bitstream_buffer) = 0;
+                      const BitstreamBuffer* exif_buffer,
+                      const BitstreamBuffer& output_buffer) = 0;
 };
 
 }  // namespace media
