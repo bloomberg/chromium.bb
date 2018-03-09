@@ -35,7 +35,6 @@ static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 134) },
 };
 
-#if CONFIG_OPT_REF_MV
 static const aom_cdf_prob
     default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
         INTER_COMPOUND_MODES)] = {
@@ -55,19 +54,6 @@ static const aom_cdf_prob
       { AOM_CDF8(11407, 16588, 19365, 21657, 22748, 23629, 28912) },
       { AOM_CDF8(10681, 18953, 20791, 22468, 23935, 25024, 28506) }
     };
-#else
-static const aom_cdf_prob
-    default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
-        INTER_COMPOUND_MODES)] = {
-      { AOM_CDF8(19712, 28229, 30892, 31437, 31712, 32135, 32360) },
-      { AOM_CDF8(9600, 24804, 29268, 30323, 30802, 31726, 32177) },
-      { AOM_CDF8(896, 22434, 27015, 29026, 29753, 31114, 31597) },
-      { AOM_CDF8(1024, 15904, 22127, 25421, 26864, 28996, 30001) },
-      { AOM_CDF8(512, 11222, 17217, 21445, 23473, 26133, 27550) },
-      { AOM_CDF8(2944, 13313, 17214, 20751, 23211, 25500, 26992) },
-      { AOM_CDF8(3456, 9067, 14069, 16907, 18817, 21214, 23139) }
-    };
-#endif
 
 static const aom_cdf_prob
     default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)] = {

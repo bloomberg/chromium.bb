@@ -20,11 +20,7 @@ extern "C" {
 
 #define MVREF_NEIGHBOURS 9
 #define MVREF_ROWS 3
-#if CONFIG_OPT_REF_MV
 #define MVREF_COLS 3
-#else
-#define MVREF_COLS 4
-#endif
 
 // Set the upper limit of the motion vector component magnitude.
 // This would make a motion vector fit in 26 bits. Plus 3 bits for the
@@ -293,9 +289,7 @@ static INLINE uint8_t av1_get_pred_diff_ctx(const int_mv pred_mv,
 static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
                               const CANDIDATE_MV *ref_mv_stack, int ref,
                               int ref_mv_idx) {
-#if CONFIG_OPT_REF_MV
   return 0;
-#endif
 
   if (ref_mv_idx < ref_mv_count &&
       ref_mv_stack[ref_mv_idx].weight >= REF_CAT_LEVEL)
@@ -373,7 +367,6 @@ static INLINE int16_t av1_mode_context_analyzer(
     const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
   const int8_t ref_frame = av1_ref_frame_type(rf);
 
-#if CONFIG_OPT_REF_MV
   if (rf[1] <= INTRA_FRAME) return mode_context[ref_frame];
 
   const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
@@ -382,9 +375,6 @@ static INLINE int16_t av1_mode_context_analyzer(
   const int16_t comp_ctx = (refmv_ctx >> 1) * COMP_NEWMV_CTXS +
                            AOMMIN(newmv_ctx, COMP_NEWMV_CTXS - 1);
   return comp_ctx;
-#else
-  return mode_context[ref_frame];
-#endif
 }
 
 static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,

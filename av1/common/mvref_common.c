@@ -120,15 +120,9 @@ static void add_ref_mv_candidate(
               get_sub_block_pred_mv(candidate_mi, ref, col), this_refmv);
           ref_mv_stack[index].weight = weight * len;
           ++(*refmv_count);
-
-#if !CONFIG_OPT_REF_MV
-          if (candidate->mode == NEWMV) ++*newmv_count;
-#endif
         }
-#if CONFIG_OPT_REF_MV
         if (have_newmv_in_inter_mode(candidate->mode)) ++*newmv_count;
         ++*ref_match_count;
-#endif
       }
     }
   } else {
@@ -169,15 +163,9 @@ static void add_ref_mv_candidate(
             get_sub_block_pred_mv(candidate_mi, 1, col), this_refmv[1]);
         ref_mv_stack[index].weight = weight * len;
         ++(*refmv_count);
-
-#if !CONFIG_OPT_REF_MV
-        if (candidate->mode == NEW_NEWMV) ++*newmv_count;
-#endif
       }
-#if CONFIG_OPT_REF_MV
       if (have_newmv_in_inter_mode(candidate->mode)) ++*newmv_count;
       ++*ref_match_count;
-#endif
     }
   }
 }
@@ -447,17 +435,10 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
 
-#if CONFIG_OPT_REF_MV
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row - gm_mv_candidates[0].as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col - gm_mv_candidates[0].as_mv.col) >= 16)
             mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
-#else
-        if (blk_row == 0 && blk_col == 0)
-          if (abs(this_refmv.as_mv.row) >= 16 ||
-              abs(this_refmv.as_mv.col) >= 16)
-            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
-#endif
 
         for (idx = 0; idx < refmv_count[rf[0]]; ++idx)
           if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int) break;
@@ -518,21 +499,12 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
 
-#if CONFIG_OPT_REF_MV
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row - gm_mv_candidates[0].as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col - gm_mv_candidates[0].as_mv.col) >= 16 ||
               abs(comp_refmv.as_mv.row - gm_mv_candidates[1].as_mv.row) >= 16 ||
               abs(comp_refmv.as_mv.col - gm_mv_candidates[1].as_mv.col) >= 16)
             mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
-#else
-        if (blk_row == 0 && blk_col == 0)
-          if (abs(this_refmv.as_mv.row) >= 16 ||
-              abs(this_refmv.as_mv.col) >= 16 ||
-              abs(comp_refmv.as_mv.row) >= 16 ||
-              abs(comp_refmv.as_mv.col) >= 16)
-            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
-#endif
 
         for (idx = 0; idx < refmv_count[ref_frame]; ++idx)
           if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int &&
@@ -605,20 +577,20 @@ static void setup_ref_mv_list(
   // Find valid maximum row/col offset.
   if (xd->up_available) {
     max_row_offset = -(MVREF_ROWS << 1) + row_adj;
-#if CONFIG_OPT_REF_MV
+
     if (xd->n8_h < mi_size_high[BLOCK_8X8])
       max_row_offset = -(2 << 1) + row_adj;
-#endif
+
     max_row_offset =
         find_valid_row_offset(tile, mi_row, cm->mi_rows, cm, max_row_offset);
   }
 
   if (xd->left_available) {
     max_col_offset = -(MVREF_COLS << 1) + col_adj;
-#if CONFIG_OPT_REF_MV
+
     if (xd->n8_w < mi_size_wide[BLOCK_8X8])
       max_col_offset = -(2 << 1) + col_adj;
-#endif
+
     max_col_offset = find_valid_col_offset(tile, mi_col, max_col_offset);
   }
 
@@ -762,41 +734,22 @@ static void setup_ref_mv_list(
   ref_match_count[ref_frame] =
       (row_match_count[ref_frame] > 0) + (col_match_count[ref_frame] > 0);
 
-#if CONFIG_OPT_REF_MV
-  switch (nearest_match[ref_frame])
-#else
-  switch (nearest_refmv_count[ref_frame])
-#endif
-  {
-    case 0: mode_context[ref_frame] |= 0;
-#if CONFIG_OPT_REF_MV
+  switch (nearest_match[ref_frame]) {
+    case 0:
+      mode_context[ref_frame] |= 0;
       if (ref_match_count[ref_frame] >= 1) mode_context[ref_frame] |= 1;
       if (ref_match_count[ref_frame] == 1)
         mode_context[ref_frame] |= (1 << REFMV_OFFSET);
       else if (ref_match_count[ref_frame] >= 2)
         mode_context[ref_frame] |= (2 << REFMV_OFFSET);
-#else
-      if (refmv_count[ref_frame] >= 1) mode_context[ref_frame] |= 1;
-      if (refmv_count[ref_frame] == 1)
-        mode_context[ref_frame] |= (1 << REFMV_OFFSET);
-      else if (refmv_count[ref_frame] >= 2)
-        mode_context[ref_frame] |= (2 << REFMV_OFFSET);
-#endif
       break;
-    case 1: mode_context[ref_frame] |= (newmv_count[ref_frame] > 0) ? 2 : 3;
-#if CONFIG_OPT_REF_MV
+    case 1:
+      mode_context[ref_frame] |= (newmv_count[ref_frame] > 0) ? 2 : 3;
       if (ref_match_count[ref_frame] == 1)
         mode_context[ref_frame] |= (3 << REFMV_OFFSET);
       else if (ref_match_count[ref_frame] >= 2)
         mode_context[ref_frame] |= (4 << REFMV_OFFSET);
-#else
-      if (refmv_count[ref_frame] == 1)
-        mode_context[ref_frame] |= (3 << REFMV_OFFSET);
-      else if (refmv_count[ref_frame] >= 2)
-        mode_context[ref_frame] |= (4 << REFMV_OFFSET);
-#endif
       break;
-
     case 2:
     default:
       if (newmv_count[ref_frame] >= 1)
@@ -840,7 +793,6 @@ static void setup_ref_mv_list(
   }
 
   if (rf[1] > NONE_FRAME) {
-#if CONFIG_OPT_REF_MV
     // TODO(jingning, yunqing): Refactor and consolidate the compound and
     // single reference frame modes. Reduce unnecessary redundancy.
     if (refmv_count[ref_frame] < 2) {
@@ -953,7 +905,6 @@ static void setup_ref_mv_list(
     }
 
     assert(refmv_count[ref_frame] >= 2);
-#endif
 
     for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
       clamp_mv_ref(&ref_mv_stack[ref_frame][idx].this_mv.as_mv,
@@ -962,7 +913,6 @@ static void setup_ref_mv_list(
                    xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
     }
   } else {
-#if CONFIG_OPT_REF_MV
     // Handle single reference frame extension
     int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n8_w);
     mi_width = AOMMIN(mi_width, cm->mi_cols - mi_col);
@@ -1040,7 +990,6 @@ static void setup_ref_mv_list(
 
     for (int idx = refmv_count[ref_frame]; idx < MAX_MV_REF_CANDIDATES; ++idx)
       mv_ref_list[rf[0]][idx].as_int = gm_mv_candidates[0].as_int;
-#endif
 
     for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
       clamp_mv_ref(&ref_mv_stack[ref_frame][idx].this_mv.as_mv,
@@ -1205,23 +1154,6 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       zeromv1,
 #endif  // USE_CUR_GM_REFMV
                       mi_row, mi_col, mode_context, compound_search);
-#if !CONFIG_OPT_REF_MV
-    zeromv1[0].as_int = zeromv[0].as_int;
-    zeromv1[1].as_int = 0;
-    setup_ref_mv_list(cm, xd, rf[0], ref_mv_count, ref_mv_stack, mv_ref_list,
-#if USE_CUR_GM_REFMV
-                      zeromv1,
-#endif  // USE_CUR_GM_REFMV
-                      mi_row, mi_col, mode_context, compound_search);
-
-    zeromv1[0].as_int = zeromv[1].as_int;
-    zeromv1[1].as_int = 0;
-    setup_ref_mv_list(cm, xd, rf[1], ref_mv_count, ref_mv_stack, mv_ref_list,
-#if USE_CUR_GM_REFMV
-                      zeromv1,
-#endif  // USE_CUR_GM_REFMV
-                      mi_row, mi_col, mode_context, compound_search);
-#endif
   } else {
     setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack,
                       mv_ref_list,
@@ -1231,25 +1163,9 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       mi_row, mi_col, mode_context, compound_search);
   }
 
-#if !CONFIG_OPT_REF_MV
-  if (compound_search) {
-    find_mv_refs_idx(cm, xd, mi, rf[0], mv_ref_list[rf[0]], mi_row, mi_col,
-                     sync, data, compound_mode_context, zeromv[0],
-                     ref_mv_count[rf[0]]);
-    find_mv_refs_idx(cm, xd, mi, rf[1], mv_ref_list[rf[1]], mi_row, mi_col,
-                     sync, data, compound_mode_context, zeromv[1],
-                     ref_mv_count[rf[1]]);
-  } else {
-    if (ref_frame <= ALTREF_FRAME)
-      find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list[rf[0]], mi_row,
-                       mi_col, sync, data, compound_mode_context, zeromv[0],
-                       ref_mv_count[ref_frame]);
-  }
-#else
   (void)compound_mode_context;
   (void)data;
   (void)sync;
-#endif
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
