@@ -145,8 +145,10 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
 
     case V4L2_PIX_FMT_VP9:
     case V4L2_PIX_FMT_VP9_FRAME:
-      min_profile = VP9PROFILE_MIN;
-      max_profile = VP9PROFILE_MAX;
+      // TODO(posciak): https://crbug.com/819930 Query supported profiles.
+      // Currently no devices support Profiles > 0 https://crbug.com/796297.
+      min_profile = VP9PROFILE_PROFILE0;
+      max_profile = VP9PROFILE_PROFILE0;
       break;
 
     default:
