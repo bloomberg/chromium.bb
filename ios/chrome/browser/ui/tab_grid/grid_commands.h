@@ -7,12 +7,16 @@
 
 // Commands issued to a model backing a grid UI.
 @protocol GridCommands
-// Tells the receiver to insert a new item at |index|. A negative |index| tells
-// the receiver to insert a new item at the end of the list.
-- (void)insertNewItemAtIndex:(NSInteger)index;
-// Tells the receiver to select the item at |index|.
+// Tells the receiver to insert a new item at the end of the list.
+- (void)addNewItem;
+// Tells the receiver to insert a new item at |index|. It is an error to call
+// this method with an |index| greater than the number of items in the model.
+- (void)insertNewItemAtIndex:(NSUInteger)index;
+// Tells the receiver to select the item at |index|. It is an error to call this
+// method with an |index| greater than the largest index in the model.
 - (void)selectItemAtIndex:(NSUInteger)index;
-// Tells the receiver to close the item at |index|.
+// Tells the receiver to close the item at |index|. It is an error to call this
+// method with an |index| greater than the largest index in the model.
 - (void)closeItemAtIndex:(NSUInteger)index;
 // Tells the receiver to close all items.
 - (void)closeAllItems;
