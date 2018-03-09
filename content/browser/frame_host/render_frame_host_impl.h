@@ -790,12 +790,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnVisualStateResponse(uint64_t id);
   void OnRunJavaScriptDialog(const base::string16& message,
                              const base::string16& default_prompt,
-                             const GURL& frame_url,
                              JavaScriptDialogType dialog_type,
                              IPC::Message* reply_msg);
-  void OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                bool is_reload,
-                                IPC::Message* reply_msg);
+  void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           uint32_t start_offset,
