@@ -144,23 +144,16 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
 
   client_ = client;
 
-  D3D_FEATURE_LEVEL actual_feature_level = {};
-  D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1,
-                                        D3D_FEATURE_LEVEL_11_0};
+  const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
+
   HRESULT hresult = create_device_func_.Run(
       nullptr,                            // No adapter.
       D3D_DRIVER_TYPE_HARDWARE, nullptr,  // No software rasterizer.
       0,                                  // flags, none.
       feature_levels, arraysize(feature_levels), D3D11_SDK_VERSION,
-      device_.GetAddressOf(), &actual_feature_level,
-      device_context_.GetAddressOf());
+      device_.GetAddressOf(), nullptr, device_context_.GetAddressOf());
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to create the D3D11Device:" << hresult;
-    failed();
-    return;
-  }
-  if (actual_feature_level != D3D_FEATURE_LEVEL_11_1) {
-    DLOG(ERROR) << "D3D11 feature level too low: " << actual_feature_level;
     failed();
     return;
   }
