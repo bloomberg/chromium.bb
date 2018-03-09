@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
@@ -42,7 +43,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
@@ -915,7 +915,7 @@ class ParallelDownloadTest : public DownloadContentTest {
         {content::kParallelRequestDelayFinchKey, "0"},
         {content::kParallelRequestRemainingTimeFinchKey, "0"}};
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kParallelDownloading, params);
+        download::features::kParallelDownloading, params);
   }
 
   ~ParallelDownloadTest() override {}
@@ -971,7 +971,8 @@ class ParallelDownloadTest : public DownloadContentTest {
       const download::DownloadItem::ReceivedSlices& received_slices,
       int64_t total_length,
       size_t expected_request_count) {
-    EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+    EXPECT_TRUE(
+        base::FeatureList::IsEnabled(download::features::kParallelDownloading));
     GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
     GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
     TestDownloadHttpResponse::Parameters parameters;
@@ -1007,7 +1008,8 @@ class ParallelDownloadTest : public DownloadContentTest {
 
   // Verifies parallel download completion.
   void RunCompletionTest(TestDownloadHttpResponse::Parameters& parameters) {
-    EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+    EXPECT_TRUE(
+        base::FeatureList::IsEnabled(download::features::kParallelDownloading));
 
     GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
     GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());

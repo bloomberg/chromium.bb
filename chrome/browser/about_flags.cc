@@ -48,6 +48,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/download/public/common/download_features.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/favicon/core/features.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -3490,7 +3491,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-parallel-downloading", flag_descriptions::kParallelDownloadingName,
      flag_descriptions::kParallelDownloadingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kParallelDownloading)},
+     FEATURE_VALUE_TYPE(download::features::kParallelDownloading)},
 
     {"enable-html-base-username-detector",
      flag_descriptions::kHtmlBasedUsernameDetectorName,
