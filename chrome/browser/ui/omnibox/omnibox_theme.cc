@@ -52,6 +52,9 @@ ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
           state, NativeId::kColorId_ResultsTableNormalBackground,
           NativeId::kColorId_ResultsTableHoveredBackground,
           NativeId::kColorId_ResultsTableSelectedBackground);
+    case OmniboxPart::RESULTS_SEPARATOR:
+      NOTREACHED();
+      break;
   }
   return kInvalidColorId;
 }
@@ -97,6 +100,10 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return color_utils::BlendTowardOppositeLuma(
           dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
           NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0f, 0x14, 0x24));
+    case OmniboxPart::RESULTS_SEPARATOR:
+      // The dark base color doesn't appear in the MD2 spec, just Chrome's.
+      return dark ? SkColorSetARGB(0x6e, 0x16, 0x17, 0x1a)   // 43% alpha.
+                  : SkColorSetA(gfx::kGoogleGrey900, 0x24);  // 14% alpha.
   }
   return gfx::kPlaceholderColor;
 }

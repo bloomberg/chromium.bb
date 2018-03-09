@@ -10,6 +10,7 @@
 // A part of the omnibox (location bar, location bar decoration, or dropdown).
 enum class OmniboxPart {
   RESULTS_BACKGROUND,  // Background of the results dropdown.
+  RESULTS_SEPARATOR,   // Separator between the input row and the results rows.
 };
 
 // The tint of the omnibox theme. E.g. Incognito may use a DARK tint. NATIVE is
