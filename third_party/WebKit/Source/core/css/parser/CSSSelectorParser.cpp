@@ -945,6 +945,15 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           DCHECK(RuntimeEnabledFeatures::CSSMatchesEnabled());
           feature = WebFeature::kCSSSelectorPseudoMatches;
           break;
+        case CSSSelector::kPseudoFocusVisible:
+          DCHECK(RuntimeEnabledFeatures::CSSFocusVisibleEnabled());
+          if (context_->Mode() != kUASheetMode)
+            feature = WebFeature::kCSSSelectorPseudoFocusVisible;
+          break;
+        case CSSSelector::kPseudoFocus:
+          if (context_->Mode() != kUASheetMode)
+            feature = WebFeature::kCSSSelectorPseudoFocus;
+          break;
         case CSSSelector::kPseudoAnyLink:
           feature = WebFeature::kCSSSelectorPseudoAnyLink;
           break;
