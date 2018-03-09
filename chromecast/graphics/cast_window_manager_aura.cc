@@ -46,6 +46,23 @@ gfx::Transform GetPrimaryDisplayRotationTransform() {
   return rotation;
 }
 
+gfx::Rect GetPrimaryDisplayHostBounds() {
+  display::Display display(display::Screen::GetScreen()->GetPrimaryDisplay());
+  gfx::Point display_origin_in_pixel = display.bounds().origin();
+  gfx::Size display_size_in_pixel = display.GetSizeInPixel();
+  switch (display.rotation()) {
+    case display::Display::ROTATE_90:
+    case display::Display::ROTATE_270:
+      return gfx::Rect(display_origin_in_pixel,
+                       gfx::Size(display_size_in_pixel.height(),
+                                 display_size_in_pixel.width()));
+    case display::Display::ROTATE_0:
+    case display::Display::ROTATE_180:
+      // default:
+      return gfx::Rect(display_origin_in_pixel, display_size_in_pixel);
+  }
+}
+
 }  // namespace
 
 // An ui::EventTarget that ignores events.
@@ -224,20 +241,11 @@ void CastWindowManagerAura::Setup() {
 
   ui::InitializeInputMethodForTesting();
 
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
-  display::Display::Rotation rotation =
-      display::Screen::GetScreen()->GetPrimaryDisplay().rotation();
-  if (rotation == display::Display::ROTATE_90 ||
-      rotation == display::Display::ROTATE_270) {
-    display_size = gfx::Size(display_size.height(), display_size.width());
-  }
+  gfx::Rect host_bounds = GetPrimaryDisplayHostBounds();
 
-  LOG(INFO) << "Starting window manager, screen size: " << display_size.width()
-            << "x" << display_size.height();
+  LOG(INFO) << "Starting window manager, bounds: " << host_bounds.ToString();
   CHECK(aura::Env::GetInstance());
-  window_tree_host_.reset(
-      new CastWindowTreeHost(enable_input_, gfx::Rect(display_size)));
+  window_tree_host_.reset(new CastWindowTreeHost(enable_input_, host_bounds));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
