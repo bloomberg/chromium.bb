@@ -891,7 +891,7 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
   // Getting the number formatting based on the locale and writing to
   // dictionary.
   base::string16 number_format = base::FormatDouble(123456.78, 2);
-  settings->SetString(kDecimalDelimeter, number_format.substr(6, 1));
+  settings->SetString(kDecimalDelimeter, number_format.substr(7, 1));
   settings->SetString(kThousandsDelimeter, number_format.substr(3, 1));
   settings->SetInteger(kUnitType, system);
 }

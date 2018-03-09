@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
@@ -339,6 +340,10 @@ class PrintPreviewHandlerTest : public testing::Test {
   }
 
   void Initialize() {
+    // Set locale since the delimeters we check in VerifyInitialSettings()
+    // depend on it.
+    base::i18n::SetICUDefaultLocale("en");
+
     // Sending this message will enable javascript, so it must always be called
     // before any other messages are sent.
     base::Value args(base::Value::Type::LIST);
@@ -376,7 +381,8 @@ class PrintPreviewHandlerTest : public testing::Test {
   // print_preview.NativeInitialSettings type in
   // chrome/browser/resources/print_preview/native_layer.js. Checks that
   // |default_printer_name| is the printer name returned and that
-  // |initiator_title| is the initiator title returned. Assumes
+  // |initiator_title| is the initiator title returned and validates that
+  // delimeters are correct for "en" locale (set in Initialize()). Assumes
   // "test-callback-id-0" was used as the callback id.
   void ValidateInitialSettings(const content::TestWebUI::CallData& data,
                                const std::string& default_printer_name,
@@ -387,10 +393,16 @@ class PrintPreviewHandlerTest : public testing::Test {
                                         base::Value::Type::BOOLEAN));
     ASSERT_TRUE(settings->FindKeyOfType("isInAppKioskMode",
                                         base::Value::Type::BOOLEAN));
-    ASSERT_TRUE(settings->FindKeyOfType("thousandsDelimeter",
-                                        base::Value::Type::STRING));
-    ASSERT_TRUE(
-        settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING));
+
+    const base::Value* thousandsDelimeter = settings->FindKeyOfType(
+        "thousandsDelimeter", base::Value::Type::STRING);
+    ASSERT_TRUE(thousandsDelimeter);
+    EXPECT_EQ(",", thousandsDelimeter->GetString());
+    const base::Value* decimalDelimeter =
+        settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING);
+    ASSERT_TRUE(decimalDelimeter);
+    EXPECT_EQ(".", decimalDelimeter->GetString());
+
     ASSERT_TRUE(
         settings->FindKeyOfType("unitType", base::Value::Type::INTEGER));
     ASSERT_TRUE(settings->FindKeyOfType("previewModifiable",
