@@ -347,6 +347,10 @@ const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 const char kEnableClientLoFiDescription[] =
     "Enable showing low fidelity images on some pages on slow networks.";
 
+const char kEnableCursorMotionBlurName[] = "Enable Cursor Motion Blur";
+const char kEnableCursorMotionBlurDescription[] =
+    "Enable motion blur effect for the cursor.";
+
 const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =

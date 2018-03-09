@@ -71,7 +71,7 @@ const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
 HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
                                  aura::Window* container)
-    : FastInkView(container),
+    : FastInkView(container, PresentationCallback()),
       points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay),

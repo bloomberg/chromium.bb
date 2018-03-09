@@ -220,7 +220,10 @@ class FastInkView::LayerTreeFrameSinkHolder
   void DidPresentCompositorFrame(uint32_t presentation_token,
                                  base::TimeTicks time,
                                  base::TimeDelta refresh,
-                                 uint32_t flags) override {}
+                                 uint32_t flags) override {
+    if (view_)
+      view_->DidPresentCompositorFrame(time, refresh, flags);
+  }
   void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();
@@ -265,7 +268,9 @@ class FastInkView::LayerTreeFrameSinkHolder
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
 };
 
-FastInkView::FastInkView(aura::Window* container) : weak_ptr_factory_(this) {
+FastInkView::FastInkView(aura::Window* container,
+                         const PresentationCallback& presentation_callback)
+    : presentation_callback_(presentation_callback), weak_ptr_factory_(this) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -476,6 +481,13 @@ void FastInkView::SubmitCompositorFrame() {
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = device_scale_factor;
 
+  if (!presentation_callback_.is_null()) {
+    // If overflow happens, we increase it again.
+    if (!++presentation_token_)
+      ++presentation_token_;
+    frame.metadata.presentation_token = presentation_token_;
+  }
+
   viz::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -512,6 +524,13 @@ void FastInkView::DidReceiveCompositorFrameAck() {
         FROM_HERE, base::BindOnce(&FastInkView::SubmitPendingCompositorFrame,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void FastInkView::DidPresentCompositorFrame(base::TimeTicks time,
+                                            base::TimeDelta refresh,
+                                            uint32_t flags) {
+  DCHECK(!presentation_callback_.is_null());
+  presentation_callback_.Run(time, refresh, flags);
 }
 
 void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {

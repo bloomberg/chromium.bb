@@ -38,6 +38,10 @@ jumbo_component("x11") {
     "//base",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//ui/events/ozone:events_ozone" ]
+  }
+
   if (use_glib) {
     sources += [
       "x11_event_source_glib.cc",

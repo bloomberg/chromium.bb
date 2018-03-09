@@ -35,10 +35,16 @@ namespace fast_ink {
 // when possible and trigger continious updates.
 class FastInkView : public views::View {
  public:
+  using PresentationCallback =
+      base::RepeatingCallback<void(base::TimeTicks presentation_time,
+                                   base::TimeDelta refresh,
+                                   uint32_t flags)>;
+
   // Creates a FastInkView filling the bounds of |root_window|.
   // If |root_window| is resized (e.g. due to a screen size change),
   // a new instance of FastInkView should be created.
-  explicit FastInkView(aura::Window* container);
+  FastInkView(aura::Window* container,
+              const PresentationCallback& presentation_callback);
   ~FastInkView() override;
 
  protected:
@@ -67,6 +73,7 @@ class FastInkView : public views::View {
                      bool auto_refresh);
 
   // Constants initialized in constructor.
+  const PresentationCallback presentation_callback_;
   gfx::Transform screen_to_buffer_transform_;
   gfx::Size buffer_size_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
@@ -79,6 +86,9 @@ class FastInkView : public views::View {
   void SubmitPendingCompositorFrame();
   void ReclaimResource(std::unique_ptr<Resource> resource);
   void DidReceiveCompositorFrameAck();
+  void DidPresentCompositorFrame(base::TimeTicks time,
+                                 base::TimeDelta refresh,
+                                 uint32_t flags);
 
   std::unique_ptr<views::Widget> widget_;
   gfx::Rect content_rect_;
@@ -87,6 +97,7 @@ class FastInkView : public views::View {
   bool pending_compositor_frame_ = false;
   bool pending_compositor_frame_ack_ = false;
   int next_resource_id_ = 1;
+  uint32_t presentation_token_ = 0;
   std::vector<std::unique_ptr<Resource>> returned_resources_;
   std::unique_ptr<LayerTreeFrameSinkHolder> frame_sink_holder_;
   base::WeakPtrFactory<FastInkView> weak_ptr_factory_;

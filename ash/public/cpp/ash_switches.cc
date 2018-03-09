@@ -41,6 +41,9 @@ const char kAshDisableTouchExplorationMode[] =
 // TODO(oshima): Remove this once the feature is launched. crbug.com/749713.
 const char kAshEnableV1AppBackButton[] = "ash-enable-v1-app-back-button";
 
+// Enable cursor motion blur.
+const char kAshEnableCursorMotionBlur[] = "ash-enable-cursor-motion-blur";
+
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";

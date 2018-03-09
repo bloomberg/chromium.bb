@@ -10,9 +10,11 @@
 #include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "ui/display/display.h"
 #include "ui/events/ozone/events_ozone_export.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -36,7 +38,19 @@ namespace ui {
 // TODO(spang): Don't worry, we have a plan to remove this.
 class EVENTS_OZONE_EXPORT CursorController {
  public:
+  class CursorObserver {
+   public:
+    // Called when cursor location changed.
+    virtual void OnCursorLocationChanged(const gfx::PointF& location) = 0;
+
+   protected:
+    virtual ~CursorObserver() {}
+  };
+
   static CursorController* GetInstance();
+
+  void AddCursorObserver(CursorObserver* observer);
+  void RemoveCursorObserver(CursorObserver* observer);
 
   // Changes the rotation & scale applied for a window.
   void SetCursorConfigForWindow(gfx::AcceleratedWidget widget,
@@ -59,6 +73,9 @@ class EVENTS_OZONE_EXPORT CursorController {
   void ApplyCursorConfigForWindow(gfx::AcceleratedWidget widget,
                                   gfx::Vector2dF* delta) const;
 
+  // Notifies controller of new cursor location.
+  void SetCursorLocation(const gfx::PointF& location);
+
  private:
   CursorController();
   ~CursorController();
@@ -74,6 +91,9 @@ class EVENTS_OZONE_EXPORT CursorController {
 
   WindowToCursorConfigurationMap window_to_cursor_configuration_map_;
   mutable base::Lock window_to_cursor_configuration_map_lock_;
+
+  base::ObserverList<CursorObserver> cursor_observers_;
+  mutable base::Lock cursor_observers_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorController);
 };

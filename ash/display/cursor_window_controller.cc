@@ -5,14 +5,17 @@
 #include "ash/display/cursor_window_controller.h"
 
 #include "ash/ash_constants.h"
+#include "ash/components/cursor/cursor_view.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "components/prefs/pref_service.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
@@ -30,6 +33,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -92,7 +96,10 @@ class CursorWindowDelegate : public aura::WindowDelegate {
 };
 
 CursorWindowController::CursorWindowController()
-    : delegate_(new CursorWindowDelegate()) {}
+    : delegate_(new CursorWindowDelegate()),
+      is_cursor_motion_blur_enabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableCursorMotionBlur)) {}
 
 CursorWindowController::~CursorWindowController() {
   SetContainer(NULL);
@@ -115,6 +122,9 @@ void CursorWindowController::SetLargeCursorSizeInDip(
 }
 
 bool CursorWindowController::ShouldEnableCursorCompositing() {
+  if (is_cursor_motion_blur_enabled_)
+    return true;
+
   // During startup, we may not have a preference service yet. We need to check
   // display manager state first so that we don't accidentally ignore it while
   // early outing when there isn't a PrefService yet.
@@ -192,20 +202,20 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
 
   SetContainer(RootWindowController::ForWindow(root_window)
                    ->GetContainer(kShellWindowId_MouseCursorContainer));
-  SetBoundsInScreen(display.bounds());
+  SetBoundsInScreenAndRotation(display.bounds(), display.rotation());
   // Updates the hot point based on the current display.
   UpdateCursorImage();
 }
 
 void CursorWindowController::UpdateLocation() {
-  if (!cursor_window_)
-    return;
   gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
   if (!is_cursor_compositing_enabled_) {
     Shell::GetPrimaryRootWindow()->GetHost()->ConvertDIPToPixels(&point);
   } else {
     point.Offset(-bounds_in_screen_.x(), -bounds_in_screen_.y());
   }
+  if (!cursor_window_)
+    return;
   point.Offset(-hot_point_.x(), -hot_point_.y());
   gfx::Rect bounds = cursor_window_->bounds();
   bounds.set_origin(point);
@@ -236,27 +246,41 @@ void CursorWindowController::SetContainer(aura::Window* container) {
   container_ = container;
   if (!container) {
     cursor_window_.reset();
+    cursor_view_.reset();
     return;
   }
 
-  // Reusing the window does not work when the display is disconnected.
-  // Just creates a new one instead. crbug.com/384218.
-  cursor_window_.reset(new aura::Window(delegate_.get()));
-  cursor_window_->SetTransparent(true);
-  cursor_window_->Init(ui::LAYER_TEXTURED);
-  cursor_window_->SetEventTargetingPolicy(
-      ui::mojom::EventTargetingPolicy::NONE);
-  cursor_window_->set_owned_by_parent(false);
-  // Call UpdateCursorImage() to figure out |cursor_window_|'s desired size.
-  UpdateCursorImage();
+  bounds_in_screen_ = display_.bounds();
+  rotation_ = display_.rotation();
 
-  container->AddChild(cursor_window_.get());
+  if (is_cursor_motion_blur_enabled_) {
+    UpdateCursorView();
+  } else {
+    // Reusing the window does not work when the display is disconnected.
+    // Just creates a new one instead. crbug.com/384218.
+    cursor_window_.reset(new aura::Window(delegate_.get()));
+    cursor_window_->SetTransparent(true);
+    cursor_window_->Init(ui::LAYER_TEXTURED);
+    cursor_window_->SetEventTargetingPolicy(
+        ui::mojom::EventTargetingPolicy::NONE);
+    cursor_window_->set_owned_by_parent(false);
+    // Call UpdateCursorImage() to figure out |cursor_window_|'s desired size.
+    UpdateCursorImage();
+    container->AddChild(cursor_window_.get());
+  }
   UpdateCursorVisibility();
-  SetBoundsInScreen(container->bounds());
+  UpdateLocation();
 }
 
-void CursorWindowController::SetBoundsInScreen(const gfx::Rect& bounds) {
+void CursorWindowController::SetBoundsInScreenAndRotation(
+    const gfx::Rect& bounds,
+    display::Display::Rotation rotation) {
+  if (bounds == bounds_in_screen_ && rotation == rotation_)
+    return;
   bounds_in_screen_ = bounds;
+  rotation_ = rotation;
+  if (cursor_view_)
+    UpdateCursorView();
   UpdateLocation();
 }
 
@@ -337,22 +361,38 @@ void CursorWindowController::UpdateCursorImage() {
     hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
   }
 
+  if (cursor_view_) {
+    cursor_view_->SetCursorImage(delegate_->cursor_image(), delegate_->size(),
+                                 hot_point_);
+  }
   if (cursor_window_) {
     cursor_window_->SetBounds(gfx::Rect(delegate_->size()));
     cursor_window_->SchedulePaintInRect(
         gfx::Rect(cursor_window_->bounds().size()));
-    UpdateLocation();
   }
+  UpdateLocation();
 }
 
 void CursorWindowController::UpdateCursorVisibility() {
-  if (!cursor_window_)
-    return;
   bool visible = (visible_ && cursor_type_ != ui::CursorType::kNone);
-  if (visible)
-    cursor_window_->Show();
-  else
-    cursor_window_->Hide();
+  if (visible) {
+    if (cursor_view_)
+      cursor_view_->GetWidget()->Show();
+    if (cursor_window_)
+      cursor_window_->Show();
+  } else {
+    if (cursor_view_)
+      cursor_view_->GetWidget()->Hide();
+    if (cursor_window_)
+      cursor_window_->Hide();
+  }
+}
+
+void CursorWindowController::UpdateCursorView() {
+  cursor_view_.reset(new cursor::CursorView(
+      container_, aura::Env::GetInstance()->last_mouse_location(),
+      is_cursor_motion_blur_enabled_));
+  UpdateCursorImage();
 }
 
 const gfx::ImageSkia& CursorWindowController::GetCursorImageForTest() const {

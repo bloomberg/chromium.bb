@@ -67,6 +67,8 @@ ASH_PUBLIC_EXPORT extern const char kQuickUnlockPinSalt[];
 
 ASH_PUBLIC_EXPORT extern const char kDetachableBaseDevices[];
 
+ASH_PUBLIC_EXPORT extern const char kCursorMotionBlurEnabled[];
+
 }  // namespace prefs
 
 }  // namespace ash

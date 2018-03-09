@@ -26745,6 +26745,7 @@ from previous Chrome versions.
   <int value="665409384"
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
+  <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
   <int value="687838135" label="ThirdPartyDoodles:disabled"/>
