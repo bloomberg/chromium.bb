@@ -104,7 +104,7 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     const gfx::Size& tabstrip_preferred_size,
     int available_width) const {
-  int x = leading_button_start_ + OpaqueBrowserFrameView::kAvatarIconPadding;
+  const int x = GetTabStripLeftInset();
   available_width -= x + NewTabCaptionSpacing() + trailing_button_start_;
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
@@ -130,6 +130,10 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   }
 
   return min_size;
+}
+
+int OpaqueBrowserFrameViewLayout::GetTabStripLeftInset() const {
+  return leading_button_start_ + OpaqueBrowserFrameView::GetAvatarIconPadding();
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
@@ -428,7 +432,7 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
 
   if (incognito_icon_) {
-    constexpr int pad = OpaqueBrowserFrameView::kAvatarIconPadding;
+    const int pad = OpaqueBrowserFrameView::GetAvatarIconPadding();
     const gfx::Size size(delegate_->GetIncognitoAvatarIcon().size());
     const int incognito_width = pad + size.width();
     int x;

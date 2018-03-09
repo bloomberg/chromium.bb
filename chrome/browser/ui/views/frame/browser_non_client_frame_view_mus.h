@@ -38,6 +38,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   void UpdateClientArea() override;
   void UpdateMinimumSize() override;
+  int GetTabStripLeftInset() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -69,9 +70,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // TabStripObserver:
   void TabStripMaxXChanged(TabStrip* tab_strip) override;
   void TabStripDeleted(TabStrip* tab_strip) override;
-
-  // Distance between the left edge of the NonClientFrameView and the tab strip.
-  int GetTabStripLeftInset() const;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.

@@ -18,11 +18,11 @@ class BrowserView;
 class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileAttributesStorage::Observer {
  public:
-  // The padding on the left, right, and bottom of the avatar icon.
-  static constexpr int kAvatarIconPadding = 4;
-
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
+
+  // Returns the padding on the left, right, and bottom of the avatar icon.
+  static int GetAvatarIconPadding();
 
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
@@ -76,6 +76,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Provided for mus to update the minimum window size property.
   virtual void UpdateMinimumSize();
+
+  // Distance between the leading edge of the NonClientFrameView and the tab
+  // strip.
+  // TODO: Consider refactoring and unifying tabstrip bounds calculations.
+  // https://crbug.com/820485.
+  virtual int GetTabStripLeftInset() const;
 
   // Overriden from views::View.
   void ChildPreferredSizeChanged(views::View* child) override;

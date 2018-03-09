@@ -241,7 +241,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
                      : -GetLayoutSize(NEW_TAB_BUTTON, delegate_->IsIncognito())
                             .width());
     }
-    int tabstrip_x = OpaqueBrowserFrameView::kAvatarIconPadding;
+    int tabstrip_x = OpaqueBrowserFrameView::GetAvatarIconPadding();
     if (show_caption_buttons && caption_buttons_on_left) {
       int right_of_close =
           maximized ? kMaximizedExtraCloseWidth : OBFVL::kFrameBorderThickness;

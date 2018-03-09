@@ -42,7 +42,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
   DCHECK(tabstrip);
   gfx::Rect bounds = gfx::Rect(0, kTabstripTopInset, width(),
                                tabstrip->GetPreferredSize().height());
-  bounds.Inset(kTabstripLeftInset, 0, GetTabStripRightInset(), 0);
+  bounds.Inset(GetTabStripLeftInset(), 0, GetTabStripRightInset(), 0);
   return bounds;
 }
 
@@ -56,7 +56,8 @@ int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
   if (profile_switcher_view) {
     inset += profile_switcher_view->GetPreferredSize().width();
   } else if (profile_indicator_icon()) {
-    inset += profile_indicator_icon()->bounds().width() + kAvatarIconPadding;
+    inset +=
+        profile_indicator_icon()->bounds().width() + GetAvatarIconPadding();
   }
   return inset;
 }
@@ -66,6 +67,10 @@ int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
 }
 
 void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
+}
+
+int BrowserNonClientFrameViewMac::GetTabStripLeftInset() const {
+  return kTabstripLeftInset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

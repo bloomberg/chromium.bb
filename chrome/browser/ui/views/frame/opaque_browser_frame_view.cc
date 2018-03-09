@@ -173,6 +173,10 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
   return layout_->GetMinimumSize(width());
 }
 
+int OpaqueBrowserFrameView::GetTabStripLeftInset() const {
+  return layout_->GetTabStripLeftInset();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::NonClientFrameView implementation:
 
