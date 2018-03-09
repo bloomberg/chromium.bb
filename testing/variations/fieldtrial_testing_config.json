@@ -3535,6 +3535,27 @@
             ]
         }
     ],
+    "SimplifyHttpsIndicator": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "win",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "EvToSecure",
+                    "params": {
+                        "treatment": "ev-to-secure"
+                    },
+                    "enable_features": [
+                        "SimplifyHttpsIndicator"
+                    ]
+                }
+            ]
+        }
+    ],
     "SocketReadIfReady": [
         {
             "platforms": [
