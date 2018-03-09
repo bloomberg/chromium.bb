@@ -63,9 +63,10 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
 ]
 
 # We currently have two different sharding schemes for android
-# vs desktop.
-CURRENT_DESKTOP_NUM_SHARDS = 5
-CURRENT_ANDROID_NUM_SHARDS = 21
+# vs desktop.  When we are running at capacity we will have 26
+# desktop shards and 39 android.
+CURRENT_DESKTOP_NUM_SHARDS = 26
+CURRENT_ANDROID_NUM_SHARDS = 39
 
 def get_sharding_map_path(total_shards, testing):
   # Determine if we want to do a test run of the benchmarks or run the
