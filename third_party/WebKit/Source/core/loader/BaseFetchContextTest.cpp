@@ -32,7 +32,7 @@
 
 #include "core/testing/NullExecutionContext.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

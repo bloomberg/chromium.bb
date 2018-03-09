@@ -18,7 +18,7 @@
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {

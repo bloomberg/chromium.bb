@@ -5,7 +5,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositingInputsUpdater.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -13,7 +13,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
 #include "platform/testing/HistogramTester.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"

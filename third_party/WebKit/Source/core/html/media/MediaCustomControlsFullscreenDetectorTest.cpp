@@ -8,7 +8,7 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

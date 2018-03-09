@@ -33,7 +33,7 @@
 #include <stdint.h>
 
 #include "platform/blob/BlobURL.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/text/StringBuilder.h"

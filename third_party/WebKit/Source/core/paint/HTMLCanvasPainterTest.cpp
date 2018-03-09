@@ -15,7 +15,7 @@
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebSize.h"
 

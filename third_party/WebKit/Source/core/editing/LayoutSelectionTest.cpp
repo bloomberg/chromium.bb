@@ -15,7 +15,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 

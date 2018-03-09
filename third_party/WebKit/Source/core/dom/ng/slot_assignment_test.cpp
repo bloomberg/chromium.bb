@@ -13,7 +13,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,7 +8,7 @@
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

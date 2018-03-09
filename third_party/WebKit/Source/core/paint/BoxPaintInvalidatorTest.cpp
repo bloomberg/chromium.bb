@@ -14,7 +14,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

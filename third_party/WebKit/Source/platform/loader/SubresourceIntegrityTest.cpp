@@ -16,7 +16,7 @@
 #include "platform/loader/testing/CryptoTestingPlatformSupport.h"
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Vector.h"

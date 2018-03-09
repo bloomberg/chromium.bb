@@ -88,7 +88,7 @@ class RuntimeFeatureWriter(json5_generator.Writer):
 
 class RuntimeFeatureTestHelpersWriter(json5_generator.Writer):
     class_name = 'ScopedRuntimeEnabledFeatureForTest'
-    file_basename = 'RuntimeEnabledFeaturesTestHelpers'
+    file_basename = 'runtime_enabled_features_test_helpers'
 
     def __init__(self, json5_file_path):
         super(RuntimeFeatureTestHelpersWriter, self).__init__(json5_file_path)
