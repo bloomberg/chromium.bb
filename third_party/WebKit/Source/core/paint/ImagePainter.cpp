@@ -109,12 +109,12 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
                                                   paint_info.phase))
     return;
 
-  // Disable cache in under-invalidation checking mode for delayed-invalidation
-  // image because it may change before it's actually invalidated.
+  // Disable cache in under-invalidation checking mode for animated image
+  // because it may change before it's actually invalidated.
   Optional<DisplayItemCacheSkipper> cache_skipper;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      layout_image_.FullPaintInvalidationReason() ==
-          PaintInvalidationReason::kDelayedFull)
+      layout_image_.ImageResource() &&
+      layout_image_.ImageResource()->MaybeAnimated())
     cache_skipper.emplace(context);
 
   LayoutRect content_rect(paint_offset + layout_image_.ContentBoxOffset(),
