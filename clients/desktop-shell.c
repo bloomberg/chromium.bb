@@ -34,8 +34,6 @@
 #include <math.h>
 #include <cairo.h>
 #include <sys/wait.h>
-#include <sys/timerfd.h>
-#include <sys/epoll.h>
 #include <linux/input.h>
 #include <libgen.h>
 #include <ctype.h>
@@ -148,8 +146,7 @@ struct panel_launcher {
 struct panel_clock {
 	struct widget *widget;
 	struct panel *panel;
-	struct task clock_task;
-	int clock_fd;
+	struct toytimer timer;
 	char *format_string;
 	time_t refresh_timer;
 };
@@ -365,14 +362,10 @@ panel_launcher_touch_up_handler(struct widget *widget, struct input *input,
 }
 
 static void
-clock_func(struct task *task, uint32_t events)
+clock_func(struct toytimer *tt)
 {
-	struct panel_clock *clock =
-		container_of(task, struct panel_clock, clock_task);
-	uint64_t exp;
+	struct panel_clock *clock = container_of(tt, struct panel_clock, timer);
 
-	if (read(clock->clock_fd, &exp, sizeof exp) != sizeof exp)
-		abort();
 	widget_schedule_redraw(clock->widget);
 }
 
@@ -423,10 +416,7 @@ clock_timer_reset(struct panel_clock *clock)
 	its.it_interval.tv_nsec = 0;
 	its.it_value.tv_sec = clock->refresh_timer;
 	its.it_value.tv_nsec = 0;
-	if (timerfd_settime(clock->clock_fd, 0, &its, NULL) < 0) {
-		fprintf(stderr, "could not set timerfd\n: %m");
-		return -1;
-	}
+	toytimer_arm(&clock->timer, &its);
 
 	return 0;
 }
@@ -435,9 +425,7 @@ static void
 panel_destroy_clock(struct panel_clock *clock)
 {
 	widget_destroy(clock->widget);
-
-	close(clock->clock_fd);
-
+	toytimer_fini(&clock->timer);
 	free(clock);
 }
 
@@ -445,18 +433,10 @@ static void
 panel_add_clock(struct panel *panel)
 {
 	struct panel_clock *clock;
-	int timerfd;
-
-	timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
-	if (timerfd < 0) {
-		fprintf(stderr, "could not create timerfd\n: %m");
-		return;
-	}
 
 	clock = xzalloc(sizeof *clock);
 	clock->panel = panel;
 	panel->clock = clock;
-	clock->clock_fd = timerfd;
 
 	switch (panel->clock_format) {
 	case CLOCK_FORMAT_MINUTES:
@@ -471,9 +451,8 @@ panel_add_clock(struct panel *panel)
 		assert(!"not reached");
 	}
 
-	clock->clock_task.run = clock_func;
-	display_watch_fd(window_get_display(panel->window), clock->clock_fd,
-			 EPOLLIN, &clock->clock_task);
+	toytimer_init(&clock->timer, CLOCK_MONOTONIC,
+		      window_get_display(panel->window), clock_func);
 	clock_timer_reset(clock);
 
 	clock->widget = widget_add_widget(panel->widget, clock);

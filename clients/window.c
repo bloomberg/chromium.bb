@@ -388,8 +388,7 @@ struct input {
 	int32_t repeat_delay_sec;
 	int32_t repeat_delay_nsec;
 
-	struct task repeat_task;
-	int repeat_timer_fd;
+	struct toytimer repeat_timer;
 	uint32_t repeat_sym;
 	uint32_t repeat_key;
 	uint32_t repeat_time;
@@ -2910,13 +2909,8 @@ static void
 input_remove_keyboard_focus(struct input *input)
 {
 	struct window *window = input->keyboard_focus;
-	struct itimerspec its;
 
-	its.it_interval.tv_sec = 0;
-	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 0;
-	its.it_value.tv_nsec = 0;
-	timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+	toytimer_disarm(&input->repeat_timer);
 
 	if (!window)
 		return;
@@ -2929,18 +2923,10 @@ input_remove_keyboard_focus(struct input *input)
 }
 
 static void
-keyboard_repeat_func(struct task *task, uint32_t events)
+keyboard_repeat_func(struct toytimer *tt)
 {
-	struct input *input =
-		container_of(task, struct input, repeat_task);
+	struct input *input = container_of(tt, struct input, repeat_timer);
 	struct window *window = input->keyboard_focus;
-	uint64_t exp;
-
-	if (read(input->repeat_timer_fd, &exp, sizeof exp) != sizeof exp)
-		/* If we change the timer between the fd becoming
-		 * readable and getting here, there'll be nothing to
-		 * read and we get EAGAIN. */
-		return;
 
 	if (window && window->key_handler) {
 		(*window->key_handler)(window, input, input->repeat_time,
@@ -3163,11 +3149,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED &&
 	    key == input->repeat_key) {
-		its.it_interval.tv_sec = 0;
-		its.it_interval.tv_nsec = 0;
-		its.it_value.tv_sec = 0;
-		its.it_value.tv_nsec = 0;
-		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+		toytimer_disarm(&input->repeat_timer);
 	} else if (state == WL_KEYBOARD_KEY_STATE_PRESSED &&
 		   xkb_keymap_key_repeats(input->xkb.keymap, code)) {
 		input->repeat_sym = sym;
@@ -3177,7 +3159,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		its.it_interval.tv_nsec = input->repeat_rate_nsec;
 		its.it_value.tv_sec = input->repeat_delay_sec;
 		its.it_value.tv_nsec = input->repeat_delay_nsec;
-		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+		toytimer_arm(&input->repeat_timer, &its);
 	}
 }
 
@@ -5846,13 +5828,10 @@ display_add_input(struct display *d, uint32_t id, int display_seat_version)
 
 	toytimer_init(&input->cursor_timer, CLOCK_MONOTONIC, d,
 		      cursor_timer_func);
-	set_repeat_info(input, 40, 400);
 
-	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC,
-						TFD_CLOEXEC | TFD_NONBLOCK);
-	input->repeat_task.run = keyboard_repeat_func;
-	display_watch_fd(d, input->repeat_timer_fd,
-			 EPOLLIN, &input->repeat_task);
+	set_repeat_info(input, 40, 400);
+	toytimer_init(&input->repeat_timer, CLOCK_MONOTONIC, d,
+		      keyboard_repeat_func);
 }
 
 static void
@@ -5895,7 +5874,7 @@ input_destroy(struct input *input)
 
 	wl_list_remove(&input->link);
 	wl_seat_destroy(input->seat);
-	close(input->repeat_timer_fd);
+	toytimer_fini(&input->repeat_timer);
 	toytimer_fini(&input->cursor_timer);
 	free(input);
 }

@@ -33,8 +33,6 @@
 #include <cairo.h>
 #include <math.h>
 #include <assert.h>
-#include <sys/timerfd.h>
-#include <sys/epoll.h>
 #include <unistd.h>
 
 #include <linux/input.h>
@@ -64,8 +62,7 @@ struct confine {
 	int reset;
 
 	struct input *cursor_timeout_input;
-	int cursor_timeout_fd;
-	struct task cursor_timeout_task;
+	struct toytimer cursor_timeout;
 
 	bool pointer_confined;
 
@@ -347,14 +344,7 @@ button_handler(struct widget *widget,
 static void
 cursor_timeout_reset(struct confine *confine)
 {
-	const long cursor_timeout = 500;
-	struct itimerspec its;
-
-	its.it_interval.tv_sec = 0;
-	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = cursor_timeout / 1000;
-	its.it_value.tv_nsec = (cursor_timeout % 1000) * 1000 * 1000;
-	timerfd_settime(confine->cursor_timeout_fd, 0, &its, NULL);
+	toytimer_arm_once_usec(&confine->cursor_timeout, 500 * 1000);
 }
 
 static int
@@ -406,15 +396,10 @@ leave_handler(struct widget *widget,
 }
 
 static void
-cursor_timeout_func(struct task *task, uint32_t events)
+cursor_timeout_func(struct toytimer *tt)
 {
 	struct confine *confine =
-		container_of(task, struct confine, cursor_timeout_task);
-	uint64_t exp;
-
-	if (read(confine->cursor_timeout_fd, &exp, sizeof (uint64_t)) !=
-	    sizeof(uint64_t))
-		abort();
+		container_of(tt, struct confine, cursor_timeout);
 
 	input_set_pointer_image(confine->cursor_timeout_input,
 				CURSOR_LEFT_PTR);
@@ -461,12 +446,8 @@ confine_create(struct display *display)
 	confine->line.old_y = -1;
 	confine->reset = 0;
 
-	confine->cursor_timeout_fd =
-		timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
-	confine->cursor_timeout_task.run = cursor_timeout_func;
-	display_watch_fd(window_get_display(confine->window),
-			 confine->cursor_timeout_fd,
-			 EPOLLIN, &confine->cursor_timeout_task);
+	toytimer_init(&confine->cursor_timeout, CLOCK_MONOTONIC,
+		      display, cursor_timeout_func);
 
 	return confine;
 }
@@ -474,9 +455,7 @@ confine_create(struct display *display)
 static void
 confine_destroy(struct confine *confine)
 {
-	display_unwatch_fd(window_get_display(confine->window),
-			   confine->cursor_timeout_fd);
-	close(confine->cursor_timeout_fd);
+	toytimer_fini(&confine->cursor_timeout);
 	if (confine->buffer)
 		cairo_surface_destroy(confine->buffer);
 	widget_destroy(confine->widget);
