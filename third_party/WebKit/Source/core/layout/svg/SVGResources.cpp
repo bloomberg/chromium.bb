@@ -158,7 +158,7 @@ template <typename ContainerType>
 ContainerType* AttachToResource(SVGTreeScopeResources& tree_scope_resources,
                                 const AtomicString& id,
                                 SVGElement& element) {
-  SVGResource* resource = tree_scope_resources.ResourceForId(id);
+  LocalSVGResource* resource = tree_scope_resources.ResourceForId(id);
   if (!resource)
     return nullptr;
   if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {

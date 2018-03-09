@@ -16,20 +16,13 @@
 
 namespace blink {
 
-SVGResource::SVGResource(TreeScope& tree_scope, const AtomicString& id)
-    : tree_scope_(tree_scope) {
-  target_ = SVGURIReference::ObserveTarget(
-      id_observer_, tree_scope, id,
-      WTF::BindRepeating(&SVGResource::TargetChanged, WrapWeakPersistent(this),
-                         id));
-}
+SVGResource::SVGResource() = default;
+
+SVGResource::~SVGResource() = default;
 
 void SVGResource::Trace(Visitor* visitor) {
-  visitor->Trace(tree_scope_);
   visitor->Trace(target_);
-  visitor->Trace(id_observer_);
   visitor->Trace(clients_);
-  visitor->Trace(pending_clients_);
 }
 
 void SVGResource::AddClient(SVGResourceClient& client) {
@@ -38,51 +31,6 @@ void SVGResource::AddClient(SVGResourceClient& client) {
 
 void SVGResource::RemoveClient(SVGResourceClient& client) {
   clients_.erase(&client);
-}
-
-void SVGResource::AddWatch(SVGElement& element) {
-  pending_clients_.insert(&element);
-  element.SetHasPendingResources();
-}
-
-void SVGResource::RemoveWatch(SVGElement& element) {
-  pending_clients_.erase(&element);
-}
-
-bool SVGResource::IsEmpty() const {
-  LayoutSVGResourceContainer* container = ResourceContainer();
-  return !HasClients() && (!container || !container->HasClients()) &&
-         pending_clients_.IsEmpty();
-}
-
-void SVGResource::Unregister() {
-  SVGURIReference::UnobserveTarget(id_observer_);
-}
-
-void SVGResource::NotifyPendingClients() {
-  HeapHashSet<Member<SVGElement>> pending_clients;
-  pending_clients.swap(pending_clients_);
-
-  for (SVGElement* client_element : pending_clients) {
-    if (LayoutObject* layout_object = client_element->GetLayoutObject())
-      SVGResourcesCache::ResourceReferenceChanged(*layout_object);
-  }
-}
-
-void SVGResource::NotifyContentChanged() {
-  HeapVector<Member<SVGResourceClient>> clients;
-  CopyToVector(clients_, clients);
-
-  for (SVGResourceClient* client : clients)
-    client->ResourceContentChanged();
-}
-
-void SVGResource::NotifyElementChanged() {
-  HeapVector<Member<SVGResourceClient>> clients;
-  CopyToVector(clients_, clients);
-
-  for (SVGResourceClient* client : clients)
-    client->ResourceElementChanged();
 }
 
 LayoutSVGResourceContainer* SVGResource::ResourceContainer() const {
@@ -94,7 +42,61 @@ LayoutSVGResourceContainer* SVGResource::ResourceContainer() const {
   return ToLayoutSVGResourceContainer(layout_object);
 }
 
-void SVGResource::TargetChanged(const AtomicString& id) {
+LocalSVGResource::LocalSVGResource(TreeScope& tree_scope,
+                                   const AtomicString& id)
+    : tree_scope_(tree_scope) {
+  target_ = SVGURIReference::ObserveTarget(
+      id_observer_, tree_scope, id,
+      WTF::BindRepeating(&LocalSVGResource::TargetChanged,
+                         WrapWeakPersistent(this), id));
+}
+
+void LocalSVGResource::AddWatch(SVGElement& element) {
+  pending_clients_.insert(&element);
+  element.SetHasPendingResources();
+}
+
+void LocalSVGResource::RemoveWatch(SVGElement& element) {
+  pending_clients_.erase(&element);
+}
+
+bool LocalSVGResource::IsEmpty() const {
+  LayoutSVGResourceContainer* container = ResourceContainer();
+  return !HasClients() && (!container || !container->HasClients()) &&
+         pending_clients_.IsEmpty();
+}
+
+void LocalSVGResource::Unregister() {
+  SVGURIReference::UnobserveTarget(id_observer_);
+}
+
+void LocalSVGResource::NotifyPendingClients() {
+  HeapHashSet<Member<SVGElement>> pending_clients;
+  pending_clients.swap(pending_clients_);
+
+  for (SVGElement* client_element : pending_clients) {
+    if (LayoutObject* layout_object = client_element->GetLayoutObject())
+      SVGResourcesCache::ResourceReferenceChanged(*layout_object);
+  }
+}
+
+void LocalSVGResource::NotifyContentChanged() {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceContentChanged();
+}
+
+void LocalSVGResource::NotifyElementChanged() {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceElementChanged();
+}
+
+void LocalSVGResource::TargetChanged(const AtomicString& id) {
   Element* new_target = tree_scope_->getElementById(id);
   if (new_target == target_)
     return;
@@ -105,6 +107,13 @@ void SVGResource::TargetChanged(const AtomicString& id) {
   target_ = new_target;
   NotifyElementChanged();
   NotifyPendingClients();
+}
+
+void LocalSVGResource::Trace(Visitor* visitor) {
+  visitor->Trace(tree_scope_);
+  visitor->Trace(id_observer_);
+  visitor->Trace(pending_clients_);
+  SVGResource::Trace(visitor);
 }
 
 }  // namespace blink

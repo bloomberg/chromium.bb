@@ -30,7 +30,7 @@ namespace blink {
 
 namespace {
 
-SVGResource* ResourceForContainer(
+LocalSVGResource* ResourceForContainer(
     const LayoutSVGResourceContainer& resource_container) {
   const SVGElement& element = *resource_container.GetElement();
   return element.GetTreeScope()
@@ -68,7 +68,7 @@ SVGElementProxySet* LayoutSVGResourceContainer::ElementProxySet() {
 }
 
 void LayoutSVGResourceContainer::NotifyContentChanged() {
-  if (SVGResource* resource = ResourceForContainer(*this))
+  if (LocalSVGResource* resource = ResourceForContainer(*this))
     resource->NotifyContentChanged();
   if (SVGElementProxySet* proxy_set = ElementProxySet())
     proxy_set->NotifyContentChanged(GetElement()->GetTreeScope());
@@ -78,7 +78,7 @@ void LayoutSVGResourceContainer::WillBeDestroyed() {
   LayoutSVGHiddenContainer::WillBeDestroyed();
   // The resource is being torn down. If we have any clients, move those to be
   // pending on the resource (if one exists.)
-  if (SVGResource* resource = ResourceForContainer(*this))
+  if (LocalSVGResource* resource = ResourceForContainer(*this))
     MakeClientsPending(*resource);
 }
 
@@ -89,13 +89,14 @@ void LayoutSVGResourceContainer::StyleDidChange(
   // The resource has (read: may have) been attached. Notify any pending
   // clients that they can now try to add themselves as clients to the
   // resource.
-  if (SVGResource* resource = ResourceForContainer(*this)) {
+  if (LocalSVGResource* resource = ResourceForContainer(*this)) {
     if (resource->Target() == GetElement())
       resource->NotifyPendingClients();
   }
 }
 
-void LayoutSVGResourceContainer::MakeClientsPending(SVGResource& resource) {
+void LayoutSVGResourceContainer::MakeClientsPending(
+    LocalSVGResource& resource) {
   RemoveAllClientsFromCache();
 
   for (auto* client : clients_) {
@@ -115,7 +116,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     InvalidationModeMask invalidation_mask) {
   if (is_invalidating_)
     return;
-  SVGResource* resource = ResourceForContainer(*this);
+  LocalSVGResource* resource = ResourceForContainer(*this);
   SVGElementProxySet* proxy_set = ElementProxySet();
   if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()) &&
       (!resource || !resource->HasClients()))

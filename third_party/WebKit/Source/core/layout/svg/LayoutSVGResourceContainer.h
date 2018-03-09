@@ -24,8 +24,8 @@
 
 namespace blink {
 
+class LocalSVGResource;
 class SVGElementProxySet;
-class SVGResource;
 
 enum LayoutSVGResourceType {
   kMaskerResourceType,
@@ -67,7 +67,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   // Detach all clients from this resource, and add them as watches to the tree
   // scope's resource entry (the argument.)
-  void MakeClientsPending(SVGResource&);
+  void MakeClientsPending(LocalSVGResource&);
   bool HasClients() const { return !clients_.IsEmpty(); }
 
   void InvalidateCacheAndMarkForLayout(LayoutInvalidationReasonForTracing,
