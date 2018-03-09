@@ -141,7 +141,7 @@ void IncompatibleApplicationsHandler::GetPluralString(
 
   const base::Value& callback_id = args->GetList()[0];
   int num_applications = args->GetList()[1].GetInt();
-  DCHECK_GT(0, num_applications);
+  DCHECK_GT(num_applications, 0);
 
   ResolveJavascriptCallback(
       callback_id,
