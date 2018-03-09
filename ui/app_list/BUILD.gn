@@ -190,8 +190,6 @@ executable("app_list_demo") {
 
 test("app_list_unittests") {
   sources = [
-    "app_list_item_list_unittest.cc",
-    "app_list_model_unittest.cc",
     "folder_image_unittest.cc",
     "pagination_model_unittest.cc",
     "search/history_data_store_unittest.cc",
