@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -69,16 +70,12 @@ gfx::NativeViewId ScreenCaptureNotificationUICocoa::OnStarted(
 
 std::unique_ptr<ScreenCaptureNotificationUI>
 ScreenCaptureNotificationUI::CreateCocoa(const base::string16& text) {
+  if (chrome::ShowAllDialogsWithViewsToolkit())
+    return nullptr;
+
   return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUICocoa(text));
 }
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-std::unique_ptr<ScreenCaptureNotificationUI>
-ScreenCaptureNotificationUI::Create(const base::string16& text) {
-  return CreateCocoa(text);
-}
-#endif
 
 @implementation ScreenCaptureNotificationController
 - (id)initWithCallback:(const base::Closure&)stop_callback
