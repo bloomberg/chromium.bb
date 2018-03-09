@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/invalidate_type.h"
@@ -57,6 +58,8 @@ class BrowserViewTest : public InProcessBrowserTest {
   DevToolsWindow* devtools_;
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
   DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
 };
 

@@ -251,6 +251,8 @@ static_library("test_support") {
     sources += [
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
+      "views/scoped_macviews_browser_mode.cc",
+      "views/scoped_macviews_browser_mode.h",
     ]
   }
 

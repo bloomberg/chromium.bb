@@ -31,11 +31,6 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/common/chrome_features.h"
-#include "ui/base/ui_base_features.h"
-#endif
-
 namespace {
 
 std::unique_ptr<KeyedService> CreateTemplateURLService(
@@ -77,9 +72,6 @@ void TestWithBrowserView::SetUp() {
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
-#endif
-#if defined(OS_MACOSX)
-  feature_list_.InitAndEnableFeature(features::kViewsBrowserWindows);
 #endif
   BrowserWithTestWindowTest::SetUp();
   browser_view_ = static_cast<BrowserView*>(browser()->window());
