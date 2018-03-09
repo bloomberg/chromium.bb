@@ -1934,7 +1934,8 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
     ResizeParams resize_params;
     resize_params.screen_info = screen_info_;
     resize_params.new_size = new_size;
-    resize_params.physical_backing_size = physical_backing_size_;
+    resize_params.compositor_viewport_pixel_size =
+        compositor_viewport_pixel_size_;
     resize_params.browser_controls_shrink_blink_size =
         browser_controls_shrink_blink_size_;
     resize_params.top_controls_height = top_controls_height_;
@@ -2091,7 +2092,7 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   if (device_scale_factor_for_testing_) {
     ResizeParams p(params);
     p.screen_info.device_scale_factor = *device_scale_factor_for_testing_;
-    p.physical_backing_size =
+    p.compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(p.new_size, p.screen_info.device_scale_factor);
     RenderWidget::OnResize(p);
   } else {
@@ -2415,7 +2416,8 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.screen_info.device_scale_factor = factor;
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
-  params.physical_backing_size = gfx::ScaleToCeiledSize(size(), factor);
+  params.compositor_viewport_pixel_size =
+      gfx::ScaleToCeiledSize(size(), factor);
   params.browser_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
   params.is_fullscreen_granted = is_fullscreen_granted();
@@ -2431,7 +2433,7 @@ void RenderViewImpl::SetDeviceColorSpaceForTesting(
   params.screen_info.color_space = color_space;
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
-  params.physical_backing_size = physical_backing_size_;
+  params.compositor_viewport_pixel_size = compositor_viewport_pixel_size_;
   params.browser_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
   params.is_fullscreen_granted = is_fullscreen_granted();

@@ -2212,7 +2212,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
 }
 
-TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
+TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(),
@@ -2220,7 +2220,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
       gfx::Rect());
   sink_->ClearMessages();
   view_->SetSize(gfx::Size(100, 100));
-  EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
+  EXPECT_EQ("100x100", view_->GetCompositorViewportPixelSize().ToString());
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
             sink_->GetMessageAt(0)->type());
@@ -2230,16 +2230,16 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
-    EXPECT_EQ(
-        "100x100",
-        std::get<0>(params).physical_backing_size.ToString());  // backing size
+    EXPECT_EQ("100x100",
+              std::get<0>(params)
+                  .compositor_viewport_pixel_size.ToString());  // backing size
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
-  EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
+  EXPECT_EQ("200x200", view_->GetCompositorViewportPixelSize().ToString());
   // Extra ScreenInfoChanged message for |parent_view_|.
   // Changing the device scale factor triggers the
   // RenderWidgetHostViewAura::OnDisplayMetricsChanged() observer callback,
@@ -2256,7 +2256,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
             sink_->GetMessageAt(0)->type());
-  EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
+  EXPECT_EQ("100x100", view_->GetCompositorViewportPixelSize().ToString());
 }
 
 // This test verifies that in AutoResize mode a new

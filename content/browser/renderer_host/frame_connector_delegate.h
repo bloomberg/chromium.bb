@@ -245,7 +245,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   const bool use_zoom_for_device_scale_factor_;
 
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameZoomForDSFTest,
-                           PhysicalBackingSize);
+                           CompositorViewportPixelSize);
 };
 
 }  // namespace content

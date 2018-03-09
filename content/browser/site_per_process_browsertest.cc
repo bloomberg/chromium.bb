@@ -956,7 +956,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
 
 // Test that the physical backing size and view bounds for a scaled out-of-
 // process iframe are set and updated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PhysicalBackingSizeTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CompositorViewportPixelSizeTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_scaled_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -996,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PhysicalBackingSizeTest) {
   EXPECT_EQ(gfx::Size(100, 100), rwhv_nested->GetViewBounds().size());
   EXPECT_EQ(gfx::Size(100, 100), connector->local_frame_size_in_dip());
   EXPECT_EQ(connector->local_frame_size_in_pixels(),
-            rwhv_nested->GetPhysicalBackingSize());
+            rwhv_nested->GetCompositorViewportPixelSize());
 }
 
 // Test that the view bounds for an out-of-process iframe are set and updated

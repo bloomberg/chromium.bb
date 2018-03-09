@@ -107,7 +107,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
-  gfx::Size GetPhysicalBackingSize() const override;
+  gfx::Size GetCompositorViewportPixelSize() const override;
   bool IsMouseLocked() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void SetWantsAnimateOnlyBeginFrames() override;

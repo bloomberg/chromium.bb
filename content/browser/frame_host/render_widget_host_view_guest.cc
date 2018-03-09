@@ -334,7 +334,7 @@ void RenderWidgetHostViewGuest::Destroy() {
   RenderWidgetHostViewChildFrame::Destroy();
 }
 
-gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
+gfx::Size RenderWidgetHostViewGuest::GetCompositorViewportPixelSize() const {
   gfx::Size size;
   if (guest_) {
     size = gfx::ScaleToCeiledSize(guest_->frame_rect().size(),

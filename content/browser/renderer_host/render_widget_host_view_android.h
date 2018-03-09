@@ -117,7 +117,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool IsShowing() override;
   gfx::Rect GetViewBounds() const override;
   gfx::Size GetVisibleViewportSize() const override;
-  gfx::Size GetPhysicalBackingSize() const override;
+  gfx::Size GetCompositorViewportPixelSize() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,

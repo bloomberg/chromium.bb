@@ -183,7 +183,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual gfx::Size GetRequestedRendererSize() const;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
-  virtual gfx::Size GetPhysicalBackingSize() const;
+  virtual gfx::Size GetCompositorViewportPixelSize() const;
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.

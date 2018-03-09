@@ -95,7 +95,7 @@ void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
   SetBackgroundColor(SK_ColorWHITE);
 }
 
-gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
+gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 GetDeviceScaleFactor());
 }

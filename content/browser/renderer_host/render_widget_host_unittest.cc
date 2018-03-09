@@ -327,7 +327,7 @@ class TestView : public TestRenderWidgetHostView {
         unhandled_wheel_event_count_(0),
         acked_event_count_(0),
         gesture_event_type_(-1),
-        use_fake_physical_backing_size_(false),
+        use_fake_compositor_viewport_pixel_size_(false),
         ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         top_controls_height_(0.f),
         bottom_controls_height_(0.f) {}
@@ -372,12 +372,13 @@ class TestView : public TestRenderWidgetHostView {
   int gesture_event_type() const { return gesture_event_type_; }
   InputEventAckState ack_result() const { return ack_result_; }
 
-  void SetMockPhysicalBackingSize(const gfx::Size& mock_physical_backing_size) {
-    use_fake_physical_backing_size_ = true;
-    mock_physical_backing_size_ = mock_physical_backing_size;
+  void SetMockCompositorViewportPixelSize(
+      const gfx::Size& mock_compositor_viewport_pixel_size) {
+    use_fake_compositor_viewport_pixel_size_ = true;
+    mock_compositor_viewport_pixel_size_ = mock_compositor_viewport_pixel_size;
   }
-  void ClearMockPhysicalBackingSize() {
-    use_fake_physical_backing_size_ = false;
+  void ClearMockCompositorViewportPixelSize() {
+    use_fake_compositor_viewport_pixel_size_ = false;
   }
 
   const viz::BeginFrameAck& last_did_not_produce_frame_ack() {
@@ -411,10 +412,10 @@ class TestView : public TestRenderWidgetHostView {
     gesture_event_type_ = event.GetType();
     ack_result_ = ack_result;
   }
-  gfx::Size GetPhysicalBackingSize() const override {
-    if (use_fake_physical_backing_size_)
-      return mock_physical_backing_size_;
-    return TestRenderWidgetHostView::GetPhysicalBackingSize();
+  gfx::Size GetCompositorViewportPixelSize() const override {
+    if (use_fake_compositor_viewport_pixel_size_)
+      return mock_compositor_viewport_pixel_size_;
+    return TestRenderWidgetHostView::GetCompositorViewportPixelSize();
   }
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override {
     last_did_not_produce_frame_ack_ = ack;
@@ -427,8 +428,8 @@ class TestView : public TestRenderWidgetHostView {
   int acked_event_count_;
   int gesture_event_type_;
   gfx::Rect bounds_;
-  bool use_fake_physical_backing_size_;
-  gfx::Size mock_physical_backing_size_;
+  bool use_fake_compositor_viewport_pixel_size_;
+  gfx::Size mock_compositor_viewport_pixel_size_;
   InputEventAckState ack_result_;
   float top_controls_height_;
   float bottom_controls_height_;
@@ -1009,7 +1010,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
 
   // No resize ack if the physical backing gets set, but the view bounds are
   // zero.
-  view_->SetMockPhysicalBackingSize(gfx::Size(200, 200));
+  view_->SetMockCompositorViewportPixelSize(gfx::Size(200, 200));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
 
@@ -1018,7 +1019,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   gfx::Rect original_size(0, 0, 100, 100);
   process_->sink().ClearMessages();
   view_->SetBounds(original_size);
-  view_->SetMockPhysicalBackingSize(gfx::Size());
+  view_->SetMockCompositorViewportPixelSize(gfx::Size());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
@@ -1027,7 +1028,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
   process_->sink().ClearMessages();
-  view_->ClearMockPhysicalBackingSize();
+  view_->ClearMockCompositorViewportPixelSize();
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
@@ -2707,14 +2708,15 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
 
 TEST_F(RenderWidgetHostTest, ResizeParams) {
   gfx::Rect bounds(0, 0, 100, 100);
-  gfx::Size physical_backing_size(40, 50);
+  gfx::Size compositor_viewport_pixel_size(40, 50);
   view_->SetBounds(bounds);
-  view_->SetMockPhysicalBackingSize(physical_backing_size);
+  view_->SetMockCompositorViewportPixelSize(compositor_viewport_pixel_size);
 
   ResizeParams resize_params;
   host_->GetResizeParams(&resize_params);
   EXPECT_EQ(bounds.size(), resize_params.new_size);
-  EXPECT_EQ(physical_backing_size, resize_params.physical_backing_size);
+  EXPECT_EQ(compositor_viewport_pixel_size,
+            resize_params.compositor_viewport_pixel_size);
 }
 
 TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {

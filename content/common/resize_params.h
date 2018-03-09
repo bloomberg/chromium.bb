@@ -22,11 +22,13 @@ struct CONTENT_EXPORT ResizeParams {
   // Information about the screen (dpi, depth, etc..).
   ScreenInfo screen_info;
 
-  // The size of the renderer.
+  // The size for the widget in DIPs.
   gfx::Size new_size;
 
-  // The size of the view's backing surface in non-DPI-adjusted pixels.
-  gfx::Size physical_backing_size;
+  // The size of compositor's viewport in pixels. Note that this may differ
+  // from a ScaleToCeiledSize of |new_size| due to Android's keyboard or due
+  // to rounding particulars.
+  gfx::Size compositor_viewport_pixel_size;
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar (always false on platforms where URL-bar hiding isn't supported).

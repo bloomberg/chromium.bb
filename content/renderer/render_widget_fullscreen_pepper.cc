@@ -380,7 +380,7 @@ void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
   // Note that root cc::Layers' bounds are specified in pixels (in contrast with
   // non-root cc::Layers' bounds, which are specified in DIPs).
   if (layer_)
-    layer_->SetBounds(blink::WebSize(params.physical_backing_size));
+    layer_->SetBounds(blink::WebSize(params.compositor_viewport_pixel_size));
   RenderWidget::OnResize(params);
 }
 

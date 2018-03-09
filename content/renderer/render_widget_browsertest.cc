@@ -59,7 +59,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   ResizeParams resize_params;
   resize_params.screen_info = ScreenInfo();
   resize_params.new_size = gfx::Size();
-  resize_params.physical_backing_size = gfx::Size();
+  resize_params.compositor_viewport_pixel_size = gfx::Size();
   resize_params.top_controls_height = 0.f;
   resize_params.browser_controls_shrink_blink_size = false;
   resize_params.is_fullscreen_granted = false;
@@ -79,7 +79,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   gfx::Size size(100, 100);
   resize_params.local_surface_id = local_surface_id_allocator.GenerateId();
   resize_params.new_size = size;
-  resize_params.physical_backing_size = size;
+  resize_params.compositor_viewport_pixel_size = size;
   resize_params.content_source_id = 1u;
   resize_params.needs_resize_ack = true;
   OnResize(resize_params);
@@ -96,7 +96,7 @@ TEST_F(RenderWidgetTest, OnResize) {
 
   // Resetting the rect to empty should not send the ack.
   resize_params.new_size = gfx::Size();
-  resize_params.physical_backing_size = gfx::Size();
+  resize_params.compositor_viewport_pixel_size = gfx::Size();
   resize_params.local_surface_id = base::nullopt;
   OnResize(resize_params);
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
@@ -122,7 +122,7 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
   std::unique_ptr<ResizeParams> InitialSizeParams() override {
     std::unique_ptr<ResizeParams> initial_size_params(new ResizeParams());
     initial_size_params->new_size = initial_size_;
-    initial_size_params->physical_backing_size = initial_size_;
+    initial_size_params->compositor_viewport_pixel_size = initial_size_;
     initial_size_params->needs_resize_ack = true;
     initial_size_params->local_surface_id = local_surface_id_;
     return initial_size_params;

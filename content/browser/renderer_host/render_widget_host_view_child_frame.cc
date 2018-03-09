@@ -349,9 +349,8 @@ SkColor RenderWidgetHostViewChildFrame::background_color() const {
   return background_color_;
 }
 
-gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
-  // TODO(fsamuel): Consider renaming GetPhysicalBackingSize to
-  // GetCompositorViewportSize.
+gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize()
+    const {
   if (frame_connector_)
     return frame_connector_->local_frame_size_in_pixels();
   return gfx::Size();

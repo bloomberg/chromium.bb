@@ -418,7 +418,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
   return view_.GetSize();
 }
 
-gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
+gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
   if (!content_view_core_) {
     if (default_bounds_.IsEmpty()) return gfx::Size();
 

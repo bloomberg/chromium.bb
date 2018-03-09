@@ -758,10 +758,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
-    // TODO(wjmaclean): Can we just get rid of physical_backing_size and just
-    // deal with it on the renderer side? It seems to always be
-    // ScaleToCeiledSize(new_size, device_scale_factor) ??
-    resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
+    resize_params->compositor_viewport_pixel_size =
+        view_->GetCompositorViewportPixelSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
     resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     if (IsUseZoomForDSFEnabled()) {
@@ -778,7 +776,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     // a size. We should only propagate a LocalSurfaceId here if the
     // compositor's viewport has a non-empty size.
     viz::LocalSurfaceId local_surface_id =
-        resize_params->physical_backing_size.IsEmpty()
+        resize_params->compositor_viewport_pixel_size.IsEmpty()
             ? viz::LocalSurfaceId()
             : view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
@@ -800,14 +798,14 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   const bool size_changed =
       !old_resize_params_ ||
       old_resize_params_->new_size != resize_params->new_size ||
-      (old_resize_params_->physical_backing_size.IsEmpty() &&
-       !resize_params->physical_backing_size.IsEmpty());
+      (old_resize_params_->compositor_viewport_pixel_size.IsEmpty() &&
+       !resize_params->compositor_viewport_pixel_size.IsEmpty());
 
   bool dirty =
       size_changed ||
       old_resize_params_->screen_info != resize_params->screen_info ||
-      old_resize_params_->physical_backing_size !=
-          resize_params->physical_backing_size ||
+      old_resize_params_->compositor_viewport_pixel_size !=
+          resize_params->compositor_viewport_pixel_size ||
       old_resize_params_->is_fullscreen_granted !=
           resize_params->is_fullscreen_granted ||
       old_resize_params_->display_mode != resize_params->display_mode ||
@@ -829,7 +827,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   // backing size is empty, or when the main viewport size didn't change.
   resize_params->needs_resize_ack =
       g_check_for_pending_resize_ack && !resize_params->new_size.IsEmpty() &&
-      !resize_params->physical_backing_size.IsEmpty() &&
+      !resize_params->compositor_viewport_pixel_size.IsEmpty() &&
       (size_changed || next_resize_needs_resize_ack_) &&
       (!enable_surface_synchronization_ ||
        (resize_params->local_surface_id.has_value() &&

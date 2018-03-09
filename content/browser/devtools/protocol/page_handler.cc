@@ -815,7 +815,7 @@ void PageHandler::InnerSwapCompositorFrame() {
 
   // Determine the snapshot size that best-fits the Surface's content to the
   // remote's requested image size.
-  const gfx::Size& surface_size = view->GetPhysicalBackingSize();
+  const gfx::Size& surface_size = view->GetCompositorViewportPixelSize();
   if (surface_size.IsEmpty())
     return;  // Nothing to copy (and avoid divide-by-zero below).
   double scale = 1;

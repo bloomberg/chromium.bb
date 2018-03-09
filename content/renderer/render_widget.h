@@ -191,7 +191,7 @@ class CONTENT_EXPORT RenderWidget
 
   const gfx::Size& size() const { return size_; }
   const gfx::Size& compositor_viewport_pixel_size() const {
-    return physical_backing_size_;
+    return compositor_viewport_pixel_size_;
   }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }
@@ -713,13 +713,13 @@ class CONTENT_EXPORT RenderWidget
   WebCursor current_cursor_;
 
   // The size of the RenderWidget in DIPs. This may differ from
-  // |physical_backing_size_| in the following (and possibly other) cases:
-  // * On Android, for top and bottom controls
-  // * On OOPIF, due to rounding
+  // |compositor_viewport_pixel_size_| in the following (and possibly other)
+  // cases: * On Android, for top and bottom controls * On OOPIF, due to
+  // rounding
   gfx::Size size_;
 
   // The size of the compositor's surface in pixels.
-  gfx::Size physical_backing_size_;
+  gfx::Size compositor_viewport_pixel_size_;
 
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
@@ -889,9 +889,10 @@ class CONTENT_EXPORT RenderWidget
                     blink::WebPopupType popup_type,
                     int32_t* routing_id);
 
-  void UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId new_local_surface_id,
-                                  const gfx::Size& new_physical_backing_size,
-                                  const ScreenInfo& new_screen_info);
+  void UpdateSurfaceAndScreenInfo(
+      viz::LocalSurfaceId new_local_surface_id,
+      const gfx::Size& new_compositor_viewport_pixel_size,
+      const ScreenInfo& new_screen_info);
 
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will
