@@ -31,6 +31,8 @@ class ToolbarView;
 // The app menu button lives in the top right of the main browser window. It
 // shows three dots and animates to a hamburger-ish icon when there's a need to
 // alert the user. Clicking displays the app menu.
+// TODO: Consider making ToolbarButton and AppMenuButton share a common base
+// class https://crbug.com/819854.
 class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
@@ -108,6 +110,11 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   AppMenuIconController::Severity severity_ =
       AppMenuIconController::Severity::NONE;

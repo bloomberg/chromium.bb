@@ -81,8 +81,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
 
-  virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
-
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       const std::vector<IntentPickerBubbleView::AppInfo>& app_info,

@@ -45,12 +45,14 @@ int GetLayoutConstant(LayoutConstant constant) {
       return hybrid ? 3 : 1;
     case LOCATION_BAR_PADDING:
       return hybrid ? 3 : 1;
-    case LOCATION_BAR_HEIGHT:
-      return hybrid ? 32 : 28;
+    case LOCATION_BAR_HEIGHT: {
+      constexpr int kHeights[] = {28, 32, 36};
+      return kHeights[mode];
+    }
     case LOCATION_BAR_ICON_SIZE:
       return 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return 4;
+      return touch_optimized_material ? 8 : 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
       // In non-touch optimized UI, we make the new tab button overlap with the
       // last tab in the tabstrip (i.e negative spacing). However, in
@@ -81,8 +83,10 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_optimized_material ? 245 : 193;
     case TOOLBAR_ELEMENT_PADDING:
       return hybrid ? 8 : 0;
-    case TOOLBAR_STANDARD_SPACING:
-      return hybrid ? 8 : 4;
+    case TOOLBAR_STANDARD_SPACING: {
+      constexpr int kSpacings[] = {4, 8, 12};
+      return kSpacings[mode];
+    }
   }
   NOTREACHED();
   return 0;
@@ -90,10 +94,14 @@ int GetLayoutConstant(LayoutConstant constant) {
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
   switch (inset) {
-    case TAB:
+    case TAB: {
       constexpr int kTabHorizontalInset[] = {16, 18, 24};
       return gfx::Insets(
           1, kTabHorizontalInset[ui::MaterialDesignController::GetMode()]);
+    }
+    case TOOLBAR_BUTTON:
+      return gfx::Insets(
+          ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 12 : 6);
   }
   NOTREACHED();
   return gfx::Insets();

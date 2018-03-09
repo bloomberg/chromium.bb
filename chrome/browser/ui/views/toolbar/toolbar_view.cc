@@ -89,8 +89,17 @@ using content::WebContents;
 namespace {
 
 int GetToolbarHorizontalPadding() {
+  // In the touch-optimized UI, we don't use any horizontal paddings; the back
+  // button starts from the beginning of the view, and the app menu button ends
+  // at the end of the view.
   using Md = ui::MaterialDesignController;
-  return Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4;
+  constexpr int kPaddings[] = {4, 8, 0};
+  return kPaddings[Md::GetMode()];
+}
+
+// Returns true if the touch-optimized UI is enabled.
+bool IsTouchOptimized() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 }
 
 }  // namespace
@@ -334,13 +343,6 @@ bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, Menu::Delegate overrides:
-
-bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
-  return GetWidget()->GetAccelerator(id, accel);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuButtonListener implementation:
 
 void ToolbarView::OnMenuButtonClicked(views::MenuButton* source,
@@ -538,7 +540,6 @@ void ToolbarView::Layout() {
 
   const int location_height = location_bar_->GetPreferredSize().height();
   const int location_y = (height() - location_height) / 2;
-
   location_bar_->SetBounds(next_element_x, location_y,
                            location_bar_width, location_height);
 
@@ -567,6 +568,7 @@ void ToolbarView::Layout() {
   // we extend the back button to the left edge.
   if (maximized)
     app_menu_width += end_padding;
+
   app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
                               toolbar_button_height);
   app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
@@ -698,8 +700,10 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
     // and constant padding values.
     int content_height = std::max(back_->GetPreferredSize().height(),
                                   location_bar_->GetPreferredSize().height());
-    const int kExtraVerticalSpace = 9;
-    size.SetToMax(gfx::Size(0, content_height + kExtraVerticalSpace));
+    // In the touch-optimized UI, the toolbar buttons are big and occupy the
+    // entire view's height, we don't need to add any extra vertical space.
+    const int extra_vertical_space = IsTouchOptimized() ? 0 : 9;
+    size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
   }
   return size;
 }
@@ -712,26 +716,33 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-  back_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, normal_color));
-  back_->SetImage(
-      views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, disabled_color));
-  forward_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kForwardArrowIcon, normal_color));
-  forward_->SetImage(
-      views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(vector_icons::kForwardArrowIcon, disabled_color));
+  const bool is_touch = IsTouchOptimized();
+  const gfx::VectorIcon& back_image =
+      is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
+  back_->SetImage(views::Button::STATE_NORMAL,
+                  gfx::CreateVectorIcon(back_image, normal_color));
+  back_->SetImage(views::Button::STATE_DISABLED,
+                  gfx::CreateVectorIcon(back_image, disabled_color));
+
+  const gfx::VectorIcon& forward_image =
+      is_touch ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
+  forward_->SetImage(views::Button::STATE_NORMAL,
+                     gfx::CreateVectorIcon(forward_image, normal_color));
+  forward_->SetImage(views::Button::STATE_DISABLED,
+                     gfx::CreateVectorIcon(forward_image, disabled_color));
+
+  const gfx::VectorIcon& home_image =
+      is_touch ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
   home_->SetImage(views::Button::STATE_NORMAL,
-                  gfx::CreateVectorIcon(kNavigateHomeIcon, normal_color));
+                  gfx::CreateVectorIcon(home_image, normal_color));
   app_menu_button_->UpdateIcon(false);
 
-  back_->set_ink_drop_base_color(normal_color);
-  forward_->set_ink_drop_base_color(normal_color);
-  home_->set_ink_drop_base_color(normal_color);
-  app_menu_button_->set_ink_drop_base_color(normal_color);
+  const SkColor ink_drop_color = color_utils::BlendTowardOppositeLuma(
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR), SK_AlphaOPAQUE);
+  back_->set_ink_drop_base_color(ink_drop_color);
+  forward_->set_ink_drop_base_color(ink_drop_color);
+  home_->set_ink_drop_base_color(ink_drop_color);
+  app_menu_button_->set_ink_drop_base_color(ink_drop_color);
 
   reload_->LoadImages();
 }

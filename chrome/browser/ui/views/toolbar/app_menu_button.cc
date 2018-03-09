@@ -24,10 +24,12 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -41,9 +43,12 @@
 
 namespace {
 
-constexpr float kIconSize = 16;
-
 constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(1500);
+
+// Returns true if the touch-optimized UI is enabled.
+bool IsTouchOptimized() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+}
 
 }  // namespace
 
@@ -61,6 +66,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
                              false) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
   if (base::FeatureList::IsEnabled(features::kAnimatedAppMenuIcon)) {
     toolbar_view_->browser()->tab_strip_model()->AddObserver(this);
@@ -68,6 +74,9 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     should_delay_animation_ = base::GetFieldTrialParamByFeatureAsBool(
         features::kAnimatedAppMenuIcon, "HasDelay", false);
   }
+
+  if (IsTouchOptimized())
+    set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 }
 
 AppMenuButton::~AppMenuButton() {}
@@ -151,8 +160,10 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 }
 
 gfx::Size AppMenuButton::CalculatePreferredSize() const {
-  gfx::Rect rect(gfx::Size(kIconSize, kIconSize));
-  rect.Inset(gfx::Insets(-ToolbarButton::kInteriorPadding));
+  const int icon_size = IsTouchOptimized() ? 24 : 16;
+  gfx::Rect rect(gfx::Size(icon_size, icon_size));
+  rect.Inset(-GetLayoutInsets(TOOLBAR_BUTTON));
+
   return rect.size();
 }
 
@@ -224,18 +235,21 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
     return;
   }
 
+  const bool is_touch = IsTouchOptimized();
   const gfx::VectorIcon* icon_id = nullptr;
   switch (type_) {
     case AppMenuIconController::IconType::NONE:
-      icon_id = &kBrowserToolsIcon;
+      icon_id = is_touch ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
       DCHECK_EQ(AppMenuIconController::Severity::NONE, severity_);
       break;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
-      icon_id = &kBrowserToolsUpdateIcon;
+      icon_id =
+          is_touch ? &kBrowserToolsUpdateTouchIcon : &kBrowserToolsUpdateIcon;
       break;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
     case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
-      icon_id = &kBrowserToolsErrorIcon;
+      icon_id =
+          is_touch ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
       break;
   }
 
@@ -328,4 +342,26 @@ void AppMenuButton::OnDragExited() {
 
 int AppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
+}
+
+std::unique_ptr<views::InkDrop> AppMenuButton::CreateInkDrop() {
+  return CreateToolbarInkDrop<MenuButton>(this);
+}
+
+std::unique_ptr<views::InkDropRipple> AppMenuButton::CreateInkDropRipple()
+    const {
+  // FIXME: GetInkDropCenterBasedOnLastEvent() will always return the center
+  // of this view. https://crbug.com/819878.
+  return CreateToolbarInkDropRipple<MenuButton>(
+      this, GetInkDropCenterBasedOnLastEvent());
+}
+
+std::unique_ptr<views::InkDropHighlight> AppMenuButton::CreateInkDropHighlight()
+    const {
+  return CreateToolbarInkDropHighlight<MenuButton>(
+      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+}
+
+std::unique_ptr<views::InkDropMask> AppMenuButton::CreateInkDropMask() const {
+  return CreateToolbarInkDropMask<MenuButton>(this);
 }

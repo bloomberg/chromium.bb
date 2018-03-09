@@ -45,6 +45,12 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
+  // Subclasses can override to return a mask for the ink drop. By default,
+  // returns nullptr (i.e no mask).
+  // TODO(bruthig): InkDropMasks do not currently work on Windows. See
+  // https://crbug.com/713359.
+  virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
+
   // Toggle to enable/disable an InkDrop on this View.  Descendants can override
   // CreateInkDropHighlight() and CreateInkDropRipple() to change the look/feel
   // of the InkDrop.
@@ -106,12 +112,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
   virtual SkColor GetInkDropBaseColor() const;
-
-  // Subclasses can override to return a mask for the ink drop. By default,
-  // returns nullptr (i.e no mask).
-  // TODO(bruthig): InkDropMasks do not currently work on Windows. See
-  // crbug.com/713359.
-  virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
 
   // Called after a new InkDrop instance is created.
   virtual void OnInkDropCreated() {}
