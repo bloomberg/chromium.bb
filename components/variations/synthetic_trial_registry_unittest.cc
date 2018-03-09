@@ -4,10 +4,14 @@
 
 #include "components/variations/synthetic_trial_registry.h"
 
+#include <string>
+
+#include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
+#include "components/variations/variations_crash_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -16,6 +20,9 @@ namespace {
 
 class SyntheticTrialRegistryTest : public ::testing::Test {
  public:
+  SyntheticTrialRegistryTest() : field_trial_list_(nullptr) { InitCrashKeys(); }
+  ~SyntheticTrialRegistryTest() override { ClearCrashKeysInstanceForTesting(); }
+
   // Returns true if there is a synthetic trial in the given vector that matches
   // the given trial name and trial group; returns false otherwise.
   bool HasSyntheticTrial(const std::vector<ActiveGroupId>& synthetic_trials,
@@ -37,6 +44,11 @@ class SyntheticTrialRegistryTest : public ::testing::Test {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
     }
   }
+
+ private:
+  base::FieldTrialList field_trial_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyntheticTrialRegistryTest);
 };
 
 }  // namespace

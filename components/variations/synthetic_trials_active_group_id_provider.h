@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VARIATIONS_SYNTEHTIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_
-#define COMPONENTS_VARIATIONS_SYNTEHTIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_SYNTHETIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_SYNTHETIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_
 
 #include <vector>
 
@@ -30,6 +30,9 @@ class SyntheticTrialsActiveGroupIdProvider : public SyntheticTrialObserver {
   // cannot be nullptr.
   void GetActiveGroupIds(std::vector<ActiveGroupId>* output);
 
+  // Clears state for testing.
+  void ResetForTesting();
+
  private:
   friend struct base::DefaultSingletonTraits<
       SyntheticTrialsActiveGroupIdProvider>;
@@ -50,4 +53,4 @@ class SyntheticTrialsActiveGroupIdProvider : public SyntheticTrialObserver {
 
 }  // namespace variations
 
-#endif  // COMPONENTS_VARIATIONS_SYNTEHTIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_SYNTHETIC_TRIALS_ACTIVE_GROUP_ID_PROVIDER_H_

@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_util.h"
+#include "components/variations/variations_crash_keys.h"
 
 namespace variations {
 
@@ -19,6 +19,18 @@ SyntheticTrialsActiveGroupIdProvider::SyntheticTrialsActiveGroupIdProvider() {}
 
 SyntheticTrialsActiveGroupIdProvider::~SyntheticTrialsActiveGroupIdProvider() {}
 
+void SyntheticTrialsActiveGroupIdProvider::GetActiveGroupIds(
+    std::vector<ActiveGroupId>* output) {
+  base::AutoLock scoped_lock(lock_);
+  for (const auto& group_id : synthetic_trials_)
+    output->push_back(group_id);
+}
+
+void SyntheticTrialsActiveGroupIdProvider::ResetForTesting() {
+  base::AutoLock scoped_lock(lock_);
+  synthetic_trials_.clear();
+}
+
 void SyntheticTrialsActiveGroupIdProvider::OnSyntheticTrialsChanged(
     const std::vector<SyntheticTrialGroup>& groups) {
   {
@@ -27,16 +39,9 @@ void SyntheticTrialsActiveGroupIdProvider::OnSyntheticTrialsChanged(
     for (const auto& group : groups)
       synthetic_trials_.push_back(group.id);
   }
-  // Update the experiments lists for crash reports to include the newly added
-  // group.
-  SetVariationListCrashKeys();
-}
 
-void SyntheticTrialsActiveGroupIdProvider::GetActiveGroupIds(
-    std::vector<ActiveGroupId>* output) {
-  base::AutoLock scoped_lock(lock_);
-  for (const auto& group_id : synthetic_trials_)
-    output->push_back(group_id);
+  // Update the experiments list for crash reports.
+  UpdateCrashKeysWithSyntheticTrials(groups);
 }
 
 }  // namespace variations

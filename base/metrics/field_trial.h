@@ -614,8 +614,9 @@ class BASE_EXPORT FieldTrialList {
 
   // Add an observer to be notified when a field trial is irrevocably committed
   // to being part of some specific field_group (and hence the group_name is
-  // also finalized for that field_trial).
-  static void AddObserver(Observer* observer);
+  // also finalized for that field_trial). Returns false and does nothing if
+  // there is no FieldTrialList singleton.
+  static bool AddObserver(Observer* observer);
 
   // Remove an observer.
   static void RemoveObserver(Observer* observer);
