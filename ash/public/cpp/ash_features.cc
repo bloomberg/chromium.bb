@@ -19,6 +19,9 @@ const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
 const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kPersistentWindowBounds{"PersistentWindowBounds",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -43,6 +46,10 @@ bool IsNewOverviewAnimationsEnabled() {
 
 bool IsSystemTrayUnifiedEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayUnified);
+}
+
+bool IsPersistentWindowBoundsEnabled() {
+  return base::FeatureList::IsEnabled(kPersistentWindowBounds);
 }
 
 bool IsLockScreenNotificationsEnabled() {

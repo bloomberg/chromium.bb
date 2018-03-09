@@ -3594,7 +3594,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-persistent-window-bounds",
      flag_descriptions::kAshEnablePersistentWindowBoundsName,
      flag_descriptions::kAshEnablePersistentWindowBoundsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnablePersistentWindowBounds)},
+     FEATURE_VALUE_TYPE(ash::features::kPersistentWindowBounds)},
 #endif  // OS_CHROMEOS
 
     {"clipboard-content-setting",
