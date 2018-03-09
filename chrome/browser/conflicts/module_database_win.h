@@ -117,8 +117,9 @@ class ModuleDatabase {
 #if defined(GOOGLE_CHROME_BUILD)
   // Accessor for the third party conflicts manager. This is exposed so that the
   // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
-  ThirdPartyConflictsManager& third_party_conflicts_manager() {
-    return third_party_conflicts_manager_;
+  // Returns returns null on Windows 8.1 and lower.
+  ThirdPartyConflictsManager* third_party_conflicts_manager() {
+    return third_party_conflicts_manager_.get();
   }
 #endif
 
@@ -193,7 +194,7 @@ class ModuleDatabase {
   base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  ThirdPartyConflictsManager third_party_conflicts_manager_;
+  std::unique_ptr<ThirdPartyConflictsManager> third_party_conflicts_manager_;
 #endif
 
   // Records metrics on third-party modules.

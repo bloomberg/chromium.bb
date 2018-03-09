@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
 namespace {
@@ -44,14 +45,15 @@ ModuleDatabase::ModuleDatabase(
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))),
-#if defined(GOOGLE_CHROME_BUILD)
-      third_party_conflicts_manager_(this),
-#endif
       weak_ptr_factory_(this) {
   AddObserver(&third_party_metrics_);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  AddObserver(&third_party_conflicts_manager_);
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    third_party_conflicts_manager_ =
+        std::make_unique<ThirdPartyConflictsManager>(this);
+    AddObserver(third_party_conflicts_manager_.get());
+  }
 #endif
 }
 

@@ -142,7 +142,9 @@ void RegisterThirdPartyModuleListComponent(ComponentUpdateService* cus) {
   if (!database)
     return;
   ThirdPartyConflictsManager* manager =
-      &database->third_party_conflicts_manager();
+      database->third_party_conflicts_manager();
+  if (!manager)
+    return;
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<ThirdPartyModuleListComponentInstallerPolicy>(manager));
   installer->Register(cus, base::OnceClosure());
