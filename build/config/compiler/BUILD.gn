@@ -1278,6 +1278,12 @@ config("default_warnings") {
       # [1] https://gcc.gnu.org/gcc-6/porting_to.html#this-cannot-be-null
       # [2] https://crbug.com/784492#c13
       cflags += [ "-fno-delete-null-pointer-checks" ]
+
+      # -Wcomment gives too many false positives in the case a
+      # backslash ended comment line is followed by a new line of
+      # comments
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61638
+      cflags += [ "-Wno-comments" ]
     }
   }
 
