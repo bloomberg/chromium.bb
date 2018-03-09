@@ -129,7 +129,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen.src_image_file, '/foo/src_image.bin')
     self.assertEqual(gen.tgt_image_file, '/foo/tgt_image.bin')
     self.assertEqual(gen.payload_file, '/foo/delta.bin')
-    self.assertEqual(gen.delta_log_file, '/foo/delta.log')
+    self.assertEqual(gen.log_file, '/foo/delta.log')
     self.assertEqual(gen.metadata_size_file, '/foo/metadata_size.txt')
 
     # Siged image specific values.
@@ -146,9 +146,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._MetadataUri('gs://foo/bar'),
                      'gs://foo/bar.metadata-signature')
 
-    self.assertEqual(gen._DeltaLogsUri('/foo/bar'),
+    self.assertEqual(gen._LogsUri('/foo/bar'),
                      '/foo/bar.log')
-    self.assertEqual(gen._DeltaLogsUri('gs://foo/bar'),
+    self.assertEqual(gen._LogsUri('gs://foo/bar'),
                      'gs://foo/bar.log')
 
     self.assertEqual(gen._JsonUri('/foo/bar'),
@@ -176,6 +176,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator(work_dir='/foo')
 
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(gen, '_StoreLog')
 
     mock_result = cros_build_lib.CommandResult()
     mock_result.output = 'foo output'
@@ -188,10 +189,12 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         combine_stdout_stderr=True,
         error_code_ok=True).AndReturn(mock_result)
 
+    gen._StoreLog('Output of command: cmd bar jo nes')
+    gen._StoreLog(mock_result.output)
+
     # Run the test verification.
     self.mox.ReplayAll()
-    self.assertEqual(gen._RunGeneratorCmd(expected_cmd),
-                     'foo output')
+    gen._RunGeneratorCmd(expected_cmd)
 
     # Demonstrate that the PATH was restored.
     self.assertEqual(os.environ, original_environ)
@@ -275,7 +278,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
 
     # Record the expected function calls.
@@ -290,8 +292,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--key', 'mp-v3',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreDeltaLog('log contents')
+    gen._RunGeneratorCmd(cmd)
     gen._CheckPartitionFiles()
 
     # Run the test.
@@ -304,7 +305,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
 
     # Record the expected function calls.
@@ -328,8 +328,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_key', 'mp-v3',
            '--src_build_channel', 'dev-channel',
            '--src_build_version', '1620.0.0']
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreDeltaLog('log contents')
+    gen._RunGeneratorCmd(cmd)
     gen._CheckPartitionFiles()
 
     # Run the test.
@@ -343,7 +342,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
 
     # Record the expected function calls.
@@ -358,8 +356,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--key', 'test',
            '--build_channel', 'dev-channel',
            '--build_version', '1620.0.0']
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreDeltaLog('log contents')
+    gen._RunGeneratorCmd(cmd)
     gen._CheckPartitionFiles()
 
     # Run the test.
@@ -373,7 +370,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreDeltaLog')
     self.mox.StubOutWithMock(gen, '_CheckPartitionFiles')
 
     # Record the expected function calls.
@@ -397,8 +393,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_key', 'test',
            '--src_build_channel', 'dev-channel',
            '--src_build_version', '1620.0.0']
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreDeltaLog('log contents')
+    gen._RunGeneratorCmd(cmd)
     gen._CheckPartitionFiles()
 
     # Run the test.
@@ -494,7 +489,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreVerifyLog')
     gen.metadata_size = 10
 
     # Record the expected function calls.
@@ -510,8 +504,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--src_root', '/work/old_rootfs.dat',
            gen.signed_payload_file]
 
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreVerifyLog('log contents')
+    gen._RunGeneratorCmd(cmd)
 
     # Run the test.
     self.mox.ReplayAll()
@@ -524,7 +517,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
-    self.mox.StubOutWithMock(gen, '_StoreVerifyLog')
     gen.metadata_size = 10
 
     # Record the expected function calls.
@@ -538,8 +530,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--metadata-size', "10",
            gen.signed_payload_file]
 
-    gen._RunGeneratorCmd(cmd).AndReturn('log contents')
-    gen._StoreVerifyLog('log contents')
+    gen._RunGeneratorCmd(cmd)
 
     # Run the test.
     self.mox.ReplayAll()
@@ -665,8 +656,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                 'gs://full_old_foo/boo.metadata-signature')
     urilib.Copy('/work/delta.log',
                 'gs://full_old_foo/boo.log')
-    urilib.Copy('/work/verify.log',
-                'gs://full_old_foo/boo.verify.log')
     urilib.Copy('/work/delta.json',
                 'gs://full_old_foo/boo.json')
 
@@ -675,8 +664,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                 'gs://full_old_foo/boo')
     urilib.Copy('/work/delta.log',
                 'gs://full_old_foo/boo.log')
-    urilib.Copy('/work/verify.log',
-                'gs://full_old_foo/boo.verify.log')
     urilib.Copy('/work/delta.json',
                 'gs://full_old_foo/boo.json')
 

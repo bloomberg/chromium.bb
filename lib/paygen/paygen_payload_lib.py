@@ -82,8 +82,7 @@ class _PaygenPayload(object):
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
 
     self.payload_file = os.path.join(work_dir, 'delta.bin')
-    self.delta_log_file = os.path.join(work_dir, 'delta.log')
-    self.verify_log_file = os.path.join(work_dir, 'verify.log')
+    self.log_file = os.path.join(work_dir, 'delta.log')
     self.description_file = os.path.join(work_dir, 'delta.json')
     self.metadata_size_file = os.path.join(work_dir, 'metadata_size.txt')
     self.metadata_size = 0
@@ -115,13 +114,9 @@ class _PaygenPayload(object):
     """Given a payload uri, find the uri for the metadata signature."""
     return uri + '.metadata-signature'
 
-  def _DeltaLogsUri(self, uri):
-    """Given a payload uri, find the uri for the delta generator logs."""
+  def _LogsUri(self, uri):
+    """Given a payload uri, find the uri for the logs."""
     return uri + '.log'
-
-  def _VerifyLogsUri(self, uri):
-    """Given a payload uri, find the uri for the update payload verify logs."""
-    return uri + '.verify.log'
 
   def _JsonUri(self, uri):
     """Given a payload uri, find the uri for the json payload description."""
@@ -182,7 +177,8 @@ class _PaygenPayload(object):
       raise cros_build_lib.RunCommandError(
           'Command failed: %s (cwd=%s)' % ' '.join(cmd), result)
 
-    return result.output
+    self._StoreLog('Output of command: ' + ' '.join(cmd))
+    self._StoreLog(result.output)
 
   @staticmethod
   def _BuildArg(flag, dict_obj, key, default=None):
@@ -316,8 +312,7 @@ class _PaygenPayload(object):
       cmd += self._BuildArg('--src_build_version', src_image, 'image_version',
                             default=src_image.version)
 
-    delta_log = self._RunGeneratorCmd(cmd)
-    self._StoreDeltaLog(delta_log)
+    self._RunGeneratorCmd(cmd)
     self._CheckPartitionFiles()
 
   def _GenerateHashes(self):
@@ -522,27 +517,16 @@ class _PaygenPayload(object):
     # Write out the results.
     osutils.WriteFile(self.description_file, payload_json)
 
-  def _StoreDeltaLog(self, delta_log):
-    """Store delta log related to the payload.
+  def _StoreLog(self, log):
+    """Store any log related to the payload.
 
-    Write out the delta log to a known file name. Mostly in its own function
+    Write out the log to a known file name. Mostly in its own function
     to simplify unittest mocks.
 
     Args:
-      delta_log: The delta logs as a single string.
+      log: The delta logs as a single string.
     """
-    osutils.WriteFile(self.delta_log_file, delta_log, mode='a')
-
-  def _StoreVerifyLog(self, verify_log):
-    """Store log related to the verifying the payload.
-
-    Write out the delta log to a known file name. Mostly in its own function
-    to simplify unittest mocks.
-
-    Args:
-      verify_log: The delta logs as a single string.
-    """
-    osutils.WriteFile(self.verify_log_file, verify_log, mode='a')
+    osutils.WriteFile(self.log_file, log, mode='a')
 
   def _SignPayload(self):
     """Wrap all the steps for signing an existing payload.
@@ -633,8 +617,7 @@ class _PaygenPayload(object):
               path_util.ToChrootPath(self.src_partitions[self._ROOTFS])]
     cmd += [path_util.ToChrootPath(payload_file_name)]
 
-    verify_log = self._RunGeneratorCmd(cmd)
-    self._StoreVerifyLog(verify_log)
+    self._RunGeneratorCmd(cmd)
 
   def _UploadResults(self):
     """Copy the payload generation results to the specified destination."""
@@ -650,8 +633,7 @@ class _PaygenPayload(object):
       urilib.Copy(self.payload_file, self.payload.uri)
 
     # Upload payload related artifacts.
-    urilib.Copy(self.delta_log_file, self._DeltaLogsUri(self.payload.uri))
-    urilib.Copy(self.verify_log_file, self._VerifyLogsUri(self.payload.uri))
+    urilib.Copy(self.log_file, self._LogsUri(self.payload.uri))
     urilib.Copy(self.description_file, self._JsonUri(self.payload.uri))
 
   def Run(self):
