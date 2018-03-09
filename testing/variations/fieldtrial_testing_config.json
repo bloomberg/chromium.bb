@@ -444,28 +444,6 @@
             ]
         }
     ],
-    "AutofillGooglePayBranding": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillCreditCardDropdownGooglePayBranding",
-                        "AutofillUpstreamUseGooglePayBranding",
-                        "AutofillUseNewSettingsNameInDropdown"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillProfileCleanup": [
         {
             "platforms": [
@@ -522,25 +500,6 @@
                     "name": "EnabledWithGoogleBranding_Launched",
                     "enable_features": [
                         "AutofillUpstreamRequestCvcIfMissing"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillUpstreamSendDetectedValues": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamSendDetectedValues"
                     ]
                 }
             ]
