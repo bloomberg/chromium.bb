@@ -161,6 +161,14 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
+static size_t get_obu_length_field_size(const uint8_t *data) {
+  size_t length_field_size = 1;
+  for (size_t i = 0; i < sizeof(uint64_t) && (data[i] & 0x80); ++i) {
+    ++length_field_size;
+  }
+  return length_field_size;
+}
+
 static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
                                                 unsigned int data_sz,
                                                 aom_codec_stream_info_t *si,
@@ -180,11 +188,10 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   intra_only_flag = 1;
   si->is_kf = 1;
 
-#if CONFIG_OBU_SIZING
-  size_t length_field_size = 1;
-  for (size_t i = 0; i < sizeof(uint64_t) && (data[i] & 0x80); ++i) {
-    ++length_field_size;
-  }
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+  struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
+#elif CONFIG_OBU_SIZING
+  const size_t length_field_size = get_obu_length_field_size(data);
   struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
                                     NULL, NULL };
 #else
@@ -198,6 +205,11 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
   if (get_obu_type(obu_header, &obu_type) != 0)
     return AOM_CODEC_UNSUP_BITSTREAM;
+
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+  // One byte has been consumed by the OBU header.
+  rb.bit_offset += get_obu_length_field_size(data + 1);
+#endif
 
   // This check is disabled because existing behavior is depended upon by
   // decoder tests (see decode_test_driver.cc), scalability_decoder (see
