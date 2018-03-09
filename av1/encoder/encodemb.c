@@ -218,7 +218,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   // Assert not magic number (uninitialized).
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
-  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
+  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0 &&
+      !xd->mi[0]->mbmi.skip_mode) {
     if (args->enable_optimize_b) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);

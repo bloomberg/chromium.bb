@@ -1015,12 +1015,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   write_skip_mode(cm, xd, segment_id, mi, w);
 
-  if (mbmi->skip_mode) {
-    skip = mbmi->skip;
-    assert(skip);
-  } else {
-    skip = write_skip(cm, xd, segment_id, mi, w);
-  }
+  assert(IMPLIES(mbmi->skip_mode, mbmi->skip));
+  skip = mbmi->skip_mode ? 1 : write_skip(cm, xd, segment_id, mi, w);
 
 #if CONFIG_SPATIAL_SEGMENTATION
   write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
