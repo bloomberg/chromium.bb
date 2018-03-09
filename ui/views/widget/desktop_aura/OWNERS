@@ -1,3 +1,2 @@
-# Elliot is the owner of all the X11 stuff.
-per-file *x11*=erg@chromium.org
-per-file window_event_filter*=erg@chromium.org
+per-file *x11*=thomasanderson@chromium.org
+per-file window_event_filter*=thomasanderson@chromium.org
