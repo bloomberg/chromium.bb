@@ -6,6 +6,7 @@
 #define WebRTCRtpSender_h
 
 #include "WebCommon.h"
+#include "WebRTCRtpParameters.h"
 #include "WebRTCVoidRequest.h"
 #include "WebString.h"
 
@@ -32,6 +33,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   // https://crbug.com/790007
   virtual void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) = 0;
   virtual std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const = 0;
+  virtual std::unique_ptr<WebRTCRtpParameters> GetParameters() const = 0;
 };
 
 }  // namespace blink

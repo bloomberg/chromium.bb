@@ -19,6 +19,7 @@ namespace blink {
 class MediaStreamTrack;
 class RTCDTMFSender;
 class RTCPeerConnection;
+class RTCRtpParameters;
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {
@@ -35,6 +36,8 @@ class RTCRtpSender final : public ScriptWrappable {
   MediaStreamTrack* track();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
+  void getParameters(RTCRtpParameters&);
+  ScriptPromise setParameters(ScriptState*, const RTCRtpParameters&);
 
   WebRTCRtpSender* web_sender();
   // Sets the track. This must be called when the |WebRTCRtpSender| has its

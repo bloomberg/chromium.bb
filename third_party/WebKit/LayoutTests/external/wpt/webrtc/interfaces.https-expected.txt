@@ -334,9 +334,9 @@ FAIL RTCRtpSender interface: attribute rtcpTransport assert_true: The prototype 
 PASS Unscopable handled correctly for rtcpTransport property on RTCRtpSender
 FAIL RTCRtpSender interface: operation getCapabilities(DOMString) assert_own_property: interface object missing static operation expected property "getCapabilities" missing
 PASS Unscopable handled correctly for getCapabilities(DOMString) on RTCRtpSender
-FAIL RTCRtpSender interface: operation setParameters(RTCRtpParameters) assert_own_property: interface prototype object missing non-static operation expected property "setParameters" missing
+PASS RTCRtpSender interface: operation setParameters(RTCRtpParameters)
 PASS Unscopable handled correctly for setParameters(RTCRtpParameters) on RTCRtpSender
-FAIL RTCRtpSender interface: operation getParameters() assert_own_property: interface prototype object missing non-static operation expected property "getParameters" missing
+PASS RTCRtpSender interface: operation getParameters()
 PASS Unscopable handled correctly for getParameters() on RTCRtpSender
 PASS RTCRtpSender interface: operation replaceTrack(MediaStreamTrack)
 PASS Unscopable handled correctly for replaceTrack(MediaStreamTrack) on RTCRtpSender
