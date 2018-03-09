@@ -40,6 +40,7 @@ class SyntheticTrialRegistry {
                            RegisterSyntheticMultiGroupFieldTrial);
   FRIEND_TEST_ALL_PREFIXES(SyntheticTrialRegistryTest,
                            GetSyntheticFieldTrialActiveGroups);
+  FRIEND_TEST_ALL_PREFIXES(VariationsCrashKeysTest, BasicFunctionality);
 
   // Registers a field trial name and group to be used to annotate a UMA report
   // with a particular Chrome configuration state. A UMA report will be

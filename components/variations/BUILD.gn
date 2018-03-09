@@ -48,6 +48,8 @@ static_library("variations") {
     "synthetic_trials_active_group_id_provider.h",
     "variations_associated_data.cc",
     "variations_associated_data.h",
+    "variations_crash_keys.cc",
+    "variations_crash_keys.h",
     "variations_experiment_util.cc",
     "variations_experiment_util.h",
     "variations_http_header_provider.cc",
@@ -66,8 +68,6 @@ static_library("variations") {
     "variations_switches.h",
     "variations_url_constants.cc",
     "variations_url_constants.h",
-    "variations_util.cc",
-    "variations_util.h",
   ]
 
   if (is_android || is_ios) {
@@ -133,6 +133,7 @@ source_set("unit_tests") {
     "study_filtering_unittest.cc",
     "synthetic_trial_registry_unittest.cc",
     "variations_associated_data_unittest.cc",
+    "variations_crash_keys_unittest.cc",
     "variations_http_header_provider_unittest.cc",
     "variations_id_collection_unittest.cc",
     "variations_request_scheduler_unittest.cc",
@@ -150,6 +151,7 @@ source_set("unit_tests") {
     "net",
     "proto",
     "//base/test:test_support",
+    "//components/crash/core/common:crash_key",
     "//components/prefs:test_support",
     "//components/variations/field_trial_config:field_trial_config",
     "//testing/gmock",

@@ -16,10 +16,6 @@
 class ApplicationContextImpl;
 class PrefService;
 
-namespace ios {
-class FieldTrialSynchronizer;
-}
-
 class IOSChromeMainParts : public web::WebMainParts {
  public:
   explicit IOSChromeMainParts(const base::CommandLine& parsed_command_line);
@@ -53,9 +49,6 @@ class IOSChromeMainParts : public web::WebMainParts {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   PrefService* local_state_;
-
-  // Initialized in SetupMetricsAndFieldTrials.
-  std::unique_ptr<ios::FieldTrialSynchronizer> field_trial_synchronizer_;
 
   IOSChromeFieldTrials ios_field_trials_;
 

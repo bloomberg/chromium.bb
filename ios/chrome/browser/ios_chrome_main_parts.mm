@@ -27,6 +27,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/synthetic_trials_active_group_id_provider.h"
+#include "components/variations/variations_crash_keys.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/about_flags.h"
 #include "ios/chrome/browser/application_context_impl.h"
@@ -36,7 +38,6 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/install_time_util.h"
-#include "ios/chrome/browser/metrics/field_trial_synchronizer.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
@@ -126,8 +127,7 @@ void IOSChromeMainParts::PreCreateThreads() {
   // initialization is handled in PreMainMessageLoopRun since it posts tasks.
   SetupFieldTrials();
 
-  // Initialize FieldTrialSynchronizer system.
-  field_trial_synchronizer_.reset(new ios::FieldTrialSynchronizer);
+  variations::InitCrashKeys();
 
   application_context_->PreCreateThreads();
 }
@@ -236,6 +236,8 @@ void IOSChromeMainParts::SetupMetrics() {
   metrics::MetricsService* metrics = application_context_->GetMetricsService();
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::VariationsHttpHeaderProvider::GetInstance());
+  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+      variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 }

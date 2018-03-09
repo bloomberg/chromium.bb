@@ -981,10 +981,11 @@ FieldTrial* FieldTrialList::CreateFieldTrial(
 }
 
 // static
-void FieldTrialList::AddObserver(Observer* observer) {
+bool FieldTrialList::AddObserver(Observer* observer) {
   if (!global_)
-    return;
+    return false;
   global_->observer_list_->AddObserver(observer);
+  return true;
 }
 
 // static

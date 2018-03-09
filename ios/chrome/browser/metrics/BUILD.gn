@@ -5,8 +5,6 @@
 source_set("metrics") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "field_trial_synchronizer.cc",
-    "field_trial_synchronizer.h",
     "incognito_web_state_observer.h",
     "incognito_web_state_observer.mm",
     "ios_chrome_metrics_service_accessor.cc",
