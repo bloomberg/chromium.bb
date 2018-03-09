@@ -36,6 +36,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -44,14 +46,11 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
-import android.support.test.espresso.PerformException;
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.util.TreeIterables;
 import android.support.test.filters.SmallTest;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.hamcrest.Matcher;
@@ -81,7 +80,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the "Save Passwords" settings screen.
@@ -333,39 +331,6 @@ public class SavePasswordsPreferencesTest {
             Thread.sleep(100);
     }
 
-    /**
-     * Waits until a view matching the given matcher appears. Times out if no view was found until
-     * the UI_UPDATING_TIMEOUT_MS expired.
-     * @param viewMatcher The matcher matching the view that should be waited for.
-     */
-    private void waitForView(Matcher<View> viewMatcher) {
-        Espresso.onView(isRoot()).perform(new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return isRoot();
-            }
-
-            @Override
-            public String getDescription() {
-                return "wait for " + UI_UPDATING_TIMEOUT_MS + "ms to match "
-                        + viewMatcher.toString();
-            }
-
-            @Override
-            public void perform(UiController uiController, View root) {
-                final long start_time = System.currentTimeMillis();
-                do {
-                    for (View view : TreeIterables.breadthFirstViewTraversal(root))
-                        if (viewMatcher.matches(view)) return;
-                    uiController.loopMainThreadForAtLeast(100);
-                } while (System.currentTimeMillis() - start_time < UI_UPDATING_TIMEOUT_MS);
-                throw new PerformException.Builder()
-                        .withActionDescription(this.getDescription())
-                        .withCause(new TimeoutException())
-                        .build();
-            }
-        });
-    }
 
     /**
      * Ensure that resetting of empty passwords list works.
@@ -1590,12 +1555,15 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
+        final Preferences prefs =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
 
         // Open the search and filter all but "Zeus".
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
-        waitForView(withId(R.id.search_src_text));
+
+        Espresso.onView(isRoot()).check(
+                (root, e) -> waitForView((ViewGroup) root, withId(R.id.search_src_text)));
         Espresso.onView(withId(R.id.search_src_text))
                 .perform(click(), typeText("Zeu"), closeSoftKeyboard());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -1632,7 +1600,10 @@ public class SavePasswordsPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // The search bar should still be open and still display the search query.
-        waitForView(allOf(withId(R.id.search_src_text), withText("Zeu")));
+        Espresso.onView(isRoot()).check(
+                (root, e)
+                        -> waitForView((ViewGroup) root,
+                                allOf(withId(R.id.search_src_text), withText("Zeu"))));
         Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
     }
 
@@ -1673,7 +1644,9 @@ public class SavePasswordsPreferencesTest {
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click()); // Go back to the search list.
-        waitForView(withId(R.id.search_src_text));
+        Espresso.onView(isRoot()).check(
+                (root, e) -> waitForView((ViewGroup) root, withId(R.id.search_src_text)));
+
         Assert.assertEquals(1, viewed_after_search_delta.getDelta());
 
         preferences.finish();
