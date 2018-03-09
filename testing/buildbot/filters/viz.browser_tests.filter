@@ -1,3 +1,4 @@
+#### HostFrameSinkManager Crashes
 # HostFrameSinkManager::CreateRootCompositorFrameSink Crash crbug.com/796575
 -AppWindowApiTest.OnBoundsChangedEvent
 -ForceMaximizeOnFirstRunTest.*TwoRuns
@@ -7,41 +8,27 @@
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus1
 
-# viz::HostFrameSinkManager::CreateCompositorFrameSinkSupport crash.
+#### HostFrameSinkManager::CreateCompositorFrameSinkSupport crash.
 # http://crbug.com/807465
 -ArcAccessibilityHelperBridgeBrowserTest.PreferenceChange
 
-# PictureLayerTilingSet::ComputeSkewport crash crbug.com/796594
--LoginFeedbackTest.Basic
-
-# RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl crash
-# crbug.com/797801
--HostedAppProcessModelTest.IframeNavigationsInsideHostedApp/1
-
+# Tab Capture Errors
 # Tab Capture is still in development: crbug.com/754864
--CastStreamingApiTestWithPixelOutput.EndToEnd
--ChromeScreenshotGrabberBrowserTest.TakeScreenshot
--PluginPowerSaverBrowserTest.PosterTests
--PluginPowerSaverBrowserTest.SmallCrossOrigin
--PluginPowerSaverBrowserTest.SmallerThanPlayIcon
--TabCaptureApiPixelTest.EndToEndThroughWebRTC
--TabCaptureApiPixelTest.EndToEndWithoutRemoting
 -TabCaptureApiPixelTest.OffscreenTabEndToEnd
 -TabCaptureApiPixelTest.OffscreenTabEvilTests
 -ThumbnailTest.ShouldCaptureOnNavigatingAwayExplicitWait
 -ThumbnailTest.ShouldCaptureOnNavigatingAwaySlowPageLoad
 
-# Tab Capture on Viz fails FeedbackTest: crbug.com/810389
+# Tab Capture on Viz fails at CopyOutputRequest: crbug.com/810389
 -FeedbackTest.*
+-LoginFeedbackTest.Basic
 
+#### Compositor Frame Observation Timeouts
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
 -PDFExtensionTest.ContextMenuCoordinates
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
-
-# Flaky timeouts. http://crbug.com/807773
--PDFExtensionClipboardTest.*
 
 # WebViewBrowserTest::ScrollWaiter Doesn't Work in Viz crbug.com/796336
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/0
@@ -49,6 +36,7 @@
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/2
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/3
 
+#### FrameSinkManager Crashes
 # FrameSinkManagerImpl::RegisterFrameSinkHierarchy Crash crbug.com/796344
 # Linux and Windows failures
 -WebViewTests/WebViewTest.Shim_TestAssignSrcAfterCrash/0
@@ -56,16 +44,11 @@
 -WebViewTests/WebViewTest.Shim_TestReloadAfterTerminate/0
 -WebViewTests/WebViewTest.Shim_TestTerminateAfterExit/0
 
+#### Hit Testing
 # Incorrect Focus State crbug.com/818205
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 
-# Windows only failures
--ExtensionApiTabTest.TabsOnUpdated
-
-# Individual test failure, Windows only
--CloudPrintPolicyTest.NormalPassedFlag
--PolicyMakeDefaultBrowserTest.MakeDefaultDisabled
-
+#### Surface Invariants
 # Surface Invariants Failure on Mac http://crbug.com/817827
 -ActivityLogApiTest.TriggerEvent
 -AllUrlsApiTest.WhitelistedExtension
@@ -86,6 +69,7 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.ServiceWorkerSuspensionOnExtensionUnload/0
 -TabManagerTest.DiscardTabsWithMinimizedAndOccludedWindows
 
+#### GL Renderer
 # GL Renderer Check Failure on Mac https://crbug.com/817830
 -DeclarativeNetRequestBrowserTest.BlockRequests_UrlFilter/0
 -DeclarativeNetRequestBrowserTest.BlockRequests_UrlFilter/1
@@ -113,3 +97,7 @@
 -SSLUIWorkerFetchTest.MixedContentSubFrame/1
 -ThumbnailTest.ShouldContainProperContentIfCapturedOnNavigatingAway
 -ThumbnailTest.ShouldContainProperContentIfCapturedOnTabSwitch
+
+# Unknown Flakes
+# Flaky timeouts. http://crbug.com/807773
+-PDFExtensionClipboardTest.*
