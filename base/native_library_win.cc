@@ -165,7 +165,7 @@ void UnloadNativeLibrary(NativeLibrary library) {
 // static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
                                           StringPiece name) {
-  return GetProcAddress(library, name.data());
+  return reinterpret_cast<void*>(GetProcAddress(library, name.data()));
 }
 
 // static
