@@ -68,6 +68,7 @@ test("device_unittests") {
     "fido/ctap_response_unittest.cc",
     "fido/fake_u2f_discovery_unittest.cc",
     "fido/fido_hid_message_unittest.cc",
+    "fido/test_callback_receiver_unittest.cc",
     "fido/u2f_apdu_unittest.cc",
     "fido/u2f_ble_connection_unittest.cc",
     "fido/u2f_ble_device_unittest.cc",

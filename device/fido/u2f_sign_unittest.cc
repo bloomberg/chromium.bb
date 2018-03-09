@@ -12,6 +12,7 @@
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/mock_u2f_device.h"
 #include "device/fido/sign_response_data.h"
+#include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_response_test_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,36 +100,9 @@ std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
                               test_data::kTestU2fSignResponse + length);
 }
 
-class TestSignCallback {
- public:
-  TestSignCallback()
-      : callback_(base::Bind(&TestSignCallback::ReceivedCallback,
-                             base::Unretained(this))) {}
-  ~TestSignCallback() = default;
-
-  void ReceivedCallback(U2fReturnCode status_code,
-                        base::Optional<SignResponseData> response_data) {
-    response_ = std::make_pair(status_code, std::move(response_data));
-    run_loop_.Quit();
-  }
-
-  void WaitForCallback() {
-    run_loop_.Run();
-  }
-
-  U2fReturnCode GetReturnCode() { return std::get<0>(response_); }
-
-  const base::Optional<SignResponseData>& GetResponseData() {
-    return std::get<1>(response_);
-  }
-
-  U2fSign::SignResponseCallback callback() { return std::move(callback_); }
-
- private:
-  std::pair<U2fReturnCode, base::Optional<SignResponseData>> response_;
-  U2fSign::SignResponseCallback callback_;
-  base::RunLoop run_loop_;
-};
+using TestSignCallback = ::device::test::StatusAndValueCallbackReceiver<
+    U2fReturnCode,
+    base::Optional<SignResponseData>>;
 
 }  // namespace
 
@@ -154,17 +128,17 @@ class U2fSignTest : public ::testing::Test {
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
         registered_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-        base::nullopt, sign_callback_.callback());
+        base::nullopt, sign_callback_receiver_.callback());
   }
 
   test::FakeU2fDiscovery* discovery() const { return discovery_; }
-  TestSignCallback& sign_callback() { return sign_callback_; }
+  TestSignCallback& sign_callback_receiver() { return sign_callback_receiver_; }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   test::ScopedFakeU2fDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeU2fDiscovery* discovery_;
-  TestSignCallback sign_callback_;
+  TestSignCallback sign_callback_receiver_;
 };
 
 TEST_F(U2fSignTest, TestCreateSignApduCommand) {
@@ -219,7 +193,7 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
                    std::vector<uint8_t>(std::begin(kChallengeDigest),
                                         std::end(kChallengeDigest)),
                    std::vector<uint8_t>(std::begin(kAppId), std::end(kAppId)),
-                   base::nullopt, sign_callback().callback());
+                   base::nullopt, sign_callback_receiver().callback());
 
   const auto encoded_sign = u2f_sign.GetU2fSignApduCommand(key_handle);
   ASSERT_TRUE(encoded_sign);
@@ -247,15 +221,15 @@ TEST_F(U2fSignTest, TestSignSuccess) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback().GetReturnCode());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback().GetResponseData()->signature());
+            sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(signing_key_handle, sign_callback().GetResponseData()->raw_id());
+  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestDelayedSuccess) {
@@ -275,15 +249,15 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
       .WillRepeatedly(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback().GetReturnCode());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected
   EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback().GetResponseData()->signature());
+            sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing
-  EXPECT_EQ(signing_key_handle, sign_callback().GetResponseData()->raw_id());
+  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleHandles) {
@@ -309,15 +283,15 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback().GetReturnCode());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback().GetResponseData()->signature());
+            sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(correct_key_handle, sign_callback().GetResponseData()->raw_id());
+  EXPECT_EQ(correct_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleDevices) {
@@ -347,15 +321,15 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   discovery()->AddDevice(std::move(device1));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback().GetReturnCode());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback().GetResponseData()->signature());
+            sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(correct_key_handle, sign_callback().GetResponseData()->raw_id());
+  EXPECT_EQ(correct_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
 TEST_F(U2fSignTest, TestFakeEnroll) {
@@ -388,11 +362,11 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   discovery()->AddDevice(std::move(device1));
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  sign_callback().WaitForCallback();
+  sign_callback_receiver().WaitForCallback();
   // Device that responded had no correct keys.
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
-            sign_callback().GetReturnCode());
-  EXPECT_FALSE(sign_callback().GetResponseData());
+            sign_callback_receiver().status());
+  EXPECT_FALSE(sign_callback_receiver().value());
 }
 
 TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
@@ -471,9 +445,9 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::FAILURE, sign_callback().GetReturnCode());
-  EXPECT_FALSE(sign_callback().GetResponseData());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::FAILURE, sign_callback_receiver().status());
+  EXPECT_FALSE(sign_callback_receiver().value());
 }
 
 MATCHER_P(WithApplicationParameter, expected, "") {
@@ -503,7 +477,7 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
           {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
       std::vector<std::vector<uint8_t>>({signing_key_handle}),
       std::vector<uint8_t>(32), primary_app_param, alt_app_param,
-      sign_callback_.callback());
+      sign_callback_receiver_.callback());
 
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
@@ -522,12 +496,12 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery()->AddDevice(std::move(device));
 
-  sign_callback().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback().GetReturnCode());
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback().GetResponseData()->signature());
-  EXPECT_EQ(signing_key_handle, sign_callback().GetResponseData()->raw_id());
+            sign_callback_receiver().value()->signature());
+  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
 }  // namespace device
