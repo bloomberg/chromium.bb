@@ -36,6 +36,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
 namespace content {
@@ -266,7 +267,9 @@ class ServiceWorkerContextClientTest : public testing::Test {
         embedded_worker_host_ptr.PassInterface(),
         CreateProviderInfo(&out_pipes->registration_host_request,
                            &out_pipes->registration),
-        nullptr /* embedded_worker_client */, sender_, io_task_runner());
+        nullptr /* embedded_worker_client */, sender_,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+        io_task_runner());
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
