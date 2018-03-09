@@ -57,6 +57,8 @@ constexpr float kPageLoadTimeMilliseconds = 500;
 constexpr gfx::Point3F kDefaultLaserOrigin = {0.5f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
 constexpr float kControllerScaleFactor = 1.5f;
+constexpr float kTouchpadPositionDelta = 0.05f;
+constexpr gfx::PointF kInitialTouchPosition = {0.5f, 0.5f};
 
 void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
   gfx::Quaternion quat(kForwardVector, fwd);
@@ -101,6 +103,8 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
       base::BindRepeating(&TestKeyboardDelegate::UpdateInput,
                           base::Unretained(keyboard_delegate_.get())));
   keyboard_delegate_->SetUiInterface(ui_.get());
+
+  touchpad_touch_position_ = kInitialTouchPosition;
 
   model_ = ui_->model_for_test();
 
@@ -201,6 +205,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_X:
         ui_->OnAppButtonClicked();
         break;
+      case ui::DomCode::US_T:
+        touching_touchpad_ = !touching_touchpad_;
+        break;
       case ui::DomCode::US_Q:
         model_->active_modal_prompt_type =
             kModalPromptTypeGenericUnsupportedFeature;
@@ -214,9 +221,15 @@ void VrTestContext::HandleInput(ui::Event* event) {
   if (event->IsMouseWheelEvent()) {
     int direction =
         base::ClampToRange(event->AsMouseWheelEvent()->y_offset(), -1, 1);
-    view_scale_factor_ *= (1 + direction * kViewScaleAdjustmentFactor);
-    view_scale_factor_ = base::ClampToRange(
-        view_scale_factor_, kMinViewScaleFactor, kMaxViewScaleFactor);
+    if (event->IsControlDown()) {
+      touchpad_touch_position_.set_y(base::ClampToRange(
+          touchpad_touch_position_.y() + kTouchpadPositionDelta * direction,
+          0.0f, 1.0f));
+    } else {
+      view_scale_factor_ *= (1 + direction * kViewScaleAdjustmentFactor);
+      view_scale_factor_ = base::ClampToRange(
+          view_scale_factor_, kMinViewScaleFactor, kMaxViewScaleFactor);
+    }
     return;
   }
 
@@ -300,6 +313,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info) {
   ControllerModel controller_model;
   controller_model.touchpad_button_state =
       touchpad_pressed_ ? UiInputManager::DOWN : UiInputManager::UP;
+  controller_model.touchpad_touch_position = touchpad_touch_position_;
+  controller_model.touching_touchpad = touching_touchpad_;
 
   controller_model.laser_origin = mouse_point_near;
   controller_model.laser_direction = mouse_point_far - mouse_point_near;

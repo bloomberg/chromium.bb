@@ -1225,17 +1225,24 @@ TEST_F(UiTest, RepositionButton) {
 
 TEST_F(UiTest, ResetRepositioner) {
   CreateScene(kNotInCct, kNotInWebVr);
+
   Repositioner* repositioner = static_cast<Repositioner*>(
       scene_->GetUiElementByName(k2dBrowsingRepositioner));
+
+  OnBeginFrame();
+  gfx::Transform original = repositioner->world_space_transform();
+
   repositioner->set_laser_direction(kForwardVector);
   repositioner->SetEnabled(true);
   repositioner->set_laser_direction({0, 1, 0});
   OnBeginFrame();
-  EXPECT_FALSE(repositioner->world_space_transform().IsIdentity());
+
+  EXPECT_NE(original, repositioner->world_space_transform());
   repositioner->SetEnabled(false);
   model_->controller.recentered = true;
+
   OnBeginFrame();
-  EXPECT_TRUE(repositioner->world_space_transform().IsIdentity());
+  EXPECT_EQ(original, repositioner->world_space_transform());
 }
 
 // No element in the controller root's subtree should be hit testable.
@@ -1244,6 +1251,22 @@ TEST_F(UiTest, ControllerHitTest) {
   auto* controller = scene_->GetUiElementByName(kControllerRoot);
   for (auto& child : *controller)
     EXPECT_FALSE(child.IsHitTestable());
+}
+
+TEST_F(UiTest, BrowsingRootBounds) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  auto* elem = scene_->GetUiElementByName(k2dBrowsingContentGroup);
+  auto* root = scene_->GetUiElementByName(k2dBrowsingRepositioner);
+  for (; elem; elem = elem->parent()) {
+    int num_bounds_contributors = 0;
+    for (auto& child : elem->children()) {
+      if (child->contributes_to_parent_bounds())
+        num_bounds_contributors++;
+    }
+    EXPECT_EQ(1, num_bounds_contributors);
+    if (elem == root)
+      break;
+  }
 }
 
 }  // namespace vr

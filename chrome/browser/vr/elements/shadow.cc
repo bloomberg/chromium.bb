@@ -149,6 +149,12 @@ void Shadow::LayOutChildren() {
     set_corner_radius(children().front()->corner_radii().MaxRadius());
 }
 
+gfx::SizeF Shadow::ContributedSize() const {
+  gfx::RectF bounds(size());
+  bounds.Inset(x_padding(), y_padding());
+  return bounds.size();
+}
+
 Shadow::Renderer::Renderer()
     : BaseQuadRenderer(kVertexShader, kFragmentShader) {
   model_view_proj_matrix_handle_ =
