@@ -24,6 +24,10 @@ void TestInkDrop::SnapToActivated() {
   state_ = InkDropState::ACTIVATED;
 }
 
+void TestInkDrop::SnapToHidden() {
+  state_ = InkDropState::HIDDEN;
+}
+
 void TestInkDrop::SetHovered(bool is_hovered) {
   is_hovered_ = is_hovered;
 }

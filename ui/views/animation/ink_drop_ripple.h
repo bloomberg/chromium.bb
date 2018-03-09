@@ -70,7 +70,7 @@ class VIEWS_EXPORT InkDropRipple {
   //
   // NOTE: This will NOT raise Animation(Started|Ended) events for the state
   // transition to HIDDEN!
-  void HideImmediately();
+  void SnapToHidden();
 
   // Immediately snaps the ink drop to the ACTIVATED target state. All pending
   // animations are aborted. Events will be raised for the pending animations

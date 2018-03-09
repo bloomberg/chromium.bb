@@ -226,7 +226,7 @@ void InkDropHostView::ViewHierarchyChanged(
   // If we're being removed hide the ink-drop so if we're highlighted now the
   // highlight won't be active if we're added back again.
   if (!details.is_add && details.child == this && ink_drop_) {
-    GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
+    GetInkDrop()->SnapToHidden();
     GetInkDrop()->SetHovered(false);
   }
   View::ViewHierarchyChanged(details);
