@@ -20,8 +20,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
-#include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -118,7 +118,7 @@ struct FastInkView::Resource {
 
 class FastInkView::LayerTreeFrameSinkHolder
     : public cc::LayerTreeFrameSinkClient,
-      public aura::EnvObserver {
+      public aura::WindowObserver {
  public:
   LayerTreeFrameSinkHolder(FastInkView* view,
                            std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
@@ -128,8 +128,8 @@ class FastInkView::LayerTreeFrameSinkHolder
   ~LayerTreeFrameSinkHolder() override {
     if (frame_sink_)
       frame_sink_->DetachFromClient();
-    if (env_)
-      env_->RemoveObserver(this);
+    if (root_window_)
+      root_window_->RemoveObserver(this);
   }
 
   // Delete frame sink after having reclaimed all exported resources.
@@ -165,15 +165,20 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (holder->exported_resources_.empty())
       return;
 
-    aura::Env* env = aura::Env::GetInstance();
-    holder->env_ = env;
+    // Delete sink holder immediately if native window is already gone.
+    aura::Window* window = holder->view_->GetWidget()->GetNativeView();
+    if (!window)
+      return;
+
+    aura::Window* root_window = window->GetRootWindow();
+    holder->root_window_ = root_window;
     holder->view_ = nullptr;
 
     // If we have exported resources to reclaim then extend the lifetime of
-    // holder by adding it as an aura env observer. The holder will delete
-    // itself when aura shuts down or when all exported resources have been
-    // reclaimed.
-    env->AddObserver(holder.release());
+    // holder by adding it as a root window observer. The holder will delete
+    // itself when the root window is removed or when all exported resources
+    // have been reclaimed.
+    root_window->AddObserver(holder.release());
   }
 
   void SubmitCompositorFrame(viz::CompositorFrame frame,
@@ -204,7 +209,7 @@ class FastInkView::LayerTreeFrameSinkHolder
         view_->ReclaimResource(std::move(resource));
     }
 
-    if (env_ && exported_resources_.empty())
+    if (root_window_ && exported_resources_.empty())
       ScheduleDelete();
   }
   void SetTreeActivationCallback(const base::Closure& callback) override {}
@@ -219,7 +224,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();
-    if (env_)
+    if (root_window_)
       ScheduleDelete();
   }
   void OnDraw(const gfx::Transform& transform,
@@ -230,11 +235,10 @@ class FastInkView::LayerTreeFrameSinkHolder
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override {}
 
-  // Overridden from aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override {}
-  void OnWillDestroyEnv() override {
-    env_->RemoveObserver(this);
-    env_ = nullptr;
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    root_window_->RemoveObserver(this);
+    root_window_ = nullptr;
     // Make sure frame sink never outlives aura.
     frame_sink_->DetachFromClient();
     frame_sink_.reset();
@@ -255,7 +259,7 @@ class FastInkView::LayerTreeFrameSinkHolder
       exported_resources_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
-  aura::Env* env_ = nullptr;
+  aura::Window* root_window_ = nullptr;
   bool delete_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
