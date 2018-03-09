@@ -149,7 +149,8 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
 
     private boolean mPositionBelow;
     private boolean mPositionToLeft;
-    private boolean mOverlapAnchor;
+    private boolean mVerticalOverlapAnchor;
+    private boolean mHorizontalOverlapAnchor;
 
     /**
      * Constructs an {@link AnchoredPopupWindow} instance.
@@ -295,12 +296,29 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
     }
 
     /**
-     * Sets whether the popup should overlap the anchor {@link Rect}. Defaults to false.  This
-     * should be called before the popup is shown.
+     * Sets whether the popup should horizontally overlap the anchor {@link Rect}.
+     * Defaults to false.  This should be called before the popup is shown.
      * @param overlap Whether the popup should overlap the anchor.
      */
-    public void setOverlapAnchor(boolean overlap) {
-        mOverlapAnchor = overlap;
+    public void setHorizontalOverlapAnchor(boolean overlap) {
+        mHorizontalOverlapAnchor = overlap;
+    }
+
+    /**
+     * Sets whether the popup should vertically overlap the anchor {@link Rect}.
+     * Defaults to false.  This should be called before the popup is shown.
+     * @param overlap Whether the popup should overlap the anchor.
+     */
+    public void setVerticalOverlapAnchor(boolean overlap) {
+        mVerticalOverlapAnchor = overlap;
+    }
+
+    /**
+     * Changes the background of the popup.
+     * @param background The {@link Drawable} that is set to be background.
+     */
+    public void setBackgroundDrawable(Drawable background) {
+        mPopupWindow.setBackgroundDrawable(background);
     }
 
     // RectProvider.Observer implementation.
@@ -353,10 +371,11 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         // TODO(dtrainor): This follows the previous logic.  But we should look into if we want to
         // use the root view dimensions instead of the window dimensions here so the popup can't
         // bleed onto the decorations.
-        int spaceAboveAnchor = (mOverlapAnchor ? anchorRect.bottom : anchorRect.top)
+        int spaceAboveAnchor = (mVerticalOverlapAnchor ? anchorRect.bottom : anchorRect.top)
                 - mCachedWindowRect.top - paddingY - mMarginPx;
         int spaceBelowAnchor = mCachedWindowRect.bottom
-                - (mOverlapAnchor ? anchorRect.top : anchorRect.bottom) - paddingY - mMarginPx;
+                - (mVerticalOverlapAnchor ? anchorRect.top : anchorRect.bottom) - paddingY
+                - mMarginPx;
 
         // Bias based on the center of the popup and where it is on the screen.
         boolean idealFitsBelow = idealContentHeight <= spaceBelowAnchor;
@@ -382,9 +401,9 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
 
         if (mPreferredHorizontalOrientation == HORIZONTAL_ORIENTATION_MAX_AVAILABLE_SPACE) {
             int spaceLeftOfAnchor =
-                    getSpaceLeftOfAnchor(anchorRect, mCachedWindowRect, mOverlapAnchor);
+                    getSpaceLeftOfAnchor(anchorRect, mCachedWindowRect, mHorizontalOverlapAnchor);
             int spaceRightOfAnchor =
-                    getSpaceRightOfAnchor(anchorRect, mCachedWindowRect, mOverlapAnchor);
+                    getSpaceRightOfAnchor(anchorRect, mCachedWindowRect, mHorizontalOverlapAnchor);
             mPositionToLeft = shouldPositionLeftOfAnchor(spaceLeftOfAnchor, spaceRightOfAnchor,
                     idealContentWidth + paddingY + mMarginPx, currentPositionToLeft,
                     preferCurrentOrientation);
@@ -401,9 +420,9 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         mHeight = contentView.getMeasuredHeight() + paddingY;
 
         // Determine the position of the text popup.
-        mX = getPopupX(anchorRect, mCachedWindowRect, mWidth, mMarginPx, mOverlapAnchor,
+        mX = getPopupX(anchorRect, mCachedWindowRect, mWidth, mMarginPx, mHorizontalOverlapAnchor,
                 mPreferredHorizontalOrientation, mPositionToLeft);
-        mY = getPopupY(anchorRect, mHeight, mOverlapAnchor, mPositionBelow);
+        mY = getPopupY(anchorRect, mHeight, mVerticalOverlapAnchor, mPositionBelow);
 
         if (mLayoutObserver != null) {
             mLayoutObserver.onPreLayoutChange(mPositionBelow, mX, mY, mWidth, mHeight, anchorRect);
