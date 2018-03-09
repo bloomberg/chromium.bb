@@ -1570,6 +1570,11 @@
     'wake_lock': {
       'filepath': 'wake_lock',
     },
+    'web_package': {
+      'filepath': 'content/browser/loader/prefetch_url_loader'\
+                  '|content/browser/web_package/'\
+                  '|content/test/data/htxg/'
+    },
     'web_share': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webshare/'\
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/WebShare.*'\
@@ -2305,6 +2310,7 @@
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
     'wake_lock': ['cco3+watch@chromium.org',
                   'mattreynolds+watch@chromium.org'],
+    'web_package': ['twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org',
