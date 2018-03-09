@@ -26,7 +26,7 @@ Polymer({
   },
 
   listeners: {
-    'tap': 'onHostTap_',
+    'click': 'onHostTap_',
   },
 
   observers: [
@@ -68,7 +68,7 @@ Polymer({
   },
 
   /**
-   * Handles non cr-toggle button taps (cr-toggle handles its own tap events
+   * Handles non cr-toggle button clicks (cr-toggle handles its own click events
    * which don't bubble).
    * @param {!Event} e
    * @private

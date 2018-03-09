@@ -25,8 +25,8 @@ Polymer({
   },
 
   listeners: {
-    'topMenu.tap': 'onLinkTap_',
-    'subMenu.tap': 'onLinkTap_',
+    'topMenu.click': 'onLinkTap_',
+    'subMenu.click': 'onLinkTap_',
   },
 
   /** @param {!settings.Route} newRoute */
