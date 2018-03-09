@@ -624,6 +624,8 @@ class _PaygenPayload(object):
     if metadata_sig_file_name:
       cmd += ['--meta-sig', path_util.ToChrootPath(metadata_sig_file_name)]
 
+    cmd += ['--metadata-size', str(self.metadata_size)]
+
     if is_delta:
       cmd += ['--src_kern',
               path_util.ToChrootPath(self.src_partitions[self._KERNEL]),

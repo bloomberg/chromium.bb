@@ -495,6 +495,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreVerifyLog')
+    gen.metadata_size = 10
 
     # Record the expected function calls.
     cmd = ['check_update_payload',
@@ -504,6 +505,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--dst_kern', '/work/new_kernel.dat',
            '--dst_root', '/work/new_rootfs.dat',
            '--meta-sig', gen.metadata_signature_file,
+           '--metadata-size', "10",
            '--src_kern', '/work/old_kernel.dat',
            '--src_root', '/work/old_rootfs.dat',
            gen.signed_payload_file]
@@ -523,6 +525,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     self.mox.StubOutWithMock(gen, '_RunGeneratorCmd')
     self.mox.StubOutWithMock(gen, '_StoreVerifyLog')
+    gen.metadata_size = 10
 
     # Record the expected function calls.
     cmd = ['check_update_payload',
@@ -532,6 +535,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--dst_kern', '/work/new_kernel.dat',
            '--dst_root', '/work/new_rootfs.dat',
            '--meta-sig', gen.metadata_signature_file,
+           '--metadata-size', "10",
            gen.signed_payload_file]
 
     gen._RunGeneratorCmd(cmd).AndReturn('log contents')
