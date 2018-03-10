@@ -1816,7 +1816,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
   return bestsad;
 }
 
-static int vector_match(int16_t *ref, int16_t *src, int bwl) {
+static int aom_vector_match(int16_t *ref, int16_t *src, int bwl) {
   int best_sad = INT_MAX;
   int this_sad;
   int d;
@@ -1966,8 +1966,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   // Find the best match per 1-D search
-  tmp_mv->col = vector_match(hbuf, src_hbuf, b_width_log2_lookup[bsize]);
-  tmp_mv->row = vector_match(vbuf, src_vbuf, b_height_log2_lookup[bsize]);
+  tmp_mv->col = aom_vector_match(hbuf, src_hbuf, b_width_log2_lookup[bsize]);
+  tmp_mv->row = aom_vector_match(vbuf, src_vbuf, b_height_log2_lookup[bsize]);
 
   this_mv = *tmp_mv;
   src_buf = x->plane[0].src.buf;

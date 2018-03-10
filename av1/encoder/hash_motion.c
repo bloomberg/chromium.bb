@@ -16,7 +16,7 @@ static void hash_table_clear_all(hash_table *p_hash_table) {
   int max_addr = 1 << (crc_bits + block_size_bits);
   for (int i = 0; i < max_addr; i++) {
     if (p_hash_table->p_lookup_table[i] != NULL) {
-      vector_destroy(p_hash_table->p_lookup_table[i]);
+      aom_vector_destroy(p_hash_table->p_lookup_table[i]);
       aom_free(p_hash_table->p_lookup_table[i]);
       p_hash_table->p_lookup_table[i] = NULL;
     }
@@ -126,11 +126,13 @@ static void hash_table_add_to_table(hash_table *p_hash_table,
   if (p_hash_table->p_lookup_table[hash_value] == NULL) {
     p_hash_table->p_lookup_table[hash_value] =
         aom_malloc(sizeof(p_hash_table->p_lookup_table[0][0]));
-    vector_setup(p_hash_table->p_lookup_table[hash_value], 10,
-                 sizeof(curr_block_hash[0]));
-    vector_push_back(p_hash_table->p_lookup_table[hash_value], curr_block_hash);
+    aom_vector_setup(p_hash_table->p_lookup_table[hash_value], 10,
+                     sizeof(curr_block_hash[0]));
+    aom_vector_push_back(p_hash_table->p_lookup_table[hash_value],
+                         curr_block_hash);
   } else {
-    vector_push_back(p_hash_table->p_lookup_table[hash_value], curr_block_hash);
+    aom_vector_push_back(p_hash_table->p_lookup_table[hash_value],
+                         curr_block_hash);
   }
 }
 
@@ -145,7 +147,7 @@ int32_t av1_hash_table_count(hash_table *p_hash_table, uint32_t hash_value) {
 Iterator av1_hash_get_first_iterator(hash_table *p_hash_table,
                                      uint32_t hash_value) {
   assert(av1_hash_table_count(p_hash_table, hash_value) > 0);
-  return vector_begin(p_hash_table->p_lookup_table[hash_value]);
+  return aom_vector_begin(p_hash_table->p_lookup_table[hash_value]);
 }
 
 int32_t av1_has_exact_match(hash_table *p_hash_table, uint32_t hash_value1,
@@ -153,8 +155,9 @@ int32_t av1_has_exact_match(hash_table *p_hash_table, uint32_t hash_value1,
   if (p_hash_table->p_lookup_table[hash_value1] == NULL) {
     return 0;
   }
-  Iterator iterator = vector_begin(p_hash_table->p_lookup_table[hash_value1]);
-  Iterator last = vector_end(p_hash_table->p_lookup_table[hash_value1]);
+  Iterator iterator =
+      aom_vector_begin(p_hash_table->p_lookup_table[hash_value1]);
+  Iterator last = aom_vector_end(p_hash_table->p_lookup_table[hash_value1]);
   for (; !iterator_equals(&iterator, &last); iterator_increment(&iterator)) {
     if ((*(block_hash *)iterator_get(&iterator)).hash_value2 == hash_value2) {
       return 1;
