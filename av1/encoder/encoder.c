@@ -1041,12 +1041,6 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->time_scale = oxcf->time_scale;
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
-  cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
-  cm->seq_params.enable_order_hint = oxcf->enable_order_hint;
-  cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
-  cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
-  // disable jnt_comp at sequence header for error resilient mode
-  cm->seq_params.enable_jnt_comp &= !oxcf->error_resilient_mode;
   cm->width = oxcf->width;
   cm->height = oxcf->height;
   set_sb_size(&cm->seq_params,
@@ -2578,6 +2572,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #if CONFIG_EXPLICIT_ORDER_HINT
   cm->seq_params.order_hint_bits = DEFAULT_EXPLICIT_ORDER_HINT_BITS;
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
+  cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
+  cm->seq_params.enable_order_hint = oxcf->enable_order_hint;
+  cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
+  cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,

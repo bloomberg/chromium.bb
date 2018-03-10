@@ -1199,7 +1199,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (mbmi->compound_idx)
           assert(mbmi->interinter_compound_type == COMPOUND_AVERAGE);
 
-        if (cm->seq_params.enable_jnt_comp) {
+        if (cm->seq_params.enable_jnt_comp && !cm->error_resilient_mode) {
           const int comp_index_ctx = get_comp_index_context(cm, xd);
           aom_write_symbol(w, mbmi->compound_idx,
                            ec_ctx->compound_index_cdf[comp_index_ctx], 2);
