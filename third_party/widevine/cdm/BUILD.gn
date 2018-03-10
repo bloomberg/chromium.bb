@@ -10,6 +10,11 @@ import("//media/cdm/library_cdm/ppapi_cdm_adapter.gni")
 import("//media/media_options.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
+# TODO(xhwang): Support component updated CDM on other platforms and remove this
+# assert.
+assert(!enable_widevine || is_win || is_mac,
+       "Component updated CDM only supported on Windows and Mac for now.")
+
 widevine_arch = current_cpu
 if (widevine_arch == "x86") {
   widevine_arch = "ia32"
