@@ -176,7 +176,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool IsWindowInteractionAllowed() const;
 
   // Decides whether this context is privileged, as described in
-  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
+  // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure.
   virtual bool IsSecureContext(String& error_message) const = 0;
   virtual bool IsSecureContext() const;
 

@@ -123,7 +123,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Returns true if the origin loads resources either from the local
   // machine or over the network from a
   // cryptographically-authenticated origin, as described in
-  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
+  // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy
   bool IsPotentiallyTrustworthy() const;
 
   // Returns a human-readable error message describing that a non-secure

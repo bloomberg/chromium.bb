@@ -183,7 +183,7 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
       execution_context->GetSecurityOrigin();
   String error_message;
   // Restrict to secure origins:
-  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
+  // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure
   if (!execution_context->IsSecureContext(error_message)) {
     callbacks->OnError(WebServiceWorkerError(
         mojom::blink::ServiceWorkerErrorType::kSecurity, error_message));
