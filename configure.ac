@@ -337,6 +337,9 @@ CFLAGS="$fontconfig_save_cflags"
 #
 if test "$os_win32" != "yes"; then
 	use_pkgconfig_for_uuid=yes
+	if test -n "${UUID_LIBS}"; then
+		save_UUID_LIBS=$UUID_LIBS
+	fi
 	PKG_CHECK_MODULES([UUID], [uuid],
 			  [use_pkgconfig_for_uuid=yes],
 			  [use_pkgconfig_for_uuid=no])
@@ -351,7 +354,9 @@ if test "$os_win32" != "yes"; then
 *** uuid is required. install util-linux.
 			])])
 	else
-		PKGCONFIG_REQUIRES_PRIVATELY="$PKGCONFIG_REQUIRES_PRIVATELY uuid"
+		if test -z "${save_UUID_LIBS+x}" && test "x${UUID_LIBS}" != "x"; then
+			PKGCONFIG_REQUIRES_PRIVATELY="$PKGCONFIG_REQUIRES_PRIVATELY uuid"
+		fi
 	fi
 else
 	UUID_CFLAGS=""
