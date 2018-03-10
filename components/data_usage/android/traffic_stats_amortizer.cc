@@ -176,7 +176,7 @@ void RecordConcurrentTabsHistogram(const DataUseBuffer& data_use_buffer) {
 
 TrafficStatsAmortizer::TrafficStatsAmortizer()
     : TrafficStatsAmortizer(
-          std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
+          base::DefaultTickClock::GetInstance(),
           std::unique_ptr<base::Timer>(new base::Timer(false, false)),
           GetTrafficStatsQueryDelay(),
           GetMaxAmortizationDelay(),
@@ -219,12 +219,12 @@ base::WeakPtr<TrafficStatsAmortizer> TrafficStatsAmortizer::GetWeakPtr() {
 }
 
 TrafficStatsAmortizer::TrafficStatsAmortizer(
-    std::unique_ptr<base::TickClock> tick_clock,
+    base::TickClock* tick_clock,
     std::unique_ptr<base::Timer> traffic_stats_query_timer,
     const base::TimeDelta& traffic_stats_query_delay,
     const base::TimeDelta& max_amortization_delay,
     size_t max_data_use_buffer_size)
-    : tick_clock_(std::move(tick_clock)),
+    : tick_clock_(tick_clock),
       traffic_stats_query_timer_(std::move(traffic_stats_query_timer)),
       traffic_stats_query_delay_(traffic_stats_query_delay),
       max_amortization_delay_(max_amortization_delay),

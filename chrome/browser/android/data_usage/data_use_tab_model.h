@@ -297,7 +297,7 @@ class DataUseTabModel {
   const base::TimeDelta open_tab_expiration_duration_;
 
   // TickClock used for obtaining the current time.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Stores the matching patterns.
   std::unique_ptr<DataUseMatcher> data_use_matcher_;

@@ -72,8 +72,7 @@ class TabDataUseEntryTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&TabDataUseEntryTest::OnMatchingRulesFetched,
                    base::Unretained(this))));
-    tick_clock_ = new SimpleOffsetTestTickClock();
-    tab_model_->tick_clock_.reset(tick_clock_);
+    tab_model_->tick_clock_ = &tick_clock_;
     tab_entry_.reset(new TabDataUseEntry(tab_model_.get()));
   }
 
@@ -151,8 +150,8 @@ class TabDataUseEntryTest : public testing::Test {
     return false;
   }
 
-  // Pointer to the clock used for spoofing time, owned by |tab_model_|.
-  SimpleOffsetTestTickClock* tick_clock_;
+  // The clock used for spoofing time.
+  SimpleOffsetTestTickClock tick_clock_;
 
   std::unique_ptr<DataUseTabModel> tab_model_;
   std::unique_ptr<TabDataUseEntry> tab_entry_;
@@ -225,22 +224,22 @@ TEST_F(TabDataUseEntryTest, SingleTabSessionCloseEvent) {
   ExpectTabEntrySessionsSize(TabEntrySessionSize::ZERO);
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  tick_clock_->SetNowOffsetInSeconds(1);
+  tick_clock_.SetNowOffsetInSeconds(1);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  tick_clock_->SetNowOffsetInSeconds(2);
+  tick_clock_.SetNowOffsetInSeconds(2);
   EXPECT_TRUE(tab_entry_->EndTracking());
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  tick_clock_->SetNowOffsetInSeconds(3);
-  base::TimeTicks time_before_close = tick_clock_->NowTicks();
+  tick_clock_.SetNowOffsetInSeconds(3);
+  base::TimeTicks time_before_close = tick_clock_.NowTicks();
   tab_entry_->OnTabCloseEvent();
-  tick_clock_->SetNowOffsetInSeconds(4);
+  tick_clock_.SetNowOffsetInSeconds(4);
 
   EXPECT_FALSE(tab_entry_->tab_close_time_.is_null());
   EXPECT_GE(tab_entry_->tab_close_time_, time_before_close);
-  EXPECT_LE(tab_entry_->tab_close_time_, tick_clock_->NowTicks());
+  EXPECT_LE(tab_entry_->tab_close_time_, tick_clock_.NowTicks());
 
   EXPECT_FALSE(tab_entry_->IsTrackingDataUse());
 }
@@ -251,26 +250,26 @@ TEST_F(TabDataUseEntryTest, MultipleTabSessionCloseEvent) {
   ExpectTabEntrySessionsSize(TabEntrySessionSize::ZERO);
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  tick_clock_->SetNowOffsetInSeconds(1);
+  tick_clock_.SetNowOffsetInSeconds(1);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
-  tick_clock_->SetNowOffsetInSeconds(2);
+  tick_clock_.SetNowOffsetInSeconds(2);
   EXPECT_TRUE(tab_entry_->EndTracking());
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  tick_clock_->SetNowOffsetInSeconds(3);
+  tick_clock_.SetNowOffsetInSeconds(3);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel2));
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
-  tick_clock_->SetNowOffsetInSeconds(4);
+  tick_clock_.SetNowOffsetInSeconds(4);
   EXPECT_TRUE(tab_entry_->EndTracking());
-  tick_clock_->SetNowOffsetInSeconds(5);
+  tick_clock_.SetNowOffsetInSeconds(5);
   EXPECT_TRUE(tab_entry_->tab_close_time_.is_null());
 
-  base::TimeTicks time_before_close = tick_clock_->NowTicks();
+  base::TimeTicks time_before_close = tick_clock_.NowTicks();
   tab_entry_->OnTabCloseEvent();
   EXPECT_FALSE(tab_entry_->tab_close_time_.is_null());
   EXPECT_GE(tab_entry_->tab_close_time_, time_before_close);
-  EXPECT_LE(tab_entry_->tab_close_time_, tick_clock_->NowTicks());
+  EXPECT_LE(tab_entry_->tab_close_time_, tick_clock_.NowTicks());
 
   EXPECT_FALSE(tab_entry_->IsTrackingDataUse());
 }
@@ -289,17 +288,17 @@ TEST_F(TabDataUseEntryTest, EndTrackingWithLabel) {
 // tracking sessions.
 TEST_F(TabDataUseEntryTest, TabSessionStartEndTimes) {
   // Start a tracking session at time=0.
-  tick_clock_->SetNowOffsetInSeconds(0);
+  tick_clock_.SetNowOffsetInSeconds(0);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
 
   // End the tracking session at time=10.
-  tick_clock_->SetNowOffsetInSeconds(10);
+  tick_clock_.SetNowOffsetInSeconds(10);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   // Start a tracking session at time=20, and end it at time=30.
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel2));
-  tick_clock_->SetNowOffsetInSeconds(30);
+  tick_clock_.SetNowOffsetInSeconds(30);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   ExpectTabEntrySessionsSize(TabEntrySessionSize::TWO);
@@ -315,9 +314,9 @@ TEST_F(TabDataUseEntryTest, TabSessionLabelDataUse) {
   ExpectEmptyDataUseLabelAtOffsetTime(40);
 
   // Start a tracking session at time=10, and end it at time=20.
-  tick_clock_->SetNowOffsetInSeconds(10);
+  tick_clock_.SetNowOffsetInSeconds(10);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   // No tracking session active during the time interval [0-10).
@@ -333,9 +332,9 @@ TEST_F(TabDataUseEntryTest, TabSessionLabelDataUse) {
   ExpectEmptyDataUseLabelAtOffsetTime(21);
 
   // Start a tracking session at time=30, and end it at time=40.
-  tick_clock_->SetNowOffsetInSeconds(30);
+  tick_clock_.SetNowOffsetInSeconds(30);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel2));
-  tick_clock_->SetNowOffsetInSeconds(40);
+  tick_clock_.SetNowOffsetInSeconds(40);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   // Tracking session active during the time interval [10-20] and [30-40].
@@ -364,18 +363,18 @@ TEST_F(TabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionStart) {
   EXPECT_TRUE(tab_entry_->IsExpired());
 
   // Start a tracking session at time=10.
-  tick_clock_->SetNowOffsetInSeconds(10);
+  tick_clock_.SetNowOffsetInSeconds(10);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Fast forward |open_tab_expiration_seconds| seconds from session start time.
   // Tab entry is not expired.
-  tick_clock_->SetNowOffsetInSeconds(10 + open_tab_expiration_seconds);
+  tick_clock_.SetNowOffsetInSeconds(10 + open_tab_expiration_seconds);
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Fast forward |open_tab_expiration_seconds+1| seconds from session start
   // time. Tab entry is expired.
-  tick_clock_->SetNowOffsetInSeconds(10 + open_tab_expiration_seconds + 1);
+  tick_clock_.SetNowOffsetInSeconds(10 + open_tab_expiration_seconds + 1);
   EXPECT_TRUE(tab_entry_->IsExpired());
 }
 
@@ -389,20 +388,20 @@ TEST_F(TabDataUseEntryTest, OpenTabSessionExpiryFromLatestSessionEnd) {
   EXPECT_TRUE(tab_entry_->IsExpired());
 
   // Start a tracking session at time=10, and end it at time=20.
-  tick_clock_->SetNowOffsetInSeconds(10);
+  tick_clock_.SetNowOffsetInSeconds(10);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->EndTracking());
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Fast forward |open_tab_expiration_seconds| seconds from session end
   // time. Tab entry is not expired.
-  tick_clock_->SetNowOffsetInSeconds(20 + open_tab_expiration_seconds);
+  tick_clock_.SetNowOffsetInSeconds(20 + open_tab_expiration_seconds);
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Fast forward |open_tab_expiration_seconds+1| seconds from session end
   // time. Tab entry is expired.
-  tick_clock_->SetNowOffsetInSeconds(20 + open_tab_expiration_seconds + 1);
+  tick_clock_.SetNowOffsetInSeconds(20 + open_tab_expiration_seconds + 1);
   EXPECT_TRUE(tab_entry_->IsExpired());
 }
 
@@ -416,24 +415,24 @@ TEST_F(TabDataUseEntryTest, ClosedTabSessionExpiry) {
   EXPECT_TRUE(tab_entry_->IsExpired());
 
   // Start a tracking session at time=10, and end it at time=20.
-  tick_clock_->SetNowOffsetInSeconds(10);
+  tick_clock_.SetNowOffsetInSeconds(10);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->EndTracking());
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Close the tab entry at time=30.
-  tick_clock_->SetNowOffsetInSeconds(30);
+  tick_clock_.SetNowOffsetInSeconds(30);
   tab_entry_->OnTabCloseEvent();
 
   // Fast forward |closed_tab_expiration_seconds| seconds from tab close
   // time. Tab entry is not expired.
-  tick_clock_->SetNowOffsetInSeconds(30 + closed_tab_expiration_seconds);
+  tick_clock_.SetNowOffsetInSeconds(30 + closed_tab_expiration_seconds);
   EXPECT_FALSE(tab_entry_->IsExpired());
 
   // Fast forward |closed_tab_expiration_seconds+1| seconds from tab close
   // time. Tab entry is expired.
-  tick_clock_->SetNowOffsetInSeconds(30 + closed_tab_expiration_seconds + 1);
+  tick_clock_.SetNowOffsetInSeconds(30 + closed_tab_expiration_seconds + 1);
   EXPECT_TRUE(tab_entry_->IsExpired());
 }
 
@@ -452,10 +451,10 @@ TEST_F(TabDataUseEntryTest, CompactTabSessionHistory) {
     // Start tracking session at time=|session_start_time| and end after
     // time=|per_session_duration|.
     std::string session_label = base::StringPrintf("label_%d", num_sessions);
-    tick_clock_->SetNowOffsetInSeconds(session_start_time);
+    tick_clock_.SetNowOffsetInSeconds(session_start_time);
     EXPECT_TRUE(tab_entry_->StartTracking(session_label));
-    tick_clock_->SetNowOffsetInSeconds(session_start_time +
-                                       per_session_duration);
+    tick_clock_.SetNowOffsetInSeconds(session_start_time +
+                                      per_session_duration);
     EXPECT_TRUE(tab_entry_->EndTracking());
 
     ExpectTabEntrySessionsSize(num_sessions);
@@ -477,10 +476,10 @@ TEST_F(TabDataUseEntryTest, CompactTabSessionHistory) {
     // Start tracking session at time=|session_start_time| and end after
     // time=|per_session_duration|.
     std::string session_label = base::StringPrintf("label_%d", num_sessions);
-    tick_clock_->SetNowOffsetInSeconds(session_start_time);
+    tick_clock_.SetNowOffsetInSeconds(session_start_time);
     EXPECT_TRUE(tab_entry_->StartTracking(session_label));
-    tick_clock_->SetNowOffsetInSeconds(session_start_time +
-                                       per_session_duration);
+    tick_clock_.SetNowOffsetInSeconds(session_start_time +
+                                      per_session_duration);
     EXPECT_TRUE(tab_entry_->EndTracking());
 
     // Oldest entry got removed.
@@ -500,9 +499,9 @@ TEST_F(TabDataUseEntryTest, TrackingSessionLifetimeHistogram) {
   base::HistogramTester histogram_tester;
 
   // Tracking session from time=20 to time=30, lifetime of 10 seconds.
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(30);
+  tick_clock_.SetNowOffsetInSeconds(30);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   histogram_tester.ExpectTotalCount(kUMATrackingSessionLifetimeSecondsHistogram,
@@ -512,9 +511,9 @@ TEST_F(TabDataUseEntryTest, TrackingSessionLifetimeHistogram) {
       base::TimeDelta::FromSeconds(10).InMilliseconds(), 1);
 
   // Tracking session from time=40 to time=70, lifetime of 30 seconds.
-  tick_clock_->SetNowOffsetInSeconds(40);
+  tick_clock_.SetNowOffsetInSeconds(40);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(70);
+  tick_clock_.SetNowOffsetInSeconds(70);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   histogram_tester.ExpectTotalCount(kUMATrackingSessionLifetimeSecondsHistogram,
@@ -531,9 +530,9 @@ TEST_F(TabDataUseEntryTest, OldInactiveSessionRemovaltimeHistogram) {
   const size_t max_sessions_per_tab = GetMaxSessionsPerTab();
 
   // Start a tracking session at time=20, and end it at time=30.
-  tick_clock_->SetNowOffsetInSeconds(20);
+  tick_clock_.SetNowOffsetInSeconds(20);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
-  tick_clock_->SetNowOffsetInSeconds(30);
+  tick_clock_.SetNowOffsetInSeconds(30);
   EXPECT_TRUE(tab_entry_->EndTracking());
 
   for (size_t session = 1; session < max_sessions_per_tab; ++session) {
@@ -543,7 +542,7 @@ TEST_F(TabDataUseEntryTest, OldInactiveSessionRemovaltimeHistogram) {
 
   // Add one more session at time=60. This removes the first inactive tracking
   // session that ended at time=30, with removal duration of 30 seconds.
-  tick_clock_->SetNowOffsetInSeconds(60);
+  tick_clock_.SetNowOffsetInSeconds(60);
   EXPECT_TRUE(tab_entry_->StartTracking(kTestLabel1));
   EXPECT_TRUE(tab_entry_->EndTracking());
 
