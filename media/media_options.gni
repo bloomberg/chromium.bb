@@ -9,7 +9,6 @@ import("//build/config/features.gni")
 # TODO(xhwang): Remove this once pepper CDM support is removed.
 import("//ppapi/features/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/widevine/cdm/widevine.gni")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
 # all targets which roll up into the //media component. It controls visibility
