@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/decoder_stream_traits.h"
@@ -91,15 +90,11 @@ class MEDIA_EXPORT DecoderSelector {
                      const base::Closure& waiting_for_decryption_key_cb);
 
  private:
-#if !defined(OS_ANDROID)
-  void InitializeDecryptingDecoder();
-  void DecryptingDecoderInitDone(bool success);
-#endif
-  void InitializeDecryptingDemuxerStream();
-  void DecryptingDemuxerStreamInitDone(PipelineStatus status);
   void InitializeDecoder();
   void DecoderInitDone(bool success);
   void ReturnNullDecoder();
+  void InitializeDecryptingDemuxerStream();
+  void DecryptingDemuxerStreamInitDone(PipelineStatus status);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CreateDecodersCB create_decoders_cb_;
@@ -109,7 +104,7 @@ class MEDIA_EXPORT DecoderSelector {
 
   // Could be the |stream| passed in SelectDecoder, or |decrypted_stream_| when
   // a DecryptingDemuxerStream is selected.
-  DemuxerStream* input_stream_;
+  DemuxerStream* input_stream_ = nullptr;
 
   CdmContext* cdm_context_;
   std::string blacklisted_decoder_;
@@ -124,6 +119,9 @@ class MEDIA_EXPORT DecoderSelector {
 
   // Config of the |input_stream| used to initialize decoders.
   DecoderConfig config_;
+
+  // Indicates if we tried to initialize |decrypted_stream_|.
+  bool tried_decrypting_demuxer_stream_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderSelector> weak_ptr_factory_;

@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "media/base/fake_demuxer_stream.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
@@ -20,6 +21,10 @@
 #include "media/filters/decoder_stream.h"
 #include "media/filters/fake_video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID)
+#include "media/filters/decrypting_video_decoder.h"
+#endif
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -141,6 +146,14 @@ class VideoFrameStreamTest
     // supports encrypted streams. Currently this is hard to test because we use
     // parameterized tests which need to pass in all combinations.
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
+
+#if !defined(OS_ANDROID)
+    // Note this is _not_ inserted into |decoders_| below, so we don't need to
+    // adjust the indices used below to compensate.
+    decoders.push_back(std::make_unique<DecryptingVideoDecoder>(
+        message_loop_.task_runner(), &media_log_));
+#endif
+
     for (int i = 0; i < 3; ++i) {
       auto decoder = std::make_unique<FakeVideoDecoder>(
           GetDecoderName(i), GetParam().decoding_delay,
@@ -167,11 +180,13 @@ class VideoFrameStreamTest
     for (const auto& i : decoder_indices_to_hold_decode_)
       decoders_[i]->HoldDecode();
 
+    return decoders;
+  }
+
+  void ClearDecoderInitExpectations() {
     decoder_indices_to_fail_init_.clear();
     decoder_indices_to_hold_init_.clear();
     decoder_indices_to_hold_decode_.clear();
-
-    return decoders;
   }
 
   // On next decoder selection, fail initialization on decoders specified by
@@ -1187,6 +1202,7 @@ TEST_P(VideoFrameStreamTest, FallbackDecoder_SelectedOnInitThenDecodeErrors) {
   FailDecoderInitOnSelection({0});
   Initialize();
   ASSERT_EQ(GetDecoderName(1), decoder_->GetDisplayName());
+  ClearDecoderInitExpectations();
 
   decoder_->HoldDecode();
   ReadOneFrame();

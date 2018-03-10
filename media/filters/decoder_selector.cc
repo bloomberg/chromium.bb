@@ -20,11 +20,6 @@
 #include "media/filters/decoder_stream_traits.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
-#if !defined(OS_ANDROID)
-#include "media/filters/decrypting_audio_decoder.h"
-#include "media/filters/decrypting_video_decoder.h"
-#endif
-
 namespace media {
 
 static bool HasValidStreamConfig(DemuxerStream* stream) {
@@ -48,7 +43,6 @@ DecoderSelector<StreamType>::DecoderSelector(
     : task_runner_(task_runner),
       create_decoders_cb_(std::move(create_decoders_cb)),
       media_log_(media_log),
-      input_stream_(nullptr),
       weak_ptr_factory_(this) {}
 
 template <DemuxerStream::Type StreamType>
@@ -98,99 +92,6 @@ void DecoderSelector<StreamType>::SelectDecoder(
   decoders_ = create_decoders_cb_.Run();
   config_ = StreamTraits::GetDecoderConfig(input_stream_);
 
-  // When there is a CDM attached, always try the decrypting decoder or
-  // demuxer-stream first.
-  if (config_.is_encrypted()) {
-    DCHECK(cdm_context_);
-// TODO(xhwang): This if-defined doesn't make a lot of sense. It should be
-// replaced by some better checks.
-#if !defined(OS_ANDROID)
-    InitializeDecryptingDecoder();
-#else
-    InitializeDecryptingDemuxerStream();
-#endif
-    return;
-  }
-
-  InitializeDecoder();
-}
-
-#if !defined(OS_ANDROID)
-template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
-  DVLOG(2) << __func__;
-
-  decoder_.reset(new typename StreamTraits::DecryptingDecoderType(task_runner_,
-                                                                  media_log_));
-
-  if (decoder_->GetDisplayName() == blacklisted_decoder_) {
-    DVLOG(1) << __func__ << ": Decrypting decoder is blacklisted.";
-    DecryptingDecoderInitDone(false);
-    return;
-  }
-
-  traits_->InitializeDecoder(
-      decoder_.get(), StreamTraits::GetDecoderConfig(input_stream_),
-      input_stream_->liveness() == DemuxerStream::LIVENESS_LIVE, cdm_context_,
-      base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
-                 weak_ptr_factory_.GetWeakPtr()),
-      output_cb_, waiting_for_decryption_key_cb_);
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
-  DVLOG(2) << __func__ << ": success=" << success;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (success) {
-    DVLOG(1) << __func__ << ": " << decoder_->GetDisplayName() << " selected.";
-    decoders_.clear();
-    base::ResetAndReturn(&select_decoder_cb_)
-        .Run(std::move(decoder_), std::unique_ptr<DecryptingDemuxerStream>());
-    return;
-  }
-
-  decoder_.reset();
-
-  // When we get here decrypt-and-decode is not supported. Try to use
-  // DecryptingDemuxerStream to do decrypt-only.
-  InitializeDecryptingDemuxerStream();
-}
-#endif  // !defined(OS_ANDROID)
-
-template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
-  decrypted_stream_.reset(new DecryptingDemuxerStream(
-      task_runner_, media_log_, waiting_for_decryption_key_cb_));
-
-  decrypted_stream_->Initialize(
-      input_stream_, cdm_context_,
-      base::Bind(&DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
-    PipelineStatus status) {
-  DVLOG(2) << __func__
-           << ": status=" << MediaLog::PipelineStatusToString(status);
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(cdm_context_);
-
-  // If DecryptingDemuxerStream initialization succeeded, we'll use it to do
-  // decryption and use a decoder to decode the clear stream. Otherwise, we'll
-  // try to see whether any decoder can decrypt-and-decode the encrypted stream
-  // directly. So in both cases, we'll initialize the decoders.
-
-  if (status == PIPELINE_OK) {
-    input_stream_ = decrypted_stream_.get();
-    config_ = StreamTraits::GetDecoderConfig(input_stream_);
-    DCHECK(!config_.is_encrypted());
-  } else {
-    decrypted_stream_.reset();
-    DCHECK(config_.is_encrypted());
-  }
-
   InitializeDecoder();
 }
 
@@ -214,6 +115,12 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   }
 
   if (!decoder_) {
+    // No decoder could handle encrypted content, try to do decrypt-only.
+    if (!tried_decrypting_demuxer_stream_ && config_.is_encrypted()) {
+      InitializeDecryptingDemuxerStream();
+      return;
+    }
+
     ReturnNullDecoder();
     return;
   }
@@ -254,6 +161,53 @@ void DecoderSelector<StreamType>::ReturnNullDecoder() {
   base::ResetAndReturn(&select_decoder_cb_)
       .Run(std::unique_ptr<Decoder>(),
            std::unique_ptr<DecryptingDemuxerStream>());
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
+  decrypted_stream_.reset(new DecryptingDemuxerStream(
+      task_runner_, media_log_, waiting_for_decryption_key_cb_));
+
+  decrypted_stream_->Initialize(
+      input_stream_, cdm_context_,
+      base::Bind(&DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
+    PipelineStatus status) {
+  DVLOG(2) << __func__
+           << ": status=" << MediaLog::PipelineStatusToString(status);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(cdm_context_);
+
+  // If DecryptingDemuxerStream initialization failed, we've already tried every
+  // possible decoder, so we can just ReturnNullDecoder() here.
+  if (status != PIPELINE_OK) {
+    DCHECK(decoders_.empty());
+    DCHECK(config_.is_encrypted());
+    decrypted_stream_.reset();
+    ReturnNullDecoder();
+    return;
+  }
+
+  // If DecryptingDemuxerStream initialization succeeded, we'll use it to do
+  // decryption and use a decoder to decode the clear stream. Otherwise, we'll
+  // try to see whether any decoder can decrypt-and-decode the encrypted stream
+  // directly. So in both cases, we'll initialize the decoders.
+  input_stream_ = decrypted_stream_.get();
+  config_ = StreamTraits::GetDecoderConfig(input_stream_);
+  DCHECK(!config_.is_encrypted());
+
+  // If we're here we tried all the decoders w/ is_encrypted=true, try again
+  // now that the stream is being decrypted by the demuxer.
+  DCHECK(decoders_.empty());
+  DCHECK(!tried_decrypting_demuxer_stream_);
+  decoders_ = create_decoders_cb_.Run();
+  tried_decrypting_demuxer_stream_ = true;
+
+  InitializeDecoder();
 }
 
 // These forward declarations tell the compiler that we will use

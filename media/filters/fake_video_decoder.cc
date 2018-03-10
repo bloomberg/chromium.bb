@@ -80,7 +80,9 @@ void FakeVideoDecoder::Initialize(
 
   if (config.is_encrypted() && (!supports_encrypted_config_ || !cdm_context)) {
     DVLOG(1) << "Encrypted config not supported.";
-    fail_to_initialize_ = true;
+    state_ = STATE_NORMAL;
+    init_cb_.RunOrHold(false);
+    return;
   }
 
   if (fail_to_initialize_) {

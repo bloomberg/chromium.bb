@@ -112,6 +112,10 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   // matching DecryptCB call (in DoDeliverFrame()).
   uint32_t trace_id_;
 
+  // Once Initialized() with encrypted content support, if the stream changes to
+  // clear content, we want to ensure this decoder remains used.
+  bool support_clear_content_;
+
   base::WeakPtr<DecryptingVideoDecoder> weak_this_;
   base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
 
