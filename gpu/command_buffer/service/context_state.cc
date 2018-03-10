@@ -402,7 +402,8 @@ void ContextState::RestoreProgramSettings(
   if (flag) {
     if (bound_transform_feedback.get()) {
       bound_transform_feedback->DoBindTransformFeedback(
-          GL_TRANSFORM_FEEDBACK, bound_transform_feedback.get());
+          GL_TRANSFORM_FEEDBACK, bound_transform_feedback.get(),
+          bound_transform_feedback_buffer.get());
     } else {
       api()->glBindTransformFeedbackFn(GL_TRANSFORM_FEEDBACK, 0);
     }

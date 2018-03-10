@@ -68,6 +68,14 @@ class GPU_GLES2_EXPORT IndexedBufferBindingHost
 
   virtual ~IndexedBufferBindingHost();
 
+  // Whether this object is currently bound into the context.
+  bool is_bound_;
+
+  // Whether or not to call Buffer::OnBind/OnUnbind whenever bindings change.
+  // This is only necessary for WebGL contexts to implement
+  // https://crbug.com/696345
+  bool do_buffer_refcounting_;
+
  private:
   enum IndexedBufferBindingType {
     kBindBufferBase,
@@ -108,14 +116,6 @@ class GPU_GLES2_EXPORT IndexedBufferBindingHost
   std::vector<IndexedBufferBinding> buffer_bindings_;
 
   bool needs_emulation_;
-
-  // Whether this object is currently bound into the context.
-  bool is_bound_;
-
-  // Whether or not to call Buffer::OnBind/OnUnbind whenever bindings change.
-  // This is only necessary for WebGL contexts to implement
-  // https://crbug.com/696345
-  bool do_buffer_refcounting_;
 
   // This is used for optimization purpose in context switching.
   size_t max_non_null_binding_index_plus_one_;
