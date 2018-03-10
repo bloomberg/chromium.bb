@@ -382,15 +382,12 @@ static int check_sb_border(const int mi_row, const int mi_col,
   return 1;
 }
 
-static int add_tpl_ref_mv(const AV1_COMMON *cm,
-                          const MV_REF *prev_frame_mvs_base,
-                          const MACROBLOCKD *xd, int mi_row, int mi_col,
-                          MV_REFERENCE_FRAME ref_frame, int blk_row,
-                          int blk_col, int_mv *gm_mv_candidates,
+static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                          int mi_row, int mi_col, MV_REFERENCE_FRAME ref_frame,
+                          int blk_row, int blk_col, int_mv *gm_mv_candidates,
                           uint8_t refmv_count[MODE_CTX_REF_FRAMES],
                           CANDIDATE_MV ref_mv_stacks[][MAX_REF_MV_STACK_SIZE],
                           int16_t *mode_context) {
-  (void)prev_frame_mvs_base;
   POSITION mi_pos;
   int idx;
   int coll_blk_count = 0;
@@ -544,15 +541,6 @@ static void setup_ref_mv_list(
     int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
     int mi_row, int mi_col, int16_t *mode_context, int compound_search) {
-  const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
-  const int tmi_row = mi_row & 0xfffe;
-  const int tmi_col = mi_col & 0xfffe;
-  const MV_REF *const prev_frame_mvs_base =
-      cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs + (tmi_row >> 1) * prev_frame_mvs_stride +
-                (tmi_col >> 1)
-          : NULL;
-
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
   MV_REFERENCE_FRAME rf[2];
@@ -661,12 +649,9 @@ static void setup_ref_mv_list(
 
     for (int blk_row = 0; blk_row < blk_row_end; blk_row += step_h) {
       for (int blk_col = 0; blk_col < blk_col_end; blk_col += step_w) {
-        // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is
-        // used.
-        // Can be modified the same way.
         int is_available = add_tpl_ref_mv(
-            cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
-            blk_col, gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
+            cm, xd, mi_row, mi_col, ref_frame, blk_row, blk_col,
+            gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
         if (blk_row == 0 && blk_col == 0)
           coll_blk_count[ref_frame] = is_available;
       }
@@ -680,11 +665,9 @@ static void setup_ref_mv_list(
       const int blk_col = tpl_sample_pos[i][1];
 
       if (!check_sb_border(mi_row, mi_col, blk_row, blk_col)) continue;
-      // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
-      // Can be modified the same way.
       coll_blk_count[ref_frame] += add_tpl_ref_mv(
-          cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
-          blk_col, gm_mv_candidates, refmv_count, ref_mv_stack, mode_context);
+          cm, xd, mi_row, mi_col, ref_frame, blk_row, blk_col, gm_mv_candidates,
+          refmv_count, ref_mv_stack, mode_context);
     }
   }
 
