@@ -21,6 +21,12 @@ InputDeviceInfo::InputDeviceInfo(const String& device_id,
                                  MediaDeviceType device_type)
     : MediaDeviceInfo(device_id, label, group_id, device_type) {}
 
-void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {}
+void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {
+  capabilities.setDeviceId(deviceId());
+  capabilities.setGroupId(groupId());
+
+  if (DeviceType() == MediaDeviceType::MEDIA_AUDIO_INPUT)
+    capabilities.setEchoCancellation({true, false});
+}
 
 }  // namespace blink

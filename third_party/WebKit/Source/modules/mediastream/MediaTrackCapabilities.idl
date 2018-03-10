@@ -10,6 +10,7 @@ dictionary MediaTrackCapabilities {
     sequence<DOMString> facingMode;
     sequence<boolean> echoCancellation;
     DOMString deviceId;
+    DOMString groupId;
     // W3C Image Capture API
     // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
     // TODO(mcasas) move out when partial dictionaries are supported
