@@ -62,13 +62,15 @@
             [[item.site]]
             <div class="secondary">[[item.localData]]</div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label$="[[item.site]]"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label$="[[item.site]]"></button>
+          </paper-icon-button-light>
           <div class="separator"></div>
-          <button is="paper-icon-button-light" class="icon-delete-gray"
-              title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
-              on-click="onRemoveSiteTap_">
-          </button>
+          <paper-icon-button-light class="icon-delete-gray">
+            <button title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
+                on-click="onRemoveSiteTap_">
+            </button>
+          </paper-icon-button-light>
         </div>
       </template>
     </iron-list>

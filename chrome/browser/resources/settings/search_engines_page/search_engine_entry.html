@@ -53,10 +53,11 @@
       </div>
       <div id="keyword-column"><div>[[engine.keyword]]</div></div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
-      <button is="paper-icon-button-light" class="icon-more-vert"
-          on-click="onDotsTap_" title="$i18n{moreActions}" focus-row-control
-          focus-type="cr-menu-button">
-      </button>
+      <paper-icon-button-light class="icon-more-vert">
+        <button on-click="onDotsTap_" title="$i18n{moreActions}"
+            focus-row-control focus-type="cr-menu-button">
+        </button>
+      </paper-icon-button-light>
       <dialog is="cr-action-menu">
         <button slot="item" class="dropdown-item" on-click="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">

@@ -52,35 +52,36 @@
                   if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
                 <div actionable class="list-item" on-click="onAddWiFiTap_">
                   <div class="start">$i18n{internetAddWiFi}</div>
-                  <button class$="[[getAddNetworkClass_('WiFi')]]"
-                      is="paper-icon-button-light"
-                      aria-label="$i18n{internetAddWiFi}">
-                  </button>
+                  <paper-icon-button-light
+                      class$="[[getAddNetworkClass_('WiFi')]]">
+                    <button aria-label="$i18n{internetAddWiFi}"></button>
+                  </paper-icon-button-light>
                 </div>
               </template>
               <div actionable class="list-item" on-click="onAddVPNTap_">
                 <div class="start">$i18n{internetAddVPN}</div>
-                <button class$="[[getAddNetworkClass_('VPN')]]"
-                    is="paper-icon-button-light"
-                    aria-label="$i18n{internetAddVPN}">
-                </button>
+                <paper-icon-button-light
+                    class$="[[getAddNetworkClass_('VPN')]]">
+                  <button aria-label="$i18n{internetAddVPN}"></button>
+                </paper-icon-button-light>
               </div>
               <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
                 <div actionable class="list-item"
                     on-click="onAddThirdPartyVpnTap_" provider="[[item]]">
                   <div class="start">[[getAddThirdPartyVpnLabel_(item)]]</div>
-                  <button class="icon-external" is="paper-icon-button-light"
-                      aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
-                  </button>
+                  <paper-icon-button-light class="icon-external">
+                    <button aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
+                    </button>
+                  </paper-icon-button-light>
                 </div>
               </template>
               <template is="dom-if" if="[[arcVpnProviders_.length]]">
                 <div actionable class="list-item" id="addArcVpn"
                     on-click="onAddArcVpnTap_">
                   <div class="start">$i18n{internetAddArcVPN}</div>
-                  <button class="icon-external" is="paper-icon-button-light"
-                      aria-label$="$i18n{internetAddArcVPN}">
-                  </button>
+                  <paper-icon-button-light class="icon-external">
+                    <button aria-label$="$i18n{internetAddArcVPN}"></button>
+                  </paper-icon-button-light>
                 </div>
               </template>
             </div>

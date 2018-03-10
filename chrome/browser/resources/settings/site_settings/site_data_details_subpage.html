@@ -28,9 +28,9 @@
           [[getEntryDescription_(item)]]
         </cr-expand-button>
         <div class="separator"></div>
-        <button is="paper-icon-button-light" data-id-path$="[[item.idPath]]"
-            class="icon-clear" on-click="onRemove_">
-        </button>
+        <paper-icon-button-light class="icon-clear">
+          <button data-id-path$="[[item.idPath]]" on-click="onRemove_"></button>
+        </paper-icon-button-light>
       </div>
       <iron-collapse class="list-frame vertical-list"
           opened="[[item.expanded_]]">

@@ -65,10 +65,11 @@
           </div>
           <div class="list-item" id="storage" hidden$="[[!storedData_]]">
             <div class="start">[[storedData_]]</div>
-            <button is="paper-icon-button-light" class="icon-delete-gray"
-                on-click="onConfirmClearStorage_"
-                aria-label="$i18n{siteSettingsDelete}">
-            </button>
+            <paper-icon-button-light class="icon-delete-gray">
+              <button on-click="onConfirmClearStorage_"
+                  aria-label="$i18n{siteSettingsDelete}">
+              </button>
+            </paper-icon-button-light>
           </div>
         </div>
       </div>
@@ -163,10 +164,11 @@
       <div class="start">
         $i18n{siteSettingsReset}
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{siteSettingsReset}"
-          aria-describedby="clearAndReset">
-      </button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{siteSettingsReset}"
+            aria-describedby="clearAndReset">
+        </button>
+      </paper-icon-button-light>
     </div>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"

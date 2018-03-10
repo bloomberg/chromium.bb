@@ -86,7 +86,7 @@ Polymer({
   /** @private */
   onDotsTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
-        .showAt(assert(this.$$('button[is="paper-icon-button-light"]')));
+        .showAt(assert(this.$$('paper-icon-button-light button')));
   },
 
   /**
@@ -106,7 +106,7 @@ Polymer({
       dialog.addEventListener('close', () => {
         this.showEditSearchEngineDialog_ = false;
         cr.ui.focusWithoutInk(
-            assert(this.$$('button[is="paper-icon-button-light"]')));
+            assert(this.$$('paper-icon-button-light button')));
       });
     });
   },

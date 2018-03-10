@@ -33,9 +33,10 @@
               $i18n{resetTriggerDescription}
             </div>
           </div>
-          <button id="resetProfileArrow" is="paper-icon-button-light"
-              class="subpage-arrow" aria-label="$i18n{resetTrigger}"
-              aria-describedby="resetProfileSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button id="resetProfileArrow" aria-label="$i18n{resetTrigger}"
+                aria-describedby="resetProfileSecondary"></button>
+          </paper-icon-button-light>
         </div>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
           preserve state across show/hide operations. -->
@@ -52,9 +53,10 @@
               $i18n{powerwashDescription}
             </div>
           </div>
-          <button id="powerwashArrow" is="paper-icon-button-light"
-              class="subpage-arrow" aria-label="$i18n{powerwashTitle}"
-              aria-describedby="powerwashSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button id="powerwashArrow" aria-label="$i18n{powerwashTitle}"
+                aria-describedby="powerwashSecondary"></button>
+          </paper-icon-button-light>
         </div>
         <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>
           <settings-powerwash-dialog on-close="onPowerwashDialogClose_">
@@ -66,10 +68,11 @@
           <div class="settings-box" id="chromeCleanupSubpageTrigger"
               on-click="onChromeCleanupTap_" actionable>
             <div class="start">$i18n{resetCleanupComputerTrigger}</div>
-            <button id="chromeCleanupArrow" is="paper-icon-button-light"
-                class="subpage-arrow"
-                aria-label="$i18n{resetCleanupComputerTrigger}"
-                aria-describedby="chromeCleanupSecondary"></button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button id="chromeCleanupArrow"
+                  aria-label="$i18n{resetCleanupComputerTrigger}"
+                  aria-describedby="chromeCleanupSecondary"></button>
+            </paper-icon-button-light>
           </div>
         </template>
         <template is="dom-if" if="[[showIncompatibleApplications_]]" restamp>

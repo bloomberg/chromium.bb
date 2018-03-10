@@ -32,9 +32,10 @@
     <div id="proxy" class="settings-box" on-click="onProxyTap_"
         actionable$="[[!isProxyEnforcedByPolicy_]]">
       <div class="start">$i18n{proxySettingsLabel}</div>
-      <button is="paper-icon-button-light" class="icon-external"
-          aria-label="$i18n{proxySettingsLabel}"
-          hidden$="[[isProxyEnforcedByPolicy_]]"></button>
+      <paper-icon-button-light class="icon-external"
+          hidden$="[[isProxyEnforcedByPolicy_]]">
+        <button aria-label="$i18n{proxySettingsLabel}"></button>
+      </paper-icon-button-light>
       <template is="dom-if" if="[[isProxyEnforcedByPolicy_]]">
         <cr-policy-pref-indicator pref="[[prefs.proxy]]"
             icon-aria-label="$i18n{proxySettingsLabel}">

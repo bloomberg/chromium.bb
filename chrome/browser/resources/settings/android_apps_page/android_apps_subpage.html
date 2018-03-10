@@ -23,9 +23,9 @@
     <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]">
       <div id="remove" class="settings-box" actionable on-click="onRemoveTap_">
         <div class="start">$i18n{androidAppsRemove}</div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="$i18n{androidAppsRemove}">
-        </button>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{androidAppsRemove}"></button>
+        </paper-icon-button-light>
       </div>
     </template>
 

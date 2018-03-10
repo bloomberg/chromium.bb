@@ -32,8 +32,10 @@
         [[i18n('certificateManagerUntrusted')]]
       </div>
       <div class="name">[[model.name]]</div>
-      <button is="paper-icon-button-light" class="icon-more-vert" id="dots"
-          title="[[i18n('moreActions')]]" on-tap="onDotsTap_"></button>
+      <paper-icon-button-light class="icon-more-vert">
+        <button id="dots" title="[[i18n('moreActions')]]" on-tap="onDotsTap_">
+        </button>
+      </paper-icon-button-light>
       <template is="cr-lazy-render" id="menu">
         <dialog is="cr-action-menu">
           <button slot="item" class="dropdown-item" id="view"

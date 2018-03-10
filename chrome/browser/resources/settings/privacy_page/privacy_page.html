@@ -141,14 +141,16 @@
             </div>
           </div>
 <if expr="use_nss_certs">
-          <button is="paper-icon-button-light" class="subpage-arrow"
-              aria-label="$i18n{manageCertificates}"
-              aria-describedby="manageCertificatesSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{manageCertificates}"
+                aria-describedby="manageCertificatesSecondary"></button>
+          </paper-icon-button-light>
 </if>
 <if expr="not use_nss_certs">
-          <button is="paper-icon-button-light" class="icon-external"
-              aria-label="$i18n{manageCertificates}"
-              aria-describedby="manageCertificatesSecondary"></button>
+          <paper-icon-button-light class="icon-external">
+            <button aria-label="$i18n{manageCertificates}"
+                aria-describedby="manageCertificatesSecondary"></button>
+          </paper-icon-button-light>
 </if>
         </div>
 </if>
@@ -161,9 +163,10 @@
               $i18n{siteSettingsDescription}
             </div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label$="[[siteSettingsPageTitle_()]]"
-              aria-describedby="siteSettingsSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label$="[[siteSettingsPageTitle_()]]"
+                aria-describedby="siteSettingsSecondary"></button>
+          </paper-icon-button-light>
         </div>
         <div class="settings-box two-line" id="clearBrowsingData"
             on-click="onClearBrowsingDataTap_" actionable>
@@ -173,9 +176,11 @@
               $i18n{clearBrowsingDataDescription}
             </div>
           </div>
-          <button is="paper-icon-button-light" id="clearBrowsingDataTrigger"
-              class="subpage-arrow" aria-label="$i18n{clearBrowsingData}"
-              aria-describedby="clearBrowsingDataSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button id="clearBrowsingDataTrigger"
+                aria-label="$i18n{clearBrowsingData}"
+                aria-describedby="clearBrowsingDataSecondary"></button>
+          </paper-icon-button-light>
         </div>
       </neon-animatable>
 <if expr="use_nss_certs">
@@ -261,9 +266,9 @@
              <div class="start" id="cookiesLink">
                $i18n{siteSettingsCookieLink}
              </div>
-             <button class="subpage-arrow" is="paper-icon-button-light"
-                 aria-labelledby="cookiesLink">
-             </button>
+             <paper-icon-button-light class="subpage-arrow">
+               <button aria-labelledby="cookiesLink"></button>
+             </paper-icon-button-light>
           </div>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.COOKIES}}"
@@ -406,8 +411,9 @@
               target="_blank"
               href="https://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html">
             <div class="start">$i18n{adobeFlashStorage}</div>
-            <button class="icon-external" is="paper-icon-button-light"
-                actionable aria-label="$i18n{adobeFlashStorage}"></button>
+            <paper-icon-button-light class="icon-external">
+              <button actionable aria-label="$i18n{adobeFlashStorage}"></button>
+            </paper-icon-button-light>
           </a>
 </if>
           <category-setting-exceptions

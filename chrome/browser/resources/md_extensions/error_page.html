@@ -81,7 +81,7 @@
         padding-left: 0;
       }
 
-      .error-item button[is='paper-icon-button-light'] {
+      .error-item paper-icon-button-light {
         -webkit-margin-end: 0;
       }
 
@@ -160,7 +160,7 @@
       }
 
       /* TODO(scottchen): extract to shared location from settings. */
-      .separator + button[is='paper-icon-button-light'] {
+      .separator + paper-icon-button-light {
         -webkit-margin-start: var(--cr-icon-ripple-margin);
       }
 
@@ -175,10 +175,11 @@
     <div id="container">
       <div id="main">
         <div id="heading">
-          <button id="close-button" is="paper-icon-button-light"
-              aria-label="$i18n{back}"
-              class="icon-arrow-back no-overlap" on-click="onCloseButtonTap_">
-          </button>
+          <paper-icon-button-light class="icon-arrow-back no-overlap">
+            <button id="close-button" aria-label="$i18n{back}"
+                on-click="onCloseButtonTap_">
+            </button>
+          </paper-icon-button-light>
           <span>$i18n{errorsPageHeading}</span>
           <paper-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
             $i18n{clearAll}
@@ -203,12 +204,13 @@
                     </div>
                   </div>
                   <div class="separator"></div>
-                  <button is="paper-icon-button-light" class="icon-delete-gray"
-                      on-click="onDeleteErrorAction_"
-                      aria-describedby$="[[item.id]]"
-                      aria-label="$i18n{clearEntry}"
-                      on-keydown="onDeleteErrorAction_">
-                  </button>
+                  <paper-icon-button-light class="icon-delete-gray">
+                    <button on-click="onDeleteErrorAction_"
+                        aria-describedby$="[[item.id]]"
+                        aria-label="$i18n{clearEntry}"
+                        on-keydown="onDeleteErrorAction_">
+                    </button>
+                  </paper-icon-button-light>
                 </div>
                 <iron-collapse opened="[[isOpened_(index, selectedEntry_)]]">
                   <div class="devtools-controls">

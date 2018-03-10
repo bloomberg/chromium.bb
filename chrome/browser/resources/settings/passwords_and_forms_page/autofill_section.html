@@ -107,14 +107,16 @@
               </span>
             </div>
             <template is="dom-if" if="[[item.metadata.isLocal]]">
-              <button is="paper-icon-button-light" id="addressMenu"
-                  class="icon-more-vert" on-click="onAddressMenuTap_"
-                  title="$i18n{moreActions}">
-              </button>
+              <paper-icon-button-light class="icon-more-vert">
+                <button id="addressMenu"
+                    on-click="onAddressMenuTap_" title="$i18n{moreActions}">
+                </button>
+              </paper-icon-button-light>
             </template>
             <template is="dom-if" if="[[!item.metadata.isLocal]]">
-              <button is="paper-icon-button-light" class="icon-external"
-                  on-click="onRemoteEditAddressTap_" actionable></button>
+              <paper-icon-button-light class="icon-external">
+                <button on-click="onRemoteEditAddressTap_" actionable></button>
+              </paper-icon-button-light>
             </template>
           </div>
         </template>
@@ -171,15 +173,18 @@
                 <div id="creditCardExpiration"
                     class="expiration-date">[[expiration_(item)]]</div>
                 <template is="dom-if" if="[[showDots_(item.metadata)]]">
-                  <button is="paper-icon-button-light" id="creditCardMenu"
-                      class="icon-more-vert" title="$i18n{moreActions}"
-                      on-click="onCreditCardMenuTap_">
-                  </button>
+                  <paper-icon-button-light class="icon-more-vert">
+                    <button id="creditCardMenu" title="$i18n{moreActions}"
+                        on-click="onCreditCardMenuTap_">
+                    </button>
+                  </paper-icon-button-light>
                 </template>
                 <template is="dom-if" if="[[!showDots_(item.metadata)]]">
-                  <button is="paper-icon-button-light" id="remoteCreditCardLink"
-                      class="icon-external"
-                      on-click="onRemoteEditCreditCardTap_" actionable></button>
+                  <paper-icon-button-light class="icon-external">
+                    <button id="remoteCreditCardLink"
+                        on-click="onRemoteEditCreditCardTap_" actionable>
+                    </button>
+                  </paper-icon-button-light>
                 </template>
               </div>
             </div>

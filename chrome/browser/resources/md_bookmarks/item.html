@@ -53,7 +53,7 @@
         flex: none;
       }
 
-      button.more-vert-button {
+      .more-vert-button {
         -webkit-margin-end: 12px;
       }
     </style>
@@ -64,19 +64,19 @@
     <div id="website-url" class="elided-text" title="[[item_.url]]">
       [[item_.url]]
     </div>
-    <button id="menuButton"
-        is="paper-icon-button-light"
-        class="more-vert-button"
-        tabindex$="[[ironListTabIndex]]"
-        title="$i18n{moreActionsButtonTitle}"
-        aria-label$="[[getButtonAriaLabel_(item_)]]"
-        on-click="onMenuButtonClick_"
-        on-dblclick="onMenuButtonDblClick_"
-        aria-haspopup="menu">
-      <div></div>
-      <div></div>
-      <div></div>
-    </button>
+    <paper-icon-button-light class="more-vert-button">
+      <button id="menuButton"
+          tabindex$="[[ironListTabIndex]]"
+          title="$i18n{moreActionsButtonTitle}"
+          aria-label$="[[getButtonAriaLabel_(item_)]]"
+          on-click="onMenuButtonClick_"
+          on-dblclick="onMenuButtonDblClick_"
+          aria-haspopup="menu">
+        <div></div>
+        <div></div>
+        <div></div>
+      </button>
+    </paper-icon-button-light>
   </template>
   <script src="chrome://bookmarks/item.js"></script>
 <dom-module>

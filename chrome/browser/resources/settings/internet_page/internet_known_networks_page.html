@@ -36,16 +36,18 @@
                   indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
               </cr-policy-indicator>
             </template>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
-            </button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button actionable on-click="fireShowDetails_"
+                  tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
+              </button>
+            </paper-icon-button-light>
           </div>
-
           <div class="separator"></div>
-          <button is="paper-icon-button-light" class="icon-more-vert"
-              preferred tabindex$="[[tabindex]]" on-click="onMenuButtonTap_"
-              title="$i18n{moreActions}">
-          </button>
+          <paper-icon-button-light class="icon-more-vert">
+            <button preferred tabindex$="[[tabindex]]"
+                on-click="onMenuButtonTap_" title="$i18n{moreActions}">
+            </button>
+          </paper-icon-button-light>
         </div>
       </template>
     </div>
@@ -66,16 +68,18 @@
                   indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
               </cr-policy-indicator>
             </template>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
-            </button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button actionable on-click="fireShowDetails_"
+                  tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
+              </button>
+            </paper-icon-button-light>
           </div>
-
           <div class="separator"></div>
-          <button is="paper-icon-button-light" class="icon-more-vert"
-              tabindex$="[[tabindex]]" on-click="onMenuButtonTap_"
-              title="$i18n{moreActions}">
-          </button>
+          <paper-icon-button-light class="icon-more-vert">
+            <button tabindex$="[[tabindex]]" on-click="onMenuButtonTap_"
+                title="$i18n{moreActions}">
+            </button>
+          </paper-icon-button-light>
         </div>
       </template>
     </div>

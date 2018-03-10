@@ -1,26 +1,32 @@
 Polymer({
       is: 'paper-icon-button-light',
-      extends: 'button',
 
       behaviors: [
         Polymer.PaperRippleBehavior
       ],
 
-      listeners: {
-        'down': '_rippleDown',
-        'up': '_rippleUp',
-        'focus': '_rippleDown',
-        'blur': '_rippleUp',
-      },
+      ready: function() {
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          // Add lazy host listeners
+          this.addEventListener('down', this._rippleDown.bind(this));
+          this.addEventListener('up', this._rippleUp.bind(this));
 
+          // Assume the button has already been distributed.
+          var button = this.getEffectiveChildren()[0];
+          this._rippleContainer = button;
+          
+          // We need to set the focus/blur listeners on the distributed button,
+          // not the host, since the host isn't focusable.
+          button.addEventListener('focus', this._rippleDown.bind(this));
+          button.addEventListener('blur', this._rippleUp.bind(this));
+        });
+      },
       _rippleDown: function() {
         this.getRipple().uiDownAction();
       },
-
       _rippleUp: function() {
         this.getRipple().uiUpAction();
       },
-
       /**
        * @param {...*} var_args
        */

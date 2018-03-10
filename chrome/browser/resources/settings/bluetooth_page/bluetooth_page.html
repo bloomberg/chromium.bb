@@ -35,11 +35,12 @@
             hidden="[[prefs.cros.device.allow_bluetooth.value]]">
           </cr-policy-pref-indicator>
           <template is="dom-if" if="[[bluetoothToggleState_]]">
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                on-click="onSubpageArrowTap_"
-                aria-label="$i18n{bluetoothPageTitle}"
-                aria-describedby="bluetoothSecondary">
-            </button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button on-click="onSubpageArrowTap_"
+                  aria-label="$i18n{bluetoothPageTitle}"
+                  aria-describedby="bluetoothSecondary">
+              </button>
+            </paper-icon-button-light>
           </template>
           <div class="separator"></div>
           <paper-toggle-button id="enableBluetooth"

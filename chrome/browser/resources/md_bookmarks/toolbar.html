@@ -17,11 +17,11 @@
         background: var(--interactive-color);
       }
 
-      button.more-actions {
+      paper-icon-button-light.more-actions {
         margin: 4px;
       }
 
-      button.more-vert-button div {
+      paper-icon-button-light.more-vert-button div {
         border-color: white;
       }
 
@@ -48,16 +48,16 @@
         hidden$="[[showSelectionOverlay]]"
         narrow="{{narrow_}}"
         on-search-changed="onSearchChanged_">
-      <button is="paper-icon-button-light"
-          id="menuButton"
-          class="more-actions more-vert-button"
-          title="$i18n{organizeButtonTitle}"
-          on-click="onMenuButtonOpenTap_"
-          aria-haspopup="menu">
-        <div></div>
-        <div></div>
-        <div></div>
-      </button>
+      <paper-icon-button-light class="more-actions more-vert-button">
+        <button id="menuButton"
+            title="$i18n{organizeButtonTitle}"
+            on-click="onMenuButtonOpenTap_"
+            aria-haspopup="menu">
+          <div></div>
+          <div></div>
+          <div></div>
+        </button>
+      </paper-icon-button-light>
     </cr-toolbar>
     <template is="dom-if" if="[[showSelectionOverlay]]">
       <cr-toolbar-selection-overlay delete-label="$i18n{delete}"

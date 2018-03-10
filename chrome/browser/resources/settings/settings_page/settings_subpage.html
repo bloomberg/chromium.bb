@@ -35,7 +35,7 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      button[is='paper-icon-button-light'] {
+      paper-icon-button-light {
         /* Centers the ripple on the icon with appropriate margin on right. */
         -webkit-margin-end: 10px;
         -webkit-margin-start: -10px;
@@ -56,9 +56,9 @@
       }
     </style>
     <div class="settings-box first" id="headerLine">
-      <button is="paper-icon-button-light" on-click="onTapBack_"
-          aria-label="$i18n{back}" class="icon-arrow-back">
-      </button>
+      <paper-icon-button-light class="icon-arrow-back">
+        <button on-click="onTapBack_" aria-label="$i18n{back}"></button>
+      </paper-icon-button-light>
       <h1>[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>
       <template is="dom-if" if="[[learnMoreUrl]]">

@@ -24,23 +24,26 @@
         <div id="cupsPrinters" class="settings-box first"
             on-click="onTapCupsPrinters_" actionable>
           <div class="start">$i18n{cupsPrintersTitle}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{cupsPrintersTitle}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{cupsPrintersTitle}"></button>
+          </paper-icon-button-light>
         </div>
 </if>
 <if expr="not chromeos">
         <div class="settings-box first"
             on-click="onTapLocalPrinters_" actionable>
           <div class="start">$i18n{localPrintersTitle}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{localPrintersTitle}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{localPrintersTitle}"></button>
+          </paper-icon-button-light>
         </div>
 </if>
         <div id="cloudPrinters" class="settings-box"
             on-click="onTapCloudPrinters_" actionable>
           <div class="start">$i18n{cloudPrintersTitle}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{cloudPrintersTitle}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{cloudPrintersTitle}"></button>
+          </paper-icon-button-light>
         </div>
       </neon-animatable>
 <if expr="chromeos">

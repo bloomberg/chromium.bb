@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="constants.html">
 <link rel="import" href="site_list.html">
@@ -27,9 +28,10 @@
                 id="displayName">
               [[item.displayName]]
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                aria-label$="[[item.displayName]]"
-                aria-describedby="displayName"></button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label$="[[item.displayName]]"
+                  aria-describedby="displayName"></button>
+            </paper-icon-button-light>
           </div>
         </div>
       </template>

@@ -62,10 +62,9 @@
             <cr-policy-pref-indicator
                 pref="[[prefs.generated.resolve_timezone_by_geolocation_on_off]]">
             </cr-policy-pref-indicator>
-            <button class="subpage-arrow"
-                is="paper-icon-button-light"
-                aria-label="$i18n{timeZoneButton}">
-            </button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{timeZoneButton}"></button>
+            </paper-icon-button-light>
           </div>
         </template>
         <div class="settings-box continuation embedded"
@@ -81,8 +80,9 @@
         <div class="settings-box" id="setDateTime" actionable
             on-click="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]">
           <div class="start">$i18n{setDateTime}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{setDateTime}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{setDateTime}"></button>
+          </paper-icon-button-light>
         </div>
       </neon-animatable>
       <template is="dom-if" route-path="/dateTime/timeZone">

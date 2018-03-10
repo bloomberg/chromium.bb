@@ -88,8 +88,9 @@
           <div class="start">
             $i18n{searchEnginesManage}
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{searchEnginesManage}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{searchEnginesManage}"></button>
+          </paper-icon-button-light>
         </div>
 
 <if expr="chromeos">
@@ -105,8 +106,9 @@
               </div>
             </div>
             <template is="dom-if" if="[[assistantOn_]]">
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  aria-label="$i18n{searchGoogleAssistant}"></button>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-label="$i18n{searchGoogleAssistant}"></button>
+              </paper-icon-button-light>
             </template>
             <template is="dom-if" if="[[!assistantOn_]]">
               <div class="separator"></div>

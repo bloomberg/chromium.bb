@@ -46,10 +46,10 @@
               [[item.displayEmail]]
             </div>
           </div>
-          <button is="paper-icon-button-light" class="icon-clear"
-              on-click="removeUser_"
+          <paper-icon-button-light class="icon-clear"
               hidden="[[shouldHideCloseButton_(disabled, item.isOwner)]]">
-          </button>
+            <button on-click="removeUser_"></button>
+          </paper-icon-button-light>
         </div>
       </template>
     </div>

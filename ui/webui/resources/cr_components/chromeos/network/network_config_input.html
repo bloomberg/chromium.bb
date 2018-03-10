@@ -22,7 +22,7 @@
         width: var(--network-control-margin);
       }
 
-      #iconDiv button {
+      #iconDiv paper-icon-button-light {
         margin: 0;
       }
     </style>
@@ -36,11 +36,11 @@
       </paper-input-container>
       <div id="iconDiv">
         <template is="dom-if" if="[[password]]">
-          <button is="paper-icon-button-light"
-              on-tap="onShowPasswordTap_"
-              class$="[[getIconClass_(showPassword)]]"
-              title="[[getShowPasswordTitle_(showPassword)]]">
-          </button>
+          <paper-icon-button-light class$="[[getIconClass_(showPassword)]]">
+            <button on-tap="onShowPasswordTap_"
+                title="[[getShowPasswordTitle_(showPassword)]]">
+            </button>
+          </paper-icon-button-light>
         </template>
       </div>
     </div>

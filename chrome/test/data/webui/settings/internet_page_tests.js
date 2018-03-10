@@ -145,7 +145,7 @@ suite('InternetPage', function() {
       Polymer.dom.flush();
       const wifi = networkSummary_.$$('#WiFi');
       assertTrue(!!wifi);
-      MockInteractions.tap(wifi.$$('button.subpage-arrow'));
+      MockInteractions.tap(wifi.$$('.subpage-arrow button'));
       return flushAsync().then(() => {
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -172,7 +172,7 @@ suite('InternetPage', function() {
       }).then(() => {
         const mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('button.subpage-arrow'));
+        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
         return Promise.all([
           api_.whenCalled('getManagedProperties'),
         ]);
@@ -191,7 +191,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Tether');
         assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('button.subpage-arrow'));
+        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -220,7 +220,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('button.subpage-arrow'));
+        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -273,7 +273,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const vpn = networkSummary_.$$('#VPN');
         assertTrue(!!vpn);
-        MockInteractions.tap(vpn.$$('button.subpage-arrow'));
+        MockInteractions.tap(vpn.$$('.subpage-arrow button'));
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -324,7 +324,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const wifi = networkSummary_.$$('#WiFi');
         assertTrue(!!wifi);
-        MockInteractions.tap(wifi.$$('button.subpage-arrow'));
+        MockInteractions.tap(wifi.$$('.subpage-arrow button'));
         return flushAsync();
       }).then(() => {
         // Call setTimeout to populate iron-list.

@@ -232,7 +232,9 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('dialog');
     dialog.showModal();
 
-    assertTrue(dialog.getCloseButton().hidden);
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertTrue(dialog.getCloseButton().parentElement.hidden);
 
     // Hitting escape fires a 'cancel' event. Cancelling that event prevents the
     // dialog from closing.

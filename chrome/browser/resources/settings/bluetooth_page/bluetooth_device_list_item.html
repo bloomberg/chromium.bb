@@ -32,10 +32,11 @@
       </div>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
-        <button is="paper-icon-button-light" class="icon-more-vert"
-            on-click="onMenuButtonTap_" tabindex$="[[tabindex]]"
-            title="$i18n{moreActions}" on-keydown="ignoreEnterKey_">
-        </button>
+        <paper-icon-button-light class="icon-more-vert">
+          <button on-click="onMenuButtonTap_" tabindex$="[[tabindex]]"
+              title="$i18n{moreActions}" on-keydown="ignoreEnterKey_">
+          </button>
+        </paper-icon-button-light>
         <dialog id="dotsMenu" is="cr-action-menu">
           <button slot="item" class="dropdown-item"
               on-click="onConnectActionTap_">
