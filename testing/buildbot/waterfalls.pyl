@@ -1123,6 +1123,11 @@
           'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },
+      'linux-blink-heap-verification': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'Mac Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
