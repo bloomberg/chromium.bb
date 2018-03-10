@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -36,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
 using content::OpenURLParams;
@@ -56,6 +56,11 @@ class TabManagerTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     kBlinkPageLifecycleFeature);
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void OpenTwoTabs(const GURL& first_url, const GURL& second_url) {
@@ -789,6 +794,76 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 #endif  // OS_CHROMEOS
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest, FreezeTab) {
+  const char kMainFrameFrozenStateJS[] =
+      "window.domAutomationController.send(mainFrameFreezeCount);";
+  const char kChildFrameFrozenStateJS[] =
+      "window.domAutomationController.send(childFrameFreezeCount);";
+
+  const int freezing_index = 1;  // The second tab.
+  // Setup the embedded_test_server to serve a cross-site frame.
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Opening two tabs, where the second tab is backgrounded.
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html"));
+  OpenTwoTabs(GURL(chrome::kChromeUIAboutURL), main_url);
+  content::WebContents* content =
+      browser()->tab_strip_model()->GetWebContentsAt(freezing_index);
+
+  // Grab the frames.
+  content::RenderFrameHost* main_frame = content->GetMainFrame();
+  ASSERT_EQ(3u, content->GetAllFrames().size());
+  // The page has 2 iframes, we will use the first one.
+  content::RenderFrameHost* child_frame = content->GetAllFrames()[1];
+  // Verify that the main frame and subframe are cross-site.
+  EXPECT_FALSE(content::SiteInstance::IsSameWebSite(
+      browser()->profile(), main_frame->GetLastCommittedURL(),
+      child_frame->GetLastCommittedURL()));
+  if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(main_frame->GetProcess()->GetID(),
+              child_frame->GetProcess()->GetID());
+  }
+
+  EXPECT_TRUE(content::ExecuteScript(
+      main_frame,
+      "if (window.location.pathname != '/iframe_cross_site.html')"
+      "  throw 'Incorrect frame';"
+      "mainFrameFreezeCount = 0;"
+      "window.onfreeze = function(){ mainFrameFreezeCount++; };"));
+
+  EXPECT_TRUE(content::ExecuteScript(
+      child_frame,
+      "if (window.location.pathname != '/title1.html') throw 'Incorrect frame';"
+      "childFrameFreezeCount = 0;"
+      "window.onfreeze = function(){ childFrameFreezeCount++; };"));
+
+  // freeze_count_result should be 0 for both frames, if it is undefined then we
+  // are in the wrong frame/tab.
+  int freeze_count_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      main_frame, kMainFrameFrozenStateJS, &freeze_count_result));
+  EXPECT_EQ(0, freeze_count_result);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      child_frame, kChildFrameFrozenStateJS, &freeze_count_result));
+  EXPECT_EQ(0, freeze_count_result);
+
+  // Freeze the tab. If it fails then we might be freezing a visible tab.
+  g_browser_process->GetTabManager()->FreezeWebContentsAt(
+      freezing_index, browser()->tab_strip_model());
+
+  // freeze_count_result should be exactly 1 for both frames. The valus is
+  // incremented in the onfreeze callback. If it is >1, then the callback was
+  // called more than once.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      main_frame, kMainFrameFrozenStateJS, &freeze_count_result));
+  EXPECT_EQ(1, freeze_count_result);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      child_frame, kChildFrameFrozenStateJS, &freeze_count_result));
+  EXPECT_EQ(1, freeze_count_result);
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerWasDiscarded) {

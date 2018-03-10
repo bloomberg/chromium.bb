@@ -236,6 +236,7 @@ class CORE_EXPORT WebViewImpl final
   void SetShowFPSCounter(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
   void AcceptLanguagesChanged() override;
+  void FreezePage() override;
 
   // WebScheduler::InterventionReporter implementation:
   void ReportIntervention(const WebString& message) override;

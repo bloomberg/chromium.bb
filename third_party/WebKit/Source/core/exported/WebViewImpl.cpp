@@ -3855,4 +3855,8 @@ LocalFrame* WebViewImpl::FocusedLocalFrameAvailableForIme() const {
   return ime_accept_events_ ? FocusedLocalFrameInWidget() : nullptr;
 }
 
+void WebViewImpl::FreezePage() {
+  Scheduler()->SetPageFrozen(true);
+}
+
 }  // namespace blink

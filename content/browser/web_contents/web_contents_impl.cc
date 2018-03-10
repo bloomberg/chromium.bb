@@ -1677,6 +1677,10 @@ void WebContentsImpl::Stop() {
     observer.NavigationStopped();
 }
 
+void WebContentsImpl::FreezePage() {
+  SendPageMessage(new PageMsg_FreezePage(MSG_ROUTING_NONE));
+}
+
 WebContents* WebContentsImpl::Clone() {
   // We use our current SiteInstance since the cloned entry will use it anyway.
   // We pass our own opener so that the cloned page can access it if it was set

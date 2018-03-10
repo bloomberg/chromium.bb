@@ -428,6 +428,11 @@ class WebView : protected WebWidget {
   // to call the WebViewClient::acceptLanguages().
   virtual void AcceptLanguagesChanged() = 0;
 
+  // Lifecycle state ------------------------------------------------------
+
+  // Freeze the page and all the local frames.
+  virtual void FreezePage() = 0;
+
   // Testing functionality for TestRunner ---------------------------------
 
   // Force the webgl context to fail so that webglcontextcreationerror

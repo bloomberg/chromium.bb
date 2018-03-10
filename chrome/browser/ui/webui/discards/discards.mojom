@@ -53,6 +53,9 @@ interface DiscardsDetailsProvider {
   // Invokes a callback when the discard is complete.
   DiscardById(int32 tab_id, bool urgent) => ();
 
+  // Freezes a tab given its |tab_id|.
+  FreezeById(int32 tab_id);
+
   // Discards the least important tab. If |urgent| is specified the unload
   // handlers will not be run, and the tab will be unloaded with prejudice.
   // This can fail to discard a tab if no tabs are currently considered

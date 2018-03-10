@@ -94,6 +94,12 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
     std::move(callback).Run();
   }
 
+  void FreezeById(int32_t tab_id) override {
+    resource_coordinator::TabManager* tab_manager =
+        g_browser_process->GetTabManager();
+    tab_manager->FreezeTabById(tab_id);
+  }
+
   void Discard(bool urgent, DiscardCallback callback) override {
     resource_coordinator::TabManager* tab_manager =
         g_browser_process->GetTabManager();
