@@ -464,4 +464,29 @@ TEST(SpanTest, MakeSpanFromContainer) {
   EXPECT_EQ(span, make_span(vector));
 }
 
+TEST(SpanTest, EnsureConstexprGoodness) {
+  static constexpr int kArray[] = {5, 4, 3, 2, 1};
+  constexpr span<const int> constexpr_span(kArray);
+  const size_t size = 2;
+
+  const size_t start = 1;
+  constexpr span<const int> subspan =
+      constexpr_span.subspan(start, start + size);
+  for (size_t i = 0; i < subspan.size(); ++i)
+    EXPECT_EQ(kArray[start + i], subspan[i]);
+
+  constexpr span<const int> firsts = constexpr_span.first(size);
+  for (size_t i = 0; i < firsts.size(); ++i)
+    EXPECT_EQ(kArray[i], firsts[i]);
+
+  constexpr span<const int> lasts = constexpr_span.last(size);
+  for (size_t i = 0; i < lasts.size(); ++i) {
+    const size_t j = (arraysize(kArray) - size) + i;
+    EXPECT_EQ(kArray[j], lasts[i]);
+  }
+
+  constexpr int item = constexpr_span[size];
+  EXPECT_EQ(kArray[size], item);
+}
+
 }  // namespace base
