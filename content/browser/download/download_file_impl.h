@@ -95,9 +95,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
     void Initialize();
 
-    // Called when response is completed.
-    void OnResponseCompleted(download::DownloadInterruptReason reason);
-
     // Called after successfully writing a buffer to disk.
     void OnWriteBytesToDisk(int64_t bytes_write);
 

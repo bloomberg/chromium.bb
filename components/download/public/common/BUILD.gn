@@ -38,6 +38,7 @@ component("public") {
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "download_utils.h",
+    "input_stream.cc",
     "input_stream.h",
     "rate_estimator.h",
     "resume_mode.h",

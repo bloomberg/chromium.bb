@@ -100,12 +100,7 @@ DownloadInterruptReason StreamHandleInputStream::GetCompletionStatus() {
 void StreamHandleInputStream::OnStreamCompleted(
     mojom::NetworkRequestStatus status) {
   // This can be called before or after data pipe is completely drained.
-  OnResponseCompleted(ConvertMojoNetworkRequestStatusToInterruptReason(status));
-}
-
-void StreamHandleInputStream::OnResponseCompleted(
-    DownloadInterruptReason status) {
-  completion_status_ = status;
+  completion_status_ = ConvertMojoNetworkRequestStatusToInterruptReason(status);
   is_response_completed_ = true;
   if (completion_callback_)
     std::move(completion_callback_).Run();

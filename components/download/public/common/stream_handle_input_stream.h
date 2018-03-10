@@ -32,7 +32,6 @@ class COMPONENTS_DOWNLOAD_EXPORT StreamHandleInputStream
   InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
                                           size_t* length) override;
   DownloadInterruptReason GetCompletionStatus() override;
-  void OnResponseCompleted(DownloadInterruptReason status) override;
 
   // mojom::DownloadStreamClient
   void OnStreamCompleted(mojom::NetworkRequestStatus status) override;
