@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_utils.h"
@@ -95,7 +94,9 @@ class ShellExtensionLoaderTest : public ExtensionsTest {
 
     ExtensionsTest::SetUp();
     extensions_browser_client()->set_extension_system_factory(&factory_);
-    user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
+    // ExtensionsTest sets up the ExtensionPrefs, but we still need to attach
+    // the PrefService to the browser context.
+    user_prefs::UserPrefs::Set(browser_context(), pref_service());
     event_router_ = CreateAndUseTestEventRouter(browser_context());
   }
 
@@ -135,7 +136,6 @@ class ShellExtensionLoaderTest : public ExtensionsTest {
 
  private:
   MockExtensionSystemFactory<TestExtensionSystem> factory_;
-  TestingPrefServiceSimple testing_pref_service_;
 
   TestEventRouter* event_router_ = nullptr;  // Created in SetUp().
 
