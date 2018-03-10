@@ -724,8 +724,6 @@ Shell::~Shell() {
 
   toast_manager_.reset();
 
-  for (aura::Window* root : GetAllRootWindows())
-    Shelf::ForWindow(root)->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
 
   // Accesses root window containers.
@@ -759,6 +757,7 @@ Shell::~Shell() {
   // |window_selector_controller_|.
   split_view_controller_.reset();
 
+  // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 
   // MruWindowTracker must be destroyed after all windows have been deleted to

@@ -555,6 +555,9 @@ void MagnificationControllerImpl::SwitchTargetRootWindow(
 
   // Unmagnify the previous root window.
   root_window_->RemoveObserver(this);
+  // TODO: This may need to remove the IME observer from the old root window
+  // and add it to the new root window. https://crbug.com/820464
+
   // Do not move mouse back to its original position (point at border of the
   // root window) after redrawing as doing so will trigger root window switch
   // again.

@@ -471,17 +471,19 @@ void RootWindowController::Shutdown() {
 }
 
 void RootWindowController::CloseChildWindows() {
-  // NOTE: this may be called multiple times.
+  // Child windows can be closed by secondary monitor disconnection, Shell
+  // shutdown, or both. Avoid running the related cleanup code twice.
+  if (did_close_child_windows_)
+    return;
+  did_close_child_windows_ = true;
 
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
   DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
   // |panel_layout_manager_| needs to be shut down before windows are destroyed.
-  if (panel_layout_manager_) {
-    panel_layout_manager_->Shutdown();
-    panel_layout_manager_ = nullptr;
-  }
+  panel_layout_manager_->Shutdown();
+  panel_layout_manager_ = nullptr;
 
   shelf_->ShutdownShelfWidget();
 
@@ -506,6 +508,7 @@ void RootWindowController::CloseChildWindows() {
     while (!toplevel_windows.windows().empty())
       delete toplevel_windows.Pop();
   }
+
   // And then remove the containers.
   while (!root->children().empty()) {
     aura::Window* child = root->children()[0];
@@ -515,6 +518,8 @@ void RootWindowController::CloseChildWindows() {
       root->RemoveChild(child);
   }
 
+  // Removing the containers destroys ShelfLayoutManager. ShelfWidget outlives
+  // ShelfLayoutManager because ShelfLayoutManager holds a pointer to it.
   shelf_->DestroyShelfWidget();
 
   ::wm::SetTooltipClient(GetRootWindow(), nullptr);

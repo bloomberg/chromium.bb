@@ -87,6 +87,8 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
       this, use_default_accelerated_widget, bounds_in_pixels));
 
   if (!init_params.use_classic_ime) {
+    // NOTE: This creates one InputMethodMus per display, despite the
+    // call to SetSharedInputMethod() below.
     input_method_ = std::make_unique<InputMethodMus>(this, window());
     input_method_->Init(init_params.window_tree_client->connector());
     SetSharedInputMethod(input_method_.get());
