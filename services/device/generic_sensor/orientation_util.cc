@@ -52,7 +52,7 @@ void ComputeOrientationEulerAnglesInRadiansFromRotationMatrix(
 
   // Since |r| contains double, directly compare it with 0 won't be accurate,
   // so here |device::kEpsilon| is used to check if r[8] and r[6] is close to
-  // 0. And // this needs to be done before checking if it is greater or less
+  // 0. And this needs to be done before checking if it is greater or less
   // than 0 since a number close to 0 can be either a positive or negative
   // number.
   if (std::abs(r[8]) < device::kEpsilon) {    // r[8] == 0
