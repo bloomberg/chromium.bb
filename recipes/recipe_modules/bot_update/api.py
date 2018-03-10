@@ -70,7 +70,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch_root=None, no_shallow=False,
                       with_branch_heads=False, with_tags=False, refs=None,
                       patch_oauth2=False, oauth2_json=False,
-                      use_site_config_creds=True, clobber=False,
+                      use_site_config_creds=None, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
@@ -78,8 +78,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       **kwargs):
     """
     Args:
-      use_site_config_creds: If the oauth2 credentials are in the buildbot
-        site_config. See crbug.com/624212 for more information.
       gclient_config: The gclient configuration to use when running bot_update.
         If omitted, the current gclient configuration is used.
       rietveld: The rietveld server to use. If omitted, will infer from
@@ -94,6 +92,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       manifest_name: The name of the manifest to upload to LogDog.  This must
         be unique for the whole build.
     """
+    assert use_site_config_creds is None, "use_site_config_creds is deprecated"
+
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
     # data bot_update needs is already configured into the gclient spec.
@@ -119,7 +119,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     else:
       # The trybot recipe sometimes wants to de-apply the patch. In which case
       # we pretend the issue/patchset never existed.
-      issue = patchset = email_file = key_file = None
+      issue = patchset = None
       gerrit_repo = gerrit_ref = None
 
     # Issue and patchset must come together.
@@ -142,28 +142,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # Point to the oauth2 auth files if specified.
     # These paths are where the bots put their credential files.
-    oauth2_json_file = email_file = key_file = None
+    oauth2_json_file = None
     if oauth2_json:
       if self.m.platform.is_win:
         oauth2_json_file = 'C:\\creds\\refresh_tokens\\internal-try'
       else:
         oauth2_json_file = '/creds/refresh_tokens/internal-try'
-    elif patch_oauth2:
-      # TODO(martiniss): remove this hack :(. crbug.com/624212
-      if use_site_config_creds:
-        try:
-          build_path = self.m.path['build']
-        except KeyError:
-          raise self.m.step.StepFailure(
-              'build path is not defined. This is normal for LUCI builds. '
-              'In LUCI, use_site_config_creds parameter of '
-              'bot_update.ensure_checkout is not supported')
-        email_file = build_path.join('site_config', '.rietveld_client_email')
-        key_file = build_path.join('site_config', '.rietveld_secret_key')
-      else: #pragma: no cover
-        #TODO(martiniss): make this use path.join, so it works on windows
-        email_file = '/creds/rietveld/client_email'
-        key_file = '/creds/rietveld/secret_key'
 
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
@@ -188,8 +172,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--rietveld_server', rietveld or self._rietveld],
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],
-        ['--apply_issue_email_file', email_file],
-        ['--apply_issue_key_file', key_file],
         ['--apply_issue_oauth2_file', oauth2_json_file],
 
         # Hookups to JSON output back into recipes.

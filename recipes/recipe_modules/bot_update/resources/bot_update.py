@@ -720,8 +720,7 @@ def _download(url):
 
 
 def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
-                         email_file, key_file, oauth2_file,
-                         whitelist=None, blacklist=None):
+                         oauth2_file, whitelist=None, blacklist=None):
   apply_issue_bin = ('apply_issue.bat' if sys.platform.startswith('win')
                      else 'apply_issue')
   cmd = [apply_issue_bin,
@@ -739,8 +738,6 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
   # Use an oauth key or json file if specified.
   if oauth2_file:
     cmd.extend(['--auth-refresh-token-json', oauth2_file])
-  elif email_file and key_file:
-    cmd.extend(['--email-file', email_file, '--private-key-file', key_file])
   else:
     cmd.append('--no-auth')
 
@@ -872,8 +869,7 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, issue, patchset, rietveld_server,
                     gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
-                    revision_mapping, apply_issue_email_file,
-                    apply_issue_key_file, apply_issue_oauth2_file, shallow,
+                    revision_mapping, apply_issue_oauth2_file, shallow,
                     refs, git_cache_dir, cleanup_dir, gerrit_reset,
                     disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
@@ -898,8 +894,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       print '  relative root is %r, target is %r' % (relative_root, target)
       if issue:
         apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
-                             revision_mapping, git_ref, apply_issue_email_file,
-                             apply_issue_key_file, apply_issue_oauth2_file,
+                             revision_mapping, git_ref, apply_issue_oauth2_file,
                              whitelist=[target])
         already_patched.append(target)
       elif gerrit_ref:
@@ -942,8 +937,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Apply the rest of the patch here (sans DEPS)
   if issue:
     apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
-                         revision_mapping, git_ref, apply_issue_email_file,
-                         apply_issue_key_file, apply_issue_oauth2_file,
+                         revision_mapping, git_ref, apply_issue_oauth2_file,
                          blacklist=already_patched)
   elif gerrit_ref and not applied_gerrit_patch:
     # If gerrit_ref was for solution's main repository, it has already been
@@ -1007,11 +1001,6 @@ def parse_args():
   parse.add_option('--issue', help='Issue number to patch from.')
   parse.add_option('--patchset',
                    help='Patchset from issue to patch from, if applicable.')
-  parse.add_option('--apply_issue_email_file',
-                   help='--email-file option passthrough for apply_patch.py.')
-  parse.add_option('--apply_issue_key_file',
-                   help='--private-key-file option passthrough for '
-                        'apply_patch.py.')
   parse.add_option('--apply_issue_oauth2_file',
                    help='--auth-refresh-token-json option passthrough for '
                         'apply_patch.py.')
@@ -1175,8 +1164,6 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           gerrit_ref=options.gerrit_ref,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
           revision_mapping=options.revision_mapping,
-          apply_issue_email_file=options.apply_issue_email_file,
-          apply_issue_key_file=options.apply_issue_key_file,
           apply_issue_oauth2_file=options.apply_issue_oauth2_file,
 
           # Finally, extra configurations such as shallowness of the clone.

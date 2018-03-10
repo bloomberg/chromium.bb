@@ -134,9 +134,6 @@ def GenTests(api):
   yield api.test('trychange') + api.properties(
       refs=['+refs/change/1/2/333'],
   )
-  yield api.test('trychange_oauth2') + api.properties(
-      oauth2=True,
-  )
   yield api.test('trychange_oauth2_buildbot') + api.properties(
       path_config='buildbot',
       oauth2=True,

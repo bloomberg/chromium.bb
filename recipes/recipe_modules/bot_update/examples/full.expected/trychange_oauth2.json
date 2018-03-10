@@ -1,8 +1,0 @@
-[
-  {
-    "name": "$result",
-    "reason": "build path is not defined. This is normal for LUCI builds. In LUCI, use_site_config_creds parameter of bot_update.ensure_checkout is not supported",
-    "recipe_result": null,
-    "status_code": 1
-  }
-]
