@@ -83,11 +83,12 @@
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <button is="paper-icon-button-light" id="addButton"
-            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
-            aria-label="$i18n{internetAddWiFi}" class="icon-add-wifi"
-            on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
-        </button>
+        <paper-icon-button-light class="icon-add-wifi"
+            hidden$="[[!showAddButton_(deviceState, globalPolicy)]]">
+          <button id="addButton" aria-label="$i18n{internetAddWiFi}"
+              on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
+          </button>
+        </paper-icon-button-light>
         <paper-toggle-button id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
@@ -100,9 +101,9 @@
     <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
       <div actionable class="settings-box" on-click="onKnownNetworksTap_">
         <div class="start">$i18n{knownNetworksButton}</div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="$i18n{knownNetworksButton}">
-        </button>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{knownNetworksButton}"></button>
+        </paper-icon-button-light>
       </div>
     </template>
 
@@ -112,10 +113,11 @@
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <div class="vpn-header layout horizontal center">
             <div class="flex">$i18n{networkVpnBuiltin}</div>
-            <button is="paper-icon-button-light" class="icon-add-circle"
-                aria-label="$i18n{internetAddVPN}"
-                on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
-            </button>
+            <paper-icon-button-light class="icon-add-circle">
+              <button aria-label="$i18n{internetAddVPN}"
+                  on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
+              </button>
+            </paper-icon-button-light>
           </div>
         </template>
 
@@ -161,10 +163,12 @@
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex">[[item.ProviderName]]</div>
-              <button is="paper-icon-button-light" class="icon-add-circle"
-                  aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
-                  on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
-              </button>
+              <paper-icon-button-light>
+                <button class="icon-add-circle"
+                    aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
+                    on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
+                </button>
+              </paper-icon-button-light>
             </div>
             <cr-network-list show-buttons
                 hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
@@ -181,10 +185,12 @@
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex">[[item.ProviderName]]</div>
-              <button is="paper-icon-button-light" class="icon-add-circle"
-                  aria-label$="[[getAddArcVpnAllyString_(item)]]"
-                  on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
-              </button>
+              <paper-icon-button-light>
+                <button class="icon-add-circle"
+                    aria-label$="[[getAddArcVpnAllyString_(item)]]"
+                    on-click="onAddArcVpnTap_" tabindex$="[[tabindex]]">
+                </button>
+              </paper-icon-button-light>
             </div>
             <cr-network-list show-buttons
                 hidden$="[[!haveArcVpnNetwork_(arcVpns_, item)]]"

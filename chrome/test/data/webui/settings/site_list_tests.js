@@ -354,8 +354,8 @@ suite('SiteList', function() {
         .then(function(contentType) {
           // Flush to be sure list container is populated.
           Polymer.dom.flush();
-          const dotsMenu =
-              testElement.$.listContainer.querySelector('#actionMenuButton');
+          const dotsMenu = testElement.$.listContainer.querySelector(
+              '#actionMenuButtonContainer');
           assertFalse(dotsMenu.hidden);
           testElement.setAttribute('read-only-list', true);
           Polymer.dom.flush();
@@ -640,16 +640,16 @@ suite('SiteList', function() {
           const item = testElement.$.listContainer.children[0];
 
           // Assert action button is hidden.
-          const dots = item.querySelector('#actionMenuButton');
+          const dots = item.querySelector('#actionMenuButtonContainer');
           assertTrue(!!dots);
           assertTrue(dots.hidden);
 
           // Assert reset button is visible.
-          const resetButton = item.querySelector('#resetSite');
+          const resetButton = item.querySelector('#resetSiteContainer');
           assertTrue(!!resetButton);
           assertFalse(resetButton.hidden);
 
-          MockInteractions.tap(resetButton);
+          MockInteractions.tap(resetButton.querySelector('button'));
           return browserProxy.whenCalled('resetCategoryPermissionForPattern');
         })
         .then(function(args) {
@@ -798,12 +798,14 @@ suite('SiteList', function() {
           Polymer.dom.flush();
           // Validate that embeddingOrigin sites cannot be edited.
           const firstItem = testElement.$.listContainer.children[0];
-          assertTrue(firstItem.querySelector('#actionMenuButton').hidden);
-          assertFalse(firstItem.querySelector('#resetSite').hidden);
+          assertTrue(
+              firstItem.querySelector('#actionMenuButtonContainer').hidden);
+          assertFalse(firstItem.querySelector('#resetSiteContainer').hidden);
           // Validate that non-embeddingOrigin sites can be edited.
           const secondItem = testElement.$.listContainer.children[1];
-          assertFalse(secondItem.querySelector('#actionMenuButton').hidden);
-          assertTrue(secondItem.querySelector('#resetSite').hidden);
+          assertFalse(
+              secondItem.querySelector('#actionMenuButtonContainer').hidden);
+          assertTrue(secondItem.querySelector('#resetSiteContainer').hidden);
         });
   });
 

@@ -1,21 +1,22 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
-<link rel="import" href="chrome://resources/html/icon.html">
-<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/searched_label.html">
 <link rel="import" href="chrome://history/shared_style.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 
 <!-- Lazy loaded: paper-icon-button-light. -->
 
 <dom-module id="history-item">
   <template>
-    <style include="shared-style">
+    <style include="shared-style cr-icons">
       :host {
         display: block;
         outline: none;
@@ -66,7 +67,7 @@
         overflow: hidden;
       }
 
-      #checkbox {
+      #checkbox-container {
         height: 40px;
         margin: 0;
         padding: 0;
@@ -125,7 +126,7 @@
         flex-shrink: 0;
       }
 
-      #menu-button {
+      #menu-button-container {
         -webkit-margin-end: 12px;
       }
 
@@ -135,13 +136,13 @@
         width: 32px;
       }
 
-      #bookmark-star {
+      #bookmark-star-container {
         color: var(--interactive-color);
         height: 32px;
         width: 32px;
       }
 
-      #bookmark-star iron-icon {
+      #bookmark-star-container iron-icon {
         height: 16px;
         width: 16px;
       }
@@ -205,13 +206,15 @@
       <div id="item-container"
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
-        <button is="paper-icon-button-light" id="checkbox"
-            hidden="[[selectionNotAllowed_]]"
-            role="checkbox"
-            aria-checked$="[[getAriaChecked_(selected)]]"
-            aria-label$="[[getEntrySummary_(item)]]">
-          <div id="checkmark"></div>
-        </button>
+        <paper-icon-button-light id="checkbox-container"
+            hidden="[[selectionNotAllowed_]]">
+          <button id="checkbox"
+              role="checkbox"
+              aria-checked$="[[getAriaChecked_(selected)]]"
+              aria-label$="[[getEntrySummary_(item)]]">
+            <div id="checkmark"></div>
+          </button>
+        </paper-icon-button-light>
         <span id="time-accessed">
           [[item.readableTimestamp]]
         </span>
@@ -227,19 +230,23 @@
         </div>
         <div id="star-container">
           <template is="dom-if" if="[[item.starred]]" notify-dom-change>
-            <button is="paper-icon-button-light" id="bookmark-star"
-                title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
-              <iron-icon icon="cr:star"></iron-icon>
-            </button>
+            <paper-icon-button-light id="bookmark-star-container">
+              <button id="bookmark-star"
+                  title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
+                <iron-icon icon="cr:star"></iron-icon>
+              </button>
+            </paper-icon-button-light>
           </template>
         </div>
-        <button is="paper-icon-button-light" id="menu-button"
-            class="more-vert-button" title="$i18n{moreActionsButton}"
-            on-click="onMenuButtonTap_">
-          <div></div>
-          <div></div>
-          <div></div>
-        </button>
+        <paper-icon-button-light id="menu-button-container"
+            class="more-vert-button">
+          <button id="menu-button"
+              title="$i18n{moreActionsButton}" on-click="onMenuButtonTap_">
+            <div></div>
+            <div></div>
+            <div></div>
+          </button>
+        </paper-icon-button-light>
       </div>
       <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
     </div>

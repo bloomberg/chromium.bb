@@ -83,15 +83,15 @@
         hidden="[[isRootFolder_(depth)]]"
         role="treeitem">
       <template is="dom-if" if="[[hasChildFolder_]]">
-        <button is="paper-icon-button-light"
-            id="arrow"
-            on-click="toggleFolder_"
-            on-mousedown="preventDefault_"
-            tabindex="-1"
-            aria-label$="[[getButtonAriaLabel_(isOpen, item_)]]">
-          <iron-icon icon="cr:arrow-drop-down" is-open$="[[isOpen]]">
-          </iron-icon>
-        </button>
+        <paper-icon-button-light id="arrow">
+          <button on-click="toggleFolder_"
+              on-mousedown="preventDefault_"
+              tabindex="-1"
+              aria-label$="[[getButtonAriaLabel_(isOpen, item_)]]">
+            <iron-icon icon="cr:arrow-drop-down" is-open$="[[isOpen]]">
+            </iron-icon>
+          </button>
+        </paper-icon-button-light>
       </template>
       <div id="folder-label" class="v-centered">
         <div class="folder-icon"

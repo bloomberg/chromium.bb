@@ -358,33 +358,33 @@ cr.define('languages_page_tests', function() {
 
         Polymer.dom.flush();
 
-        const menuButtons =
-            languagesCollapse.querySelectorAll(
-                '.list-item button.icon-more-vert');
+        const menuButtons = languagesCollapse.querySelectorAll(
+            '.list-item paper-icon-button-light.icon-more-vert');
 
         // First language should not have "Move up" or "Move to top".
-        MockInteractions.tap(menuButtons[0]);
+        MockInteractions.tap(menuButtons[0].querySelector('button'));
         assertMenuItemButtonsVisible({
           moveToTop: false, moveUp: false, moveDown: true,
         });
         actionMenu.close();
 
         // Second language should not have "Move up".
-        MockInteractions.tap(menuButtons[1]);
+        MockInteractions.tap(menuButtons[1].querySelector('button'));
         assertMenuItemButtonsVisible({
           moveToTop: true, moveUp: false, moveDown: true,
         });
         actionMenu.close();
 
         // Middle languages should have all buttons.
-        MockInteractions.tap(menuButtons[2]);
+        MockInteractions.tap(menuButtons[2].querySelector('button'));
         assertMenuItemButtonsVisible({
           moveToTop: true, moveUp: true, moveDown: true,
         });
         actionMenu.close();
 
         // Last language should not have "Move down".
-        MockInteractions.tap(menuButtons[menuButtons.length - 1]);
+        MockInteractions.tap(
+            menuButtons[menuButtons.length - 1].querySelector('button'));
         assertMenuItemButtonsVisible({
           moveToTop: true, moveUp: true, moveDown: false,
         });

@@ -147,18 +147,22 @@
         <!-- Empty div for even 'space-between' justification -->
       </div>
       <div>
-        <button is="paper-icon-button-light" id="takePhoto" tabindex="1"
-            title="[[getTakePhotoLabel_(videomode, takePhotoLabel,
-                captureVideoLabel)]]" on-tap="takePhoto"
-            disabled="[[!cameraOnline_]]">
-        </button>
+        <paper-icon-button-light>
+          <button id="takePhoto" tabindex="1"
+              title="[[getTakePhotoLabel_(videomode, takePhotoLabel,
+                  captureVideoLabel)]]" on-tap="takePhoto"
+              disabled="[[!cameraOnline_]]">
+          </button>
+        </paper-icon-button-light>
       </div>
       <div>
-        <button is="paper-icon-button-light" id="switchMode" tabindex="2"
-            title="[[getSwitchModeLabel_(videomode, switchModeToCameraLabel,
-                switchModeToVideoLabel)]]" on-tap="onTapSwitchMode_"
-            disabled="[[!cameraOnline_]]" hidden="[[!videoModeEnabled]]">
-        </button>
+        <paper-icon-button-light hidden="[[!videoModeEnabled]]">
+          <button id="switchMode" tabindex="2"
+              title="[[getSwitchModeLabel_(videomode, switchModeToCameraLabel,
+                  switchModeToVideoLabel)]]" on-tap="onTapSwitchMode_"
+              disabled="[[!cameraOnline_]]">
+          </button>
+        </paper-icon-button-light>
       </div>
     </div>
   </template>

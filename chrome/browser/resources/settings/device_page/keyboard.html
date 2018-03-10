@@ -106,13 +106,15 @@
     <div id="keyboardOverlay" class="settings-box"
         on-click="onShowKeyboardShortcutsOverlayTap_" actionable>
       <div class="start">$i18n{showKeyboardShortcutsOverlay}</div>
-      <button class="icon-external" is="paper-icon-button-light"
-          aria-label="$i18n{showKeyboardShortcutsOverlay}"></button>
+      <paper-icon-button-light class="icon-external">
+        <button aria-label="$i18n{showKeyboardShortcutsOverlay}"></button>
+      </paper-icon-button-light>
     </div>
     <div class="settings-box" on-click="onShowLanguageInputTap_" actionable>
       <div class="start">$i18n{keyboardShowLanguageAndInput}</div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{keyboardShowLanguageAndInput}"></button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{keyboardShowLanguageAndInput}"></button>
+      </paper-icon-button-light>
     </div>
   </template>
   <script src="keyboard.js"></script>

@@ -1,7 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -18,7 +19,7 @@
 
 <dom-module id="downloads-item">
   <template>
-    <style include="action-link cr-hidden-style">
+    <style include="action-link cr-hidden-style cr-icons">
       :host {
         display: flex;
         flex-direction: column;
@@ -211,12 +212,21 @@
         margin: 0;
       }
 
-      #remove {
+      #remove-wrapper > paper-icon-button-light {
+        -webkit-margin-end: 0;
+        -webkit-margin-start: 0;
         color: var(--paper-grey-700);
-        font-size: 16px;
         height: 32px;
-        line-height: 17px;  /* TODO(dbeam): why is this necesssary? */
         width: 32px;
+      }
+
+      /* TODO(hcarmona): Move this to its parent after updating
+         paper-icon-button-light to have:
+         :host ::slotted(button) {
+           font-size: inherit;
+         } */
+      #remove-wrapper > paper-icon-button-light > button {
+        font-size: 16px;
       }
 
       #incognito {
@@ -304,12 +314,14 @@
         </template>
       </div>
 
-      <div id="remove-wrapper" class="icon-wrapper">
-        <button is="paper-icon-button-light" id="remove"
-            title="$i18n{controlRemoveFromList}"
-            aria-label="$i18n{controlRemoveFromList}"
-            style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]"
-            on-click="onRemoveTap_">&#x2715;</button>
+      <div id="remove-wrapper" class="icon-wrapper ">
+        <paper-icon-button-light
+            style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]">
+          <button id="remove"
+              title="$i18n{controlRemoveFromList}"
+              aria-label="$i18n{controlRemoveFromList}"
+              on-click="onRemoveTap_">&#x2715;</button>
+        </paper-icon-button-light>
       </div>
 
       <div id="incognito" title="$i18n{inIncognito}" hidden="[[!data.otr]]">

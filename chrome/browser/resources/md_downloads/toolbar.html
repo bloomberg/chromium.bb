@@ -28,22 +28,25 @@
         flex: 1;
       }
 
-      #moreActions {
+      #moreActionsContainer {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
         height: 32px;
-        padding: 6px;
+        padding: 6px 0;
         width: 32px;
       }
     </style>
     <cr-toolbar id="toolbar" page-name="$i18n{title}"
         search-prompt="$i18n{search}" clear-label="$i18n{clearSearch}"
         spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
-      <button is="paper-icon-button-light" id="moreActions"
-          title="$i18n{moreActions}" class="dropdown-trigger"
-          on-click="onMoreActionsTap_">
-        <iron-icon icon="cr:more-vert"></iron-icon>
-      </button>
+      <paper-icon-button-light id="moreActionsContainer"
+          class="dropdown-trigger">
+        <button id="moreActions"
+            title="$i18n{moreActions}"
+            on-click="onMoreActionsTap_">
+          <iron-icon icon="cr:more-vert"></iron-icon>
+        </button>
+      </paper-icon-button-light>
     </cr-toolbar>
     <dialog is="cr-action-menu" id="moreActionsMenu">
       <button slot="item" class="dropdown-item clear-all"

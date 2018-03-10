@@ -108,7 +108,7 @@
         outline: none;
       }
 
-      #close {
+      #closeContainer {
         --layout-inline: {
           display: flex;
         };
@@ -116,16 +116,15 @@
         -webkit-margin-end: 4px;
         align-self: flex-start;
         margin-top: 4px;
-        padding: 10px;  /* Makes the actual icon 16x16. */
 
         @apply --cr-dialog-close-image;
       }
 
-      #close:hover {
+      #closeContainer:hover {
         @apply --cr-dialog-close-image-hover;
       }
 
-      #close:active {
+      #closeContainer:active {
         @apply --cr-dialog-close-image-active;
       }
     </style>
@@ -136,10 +135,12 @@
         <div class="title-container" tabindex="-1">
           <slot name="title"></slot>
         </div>
-        <button is="paper-icon-button-light" class="icon-clear" id="close"
-            aria-label$="[[closeText]]" hidden$="[[noCancel]]" on-tap="cancel"
-            on-keypress="onCloseKeypress_">
-        </button>
+        <paper-icon-button-light id="closeContainer" class="icon-clear"
+            hidden$="[[noCancel]]">
+          <button id="close" aria-label$="[[closeText]]"
+              on-tap="cancel" on-keypress="onCloseKeypress_">
+          </button>
+        </paper-icon-button-light>
       </div>
       <slot name="header"></slot>
       <div class="body-container">

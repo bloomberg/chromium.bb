@@ -90,9 +90,10 @@ suite('UsbDevices', function() {
     browserProxy.setUsbDevices(deviceList);
 
     return initPage().then(function() {
-      const menuButton = testElement.$$('button.icon-more-vert');
+      const menuButton =
+          testElement.$$('paper-icon-button-light.icon-more-vert');
       assertTrue(!!menuButton);
-      MockInteractions.tap(menuButton);
+      MockInteractions.tap(menuButton.querySelector('button'));
       const dialog = testElement.$$('dialog[is=cr-action-menu]');
       assertTrue(dialog.open);
     });
@@ -109,9 +110,9 @@ suite('UsbDevices', function() {
      * parameters to the browserProxy.removeUsbDevice() function.
      */
     const menuButton = testElement.root.querySelectorAll(
-        'button.icon-more-vert')[indexToRemove];
+        'paper-icon-button-light.icon-more-vert')[indexToRemove];
     const removeButton = testElement.$.removeButton;
-    MockInteractions.tap(menuButton);
+    MockInteractions.tap(menuButton.querySelector('button'));
     MockInteractions.tap(removeButton);
     return browserProxy.whenCalled('removeUsbDevice').then(function(args) {
       /**

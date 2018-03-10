@@ -140,14 +140,16 @@
                   </div>
                 </div>
 <if expr="not chromeos">
-                <button class="subpage-arrow" is="paper-icon-button-light"
-                    aria-label="$i18n{editPerson}"
-                    aria-describedby="profile-name"></button>
+                <paper-icon-button-light class="subpage-arrow">
+                  <button aria-label="$i18n{editPerson}"
+                      aria-describedby="profile-name"></button>
+                </paper-icon-button-light>
 </if>
 <if expr="chromeos">
-                <button class="subpage-arrow" is="paper-icon-button-light"
-                    aria-label="$i18n{changePictureTitle}"
-                    aria-describedby="profile-name"></button>
+                <paper-icon-button-light class="subpage-arrow">
+                  <button aria-label="$i18n{changePictureTitle}"
+                      aria-describedby="profile-name"></button>
+                </paper-icon-button-light>
 </if>
               </div>
 <if expr="not chromeos">
@@ -223,9 +225,10 @@
                 [[syncStatus.statusText]]
               </div>
             </div>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                aria-label="$i18n{sync}"
-                aria-describedby="syncSecondary"></button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{sync}"
+                  aria-describedby="syncSecondary"></button>
+            </paper-icon-button-light>
           </div>
         </template>
 
@@ -234,8 +237,9 @@
           <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
               actionable>
             <div class="start">$i18n{profileNameAndPicture}</div>
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                aria-label="$i18n{editPerson}"></button>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{editPerson}"></button>
+            </paper-icon-button-light>
           </div>
         </template>
 </if>
@@ -250,25 +254,29 @@
                                   prefs.settings.enable_screen_lock.value)]]
             </div>
           </div>
-          <button class="subpage-arrow"
-              is="paper-icon-button-light" aria-label="$i18n{lockScreenTitle}"
-              aria-describedby="lockScreenSecondary"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{lockScreenTitle}"
+                aria-describedby="lockScreenSecondary"></button>
+          </paper-icon-button-light>
         </div>
 </if>
 
         <div id="manage-other-people-subpage-trigger"
             class="settings-box" on-click="onManageOtherPeople_" actionable>
           <div class="start">$i18n{manageOtherPeople}</div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{manageOtherPeople}"></button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{manageOtherPeople}"></button>
+          </paper-icon-button-light>
         </div>
 
 <if expr="not chromeos">
         <div class="settings-box" on-click="onImportDataTap_" actionable>
           <div class="start">$i18n{importTitle}</div>
-          <button id="importDataDialogTrigger" class="subpage-arrow"
-              is="paper-icon-button-light" aria-label="$i18n{importTitle}">
-          </button>
+          <paper-icon-button-light class="subpage-arrow">
+            <button id="importDataDialogTrigger"
+                aria-label="$i18n{importTitle}">
+            </button>
+          </paper-icon-button-light>
         </div>
 </if>
 

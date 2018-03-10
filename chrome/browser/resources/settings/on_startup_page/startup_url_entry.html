@@ -25,10 +25,11 @@
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
       <template is="dom-if" if="[[editable]]">
-        <button is="paper-icon-button-light" id="dots" on-click="onDotsTap_"
-            title="$i18n{moreActions}" focus-row-control focus-type="menu"
-            class="icon-more-vert">
-        </button>
+        <paper-icon-button-light class="icon-more-vert">
+          <button id="dots" on-click="onDotsTap_" title="$i18n{moreActions}"
+              focus-row-control focus-type="menu">
+          </button>
+        </paper-icon-button-light>
         <template is="cr-lazy-render" id="menu">
           <dialog is="cr-action-menu">
             <button slot="item" class="dropdown-item" on-click="onEditTap_">

@@ -57,9 +57,10 @@
           <template>
             <div class="list-item">
               <div class="word text-elide">[[item]]</div>
-              <button is="paper-icon-button-light" class="icon-clear"
-                  on-click="onRemoveWordTap_" tabindex$="[[tabIndex]]">
-              </button>
+              <paper-icon-button-light class="icon-clear">
+                <button on-click="onRemoveWordTap_" tabindex$="[[tabIndex]]">
+                </button>
+              </paper-icon-button-light>
             </div>
           </template>
         </iron-list>

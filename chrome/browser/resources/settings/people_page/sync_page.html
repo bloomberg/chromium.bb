@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
@@ -258,9 +259,10 @@
             $i18n{personalizeGoogleServicesText}
           </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light"
-            actionable aria-label="$i18n{personalizeGoogleServicesTitle}"
-            aria-describedby="activityControlsSecondary"></button>
+        <paper-icon-button-light class="icon-external">
+          <button actionable aria-label="$i18n{personalizeGoogleServicesTitle}"
+              aria-describedby="activityControlsSecondary"></button>
+        </paper-icon-button-light>
       </a>
 
       <a class="settings-box inherit-color no-outline" tabindex="-1"
@@ -268,8 +270,9 @@
         <div class="start">
           $i18n{manageSyncedDataTitle}
         </div>
-        <button class="icon-external" is="paper-icon-button-light" actionable
-            aria-label="$i18n{manageSyncedDataTitle}"></button>
+        <paper-icon-button-light class="icon-external">
+          <button actionable aria-label="$i18n{manageSyncedDataTitle}"></button>
+        </paper-icon-button-light>
       </a>
 
       <div id="encryptionDescription" hidden="[[syncPrefs.passphraseRequired]]"

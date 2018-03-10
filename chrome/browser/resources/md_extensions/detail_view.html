@@ -187,9 +187,10 @@
     <div id="container">
       <div id="main">
         <div id="top-bar">
-          <button id="close-button" is="paper-icon-button-light"
-              aria-label="$i18n{back}" class="icon-arrow-back no-overlap"
-              on-click="onCloseButtonTap_"></button>
+          <paper-icon-button-light class="icon-arrow-back no-overlap">
+            <button id="close-button" aria-label="$i18n{back}"
+                on-click="onCloseButtonTap_"></button>
+          </paper-icon-button-light>
           <img id="icon" src="[[data.iconUrl]]"
               alt$="[[appOrExtension(
                   data.type,

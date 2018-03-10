@@ -28,9 +28,10 @@
         <div class="list-item">
           <div class="printer-name text-elide">[[item.printerName]]</div>
           <!--TODO(xdai): Add icon for enterprise CUPS printer. -->
-          <button is="paper-icon-button-light" class="icon-more-vert"
-              on-click="onOpenActionMenuTap_" title="$i18n{moreActions}">
-          </button>
+          <paper-icon-button-light class="icon-more-vert">
+            <button on-click="onOpenActionMenuTap_" title="$i18n{moreActions}">
+            </button>
+          </paper-icon-button-light>
         </div>
       </template>
     </div>

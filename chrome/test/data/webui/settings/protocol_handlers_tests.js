@@ -145,8 +145,8 @@ suite('ProtocolHandlers', function() {
   function testButtonFlow(button, browserProxyHandler) {
     return initPage().then(() => {
       // Initiating the elements
-      const menuButtons =
-          testElement.root.querySelectorAll('button.icon-more-vert');
+      const menuButtons = testElement.root.querySelectorAll(
+          'paper-icon-button-light.icon-more-vert');
       assertEquals(3, menuButtons.length);
       const dialog = testElement.$$('dialog[is=cr-action-menu]');
       return Promise.all([[0, 0], [1, 0], [1, 1]].map((indices, menuIndex) => {
@@ -155,7 +155,7 @@ suite('ProtocolHandlers', function() {
         // Test the button for the first protocol handler
         browserProxy.reset();
         assertFalse(dialog.open);
-        MockInteractions.tap(menuButtons[menuIndex]);
+        MockInteractions.tap(menuButtons[menuIndex].querySelector('button'));
         assertTrue(dialog.open);
         MockInteractions.tap(testElement.$[button]);
         assertFalse(dialog.open);
@@ -180,17 +180,17 @@ suite('ProtocolHandlers', function() {
   test('default button works', function() {
     browserProxy.setProtocolHandlers(protocols);
     return testButtonFlow('defaultButton', 'setProtocolDefault').then(() => {
-      const menuButtons =
-          testElement.root.querySelectorAll('button.icon-more-vert');
+      const menuButtons = testElement.root.querySelectorAll(
+          'paper-icon-button-light.icon-more-vert');
       const closeMenu = () =>
           testElement.$$('dialog[is=cr-action-menu]').close();
-      MockInteractions.tap(menuButtons[0]);
+      MockInteractions.tap(menuButtons[0].querySelector('button'));
       assertTrue(testElement.$.defaultButton.hidden);
       closeMenu();
-      MockInteractions.tap(menuButtons[1]);
+      MockInteractions.tap(menuButtons[1].querySelector('button'));
       assertTrue(testElement.$.defaultButton.hidden);
       closeMenu();
-      MockInteractions.tap(menuButtons[2]);
+      MockInteractions.tap(menuButtons[2].querySelector('button'));
       assertFalse(testElement.$.defaultButton.hidden);
     });
   });

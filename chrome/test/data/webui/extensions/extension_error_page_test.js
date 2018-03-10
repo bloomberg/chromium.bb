@@ -122,7 +122,7 @@ cr.define('extension_error_page_tests', function() {
       expectTrue(error.querySelector('iron-icon').icon == 'warning');
 
       mockDelegate.testClickingCalls(
-          error.querySelector('.icon-delete-gray'), 'deleteErrors',
+          error.querySelector('.icon-delete-gray button'), 'deleteErrors',
           [extensionId, [manifestError.id]]);
     });
 

@@ -34,10 +34,11 @@
                 icon-aria-label="$i18n{androidAppsPageTitle}">
             </cr-policy-pref-indicator>
             <template is="dom-if" if="[[androidAppsInfo.playStoreEnabled]]">
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  aria-label="$i18n{androidAppsPageTitle}"
-                  aria-describedby="secondaryText">
-              </button>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-label="$i18n{androidAppsPageTitle}"
+                    aria-describedby="secondaryText">
+                </button>
+              </paper-icon-button-light>
             </template>
             <template is="dom-if" if="[[!androidAppsInfo.playStoreEnabled]]">
               <div class="separator"></div>

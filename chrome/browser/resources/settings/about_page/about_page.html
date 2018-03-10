@@ -184,9 +184,9 @@
                   </a>
                 </div>
               </div>
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  aria-labelledby="aboutTPMFirmwareUpdate">
-              </button>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-labelledby="aboutTPMFirmwareUpdate"></button>
+              </paper-icon-button-light>
             </div>
 </if>
 <if expr="_google_chrome and is_macosx">
@@ -203,36 +203,40 @@
                     $i18n{learnMore}
                   </a>
                 </div>
-                <button class="subpage-arrow" is="paper-icon-button-light"
-                    disabled="[[promoteUpdaterStatus_.disabled]]"
-                    hidden="[[!promoteUpdaterStatus_.actionable]]"
-                    aria-label$="[[promoteUpdaterStatus_.text]]">
-                </button>
+                <paper-icon-button-light class="subpage-arrow"
+                    hidden="[[!promoteUpdaterStatus_.actionable]]">
+                  <button disabled="[[promoteUpdaterStatus_.disabled]]"
+                      aria-label$="[[promoteUpdaterStatus_.text]]">
+                  </button>
+                </paper-icon-button-light>
               </div>
             </template>
 </if>
             <div id="help" class="settings-box" on-click="onHelpTap_"
                 actionable>
               <div class="start">$i18n{aboutGetHelpUsingChrome}</div>
-              <button class="icon-external" is="paper-icon-button-light"
-                  aria-labelledby="help"></button>
+              <paper-icon-button-light class="icon-external">
+                <button aria-labelledby="help"></button>
+              </paper-icon-button-light>
             </div>
 <if expr="_google_chrome">
             <div id="reportIssue" class="settings-box" actionable
                 on-click="onReportIssueTap_">
               <div class="start">$i18n{aboutReportAnIssue}</div>
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  aria-labelledby="reportIssue"></button>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-labelledby="reportIssue"></button>
+              </paper-icon-button-light>
             </div>
 </if>
 <if expr="chromeos">
             <div class="settings-box" on-click="onDetailedBuildInfoTap_"
                 actionable>
               <div class="start">$i18n{aboutDetailedBuildInfo}</div>
-              <button id="detailed-build-info-trigger" class="subpage-arrow"
-                  is="paper-icon-button-light"
-                  aria-label="$i18n{aboutDetailedBuildInfo}">
-              </button>
+              <paper-icon-button-light class="subpage-arrow">
+                <button id="detailed-build-info-trigger"
+                    aria-label="$i18n{aboutDetailedBuildInfo}">
+                </button>
+              </paper-icon-button-light>
             </div>
 </if>
           </neon-animatable>

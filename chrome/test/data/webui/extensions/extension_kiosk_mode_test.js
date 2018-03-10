@@ -106,7 +106,8 @@ cr.define('extension_kiosk_mode_tests', function() {
             // disabled.
             expectTrue(dialog.$$('paper-checkbox').hidden);
 
-            MockInteractions.tap(items[0].querySelector('.icon-delete-gray'));
+            MockInteractions.tap(
+                items[0].querySelector('.icon-delete-gray button'));
             Polymer.dom.flush();
             return browserProxy.whenCalled('removeKioskApp');
           })

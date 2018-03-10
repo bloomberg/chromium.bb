@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
@@ -54,9 +55,9 @@
             <paper-input value="{{item}}"
                 on-change="onFingerprintLabelChanged_">
             </paper-input>
-            <button is="paper-icon-button-light" class="icon-delete-gray"
-                on-click="onFingerprintDeleteTapped_">
-            </button>
+            <paper-icon-button-light class="icon-delete-gray">
+              <button on-click="onFingerprintDeleteTapped_"></button>
+            </paper-icon-button-light>
           </div>
         </template>
       </iron-list>

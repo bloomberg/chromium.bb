@@ -236,7 +236,7 @@ cr.define('extension_test_util', function() {
       }
     });
 
-    e.querySelectorAll('* /deep/ [is=paper-icon-button-light]')
+    e.querySelectorAll('* /deep/ paper-icon-button-light')
         .forEach(function(button) {
           if (isElementVisible(button)) {
             expectTrue(

@@ -45,10 +45,10 @@
           value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]"
           no-label-float>
       </paper-input>
-      <button id="clear" is="paper-icon-button-light"
-          class="icon-clear no-overlap" on-click="onClearTap_"
+      <paper-icon-button-light class="icon-clear no-overlap"
           hidden$="[[computeClearHidden_(capturing_, shortcut)]]">
-      </button>
+        <button id="clear" on-click="onClearTap_"></button>
+      </paper-icon-button-light>
     </div>
   </template>
   <script src="shortcut_input.js"></script>

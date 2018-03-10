@@ -85,9 +85,10 @@
           $i18n{stylusFindMoreAppsSecondary}
         </div>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"
-          aria-label="$i18n{stylusFindMoreAppsPrimary}"
-          aria-describedby="stylusFindMoreAppsSecondary"></button>
+      <paper-icon-button-light class="icon-external">
+        <button aria-label="$i18n{stylusFindMoreAppsPrimary}"
+            aria-describedby="stylusFindMoreAppsSecondary"></button>
+      </paper-icon-button-light>
     </div>
 
     <template is="dom-if" if="[[supportsLockScreen_(selectedApp_)]]">

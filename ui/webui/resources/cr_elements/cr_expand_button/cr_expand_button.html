@@ -10,7 +10,7 @@
         pointer-events: none;
       }
 
-      button[is=paper-icon-button-light] {
+      paper-icon-button-light {
         @apply --cr-paper-icon-button-margin;
       }
 
@@ -25,11 +25,12 @@
     </style>
     <div id="outer" on-tap="toggleExpand_">
       <div id="label" on-tap="toggleExpand_"><slot></slot></div>
-      <button is="paper-icon-button-light" class$="[[iconName_(expanded)]]"
-          toggles active="{{expanded}}" disabled="[[disabled]]"
-          aria-label$="[[alt]]" aria-pressed$="[[getAriaPressed_(expanded)]]"
-          tabindex$="[[tabIndex]]">
-      </button>
+      <paper-icon-button-light class$="[[iconName_(expanded)]]">
+        <button toggles active="{{expanded}}" disabled="[[disabled]]"
+            aria-label$="[[alt]]" aria-pressed$="[[getAriaPressed_(expanded)]]"
+            tabindex$="[[tabIndex]]">
+        </button>
+      </paper-icon-button-light>
     </div>
   </template>
   <script src="cr_expand_button.js"></script>

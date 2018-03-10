@@ -48,8 +48,9 @@
       <div class="settings-box"
           on-click="onChromeVoxSettingsTap_" actionable>
         <div class="start">$i18n{chromeVoxOptionsLabel}</div>
-        <button class="icon-external" is="paper-icon-button-light"
-            aria-label="$i18n{chromeVoxOptionsLabel}"></button>
+        <paper-icon-button-light class="icon-external">
+          <button aria-label="$i18n{chromeVoxOptionsLabel}"></button>
+        </paper-icon-button-light>
       </div>
     </iron-collapse>
     <settings-toggle-button
@@ -61,8 +62,9 @@
       <div class="settings-box"
           on-click="onSelectToSpeakSettingsTap_" actionable>
         <div class="start">$i18n{selectToSpeakOptionsLabel}</div>
-        <button class="icon-external" is="paper-icon-button-light"
-            aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
+        <paper-icon-button-light class="icon-external">
+          <button aria-label="$i18n{selectToSpeakOptionsLabel}"></button>
+        </paper-icon-button-light>
       </div>
     </iron-collapse>
 
@@ -104,9 +106,10 @@
         $i18n{displaySettingsTitle}
         <div class="secondary">$i18n{displaySettingsDescription}</div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{displaySettingsTitle}"
-          aria-describedby="displaySettingsSecondary"></button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{displaySettingsTitle}"
+            aria-describedby="displaySettingsSecondary"></button>
+      </paper-icon-button-light>
     </div>
     <div class="settings-box two-line" on-click="onAppearanceTap_" actionable>
       <div class="start">
@@ -115,9 +118,10 @@
           $i18n{appearanceSettingsDescription}
         </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{appearanceSettingsTitle}"
-          aria-describedby="appearanceSettingsSecondary"></button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{appearanceSettingsTitle}"
+            aria-describedby="appearanceSettingsSecondary"></button>
+      </paper-icon-button-light>
     </div>
 
     <h2>$i18n{keyboardHeading}</h2>
@@ -141,12 +145,12 @@
       <settings-toggle-button
           pref="{{prefs.settings.a11y.switch_access}}"
           label="$i18n{switchAccessLabel}">
-        <button is="paper-icon-button-light"
-            class="icon-settings" slot="more-actions"
-            on-click="onSwitchAccessSettingsTap_"
-            hidden="[[!prefs.settings.a11y.switch_access.value]]"
-            aria-label="$i18n{selectToSpeakOptionsLabel}">
-        </button>
+        <paper-icon-button-light slot="more-actions" class="icon-settings"
+            hidden="[[!prefs.settings.a11y.switch_access.value]]">
+          <button on-click="onSwitchAccessSettingsTap_"
+              aria-label="$i18n{selectToSpeakOptionsLabel}">
+          </button>
+        </paper-icon-button-light>
       </settings-toggle-button>
     </template>
     <div class="settings-box two-line" on-click="onKeyboardTap_" actionable>
@@ -156,9 +160,10 @@
           $i18n{keyboardSettingsDescription}
         </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{keyboardSettingsTitle}"
-          aria-describedby="keyboardSettingsSecondary"></button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{keyboardSettingsTitle}"
+            aria-describedby="keyboardSettingsSecondary"></button>
+      </paper-icon-button-light>
     </div>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
@@ -202,10 +207,11 @@
         <div class="secondary" id="mouseSettingsSecondary">
           $i18n{mouseSettingsDescription}
         </div>
-      </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{mouseSettingsTitle}"
-          aria-describedby="mouseSettingsSecondary"></button>
+        </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{mouseSettingsTitle}"
+              aria-describedby="mouseSettingsSecondary"></button>
+        </paper-icon-button-light>
     </div>
 
     <h2>$i18n{audioHeading}</h2>
@@ -224,9 +230,10 @@
             $i18n{a11yWebStore}
           </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light" actionable
-            aria-label="$i18n{additionalFeaturesTitle}"
-            aria-describedby="moreFeaturesSecondary"></button>
+        <paper-icon-button-light class="icon-external">
+          <button actionable aria-label="$i18n{additionalFeaturesTitle}"
+              aria-describedby="moreFeaturesSecondary"></button>
+        </paper-icon-button-light>
       </a>
     </template>
   </template>

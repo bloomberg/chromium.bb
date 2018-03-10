@@ -202,9 +202,10 @@
           $i18n{storageSizeComputing}
         </div>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"
-          aria-label="$i18n{storageItemDownloads}"
-          aria-describedby="downloadsSize"></button>
+      <paper-icon-button-light class="icon-external">
+        <button aria-label="$i18n{storageItemDownloads}"
+            aria-describedby="downloadsSize"></button>
+      </paper-icon-button-light>
     </div>
     <template is="dom-if" if="[[driveEnabled_]]">
       <div class="settings-box two-line" on-click="onDriveCacheTap_"
@@ -215,10 +216,11 @@
             $i18n{storageSizeComputing}
           </div>
         </div>
-        <button id="deleteButton" is="paper-icon-button-light"
-            class="icon-delete-gray" aria-label="$i18n{storageItemDriveCache}"
-            aria-describedby="driveSizeCache">
-        </button>
+        <paper-icon-button-light class="icon-delete-gray">
+          <button id="deleteButton" aria-label="$i18n{storageItemDriveCache}"
+              aria-describedby="driveSizeCache">
+          </button>
+        </paper-icon-button-light>
       </div>
     </template>
     <div class="settings-box two-line" on-click="onBrowsingDataTap_" actionable>
@@ -228,9 +230,10 @@
           $i18n{storageSizeComputing}
         </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{storageItemBrowsingData}"
-          aria-describedby="browsingDataSize"></button>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{storageItemBrowsingData}"
+            aria-describedby="browsingDataSize"></button>
+      </paper-icon-button-light>
     </div>
     <template is="dom-if" if="[[androidEnabled_]]">
       <div class="settings-box two-line" on-click="onAndroidTap_" actionable>
@@ -240,9 +243,10 @@
             $i18n{storageSizeComputing}
           </div>
         </div>
-        <button class="icon-external" is="paper-icon-button-light"
-            aria-label="$i18n{storageItemAndroid}"
-            aria-describedby="androidSize"></button>
+        <paper-icon-button-light class="icon-external">
+          <button aria-label="$i18n{storageItemAndroid}"
+              aria-describedby="androidSize"></button>
+        </paper-icon-button-light>
       </div>
     </template>
     <template is="dom-if" if="[[!isGuest_]]">
@@ -253,9 +257,10 @@
             $i18n{storageSizeComputing}
           </div>
         </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="$i18n{storageItemOtherUsers}"
-            aria-describedby="otherUsersSize"></button>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{storageItemOtherUsers}"
+              aria-describedby="otherUsersSize"></button>
+        </paper-icon-button-light>
       </div>
     </template>
 

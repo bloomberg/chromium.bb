@@ -54,6 +54,6 @@ Polymer({
   /** @private */
   onDotsTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
-        .showAt(assert(this.$$('button[is="paper-icon-button-light"]')));
+        .showAt(assert(this.$$('paper-icon-button-light button')));
   },
 });

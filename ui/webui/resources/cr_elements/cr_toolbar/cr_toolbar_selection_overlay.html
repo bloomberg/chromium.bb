@@ -48,11 +48,11 @@
       }
     </style>
     <div id="overlay-content">
-      <button is="paper-icon-button-light"
-          on-tap="onClearSelectionTap_"
-          title="[[cancelLabel]]">
-        <iron-icon icon="cr:clear"></iron-icon>
-      </button>
+      <paper-icon-button-light>
+        <button on-tap="onClearSelectionTap_" title="[[cancelLabel]]">
+          <iron-icon icon="cr:clear"></iron-icon>
+        </button>
+      </paper-icon-button-light>
       <div id="number-selected">[[selectionLabel]]</div>
       <paper-button on-tap="onClearSelectionTap_">
         [[cancelLabel]]
