@@ -274,13 +274,10 @@ void SimpleWatcher::OnHandleReady(int watch_id,
     if (!weak_self)
       return;
 
-    if (unsatisfiable_)
-      return;
-
     // Prevent |MOJO_RESULT_FAILED_PRECONDITION| task spam by only notifying
     // at most once in AUTOMATIC arming mode.
     if (result == MOJO_RESULT_FAILED_PRECONDITION)
-      unsatisfiable_ = true;
+      return;
 
     if (arming_policy_ == ArmingPolicy::AUTOMATIC && IsWatching())
       ArmOrNotify();

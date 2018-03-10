@@ -89,6 +89,7 @@ test("mojo_common_unittests") {
 
   sources = [
     "common_custom_types_unittest.cc",
+    "data_pipe_drainer_unittest.cc",
     "struct_traits_unittest.cc",
   ]
 }
