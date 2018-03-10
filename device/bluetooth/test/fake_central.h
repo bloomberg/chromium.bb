@@ -185,6 +185,8 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& characteristic_id,
       const std::string& descriptor_id) const;
 
+  bool has_pending_or_active_discovery_session_;
+
   mojom::CentralState state_;
   mojo::Binding<mojom::FakeCentral> binding_;
 };
