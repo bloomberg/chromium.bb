@@ -28,7 +28,9 @@ namespace content {
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kSitePerProcess) ||
-         base::FeatureList::IsEnabled(features::kSitePerProcess);
+         (base::FeatureList::IsEnabled(features::kSitePerProcess) &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableSiteIsolationTrials));
 }
 
 // static
@@ -59,7 +61,9 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
 bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kIsolateOrigins) ||
-         base::FeatureList::IsEnabled(features::kIsolateOrigins);
+         (base::FeatureList::IsEnabled(features::kIsolateOrigins) &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableSiteIsolationTrials));
 }
 
 // static
@@ -76,7 +80,9 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
     return cmdline_origins;
   }
 
-  if (base::FeatureList::IsEnabled(features::kIsolateOrigins)) {
+  if (base::FeatureList::IsEnabled(features::kIsolateOrigins) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolationTrials)) {
     std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
         features::kIsolateOrigins,
         features::kIsolateOriginsFieldTrialParamName);

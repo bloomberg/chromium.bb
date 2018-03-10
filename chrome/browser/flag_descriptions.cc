@@ -1404,11 +1404,25 @@ const char kSingleClickAutofillName[] = "Single-click autofill";
 const char kSingleClickAutofillDescription[] =
     "Make autofill suggestions on initial mouse click on a form element.";
 
-const char kSitePerProcessName[] = "Strict site isolation";
-const char kSitePerProcessDescription[] =
-    "Experimental security mode that ensures each renderer process "
-    "contains pages from at most one site. In this mode, out-of-process "
-    "iframes will be used whenever an iframe is cross-site.";
+const char kStrictSiteIsolationName[] = "Strict site isolation";
+const char kStrictSiteIsolationDescription[] =
+    "Security mode that enables site isolation for all sites. When enabled, "
+    "each renderer process will contain pages from at most one site, using "
+    "out-of-process iframes when needed. When enabled, this flag forces the "
+    "strictest site isolation mode (SitePerProcess). When disabled, the site "
+    "isolation mode will be determined by enterprise policy or field trial.";
+
+const char kSiteIsolationTrialOptOutName[] = "Site isolation trial opt-out";
+const char kSiteIsolationTrialOptOutDescription[] =
+    "Opts out of field trials that enable site isolation modes "
+    "(SitePerProcess, IsolateOrigins, etc). Intended for diagnosing bugs that "
+    "may be due to out-of-process iframes. Opt-out has no effect if site "
+    "isolation is force-enabled via #enable-site-per-process or enterprise "
+    "policy. Caution: this disables important mitigations for the Spectre CPU "
+    "vulnerability affecting most computers.";
+extern const char kSiteIsolationTrialOptOutChoiceDefault[] = "Default";
+extern const char kSiteIsolationTrialOptOutChoiceOptOut[] =
+    "Opt-out (not recommended)";
 
 const char kSiteSettings[] = "Site settings with All sites and Site details";
 const char kSiteSettingsDescription[] =

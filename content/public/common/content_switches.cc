@@ -772,6 +772,9 @@ const char kSingleProcess[]                 = "single-process";
 // process consolidation, not isolation). You probably want this one.
 const char kSitePerProcess[]                = "site-per-process";
 
+// Disables enabling site isolation (i.e., --site-per-process) via field trial.
+const char kDisableSiteIsolationTrials[] = "disable-site-isolation-trials";
+
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.
 const char kStartFullscreen[] = "start-fullscreen";

@@ -1174,4 +1174,52 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginLongListTest, Test) {
   EXPECT_NE(subframe1->GetSiteInstance(), subframe2->GetSiteInstance());
 }
 
+// Ensure that --disable-site-isolation-trials disables field trials.
+class IsolatedOriginTrialOverrideTest : public IsolatedOriginFieldTrialTest {
+ public:
+  IsolatedOriginTrialOverrideTest() {}
+
+  ~IsolatedOriginTrialOverrideTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginTrialOverrideTest);
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTrialOverrideTest, Test) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_FALSE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("https://field.trial.com/"))));
+  EXPECT_FALSE(
+      policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://bar.com/"))));
+}
+
+// Ensure that --disable-site-isolation-trials does not override the flag.
+class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
+ public:
+  IsolatedOriginNoFlagOverrideTest() {}
+
+  ~IsolatedOriginNoFlagOverrideTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginNoFlagOverrideTest);
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginNoFlagOverrideTest, Test) {
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+}
+
 }  // namespace content
