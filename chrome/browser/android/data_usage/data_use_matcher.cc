@@ -27,7 +27,7 @@ DataUseMatcher::DataUseMatcher(
     const base::TimeDelta& default_matching_rule_expiration_duration)
     : default_matching_rule_expiration_duration_(
           default_matching_rule_expiration_duration),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       on_tracking_label_removed_callback_(on_tracking_label_removed_callback),
       on_matching_rules_fetched_callback_(on_matching_rules_fetched_callback) {
   DCHECK(on_tracking_label_removed_callback_);

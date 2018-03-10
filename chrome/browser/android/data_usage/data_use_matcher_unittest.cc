@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
-#include "base/time/tick_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
@@ -40,24 +40,6 @@ const char kAppFoo[] = "com.example.foo";
 
 const uint32_t kDefaultMatchingRuleExpirationDurationSeconds =
     60 * 60 * 24;  // 24 hours.
-
-class NowTestTickClock : public base::TickClock {
- public:
-  NowTestTickClock() {}
-
-  ~NowTestTickClock() override {}
-
-  base::TimeTicks NowTicks() override { return now_ticks_; }
-
-  void set_now_ticks(const base::TimeTicks& now_ticks) {
-    now_ticks_ = now_ticks;
-  }
-
- private:
-  base::TimeTicks now_ticks_;
-
-  DISALLOW_COPY_AND_ASSIGN(NowTestTickClock);
-};
 
 class TestExternalDataUseObserverBridge
     : public android::ExternalDataUseObserverBridge {
@@ -424,12 +406,10 @@ TEST_F(DataUseMatcherTest, ParsePackageField) {
       {"com.example.foo|10000", "com.example.foo",
        base::TimeDelta::FromMilliseconds(10000)},
   };
-  NowTestTickClock* tick_clock = new NowTestTickClock();
+  base::SimpleTestTickClock tick_clock;
   // Set current time to to Epoch.
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
-
-  // |tick_clock| will be owned by |data_use_matcher_|.
-  data_use_matcher()->tick_clock_.reset(tick_clock);
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch());
+  data_use_matcher()->tick_clock_ = &tick_clock;
 
   for (const auto& test : tests) {
     std::string new_app_package_name;
@@ -448,17 +428,15 @@ TEST_F(DataUseMatcherTest, ParsePackageField) {
 // correctly.
 TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
   base::HistogramTester histogram_tester;
-  NowTestTickClock* tick_clock = new NowTestTickClock();
-
-  // |tick_clock| will be owned by |data_use_matcher_|.
-  data_use_matcher()->tick_clock_.reset(tick_clock);
+  base::SimpleTestTickClock tick_clock;
+  data_use_matcher()->tick_clock_ = &tick_clock;
 
   std::vector<std::string> url_regexes, labels, app_package_names;
   url_regexes.push_back(kRegexFoo);
   labels.push_back(kLabelFoo);
 
   // Set current time to Epoch.
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch());
 
   app_package_names.push_back(base::StringPrintf("%s|%d", kAppFoo, 10000));
   RegisterURLRegexes(app_package_names, url_regexes, labels);
@@ -468,8 +446,8 @@ TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
   histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
                                       1);
   // Fast forward 10 seconds, and matching rule expires.
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
-                            base::TimeDelta::FromMilliseconds(10000 + 1));
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch() +
+                         base::TimeDelta::FromMilliseconds(10000 + 1));
   EXPECT_TRUE(IsExpired(0));
 
   // Empty app package name.
@@ -478,8 +456,8 @@ TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
   RegisterURLRegexes(app_package_names, url_regexes, labels);
   EXPECT_FALSE(IsExpired(0));
   // Fast forward 20 seconds, and matching rule expires.
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
-                            base::TimeDelta::FromMilliseconds(20000 + 1));
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch() +
+                         base::TimeDelta::FromMilliseconds(20000 + 1));
   EXPECT_TRUE(IsExpired(0));
 }
 
@@ -518,11 +496,10 @@ TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
   base::HistogramTester histogram_tester;
   std::vector<std::string> url_regexes, labels, app_package_names;
   std::string got_label;
-  NowTestTickClock* tick_clock = new NowTestTickClock();
+  base::SimpleTestTickClock tick_clock;
 
-  // |tick_clock| will be owned by |data_use_matcher_|.
-  data_use_matcher()->tick_clock_.reset(tick_clock);
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
+  data_use_matcher()->tick_clock_ = &tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch());
 
   url_regexes.push_back(kRegexFoo);
   labels.push_back(kLabelFoo);
@@ -533,8 +510,8 @@ TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
   histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
                                       1);
 
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
-                            base::TimeDelta::FromMilliseconds(1));
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch() +
+                         base::TimeDelta::FromMilliseconds(1));
 
   EXPECT_FALSE(IsExpired(0));
   EXPECT_TRUE(data_use_matcher()->MatchesURL(GURL(kRegexFoo), &got_label));
@@ -543,8 +520,8 @@ TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
   EXPECT_EQ(kLabelFoo, got_label);
 
   // Advance time to make it expired.
-  tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
-                            base::TimeDelta::FromMilliseconds(10001));
+  tick_clock.SetNowTicks(base::TimeTicks::UnixEpoch() +
+                         base::TimeDelta::FromMilliseconds(10001));
 
   EXPECT_TRUE(IsExpired(0));
   EXPECT_FALSE(data_use_matcher()->MatchesURL(GURL(kRegexFoo), &got_label));

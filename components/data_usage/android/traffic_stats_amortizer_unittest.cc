@@ -145,9 +145,9 @@ class MockTimerWithTickClock : public base::MockTimer {
 class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
  public:
   TestTrafficStatsAmortizer(
-      std::unique_ptr<base::TickClock> tick_clock,
+      base::TickClock* tick_clock,
       std::unique_ptr<base::Timer> traffic_stats_query_timer)
-      : TrafficStatsAmortizer(std::move(tick_clock),
+      : TrafficStatsAmortizer(tick_clock,
                               std::move(traffic_stats_query_timer),
                               kTrafficStatsQueryDelay,
                               kMaxAmortizationDelay,
@@ -187,9 +187,9 @@ class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
 class TrafficStatsAmortizerTest : public testing::Test {
  public:
   TrafficStatsAmortizerTest()
-      : test_tick_clock_(new base::SimpleTestTickClock()),
-        mock_timer_(new MockTimerWithTickClock(false, false, test_tick_clock_)),
-        amortizer_(std::unique_ptr<base::TickClock>(test_tick_clock_),
+      : mock_timer_(
+            new MockTimerWithTickClock(false, false, &test_tick_clock_)),
+        amortizer_(&test_tick_clock_,
                    std::unique_ptr<base::Timer>(mock_timer_)),
         data_use_callback_call_count_(0) {}
 
@@ -199,21 +199,21 @@ class TrafficStatsAmortizerTest : public testing::Test {
 
   // Simulates the passage of time by |delta|, firing timers when appropriate.
   void AdvanceTime(const base::TimeDelta& delta) {
-    const base::TimeTicks end_time = test_tick_clock_->NowTicks() + delta;
+    const base::TimeTicks end_time = test_tick_clock_.NowTicks() + delta;
     base::RunLoop().RunUntilIdle();
 
-    while (test_tick_clock_->NowTicks() < end_time) {
+    while (test_tick_clock_.NowTicks() < end_time) {
       PumpMockTimer();
 
       // If |mock_timer_| is scheduled to fire in the future before |end_time|,
       // advance to that time.
       if (mock_timer_->IsRunning() &&
           mock_timer_->desired_run_time() < end_time) {
-        test_tick_clock_->Advance(mock_timer_->desired_run_time() -
-                                  test_tick_clock_->NowTicks());
+        test_tick_clock_.Advance(mock_timer_->desired_run_time() -
+                                 test_tick_clock_.NowTicks());
       } else {
         // Otherwise, advance to |end_time|.
-        test_tick_clock_->Advance(end_time - test_tick_clock_->NowTicks());
+        test_tick_clock_.Advance(end_time - test_tick_clock_.NowTicks());
       }
     }
     PumpMockTimer();
@@ -258,7 +258,7 @@ class TrafficStatsAmortizerTest : public testing::Test {
                       base::Unretained(this), base::Passed(&expected));
   }
 
-  base::TimeTicks NowTicks() const { return test_tick_clock_->NowTicks(); }
+  base::TimeTicks NowTicks() { return test_tick_clock_.NowTicks(); }
 
   TestTrafficStatsAmortizer* amortizer() { return &amortizer_; }
 
@@ -274,7 +274,7 @@ class TrafficStatsAmortizerTest : public testing::Test {
     // Fire the |mock_timer_| if the time has come up. Use a while loop in case
     // the fired task started the timer again to fire immediately.
     while (mock_timer_->IsRunning() &&
-           mock_timer_->desired_run_time() <= test_tick_clock_->NowTicks()) {
+           mock_timer_->desired_run_time() <= test_tick_clock_.NowTicks()) {
       mock_timer_->Fire();
       base::RunLoop().RunUntilIdle();
     }
@@ -282,8 +282,7 @@ class TrafficStatsAmortizerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
-  // Weak, owned by |amortizer_|.
-  base::SimpleTestTickClock* test_tick_clock_;
+  base::SimpleTestTickClock test_tick_clock_;
 
   // Weak, owned by |amortizer_|.
   MockTimerWithTickClock* mock_timer_;

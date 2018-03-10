@@ -224,7 +224,7 @@ DataUseTabModel::DataUseTabModel(
       max_sessions_per_tab_(GetMaxSessionsPerTab()),
       closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
       open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       force_fetch_matching_rules_callback_(force_fetch_matching_rules_callback),
       is_ready_for_navigation_event_(false),
       is_control_app_installed_(false),
