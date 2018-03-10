@@ -56,9 +56,4 @@ download::DownloadInterruptReason ByteStreamInputStream::GetCompletionStatus() {
   return completion_status_;
 }
 
-void ByteStreamInputStream::OnResponseCompleted(
-    download::DownloadInterruptReason status) {
-  completion_status_ = status;
-}
-
 }  // namespace content

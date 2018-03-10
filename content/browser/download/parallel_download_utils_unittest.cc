@@ -11,11 +11,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_save_info.h"
-#include "content/browser/byte_stream.h"
-#include "content/browser/download/byte_stream_input_stream.h"
+#include "content/browser/download/mock_input_stream.h"
 #include "content/public/browser/download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Return;
+using ::testing::StrictMock;
 
 namespace content {
 
@@ -23,35 +25,30 @@ namespace {
 
 const int kErrorStreamOffset = 100;
 
-class MockByteStreamReader : public ByteStreamReader {
- public:
-  MockByteStreamReader() {}
-  ~MockByteStreamReader() override {}
-
-  // ByteStream functions
-  MOCK_METHOD2(Read,
-               ByteStreamReader::StreamState(scoped_refptr<net::IOBuffer>*,
-                                             size_t*));
-  MOCK_CONST_METHOD0(GetStatus, int());
-  MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
-};
-
-// Creates a source stream to test.
-std::unique_ptr<DownloadFileImpl::SourceStream> CreateSourceStream(
-    int64_t offset,
-    int64_t length) {
-  auto input_stream = std::make_unique<ByteStreamInputStream>(
-      std::make_unique<MockByteStreamReader>());
-  return std::make_unique<DownloadFileImpl::SourceStream>(
-      offset, length, std::move(input_stream));
-}
-
 }  // namespace
 
 class ParallelDownloadUtilsTest : public testing::Test {};
 
 class ParallelDownloadUtilsRecoverErrorTest
-    : public ::testing::TestWithParam<int64_t> {};
+    : public ::testing::TestWithParam<int64_t> {
+ public:
+  ParallelDownloadUtilsRecoverErrorTest() : input_stream_(nullptr) {}
+
+  // Creates a source stream to test.
+  std::unique_ptr<DownloadFileImpl::SourceStream> CreateSourceStream(
+      int64_t offset,
+      int64_t length) {
+    input_stream_ = new StrictMock<MockInputStream>();
+    EXPECT_CALL(*input_stream_, GetCompletionStatus())
+        .WillRepeatedly(Return(download::DOWNLOAD_INTERRUPT_REASON_NONE));
+    return std::make_unique<DownloadFileImpl::SourceStream>(
+        offset, length, std::unique_ptr<MockInputStream>(input_stream_));
+  }
+
+ protected:
+  // Stream for sending data into the SourceStream.
+  StrictMock<MockInputStream>* input_stream_;
+};
 
 TEST_F(ParallelDownloadUtilsTest, FindSlicesToDownload) {
   std::vector<download::DownloadItem::ReceivedSlice> downloaded_slices;
@@ -265,6 +262,7 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
        RecoverErrorForHalfOpenErrorStream) {
   // Create a stream that will work on byte range "100-".
   const int kErrorStreamOffset = 100;
+
   auto error_stream = CreateSourceStream(
       kErrorStreamOffset, download::DownloadSaveInfo::kLengthFullContent);
   error_stream->set_finished(true);
@@ -287,8 +285,9 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
 
   // Half open finished preceding stream with error, should be treated as
   // failed.
-  preceding_stream->OnResponseCompleted(
-      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+  EXPECT_CALL(*input_stream_, GetCompletionStatus())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Even if it has written some data.
@@ -308,8 +307,9 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
 
   // Inject an error results in failure, even if data written exceeds the first
   // byte of error stream.
-  preceding_stream->OnResponseCompleted(
-      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+  EXPECT_CALL(*input_stream_, GetCompletionStatus())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
   preceding_stream->OnWriteBytesToDisk(1000u);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
@@ -383,8 +383,9 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
 
   // Even if inject an error, since data written has cover the upper bound of
   // the error stream, it should succeed.
-  preceding_stream->OnResponseCompleted(
-      download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+  EXPECT_CALL(*input_stream_, GetCompletionStatus())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
   EXPECT_TRUE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Preceding stream that never download data won't recover the error stream.

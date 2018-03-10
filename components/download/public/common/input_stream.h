@@ -24,21 +24,21 @@ class COMPONENTS_DOWNLOAD_EXPORT InputStream {
     COMPLETE,
   };
 
-  virtual ~InputStream() = default;
+  virtual ~InputStream();
 
   // Initializes the inputStream object.
-  virtual void Initialize() {}
+  virtual void Initialize();
 
   // Returns true if the input stream contains no data, or false otherwise.
   virtual bool IsEmpty() = 0;
 
   // Register/clear callbacks when data become available.
   virtual void RegisterDataReadyCallback(
-      const mojo::SimpleWatcher::ReadyCallback& callback) {}
-  virtual void ClearDataReadyCallback() {}
+      const mojo::SimpleWatcher::ReadyCallback& callback);
+  virtual void ClearDataReadyCallback();
 
   // Registers stream completion callback if needed.
-  virtual void RegisterCompletionCallback(base::OnceClosure callback) {}
+  virtual void RegisterCompletionCallback(base::OnceClosure callback);
 
   // Reads data from the stream into |data|, |length| is the number of bytes
   // returned.
@@ -47,9 +47,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InputStream {
 
   // Returns the completion status.
   virtual DownloadInterruptReason GetCompletionStatus() = 0;
-
-  // Mark the InputStream as completed and set the completion status.
-  virtual void OnResponseCompleted(DownloadInterruptReason status){};
 };
 
 }  // namespace download

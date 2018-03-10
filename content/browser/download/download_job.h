@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
-#include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 

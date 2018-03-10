@@ -102,11 +102,6 @@ void DownloadFileImpl::SourceStream::ClearDataReadyCallback() {
   input_stream_->ClearDataReadyCallback();
 }
 
-void DownloadFileImpl::SourceStream::OnResponseCompleted(
-    download::DownloadInterruptReason reason) {
-  input_stream_->OnResponseCompleted(reason);
-}
-
 download::DownloadInterruptReason
 DownloadFileImpl::SourceStream::GetCompletionStatus() const {
   return input_stream_->GetCompletionStatus();

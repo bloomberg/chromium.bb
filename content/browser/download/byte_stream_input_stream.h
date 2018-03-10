@@ -27,7 +27,6 @@ class CONTENT_EXPORT ByteStreamInputStream : public download::InputStream {
   download::InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
                                           size_t* length) override;
   download::DownloadInterruptReason GetCompletionStatus() override;
-  void OnResponseCompleted(download::DownloadInterruptReason status) override;
 
  private:
   // ByteStreamReader to read from.

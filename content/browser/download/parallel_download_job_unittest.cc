@@ -13,10 +13,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_item_impl.h"
+#include "content/browser/download/mock_input_stream.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,15 +55,6 @@ class MockDownloadDestinationObserver
       int64_t total_bytes,
       std::unique_ptr<crypto::SecureHash> hash_state) override {}
   MOCK_METHOD2(CurrentUpdateStatus, void(int64_t, int64_t));
-};
-
-class MockByteStreamReader : public ByteStreamReader {
- public:
-  MOCK_METHOD2(Read,
-               ByteStreamReader::StreamState(scoped_refptr<net::IOBuffer>*,
-                                             size_t*));
-  MOCK_CONST_METHOD0(GetStatus, int());
-  MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 
 }  // namespace
@@ -182,9 +173,7 @@ class ParallelDownloadJobTest : public testing::Test {
         std::make_unique<download::DownloadCreateInfo>();
     create_info->request_handle = std::move(request_handle);
     delegate->OnUrlDownloadStarted(
-        std::move(create_info),
-        std::make_unique<ByteStreamInputStream>(
-            std::make_unique<MockByteStreamReader>()),
+        std::move(create_info), std::make_unique<MockInputStream>(),
         download::DownloadUrlParameters::OnStartedCallback());
   }
 
@@ -486,16 +475,14 @@ TEST_F(ParallelDownloadJobTest, RemainingContentWillFinishSoon) {
 // Test that parallel request is not created until download file is initialized.
 TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
   auto save_info = std::make_unique<download::DownloadSaveInfo>();
-  StrictMock<MockByteStreamReader>* input_stream =
-      new StrictMock<MockByteStreamReader>();
+  StrictMock<MockInputStream>* input_stream = new StrictMock<MockInputStream>();
   auto observer =
       std::make_unique<StrictMock<MockDownloadDestinationObserver>>();
   base::WeakPtrFactory<download::DownloadDestinationObserver> observer_factory(
       observer.get());
   auto download_file = std::make_unique<DownloadFileImpl>(
       std::move(save_info), base::FilePath(),
-      std::make_unique<ByteStreamInputStream>(
-          std::unique_ptr<ByteStreamReader>(input_stream)),
+      std::unique_ptr<MockInputStream>(input_stream),
       download::DownloadItem::kInvalidId, observer_factory.GetWeakPtr());
   CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 0, 0);
   job_->Start(download_file.get(),
@@ -504,7 +491,7 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
               download::DownloadItem::ReceivedSlices());
   EXPECT_FALSE(file_initialized_);
   EXPECT_EQ(0u, job_->workers().size());
-  EXPECT_CALL(*input_stream, RegisterCallback(_));
+  EXPECT_CALL(*input_stream, RegisterDataReadyCallback(_));
   EXPECT_CALL(*input_stream, Read(_, _));
   EXPECT_CALL(*(observer.get()), DestinationUpdate(_, _, _));
   task_environment_.RunUntilIdle();
