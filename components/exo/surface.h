@@ -43,7 +43,6 @@ class CompositorFrame;
 namespace exo {
 class Buffer;
 class LayerTreeFrameSinkHolder;
-class Pointer;
 class SurfaceObserver;
 class Surface;
 
@@ -53,10 +52,6 @@ class PropertyHelper;
 
 // Counter-clockwise rotations.
 enum class Transform { NORMAL, ROTATE_90, ROTATE_180, ROTATE_270 };
-
-// The pointer class is currently the only cursor provider class but this can
-// change in the future when better hardware cursor support is added.
-using CursorProvider = Pointer;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
@@ -197,15 +192,6 @@ class Surface final : public ui::PropertyHandler {
   // hit-test rects.
   std::unique_ptr<aura::WindowTargeter::HitTestRects> GetHitTestShapeRects()
       const;
-
-  // Surface does not own cursor providers. It is the responsibility of the
-  // caller to remove the cursor provider before it is destroyed.
-  void RegisterCursorProvider(CursorProvider* provider);
-  void UnregisterCursorProvider(CursorProvider* provider);
-
-  // Returns the cursor for the surface. If no cursor provider is registered
-  // then CursorType::kNull is returned.
-  gfx::NativeCursor GetCursor();
 
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);
@@ -396,9 +382,6 @@ class Surface final : public ui::PropertyHandler {
   // This is set when the compositing starts and passed to active frame
   // callbacks when compositing successfully ends.
   base::TimeTicks last_compositing_start_time_;
-
-  // Cursor providers. Surface does not own the cursor providers.
-  std::set<CursorProvider*> cursor_providers_;
 
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it
