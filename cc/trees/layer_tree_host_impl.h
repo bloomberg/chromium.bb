@@ -504,6 +504,9 @@ class CC_EXPORT LayerTreeHostImpl
   void SetViewportSize(const gfx::Size& device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
+  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
+  gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
+
   const gfx::Transform& DrawTransform() const;
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
@@ -897,6 +900,11 @@ class CC_EXPORT LayerTreeHostImpl
   // viewport, scrolling viewport and device viewport), but it can be
   // overridden.
   gfx::Size device_viewport_size_;
+
+  // Viewport clip rect passed in from the main thrad, in physical pixels.
+  // This is used for out-of-process iframes whose size exceeds the window
+  // in order to prevent full raster.
+  gfx::Rect viewport_visible_rect_;
 
   // Optional top-level constraints that can be set by the LayerTreeFrameSink.
   // - external_transform_ applies a transform above the root layer

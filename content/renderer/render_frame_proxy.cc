@@ -22,6 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/frame_owner_properties.h"
@@ -44,6 +45,7 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(USE_AURA)
 #include "content/renderer/mus/mus_embedded_frame.h"
@@ -605,13 +607,22 @@ void RenderFrameProxy::WasResized() {
   }
 #endif
 
-  if (resize_params_changed) {
-    // Let the browser know about the updated view rect.
-    Send(new FrameHostMsg_UpdateResizeParams(
-        routing_id_, screen_space_rect(), local_frame_size(), screen_info(),
-        auto_size_sequence_number(), surface_id));
-    sent_resize_params_ = pending_resize_params_;
-  }
+  if (!resize_params_changed)
+    return;
+
+  // Let the browser know about the updated view rect.
+  Send(new FrameHostMsg_UpdateResizeParams(
+      routing_id_, screen_space_rect(), local_frame_size(), screen_info(),
+      auto_size_sequence_number(), surface_id));
+  sent_resize_params_ = pending_resize_params_;
+
+  // The visible rect that the OOPIF needs to raster depends partially on
+  // parameters that might have changed. If they affect the raster area, resend
+  // the intersection rects.
+  gfx::Rect new_compositor_visible_rect =
+      ComputeCompositingRect(last_intersection_rect_);
+  if (new_compositor_visible_rect != last_compositor_visible_rect_)
+    UpdateRemoteViewportIntersection(last_intersection_rect_);
 }
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
@@ -728,8 +739,12 @@ void RenderFrameProxy::FrameRectsChanged(
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::WebRect& viewportIntersection) {
+  last_intersection_rect_ = viewportIntersection;
+  last_compositor_visible_rect_ =
+      ComputeCompositingRect(gfx::Rect(viewportIntersection));
   Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_, gfx::Rect(viewportIntersection)));
+      routing_id_, gfx::Rect(viewportIntersection),
+      last_compositor_visible_rect_));
 }
 
 void RenderFrameProxy::VisibilityChanged(bool visible) {
@@ -826,6 +841,61 @@ uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
 #else
   return 0;
 #endif
+}
+
+gfx::Rect RenderFrameProxy::ComputeCompositingRect(
+    const gfx::Rect& intersection_rect) {
+  if (!sent_resize_params_)
+    return gfx::Rect();
+
+  gfx::Size visible_viewport_size_in_pixels(
+      gfx::ScaleToCeiledSize(render_widget_->visible_viewport_size(),
+                             screen_info().device_scale_factor));
+
+  gfx::Rect screen_space_rect;
+  if (!IsUseZoomForDSFEnabled()) {
+    screen_space_rect =
+        gfx::ScaleToEnclosingRect(sent_resize_params_->screen_space_rect,
+                                  screen_info().device_scale_factor);
+  } else {
+    screen_space_rect = sent_resize_params_->screen_space_rect;
+  }
+
+  // For iframes that are larger than the window viewport, add a 30% buffer
+  // to the draw area to try to prevent guttering during scroll.
+  // TODO(kenrb): The 30% value is arbitrary, it gives 15% overdraw in both
+  // directions when the iframe extends beyond both edges of the viewport, and
+  // it seems to make guttering rare with slow to medium speed wheel scrolling.
+  // Can we collect UMA data to estimate how much extra rastering this causes,
+  // and possibly how common guttering is?
+  gfx::SizeF window_viewport = gfx::SizeF(visible_viewport_size_in_pixels);
+  window_viewport.Scale(1.3f);
+  gfx::Size viewport_size = gfx::ToFlooredSize(window_viewport);
+  viewport_size.SetToMin(screen_space_rect.size());
+
+  gfx::Rect viewport_rect(viewport_size);
+  if (!intersection_rect.IsEmpty()) {
+    gfx::RectF viewport_intersection_in_pixels(intersection_rect);
+    if (!IsUseZoomForDSFEnabled()) {
+      viewport_intersection_in_pixels.Scale(screen_info().device_scale_factor);
+    }
+    float left = intersection_rect.origin().x();
+    if (viewport_size.width() > viewport_intersection_in_pixels.width()) {
+      left -=
+          (viewport_size.width() - viewport_intersection_in_pixels.width()) / 2;
+    }
+    left = std::max(left, 0.f);
+    viewport_rect.set_x(gfx::ToCeiledInt(left));
+    float top = intersection_rect.origin().y();
+    if (viewport_size.height() > viewport_intersection_in_pixels.height()) {
+      top -=
+          (viewport_size.height() - viewport_intersection_in_pixels.height()) /
+          2;
+    }
+    top = std::max(top, 0.f);
+    viewport_rect.set_y(gfx::ToCeiledInt(top));
+  }
+  return viewport_rect;
 }
 
 }  // namespace content

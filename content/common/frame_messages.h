@@ -1482,8 +1482,11 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_UpdateResizeParams,
 
 // Sent by a parent frame to update its child's viewport intersection rect for
 // use by the IntersectionObserver API.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
-                    gfx::Rect /* viewport_intersection */)
+// compositor_rect is dependent on the intersection rect and indicates the
+// area of the child frame that needs to be rastered. It is in physical pixels.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateViewportIntersection,
+                    gfx::Rect /* viewport_intersection */,
+                    gfx::Rect /* compositor_visible_rect */)
 
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)

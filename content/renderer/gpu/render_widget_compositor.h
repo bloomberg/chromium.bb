@@ -124,6 +124,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
                                float device_scale_factor,
                                const viz::LocalSurfaceId& local_surface_id);
+  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);
 
   // WebLayerTreeView implementation.

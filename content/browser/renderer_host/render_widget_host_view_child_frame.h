@@ -221,7 +221,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void RegisterFrameSinkId();
   void UnregisterFrameSinkId();
 
-  void UpdateViewportIntersection(const gfx::Rect& viewport_intersection);
+  void UpdateViewportIntersection(const gfx::Rect& viewport_intersection,
+                                  const gfx::Rect& compositor_visible_rect);
 
   void SetIsInert();
 

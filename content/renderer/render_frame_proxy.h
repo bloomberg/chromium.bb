@@ -264,6 +264,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
   SkBitmap* GetSadPageBitmap() override;
 
+  gfx::Rect ComputeCompositingRect(const gfx::Rect& intersection_rect);
+
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;
 
@@ -309,6 +311,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
+
+  gfx::Rect last_intersection_rect_;
+  gfx::Rect last_compositor_visible_rect_;
 
 #if defined(USE_AURA)
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;
