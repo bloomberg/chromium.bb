@@ -250,9 +250,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 
 #if defined(OS_CHROMEOS)
-  html_source->AddString(
-      "a11yLearnMoreUrl",
-      GetHelpUrlWithBoard(chrome::kChromeAccessibilityHelpURL));
+  html_source->AddString("a11yLearnMoreUrl",
+                         chrome::kChromeAccessibilityHelpURL);
 
   html_source->AddBoolean(
       "showExperimentalA11yFeatures",
