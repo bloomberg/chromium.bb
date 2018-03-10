@@ -6,8 +6,10 @@
 #define ASH_LOGIN_UI_LOCK_DEBUG_VIEW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/login/login_screen_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -19,6 +21,7 @@ class MdTextButton;
 namespace ash {
 
 class LoginDataDispatcher;
+class LoginDetachableBaseModel;
 class LockContentsView;
 
 namespace mojom {
@@ -28,8 +31,10 @@ enum class TrayActionState;
 // Contains the debug UI row (ie, add user, toggle PIN buttons).
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
-  LockDebugView(mojom::TrayActionState initial_note_action_state,
-                LoginDataDispatcher* data_dispatcher);
+  LockDebugView(
+      mojom::TrayActionState initial_note_action_state,
+      LoginDataDispatcher* data_dispatcher,
+      std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
   ~LockDebugView() override;
 
   // views::View:

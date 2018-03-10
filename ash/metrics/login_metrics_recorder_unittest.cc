@@ -4,8 +4,12 @@
 
 #include "ash/metrics/login_metrics_recorder.h"
 
+#include <memory>
+#include <string>
+
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/mock_login_screen_client.h"
+#include "ash/login/ui/fake_login_detachable_base_model.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
@@ -106,8 +110,9 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
 
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
-                                        data_dispatcher());
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
   LockContentsView::TestApi test_api(contents);
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
@@ -184,8 +189,9 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
-  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
-                                        data_dispatcher());
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 

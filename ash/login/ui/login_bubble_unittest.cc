@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_test_base.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -234,6 +237,97 @@ TEST_F(LoginBubbleTest, RemoveUserRequiresTwoActivations) {
   EXPECT_FALSE(remove_called);
   EXPECT_NO_FATAL_FAILURE(click());
   EXPECT_TRUE(remove_called);
+}
+
+TEST_F(LoginBubbleTest, ErrorBubbleKeyEventHandling) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+  views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
+  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that key event on a view other than error closes the error bubble.
+  other_view_->RequestFocus();
+  generator.PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(bubble_->IsVisible());
+}
+
+TEST_F(LoginBubbleTest, ErrorBubbleMouseEventHandling) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+  views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
+  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that mouse event on the bubble itself won't close the bubble.
+  generator.MoveMouseTo(
+      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that mouse event on the other view will close the bubble.
+  generator.MoveMouseTo(other_view_->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_FALSE(bubble_->IsVisible());
+}
+
+TEST_F(LoginBubbleTest, ErrorBubbleGestureEventHandling) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+  views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
+  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that gesture event on the bubble itself won't close the bubble.
+  generator.GestureTapAt(
+      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that gesture event on the other view will close the bubble.
+  generator.GestureTapAt(other_view_->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(bubble_->IsVisible());
+}
+
+TEST_F(LoginBubbleTest, PersistentErrorBubbleEventHandling) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+  views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
+  bubble_->ShowErrorBubble(error_text, container_,
+                           LoginBubble::kFlagPersistent);
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that mouse event on the bubble itself won't close the bubble.
+  generator.MoveMouseTo(
+      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that mouse event on the other view won't close the bubble.
+  generator.MoveMouseTo(other_view_->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that gesture event on the bubble itself won't close the bubble.
+  generator.GestureTapAt(
+      bubble_->bubble_view_for_test()->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that gesture event on the other view won't close the bubble.
+  generator.GestureTapAt(other_view_->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Verifies that key event on the other view won't close the bubble.
+  other_view_->RequestFocus();
+  generator.PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // LoginBubble::Close should close the persistent error bubble.
+  bubble_->Close();
+  EXPECT_FALSE(bubble_->IsVisible());
 }
 
 }  // namespace ash

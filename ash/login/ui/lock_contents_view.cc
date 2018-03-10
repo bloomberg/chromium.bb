@@ -4,8 +4,11 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
+#include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_observer_register.h"
@@ -14,6 +17,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_bubble.h"
+#include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
@@ -46,6 +50,7 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -196,6 +201,14 @@ LoginBubble* LockContentsView::TestApi::tooltip_bubble() const {
   return view_->tooltip_bubble_.get();
 }
 
+LoginBubble* LockContentsView::TestApi::auth_error_bubble() const {
+  return view_->auth_error_bubble_.get();
+}
+
+LoginBubble* LockContentsView::TestApi::detachable_base_error_bubble() const {
+  return view_->detachable_base_error_bubble_.get();
+}
+
 views::View* LockContentsView::TestApi::dev_channel_info() const {
   return view_->dev_channel_info_;
 }
@@ -209,9 +222,11 @@ LockContentsView::UserState::~UserState() = default;
 
 LockContentsView::LockContentsView(
     mojom::TrayActionState initial_note_action_state,
-    LoginDataDispatcher* data_dispatcher)
+    LoginDataDispatcher* data_dispatcher,
+    std::unique_ptr<LoginDetachableBaseModel> detachable_base_model)
     : NonAccessibleView(kLockContentsViewName),
       data_dispatcher_(data_dispatcher),
+      detachable_base_model_(std::move(detachable_base_model)),
       display_observer_(this),
       session_observer_(this),
       keyboard_observer_(this) {
@@ -219,7 +234,8 @@ LockContentsView::LockContentsView(
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->login_screen_controller()->AddLockScreenAppsFocusObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
-  error_bubble_ = std::make_unique<LoginBubble>();
+  auth_error_bubble_ = std::make_unique<LoginBubble>();
+  detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
   tooltip_bubble_ = std::make_unique<LoginBubble>();
 
   // We reuse the focusable state on this view as a signal that focus should
@@ -496,6 +512,43 @@ void LockContentsView::OnPublicSessionLocalesChanged(
   NOTIMPLEMENTED();
 }
 
+void LockContentsView::OnDetachableBasePairingStatusChanged(
+    DetachableBasePairingStatus pairing_status) {
+  const mojom::UserInfoPtr& user_info =
+      CurrentAuthUserView()->current_user()->basic_user_info;
+  // If the base is not paired, or the paired base matches the last used by the
+  // current user, the detachable base error bubble should be hidden. Otherwise,
+  // the bubble should be shown.
+  if (pairing_status == DetachableBasePairingStatus::kNone ||
+      (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
+       detachable_base_model_->PairedBaseMatchesLastUsedByUser(*user_info))) {
+    detachable_base_error_bubble_->Close();
+    return;
+  }
+
+  auth_error_bubble_->Close();
+
+  base::string16 error_text =
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED);
+
+  views::Label* label =
+      new views::Label(error_text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                       views::style::STYLE_PRIMARY);
+  label->SetMultiLine(true);
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetEnabledColor(SK_ColorWHITE);
+
+  detachable_base_error_bubble_->ShowErrorBubble(
+      label, CurrentAuthUserView()->password_view() /*anchor_view*/,
+      LoginBubble::kFlagPersistent);
+
+  // Remove the focus from the password field, to make user less likely to enter
+  // the password without seeing the warning about detachable base change.
+  if (GetWidget()->IsActive())
+    GetWidget()->GetFocusManager()->ClearFocus();
+}
+
 void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
   if (!reverse || lock_screen_apps_active_)
     FocusNextWidget(reverse);
@@ -696,9 +749,20 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
 
 void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
-    error_bubble_->Close();
+    auth_error_bubble_->Close();
+    detachable_base_error_bubble_->Close();
+
+    // Now that the user has been authenticated, update the user's last used
+    // detachable base (if one is attached). This will prevent further
+    // detachable base change notifications from appearing for this base (until
+    // the user uses another detachable base).
+    if (detachable_base_model_->GetPairingStatus() ==
+        DetachableBasePairingStatus::kAuthenticated) {
+      detachable_base_model_->SetPairedBaseAsLastUsedByUser(
+          *CurrentAuthUserView()->current_user()->basic_user_info);
+    }
   } else {
-    ShowErrorMessage();
+    ShowAuthErrorMessage();
     ++unlock_attempt_;
   }
 }
@@ -778,6 +842,11 @@ void LockContentsView::OnAuthUserChanged() {
     // Reset unlock attempt when the auth user changes.
     unlock_attempt_ = 0;
   }
+
+  // The new auth user might have different last used detachable base - make
+  // sure the detachable base pairing error is updated if needed.
+  OnDetachableBasePairingStatusChanged(
+      detachable_base_model_->GetPairingStatus());
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
@@ -818,7 +887,7 @@ LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
   return primary_auth_;
 }
 
-void LockContentsView::ShowErrorMessage() {
+void LockContentsView::ShowAuthErrorMessage() {
   base::string16 error_text = l10n_util::GetStringUTF16(
       unlock_attempt_ ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
                       : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
@@ -848,8 +917,11 @@ void LockContentsView::ShowErrorMessage() {
 
   views::StyledLabel* label = new views::StyledLabel(error_text, this);
   MakeSectionBold(label, error_text, bold_start, bold_length);
-  error_bubble_->ShowErrorBubble(
-      label, CurrentAuthUserView()->password_view() /*anchor_view*/);
+  label->set_auto_color_readability_enabled(false);
+
+  auth_error_bubble_->ShowErrorBubble(
+      label, CurrentAuthUserView()->password_view() /*anchor_view*/,
+      LoginBubble::kFlagsNone);
 }
 
 void LockContentsView::OnEasyUnlockIconHovered() {

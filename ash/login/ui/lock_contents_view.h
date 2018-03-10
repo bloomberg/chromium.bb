@@ -39,6 +39,7 @@ namespace ash {
 
 class LoginAuthUserView;
 class LoginBubble;
+class LoginDetachableBaseModel;
 class NoteActionLaunchButton;
 class ScrollableUsersListView;
 
@@ -71,14 +72,18 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
     ScrollableUsersListView* users_list() const;
     views::View* note_action() const;
     LoginBubble* tooltip_bubble() const;
+    LoginBubble* auth_error_bubble() const;
+    LoginBubble* detachable_base_error_bubble() const;
     views::View* dev_channel_info() const;
 
    private:
     LockContentsView* const view_;
   };
 
-  LockContentsView(mojom::TrayActionState initial_note_action_state,
-                   LoginDataDispatcher* data_dispatcher);
+  LockContentsView(
+      mojom::TrayActionState initial_note_action_state,
+      LoginDataDispatcher* data_dispatcher,
+      std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
   ~LockContentsView() override;
 
   // views::View:
@@ -111,6 +116,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                      const base::ListValue& locales,
                                      const std::string& default_locale,
                                      bool show_advanced_view) override;
+  void OnDetachableBasePairingStatusChanged(
+      DetachableBasePairingStatus pairing_status) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -216,7 +223,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   LoginAuthUserView* CurrentAuthUserView();
 
   // Opens an error bubble to indicate authentication failure.
-  void ShowErrorMessage();
+  void ShowAuthErrorMessage();
 
   // Called when the easy unlock icon is hovered.
   void OnEasyUnlockIconHovered();
@@ -247,6 +254,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   std::vector<UserState> users_;
 
   LoginDataDispatcher* const data_dispatcher_;  // Unowned.
+  std::unique_ptr<LoginDetachableBaseModel> detachable_base_model_;
 
   LoginAuthUserView* primary_auth_ = nullptr;
   LoginAuthUserView* opt_secondary_auth_ = nullptr;
@@ -279,7 +287,12 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                  keyboard::KeyboardControllerObserver>
       keyboard_observer_;
 
-  std::unique_ptr<LoginBubble> error_bubble_;
+  // Bubbles for displaying authentication error.
+  std::unique_ptr<LoginBubble> auth_error_bubble_;
+
+  // Bubble for displaying error when the user's detachable base changes.
+  std::unique_ptr<LoginBubble> detachable_base_error_bubble_;
+
   std::unique_ptr<LoginBubble> tooltip_bubble_;
 
   int unlock_attempt_ = 0;

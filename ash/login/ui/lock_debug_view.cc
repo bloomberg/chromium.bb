@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <memory>
-#include <string>
+#include <utility>
 
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -14,6 +14,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
@@ -232,6 +233,10 @@ class LockDebugView::DebugDataDispatcherTransformer
       const mojom::EasyUnlockIconOptionsPtr& icon) override {
     debug_dispatcher_.ShowEasyUnlockIcon(user, icon);
   }
+  void OnDetachableBasePairingStatusChanged(
+      DetachableBasePairingStatus pairing_status) override {
+    debug_dispatcher_.SetDetachableBasePairingStatus(pairing_status);
+  }
 
  private:
   // The debug overlay UI takes ground-truth data from |root_dispatcher_|,
@@ -252,8 +257,10 @@ class LockDebugView::DebugDataDispatcherTransformer
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
 
-LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
-                             LoginDataDispatcher* data_dispatcher)
+LockDebugView::LockDebugView(
+    mojom::TrayActionState initial_note_action_state,
+    LoginDataDispatcher* data_dispatcher,
+    std::unique_ptr<LoginDetachableBaseModel> detachable_base_model)
     : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
           data_dispatcher)) {
@@ -261,7 +268,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
   lock_ = new LockContentsView(initial_note_action_state,
-                               debug_data_dispatcher_->debug_dispatcher());
+                               debug_data_dispatcher_->debug_dispatcher(),
+                               std::move(detachable_base_model));
   AddChildView(lock_);
 
   debug_row_ = new NonAccessibleView();
@@ -326,7 +334,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Iteratively adds more info to the dev channel labels to test 7 permutations
   // and then disables the button.
   if (sender == add_dev_channel_info_) {
-    DCHECK(num_dev_channel_info_clicks_ < 7u);
+    DCHECK_LT(num_dev_channel_info_clicks_, 7u);
     ++num_dev_channel_info_clicks_;
     if (num_dev_channel_info_clicks_ == 7u)
       add_dev_channel_info_->SetEnabled(false);

@@ -41,6 +41,9 @@ void LoginDataDispatcher::Observer::OnPublicSessionLocalesChanged(
     const std::string& default_locale,
     bool show_advanced_view) {}
 
+void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
+    DetachableBasePairingStatus pairing_status) {}
+
 LoginDataDispatcher::LoginDataDispatcher() = default;
 
 LoginDataDispatcher::~LoginDataDispatcher() = default;
@@ -109,6 +112,12 @@ void LoginDataDispatcher::SetPublicSessionLocales(
     observer.OnPublicSessionLocalesChanged(account_id, *locales, default_locale,
                                            show_advanced_view);
   }
+}
+
+void LoginDataDispatcher::SetDetachableBasePairingStatus(
+    DetachableBasePairingStatus pairing_status) {
+  for (auto& observer : observers_)
+    observer.OnDetachableBasePairingStatusChanged(pairing_status);
 }
 
 }  // namespace ash

@@ -11,6 +11,7 @@
 #include "ash/login/ui/lock_debug_view.h"
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/root_window_controller.h"
@@ -72,17 +73,21 @@ void LockScreen::Show(ScreenType type) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 
   auto data_dispatcher = std::make_unique<LoginDataDispatcher>();
+  auto detachable_base_model = LoginDetachableBaseModel::Create(
+      Shell::Get()->detachable_base_handler(), data_dispatcher.get());
   auto initial_note_action_state =
-      ash::Shell::Get()->tray_action()->GetLockScreenNoteState();
+      Shell::Get()->tray_action()->GetLockScreenNoteState();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kShowLoginDevOverlay)) {
     auto* debug_view =
-        new LockDebugView(initial_note_action_state, data_dispatcher.get());
+        new LockDebugView(initial_note_action_state, data_dispatcher.get(),
+                          std::move(detachable_base_model));
     instance_->contents_view_ = debug_view->lock();
     instance_->window_->SetContentsView(debug_view);
   } else {
     instance_->contents_view_ =
-        new LockContentsView(initial_note_action_state, data_dispatcher.get());
+        new LockContentsView(initial_note_action_state, data_dispatcher.get(),
+                             std::move(detachable_base_model));
     instance_->window_->SetContentsView(instance_->contents_view_);
   }
 

@@ -5,9 +5,12 @@
 #ifndef ASH_LOGIN_UI_LOGIN_DATA_DISPATCHER_H_
 #define ASH_LOGIN_UI_LOGIN_DATA_DISPATCHER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/macros.h"
@@ -77,6 +80,11 @@ class ASH_EXPORT LoginDataDispatcher {
         const base::ListValue& locales,
         const std::string& default_locale,
         bool show_advanced_view);
+
+    // Called when the pairing status of detachable base changes - e.g. when the
+    // base is attached or detached.
+    virtual void OnDetachableBasePairingStatusChanged(
+        DetachableBasePairingStatus pairing_status);
   };
 
   LoginDataDispatcher();
@@ -100,6 +108,8 @@ class ASH_EXPORT LoginDataDispatcher {
                                std::unique_ptr<base::ListValue> locales,
                                const std::string& default_locale,
                                bool show_advanced_view);
+  void SetDetachableBasePairingStatus(
+      DetachableBasePairingStatus pairing_status);
 
  private:
   base::ObserverList<Observer> observers_;
