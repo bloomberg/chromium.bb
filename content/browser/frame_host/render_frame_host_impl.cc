@@ -2995,12 +2995,6 @@ void RenderFrameHostImpl::CreateNewWindow(
 void RenderFrameHostImpl::IssueKeepAliveHandle(
     mojom::KeepAliveHandleRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(
-          features::kKeepAliveRendererForKeepaliveRequests)) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY);
-    return;
-  }
   if (GetProcess()->IsKeepAliveRefCountDisabled())
     return;
 

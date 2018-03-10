@@ -44,8 +44,6 @@ CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kImageCaptureAPI;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
-CONTENT_EXPORT extern const base::Feature
-    kKeepAliveRendererForKeepaliveRequests;
 CONTENT_EXPORT extern const base::Feature kKeyboardLockAPI;
 CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;

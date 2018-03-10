@@ -1791,25 +1791,6 @@
             ]
         }
     ],
-    "KeepAliveRendererForKeepaliveRequests": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "KeepAliveRendererForKeepaliveRequests"
-                    ]
-                }
-            ]
-        }
-    ],
     "LazyParseCSS": [
         {
             "platforms": [
