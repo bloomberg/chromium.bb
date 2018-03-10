@@ -38,9 +38,20 @@ TransformFeedback::~TransformFeedback() {
 
 void TransformFeedback::DoBindTransformFeedback(
     GLenum target,
-    TransformFeedback* last_bound_transform_feedback) {
+    TransformFeedback* last_bound_transform_feedback,
+    Buffer* bound_transform_feedback_buffer) {
   DCHECK_LT(0u, service_id_);
   glBindTransformFeedback(target, service_id_);
+  // GL drivers differ on whether GL_TRANSFORM_FEEDBACK_BUFFER is changed
+  // when calling glBindTransformFeedback. To make them consistent, we
+  // explicitly bind the buffer we think should be bound here.
+  if (bound_transform_feedback_buffer &&
+      !bound_transform_feedback_buffer->IsDeleted()) {
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER,
+                 bound_transform_feedback_buffer->service_id());
+  } else {
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+  }
   has_been_bound_ = true;
   if (active_ && !paused_) {
     // This could only happen during virtual context switching.

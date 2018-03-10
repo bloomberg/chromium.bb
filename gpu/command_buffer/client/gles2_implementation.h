@@ -653,6 +653,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   GLuint bound_copy_write_buffer_;
   GLuint bound_pixel_pack_buffer_;
   GLuint bound_pixel_unpack_buffer_;
+  GLuint bound_transform_feedback_buffer_;
   GLuint bound_uniform_buffer_;
   // We don't cache the currently bound transform feedback buffer, because
   // it is part of the current transform feedback object. Caching the transform

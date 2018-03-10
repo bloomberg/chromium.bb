@@ -78,8 +78,8 @@ void IndexedBufferBindingHost::IndexedBufferBinding::Reset() {
 IndexedBufferBindingHost::IndexedBufferBindingHost(uint32_t max_bindings,
                                                    GLenum target,
                                                    bool needs_emulation)
-    : needs_emulation_(needs_emulation),
-      is_bound_(false),
+    : is_bound_(false),
+      needs_emulation_(needs_emulation),
       max_non_null_binding_index_plus_one_(0u),
       target_(target) {
   DCHECK(needs_emulation);

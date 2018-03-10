@@ -1121,6 +1121,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   TraceWrapperMember<WebGLBuffer> bound_copy_write_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_pixel_pack_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_pixel_unpack_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_transform_feedback_buffer_;
   TraceWrapperMember<WebGLBuffer> bound_uniform_buffer_;
 
   HeapVector<TraceWrapperMember<WebGLBuffer>> bound_indexed_uniform_buffers_;

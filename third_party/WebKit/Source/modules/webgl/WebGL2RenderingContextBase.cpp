@@ -170,6 +170,7 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   bound_copy_write_buffer_ = nullptr;
   bound_pixel_pack_buffer_ = nullptr;
   bound_pixel_unpack_buffer_ = nullptr;
+  bound_transform_feedback_buffer_ = nullptr;
   bound_uniform_buffer_ = nullptr;
 
   current_boolean_occlusion_query_ = nullptr;
@@ -5044,9 +5045,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
     case GL_TRANSFORM_FEEDBACK_ACTIVE:
       return GetBooleanParameter(script_state, pname);
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
-      return WebGLAny(
-          script_state,
-          transform_feedback_binding_->GetBoundTransformFeedbackBuffer());
+      return WebGLAny(script_state, bound_transform_feedback_buffer_.Get());
     case GL_TRANSFORM_FEEDBACK_BINDING:
       if (!transform_feedback_binding_->IsDefaultObject()) {
         return WebGLAny(script_state, transform_feedback_binding_.Get());
@@ -5202,7 +5201,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindTarget(
       bound_pixel_unpack_buffer_ = buffer;
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
-      transform_feedback_binding_->SetBoundTransformFeedbackBuffer(buffer);
+      bound_transform_feedback_buffer_ = buffer;
       break;
     case GL_UNIFORM_BUFFER:
       bound_uniform_buffer_ = buffer;
@@ -5250,6 +5249,7 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
                           "index out of range");
         return false;
       }
+      bound_transform_feedback_buffer_ = buffer;
       break;
     case GL_UNIFORM_BUFFER:
       if (index >= bound_indexed_uniform_buffers_.size()) {
@@ -5605,6 +5605,7 @@ void WebGL2RenderingContextBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(bound_copy_write_buffer_);
   visitor->Trace(bound_pixel_pack_buffer_);
   visitor->Trace(bound_pixel_unpack_buffer_);
+  visitor->Trace(bound_transform_feedback_buffer_);
   visitor->Trace(bound_uniform_buffer_);
   visitor->Trace(bound_indexed_uniform_buffers_);
   visitor->Trace(current_boolean_occlusion_query_);
@@ -5623,6 +5624,7 @@ void WebGL2RenderingContextBase::TraceWrappers(
   visitor->TraceWrappers(bound_copy_write_buffer_);
   visitor->TraceWrappers(bound_pixel_pack_buffer_);
   visitor->TraceWrappers(bound_pixel_unpack_buffer_);
+  visitor->TraceWrappers(bound_transform_feedback_buffer_);
   visitor->TraceWrappers(bound_uniform_buffer_);
   for (auto& buf : bound_indexed_uniform_buffers_) {
     visitor->TraceWrappers(buf);
@@ -5731,7 +5733,7 @@ WebGLBuffer* WebGL2RenderingContextBase::ValidateBufferDataTarget(
       buffer = bound_pixel_unpack_buffer_.Get();
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
-      buffer = transform_feedback_binding_->GetBoundTransformFeedbackBuffer();
+      buffer = bound_transform_feedback_buffer_.Get();
       break;
     case GL_UNIFORM_BUFFER:
       buffer = bound_uniform_buffer_.Get();
@@ -5782,16 +5784,16 @@ const char* WebGL2RenderingContextBase::ValidateGetBufferSubData(
                                    source_byte_offset)) {
     return "Invalid value: srcByteOffset";
   }
-  if (target == GL_TRANSFORM_FEEDBACK_BUFFER && current_program_ &&
-      current_program_->ActiveTransformFeedbackCount()) {
-    SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                      "targeted transform feedback buffer is active");
-    return "Invalid operation: targeted transform feedback buffer is active";
-  }
 
   WebGLBuffer* source_buffer = ValidateBufferDataTarget(function_name, target);
   if (!source_buffer) {
     return "Invalid operation: no buffer bound to target";
+  }
+  if (transform_feedback_binding_->active() &&
+      transform_feedback_binding_->UsesBuffer(source_buffer)) {
+    SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                      "buffer in use for transform feedback");
+    return "Invalid operation: buffer in use for transform feedback";
   }
   *out_source_buffer = source_buffer;
 
@@ -5830,11 +5832,12 @@ void WebGL2RenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
     bound_pixel_pack_buffer_ = nullptr;
   if (bound_pixel_unpack_buffer_ == buffer)
     bound_pixel_unpack_buffer_ = nullptr;
+  if (bound_transform_feedback_buffer_ == buffer)
+    bound_transform_feedback_buffer_ = nullptr;
   if (bound_uniform_buffer_ == buffer)
     bound_uniform_buffer_ = nullptr;
 
-  if (transform_feedback_binding_)
-    transform_feedback_binding_->UnbindBuffer(buffer);
+  transform_feedback_binding_->UnbindBuffer(buffer);
 
   WebGLRenderingContextBase::RemoveBoundBuffer(buffer);
 }

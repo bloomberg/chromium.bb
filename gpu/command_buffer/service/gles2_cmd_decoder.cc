@@ -4521,7 +4521,8 @@ void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
         // Bind to the default transform feedback.
         DCHECK(state_.default_transform_feedback.get());
         state_.default_transform_feedback->DoBindTransformFeedback(
-            GL_TRANSFORM_FEEDBACK, state_.bound_transform_feedback.get());
+            GL_TRANSFORM_FEEDBACK, state_.bound_transform_feedback.get(),
+            state_.bound_transform_feedback_buffer.get());
         state_.bound_transform_feedback =
             state_.default_transform_feedback.get();
       }
@@ -6260,7 +6261,8 @@ void GLES2DecoderImpl::DoBindTransformFeedback(
   }
   LogClientServiceForInfo(transform_feedback, client_id, function_name);
   transform_feedback->DoBindTransformFeedback(
-      target, state_.bound_transform_feedback.get());
+      target, state_.bound_transform_feedback.get(),
+      state_.bound_transform_feedback_buffer.get());
   state_.bound_transform_feedback = transform_feedback;
 }
 

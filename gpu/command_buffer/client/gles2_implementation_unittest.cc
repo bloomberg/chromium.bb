@@ -4146,13 +4146,6 @@ TEST_F(GLES3ImplementationTest, GetBufferSubDataAsyncCHROMIUM) {
   // Positive tests
   for (size_t i = 0; i < targets.size(); i++) {
     gl_->BindBuffer(targets[i], kBufferId);
-    if (targets[i] == GL_TRANSFORM_FEEDBACK_BUFFER) {
-      ExpectedMemoryInfo result =
-          GetExpectedResultMemory(sizeof(cmds::GetIntegerv::Result));
-      EXPECT_CALL(*command_buffer(), OnFlush())
-          .WillOnce(SetMemory(result.ptr, SizedResultHelper<GLuint>(1)))
-          .RetiresOnSaturation();
-    }
     mem = gl_->GetBufferSubDataAsyncCHROMIUM(targets[i], 10, 64);
     EXPECT_TRUE(mem != nullptr);
     EXPECT_EQ(GL_NO_ERROR, CheckError());
@@ -4165,13 +4158,6 @@ TEST_F(GLES3ImplementationTest, GetBufferSubDataAsyncCHROMIUM) {
   for (size_t i = 0; i < targets.size(); i++) {
     GLenum wrong_target = targets[(i + 1) % targets.size()];
     gl_->BindBuffer(targets[i], kBufferId);
-    if (wrong_target == GL_TRANSFORM_FEEDBACK_BUFFER) {
-      ExpectedMemoryInfo result =
-          GetExpectedResultMemory(sizeof(cmds::GetIntegerv::Result));
-      EXPECT_CALL(*command_buffer(), OnFlush())
-          .WillOnce(SetMemory(result.ptr, SizedResultHelper<GLuint>(0)))
-          .RetiresOnSaturation();
-    }
     mem = gl_->GetBufferSubDataAsyncCHROMIUM(wrong_target, 10, 64);
     EXPECT_TRUE(mem == nullptr);
     EXPECT_EQ(GL_INVALID_OPERATION, CheckError());

@@ -29,9 +29,9 @@ class GPU_GLES2_EXPORT TransformFeedback : public IndexedBufferBindingHost {
   // All the following functions do state update and call the underlying GL
   // function.  All validations have been done already and the GL function is
   // guaranteed to succeed.
-  void DoBindTransformFeedback(
-      GLenum target,
-      TransformFeedback* last_bound_transform_feedback);
+  void DoBindTransformFeedback(GLenum target,
+                               TransformFeedback* last_bound_transform_feedback,
+                               Buffer* bound_transform_feedback_buffer);
   void DoBeginTransformFeedback(GLenum primitive_mode);
   void DoEndTransformFeedback();
   void DoPauseTransformFeedback();
