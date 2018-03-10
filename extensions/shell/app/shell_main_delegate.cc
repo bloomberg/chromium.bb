@@ -12,13 +12,13 @@
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/utility/content_utility_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/shell/browser/default_shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/common/shell_content_client.h"
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
-#include "extensions/shell/utility/shell_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -168,11 +168,6 @@ ShellMainDelegate::CreateContentRendererClient() {
   return renderer_client_.get();
 }
 
-content::ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
-  utility_client_.reset(CreateShellContentUtilityClient());
-  return utility_client_.get();
-}
-
 void ShellMainDelegate::ProcessExiting(const std::string& process_type) {
   logging::CloseLogFile();
 }
@@ -202,7 +197,7 @@ ShellMainDelegate::CreateShellContentRendererClient() {
 
 content::ContentUtilityClient*
 ShellMainDelegate::CreateShellContentUtilityClient() {
-  return new ShellContentUtilityClient();
+  return new content::ContentUtilityClient();
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {

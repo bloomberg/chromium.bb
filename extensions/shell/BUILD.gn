@@ -65,7 +65,6 @@ source_set("app_shell_lib") {
     "//extensions/shell/common/api",
     "//extensions/shell/common/api:api_registration",
     "//extensions/shell/common/api:extensions_features",
-    "//extensions/utility",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/cld_3/src/src:cld_3",
@@ -183,8 +182,6 @@ source_set("app_shell_lib") {
     "renderer/shell_content_renderer_client.h",
     "renderer/shell_extensions_renderer_client.cc",
     "renderer/shell_extensions_renderer_client.h",
-    "utility/shell_content_utility_client.cc",
-    "utility/shell_content_utility_client.h",
   ]
 
   if (use_aura) {

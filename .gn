@@ -113,7 +113,6 @@ check_targets = [
   "//extensions/renderer:unit_tests",
   "//extensions/shell:browser_tests",
   "//extensions/shell:unit_tests",
-  "//extensions/utility:unit_tests",
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",

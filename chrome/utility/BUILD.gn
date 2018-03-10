@@ -116,7 +116,6 @@ static_library("utility") {
       "//chrome/common/extensions/api",
       "//chrome/services/media_gallery_util:lib",
       "//chrome/services/removable_storage_writer:lib",
-      "//extensions/utility",
     ]
 
     public_deps += [ "//chrome/common/extensions/api" ]

@@ -20,6 +20,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
@@ -100,6 +101,7 @@ void InstallExtensionHandler::HandleInstallMessage(
 
   if (file_display_name_.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
     ZipFileInstaller::Create(
+        content::ServiceManagerConnection::GetForProcess()->GetConnector(),
         MakeRegisterInExtensionServiceCallback(
             ExtensionSystem::Get(profile)->extension_service()))
         ->LoadFromZipFile(file_to_install_);

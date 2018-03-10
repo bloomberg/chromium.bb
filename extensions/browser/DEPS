@@ -8,6 +8,7 @@ include_rules = [
   "+components/sync",
   "+components/sync_preferences",
   "+components/update_client",
+  "+components/unzip_service/public",
   "+components/variations",
   "+components/version_info",
   "+components/web_cache",
@@ -55,5 +56,9 @@ specific_include_rules = {
     "+chrome/common/chrome_switches.h",
     "+chrome/test/base/testing_profile.h",
     "+chrome/test/base/ui_test_utils.h",
+  ],
+  "sandboxed_unpacker_unittest.cc": [
+    "+components/unzip_service",
+    "+services/data_decoder",
   ],
 }
