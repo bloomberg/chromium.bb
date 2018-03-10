@@ -331,7 +331,8 @@ void HeadlessShell::DevToolsTargetReady() {
         << "Expected an integer value for --timeout=";
     browser_->BrowserMainThread()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&HeadlessShell::FetchTimeout, weak_factory_.GetWeakPtr()),
+        base::BindOnce(&HeadlessShell::FetchTimeout,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(timeout_ms));
   }
 
@@ -358,7 +359,7 @@ void HeadlessShell::PollReadyState() {
   // be sure the expected page is ready.
   devtools_client_->GetRuntime()->Evaluate(
       "document.readyState + ' ' + document.location.href",
-      base::Bind(&HeadlessShell::OnReadyState, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessShell::OnReadyState, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnReadyState(
@@ -438,7 +439,7 @@ void HeadlessShell::FetchDom() {
       "(document.doctype ? new "
       "XMLSerializer().serializeToString(document.doctype) + '\\n' : '') + "
       "document.documentElement.outerHTML",
-      base::Bind(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnDomFetched(
@@ -470,8 +471,8 @@ void HeadlessShell::InputExpression() {
     return;
   }
   devtools_client_->GetRuntime()->Evaluate(
-      expression.str(), base::Bind(&HeadlessShell::OnExpressionResult,
-                                   weak_factory_.GetWeakPtr()));
+      expression.str(), base::BindOnce(&HeadlessShell::OnExpressionResult,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnExpressionResult(
@@ -487,8 +488,8 @@ void HeadlessShell::CaptureScreenshot() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
       page::CaptureScreenshotParams::Builder().Build(),
-      base::Bind(&HeadlessShell::OnScreenshotCaptured,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessShell::OnScreenshotCaptured,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnScreenshotCaptured(
@@ -510,7 +511,7 @@ void HeadlessShell::PrintToPDF() {
           .SetPrintBackground(true)
           .SetPreferCSSPageSize(true)
           .Build(),
-      base::Bind(&HeadlessShell::OnPDFCreated, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessShell::OnPDFCreated, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnPDFCreated(
@@ -544,8 +545,9 @@ void HeadlessShell::WriteFile(const std::string& file_path_switch,
   file_proxy_ = std::make_unique<base::FileProxy>(file_task_runner_.get());
   if (!file_proxy_->CreateOrOpen(
           file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
-          base::Bind(&HeadlessShell::OnFileOpened, weak_factory_.GetWeakPtr(),
-                     decoded_data, file_name))) {
+          base::BindOnce(&HeadlessShell::OnFileOpened,
+                         weak_factory_.GetWeakPtr(), decoded_data,
+                         file_name))) {
     // Operation could not be started.
     OnFileOpened(std::string(), file_name, base::File::FILE_ERROR_FAILED);
   }
@@ -567,8 +569,8 @@ void HeadlessShell::OnFileOpened(const std::string& decoded_data,
 
   if (!file_proxy_->Write(
           0, buf->data(), buf->size(),
-          base::Bind(&HeadlessShell::OnFileWritten, weak_factory_.GetWeakPtr(),
-                     file_name, buf->size()))) {
+          base::BindOnce(&HeadlessShell::OnFileWritten,
+                         weak_factory_.GetWeakPtr(), file_name, buf->size()))) {
     // Operation may have completed successfully or failed.
     OnFileWritten(file_name, buf->size(), base::File::FILE_ERROR_FAILED, 0);
   }
@@ -587,8 +589,8 @@ void HeadlessShell::OnFileWritten(const base::FilePath file_name,
   } else {
     LOG(INFO) << "Written to file " << file_name.value() << ".";
   }
-  if (!file_proxy_->Close(base::Bind(&HeadlessShell::OnFileClosed,
-                                     weak_factory_.GetWeakPtr()))) {
+  if (!file_proxy_->Close(base::BindOnce(&HeadlessShell::OnFileClosed,
+                                         weak_factory_.GetWeakPtr()))) {
     // Operation could not be started.
     OnFileClosed(base::File::FILE_ERROR_FAILED);
   }
@@ -846,7 +848,7 @@ int HeadlessShellMain(int argc, const char** argv) {
 
   return HeadlessBrowserMain(
       builder.Build(),
-      base::Bind(&HeadlessShell::OnStart, base::Unretained(&shell)));
+      base::BindOnce(&HeadlessShell::OnStart, base::Unretained(&shell)));
 }
 
 int HeadlessShellMain(const content::ContentMainParams& params) {

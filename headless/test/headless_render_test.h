@@ -50,7 +50,7 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
           base::MessageLoop::current());
       run_loop.Run();
     }
-    operator base::Closure() { return run_loop.QuitClosure(); }
+    operator base::OnceClosure() { return run_loop.QuitClosure(); }
 
    private:
     base::RunLoop run_loop;

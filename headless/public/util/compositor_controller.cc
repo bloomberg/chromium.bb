@@ -74,8 +74,8 @@ class CompositorController::AnimationBeginFrameTask
                       base::Time::UnixEpoch();
 
     compositor_controller_->PostBeginFrame(
-        base::Bind(&AnimationBeginFrameTask::BeginFrameComplete,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&AnimationBeginFrameTask::BeginFrameComplete,
+                       weak_ptr_factory_.GetWeakPtr()),
         !update_display);
   }
 
@@ -129,7 +129,7 @@ CompositorController::~CompositorController() {
 }
 
 void CompositorController::PostBeginFrame(
-    const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
+    base::OnceCallback<void(std::unique_ptr<BeginFrameResult>)>
         begin_frame_complete_callback,
     bool no_display_updates,
     std::unique_ptr<ScreenshotParams> screenshot) {
@@ -138,19 +138,19 @@ void CompositorController::PostBeginFrame(
   // NeedsBeginFramesChanged event can upset the compositor. We avoid these
   // situations by issuing our BeginFrames from a separately posted task.
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&CompositorController::BeginFrame,
-                 weak_ptr_factory_.GetWeakPtr(), begin_frame_complete_callback,
-                 no_display_updates, base::Passed(&screenshot)));
+      FROM_HERE, base::BindOnce(&CompositorController::BeginFrame,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(begin_frame_complete_callback),
+                                no_display_updates, std::move(screenshot)));
 }
 
 void CompositorController::BeginFrame(
-    const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
+    base::OnceCallback<void(std::unique_ptr<BeginFrameResult>)>
         begin_frame_complete_callback,
     bool no_display_updates,
     std::unique_ptr<ScreenshotParams> screenshot) {
   DCHECK(!begin_frame_complete_callback_);
-  begin_frame_complete_callback_ = begin_frame_complete_callback;
+  begin_frame_complete_callback_ = std::move(begin_frame_complete_callback);
   if (needs_begin_frames_ || screenshot) {
     auto params_builder = headless_experimental::BeginFrameParams::Builder();
 
@@ -178,8 +178,8 @@ void CompositorController::BeginFrame(
 
     devtools_client_->GetHeadlessExperimental()->GetExperimental()->BeginFrame(
         params_builder.Build(),
-        base::Bind(&CompositorController::BeginFrameComplete,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CompositorController::BeginFrameComplete,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     BeginFrameComplete(nullptr);
   }
@@ -187,15 +187,9 @@ void CompositorController::BeginFrame(
 
 void CompositorController::BeginFrameComplete(
     std::unique_ptr<BeginFrameResult> result) {
-  DCHECK(begin_frame_complete_callback_);
-  auto callback = begin_frame_complete_callback_;
-  begin_frame_complete_callback_.Reset();
-  callback.Run(std::move(result));
-  if (idle_callback_) {
-    auto idle_callback = idle_callback_;
-    idle_callback_.Reset();
-    idle_callback.Run();
-  }
+  std::move(begin_frame_complete_callback_).Run(std::move(result));
+  if (idle_callback_)
+    std::move(idle_callback_).Run();
 }
 
 void CompositorController::OnNeedsBeginFramesChanged(
@@ -203,30 +197,29 @@ void CompositorController::OnNeedsBeginFramesChanged(
   needs_begin_frames_ = params.GetNeedsBeginFrames();
 }
 
-void CompositorController::WaitUntilIdle(const base::Closure& idle_callback) {
+void CompositorController::WaitUntilIdle(base::OnceClosure idle_callback) {
   TRACE_EVENT_INSTANT1("headless", "CompositorController::WaitUntilIdle",
                        TRACE_EVENT_SCOPE_THREAD, "begin_frame_in_flight",
                        !!begin_frame_complete_callback_);
   DCHECK(!idle_callback_);
 
   if (!begin_frame_complete_callback_) {
-    idle_callback.Run();
+    std::move(idle_callback).Run();
     return;
   }
 
-  idle_callback_ = idle_callback;
+  idle_callback_ = std::move(idle_callback);
 }
 
 void CompositorController::CaptureScreenshot(
     ScreenshotParamsFormat format,
     int quality,
-    const base::Callback<void(const std::string&)>&
-        screenshot_captured_callback) {
+    base::OnceCallback<void(const std::string&)> screenshot_captured_callback) {
   TRACE_EVENT0("headless", "CompositorController::CaptureScreenshot");
   DCHECK(!begin_frame_complete_callback_);
   DCHECK(!screenshot_captured_callback_);
 
-  screenshot_captured_callback_ = screenshot_captured_callback;
+  screenshot_captured_callback_ = std::move(screenshot_captured_callback);
 
   // Let AnimationBeginFrameTask know that it doesn't need to issue an
   // animation BeginFrame for the current virtual time pause.
@@ -234,8 +227,8 @@ void CompositorController::CaptureScreenshot(
 
   const bool no_display_updates = false;
   PostBeginFrame(
-      base::Bind(&CompositorController::CaptureScreenshotBeginFrameComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&CompositorController::CaptureScreenshotBeginFrameComplete,
+                     weak_ptr_factory_.GetWeakPtr()),
       no_display_updates,
       ScreenshotParams::Builder()
           .SetFormat(format)
@@ -254,17 +247,13 @@ void CompositorController::CaptureScreenshotBeginFrameComplete(
     // TODO(eseckler): Look into returning binary screenshot data via DevTools.
     std::string decoded_data;
     base::Base64Decode(result->GetScreenshotData(), &decoded_data);
-    auto callback = screenshot_captured_callback_;
-    screenshot_captured_callback_.Reset();
-    callback.Run(decoded_data);
+    std::move(screenshot_captured_callback_).Run(decoded_data);
   } else {
     LOG(ERROR) << "Screenshotting failed, BeginFrameResult has no data and "
                   "hasDamage is "
                << (result ? std::to_string(result->HasScreenshotData())
                           : "invalid");
-    auto callback = screenshot_captured_callback_;
-    screenshot_captured_callback_.Reset();
-    callback.Run(std::string());
+    std::move(screenshot_captured_callback_).Run(std::string());
   }
 }
 

@@ -94,8 +94,9 @@ class HeadlessBrowserContextIsolationTest
 
     devtools_client_->GetRuntime()->Evaluate(
         base::StringPrintf("document.cookie = '%s'", kMainPageCookie),
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstSetCookieResult,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnFirstSetCookieResult,
+            base::Unretained(this)));
   }
 
   void OnFirstSetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -103,7 +104,7 @@ class HeadlessBrowserContextIsolationTest
 
     devtools_client2_->GetRuntime()->Evaluate(
         base::StringPrintf("document.cookie = '%s'", kIsolatedPageCookie),
-        base::Bind(
+        base::BindOnce(
             &HeadlessBrowserContextIsolationTest::OnSecondSetCookieResult,
             base::Unretained(this)));
   }
@@ -115,8 +116,9 @@ class HeadlessBrowserContextIsolationTest
 
     devtools_client_->GetRuntime()->Evaluate(
         "document.cookie",
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstGetCookieResult,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnFirstGetCookieResult,
+            base::Unretained(this)));
   }
 
   void OnFirstGetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -124,7 +126,7 @@ class HeadlessBrowserContextIsolationTest
 
     devtools_client2_->GetRuntime()->Evaluate(
         "document.cookie",
-        base::Bind(
+        base::BindOnce(
             &HeadlessBrowserContextIsolationTest::OnSecondGetCookieResult,
             base::Unretained(this)));
   }

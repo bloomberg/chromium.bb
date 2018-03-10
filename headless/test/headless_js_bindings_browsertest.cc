@@ -47,8 +47,8 @@ class HeadlessJsBindingsTest
     devtools_client_->SetRawProtocolListener(this);
     CreateMainWorldTabSocket(
         main_frame_id(),
-        base::Bind(&HeadlessJsBindingsTest::OnInstalledHeadlessTabSocket,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessJsBindingsTest::OnInstalledHeadlessTabSocket,
+                       base::Unretained(this)));
   }
 
   void OnInstalledHeadlessTabSocket(int v8_exection_context_id) {
@@ -57,8 +57,8 @@ class HeadlessJsBindingsTest
         ui::ResourceBundle::GetSharedInstance()
             .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
             .as_string(),
-        base::Bind(&HeadlessJsBindingsTest::OnEvaluateResult,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessJsBindingsTest::OnEvaluateResult,
+                       base::Unretained(this)));
   }
 
   virtual void RunJsBindingsTest() = 0;
@@ -152,8 +152,8 @@ class SimpleCommandJsBindingsTest : public HeadlessJsBindingsTest {
   void RunJsBindingsTest() override {
     devtools_client_->GetRuntime()->Evaluate(
         "new chromium.BindingsTest().evalOneAddOne();",
-        base::Bind(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
+                       base::Unretained(this)));
   }
 
   std::string GetExpectedResult() override { return "2"; }
@@ -166,8 +166,8 @@ class ExperimentalCommandJsBindingsTest : public HeadlessJsBindingsTest {
   void RunJsBindingsTest() override {
     devtools_client_->GetRuntime()->Evaluate(
         "new chromium.BindingsTest().getIsolatedWorldName();",
-        base::Bind(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
+                       base::Unretained(this)));
   }
 
   std::string GetExpectedResult() override {
@@ -182,8 +182,8 @@ class SimpleEventJsBindingsTest : public HeadlessJsBindingsTest {
   void RunJsBindingsTest() override {
     devtools_client_->GetRuntime()->Evaluate(
         "new chromium.BindingsTest().listenForChildNodeCountUpdated();",
-        base::Bind(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
+                       base::Unretained(this)));
   }
 
   std::string GetExpectedResult() override {

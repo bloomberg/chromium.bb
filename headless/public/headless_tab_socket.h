@@ -35,7 +35,7 @@ class HEADLESS_EXPORT HeadlessTabSocket {
   // |success| = true, otherwise with |success| = false.
   virtual void InstallHeadlessTabSocketBindings(
       int v8_execution_context_id,
-      base::Callback<void(bool success)> callback) = 0;
+      base::OnceCallback<void(bool success)> callback) = 0;
 
   // Installs headless tab socket bindings into the main frame main world. If
   // the bindings were installed correctly then |callback| is run with a
@@ -43,7 +43,7 @@ class HEADLESS_EXPORT HeadlessTabSocket {
   // v8_execution_context_id, otherwise |callback| is run with an empty
   // base::Optional<int>.
   virtual void InstallMainFrameMainWorldHeadlessTabSocketBindings(
-      base::Callback<void(base::Optional<int> v8_execution_context_id)>
+      base::OnceCallback<void(base::Optional<int> v8_execution_context_id)>
           callback) = 0;
 
   // Note this will fail unless the bindings have been installed.

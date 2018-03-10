@@ -113,15 +113,16 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override;
 
   // internal::MessageDispatcher implementation:
+  void SendMessage(
+      const char* method,
+      std::unique_ptr<base::Value> params,
+      base::OnceCallback<void(const base::Value&)> callback) override;
   void SendMessage(const char* method,
                    std::unique_ptr<base::Value> params,
-                   base::Callback<void(const base::Value&)> callback) override;
-  void SendMessage(const char* method,
-                   std::unique_ptr<base::Value> params,
-                   base::Closure callback) override;
+                   base::OnceClosure callback) override;
   void RegisterEventHandler(
       const char* method,
-      base::Callback<void(const base::Value&)> callback) override;
+      base::RepeatingCallback<void(const base::Value&)> callback) override;
 
   bool AttachToHost(content::DevToolsAgentHost* agent_host);
   void ForceAttachToHost(content::DevToolsAgentHost* agent_host);
@@ -138,14 +139,14 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   struct Callback {
     Callback();
     Callback(Callback&& other);
-    explicit Callback(base::Closure callback);
-    explicit Callback(base::Callback<void(const base::Value&)> callback);
+    explicit Callback(base::OnceClosure callback);
+    explicit Callback(base::OnceCallback<void(const base::Value&)> callback);
     ~Callback();
 
     Callback& operator=(Callback&& other);
 
-    base::Closure callback;
-    base::Callback<void(const base::Value&)> callback_with_result;
+    base::OnceClosure callback;
+    base::OnceCallback<void(const base::Value&)> callback_with_result;
   };
 
   template <typename CallbackType>
@@ -159,7 +160,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
 
   bool DispatchMessageReply(const base::DictionaryValue& message_dict);
 
-  using EventHandler = base::Callback<void(const base::Value&)>;
+  using EventHandler = base::RepeatingCallback<void(const base::Value&)>;
   using EventHandlerMap = std::unordered_map<std::string, EventHandler>;
 
   bool DispatchEvent(std::unique_ptr<base::Value> owning_message,

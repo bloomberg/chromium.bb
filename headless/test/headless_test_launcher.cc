@@ -20,8 +20,8 @@ namespace {
 class HeadlessBrowserImplForTest : public HeadlessBrowserImpl {
  public:
   explicit HeadlessBrowserImplForTest(HeadlessBrowser::Options options)
-      : HeadlessBrowserImpl(base::Bind(&HeadlessBrowserImplForTest::OnStart,
-                                       base::Unretained(this)),
+      : HeadlessBrowserImpl(base::BindOnce(&HeadlessBrowserImplForTest::OnStart,
+                                           base::Unretained(this)),
                             std::move(options)) {}
 
   void OnStart(HeadlessBrowser* browser) { EXPECT_EQ(this, browser); }

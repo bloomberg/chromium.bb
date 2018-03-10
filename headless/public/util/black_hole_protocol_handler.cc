@@ -38,8 +38,8 @@ BlackHoleRequestJob::~BlackHoleRequestJob() = default;
 
 void BlackHoleRequestJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&BlackHoleRequestJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&BlackHoleRequestJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void BlackHoleRequestJob::StartAsync() {

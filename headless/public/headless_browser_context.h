@@ -140,7 +140,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetInitialVirtualTime(base::Time initial_virtual_time);
   Builder& SetAllowCookies(bool incognito_mode);
   Builder& SetOverrideWebPreferencesCallback(
-      base::Callback<void(WebPreferences*)> callback);
+      base::RepeatingCallback<void(WebPreferences*)> callback);
 
   HeadlessBrowserContext* Build();
 

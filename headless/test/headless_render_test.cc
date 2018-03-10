@@ -104,7 +104,7 @@ void HeadlessRenderTest::RunDevTooledTest() {
             .SetBudget(4001)
             .SetWaitForNavigation(true)
             .Build(),
-        base::Bind(&SetVirtualTimePolicyDoneCallback, &run_loop));
+        base::BindOnce(&SetVirtualTimePolicyDoneCallback, &run_loop));
 
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
@@ -125,8 +125,8 @@ void HeadlessRenderTest::RunDevTooledTest() {
   devtools_client_->GetPage()->Navigate(url.spec());
   browser()->BrowserMainThread()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&HeadlessRenderTest::HandleTimeout,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HeadlessRenderTest::HandleTimeout,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(10));
 
   // The caller will loop until FinishAsynchronousTest() is called either
@@ -289,8 +289,8 @@ void HeadlessRenderTest::OnPageRenderCompleted() {
       dom_snapshot::GetSnapshotParams::Builder()
           .SetComputedStyleWhitelist(std::vector<std::string>())
           .Build(),
-      base::Bind(&HeadlessRenderTest::OnGetDomSnapshotDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessRenderTest::OnGetDomSnapshotDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HeadlessRenderTest::HandleVirtualTimeExhausted() {

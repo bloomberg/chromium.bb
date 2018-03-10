@@ -64,7 +64,8 @@ class HeadlessPrintManager
     LIMIT_ERROR,
   };
 
-  using GetPDFCallback = base::Callback<void(PrintResult, const std::string&)>;
+  using GetPDFCallback =
+      base::OnceCallback<void(PrintResult, const std::string&)>;
 
   ~HeadlessPrintManager() override;
 
@@ -84,7 +85,7 @@ class HeadlessPrintManager
   // finishes.
   void GetPDFContents(content::RenderFrameHost* rfh,
                       const HeadlessPrintSettings& settings,
-                      const GetPDFCallback& callback);
+                      GetPDFCallback callback);
 
  private:
   explicit HeadlessPrintManager(content::WebContents* web_contents);

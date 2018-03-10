@@ -95,7 +95,7 @@ bool HeadlessBrowserContextOptions::allow_cookies() const {
   return ReturnOverriddenValue(allow_cookies_, browser_options_->allow_cookies);
 }
 
-const base::Callback<void(WebPreferences*)>&
+base::RepeatingCallback<void(WebPreferences*)>
 HeadlessBrowserContextOptions::override_web_preferences_callback() const {
   return ReturnOverriddenValue(
       override_web_preferences_callback_,

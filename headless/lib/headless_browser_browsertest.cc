@@ -466,8 +466,8 @@ void URLRequestJobWithCookies::Start() {
   }
   cookie_store->GetCookieListWithOptionsAsync(
       request_->url(), options,
-      base::Bind(&URLRequestJobWithCookies::SaveCookiesAndStart,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&URLRequestJobWithCookies::SaveCookiesAndStart,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestJobWithCookies::SaveCookiesAndStart(
@@ -525,7 +525,8 @@ class CookieSetter {
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
     devtools_client_->GetNetwork()->GetExperimental()->SetCookie(
         std::move(set_cookie_params),
-        base::Bind(&CookieSetter::OnSetCookieResult, base::Unretained(this)));
+        base::BindOnce(&CookieSetter::OnSetCookieResult,
+                       base::Unretained(this)));
   }
 
   ~CookieSetter() {
@@ -838,7 +839,7 @@ class TraceHelper : public tracing::ExperimentalObserver {
 
     client_->GetTracing()->GetExperimental()->Start(
         tracing::StartParams::Builder().Build(),
-        base::Bind(&TraceHelper::OnTracingStarted, base::Unretained(this)));
+        base::BindOnce(&TraceHelper::OnTracingStarted, base::Unretained(this)));
   }
 
   ~TraceHelper() override {

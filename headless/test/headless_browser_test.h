@@ -27,7 +27,8 @@ class HeadlessDevToolsClient;
 // A utility class for asynchronously observing load events.
 class LoadObserver : public page::Observer, public network::Observer {
  public:
-  LoadObserver(HeadlessDevToolsClient* devtools_client, base::Closure callback);
+  LoadObserver(HeadlessDevToolsClient* devtools_client,
+               base::OnceClosure callback);
   ~LoadObserver() override;
 
   // page::Observer implementation:
@@ -40,7 +41,7 @@ class LoadObserver : public page::Observer, public network::Observer {
   bool navigation_succeeded() const { return navigation_succeeded_; }
 
  private:
-  base::Closure callback_;
+  base::OnceClosure callback_;
   HeadlessDevToolsClient* devtools_client_;  // Not owned.
 
   bool navigation_succeeded_;

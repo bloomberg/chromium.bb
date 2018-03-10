@@ -29,8 +29,9 @@ void ThrottledDispatcher::ResumeRequests() {
   requests_paused_ = false;
   for (ManagedDispatchURLRequestJob* job : paused_jobs_) {
     io_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnHeadersComplete,
-                              job->GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&ManagedDispatchURLRequestJob::OnHeadersComplete,
+                       job->GetWeakPtr()));
   }
   paused_jobs_.clear();
 }
@@ -41,8 +42,9 @@ void ThrottledDispatcher::DataReady(ManagedDispatchURLRequestJob* job) {
     paused_jobs_.push_back(job);
   } else {
     io_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnHeadersComplete,
-                              job->GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&ManagedDispatchURLRequestJob::OnHeadersComplete,
+                       job->GetWeakPtr()));
   }
 }
 

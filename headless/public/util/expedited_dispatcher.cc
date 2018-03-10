@@ -25,14 +25,15 @@ void ExpeditedDispatcher::JobKilled(ManagedDispatchURLRequestJob*) {}
 void ExpeditedDispatcher::JobFailed(ManagedDispatchURLRequestJob* job,
                                     net::Error error) {
   io_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnStartError,
-                            job->GetWeakPtr(), error));
+      FROM_HERE, base::BindOnce(&ManagedDispatchURLRequestJob::OnStartError,
+                                job->GetWeakPtr(), error));
 }
 
 void ExpeditedDispatcher::DataReady(ManagedDispatchURLRequestJob* job) {
   io_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ManagedDispatchURLRequestJob::OnHeadersComplete,
-                            job->GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&ManagedDispatchURLRequestJob::OnHeadersComplete,
+                     job->GetWeakPtr()));
 }
 
 void ExpeditedDispatcher::JobDeleted(ManagedDispatchURLRequestJob*) {}
@@ -42,8 +43,8 @@ void ExpeditedDispatcher::NavigationRequested(
   // For the ExpeditedDispatcher we don't care when the navigation is done,
   // hence the empty closure.
   io_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&NavigationRequest::StartProcessing,
-                            std::move(navigation), base::Closure()));
+      FROM_HERE, base::BindOnce(&NavigationRequest::StartProcessing,
+                                std::move(navigation), base::Closure()));
 }
 
 }  // namespace headless
