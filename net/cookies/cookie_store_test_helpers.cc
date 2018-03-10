@@ -227,4 +227,62 @@ std::string CookieURLHelper::Format(const std::string& format_string) const {
   return new_string;
 }
 
+//
+// FlushablePersistentStore
+//
+FlushablePersistentStore::FlushablePersistentStore() : flush_count_(0) {}
+
+void FlushablePersistentStore::Load(const LoadedCallback& loaded_callback) {
+  std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(out_cookies)));
+}
+
+void FlushablePersistentStore::LoadCookiesForKey(
+    const std::string& key,
+    const LoadedCallback& loaded_callback) {
+  Load(loaded_callback);
+}
+
+void FlushablePersistentStore::AddCookie(const CanonicalCookie&) {}
+
+void FlushablePersistentStore::UpdateCookieAccessTime(const CanonicalCookie&) {}
+
+void FlushablePersistentStore::DeleteCookie(const CanonicalCookie&) {}
+
+void FlushablePersistentStore::SetForceKeepSessionState() {}
+
+void FlushablePersistentStore::SetBeforeFlushCallback(
+    base::RepeatingClosure callback) {}
+
+void FlushablePersistentStore::Flush(base::OnceClosure callback) {
+  base::AutoLock lock(flush_count_lock_);
+  ++flush_count_;
+  std::move(callback).Run();
+}
+
+int FlushablePersistentStore::flush_count() {
+  base::AutoLock lock(flush_count_lock_);
+  return flush_count_;
+}
+
+FlushablePersistentStore::~FlushablePersistentStore() = default;
+
+//
+// CallbackCounter
+//
+CallbackCounter::CallbackCounter() : callback_count_(0) {}
+
+void CallbackCounter::Callback() {
+  base::AutoLock lock(callback_count_lock_);
+  ++callback_count_;
+}
+
+int CallbackCounter::callback_count() {
+  base::AutoLock lock(callback_count_lock_);
+  return callback_count_;
+}
+
+CallbackCounter::~CallbackCounter() = default;
+
 }  // namespace net

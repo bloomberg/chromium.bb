@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -145,6 +146,46 @@ class CookieURLHelper {
   const GURL url_;
   const std::string registry_;
   const std::string domain_and_registry_;
+};
+
+// Mock PersistentCookieStore that keeps track of the number of Flush() calls.
+class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
+ public:
+  FlushablePersistentStore();
+
+  // CookieMonster::PersistentCookieStore implementation:
+  void Load(const LoadedCallback& loaded_callback) override;
+  void LoadCookiesForKey(const std::string& key,
+                         const LoadedCallback& loaded_callback) override;
+  void AddCookie(const CanonicalCookie&) override;
+  void UpdateCookieAccessTime(const CanonicalCookie&) override;
+  void DeleteCookie(const CanonicalCookie&) override;
+  void SetForceKeepSessionState() override;
+  void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
+  void Flush(base::OnceClosure callback) override;
+
+  int flush_count();
+
+ private:
+  ~FlushablePersistentStore() override;
+
+  int flush_count_;
+  base::Lock flush_count_lock_;  // Protects |flush_count_|.
+};
+
+// Counts the number of times Callback() has been run.
+class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
+ public:
+  CallbackCounter();
+  void Callback();
+  int callback_count();
+
+ private:
+  friend class base::RefCountedThreadSafe<CallbackCounter>;
+  ~CallbackCounter();
+
+  int callback_count_;
+  base::Lock callback_count_lock_;  // Protects |callback_count_|.
 };
 
 }  // namespace net

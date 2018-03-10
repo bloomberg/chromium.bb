@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -34,6 +35,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
 #include "net/cookies/cookie_store_change_unittest.h"
+#include "net/cookies/cookie_store_test_helpers.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -2400,67 +2402,11 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
 }
 
-namespace {
-
-// Mock PersistentCookieStore that keeps track of the number of Flush() calls.
-class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
- public:
-  FlushablePersistentStore() : flush_count_(0) {}
-
-  void Load(const LoadedCallback& loaded_callback) override {
-    std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(loaded_callback, base::Passed(&out_cookies)));
-  }
-
-  void LoadCookiesForKey(const std::string& key,
-                         const LoadedCallback& loaded_callback) override {
-    Load(loaded_callback);
-  }
-
-  void AddCookie(const CanonicalCookie&) override {}
-  void UpdateCookieAccessTime(const CanonicalCookie&) override {}
-  void DeleteCookie(const CanonicalCookie&) override {}
-  void SetForceKeepSessionState() override {}
-  void SetBeforeFlushCallback(base::RepeatingClosure callback) override {}
-
-  void Flush(base::OnceClosure callback) override {
-    ++flush_count_;
-    if (!callback.is_null())
-      std::move(callback).Run();
-  }
-
-  int flush_count() { return flush_count_; }
-
- private:
-  ~FlushablePersistentStore() override = default;
-
-  volatile int flush_count_;
-};
-
-// Counts the number of times Callback() has been run.
-class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
- public:
-  CallbackCounter() : callback_count_(0) {}
-
-  void Callback() { ++callback_count_; }
-
-  int callback_count() { return callback_count_; }
-
- private:
-  friend class base::RefCountedThreadSafe<CallbackCounter>;
-  ~CallbackCounter() = default;
-
-  volatile int callback_count_;
-};
-
-}  // namespace
-
 // Test that FlushStore() is forwarded to the store and callbacks are posted.
 TEST_F(CookieMonsterTest, FlushStore) {
-  scoped_refptr<CallbackCounter> counter(new CallbackCounter());
-  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
-  std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get()));
+  auto counter = base::MakeRefCounted<CallbackCounter>();
+  auto store = base::MakeRefCounted<FlushablePersistentStore>();
+  auto cm = std::make_unique<CookieMonster>(store);
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(0, counter->callback_count());
@@ -2488,7 +2434,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(2, counter->callback_count());
 
   // NULL callback is still safe.
-  cm->FlushStore(base::Closure());
+  cm->FlushStore(base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2, store->flush_count());
@@ -2497,7 +2443,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
   // If there's no backing store, FlushStore() is always a safe no-op.
   cm.reset(new CookieMonster(nullptr));
   GetAllCookies(cm.get());  // Force init.
-  cm->FlushStore(base::Closure());
+  cm->FlushStore(base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2, counter->callback_count());

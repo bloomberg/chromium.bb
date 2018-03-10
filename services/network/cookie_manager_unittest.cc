@@ -9,11 +9,13 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
+#include "net/cookies/cookie_store_test_helpers.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +46,8 @@ class SynchronousCookieManager {
   // SynchronousCookieManager.
   explicit SynchronousCookieManager(
       network::mojom::CookieManager* cookie_service)
-      : cookie_service_(cookie_service) {}
+      : cookie_service_(cookie_service), flush_callback_counter_(0) {}
+
   ~SynchronousCookieManager() {}
 
   std::vector<net::CanonicalCookie> GetAllCookies() {
@@ -96,6 +99,17 @@ class SynchronousCookieManager {
     return num_deleted;
   }
 
+  void FlushCookieStore() {
+    base::RunLoop run_loop;
+    cookie_service_->FlushCookieStore(base::BindLambdaForTesting([&]() {
+      ++flush_callback_counter_;
+      run_loop.Quit();
+    }));
+    run_loop.Run();
+  }
+
+  uint32_t callback_count() const { return flush_callback_counter_; }
+
   // No need to wrap Add*Listener and CloneInterface, since their use
   // is purely async.
  private:
@@ -122,22 +136,15 @@ class SynchronousCookieManager {
   }
 
   network::mojom::CookieManager* cookie_service_;
+  uint32_t flush_callback_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCookieManager);
 };
 
 class CookieManagerTest : public testing::Test {
  public:
-  CookieManagerTest()
-      : connection_error_seen_(false),
-        cookie_monster_(nullptr, nullptr),
-        cookie_service_(std::make_unique<CookieManager>(&cookie_monster_)) {
-    cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
-    service_wrapper_ =
-        std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
-    cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
-        &CookieManagerTest::OnConnectionError, base::Unretained(this)));
-  }
+  CookieManagerTest() : CookieManagerTest(nullptr) {}
+
   ~CookieManagerTest() override {}
 
   // Tear down the remote service.
@@ -148,7 +155,7 @@ class CookieManagerTest : public testing::Test {
                           bool secure_source,
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<bool> callback;
-    cookie_monster_.SetCanonicalCookieAsync(
+    cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie), secure_source,
         can_modify_httponly,
         base::BindOnce(&net::ResultSavingCookieCallback<bool>::Run,
@@ -169,7 +176,7 @@ class CookieManagerTest : public testing::Test {
     return result;
   }
 
-  net::CookieStore* cookie_store() { return &cookie_monster_; }
+  net::CookieStore* cookie_store() { return cookie_monster_.get(); }
 
   CookieManager* service() const { return cookie_service_.get(); }
 
@@ -183,13 +190,30 @@ class CookieManagerTest : public testing::Test {
 
   bool connection_error_seen() const { return connection_error_seen_; }
 
+  net::FlushablePersistentStore* store() { return store_.get(); }
+
+ protected:
+  explicit CookieManagerTest(scoped_refptr<net::FlushablePersistentStore> store)
+      : connection_error_seen_(false),
+        store_(std::move(store)),
+        cookie_monster_(std::make_unique<net::CookieMonster>(store_)),
+        cookie_service_(
+            std::make_unique<CookieManager>(cookie_monster_.get())) {
+    cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
+    service_wrapper_ =
+        std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
+    cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
+        &CookieManagerTest::OnConnectionError, base::Unretained(this)));
+  }
+
  private:
   void OnConnectionError() { connection_error_seen_ = true; }
 
   bool connection_error_seen_;
 
   base::MessageLoopForIO message_loop_;
-  net::CookieMonster cookie_monster_;
+  scoped_refptr<net::FlushablePersistentStore> store_;
+  std::unique_ptr<net::CookieMonster> cookie_monster_;
   std::unique_ptr<CookieManager> cookie_service_;
   network::mojom::CookieManagerPtr cookie_service_ptr_;
   std::unique_ptr<SynchronousCookieManager> service_wrapper_;
@@ -1770,6 +1794,39 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
   new_ptr.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, service()->GetClientsBoundForTesting());
+}
+
+namespace {
+
+// A test class having cookie store with a persistent backing store.
+class FlushableCookieManagerTest : public CookieManagerTest {
+ public:
+  FlushableCookieManagerTest()
+      : CookieManagerTest(
+            base::MakeRefCounted<net::FlushablePersistentStore>()) {}
+
+  ~FlushableCookieManagerTest() override {}
+};
+
+}  // namespace
+
+// Tests that the cookie's backing store (if available) gets flush to disk.
+TEST_F(FlushableCookieManagerTest, FlushCookieStore) {
+  ASSERT_EQ(0, store()->flush_count());
+  ASSERT_EQ(0U, service_wrapper()->callback_count());
+
+  // Before initialization, FlushCookieStore() should just run the callback.
+  service_wrapper()->FlushCookieStore();
+
+  ASSERT_EQ(0, store()->flush_count());
+  ASSERT_EQ(1U, service_wrapper()->callback_count());
+
+  // After initialization, FlushCookieStore() should delegate to the store.
+  service_wrapper()->GetAllCookies();  // force init
+  service_wrapper()->FlushCookieStore();
+
+  ASSERT_EQ(1, store()->flush_count());
+  ASSERT_EQ(2U, service_wrapper()->callback_count());
 }
 
 }  // namespace network
