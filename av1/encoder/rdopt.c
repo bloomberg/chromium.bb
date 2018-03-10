@@ -8854,18 +8854,24 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
         if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
             mbmi->ref_frame[1] == ALTREF2_FRAME)
-          if (cm->cur_frame->alt2_frame_offset < cm->frame_offset) continue;
+          if (cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME] <
+              cm->frame_offset)
+            continue;
         if (mbmi->ref_frame[0] == BWDREF_FRAME ||
             mbmi->ref_frame[1] == BWDREF_FRAME)
-          if (cm->cur_frame->bwd_frame_offset < cm->frame_offset) continue;
+          if (cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME] <
+              cm->frame_offset)
+            continue;
       }
       if (mbmi->ref_frame[0] == LAST3_FRAME ||
           mbmi->ref_frame[1] == LAST3_FRAME)
-        if (cm->cur_frame->lst3_frame_offset <= cm->cur_frame->gld_frame_offset)
+        if (cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME] <=
+            cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME])
           continue;
       if (mbmi->ref_frame[0] == LAST2_FRAME ||
           mbmi->ref_frame[1] == LAST2_FRAME)
-        if (cm->cur_frame->lst2_frame_offset <= cm->cur_frame->gld_frame_offset)
+        if (cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME] <=
+            cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME])
           continue;
     }
 

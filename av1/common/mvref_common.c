@@ -1200,31 +1200,31 @@ void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
   int alt2_buf_idx = cm->frame_refs[ALTREF2_FRAME - LAST_FRAME].idx;
 
   if (alt_buf_idx >= 0)
-    cm->cur_frame->alt_frame_offset =
+    cm->cur_frame->ref_frame_offset[ALTREF_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[alt_buf_idx].cur_frame_offset;
 
   if (lst_buf_idx >= 0)
-    cm->cur_frame->lst_frame_offset =
+    cm->cur_frame->ref_frame_offset[LAST_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[lst_buf_idx].cur_frame_offset;
 
   if (gld_buf_idx >= 0)
-    cm->cur_frame->gld_frame_offset =
+    cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[gld_buf_idx].cur_frame_offset;
 
   if (lst2_buf_idx >= 0)
-    cm->cur_frame->lst2_frame_offset =
+    cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[lst2_buf_idx].cur_frame_offset;
 
   if (lst3_buf_idx >= 0)
-    cm->cur_frame->lst3_frame_offset =
+    cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[lst3_buf_idx].cur_frame_offset;
 
   if (bwd_buf_idx >= 0)
-    cm->cur_frame->bwd_frame_offset =
+    cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[bwd_buf_idx].cur_frame_offset;
 
   if (alt2_buf_idx >= 0)
-    cm->cur_frame->alt2_frame_offset =
+    cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME] =
         cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
 }
 
@@ -1287,7 +1287,6 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
                                    int ref_stamp, int dir) {
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
   int cur_rf_index[TOTAL_REFS_PER_FRAME] = { 0 };
-  int ref_rf_idx[TOTAL_REFS_PER_FRAME] = { 0 };
   int cur_offset[TOTAL_REFS_PER_FRAME] = { 0 };
   int ref_offset[TOTAL_REFS_PER_FRAME] = { 0 };
 
@@ -1304,6 +1303,8 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
 
   int ref_frame_index =
       cm->buffer_pool->frame_bufs[ref_frame_idx].cur_frame_offset;
+  unsigned int *ref_rf_idx =
+      &cm->buffer_pool->frame_bufs[ref_frame_idx].ref_frame_offset[0];
   int cur_frame_index = cm->cur_frame->cur_frame_offset;
 #if CONFIG_EXPLICIT_ORDER_HINT
   int ref_to_cur = get_relative_dist(cm, ref_frame_index, cur_frame_index);
@@ -1311,31 +1312,17 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
   int ref_to_cur = ref_frame_index - cur_frame_index;
 #endif
 
-  ref_rf_idx[LAST_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].lst_frame_offset;
-  ref_rf_idx[GOLDEN_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].gld_frame_offset;
-  ref_rf_idx[LAST2_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].lst2_frame_offset;
-  ref_rf_idx[LAST3_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].lst3_frame_offset;
-  ref_rf_idx[BWDREF_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].bwd_frame_offset;
-  ref_rf_idx[ALTREF2_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].alt2_frame_offset;
-  ref_rf_idx[ALTREF_FRAME] =
-      cm->buffer_pool->frame_bufs[ref_frame_idx].alt_frame_offset;
-
   for (MV_REFERENCE_FRAME rf = LAST_FRAME; rf <= INTER_REFS_PER_FRAME; ++rf) {
     int buf_idx = cm->frame_refs[FWD_RF_OFFSET(rf)].idx;
     if (buf_idx >= 0)
       cur_rf_index[rf] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
 #if CONFIG_EXPLICIT_ORDER_HINT
     cur_offset[rf] = get_relative_dist(cm, cur_frame_index, cur_rf_index[rf]);
-    ref_offset[rf] = get_relative_dist(cm, ref_frame_index, ref_rf_idx[rf]);
+    ref_offset[rf] =
+        get_relative_dist(cm, ref_frame_index, ref_rf_idx[rf - LAST_FRAME]);
 #else
     cur_offset[rf] = cur_frame_index - cur_rf_index[rf];
-    ref_offset[rf] = ref_frame_index - ref_rf_idx[rf];
+    ref_offset[rf] = ref_frame_index - ref_rf_idx[rf - LAST_FRAME];
 #endif
   }
 
@@ -1442,8 +1429,8 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   int ref_stamp = MFMV_STACK_SIZE - 1;
 
   if (lst_buf_idx >= 0) {
-    const int alt_frame_idx =
-        cm->buffer_pool->frame_bufs[lst_buf_idx].alt_frame_offset;
+    const int alt_frame_idx = cm->buffer_pool->frame_bufs[lst_buf_idx]
+                                  .ref_frame_offset[ALTREF_FRAME - LAST_FRAME];
 
     const int is_lst_overlay = (alt_frame_idx == gld_frame_index);
     if (!is_lst_overlay) motion_field_projection(cm, LAST_FRAME, ref_stamp, 2);

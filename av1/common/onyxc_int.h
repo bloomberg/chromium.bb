@@ -132,13 +132,7 @@ typedef struct {
   int ref_count;
 
   unsigned int cur_frame_offset;
-  unsigned int lst_frame_offset;
-  unsigned int alt_frame_offset;
-  unsigned int gld_frame_offset;
-  unsigned int lst2_frame_offset;
-  unsigned int lst3_frame_offset;
-  unsigned int bwd_frame_offset;
-  unsigned int alt2_frame_offset;
+  unsigned int ref_frame_offset[INTER_REFS_PER_FRAME];
 
   MV_REF *mvs;
 #if CONFIG_SEGMENT_PRED_LAST
