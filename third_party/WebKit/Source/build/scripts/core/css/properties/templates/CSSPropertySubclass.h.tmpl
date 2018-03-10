@@ -41,6 +41,10 @@ class {{property_classname}} final : public {{property.namespace_group}} {
     return WTF::String("{{property_classname[0].lower() + property_classname[1:]}}\0");
   }
   CSSPropertyID PropertyID() const override { return {{property.property_id}}; }
+  {%if property.layout_dependent %}
+  bool IsLayoutDependentProperty() const override { return true; }
+  bool IsLayoutDependent(const ComputedStyle*, LayoutObject*) const override;
+  {% endif %}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
