@@ -900,18 +900,7 @@ ServerWindow* WindowManagerState::GetRootWindowForEventDispatch(
     if (client_visible_root->Contains(window))
       return client_visible_root;
   }
-  NOTREACHED();
   return nullptr;
-}
-
-bool WindowManagerState::IsWindowInDisplayRoot(const ServerWindow* window) {
-  for (auto& display_root_ptr : window_manager_display_roots_) {
-    ServerWindow* client_visible_root =
-        display_root_ptr->GetClientVisibleRoot();
-    if (client_visible_root->Contains(window))
-      return true;
-  }
-  return false;
 }
 
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,

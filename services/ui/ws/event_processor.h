@@ -51,7 +51,7 @@ class EventProcessorTestApi;
 }
 
 // Processes events sent to the Window Service from the native platform. Updates
-// internale state associated with events (such as mouse, keyboard state,
+// internal state associated with events (such as mouse, keyboard state,
 // capture, focus...). EventProcessorDelegate handles dispatching to the
 // appropriate client.
 class EventProcessor : public ServerWindowDrawnTrackerObserver,
