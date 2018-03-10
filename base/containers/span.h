@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/logging.h"
+
 namespace base {
 
 template <typename T>
@@ -215,15 +217,18 @@ class span {
   constexpr span(span<U>&& other) : span(other.data(), other.size()) {}
 
   // span subviews
-  // Note: ideally all of these would DCHECK, but it requires fairly horrible
-  // contortions.
-  constexpr span first(size_t count) const { return span(data_, count); }
+  constexpr span first(size_t count) const {
+    CHECK(count <= size_);
+    return span(data_, count);
+  }
 
   constexpr span last(size_t count) const {
+    CHECK(count <= size_);
     return span(data_ + (size_ - count), count);
   }
 
   constexpr span subspan(size_t pos, size_t count = -1) const {
+    CHECK(pos <= size_);
     return span(data_ + pos, std::min(size_ - pos, count));
   }
 
@@ -233,7 +238,10 @@ class span {
   constexpr bool empty() const noexcept { return size_ == 0; }
 
   // span element access
-  constexpr T& operator[](size_t index) const noexcept { return data_[index]; }
+  constexpr T& operator[](size_t index) const noexcept {
+    CHECK(index < size_);
+    return data_[index];
+  }
   constexpr T* data() const noexcept { return data_; }
 
   // span iterator support
