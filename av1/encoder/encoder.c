@@ -2470,10 +2470,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->refresh_bwd_ref_frame = 0;
   cpi->refresh_alt2_ref_frame = 0;
 
-  cm->refresh_frame_context =
-      (oxcf->error_resilient_mode || oxcf->frame_parallel_decoding_mode)
-          ? REFRESH_FRAME_CONTEXT_DISABLED
-          : REFRESH_FRAME_CONTEXT_BACKWARD;
+  cm->refresh_frame_context = (oxcf->frame_parallel_decoding_mode)
+                                  ? REFRESH_FRAME_CONTEXT_DISABLED
+                                  : REFRESH_FRAME_CONTEXT_BACKWARD;
   if (oxcf->large_scale_tile)
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 

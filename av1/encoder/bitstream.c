@@ -3259,9 +3259,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
   }
 
-  const int might_bwd_adapt =
-      !(cm->error_resilient_mode || cm->large_scale_tile);
-
+  const int might_bwd_adapt = !(cm->large_scale_tile);
   if (might_bwd_adapt) {
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
