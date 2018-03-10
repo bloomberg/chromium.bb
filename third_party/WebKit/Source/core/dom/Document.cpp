@@ -2301,9 +2301,16 @@ bool Document::NeedsLayoutTreeUpdateForNode(const Node& node) const {
     return true;
   for (const ContainerNode* ancestor = LayoutTreeBuilderTraversal::Parent(node);
        ancestor; ancestor = LayoutTreeBuilderTraversal::Parent(*ancestor)) {
+    if (ShadowRoot* root = ancestor->GetShadowRoot()) {
+      if (root->NeedsStyleRecalc() || root->NeedsStyleInvalidation() ||
+          root->NeedsAdjacentStyleRecalc()) {
+        return true;
+      }
+    }
     if (ancestor->NeedsStyleRecalc() || ancestor->NeedsStyleInvalidation() ||
-        ancestor->NeedsAdjacentStyleRecalc())
+        ancestor->NeedsAdjacentStyleRecalc()) {
       return true;
+    }
   }
   return false;
 }
