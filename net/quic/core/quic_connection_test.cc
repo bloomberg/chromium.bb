@@ -1356,12 +1356,19 @@ TEST_P(QuicConnectionTest, WriteOutOfOrderQueuedPackets) {
   connection_.SendConnectivityProbingPacket(writer_.get(),
                                             connection_.peer_address());
 
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INTERNAL_ERROR,
-                                           "Packet written out of order.",
-                                           ConnectionCloseSource::FROM_SELF));
-  EXPECT_QUIC_BUG(connection_.OnCanWrite(),
-                  "Attempt to write packet:1 after:2");
-  EXPECT_FALSE(connection_.connected());
+  if (GetQuicReloadableFlag(
+          quic_clear_queued_packets_before_sending_connectivity_probing)) {
+    EXPECT_EQ(0u, connection_.NumQueuedPackets());
+    connection_.OnCanWrite();
+    EXPECT_TRUE(connection_.connected());
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INTERNAL_ERROR,
+                                             "Packet written out of order.",
+                                             ConnectionCloseSource::FROM_SELF));
+    EXPECT_QUIC_BUG(connection_.OnCanWrite(),
+                    "Attempt to write packet:1 after:2");
+    EXPECT_FALSE(connection_.connected());
+  }
 }
 
 TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {

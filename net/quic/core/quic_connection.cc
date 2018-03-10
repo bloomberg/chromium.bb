@@ -1674,6 +1674,8 @@ void QuicConnection::WriteQueuedPackets() {
                             queued_packets_.size());
   if (GetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash)) {
     while (!queued_packets_.empty()) {
+      QUIC_FLAG_COUNT(
+          quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash);
       // WritePacket() can potentially clear all queued packets, so we need to
       // save the first queued packet to a local variable before calling it.
       SerializedPacket packet(std::move(queued_packets_.front()));
@@ -2705,6 +2707,14 @@ bool QuicConnection::SendConnectivityProbingPacket(
   if (probing_writer->IsWriteBlocked()) {
     QUIC_DLOG(INFO) << "Writer blocked when send connectivity probing packet";
     return true;
+  }
+
+  if (GetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash) &&
+      GetQuicReloadableFlag(
+          quic_clear_queued_packets_before_sending_connectivity_probing)) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing);  // NOLINT
+    ClearQueuedPackets();
   }
 
   QUIC_DLOG(INFO) << ENDPOINT << "Sending connectivity probing packet for "
