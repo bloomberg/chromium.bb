@@ -1133,6 +1133,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
+    IPC_MESSAGE_HANDLER(PageMsg_FreezePage, OnFreezePage)
 
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedText,
@@ -2185,6 +2186,12 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
   // ViewMsg_Resize.
   if (!main_render_frame_)
     screen_info_ = screen_info;
+}
+
+void RenderViewImpl::OnFreezePage() {
+  if (webview()) {
+    webview()->FreezePage();
+  }
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {

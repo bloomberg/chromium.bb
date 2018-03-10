@@ -430,9 +430,21 @@ WebContents* TabManager::DiscardTabById(int32_t tab_id, DiscardReason reason) {
   if (index == -1)
     return nullptr;
 
-  VLOG(1) << "Discarding tab " << index << " id " << tab_id;
+  DVLOG(1) << "Discarding tab " << index << " id " << tab_id;
 
   return DiscardWebContentsAt(index, model, reason);
+}
+
+void TabManager::FreezeTabById(int32_t tab_id) {
+  TabStripModel* model = nullptr;
+  int index = FindTabStripModelById(tab_id, &model);
+
+  if (index == -1)
+    return;
+
+  DVLOG(1) << "Freezing tab " << index << " id " << tab_id;
+
+  FreezeWebContentsAt(index, model);
 }
 
 WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
@@ -847,6 +859,17 @@ WebContents* TabManager::DiscardWebContentsAt(int index,
   // "wasDiscarded" set to true.
   null_contents->SetWasDiscarded(true);
   return null_contents;
+}
+
+void TabManager::FreezeWebContentsAt(int index, TabStripModel* model) {
+  WebContents* content = model->GetWebContentsAt(index);
+
+  // Can't freeze tabs that are already discarded or frozen.
+  // TODO(fmeawad): Only freeze non-frozen tabs.
+  if (!content || GetWebContentsData(content)->IsDiscarded())
+    return;
+
+  content->FreezePage();
 }
 
 void TabManager::PauseBackgroundTabOpeningIfNeeded() {

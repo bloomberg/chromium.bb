@@ -125,6 +125,11 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   // of the discarded tab.
   content::WebContents* DiscardTabById(int32_t tab_id, DiscardReason reason);
 
+  // Freezes a tab with the given unique ID. Unlike discarding, freezing does
+  // not kill or change the tab other than stopping its task queues. Revisiting
+  // the tab causes it to unfreeze.
+  void FreezeTabById(int32_t tab_id);
+
   // Method used by the extensions API to discard tabs. If |contents| is null,
   // discards the least important tab using DiscardTab(). Otherwise discards
   // the given contents. Returns the new web_contents or null if no tab
@@ -290,6 +295,7 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
                            UrgentFastShutdownWithBeforeunloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsTabRestoredInForeground);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded
@@ -366,6 +372,10 @@ class TabManager : public TabStripModelObserver, public BrowserListObserver {
   content::WebContents* DiscardWebContentsAt(int index,
                                              TabStripModel* model,
                                              DiscardReason reason);
+
+  // Makes a request to the WebContents at the specified index to freeze its
+  // page.
+  void FreezeWebContentsAt(int index, TabStripModel* model);
 
   // Pause or resume background tab opening according to memory pressure change
   // if there are pending background tabs.

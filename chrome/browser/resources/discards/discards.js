@@ -229,6 +229,20 @@ cr.define('discards', function() {
     discardLink.addEventListener('click', discardListener);
     discardUrgentLink.addEventListener('click', discardListener);
 
+
+    // Set up the listeners for freeze links.
+    let lifecycleListener = function(e) {
+      // Get the info backing this row.
+      let info = infos[getRowIndex(e.target)];
+      // TODO(fmeawad): Disable the action, and let the update function
+      // re-enable it. Blocked on acquiring freeze status.
+      // Perform the action.
+      uiHandler.freezeById(info.id);
+    };
+
+    let freezeLink = row.querySelector('.freeze-link');
+    freezeLink.addEventListener('click', lifecycleListener);
+
     return row;
   }
 

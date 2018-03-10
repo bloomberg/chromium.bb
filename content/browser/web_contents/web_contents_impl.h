@@ -374,6 +374,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* outer_contents_frame) override;
   void DidChangeVisibleSecurityState() override;
   void Stop() override;
+  void FreezePage() override;
   WebContents* Clone() override;
   void ReloadFocusedFrame(bool bypass_cache) override;
   void Undo() override;
