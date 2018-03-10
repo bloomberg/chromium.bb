@@ -593,6 +593,7 @@ ReportHTMLTemplate = """
 </head>
 
 <body>
+<p>&nbsp;</p>
 <p id="note">
 Instruction text in italic green. Places to replace are in <replace>bold red</replace>.<br>
 
