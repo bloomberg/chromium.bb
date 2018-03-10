@@ -299,7 +299,7 @@ CumulativeDistribution = CumulativeDistributionMetric
 def DistributionMetric(name, reset_after=False, description=None,
                        bucketer=None, field_spec=_MISSING):
   """Returns a metric handle for a distribution named |name|."""
-  return ts_mon.DistributionMetric(
+  return ts_mon.NonCumulativeDistributionMetric(
       name, description=description, bucketer=bucketer, field_spec=field_spec)
 Distribution = DistributionMetric
 
