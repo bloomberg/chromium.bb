@@ -361,10 +361,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   LayoutObject* layout_object = StyledLayoutObject();
   const ComputedStyle* style = ComputeComputedStyle();
 
-  // TODO(futhark@chromium.org): IsInShadowTree() should not be necessary here.
-  // See http://crbug.com/704421
-  if (property_class.IsLayoutDependent(style, layout_object) ||
-      styled_node->IsInShadowTree()) {
+  if (property_class.IsLayoutDependent(style, layout_object)) {
     document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
     styled_node = StyledNode();
     style = ComputeComputedStyle();
