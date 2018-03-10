@@ -320,11 +320,16 @@ TEST_F(PipelineControllerTest, SeekMergesWithResume) {
   Complete(StartPipeline());
   Complete(SuspendPipeline());
 
+  // Pipeline startup always completes with a seek.
+  EXPECT_TRUE(was_seeked_);
+  was_seeked_ = false;
+
   // Request a seek while suspended.
   // It will be a mock failure if pipeline_.Seek() is called.
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
   pipeline_controller_.Seek(seek_time, true);
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(was_seeked_);
 
   // Resume and verify the resume time includes the seek.
   Complete(ResumePipeline());

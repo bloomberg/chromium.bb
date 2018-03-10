@@ -2417,6 +2417,8 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
                                           bool is_idle) {
   DCHECK(delegate_);
+  DVLOG(2) << __func__ << "(" << static_cast<int>(new_state) << ", " << is_idle
+           << ")";
 
   // Prevent duplicate delegate calls.
   // TODO(sandersd): Move this deduplication into the delegate itself.
@@ -2471,6 +2473,7 @@ void WebMediaPlayerImpl::SetMemoryReportingState(
 
 void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __func__ << "(" << is_suspended << ")";
 
   // Do not change the state after an error has occurred.
   // TODO(sandersd): Update PipelineController to remove the need for this.
@@ -2538,6 +2541,15 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // Combined suspend state.
   result.is_suspended = is_remote || must_suspend || idle_suspended ||
                         background_suspended || can_stay_suspended;
+
+  DVLOG(3) << __func__ << ": is_remote=" << is_remote
+           << ", must_suspend=" << must_suspend
+           << ", idle_suspended=" << idle_suspended
+           << ", background_suspended=" << background_suspended
+           << ", can_stay_suspended=" << can_stay_suspended
+           << ", is_stale=" << is_stale
+           << ", have_future_data=" << have_future_data
+           << ", paused_=" << paused_ << ", seeking_=" << seeking_;
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,
   // being paused implies displaying a play button, which is incorrect in this
