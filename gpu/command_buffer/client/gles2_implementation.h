@@ -371,6 +371,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   bool IsSamplerReservedId(GLuint id) { return false; }
   bool IsTransformFeedbackReservedId(GLuint id) { return false; }
 
+  bool UpdateIndexedBufferState(GLenum target,
+                                GLuint index,
+                                GLuint buffer_id,
+                                const char* function_name);
   void BindBufferHelper(GLenum target, GLuint buffer);
   void BindBufferBaseHelper(GLenum target, GLuint index, GLuint buffer);
   void BindBufferRangeHelper(GLenum target, GLuint index, GLuint buffer,

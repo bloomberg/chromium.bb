@@ -4119,39 +4119,45 @@ void GLES2Implementation::BindBufferStub(GLenum target, GLuint buffer) {
     helper_->CommandBufferHelper::OrderingBarrier();
 }
 
-void GLES2Implementation::BindBufferBaseHelper(
-    GLenum target, GLuint index, GLuint buffer_id) {
-  // TODO(zmo): See note #1 above.
-  // TODO(zmo): See note #2 above.
+bool GLES2Implementation::UpdateIndexedBufferState(GLenum target,
+                                                   GLuint index,
+                                                   GLuint buffer_id,
+                                                   const char* function_name) {
   switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       if (index >=
           static_cast<GLuint>(
               capabilities_.max_transform_feedback_separate_attribs)) {
-        SetGLError(GL_INVALID_VALUE,
-                   "glBindBufferBase", "index out of range");
-        return;
+        SetGLError(GL_INVALID_VALUE, function_name, "index out of range");
+        return false;
       }
       bound_transform_feedback_buffer_ = buffer_id;
       break;
     case GL_UNIFORM_BUFFER:
       if (index >=
           static_cast<GLuint>(capabilities_.max_uniform_buffer_bindings)) {
-        SetGLError(GL_INVALID_VALUE,
-                   "glBindBufferBase", "index out of range");
-        return;
+        SetGLError(GL_INVALID_VALUE, function_name, "index out of range");
+        return false;
       }
-      if (bound_uniform_buffer_ != buffer_id) {
-        bound_uniform_buffer_ = buffer_id;
-      }
+      bound_uniform_buffer_ = buffer_id;
       break;
     default:
-      SetGLError(GL_INVALID_ENUM, "glBindBufferBase", "invalid target");
-      return;
+      SetGLError(GL_INVALID_ENUM, function_name, "invalid target");
+      return false;
   }
-  GetIdHandler(SharedIdNamespaces::kBuffers)
-      ->MarkAsUsedForBind(this, target, index, buffer_id,
-                          &GLES2Implementation::BindBufferBaseStub);
+  return true;
+}
+
+void GLES2Implementation::BindBufferBaseHelper(GLenum target,
+                                               GLuint index,
+                                               GLuint buffer_id) {
+  // TODO(zmo): See note #1 above.
+  // TODO(zmo): See note #2 above.
+  if (UpdateIndexedBufferState(target, index, buffer_id, "glBindBufferBase")) {
+    GetIdHandler(SharedIdNamespaces::kBuffers)
+        ->MarkAsUsedForBind(this, target, index, buffer_id,
+                            &GLES2Implementation::BindBufferBaseStub);
+  }
 }
 
 void GLES2Implementation::BindBufferBaseStub(
@@ -4166,9 +4172,11 @@ void GLES2Implementation::BindBufferRangeHelper(
     GLintptr offset, GLsizeiptr size) {
   // TODO(zmo): See note #1 above.
   // TODO(zmo): See note #2 above.
-  GetIdHandler(SharedIdNamespaces::kBuffers)
-      ->MarkAsUsedForBind(this, target, index, buffer_id, offset, size,
-                          &GLES2Implementation::BindBufferRangeStub);
+  if (UpdateIndexedBufferState(target, index, buffer_id, "glBindBufferRange")) {
+    GetIdHandler(SharedIdNamespaces::kBuffers)
+        ->MarkAsUsedForBind(this, target, index, buffer_id, offset, size,
+                            &GLES2Implementation::BindBufferRangeStub);
+  }
 }
 
 void GLES2Implementation::BindBufferRangeStub(
