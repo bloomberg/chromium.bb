@@ -31,6 +31,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -177,7 +178,7 @@ void BrowserNonClientFrameView::UpdateProfileIcons() {
   }
 
   Browser* browser = browser_view()->browser();
-  const Profile* profile = browser->profile();
+  Profile* profile = browser->profile();
   const bool is_incognito =
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
 
@@ -214,7 +215,7 @@ void BrowserNonClientFrameView::UpdateProfileIcons() {
     profile_indicator_icon_->set_stroke_color(SK_ColorTRANSPARENT);
   } else {
 #if defined(OS_CHROMEOS)
-    AvatarMenu::GetImageForMenuButton(profile->GetPath(), &icon);
+    icon = gfx::Image(GetAvatarImageForContext(profile));
     // Draw a stroke around the profile icon only for the avatar.
     profile_indicator_icon_->set_stroke_color(GetToolbarTopSeparatorColor());
 #else

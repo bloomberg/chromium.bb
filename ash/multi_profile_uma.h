@@ -25,7 +25,7 @@ class ASH_EXPORT MultiProfileUMA {
 
   enum SigninUserAction {
     SIGNIN_USER_BY_TRAY = 0,
-    SIGNIN_USER_BY_BROWSER_FRAME,
+    SIGNIN_USER_BY_BROWSER_FRAME,  // Deprecated.
     NUM_SIGNIN_USER_ACTIONS
   };
 

@@ -55,10 +55,6 @@ class ProfileListDesktopTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(manager_.SetUp());
-#if defined(OS_CHROMEOS)
-    // AvatarMenu and multiple profiles works after user logged in.
-    manager_.SetLoggedIn(true);
-#endif
   }
 
   AvatarMenu* GetAvatarMenu() {
@@ -262,21 +258,6 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   const AvatarMenu::Item& item3 = menu->GetItemAt(2u);
   EXPECT_EQ(2u, item3.menu_index);
   EXPECT_EQ(ASCIIToUTF16("Test 3"), item3.name);
-}
-
-TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
-  // If multiprofile mode is not enabled then the menu is never shown.
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  manager()->CreateTestingProfile("Test 1");
-  manager()->CreateTestingProfile("Test 2");
-
-#if defined(OS_CHROMEOS)
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-#else
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
-#endif
 }
 
 TEST_F(ProfileListDesktopTest, SyncState) {

@@ -111,9 +111,6 @@ class AvatarMenu :
              Browser* browser);
   ~AvatarMenu() override;
 
-  // True if avatar menu should be displayed.
-  static bool ShouldShowAvatarMenu();
-
   // Sets |image| to the avatar corresponding to the profile at |profile_path|.
   // For built-in profile avatars, returns the non-high res version. Returns the
   // image load status.

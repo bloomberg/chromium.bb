@@ -3141,6 +3141,7 @@ test("unit_tests") {
   if (is_chromeos) {
     sources -= [
       "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
+      "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
 
       # Chrome OS uses window_sizer_ash_unittest.cc
       "../browser/ui/window_sizer/window_sizer_unittest.cc",

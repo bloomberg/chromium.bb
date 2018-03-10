@@ -13,6 +13,8 @@
 class ProfileAttributesStorage;
 
 // This model represents the profiles added to Chrome.
+// Only implemented by ProfileListDesktop, although a Chrome OS version used to
+// exist as ProfileListChromeOS.
 class ProfileList {
  public:
   virtual ~ProfileList() {}
