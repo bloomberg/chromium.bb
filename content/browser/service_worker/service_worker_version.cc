@@ -52,9 +52,6 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 
 namespace content {
-
-using StatusCallback = ServiceWorkerVersion::StatusCallback;
-
 namespace {
 
 // Timeout for an installed worker to start.
@@ -102,7 +99,7 @@ void RunCallbacks(ServiceWorkerVersion* version,
 
 // An adapter to run a |callback| after StartWorker.
 void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
-                                 StatusCallback callback,
+                                 ServiceWorkerVersion::StatusCallback callback,
                                  ServiceWorkerStatusCode status) {
   if (status == SERVICE_WORKER_OK &&
       version->running_status() != EmbeddedWorkerStatus::RUNNING) {
