@@ -89,11 +89,11 @@ public final class AwBrowserProcess {
      * Configures child process launcher. This is required only if child services are used in
      * WebView.
      */
-    public static void configureChildProcessLauncher(String packageName,
-            boolean isExternalService) {
+    public static void configureChildProcessLauncher() {
+        final boolean isExternalService = true;
         final boolean bindToCaller = true;
         final boolean ignoreVisibilityForImportance = true;
-        ChildProcessCreationParams.set(new ChildProcessCreationParams(packageName,
+        ChildProcessCreationParams.set(new ChildProcessCreationParams(getWebViewPackageName(),
                 isExternalService, LibraryProcessType.PROCESS_WEBVIEW_CHILD, bindToCaller,
                 ignoreVisibilityForImportance));
     }
@@ -194,7 +194,7 @@ public final class AwBrowserProcess {
      */
     @CalledByNative
     private static void triggerMinidumpUploading() {
-        handleMinidumpsAndSetMetricsConsent(sWebViewPackageName, false /* updateMetricsConsent */);
+        handleMinidumpsAndSetMetricsConsent(false /* updateMetricsConsent */);
     }
 
     /**
@@ -203,12 +203,11 @@ public final class AwBrowserProcess {
      * @param updateMetricsConsent whether to update the metrics-consent value to represent the
      * Android Checkbox toggle.
      */
-    public static void handleMinidumpsAndSetMetricsConsent(
-            final String webViewPackageName, final boolean updateMetricsConsent) {
+    public static void handleMinidumpsAndSetMetricsConsent(final boolean updateMetricsConsent) {
         final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
                 CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
         if (enableMinidumpUploadingForTesting) {
-            AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
+            handleMinidumps(true /* enabled */);
         }
 
         PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
@@ -219,7 +218,7 @@ public final class AwBrowserProcess {
             }
 
             if (!enableMinidumpUploadingForTesting) {
-                AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
+                handleMinidumps(enabled);
             }
         });
     }
@@ -231,8 +230,7 @@ public final class AwBrowserProcess {
      * @param userApproved whether we have user consent to upload crash data - if we do, copy the
      * minidumps, if we don't, delete them.
      */
-    public static void handleMinidumps(
-            final String webViewPackageName, final boolean userApproved) {
+    public static void handleMinidumps(final boolean userApproved) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -258,7 +256,7 @@ public final class AwBrowserProcess {
                 }
 
                 final Intent intent = new Intent();
-                intent.setClassName(webViewPackageName, CrashReceiverService.class.getName());
+                intent.setClassName(getWebViewPackageName(), CrashReceiverService.class.getName());
 
                 ServiceConnection connection = new ServiceConnection() {
                     @Override
