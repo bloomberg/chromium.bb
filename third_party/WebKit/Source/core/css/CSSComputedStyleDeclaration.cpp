@@ -40,6 +40,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -333,22 +334,37 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     return nullptr;
 
   Document& document = styled_node->GetDocument();
+
+  if (HTMLFrameOwnerElement* owner = document.LocalOwner()) {
+    // We are inside an iframe. If any of our ancestor iframes needs a style
+    // and/or layout update, we need to make that up-to-date to resolve viewport
+    // media queries and generate boxes as we might be moving to/from
+    // display:none in some element in the chain of ancestors.
+    //
+    // TODO(futhark@chromium.org): There is an open question what the computed
+    // style should be in a display:none iframe. If the property we are querying
+    // is not layout dependent, we will not update the iframe layout box here.
+    if (property_class.IsLayoutDependentProperty() ||
+        document.GetStyleEngine().HasViewportDependentMediaQueries()) {
+      owner->GetDocument().UpdateStyleAndLayout();
+      // The style recalc could have caused the styled node to be discarded or
+      // replaced if it was a PseudoElement so we need to update it.
+      styled_node = StyledNode();
+    }
+  }
+
   document.UpdateStyleAndLayoutTreeForNode(styled_node);
 
   // The style recalc could have caused the styled node to be discarded or
   // replaced if it was a PseudoElement so we need to update it.
   styled_node = StyledNode();
   LayoutObject* layout_object = StyledLayoutObject();
-
   const ComputedStyle* style = ComputeComputedStyle();
 
-  bool force_full_layout =
-      property_class.IsLayoutDependent(style, layout_object) ||
-      styled_node->IsInShadowTree() ||
-      (document.LocalOwner() &&
-       document.GetStyleEngine().HasViewportDependentMediaQueries());
-
-  if (force_full_layout) {
+  // TODO(futhark@chromium.org): IsInShadowTree() should not be necessary here.
+  // See http://crbug.com/704421
+  if (property_class.IsLayoutDependent(style, layout_object) ||
+      styled_node->IsInShadowTree()) {
     document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
     styled_node = StyledNode();
     style = ComputeComputedStyle();

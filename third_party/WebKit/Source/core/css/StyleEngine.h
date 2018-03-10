@@ -221,9 +221,10 @@ class CORE_EXPORT StyleEngine final
   StyleInvalidator& GetStyleInvalidator() { return style_invalidator_; }
   bool MediaQueryAffectedByViewportChange();
   bool MediaQueryAffectedByDeviceChange();
-  bool HasViewportDependentMediaQueries() const {
+  bool HasViewportDependentMediaQueries() {
     DCHECK(IsMaster());
     DCHECK(global_rule_set_);
+    UpdateActiveStyle();
     return !global_rule_set_->GetRuleFeatureSet()
                 .ViewportDependentMediaQueryResults()
                 .IsEmpty();

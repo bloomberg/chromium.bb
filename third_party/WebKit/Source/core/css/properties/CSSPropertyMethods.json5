@@ -30,11 +30,6 @@
       parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&, HeapVector<CSSPropertyValue, 256>&)",
     },
     {
-      name: "IsLayoutDependent",
-      return_type: "bool",
-      parameters: "(const ComputedStyle*, LayoutObject*)",
-    },
-    {
       name: "CSSValueFromComputedStyleInternal",
       return_type: "const CSSValue*",
       parameters: "(const ComputedStyle&, const SVGComputedStyle&, const LayoutObject*, Node*, bool allow_visited_style)",
