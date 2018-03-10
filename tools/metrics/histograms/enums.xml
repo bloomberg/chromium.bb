@@ -17958,6 +17958,7 @@ Called by update_net_error_codes.py.-->
       label="V8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter"/>
   <int value="2387" label="CSSSelectorPseudoFocus"/>
   <int value="2388" label="CSSSelectorPseudoFocusVisible"/>
+  <int value="2389" label="DistrustedLegacySymantecSubresource"/>
 </enum>
 
 <enum name="FeedbackSource">

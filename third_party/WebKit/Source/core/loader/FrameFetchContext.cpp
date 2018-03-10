@@ -661,6 +661,8 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   }
 
   if (NetworkUtils::IsLegacySymantecCertError(error.ErrorCode())) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kDistrustedLegacySymantecSubresource);
     GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
   }
 

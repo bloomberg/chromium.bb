@@ -1878,6 +1878,7 @@ enum WebFeature {
   kV8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter = 2386,
   kCSSSelectorPseudoFocus = 2387,
   kCSSSelectorPseudoFocusVisible = 2388,
+  kDistrustedLegacySymantecSubresource = 2389,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
