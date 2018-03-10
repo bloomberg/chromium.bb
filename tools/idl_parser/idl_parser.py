@@ -259,7 +259,8 @@ class IDLParser(object):
                   | Dictionary
                   | Enum
                   | Typedef
-                  | ImplementsStatement"""
+                  | ImplementsStatement
+                  | IncludesStatement"""
     p[0] = p[1]
 
   # Error recovery for definition
@@ -489,6 +490,11 @@ class IDLParser(object):
     """ImplementsStatement : identifier IMPLEMENTS identifier ';'"""
     name = self.BuildAttribute('REFERENCE', p[3])
     p[0] = self.BuildNamed('Implements', p, 1, name)
+
+  def p_IncludesStatement(self, p):
+    """IncludesStatement : identifier INCLUDES identifier ';'"""
+    name = self.BuildAttribute('REFERENCE', p[3])
+    p[0] = self.BuildNamed('Includes', p, 1, name)
 
   def p_Const(self,  p):
     """Const : CONST ConstType identifier '=' ConstValue ';'"""
@@ -873,6 +879,7 @@ class IDLParser(object):
                            | ENUM
                            | GETTER
                            | IMPLEMENTS
+                           | INCLUDES
                            | INHERIT
                            | LEGACYCALLER
                            | NAMESPACE
