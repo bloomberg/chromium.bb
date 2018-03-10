@@ -661,3 +661,31 @@ interface MyIFaceArgumentWithAnnotatedType2 {
  *        Error(Unexpected ,.)
  */
 [ Exposed(Window, Worker) ] interface InterfaceExposedError { };
+
+/** TREE
+ *Implements(Foo)
+ *  REFERENCE: Bar
+ */
+Foo implements Bar;
+
+/** TREE
+ *Includes(Foo)
+ *  REFERENCE: Bar
+ */
+Foo includes Bar;
+
+/** TREE
+ *Interface(IFaceWithKeyword)
+ *  Operation(includes)
+ *    Arguments()
+ *      Argument(val)
+ *        Type()
+ *          StringType(DOMString)
+ *    Type()
+ *      PrimitiveType(void)
+ */
+interface IFaceWithKeyword {
+  // '_' prefix is needed because "includes" is a keyword of Web IDL and our
+  // parser cannot handle a keyword as an identifier. (https://crbug.com/820353)
+  void _includes(DOMString val);
+};

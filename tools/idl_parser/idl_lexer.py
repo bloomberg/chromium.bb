@@ -72,6 +72,7 @@ class IDLLexer(object):
     'FrozenArray' : 'FROZENARRAY',
     'getter': 'GETTER',
     'implements' : 'IMPLEMENTS',
+    'includes' : 'INCLUDES',
     'Infinity' : 'INFINITY',
     'inherit' : 'INHERIT',
     'interface' : 'INTERFACE',
