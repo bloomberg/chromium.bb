@@ -327,6 +327,10 @@ class ASH_EXPORT RootWindowController {
   std::unique_ptr<LockScreenActionBackgroundController>
       lock_screen_action_background_controller_;
 
+  // Whether child windows have been closed during shutdown. Exists to avoid
+  // calling related cleanup code more than once.
+  bool did_close_child_windows_ = false;
+
   static std::vector<RootWindowController*>* root_window_controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);

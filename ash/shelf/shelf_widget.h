@@ -43,6 +43,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
 
+  // Clean up prior to deletion.
+  void Shutdown();
+
   // Returns true if the views-based shelf is being shown.
   static bool IsUsingViewsShelf();
 
@@ -72,9 +75,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Sets the focus cycler.  Also adds the shelf to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
-
-  // Clean up prior to deletion.
-  void Shutdown();
 
   // See Shelf::UpdateIconPositionForPanel().
   void UpdateIconPositionForPanel(aura::Window* panel);

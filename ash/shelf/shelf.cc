@@ -90,12 +90,11 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
 }
 
 void Shelf::ShutdownShelfWidget() {
-  if (shelf_widget_)
-    shelf_widget_->Shutdown();
+  shelf_widget_->Shutdown();
 }
 
 void Shelf::DestroyShelfWidget() {
-  // May be called multiple times during shutdown.
+  DCHECK(shelf_widget_);
   shelf_widget_.reset();
 }
 
@@ -334,11 +333,6 @@ LoginShelfView* Shelf::GetLoginShelfViewForTesting() {
 }
 
 void Shelf::WillDeleteShelfLayoutManager() {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // TODO(sky): this should be removed once Shell is used everywhere.
-    ShutdownShelfWidget();
-  }
-
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();
   bezel_event_handler_.reset();
