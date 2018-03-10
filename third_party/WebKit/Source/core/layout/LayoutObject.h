@@ -1813,6 +1813,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void SetNeedsPaintPropertyUpdate() {
       layout_object_.SetNeedsPaintPropertyUpdate();
     }
+    void SetSubtreeNeedsPaintPropertyUpdate() {
+      layout_object_.SetSubtreeNeedsPaintPropertyUpdate();
+    }
 
     void SetPartialInvalidationRect(const LayoutRect& r) {
       layout_object_.SetPartialInvalidationRect(r);

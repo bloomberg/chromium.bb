@@ -1637,33 +1637,10 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 }
 
 void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
-  if (!object_.IsBoxModelObject())
-    return;
-
-  const auto& box_model_object = ToLayoutBoxModelObject(object_);
-  if (box_model_object.Layer() &&
-      box_model_object.Layer()->ShouldFragmentCompositedBounds()) {
-    // Always force-update properties for fragmented content.
-    // TODO(chrishtr): find ways to optimize this in the future.
-    // It may suffice to compare previous and current visual overflow,
-    // but we do not currenly cache that on the LayoutObject or PaintLayer.
-    object_.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
-    return;
-  }
-
   if (!object_.IsBox())
     return;
 
   const LayoutBox& box = ToLayoutBox(object_);
-
-  // Always force-update properties for fragmented content. Boxes with
-  // control clip have a fragment-aware offset.
-  if (box.HasControlClip() && !box.Layer() &&
-      full_context_.painting_layer->EnclosingPaginationLayer()) {
-    box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
-    return;
-  }
-
   if (box.Size() == box.PreviousSize())
     return;
 
@@ -2212,6 +2189,7 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
   FragmentData* current_fragment_data = nullptr;
   FragmentainerIterator iterator(flow_thread,
                                  object_bounding_box_in_flow_thread);
+  bool fragments_changed = false;
   Vector<PaintPropertyTreeBuilderFragmentContext, 1> new_fragment_contexts;
   for (; !iterator.AtEnd(); iterator.Advance()) {
     auto pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
@@ -2244,10 +2222,20 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
     new_fragment_contexts.push_back(
         ContextForFragment(fragment_clip, logical_top_in_flow_thread));
 
-    current_fragment_data =
-        current_fragment_data
-            ? &current_fragment_data->EnsureNextFragment()
-            : &object_.GetMutableForPainting().FirstFragment();
+    Optional<LayoutUnit> old_logical_top_in_flow_thread;
+    if (current_fragment_data) {
+      if (const auto* old_fragment = current_fragment_data->NextFragment())
+        old_logical_top_in_flow_thread = old_fragment->LogicalTopInFlowThread();
+      current_fragment_data = &current_fragment_data->EnsureNextFragment();
+    } else {
+      current_fragment_data = &object_.GetMutableForPainting().FirstFragment();
+      old_logical_top_in_flow_thread =
+          current_fragment_data->LogicalTopInFlowThread();
+    }
+
+    if (!old_logical_top_in_flow_thread ||
+        *old_logical_top_in_flow_thread != logical_top_in_flow_thread)
+      fragments_changed = true;
 
     InitFragmentPaintProperties(
         *current_fragment_data,
@@ -2259,9 +2247,15 @@ void ObjectPaintPropertyTreeBuilder::CreateFragmentContexts(
     // This will be an empty fragment - get rid of it?
     InitSingleFragmentFromParent(needs_paint_properties);
   } else {
+    if (current_fragment_data->NextFragment())
+      fragments_changed = true;
     current_fragment_data->ClearNextFragment();
     context_.fragments = std::move(new_fragment_contexts);
   }
+
+  // Need to update subtree paint properties for the changed fragments.
+  if (fragments_changed)
+    object_.GetMutableForPainting().SetSubtreeNeedsPaintPropertyUpdate();
 }
 
 bool ObjectPaintPropertyTreeBuilder::UpdateFragments() {
