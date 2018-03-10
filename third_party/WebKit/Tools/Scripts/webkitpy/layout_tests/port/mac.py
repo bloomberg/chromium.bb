@@ -40,12 +40,12 @@ class MacPort(base.Port):
     SUPPORTED_VERSIONS = ('mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'retina')
     port_name = 'mac'
 
-    # FIXME: We treat Retina (High-DPI) devices as if they are running
-    # a different operating system version. This is lame and should be fixed.
-    # Note that the retina versions fallback to the non-retina versions and so no
-    # baselines are shared between retina versions; this keeps the fallback graph as a tree
-    # and maximizes the number of baselines we can share that way.
-    # We also currently only support Retina on 10.11.
+    # FIXME: We treat Retina (High-DPI) devices as if they are running a
+    # different operating system version. This is lame and should be fixed.
+    # Note that the retina versions fallback to the non-retina versions and so
+    # no baselines are shared between retina versions; this keeps the fallback
+    # graph as a tree and maximizes the number of baselines we can share that
+    # way. We also currently only support Retina on 10.12.
 
     FALLBACK_PATHS = {}
 
@@ -53,7 +53,7 @@ class MacPort(base.Port):
     FALLBACK_PATHS['mac10.12'] = ['mac-mac10.12'] + FALLBACK_PATHS['mac10.13']
     FALLBACK_PATHS['mac10.11'] = ['mac-mac10.11'] + FALLBACK_PATHS['mac10.12']
     FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']
-    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mac10.11']
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mac10.12']
 
     CONTENT_SHELL_NAME = 'Content Shell'
 
