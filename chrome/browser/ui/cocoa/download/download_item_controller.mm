@@ -122,6 +122,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [progressView_ setController:nil];
+  [progressView_ setTarget:nil];
   [[self view] removeFromSuperview];
   [super dealloc];
 }
