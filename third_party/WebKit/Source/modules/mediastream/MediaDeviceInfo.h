@@ -53,7 +53,6 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   String label() const;
   String groupId() const;
 
-  // Used for testing only.
   MediaDeviceType DeviceType() const;
 
   ScriptValue toJSONForBinding(ScriptState*);
