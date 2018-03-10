@@ -51,6 +51,7 @@ class MockCannedChecks(object):
 
     return errors
 
+
 class MockInputApi(object):
   """Mock class for the InputApi class.
 
@@ -74,6 +75,9 @@ class MockInputApi(object):
     self.is_committing = False
     self.change = MockChange([])
     self.presubmit_local_path = os.path.dirname(__file__)
+
+  def CreateMockFileInPath(self, f_list):
+    self.os_path.exists = lambda x: x in f_list
 
   def AffectedFiles(self, file_filter=None, include_deletes=False):
     for file in self.files:

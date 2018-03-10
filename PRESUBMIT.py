@@ -2180,15 +2180,21 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   results = []
   # First, check for new / deleted .pydeps.
   for f in input_api.AffectedFiles(include_deletes=True):
-    if f.LocalPath().endswith('.pydeps'):
-      if f.Action() == 'D' and f.LocalPath() in _ALL_PYDEPS_FILES:
-        results.append(output_api.PresubmitError(
-            'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
-            'remove %s' % f.LocalPath()))
-      elif f.Action() != 'D' and f.LocalPath() not in _ALL_PYDEPS_FILES:
-        results.append(output_api.PresubmitError(
-            'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
-            'include %s' % f.LocalPath()))
+    # Check whether we are running the presubmit check for a file in src.
+    # f.LocalPath is relative to repo (src, or internal repo).
+    # os_path.exists is relative to src repo.
+    # Therefore if os_path.exists is true, it means f.LocalPath is relative
+    # to src and we can conclude that the pydeps is in src.
+    if input_api.os_path.exists(f.LocalPath()):
+      if f.LocalPath().endswith('.pydeps'):
+        if f.Action() == 'D' and f.LocalPath() in _ALL_PYDEPS_FILES:
+          results.append(output_api.PresubmitError(
+              'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
+              'remove %s' % f.LocalPath()))
+        elif f.Action() != 'D' and f.LocalPath() not in _ALL_PYDEPS_FILES:
+          results.append(output_api.PresubmitError(
+              'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
+              'include %s' % f.LocalPath()))
 
   if results:
     return results
