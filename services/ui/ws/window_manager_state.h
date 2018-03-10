@@ -273,7 +273,6 @@ class WindowManagerState : public EventProcessorDelegate,
                                           bool in_nonclient_area) override;
   ServerWindow* GetRootWindowForDisplay(int64_t display_id) override;
   ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) override;
-  bool IsWindowInDisplayRoot(const ServerWindow* window) override;
   void OnEventTargetNotFound(const Event& event, int64_t display_id) override;
   ServerWindow* GetFallbackTargetForEventBlockedByModal(
       ServerWindow* window) override;

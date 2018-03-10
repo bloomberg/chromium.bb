@@ -94,13 +94,10 @@ class EventProcessorDelegate {
   virtual ServerWindow* GetRootWindowForDisplay(int64_t display_id) = 0;
 
   // Returns the root of |window| that is used for event dispatch. The returned
-  // value is used for coordinate conversion.
+  // value is used for coordinate conversion. Returns null if |window| is not
+  // in a hierarchy that events should be dispatched to (typically not
+  // associated with a display).
   virtual ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) = 0;
-
-  // Returns true if |window| is in a display root. This is called when the
-  // hierarchy changes and |window| needs to be tested if it's still in a valid
-  // display root.
-  virtual bool IsWindowInDisplayRoot(const ServerWindow* window) = 0;
 
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.

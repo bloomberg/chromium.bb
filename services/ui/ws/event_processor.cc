@@ -845,10 +845,8 @@ void EventProcessor::OnDrawnStateChanged(ServerWindow* ancestor,
 
 void EventProcessor::OnRootDidChange(ServerWindow* ancestor,
                                      ServerWindow* window) {
-  if (delegate_->IsWindowInDisplayRoot(window))
-    return;
-
-  WindowNoLongerValidTarget(window);
+  if (!delegate_->GetRootWindowForEventDispatch(window))
+    WindowNoLongerValidTarget(window);
 }
 
 void EventProcessor::OnDragCursorUpdated() {

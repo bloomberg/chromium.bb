@@ -204,10 +204,7 @@ class TestEventProcessorDelegate : public EventProcessorDelegate {
     return nullptr;
   }
   ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) override {
-    return window->GetRootForDrawn();
-  }
-  bool IsWindowInDisplayRoot(const ServerWindow* window) override {
-    return is_window_in_display_root_;
+    return is_window_in_display_root_ ? window->GetRootForDrawn() : nullptr;
   }
 
   Delegate* delegate_;
