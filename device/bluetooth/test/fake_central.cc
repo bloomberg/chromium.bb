@@ -9,8 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/task_scheduler/post_task.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
+#include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_peripheral.h"
@@ -21,7 +25,9 @@ namespace bluetooth {
 
 FakeCentral::FakeCentral(mojom::CentralState state,
                          mojom::FakeCentralRequest request)
-    : state_(state), binding_(this, std::move(request)) {}
+    : has_pending_or_active_discovery_session_(false),
+      state_(state),
+      binding_(this, std::move(request)) {}
 
 void FakeCentral::SimulatePreconnectedPeripheral(
     const std::string& address,
@@ -456,14 +462,44 @@ void FakeCentral::AddDiscoverySession(
     device::BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  NOTREACHED();
+  if (!IsPresent()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            error_callback,
+            device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
+    return;
+  }
+
+  // TODO(https://crbug.com/820113): Currently, multiple discovery sessions are
+  // not supported, so we DCHECK to ensure that there is not an active session
+  // already.
+  DCHECK(!has_pending_or_active_discovery_session_);
+  has_pending_or_active_discovery_session_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(callback));
 }
 
 void FakeCentral::RemoveDiscoverySession(
     device::BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  NOTREACHED();
+  if (!IsPresent()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            error_callback,
+            device::UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT));
+    return;
+  }
+
+  // TODO(https://crbug.com/820113): Currently, multiple discovery sessions are
+  // not supported, so we DCHECK to ensure that there is currently an active
+  // session already.
+  DCHECK(has_pending_or_active_discovery_session_);
+  has_pending_or_active_discovery_session_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(callback));
 }
 
 void FakeCentral::SetDiscoveryFilter(
