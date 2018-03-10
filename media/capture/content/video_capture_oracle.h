@@ -98,6 +98,12 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // returned true.
   void RecordConsumerFeedback(int frame_number, double resource_utilization);
 
+  // Sets the minimum amount of time that must pass between changes to the
+  // capture size. This throttles the rate of size changes, to avoid stressing
+  // consumers and to allow the end-to-end system sufficient time to stabilize
+  // before re-evaluating the capture size.
+  void SetMinSizeChangePeriod(base::TimeDelta period);
+
   // Returns the oracle's estimate of the duration of the next frame.  This
   // should be called just after ObserveEventAndDecideCapture(), and will only
   // be non-zero if the call returned true.
@@ -124,6 +130,10 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // VideoCaptureOracle is constructed.
   static constexpr base::TimeDelta kDefaultMinCapturePeriod =
       base::TimeDelta::FromMicroseconds(1000000 / 5);  // 5 FPS
+
+  // Default minimum size change period if SetMinSizeChangePeriod is not called.
+  static constexpr base::TimeDelta kDefaultMinSizeChangePeriod =
+      base::TimeDelta::FromSeconds(3);
 
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.  Only valid
@@ -156,9 +166,26 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // or -1 if no increase should be made.
   int AnalyzeForIncreasedArea(base::TimeTicks analyze_time);
 
+  // Returns the amount of time, since the source size last changed, to allow
+  // frequent increases in capture area.  This allows the system a period of
+  // time to quickly explore up and down to find an ideal point before being
+  // more careful about capture size increases.
+  base::TimeDelta GetExplorationPeriodAfterSourceSizeChange();
+
+  // Returns true if updates have been accumulated by |accumulator| for a
+  // sufficient amount of time and the latest update was fairly recent, relative
+  // to |now|.
+  bool HasSufficientRecentFeedback(
+      const FeedbackSignalAccumulator<base::TimeTicks>& accumulator,
+      base::TimeTicks now);
+
   // Set to false to prevent the oracle from automatically adjusting the capture
   // size in response to end-to-end utilization.
   const bool auto_throttling_enabled_;
+
+  // The minimum amount of time that must pass between changes to the capture
+  // size.
+  base::TimeDelta min_size_change_period_;
 
   // Incremented every time RecordCapture() is called.
   int next_frame_number_;

@@ -187,6 +187,13 @@ void FrameSinkVideoCapturerImpl::SetMinCapturePeriod(
   }
 }
 
+void FrameSinkVideoCapturerImpl::SetMinSizeChangePeriod(
+    base::TimeDelta min_period) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  oracle_.SetMinSizeChangePeriod(min_period);
+}
+
 void FrameSinkVideoCapturerImpl::SetResolutionConstraints(
     const gfx::Size& min_size,
     const gfx::Size& max_size,

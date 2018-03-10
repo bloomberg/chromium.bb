@@ -95,6 +95,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void SetFormat(media::VideoPixelFormat format,
                  media::ColorSpace color_space) final;
   void SetMinCapturePeriod(base::TimeDelta min_capture_period) final;
+  void SetMinSizeChangePeriod(base::TimeDelta min_period) final;
   void SetResolutionConstraints(const gfx::Size& min_size,
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio) final;
