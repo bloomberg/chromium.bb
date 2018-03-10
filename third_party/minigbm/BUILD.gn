@@ -99,6 +99,10 @@ if (!use_system_minigbm) {
     ]
     public_configs = [ ":minigbm_config" ]
 
+    if (use_exynos_minigbm) {
+      configs += [ "//third_party/libdrm:libdrm_exynos_include_config" ]
+    }
+
     # Clients need this to pick up the shared library correctly.
     all_dependent_configs =
         [ "//build/config/gcc:rpath_for_built_shared_libraries" ]

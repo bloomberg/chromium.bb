@@ -33,6 +33,10 @@ if (!use_system_libdrm) {
     }
   }
 
+  config("libdrm_exynos_include_config") {
+    include_dirs = [ "//third_party/libdrm/src/exynos" ]
+  }
+
   static_library("libdrm") {
     sources = [
       "src/xf86drm.c",
