@@ -131,27 +131,6 @@
   <message name="IDS_AUTOFILL_SETTINGS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
    Autofill settings
   </message>
-  <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
-     Chrome Autofill settings...
-   </message>
-  </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
-      Chromium Autofill settings...
-    </message>
-  </if>
-
-  <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
-     Chrome Autofill settings...
-    </message>
-  </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
-      Chromium Autofill settings...
-    </message>
-  </if>
 
   <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">
     settings
@@ -231,9 +210,6 @@
       </message>
     </else>
   </if>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to June 2017 UI guidelines. The prompt can be either a bubble or an infobar.">
-    Save card to Google?
-  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to January 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
     Save card?
   </message>
