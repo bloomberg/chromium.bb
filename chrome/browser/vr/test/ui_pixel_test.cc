@@ -57,7 +57,7 @@ void UiPixelTest::TearDown() {
 
 void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
                          const ToolbarState& toolbar_state) {
-  ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr,
+  ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr, nullptr,
                              ui_initial_state);
   ui_->OnGlInitialized(content_texture_,
                        vr::UiElementRenderer::kTextureLocationLocal,

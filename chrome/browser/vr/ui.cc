@@ -18,6 +18,7 @@
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
+#include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -32,25 +33,29 @@ namespace vr {
 
 Ui::Ui(UiBrowserInterface* browser,
        ContentInputForwarder* content_input_forwarder,
-       vr::KeyboardDelegate* keyboard_delegate,
-       vr::TextInputDelegate* text_input_delegate,
+       KeyboardDelegate* keyboard_delegate,
+       TextInputDelegate* text_input_delegate,
+       AudioDelegate* audio_delegate,
        const UiInitialState& ui_initial_state)
     : Ui(browser,
          std::make_unique<ContentInputDelegate>(content_input_forwarder),
          keyboard_delegate,
          text_input_delegate,
+         audio_delegate,
          ui_initial_state) {}
 
 Ui::Ui(UiBrowserInterface* browser,
        std::unique_ptr<ContentInputDelegate> content_input_delegate,
-       vr::KeyboardDelegate* keyboard_delegate,
-       vr::TextInputDelegate* text_input_delegate,
+       KeyboardDelegate* keyboard_delegate,
+       TextInputDelegate* text_input_delegate,
+       AudioDelegate* audio_delegate,
        const UiInitialState& ui_initial_state)
     : browser_(browser),
       scene_(std::make_unique<UiScene>()),
       model_(std::make_unique<Model>()),
       content_input_delegate_(std::move(content_input_delegate)),
       input_manager_(std::make_unique<UiInputManager>(scene_.get())),
+      audio_delegate_(audio_delegate),
       weak_ptr_factory_(this) {
   UiInitialState state = ui_initial_state;
   if (keyboard_delegate != nullptr)
@@ -58,7 +63,8 @@ Ui::Ui(UiBrowserInterface* browser,
   InitializeModel(state);
 
   UiSceneCreator(browser, scene_.get(), this, content_input_delegate_.get(),
-                 keyboard_delegate, text_input_delegate, model_.get())
+                 keyboard_delegate, text_input_delegate, audio_delegate,
+                 model_.get())
       .CreateScene();
 }
 
@@ -404,6 +410,19 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
 
   ColorScheme::UpdateForComponent(component_version);
   model_->background_loaded = true;
+
+  if (audio_delegate_) {
+    std::vector<std::pair<SoundId, std::unique_ptr<std::string>&>> sounds = {
+        {kSoundButtonHover, assets->button_hover_sound},
+        {kSoundButtonClick, assets->button_click_sound},
+        {kSoundBackButtonClick, assets->back_button_click_sound},
+    };
+    audio_delegate_->ResetSounds();
+    for (auto& sound : sounds) {
+      if (sound.second)
+        audio_delegate_->RegisterSound(sound.first, std::move(sound.second));
+    }
+  }
 }
 
 void Ui::OnAssetsUnavailable() {

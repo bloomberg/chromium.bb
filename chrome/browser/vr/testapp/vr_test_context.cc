@@ -92,7 +92,8 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   UiInitialState ui_initial_state;
   ui_ = std::make_unique<Ui>(this, nullptr, keyboard_delegate_.get(),
-                             text_input_delegate_.get(), ui_initial_state);
+                             text_input_delegate_.get(), nullptr,
+                             ui_initial_state);
   LoadAssets();
 
   text_input_delegate_->SetRequestFocusCallback(
