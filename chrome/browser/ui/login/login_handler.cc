@@ -100,12 +100,25 @@ LoginHandler::LoginHandler(
       password_manager_(NULL),
       web_contents_getter_(web_contents_getter),
       login_model_(NULL),
-      auth_required_callback_(auth_required_callback) {
+      auth_required_callback_(auth_required_callback),
+      has_shown_login_handler_(false),
+      release_soon_has_been_called_(false) {
   // This constructor is called on the I/O thread, so we cannot load the nib
   // here. BuildViewImpl() will be invoked on the UI thread later, so wait with
   // loading the nib until then.
   DCHECK(auth_info_.get()) << "LoginHandler constructed with NULL auth info";
 
+  // Note from erikchen@:
+  // The ownership semantics for this class are very confusing. The class is
+  // self-owned, and is only destroyed when LoginHandler::ReleaseSoon() is
+  // called. But this relies on the assumption that the LoginHandlerView is
+  // shown, which isn't always the case. So this class also tracks whether the
+  // LoginHandler has been shown, and if has never been shown but CancelAuth()
+  // is called, then LoginHandler::ReleaseSoon() will also be called.
+  // This relies on the assumption that if the LoginView is not shown, then
+  // CancelAuth() must be called.
+  // Ideally, the whole class should be refactored to have saner ownership
+  // semantics.
   AddRef();  // matched by LoginHandler::ReleaseSoon().
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -133,12 +146,14 @@ void LoginHandler::BuildViewWithPasswordManager(
   password_manager_ = password_manager;
   password_form_ = observed_form;
   LoginHandler::LoginModelData model_data(password_manager, observed_form);
+  has_shown_login_handler_ = true;
   BuildViewImpl(authority, explanation, &model_data);
 }
 
 void LoginHandler::BuildViewWithoutPasswordManager(
     const base::string16& authority,
     const base::string16& explanation) {
+  has_shown_login_handler_ = true;
   BuildViewImpl(authority, explanation, nullptr);
 }
 
@@ -298,6 +313,12 @@ void LoginHandler::NotifyAuthNeeded() {
 }
 
 void LoginHandler::ReleaseSoon() {
+  if (release_soon_has_been_called_) {
+    return;
+  } else {
+    release_soon_has_been_called_ = true;
+  }
+
   if (!TestAndSetAuthHandled()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -378,6 +399,10 @@ void LoginHandler::NotifyAuthCancelled(bool dismiss_navigation) {
   service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
                   content::Source<NavigationController>(controller),
                   content::Details<LoginNotificationDetails>(&details));
+
+  if (!has_shown_login_handler_) {
+    ReleaseSoon();
+  }
 }
 
 // Marks authentication as handled and returns the previous handled state.
@@ -517,12 +542,15 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url,
                                    LoginHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
-  if (!parent_contents)
+  if (!parent_contents) {
+    handler->CancelAuth();
     return;
+  }
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(parent_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
+    handler->CancelAuth();
     return;
   }
 
