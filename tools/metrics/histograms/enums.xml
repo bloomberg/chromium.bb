@@ -27115,6 +27115,7 @@ from previous Chrome versions.
   <int value="1497924954" label="js-flags"/>
   <int value="1499163193" label="PostScriptPrinting:disabled"/>
   <int value="1505194447" label="disable-transition-compositing"/>
+  <int value="1508761653" label="disable-site-isolation-trials"/>
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1510659184" label="MacMDDownloadShelf:enabled"/>

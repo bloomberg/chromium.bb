@@ -140,6 +140,19 @@ class WebDriverSitePerProcessPolicyBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebDriverSitePerProcessPolicyBrowserTest);
 };
 
+// Ensure that --disable-site-isolation-trials does not override policies.
+class NoOverrideSitePerProcessPolicyBrowserTest
+    : public SitePerProcessPolicyBrowserTest {
+ protected:
+  NoOverrideSitePerProcessPolicyBrowserTest() {}
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoOverrideSitePerProcessPolicyBrowserTest);
+};
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTest, Simple) {
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", true},
@@ -167,6 +180,14 @@ IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", are_sites_isolated_for_testing_},
       {"http://example.org/pumpkins.html", are_sites_isolated_for_testing_},
+  };
+  CheckExpectations(expectations, arraysize(expectations));
+}
+
+IN_PROC_BROWSER_TEST_F(NoOverrideSitePerProcessPolicyBrowserTest, Simple) {
+  Expectations expectations[] = {
+      {"https://foo.com/noodles.html", true},
+      {"http://example.org/pumpkins.html", true},
   };
   CheckExpectations(expectations, arraysize(expectations));
 }

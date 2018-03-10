@@ -37,8 +37,10 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
           switches::kSitePerProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIsolateOrigins) ||
-      base::FeatureList::IsEnabled(features::kSitePerProcess) ||
-      base::FeatureList::IsEnabled(features::kIsolateOrigins) ||
+      ((base::FeatureList::IsEnabled(features::kSitePerProcess) ||
+        base::FeatureList::IsEnabled(features::kIsolateOrigins)) &&
+       !base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableSiteIsolationTrials)) ||
       base::FeatureList::IsEnabled(features::kTopDocumentIsolation)) {
     PrintCompositeClient::CreateForWebContents(web_contents);
     if (for_preview) {

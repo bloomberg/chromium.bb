@@ -695,6 +695,12 @@ const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
      switches::kEnableUseZoomForDSF, "false"},
 };
 
+const FeatureEntry::Choice kSiteIsolationTrialOptOutChoices[] = {
+    {flag_descriptions::kSiteIsolationTrialOptOutChoiceDefault, "", ""},
+    {flag_descriptions::kSiteIsolationTrialOptOutChoiceOptOut,
+     switches::kDisableSiteIsolationTrials, ""},
+};
+
 const FeatureEntry::Choice kTLS13VariantChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTLS13VariantDisabled, switches::kTLS13Variant,
@@ -2029,9 +2035,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"committed-interstitials", flag_descriptions::kCommittedInterstitialsName,
      flag_descriptions::kCommittedInterstitialsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kCommittedInterstitials)},
-    {"enable-site-per-process", flag_descriptions::kSitePerProcessName,
-     flag_descriptions::kSitePerProcessDescription, kOsAll,
+    {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
+     flag_descriptions::kStrictSiteIsolationDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
+    {"site-isolation-trial-opt-out",
+     flag_descriptions::kSiteIsolationTrialOptOutName,
+     flag_descriptions::kSiteIsolationTrialOptOutDescription, kOsAll,
+     MULTI_VALUE_TYPE(kSiteIsolationTrialOptOutChoices)},
     {"enable-top-document-isolation",
      flag_descriptions::kTopDocumentIsolationName,
      flag_descriptions::kTopDocumentIsolationDescription, kOsAll,

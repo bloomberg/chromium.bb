@@ -860,8 +860,13 @@ extern const char kSimplifyHttpsIndicatorDescription[];
 extern const char kSingleClickAutofillName[];
 extern const char kSingleClickAutofillDescription[];
 
-extern const char kSitePerProcessName[];
-extern const char kSitePerProcessDescription[];
+extern const char kStrictSiteIsolationName[];
+extern const char kStrictSiteIsolationDescription[];
+
+extern const char kSiteIsolationTrialOptOutName[];
+extern const char kSiteIsolationTrialOptOutDescription[];
+extern const char kSiteIsolationTrialOptOutChoiceDefault[];
+extern const char kSiteIsolationTrialOptOutChoiceOptOut[];
 
 extern const char kSiteSettings[];
 extern const char kSiteSettingsDescription[];
