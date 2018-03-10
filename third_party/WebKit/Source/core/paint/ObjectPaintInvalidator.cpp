@@ -360,14 +360,9 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
   if (!paint_invalidation_container.IsPaintInvalidationContainer()) {
     InvalidatePaintRectangleOnWindow(paint_invalidation_container,
                                      EnclosingIntRect(dirty_rect));
-  }
-
-  auto* view = paint_invalidation_container.View();
-  if (view && view->UsesCompositing()) {
-    if (paint_invalidation_container.IsPaintInvalidationContainer()) {
-      SetBackingNeedsPaintInvalidationInRect(paint_invalidation_container,
-                                             dirty_rect, invalidation_reason);
-    }
+  } else {
+    SetBackingNeedsPaintInvalidationInRect(paint_invalidation_container,
+                                           dirty_rect, invalidation_reason);
   }
 }
 
