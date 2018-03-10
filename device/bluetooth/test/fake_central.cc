@@ -70,10 +70,12 @@ void FakeCentral::SimulateAdvertisementReceived(
                 scan_result_ptr->scan_record->uuids.value().begin(),
                 scan_result_ptr->scan_record->uuids.value().end())
           : device::BluetoothDevice::UUIDList();
-  // TODO(https://crbug.com/817603): Extract the service_data map from
-  // scan_result_ptr once the typemap for this field is added.
   device::BluetoothDevice::ServiceDataMap service_data =
-      device::BluetoothDevice::ServiceDataMap();
+      (scan_result_ptr->scan_record->service_data)
+          ? device::BluetoothDevice::ServiceDataMap(
+                scan_result_ptr->scan_record->service_data.value().begin(),
+                scan_result_ptr->scan_record->service_data.value().end())
+          : device::BluetoothDevice::ServiceDataMap();
   device::BluetoothDevice::ManufacturerDataMap manufacturer_data =
       (scan_result_ptr->scan_record->manufacturer_data)
           ? device::BluetoothDevice::ManufacturerDataMap(
