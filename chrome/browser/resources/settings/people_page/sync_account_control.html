@@ -15,6 +15,12 @@
 <dom-module id="settings-sync-account-control">
   <template>
     <style include="settings-shared">
+      :host {
+        --sync-icon-size: 16px;
+        --sync-icon-border-size: 2px;
+        --shown-avatar-size: 40px;
+      }
+
       setting-box.middle {
         /* Per spec, middle text is indented 20px in this section. */
         -webkit-margin-start: 20px;
@@ -23,8 +29,8 @@
       .account-icon {
         border-radius: 20px;
         flex-shrink: 0;
-        height: 40px;
-        width: 40px;
+        height: var(--shown-avatar-size);
+        width: var(--shown-avatar-size);
       }
 
       .account-icon.small {
@@ -50,29 +56,30 @@
         position: relative;
       }
 
-      #sync-logo-container {
+      #sync-icon-container {
         align-items: center;
         background: var(--google-blue-500);
-        border: 2px solid white;
+        border: var(--sync-icon-border-size) solid white;
         border-radius: 50%;
-        bottom: 0;
         display: flex;
-        height: 16px;
+        height: var(--sync-icon-size);
         position: absolute;
         right: -6px;
-        width: 16px;
+        top: calc(var(--shown-avatar-size) - var(--sync-icon-size) -
+            var(--sync-icon-border-size));
+        width: var(--sync-icon-size);
       }
 
-      :host-context([dir='rtl']) #sync-logo-container {
+      :host-context([dir='rtl']) #sync-icon-container {
         left: -6px;
         right: initial;
       }
 
-      #sync-logo-container[syncing] {
+      #sync-icon-container[syncing] {
         background: green;
       }
 
-      #sync-logo-container iron-icon {
+      #sync-icon-container iron-icon {
         fill: white;
         height: 12px;
         margin: auto;
@@ -140,7 +147,7 @@
         <div id="avatar-container">
           <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
-          <div id="sync-logo-container" syncing$="[[syncStatus.signedIn]]">
+          <div id="sync-icon-container" syncing$="[[syncStatus.signedIn]]">
             <iron-icon icon="notification:sync"></iron-icon>
           </div>
         </div>
