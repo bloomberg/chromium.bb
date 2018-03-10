@@ -11,6 +11,7 @@
 #include "public/platform/modules/webauth/authenticator.mojom-blink.h"
 
 namespace blink {
+class AuthenticatorSelectionCriteria;
 class ArrayBufferOrArrayBufferView;
 class Credential;
 class PublicKeyCredentialCreationOptions;
@@ -19,6 +20,7 @@ class PublicKeyCredentialParameters;
 class PublicKeyCredentialRequestOptions;
 class PublicKeyCredentialRpEntity;
 class PublicKeyCredentialUserEntity;
+class UserVerificationRequirement;
 }  // namespace blink
 
 namespace mojo {
@@ -54,14 +56,38 @@ struct TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView> {
 
 template <>
 struct TypeConverter<webauth::mojom::blink::PublicKeyCredentialType, String> {
-  static webauth::mojom::blink::PublicKeyCredentialType Convert(
-      const String& type);
+  static webauth::mojom::blink::PublicKeyCredentialType Convert(const String&);
 };
 
 template <>
 struct TypeConverter<webauth::mojom::blink::AuthenticatorTransport, String> {
-  static webauth::mojom::blink::AuthenticatorTransport Convert(
-      const String& transport);
+  static webauth::mojom::blink::AuthenticatorTransport Convert(const String&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::UserVerificationRequirement,
+                     String> {
+  static webauth::mojom::blink::UserVerificationRequirement Convert(
+      const String&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::AttestationConveyancePreference,
+                     String> {
+  static webauth::mojom::blink::AttestationConveyancePreference Convert(
+      const String&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::AuthenticatorAttachment, String> {
+  static webauth::mojom::blink::AuthenticatorAttachment Convert(const String&);
+};
+
+template <>
+struct TypeConverter<webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr,
+                     blink::AuthenticatorSelectionCriteria> {
+  static webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr Convert(
+      const blink::AuthenticatorSelectionCriteria&);
 };
 
 template <>

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "modules/credentialmanager/AuthenticatorSelectionCriteria.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/FederatedCredential.h"
 #include "modules/credentialmanager/PasswordCredential.h"
@@ -39,7 +40,12 @@ using password_manager::mojom::blink::CredentialInfo;
 using password_manager::mojom::blink::CredentialInfoPtr;
 using password_manager::mojom::blink::CredentialType;
 using password_manager::mojom::blink::CredentialManagerError;
+using webauth::mojom::blink::AttestationConveyancePreference;
+using webauth::mojom::blink::AuthenticatorAttachment;
+using webauth::mojom::blink::AuthenticatorSelectionCriteria;
+using webauth::mojom::blink::AuthenticatorSelectionCriteriaPtr;
 using webauth::mojom::blink::AuthenticatorStatus;
+using webauth::mojom::blink::AuthenticatorTransport;
 using webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
 using webauth::mojom::blink::PublicKeyCredentialDescriptor;
 using webauth::mojom::blink::PublicKeyCredentialDescriptorPtr;
@@ -51,7 +57,7 @@ using webauth::mojom::blink::PublicKeyCredentialParameters;
 using webauth::mojom::blink::PublicKeyCredentialParametersPtr;
 using webauth::mojom::blink::PublicKeyCredentialRequestOptionsPtr;
 using webauth::mojom::blink::PublicKeyCredentialType;
-using webauth::mojom::blink::AuthenticatorTransport;
+using webauth::mojom::blink::UserVerificationRequirement;
 
 // static
 CredentialInfoPtr TypeConverter<CredentialInfoPtr, blink::Credential*>::Convert(
@@ -164,6 +170,62 @@ AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
 }
 
 // static
+UserVerificationRequirement
+TypeConverter<UserVerificationRequirement, String>::Convert(
+    const String& requirement) {
+  if (requirement == "required")
+    return UserVerificationRequirement::REQUIRED;
+  if (requirement == "preferred")
+    return UserVerificationRequirement::PREFERRED;
+  if (requirement == "discouraged")
+    return UserVerificationRequirement::DISCOURAGED;
+  NOTREACHED();
+  return UserVerificationRequirement::PREFERRED;
+}
+
+// static
+AttestationConveyancePreference
+TypeConverter<AttestationConveyancePreference, String>::Convert(
+    const String& preference) {
+  if (preference == "none")
+    return AttestationConveyancePreference::NONE;
+  if (preference == "indirect")
+    return AttestationConveyancePreference::INDIRECT;
+  if (preference == "direct")
+    return AttestationConveyancePreference::DIRECT;
+  NOTREACHED();
+  return AttestationConveyancePreference::NONE;
+}
+
+// static
+AuthenticatorAttachment TypeConverter<AuthenticatorAttachment, String>::Convert(
+    const String& attachment) {
+  if (attachment.IsNull())
+    return AuthenticatorAttachment::NO_PREFERENCE;
+  if (attachment == "platform")
+    return AuthenticatorAttachment::PLATFORM;
+  if (attachment == "cross-platform")
+    return AuthenticatorAttachment::CROSS_PLATFORM;
+  NOTREACHED();
+  return AuthenticatorAttachment::NO_PREFERENCE;
+}
+
+// static
+AuthenticatorSelectionCriteriaPtr
+TypeConverter<AuthenticatorSelectionCriteriaPtr,
+              blink::AuthenticatorSelectionCriteria>::
+    Convert(const blink::AuthenticatorSelectionCriteria& criteria) {
+  auto mojo_criteria =
+      webauth::mojom::blink::AuthenticatorSelectionCriteria::New();
+  mojo_criteria->authenticator_attachment =
+      ConvertTo<AuthenticatorAttachment>(criteria.authenticatorAttachment());
+  mojo_criteria->require_resident_key = criteria.requireResidentKey();
+  mojo_criteria->user_verification =
+      ConvertTo<UserVerificationRequirement>(criteria.userVerification());
+  return mojo_criteria;
+}
+
+// static
 PublicKeyCredentialUserEntityPtr
 TypeConverter<PublicKeyCredentialUserEntityPtr,
               blink::PublicKeyCredentialUserEntity>::
@@ -267,6 +329,11 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
 
   mojo_options->public_key_parameters = std::move(parameters);
 
+  if (options.hasAuthenticatorSelection()) {
+    mojo_options->authenticator_selection =
+        AuthenticatorSelectionCriteria::From(options.authenticatorSelection());
+  }
+
   if (options.hasExcludeCredentials()) {
     // Adds the excludeCredentials members
     for (const auto descriptor : options.excludeCredentials()) {
@@ -325,6 +392,9 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
       }
     }
   }
+
+  mojo_options->user_verification =
+      ConvertTo<UserVerificationRequirement>(options.userVerification());
 
   if (options.hasExtensions()) {
     const auto& extensions = options.extensions();
