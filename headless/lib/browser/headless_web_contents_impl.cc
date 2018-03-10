@@ -232,7 +232,7 @@ struct HeadlessWebContentsImpl::PendingFrame {
   bool MaybeRunCallback() {
     if (wait_for_copy_result || !display_did_finish_frame)
       return false;
-    callback.Run(has_damage, std::move(bitmap));
+    std::move(callback).Run(has_damage, std::move(bitmap));
     return true;
   }
 
@@ -643,7 +643,7 @@ void HeadlessWebContentsImpl::BeginFrame(
     const base::TimeDelta& interval,
     bool animate_only,
     bool capture_screenshot,
-    const FrameFinishedCallback& frame_finished_callback) {
+    FrameFinishedCallback frame_finished_callback) {
   DCHECK(begin_frame_control_enabled_);
   TRACE_EVENT2("headless", "HeadlessWebContentsImpl::BeginFrame", "frame_time",
                frame_timeticks, "capture_screenshot", capture_screenshot);
@@ -652,7 +652,7 @@ void HeadlessWebContentsImpl::BeginFrame(
 
   auto pending_frame = std::make_unique<PendingFrame>();
   pending_frame->sequence_number = sequence_number;
-  pending_frame->callback = frame_finished_callback;
+  pending_frame->callback = std::move(frame_finished_callback);
   // Note: It's important to move |pending_frame| into |pending_frames_| now
   // since the CopyFromSurface() call below can run its result callback
   // synchronously on certain platforms/environments.

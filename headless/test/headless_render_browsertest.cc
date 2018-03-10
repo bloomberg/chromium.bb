@@ -1158,7 +1158,8 @@ document.cookie = x + 'baz';
         network::GetCookiesParams::Builder()
             .SetUrls({"http://www.example.com/"})
             .Build(),
-        base::Bind(&CookieUpdatedFromJs::OnGetCookies, base::Unretained(this)));
+        base::BindOnce(&CookieUpdatedFromJs::OnGetCookies,
+                       base::Unretained(this)));
   }
 
   void OnGetCookies(std::unique_ptr<network::GetCookiesResult> result) {

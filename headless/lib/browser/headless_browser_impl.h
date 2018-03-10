@@ -38,7 +38,7 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
                                             public HeadlessDevToolsTarget {
  public:
   HeadlessBrowserImpl(
-      const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
+      base::OnceCallback<void(HeadlessBrowser*)> on_start_callback,
       HeadlessBrowser::Options options);
   ~HeadlessBrowserImpl() override;
 
@@ -102,7 +102,7 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   ui::Compositor* PlatformGetCompositor(HeadlessWebContentsImpl* web_contents);
 
  protected:
-  base::Callback<void(HeadlessBrowser*)> on_start_callback_;
+  base::OnceCallback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;
   std::unique_ptr<net::NetLog> net_log_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.

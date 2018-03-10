@@ -263,13 +263,14 @@ class HeadlessDevToolsClientEvalTest
         runtime::EvaluateParams::Builder().SetExpression("1 + 2").Build();
     devtools_client_->GetRuntime()->Evaluate(
         std::move(params),
-        base::Bind(&HeadlessDevToolsClientEvalTest::OnFirstResult,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessDevToolsClientEvalTest::OnFirstResult,
+                       base::Unretained(this)));
     // Test the convenience overload which only takes the required command
     // parameters.
     devtools_client_->GetRuntime()->Evaluate(
-        "24 * 7", base::Bind(&HeadlessDevToolsClientEvalTest::OnSecondResult,
-                             base::Unretained(this)));
+        "24 * 7",
+        base::BindOnce(&HeadlessDevToolsClientEvalTest::OnSecondResult,
+                       base::Unretained(this)));
   }
 
   void OnFirstResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -298,12 +299,13 @@ class HeadlessDevToolsClientCallbackTest
     devtools_client_->GetRuntime()->Evaluate("true");
     // Non-null callback without parameters.
     devtools_client_->GetPage()->Disable(
-        base::Bind(&HeadlessDevToolsClientCallbackTest::OnFirstResult,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessDevToolsClientCallbackTest::OnFirstResult,
+                       base::Unretained(this)));
     // Non-null callback with parameters.
     devtools_client_->GetRuntime()->Evaluate(
-        "true", base::Bind(&HeadlessDevToolsClientCallbackTest::OnSecondResult,
-                           base::Unretained(this)));
+        "true",
+        base::BindOnce(&HeadlessDevToolsClientCallbackTest::OnSecondResult,
+                       base::Unretained(this)));
   }
 
   void OnFirstResult() {
@@ -397,8 +399,8 @@ class HeadlessDevToolsClientExperimentalTest
     // called with a void() callback.
     devtools_client_->GetPage()->Reload(
         page::ReloadParams::Builder().Build(),
-        base::Bind(&HeadlessDevToolsClientExperimentalTest::OnReloadStarted,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessDevToolsClientExperimentalTest::OnReloadStarted,
+                       base::Unretained(this)));
   }
 
   void OnReloadStarted() { FinishAsynchronousTest(); }
@@ -419,8 +421,9 @@ class TargetDomainCreateAndDeletePageTest
             .SetWidth(1)
             .SetHeight(1)
             .Build(),
-        base::Bind(&TargetDomainCreateAndDeletePageTest::OnCreateTargetResult,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &TargetDomainCreateAndDeletePageTest::OnCreateTargetResult,
+            base::Unretained(this)));
   }
 
   void OnCreateTargetResult(
@@ -438,8 +441,9 @@ class TargetDomainCreateAndDeletePageTest
         target::CloseTargetParams::Builder()
             .SetTargetId(result->GetTargetId())
             .Build(),
-        base::Bind(&TargetDomainCreateAndDeletePageTest::OnCloseTargetResult,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &TargetDomainCreateAndDeletePageTest::OnCloseTargetResult,
+            base::Unretained(this)));
   }
 
   void OnCloseTargetResult(std::unique_ptr<target::CloseTargetResult> result) {
@@ -460,9 +464,9 @@ class TargetDomainCreateAndDeleteBrowserContextTest
 
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
-        base::Bind(&TargetDomainCreateAndDeleteBrowserContextTest::
-                       OnCreateContextResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateAndDeleteBrowserContextTest::
+                           OnCreateContextResult,
+                       base::Unretained(this)));
   }
 
   void OnCreateContextResult(
@@ -476,9 +480,9 @@ class TargetDomainCreateAndDeleteBrowserContextTest
             .SetWidth(1)
             .SetHeight(1)
             .Build(),
-        base::Bind(&TargetDomainCreateAndDeleteBrowserContextTest::
-                       OnCreateTargetResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateAndDeleteBrowserContextTest::
+                           OnCreateTargetResult,
+                       base::Unretained(this)));
   }
 
   void OnCreateTargetResult(
@@ -489,9 +493,9 @@ class TargetDomainCreateAndDeleteBrowserContextTest
         target::CloseTargetParams::Builder()
             .SetTargetId(result->GetTargetId())
             .Build(),
-        base::Bind(&TargetDomainCreateAndDeleteBrowserContextTest::
-                       OnCloseTargetResult,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &TargetDomainCreateAndDeleteBrowserContextTest::OnCloseTargetResult,
+            base::Unretained(this)));
   }
 
   void OnCloseTargetResult(std::unique_ptr<target::CloseTargetResult> result) {
@@ -502,9 +506,9 @@ class TargetDomainCreateAndDeleteBrowserContextTest
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(browser_context_id_)
             .Build(),
-        base::Bind(&TargetDomainCreateAndDeleteBrowserContextTest::
-                       OnDisposeBrowserContextResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateAndDeleteBrowserContextTest::
+                           OnDisposeBrowserContextResult,
+                       base::Unretained(this)));
   }
 
   void OnDisposeBrowserContextResult(
@@ -527,8 +531,9 @@ class TargetDomainDisposeContextFailsIfInUse
     EXPECT_EQ(1u, GetAllWebContents(browser()).size());
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
-        base::Bind(&TargetDomainDisposeContextFailsIfInUse::OnContextCreated,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &TargetDomainDisposeContextFailsIfInUse::OnContextCreated,
+            base::Unretained(this)));
   }
 
   void OnContextCreated(
@@ -540,7 +545,7 @@ class TargetDomainDisposeContextFailsIfInUse
             .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .SetBrowserContextId(context_id_)
             .Build(),
-        base::Bind(
+        base::BindOnce(
             &TargetDomainDisposeContextFailsIfInUse::OnCreateTargetResult,
             base::Unretained(this)));
   }
@@ -553,9 +558,9 @@ class TargetDomainDisposeContextFailsIfInUse
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(context_id_)
             .Build(),
-        base::Bind(&TargetDomainDisposeContextFailsIfInUse::
-                       OnDisposeBrowserContextResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainDisposeContextFailsIfInUse::
+                           OnDisposeBrowserContextResult,
+                       base::Unretained(this)));
   }
 
   void OnDisposeBrowserContextResult(
@@ -565,7 +570,7 @@ class TargetDomainDisposeContextFailsIfInUse
     // Close the page and try again.
     devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
         target::CloseTargetParams::Builder().SetTargetId(page_id_).Build(),
-        base::Bind(
+        base::BindOnce(
             &TargetDomainDisposeContextFailsIfInUse::OnCloseTargetResult,
             base::Unretained(this)));
   }
@@ -577,9 +582,9 @@ class TargetDomainDisposeContextFailsIfInUse
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(context_id_)
             .Build(),
-        base::Bind(&TargetDomainDisposeContextFailsIfInUse::
-                       OnDisposeBrowserContextResult2,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainDisposeContextFailsIfInUse::
+                           OnDisposeBrowserContextResult2,
+                       base::Unretained(this)));
   }
 
   void OnDisposeBrowserContextResult2(
@@ -610,13 +615,13 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetTarget()->GetExperimental()->AddObserver(this);
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnContextOneCreated,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnContextOneCreated,
+                       base::Unretained(this)));
 
     devtools_client_->GetTarget()->GetExperimental()->CreateBrowserContext(
         target::CreateBrowserContextParams::Builder().Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnContextTwoCreated,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnContextTwoCreated,
+                       base::Unretained(this)));
   }
 
   void OnContextOneCreated(
@@ -640,16 +645,16 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
             .SetUrl("about://blank")
             .SetBrowserContextId(context_id_one_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnCreateTargetOneResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnCreateTargetOneResult,
+                       base::Unretained(this)));
 
     devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
             .SetUrl("about://blank")
             .SetBrowserContextId(context_id_two_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnCreateTargetTwoResult,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnCreateTargetTwoResult,
+                       base::Unretained(this)));
   }
 
   void OnCreateTargetOneResult(
@@ -672,15 +677,15 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
         target::AttachToTargetParams::Builder()
             .SetTargetId(page_id_one_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnAttachedToTargetOne,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnAttachedToTargetOne,
+                       base::Unretained(this)));
 
     devtools_client_->GetTarget()->GetExperimental()->AttachToTarget(
         target::AttachToTargetParams::Builder()
             .SetTargetId(page_id_two_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnAttachedToTargetTwo,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnAttachedToTargetTwo,
+                       base::Unretained(this)));
   }
 
   void OnAttachedToTargetOne(
@@ -808,15 +813,15 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
             target::CloseTargetParams::Builder()
                 .SetTargetId(page_id_one_)
                 .Build(),
-            base::Bind(&TargetDomainCreateTwoContexts::OnCloseTarget,
-                       base::Unretained(this)));
+            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseTarget,
+                           base::Unretained(this)));
 
         devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
             target::CloseTargetParams::Builder()
                 .SetTargetId(page_id_two_)
                 .Build(),
-            base::Bind(&TargetDomainCreateTwoContexts::OnCloseTarget,
-                       base::Unretained(this)));
+            base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseTarget,
+                           base::Unretained(this)));
 
         devtools_client_->GetTarget()->GetExperimental()->RemoveObserver(this);
       }
@@ -833,15 +838,15 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(context_id_one_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnCloseContext,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
+                       base::Unretained(this)));
 
     devtools_client_->GetTarget()->GetExperimental()->DisposeBrowserContext(
         target::DisposeBrowserContextParams::Builder()
             .SetBrowserContextId(context_id_two_)
             .Build(),
-        base::Bind(&TargetDomainCreateTwoContexts::OnCloseContext,
-                   base::Unretained(this)));
+        base::BindOnce(&TargetDomainCreateTwoContexts::OnCloseContext,
+                       base::Unretained(this)));
   }
 
   void OnCloseContext(
@@ -965,8 +970,9 @@ class HeadlessDevToolsClientAttachTest
 
     // Now, let's make sure this devtools client works.
     other_devtools_client_->GetRuntime()->Evaluate(
-        "24 * 7", base::Bind(&HeadlessDevToolsClientAttachTest::OnFirstResult,
-                             base::Unretained(this)));
+        "24 * 7",
+        base::BindOnce(&HeadlessDevToolsClientAttachTest::OnFirstResult,
+                       base::Unretained(this)));
   }
 
   void OnFirstResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -982,8 +988,9 @@ class HeadlessDevToolsClientAttachTest
     EXPECT_TRUE(devtools_target->IsAttached());
 
     devtools_client_->GetRuntime()->Evaluate(
-        "27 * 4", base::Bind(&HeadlessDevToolsClientAttachTest::OnSecondResult,
-                             base::Unretained(this)));
+        "27 * 4",
+        base::BindOnce(&HeadlessDevToolsClientAttachTest::OnSecondResult,
+                       base::Unretained(this)));
   }
 
   void OnSecondResult(std::unique_ptr<runtime::EvaluateResult> result) {
@@ -1018,8 +1025,8 @@ class HeadlessDevToolsMethodCallErrorTest
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
     devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
     devtools_client_->GetDOM()->GetDocument(
-        base::Bind(&HeadlessDevToolsMethodCallErrorTest::OnGetDocument,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessDevToolsMethodCallErrorTest::OnGetDocument,
+                       base::Unretained(this)));
   }
 
   void OnGetDocument(std::unique_ptr<dom::GetDocumentResult> result) {
@@ -1028,8 +1035,8 @@ class HeadlessDevToolsMethodCallErrorTest
             .SetNodeId(result->GetRoot()->GetNodeId())
             .SetSelector("<o_O>")
             .Build(),
-        base::Bind(&HeadlessDevToolsMethodCallErrorTest::OnQuerySelector,
-                   base::Unretained(this)));
+        base::BindOnce(&HeadlessDevToolsMethodCallErrorTest::OnQuerySelector,
+                       base::Unretained(this)));
   }
 
   void OnQuerySelector(std::unique_ptr<dom::QuerySelectorResult> result) {
@@ -1255,8 +1262,8 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
         dom_snapshot::GetSnapshotParams::Builder()
             .SetComputedStyleWhitelist(std::move(css_whitelist))
             .Build(),
-        base::Bind(&DomTreeExtractionBrowserTest::OnGetSnapshotResult,
-                   base::Unretained(this)));
+        base::BindOnce(&DomTreeExtractionBrowserTest::OnGetSnapshotResult,
+                       base::Unretained(this)));
   }
 
   void OnGetSnapshotResult(
@@ -1615,7 +1622,7 @@ class NavigatorLanguages : public HeadlessAsyncDevTooledBrowserTest {
   void RunDevTooledTest() override {
     devtools_client_->GetRuntime()->Evaluate(
         "JSON.stringify(navigator.languages)",
-        base::Bind(&NavigatorLanguages::OnResult, base::Unretained(this)));
+        base::BindOnce(&NavigatorLanguages::OnResult, base::Unretained(this)));
   }
 
   void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {

@@ -107,8 +107,8 @@ void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
 
   cookie_store->GetCookieListWithOptionsAsync(
       rewritten_url, options,
-      base::Bind(&GenericURLRequestJob::OnCookiesAvailable,
-                 weak_factory_.GetWeakPtr(), rewritten_url, method));
+      base::BindOnce(&GenericURLRequestJob::OnCookiesAvailable,
+                     weak_factory_.GetWeakPtr(), rewritten_url, method));
 }
 
 void GenericURLRequestJob::OnCookiesAvailable(
@@ -359,7 +359,7 @@ bool ReadAndAppendBytes(const std::unique_ptr<net::UploadElementReader>& reader,
     base::Closure quit_closure;
     int bytes_read = reader->Read(
         read_buffer.get(), block_size,
-        base::Bind(&CompletionCallback, &bytes_read, &quit_closure));
+        base::BindOnce(&CompletionCallback, &bytes_read, &quit_closure));
 
     if (bytes_read == net::ERR_IO_PENDING) {
       base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
@@ -401,7 +401,7 @@ GenericURLRequestJob::GetInitializedReaders() const {
 
     base::Closure quit_closure;
     int init_result = reader->Init(
-        base::Bind(&CompletionCallback, &init_result, &quit_closure));
+        base::BindOnce(&CompletionCallback, &init_result, &quit_closure));
     if (init_result == net::ERR_IO_PENDING) {
       base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       quit_closure = nested_run_loop.QuitClosure();

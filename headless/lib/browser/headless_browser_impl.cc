@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -45,7 +46,7 @@ namespace {
 
 int RunContentMain(
     HeadlessBrowser::Options options,
-    const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
+    base::OnceCallback<void(HeadlessBrowser*)> on_browser_start_callback) {
   content::ContentMainParams params(nullptr);
 #if defined(OS_WIN)
   // Sandbox info has to be set and initialized.
@@ -60,8 +61,8 @@ int RunContentMain(
   // TODO(skyostil): Implement custom message pumps.
   DCHECK(!options.message_pump);
 
-  std::unique_ptr<HeadlessBrowserImpl> browser(
-      new HeadlessBrowserImpl(on_browser_start_callback, std::move(options)));
+  std::unique_ptr<HeadlessBrowserImpl> browser(new HeadlessBrowserImpl(
+      std::move(on_browser_start_callback), std::move(options)));
   HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(params);
@@ -70,9 +71,9 @@ int RunContentMain(
 }  // namespace
 
 HeadlessBrowserImpl::HeadlessBrowserImpl(
-    const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
+    base::OnceCallback<void(HeadlessBrowser*)> on_start_callback,
     HeadlessBrowser::Options options)
-    : on_start_callback_(on_start_callback),
+    : on_start_callback_(std::move(on_start_callback)),
       options_(std::move(options)),
       browser_main_parts_(nullptr),
       default_browser_context_(nullptr),
@@ -156,15 +157,14 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
 #if defined(USE_NSS_CERTS)
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&net::SetMessageLoopForNSSHttpIO));
+      base::BindOnce(&net::SetMessageLoopForNSSHttpIO));
 #endif
   // We don't support the tethering domain on this agent host.
   agent_host_ = content::DevToolsAgentHost::CreateForBrowser(
       nullptr, content::DevToolsAgentHost::CreateServerSocketCallback());
 
   PlatformStart();
-  on_start_callback_.Run(this);
-  on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();
+  std::move(on_start_callback_).Run(this);
 }
 
 HeadlessBrowserContext* HeadlessBrowserImpl::CreateBrowserContext(
@@ -309,12 +309,12 @@ void RunChildProcessIfNeeded(int argc, const char** argv) {
   }
 
   exit(RunContentMain(builder.Build(),
-                      base::Callback<void(HeadlessBrowser*)>()));
+                      base::OnceCallback<void(HeadlessBrowser*)>()));
 }
 
 int HeadlessBrowserMain(
     HeadlessBrowser::Options options,
-    const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
+    base::OnceCallback<void(HeadlessBrowser*)> on_browser_start_callback) {
   DCHECK(!on_browser_start_callback.is_null());
 #if DCHECK_IS_ON()
   // The browser can only be initialized once.

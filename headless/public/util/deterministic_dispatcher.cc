@@ -83,8 +83,8 @@ void DeterministicDispatcher::MaybeDispatchJobLocked() {
   dispatch_pending_ = true;
   io_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask() {

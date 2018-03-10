@@ -157,8 +157,8 @@ void VirtualTimeController::SetVirtualTimePolicy(base::TimeDelta next_budget,
           .SetMaxVirtualTimeTaskStarvationCount(max_task_starvation_count_)
           .SetWaitForNavigation(wait_for_navigation)
           .Build(),
-      base::Bind(&VirtualTimeController::SetVirtualTimePolicyDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&VirtualTimeController::SetVirtualTimePolicyDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VirtualTimeController::SetVirtualTimePolicyDone(

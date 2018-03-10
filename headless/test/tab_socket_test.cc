@@ -25,13 +25,13 @@ void TabSocketTest::RunDevTooledTest() {
   devtools_client_->GetPage()->AddObserver(this);
   devtools_client_->GetPage()->Enable(
       page::EnableParams::Builder().Build(),
-      base::Bind(&TabSocketTest::OnPageEnabled, base::Unretained(this)));
+      base::BindOnce(&TabSocketTest::OnPageEnabled, base::Unretained(this)));
 }
 
 void TabSocketTest::OnPageEnabled(std::unique_ptr<page::EnableResult> result) {
   devtools_client_->GetPage()->GetExperimental()->GetResourceTree(
       page::GetResourceTreeParams::Builder().Build(),
-      base::Bind(&TabSocketTest::OnResourceTree, base::Unretained(this)));
+      base::BindOnce(&TabSocketTest::OnResourceTree, base::Unretained(this)));
 }
 
 void TabSocketTest::OnResourceTree(
@@ -104,7 +104,7 @@ const std::set<int>* TabSocketTest::GetV8ExecutionContextIdsForFrame(
 
 void TabSocketTest::CreateMainWorldTabSocket(
     std::string devtools_frame_id,
-    base::Callback<void(int)> callback) {
+    base::OnceCallback<void(int)> callback) {
   const auto find_it =
       frame_id_to_v8_execution_context_ids_.find(devtools_frame_id);
   CHECK(find_it != frame_id_to_v8_execution_context_ids_.end());
@@ -112,49 +112,51 @@ void TabSocketTest::CreateMainWorldTabSocket(
     FinishAsynchronousTest();
     FAIL() << "More than one v8 execution context exists for the main frame!";
   }
-  InstallHeadlessTabSocketBindings(callback, *find_it->second.begin());
+  InstallHeadlessTabSocketBindings(std::move(callback),
+                                   *find_it->second.begin());
 }
 
 void TabSocketTest::CreateIsolatedWorldTabSocket(
     std::string isolated_world_name,
     std::string devtools_frame_id,
-    base::Callback<void(int)> callback) {
+    base::OnceCallback<void(int)> callback) {
   devtools_client_->GetPage()->GetExperimental()->CreateIsolatedWorld(
       page::CreateIsolatedWorldParams::Builder()
           .SetFrameId(devtools_frame_id)
           .SetWorldName(isolated_world_name)
           .Build(),
-      base::Bind(&TabSocketTest::OnCreatedIsolatedWorld, base::Unretained(this),
-                 std::move(callback)));
+      base::BindOnce(&TabSocketTest::OnCreatedIsolatedWorld,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void TabSocketTest::OnCreatedIsolatedWorld(
-    base::Callback<void(int)> callback,
+    base::OnceCallback<void(int)> callback,
     std::unique_ptr<page::CreateIsolatedWorldResult> result) {
-  InstallHeadlessTabSocketBindings(callback, result->GetExecutionContextId());
+  InstallHeadlessTabSocketBindings(std::move(callback),
+                                   result->GetExecutionContextId());
 }
 
 void TabSocketTest::InstallHeadlessTabSocketBindings(
-    base::Callback<void(int)> callback,
+    base::OnceCallback<void(int)> callback,
     int execution_context_id) {
   HeadlessTabSocket* tab_socket = web_contents_->GetHeadlessTabSocket();
   CHECK(tab_socket);
   tab_socket->InstallHeadlessTabSocketBindings(
       execution_context_id,
-      base::Bind(&TabSocketTest::OnInstalledHeadlessTabSocketBindings,
-                 base::Unretained(this), execution_context_id,
-                 std::move(callback)));
+      base::BindOnce(&TabSocketTest::OnInstalledHeadlessTabSocketBindings,
+                     base::Unretained(this), execution_context_id,
+                     std::move(callback)));
 }
 
 void TabSocketTest::OnInstalledHeadlessTabSocketBindings(
     int execution_context_id,
-    base::Callback<void(int)> callback,
+    base::OnceCallback<void(int)> callback,
     bool success) {
   if (!success) {
     FinishAsynchronousTest();
     CHECK(false) << "InstallHeadlessTabSocketBindings failed";
   }
-  callback.Run(execution_context_id);
+  std::move(callback).Run(execution_context_id);
 }
 
 }  // namespace headless

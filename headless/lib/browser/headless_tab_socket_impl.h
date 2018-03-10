@@ -28,9 +28,9 @@ class HeadlessTabSocketImpl : public HeadlessTabSocket, public TabSocket {
   // HeadlessTabSocket implementation:
   void InstallHeadlessTabSocketBindings(
       int v8_execution_context_id,
-      base::Callback<void(bool)> callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void InstallMainFrameMainWorldHeadlessTabSocketBindings(
-      base::Callback<void(base::Optional<int>)> callback) override;
+      base::OnceCallback<void(base::Optional<int>)> callback) override;
   void SendMessageToContext(const std::string& message,
                             int v8_execution_context_id) override;
   void SetListener(Listener* listener) override;
@@ -48,7 +48,7 @@ class HeadlessTabSocketImpl : public HeadlessTabSocket, public TabSocket {
   friend class TabSocketInstallationController;
 
   void OnInstallMainWorldTabSocket(
-      base::Callback<void(base::Optional<int>)> callback,
+      base::OnceCallback<void(base::Optional<int>)> callback,
       int world_id);
 
   base::Lock lock_;  // Protects everything below.

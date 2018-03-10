@@ -134,7 +134,7 @@ void HeadlessContentBrowserClient::OverrideWebkitPrefs(
     content::WebPreferences* prefs) {
   auto* browser_context = HeadlessBrowserContextImpl::From(
       render_view_host->GetProcess()->GetBrowserContext());
-  const base::Callback<void(WebPreferences*)>& callback =
+  base::RepeatingCallback<void(WebPreferences*)> callback =
       browser_context->options()->override_web_preferences_callback();
   if (callback)
     callback.Run(prefs);

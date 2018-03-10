@@ -188,8 +188,8 @@ Builder& Builder::SetInitialVirtualTime(base::Time initial_virtual_time) {
 }
 
 Builder& Builder::SetOverrideWebPreferencesCallback(
-    const base::Callback<void(WebPreferences*)>& callback) {
-  options_.override_web_preferences_callback = callback;
+    base::RepeatingCallback<void(WebPreferences*)> callback) {
+  options_.override_web_preferences_callback = std::move(callback);
   return *this;
 }
 

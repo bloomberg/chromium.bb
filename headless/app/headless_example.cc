@@ -102,7 +102,8 @@ void HeadlessExample::OnLoadEventFired(
       "(document.doctype ? new "
       "XMLSerializer().serializeToString(document.doctype) + '\\n' : '') + "
       "document.documentElement.outerHTML",
-      base::Bind(&HeadlessExample::OnDomFetched, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&HeadlessExample::OnDomFetched,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessExample::OnDomFetched(
@@ -191,6 +192,6 @@ int main(int argc, const char** argv) {
   // invoke the given callback on the browser UI thread. Note: if you need to
   // pass more parameters to the callback, you can add them to the Bind() call
   // below.
-  return headless::HeadlessBrowserMain(builder.Build(),
-                                       base::Bind(&OnHeadlessBrowserStarted));
+  return headless::HeadlessBrowserMain(
+      builder.Build(), base::BindOnce(&OnHeadlessBrowserStarted));
 }

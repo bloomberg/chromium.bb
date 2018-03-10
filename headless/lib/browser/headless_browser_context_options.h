@@ -68,7 +68,7 @@ class HeadlessBrowserContextOptions {
 
   // Callback that is invoked to override WebPreferences for RenderViews
   // created within this HeadlessBrowserContext.
-  const base::Callback<void(WebPreferences*)>&
+  base::RepeatingCallback<void(WebPreferences*)>
   override_web_preferences_callback() const;
 
  private:
@@ -90,7 +90,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<bool> block_new_web_contents_;
   base::Optional<base::Time> initial_virtual_time_;
   base::Optional<bool> allow_cookies_;
-  base::Optional<base::Callback<void(WebPreferences*)>>
+  base::Optional<base::RepeatingCallback<void(WebPreferences*)>>
       override_web_preferences_callback_;
 
   ProtocolHandlerMap protocol_handlers_;

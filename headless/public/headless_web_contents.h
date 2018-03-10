@@ -132,8 +132,8 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
 
   struct MojoService {
     using ServiceFactoryCallback =
-        base::Callback<void(HeadlessWebContents*,
-                            mojo::ScopedMessagePipeHandle)>;
+        base::RepeatingCallback<void(HeadlessWebContents*,
+                                     mojo::ScopedMessagePipeHandle)>;
 
     MojoService();
     MojoService(const MojoService& other);

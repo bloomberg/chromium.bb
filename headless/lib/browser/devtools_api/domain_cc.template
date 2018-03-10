@@ -35,8 +35,8 @@ void Domain::RegisterEventHandlersIfNeeded() {
     {% for event in domain.events %}
   dispatcher_->RegisterEventHandler(
       "{{domain.domain}}.{{event.name}}",
-      base::Bind(&Domain::Dispatch{{event.name | to_title_case}}Event,
-                 base::Unretained(this)));
+      base::BindRepeating(&Domain::Dispatch{{event.name | to_title_case}}Event,
+                          base::Unretained(this)));
     {% endfor %}
 }
   {% endif %}
@@ -47,8 +47,8 @@ void Domain::RegisterEventHandlersIfNeeded() {
 
     {% set class_name = 'ExperimentalDomain' if command.experimental else 'Domain' %}
     {% set method_name = command.name | sanitize_literal | to_title_case %}
-void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::Bind(&Domain::Handle{{method_name}}Response, callback));
+void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::OnceCallback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::BindOnce(&Domain::Handle{{method_name}}Response, std::move(callback)));
 }
     {# Generate convenience methods that take the required parameters directly. #}
     {% if not "parameters" in command %}{% continue %}{% endif %}
@@ -65,9 +65,9 @@ void {{class_name}}::{{method_name}}({##}
     {% endfor %}
     {% if command.get("parameters", []) and not command.parameters[0].get("optional", False) %}, {% endif %}{# -#}
     {% if command.get("returns", []) -%}
-      base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback{##}
+      base::OnceCallback<void(std::unique_ptr<{{method_name}}Result>)> callback{##}
     {% else -%}
-      base::Callback<void()> callback{##}
+      base::OnceClosure callback{##}
     {% endif %}) {
     {# Build the parameters object. #}
   std::unique_ptr<{{method_name}}Params> params = {{method_name}}Params::Builder()
@@ -80,15 +80,15 @@ void {{class_name}}::{{method_name}}({##}
       .Build();
     {# Send the message. #}
     {% if command.get("returns", []) -%}
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::Bind(&Domain::Handle{{method_name}}Response, callback));
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::BindOnce(&Domain::Handle{{method_name}}Response, std::move(callback)));
     {% else %}
   dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
     {% endif %}
 }
     {# If the command has no return value, generate a convenience method that #}
-    {# accepts a base::Callback<void()> together with the parameters object. #}
+    {# accepts a base::OnceClosure together with the parameters object. #}
     {% if not command.get("returns", []) %}
-void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void()> callback) {
+void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::OnceClosure callback) {
   dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
 }
     {% endif %}
@@ -100,18 +100,18 @@ void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> para
   {% set method_name = command.name | sanitize_literal | to_title_case %}
 
 // static
-void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response) {
+void Domain::Handle{{method_name}}Response(base::OnceCallback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response) {
   if (callback.is_null())
     return;
   // This is an error response.
   if (response.is_none()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
   ErrorReporter errors;
   std::unique_ptr<{{method_name}}Result> result = {{method_name}}Result::Parse(response, &errors);
   DCHECK(!errors.HasErrors()) << errors.ToString();
-  callback.Run(std::move(result));
+  std::move(callback).Run(std::move(result));
 }
 {% endfor %}
 {% if "events" in domain %}

@@ -44,7 +44,7 @@ class HEADLESS_EXPORT CompositorController
   ~CompositorController() override;
 
   // Executes |idle_callback| when no BeginFrames are in flight.
-  void WaitUntilIdle(const base::Closure& idle_callback);
+  void WaitUntilIdle(base::OnceClosure idle_callback);
 
   // Captures a screenshot by issuing a BeginFrame. |quality| is only valid for
   // jpeg format screenshots, in range 0..100. Should not be called again until
@@ -52,7 +52,7 @@ class HEADLESS_EXPORT CompositorController
   // other BeginFrame is in flight and after the compositor is ready.
   void CaptureScreenshot(ScreenshotParamsFormat format,
                          int quality,
-                         const base::Callback<void(const std::string&)>&
+                         base::OnceCallback<void(const std::string&)>
                              screenshot_captured_callback);
 
  private:
@@ -65,14 +65,14 @@ class HEADLESS_EXPORT CompositorController
   // Posts a BeginFrame as a new task to avoid nesting it inside the current
   // callstack, which can upset the compositor.
   void PostBeginFrame(
-      const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
+      base::OnceCallback<void(std::unique_ptr<BeginFrameResult>)>
           begin_frame_complete_callback,
       bool no_display_updates = false,
       std::unique_ptr<ScreenshotParams> screenshot = nullptr);
   // Issues a BeginFrame synchronously and runs |begin_frame_complete_callback|
   // when done. Should not be called again until |begin_frame_complete_callback|
   // was run.
-  void BeginFrame(const base::Callback<void(std::unique_ptr<BeginFrameResult>)>&
+  void BeginFrame(base::OnceCallback<void(std::unique_ptr<BeginFrameResult>)>
                       begin_frame_complete_callback,
                   bool no_display_updates = false,
                   std::unique_ptr<ScreenshotParams> screenshot = nullptr);
@@ -86,9 +86,9 @@ class HEADLESS_EXPORT CompositorController
   HeadlessDevToolsClient* devtools_client_;         // NOT OWNED
   VirtualTimeController* virtual_time_controller_;  // NOT OWNED
   std::unique_ptr<AnimationBeginFrameTask> animation_task_;
-  base::Closure idle_callback_;
-  base::Callback<void(const std::string&)> screenshot_captured_callback_;
-  base::Callback<void(std::unique_ptr<BeginFrameResult>)>
+  base::OnceClosure idle_callback_;
+  base::OnceCallback<void(const std::string&)> screenshot_captured_callback_;
+  base::OnceCallback<void(std::unique_ptr<BeginFrameResult>)>
       begin_frame_complete_callback_;
   base::TimeDelta animation_begin_frame_interval_;
   bool update_display_for_animations_;

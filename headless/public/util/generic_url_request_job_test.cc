@@ -61,10 +61,11 @@ class MockDelegate : public MockGenericURLRequestJobDelegate {
 
 class MockFetcher : public URLFetcher {
  public:
-  MockFetcher(base::DictionaryValue* fetch_request,
-              std::string* received_post_data,
-              std::map<std::string, std::string>* json_fetch_reply_map,
-              base::Callback<void(const Request*)>* on_request_callback)
+  MockFetcher(
+      base::DictionaryValue* fetch_request,
+      std::string* received_post_data,
+      std::map<std::string, std::string>* json_fetch_reply_map,
+      base::RepeatingCallback<void(const Request*)>* on_request_callback)
       : json_fetch_reply_map_(json_fetch_reply_map),
         fetch_request_(fetch_request),
         received_post_data_(received_post_data),
@@ -140,7 +141,8 @@ class MockFetcher : public URLFetcher {
   std::map<std::string, std::string>* json_fetch_reply_map_;   // NOT OWNED
   base::DictionaryValue* fetch_request_;                       // NOT OWNED
   std::string* received_post_data_;                            // NOT OWNED
-  base::Callback<void(const Request*)>* on_request_callback_;  // NOT OWNED
+  base::RepeatingCallback<void(const Request*)>*
+      on_request_callback_;    // NOT OWNED
   std::string response_data_;  // Here to ensure the required lifetime.
 };
 
@@ -148,12 +150,13 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // Details of the fetch will be stored in |fetch_request|.
   // The fetch response will be created from parsing |json_fetch_reply_map|.
-  MockProtocolHandler(base::DictionaryValue* fetch_request,
-                      std::string* received_post_data,
-                      std::map<std::string, std::string>* json_fetch_reply_map,
-                      URLRequestDispatcher* dispatcher,
-                      GenericURLRequestJob::Delegate* job_delegate,
-                      base::Callback<void(const Request*)>* on_request_callback)
+  MockProtocolHandler(
+      base::DictionaryValue* fetch_request,
+      std::string* received_post_data,
+      std::map<std::string, std::string>* json_fetch_reply_map,
+      URLRequestDispatcher* dispatcher,
+      GenericURLRequestJob::Delegate* job_delegate,
+      base::RepeatingCallback<void(const Request*)>* on_request_callback)
       : fetch_request_(fetch_request),
         received_post_data_(received_post_data),
         json_fetch_reply_map_(json_fetch_reply_map),
@@ -179,7 +182,8 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   std::map<std::string, std::string>* json_fetch_reply_map_;   // NOT OWNED
   GenericURLRequestJob::Delegate* job_delegate_;               // NOT OWNED
   URLRequestDispatcher* dispatcher_;                           // NOT OWNED
-  base::Callback<void(const Request*)>* on_request_callback_;  // NOT OWNED
+  base::RepeatingCallback<void(const Request*)>*
+      on_request_callback_;  // NOT OWNED
 };
 
 }  // namespace
@@ -242,7 +246,7 @@ class GenericURLRequestJobTest : public testing::Test {
   std::map<std::string, std::string>
       json_fetch_reply_map_;  // Replies to be sent by MockFetcher.
   MockDelegate job_delegate_;
-  base::Callback<void(const Request*)> on_request_callback_;
+  base::RepeatingCallback<void(const Request*)> on_request_callback_;
 };
 
 TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {

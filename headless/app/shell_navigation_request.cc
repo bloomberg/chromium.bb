@@ -28,9 +28,9 @@ void ShellNavigationRequest::StartProcessing(base::Closure done_callback) {
   // The devtools bindings can only be called on the UI thread.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ShellNavigationRequest::StartProcessingOnUiThread,
-                 base::Passed(std::move(headless_shell_)), interception_id_,
-                 std::move(done_callback)));
+      base::BindOnce(&ShellNavigationRequest::StartProcessingOnUiThread,
+                     std::move(headless_shell_), interception_id_,
+                     std::move(done_callback)));
 }
 
 // static
@@ -51,8 +51,9 @@ void ShellNavigationRequest::StartProcessingOnUiThread(
           network::ContinueInterceptedRequestParams::Builder()
               .SetInterceptionId(interception_id)
               .Build(),
-          base::Bind(&ShellNavigationRequest::ContinueInterceptedRequestResult,
-                     std::move(done_callback)));
+          base::BindOnce(
+              &ShellNavigationRequest::ContinueInterceptedRequestResult,
+              std::move(done_callback)));
 }
 
 // static
@@ -64,7 +65,7 @@ void ShellNavigationRequest::ContinueInterceptedRequestResult(
   // The |done_callback| must be fired on the IO thread.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ShellNavigationRequest::ContinueInterceptedRequestResultOnIoThread,
           std::move(done_callback)));
 }

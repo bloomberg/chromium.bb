@@ -22,14 +22,14 @@ class MessageDispatcher {
   virtual void SendMessage(
       const char* method,
       std::unique_ptr<base::Value> params,
-      base::Callback<void(const base::Value&)> callback) = 0;
+      base::OnceCallback<void(const base::Value&)> callback) = 0;
   virtual void SendMessage(const char* method,
                            std::unique_ptr<base::Value> params,
-                           base::Closure callback) = 0;
+                           base::OnceClosure callback) = 0;
 
   virtual void RegisterEventHandler(
       const char* method,
-      base::Callback<void(const base::Value&)> callback) = 0;
+      base::RepeatingCallback<void(const base::Value&)> callback) = 0;
 
  protected:
   virtual ~MessageDispatcher() {}

@@ -525,7 +525,7 @@ HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
 
 HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
-    base::Callback<void(WebPreferences*)> callback) {
+    base::RepeatingCallback<void(WebPreferences*)> callback) {
   options_->override_web_preferences_callback_ = std::move(callback);
   return *this;
 }

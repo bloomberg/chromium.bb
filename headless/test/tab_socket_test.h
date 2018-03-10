@@ -47,7 +47,7 @@ class TabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
   // If successful |callback| will run with the execution context id of the
   // main world tab socket.
   void CreateMainWorldTabSocket(std::string devtools_frame_id,
-                                base::Callback<void(int)> callback);
+                                base::OnceCallback<void(int)> callback);
 
   // Attempts to create an isolated world in |isolated_world_name| and then
   // install a world TabSocket. If successful |callback| will run with the
@@ -55,7 +55,7 @@ class TabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
   // Note |isolated_world_name| must be unique.
   void CreateIsolatedWorldTabSocket(std::string isolated_world_name,
                                     std::string devtools_frame_id,
-                                    base::Callback<void(int)> callback);
+                                    base::OnceCallback<void(int)> callback);
 
   virtual void RunTabSocketTest() = 0;
 
@@ -67,19 +67,20 @@ class TabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
   void OnResourceTree(std::unique_ptr<page::GetResourceTreeResult> result);
 
   void CreateMainWorldTabSocketStep2(std::string devtools_frame_id,
-                                     base::Callback<void(int)> callback,
+                                     base::OnceCallback<void(int)> callback,
                                      int v8_execution_context_id);
 
   void OnCreatedIsolatedWorld(
-      base::Callback<void(int)> callback,
+      base::OnceCallback<void(int)> callback,
       std::unique_ptr<page::CreateIsolatedWorldResult> result);
 
-  void InstallHeadlessTabSocketBindings(base::Callback<void(int)> callback,
+  void InstallHeadlessTabSocketBindings(base::OnceCallback<void(int)> callback,
                                         int execution_context_id);
 
-  void OnInstalledHeadlessTabSocketBindings(int execution_context_id,
-                                            base::Callback<void(int)> callback,
-                                            bool success);
+  void OnInstalledHeadlessTabSocketBindings(
+      int execution_context_id,
+      base::OnceCallback<void(int)> callback,
+      bool success);
 
   std::map<std::string, int> world_name_to_v8_execution_context_id_;
   std::map<std::string, std::set<int>> frame_id_to_v8_execution_context_ids_;
