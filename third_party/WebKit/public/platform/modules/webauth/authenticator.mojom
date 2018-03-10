@@ -103,6 +103,13 @@ struct PublicKeyCredentialParameters {
   int32 algorithm_identifier;
 };
 
+// See https://w3c.github.io/webauthn/#enumdef-userverificationrequirement.
+enum UserVerificationRequirement {
+  PREFERRED,
+  REQUIRED,
+  DISCOURAGED,
+};
+
 // Parameters passed into calls to GetAssertion.
 struct PublicKeyCredentialRequestOptions {
   // An indefinite-length blob passed from the the relying party server,
@@ -120,6 +127,9 @@ struct PublicKeyCredentialRequestOptions {
   // accept as the signing credential.
   array<PublicKeyCredentialDescriptor> allow_credentials;
 
+  // Indicates the relying party's need for a user-verifying authenticator.
+  UserVerificationRequirement user_verification;
+
   // The contents of the appid extension, if any. See
   // https://w3c.github.io/webauthn/#sctn-appid-extension
   string? appid;
@@ -130,6 +140,27 @@ enum AttestationConveyancePreference {
   NONE,
   INDIRECT,
   DIRECT,
+};
+
+// https://w3c.github.io/webauthn/#enumdef-authenticatorattachment.
+enum AuthenticatorAttachment {
+    NO_PREFERENCE,
+    PLATFORM,
+    CROSS_PLATFORM,
+};
+
+// See https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria.
+struct AuthenticatorSelectionCriteria {
+  // Filter authenticators by attachment type.
+  AuthenticatorAttachment authenticator_attachment;
+
+  // Whether the authenticator should store the created key so that the key
+  // can later be selected given only an RP ID (e.g. when |allow_credentials|
+  // is empty).
+  bool require_resident_key;
+
+  // Indicates the relying party's need for a user-verifying authenticator.
+  UserVerificationRequirement user_verification;
 };
 
 // Parameters passed into calls to MakeCredential.
@@ -157,11 +188,12 @@ struct PublicKeyCredentialCreationOptions {
   // create a new one.
   array<PublicKeyCredentialDescriptor> exclude_credentials;
 
+  // Specify the relying party's authenticator attribute requirements.
+  AuthenticatorSelectionCriteria? authenticator_selection;
+
   // Specifies whether the RP wants attestation information for the created
   // credential.
   AttestationConveyancePreference attestation;
-
-  // TODO(kpaulhamus): add AuthenticatorSelectionCriteria
 };
 
 enum PublicKeyCredentialType {

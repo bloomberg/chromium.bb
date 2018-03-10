@@ -128,7 +128,7 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
         std::move(rp), std::move(user), kTestChallenge, std::move(parameters),
         base::TimeDelta::FromSeconds(30),
         std::vector<webauth::mojom::PublicKeyCredentialDescriptorPtr>(),
-        webauth::mojom::AttestationConveyancePreference::NONE);
+        nullptr, webauth::mojom::AttestationConveyancePreference::NONE);
 
     return mojo_options;
   }
@@ -147,7 +147,8 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = webauth::mojom::PublicKeyCredentialRequestOptions::New(
         kTestChallenge, base::TimeDelta::FromSeconds(30), "example.com",
-        std::move(credentials), base::nullopt);
+        std::move(credentials),
+        webauth::mojom::UserVerificationRequirement::PREFERRED, base::nullopt);
 
     return mojo_options;
   }

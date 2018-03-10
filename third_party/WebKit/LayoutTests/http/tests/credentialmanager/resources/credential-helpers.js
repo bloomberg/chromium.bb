@@ -128,6 +128,16 @@ class MockAuthenticator {
     this.userHandle_ = new Uint8Array(0);
   }
 
+  // Sets everything needed for a MakeCredential success response.
+  setDefaultsForSuccessfulMakeCredential() {
+    mockAuthenticator.setRawId(RAW_ID);
+    mockAuthenticator.setId(ID);
+    mockAuthenticator.setClientDataJson(CLIENT_DATA_JSON);
+    mockAuthenticator.setAttestationObject(ATTESTATION_OBJECT);
+    mockAuthenticator.setAuthenticatorStatus(
+        webauth.mojom.AuthenticatorStatus.SUCCESS);
+  }
+
   setAuthenticatorStatus(status) {
     this.status_ = status;
   }
@@ -184,11 +194,17 @@ var PUBLIC_KEY_PARAMETERS =  [{
     alg: -7,
 },];
 
+var AUTHENTICATOR_SELECTION_CRITERIA = {
+    requireResidentKey: false,
+    userVerification: "preferred",
+};
+
 var MAKE_CREDENTIAL_OPTIONS = {
     challenge: CHALLENGE,
     rp: PUBLIC_KEY_RP,
     user: PUBLIC_KEY_USER,
     pubKeyCredParams: PUBLIC_KEY_PARAMETERS,
+    authenticatorSelection: AUTHENTICATOR_SELECTION_CRITERIA,
     excludeCredentials: [],
 };
 
@@ -201,7 +217,8 @@ var ACCEPTABLE_CREDENTIAL = {
 var GET_CREDENTIAL_OPTIONS = {
     challenge: CHALLENGE,
     rpId: "subdomain.example.test",
-    allowCredentials: [ACCEPTABLE_CREDENTIAL]
+    allowCredentials: [ACCEPTABLE_CREDENTIAL],
+    userVerification: "preferred",
 };
 
 var RAW_ID = new TextEncoder("utf-8").encode("rawId");

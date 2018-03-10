@@ -9,10 +9,18 @@ enum AuthenticatorAttachment {
   "cross-platform"
 };
 
+// https://w3c.github.io/webauthn/#enumdef-userverificationrequirement
+
+enum UserVerificationRequirement {
+    "required",
+    "preferred",
+    "discouraged"
+};
+
 // https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria
 
 dictionary AuthenticatorSelectionCriteria {
   AuthenticatorAttachment authenticatorAttachment;
   boolean requireResidentKey = false;
-  boolean requireUserVerification = false;
+  UserVerificationRequirement userVerification = "preferred";
 };
