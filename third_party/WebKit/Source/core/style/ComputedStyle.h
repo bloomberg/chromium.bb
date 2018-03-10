@@ -553,6 +553,9 @@ class ComputedStyle : public ComputedStyleBase,
   ContentData* GetContentData() const { return ContentInternal().Get(); }
   void SetContent(ContentData*);
 
+  // -webkit-line-clamp
+  bool HasLineClamp() const { return LineClamp() > 0; }
+
   // -webkit-box-ordinal-group
   void SetBoxOrdinalGroup(unsigned og) {
     SetBoxOrdinalGroupInternal(
