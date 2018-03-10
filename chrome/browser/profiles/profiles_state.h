@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
 
 #include <string>
-#include <vector>
+
 #include "base/strings/string16.h"
+
+#if !defined(OS_CHROMEOS)
+#include <vector>
 #include "chrome/browser/profiles/avatar_menu.h"
+#endif
 
 class Browser;
 class PrefRegistrySimple;
@@ -17,6 +21,10 @@ class SigninErrorController;
 namespace base { class FilePath; }
 
 namespace profiles {
+
+// Assortment of methods for dealing with profiles.
+// TODO(michaelpg): Most of these functions can be inlined or moved to more
+// appropriate locations.
 
 // Checks if multiple profiles is enabled.
 bool IsMultipleProfilesEnabled();
@@ -36,6 +44,7 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 // custom name.
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path);
 
+#if !defined(OS_CHROMEOS)
 // Returns the string to use in the avatar button for the specified profile.
 // This is essentially the name returned by GetAvatarNameForProfile, but it
 // may be elided and contain an indicator for supervised users.
@@ -58,6 +67,7 @@ void UpdateProfileName(Profile* profile,
 std::vector<std::string> GetSecondaryAccountsForProfile(
     Profile* profile,
     const std::string& primary_account);
+#endif
 
 // Returns whether the |browser|'s profile is a non-incognito or guest profile.
 // The distinction is needed because guest profiles are implemented as
@@ -70,6 +80,7 @@ bool IsRegularOrGuestSession(Browser* browser);
 // ProfileAttributesStorage::IsSigninRequired to call here instead.
 bool IsProfileLocked(const base::FilePath& profile_path);
 
+#if !defined(OS_CHROMEOS)
 // If the lock-enabled information for this profile is not up to date, starts
 // an update for the Gaia profile info.
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile);
@@ -88,25 +99,21 @@ SigninErrorController* GetSigninErrorController(Profile* profile);
 // profile had been Guest before calling or became Guest as a result of this
 // method.
 bool SetActiveProfileToGuestIfLocked();
+#endif
 
 // If the profile given by |profile_path| is loaded in the ProfileManager, use
 // a BrowsingDataRemover to delete all the Profile's data.
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path);
 
-// Marks the right-click user switching tutorial dismissed state as |dismissed|.
-void SetFastUserSwitchingTutorialDismissedState(bool dismissed);
-
-// Returns true if the right-click user switching tutorial was previously
-// dismissed by a user, false otherwise.
-bool GetFastUserSwitchingTutorialDismissedState();
-
 // Sets the last used profile pref to |profile_dir|, unless |profile_dir| is the
 // System Profile directory, which is an invalid last used profile.
 void SetLastUsedProfile(const std::string& profile_dir);
 
+#if !defined(OS_CHROMEOS)
 // Returns true if there exists at least one non-supervised or non-child profile
 // and they are all locked.
 bool AreAllNonChildNonSupervisedProfilesLocked();
+#endif
 
 // Returns whether a public session is being run currently.
 bool IsPublicSession();

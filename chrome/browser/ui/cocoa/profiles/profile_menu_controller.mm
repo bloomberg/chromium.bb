@@ -120,7 +120,7 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu
                    atOffset:(NSInteger)offset
                    fromDock:(BOOL)dock {
-  if (!avatarMenu_ || !avatarMenu_->ShouldShowAvatarMenu())
+  if (!avatarMenu_)
     return NO;
 
   // Don't show the list of profiles in the dock if only one profile exists.

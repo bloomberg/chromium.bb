@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,10 +35,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/user_manager.h"
-#endif  // !defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 
@@ -89,19 +86,6 @@ AvatarMenu::Item::Item(const Item& other) = default;
 AvatarMenu::Item::~Item() {
 }
 
-// static
-bool AvatarMenu::ShouldShowAvatarMenu() {
-  // TODO: Eliminate this ifdef. Add a delegate interface for the menu which
-  // would also help remove the Browser dependency in AvatarMenuActions
-  // implementations.
-#if defined(OS_CHROMEOS)
-  // On ChromeOS the menu will not be shown.
-  return false;
-#else
-  return true;
-#endif
-}
-
 void AvatarMenu::SwitchToProfile(size_t index,
                                  bool always_create,
                                  ProfileMetrics::ProfileOpen metric) {
@@ -109,15 +93,12 @@ void AvatarMenu::SwitchToProfile(size_t index,
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
 
-#if !defined(OS_CHROMEOS)
-  // ChromeOS doesn't have the User Manager, it can't open it.
   // Don't open a browser window for signed-out profiles.
   if (item.signin_required) {
     UserManager::Show(item.profile_path,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
   }
-#endif
 
   profiles::SwitchToProfile(item.profile_path, always_create,
                             ProfileManager::CreateCallback(), metric);

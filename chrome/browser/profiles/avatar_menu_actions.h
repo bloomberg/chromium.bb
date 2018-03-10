@@ -5,16 +5,14 @@
 #ifndef CHROME_BROWSER_PROFILES_AVATAR_MENU_ACTIONS_H_
 #define CHROME_BROWSER_PROFILES_AVATAR_MENU_ACTIONS_H_
 
-#include <stddef.h>
-
-#include <string>
-
-#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 
+class Browser;
 class Profile;
 
 // This interface controls the behavior of avatar menu actions.
+// Only implemented by AvatarMenuActionsDesktop, although a Chrome OS version
+// used to exist as AvatarMenuActionsChromeOS.
 class AvatarMenuActions {
  public:
   virtual ~AvatarMenuActions() {}

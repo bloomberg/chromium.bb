@@ -1387,13 +1387,9 @@ bool IsTabDetachingInFullscreenEnabled() {
     return YES;
 
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(browser_->profile()->GetPath(),
-                                       &entry)) {
-    return NO;
-  }
-
-  return AvatarMenu::ShouldShowAvatarMenu();
+  return g_browser_process->profile_manager()
+      ->GetProfileAttributesStorage()
+      .GetProfileAttributesWithPath(browser_->profile()->GetPath(), &entry);
 }
 
 - (BOOL)shouldUseNewAvatarButton {

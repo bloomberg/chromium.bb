@@ -29502,7 +29502,7 @@ Called by update_use_counter_css.py.-->
 
 <enum name="MultiProfileSigninUserAction">
   <int value="0" label="System tray"/>
-  <int value="1" label="Browser frame"/>
+  <int value="1" label="Browser frame (deprecated 03/2018)"/>
 </enum>
 
 <enum name="MultiProfileSwitchActiveUserAction">
