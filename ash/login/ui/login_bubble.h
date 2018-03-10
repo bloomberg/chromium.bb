@@ -13,10 +13,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace views {
-class StyledLabel;
-}
-
 namespace ash {
 class LoginButton;
 
@@ -29,12 +25,20 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
  public:
   static const int kUserMenuRemoveUserButtonIdForTest;
 
+  // Flags passed to ShowErrorBubble().
+  static constexpr uint32_t kFlagsNone = 0;
+  // If set, the shown error bubble will not be closed due to an unrelated user
+  // action - e.g. the bubble will not be closed if the user starts typing.
+  static constexpr uint32_t kFlagPersistent = 1 << 0;
+
   LoginBubble();
   ~LoginBubble() override;
 
   // Shows an error bubble for authentication failure.
   // |anchor_view| is the anchor for placing the bubble view.
-  void ShowErrorBubble(views::StyledLabel* label, views::View* anchor_view);
+  void ShowErrorBubble(views::View* content,
+                       views::View* anchor_view,
+                       uint32_t flags);
 
   // Shows a user menu bubble.
   // |anchor_view| is the anchor for placing the bubble view.
@@ -90,6 +94,9 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
 
   // Starts show/hide animation.
   void ScheduleAnimation(bool visible);
+
+  // Flags passed to ShowErrorBubble().
+  uint32_t flags_ = kFlagsNone;
 
   LoginBaseBubbleView* bubble_view_ = nullptr;
 
