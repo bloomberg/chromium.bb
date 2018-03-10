@@ -86,6 +86,13 @@ interface FrameSinkVideoCapturer {
   // content.
   SetMinCapturePeriod(mojo.common.mojom.TimeDelta min_period);
 
+  // Specifies the minimum amount of time that must elapse between changing the
+  // size of video frames. This can be set to zero to disable resize throttling,
+  // which means each video frame could have a different size.
+  //
+  // Default, if never called: 3 seconds.
+  SetMinSizeChangePeriod(mojo.common.mojom.TimeDelta min_period);
+
   // Specifies the range (if any) of acceptable capture resolutions and whether
   // a fixed aspect ratio is required. When |min_size| is equal to |max_size|,
   // capture resolution will be held constant. Otherwise, capture resolution

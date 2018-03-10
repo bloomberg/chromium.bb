@@ -86,6 +86,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                void(media::VideoPixelFormat format,
                     media::ColorSpace color_space));
   MOCK_METHOD1(SetMinCapturePeriod, void(base::TimeDelta min_period));
+  MOCK_METHOD1(SetMinSizeChangePeriod, void(base::TimeDelta));
   MOCK_METHOD3(SetResolutionConstraints,
                void(const gfx::Size& min_size,
                     const gfx::Size& max_size,
