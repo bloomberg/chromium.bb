@@ -130,7 +130,6 @@ source_set("chromeos") {
     "//components/viz/host",
     "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
-    "//services/network:network_service",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//third_party/fontconfig",
     "//third_party/metrics_proto",
