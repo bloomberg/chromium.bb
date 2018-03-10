@@ -14,16 +14,14 @@ const test_desc = 'Ensure that the SimulateAdvertisementReceived API works ' +
 const company_id = '224';
 const data = new TextEncoder().encode('foo');
 const manufacturerDataMap = {[company_id]: data};
+const serviceDataMap = {[health_thermometer.uuid]: data};
 const scanRecord = {
   name: 'Health Thermometer',
   uuids: ['generic_access', health_thermometer.uuid],
   txPower: 20,
   appearance: 100,
   manufacturerData: manufacturerDataMap,
-  // TODO(https://crbug.com/817603): Currently, simulateAdvertisementReceived
-  // does not use serviceData because it requires a typemap to properly use the
-  // UUIDs that it uses as the key values. Once the typemap is implemented, the
-  // serviceData field should be added.
+  serviceData: serviceDataMap,
 };
 let fake_central;
 let scanResult = {

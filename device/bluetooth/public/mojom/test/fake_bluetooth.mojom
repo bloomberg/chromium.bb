@@ -50,6 +50,10 @@ struct Power {
   int8 value;
 };
 
+struct ServiceDataMap {
+  map<string, array<uint8>> service_data;
+};
+
 // Stores the byte data of the advertisement packet sent by a Bluetooth device.
 struct ScanRecord {
   string? name;
@@ -58,8 +62,7 @@ struct ScanRecord {
   Power tx_power;
 
   map<uint8, array<uint8>>? manufacturer_data;
-  // TODO(https://crbug.com/817603): Add the service_data field once a typemap
-  // for this field and device::BluetoothDevice::ServiceDataMap exists.
+  ServiceDataMap? service_data;
 };
 
 // Stores the advertisement packet information that is sent by a Bluetooth device.
