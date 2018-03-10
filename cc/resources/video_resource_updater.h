@@ -86,13 +86,6 @@ class CC_EXPORT VideoResourceUpdater {
                        bool use_stream_video_draw_quad);
   ~VideoResourceUpdater();
 
-  VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
-      scoped_refptr<media::VideoFrame> video_frame);
-
-  void SetUseR16ForTesting(bool use_r16_for_testing) {
-    use_r16_for_testing_ = use_r16_for_testing;
-  }
-
   void ObtainFrameResources(scoped_refptr<media::VideoFrame> video_frame);
   void ReleaseFrameResources();
   void AppendQuads(viz::RenderPass* render_pass,
@@ -106,6 +99,14 @@ class CC_EXPORT VideoResourceUpdater {
                    float draw_opacity,
                    int sorting_context_id,
                    gfx::Rect visible_quad_rect);
+
+  // TODO(kylechar): This is only public for testing, make private.
+  VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
+      scoped_refptr<media::VideoFrame> video_frame);
+
+  void SetUseR16ForTesting(bool use_r16_for_testing) {
+    use_r16_for_testing_ = use_r16_for_testing;
+  }
 
  private:
   class PlaneResource {
@@ -152,6 +153,13 @@ class CC_EXPORT VideoResourceUpdater {
     const gfx::Size resource_size_;
     const viz::ResourceFormat resource_format_;
     const gpu::Mailbox mailbox_;
+  };
+
+  struct FrameResource {
+    FrameResource(viz::ResourceId id, gfx::Size size_in_pixels)
+        : id(id), size_in_pixels(size_in_pixels) {}
+    viz::ResourceId id;
+    gfx::Size size_in_pixels;
   };
 
   // This needs to be a container where iterators can be erased without
@@ -213,12 +221,6 @@ class CC_EXPORT VideoResourceUpdater {
   float frame_resource_multiplier_;
   uint32_t frame_bits_per_channel_;
 
-  struct FrameResource {
-    FrameResource(viz::ResourceId id, gfx::Size size_in_pixels)
-        : id(id), size_in_pixels(size_in_pixels) {}
-    viz::ResourceId id;
-    gfx::Size size_in_pixels;
-  };
   std::vector<FrameResource> frame_resources_;
 
   // Recycle resources so that we can reduce the number of allocations and
