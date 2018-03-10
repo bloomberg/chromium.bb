@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 
 #include <memory>
 
@@ -133,7 +133,8 @@ void AppListPresenterImplTest::SetUp() {
   new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
   presenter_ = std::make_unique<AppListPresenterImpl>(
-      std::make_unique<AppListPresenterDelegateFactoryTest>(container_.get()));
+      std::make_unique<AppListPresenterDelegateFactoryTest>(container_.get()),
+      nullptr);
   presenter_test_api_ =
       std::make_unique<test::AppListPresenterImplTestApi>(presenter());
 }

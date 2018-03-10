@@ -36,6 +36,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"

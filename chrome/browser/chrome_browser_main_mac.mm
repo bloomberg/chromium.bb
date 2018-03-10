@@ -27,7 +27,6 @@
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/crashpad.h"
@@ -180,8 +179,6 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
   // This is called here so that the app shim socket is only created after
   // taking the singleton lock.
   g_browser_process->platform_part()->app_shim_host_manager()->Init();
-  AppListService::InitAll(NULL,
-      GetStartupProfilePath(user_data_dir(), parsed_command_line()));
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {

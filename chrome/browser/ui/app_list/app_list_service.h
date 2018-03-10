@@ -47,10 +47,6 @@ class AppListService {
   // Get the AppListService.
   static AppListService* Get();
 
-  // Call Init for all AppListService instances on this platform.
-  static void InitAll(Profile* initial_profile,
-                      const base::FilePath& profile_path);
-
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Initializes the AppListService, and returns true if |command_line| is for
@@ -90,6 +86,9 @@ class AppListService {
   // Get the profile the app list is currently showing.
   virtual Profile* GetCurrentAppListProfile() = 0;
 
+  // Returns true if the app list target is visible.
+  virtual bool GetTargetVisibility() const = 0;
+
   // Returns true if the app list is visible.
   virtual bool IsAppListVisible() const = 0;
 
@@ -103,6 +102,9 @@ class AppListService {
 
   // Create a platform-specific shortcut for the app list.
   virtual void CreateShortcut() = 0;
+
+  // Flush pending mojo calls to Ash AppListControllerImpl.
+  virtual void FlushForTesting() = 0;
 
  protected:
   AppListService() {}

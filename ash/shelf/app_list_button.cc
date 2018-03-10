@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -121,7 +121,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->app_list()->IsVisible())
+      if (!Shell::Get()->app_list_controller()->IsVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       return;
@@ -129,7 +129,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       if (UseVoiceInteractionStyle()) {
         base::RecordAction(base::UserMetricsAction(
             "VoiceInteraction.Started.AppListButtonLongPress"));
-        Shell::Get()->app_list()->StartVoiceInteractionSession();
+        Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         assistant_overlay_->BurstAnimation();
         event->SetHandled();
       } else {
@@ -201,7 +201,7 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  if (Shell::Get()->app_list()->IsVisible())
+  if (Shell::Get()->app_list_controller()->IsVisible())
     return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }

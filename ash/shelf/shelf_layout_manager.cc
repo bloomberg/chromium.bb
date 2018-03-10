@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -450,6 +451,10 @@ void ShelfLayoutManager::OnVirtualKeyboardStateChanged(
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
                                                     aura::Window* root_window) {
+  // Shell may be under destruction.
+  if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
+    return;
+
   if (shelf_widget_->GetNativeWindow()->GetRootWindow() != root_window)
     return;
 
@@ -1110,12 +1115,12 @@ void ShelfLayoutManager::StartGestureDrag(
     const gfx::Rect shelf_bounds = GetIdealBounds();
     shelf_background_type_before_drag_ = shelf_background_type_;
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-    Shell::Get()->app_list()->Show(
+    Shell::Get()->app_list_controller()->Show(
         display::Screen::GetScreen()
             ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
             .id(),
         app_list::kSwipeFromShelf);
-    Shell::Get()->app_list()->UpdateYPositionAndOpacity(
+    Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
         shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - gesture_in_screen.location().y();
@@ -1139,13 +1144,13 @@ void ShelfLayoutManager::UpdateGestureDrag(
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
     if (!shelf_->IsHorizontalAlignment()) {
-      Shell::Get()->app_list()->Dismiss();
+      Shell::Get()->app_list_controller()->DismissAppList();
       launcher_above_shelf_bottom_amount_ = 0.f;
       gesture_drag_status_ = GESTURE_DRAG_NONE;
       return;
     }
     const gfx::Rect shelf_bounds = GetIdealBounds();
-    Shell::Get()->app_list()->UpdateYPositionAndOpacity(
+    Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
         std::min(gesture_in_screen.location().y(), shelf_bounds.y()),
         GetAppListBackgroundOpacityOnShelfOpacity());
     launcher_above_shelf_bottom_amount_ =
@@ -1218,8 +1223,8 @@ void ShelfLayoutManager::CompleteAppListDrag(
   if (gesture_drag_status_ == GESTURE_DRAG_NONE)
     return;
 
-  using app_list::mojom::AppListState;
-  AppListState app_list_state = AppListState::PEEKING;
+  using app_list::AppListViewState;
+  AppListViewState app_list_state = AppListViewState::PEEKING;
   if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
       fabs(gesture_in_screen.details().velocity_y()) >
           kAppListDragVelocityThreshold) {
@@ -1227,36 +1232,36 @@ void ShelfLayoutManager::CompleteAppListDrag(
     // list if the fling was fast enough and in the correct direction, otherwise
     // close it.
     app_list_state = gesture_in_screen.details().velocity_y() < 0
-                         ? AppListState::FULLSCREEN_ALL_APPS
-                         : AppListState::CLOSED;
+                         ? AppListViewState::FULLSCREEN_ALL_APPS
+                         : AppListViewState::CLOSED;
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.
     if (IsTabletModeEnabled()) {
       app_list_state = launcher_above_shelf_bottom_amount_ >
                                kAppListDragSnapToFullscreenThreshold
-                           ? AppListState::FULLSCREEN_ALL_APPS
-                           : AppListState::CLOSED;
+                           ? AppListViewState::FULLSCREEN_ALL_APPS
+                           : AppListViewState::CLOSED;
     } else {
       if (launcher_above_shelf_bottom_amount_ <=
           kAppListDragSnapToClosedThreshold)
-        app_list_state = AppListState::CLOSED;
+        app_list_state = AppListViewState::CLOSED;
       else if (launcher_above_shelf_bottom_amount_ <=
                kAppListDragSnapToPeekingThreshold)
-        app_list_state = AppListState::PEEKING;
+        app_list_state = AppListViewState::PEEKING;
       else
-        app_list_state = AppListState::FULLSCREEN_ALL_APPS;
+        app_list_state = AppListViewState::FULLSCREEN_ALL_APPS;
     }
   }
 
-  Shell::Get()->app_list()->EndDragFromShelf(app_list_state);
+  Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
 
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
 void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    Shell::Get()->app_list()->Dismiss();
+    Shell::Get()->app_list_controller()->DismissAppList();
   } else {
     gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
     UpdateVisibilityState();

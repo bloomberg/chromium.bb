@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
@@ -514,10 +513,8 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }
 
-  const app_list::AppListPresenterImpl* app_list_presenter =
-      AppListServiceAsh::GetInstance()->GetAppListPresenter();
   if (window->IsActive() && allow_minimize &&
-      (!app_list_presenter || !app_list_presenter->IsVisible())) {
+      !AppListServiceAsh::GetInstance()->GetTargetVisibility()) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
   }

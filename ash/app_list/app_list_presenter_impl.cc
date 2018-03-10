@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
@@ -21,6 +23,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -46,8 +49,10 @@ class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
 }  // namespace
 
 AppListPresenterImpl::AppListPresenterImpl(
-    std::unique_ptr<AppListPresenterDelegateFactory> factory)
+    std::unique_ptr<AppListPresenterDelegateFactory> factory,
+    ash::AppListControllerImpl* controller)
     : factory_(std::move(factory)),
+      controller_(controller),
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()) {
   DCHECK(factory_);
@@ -77,10 +82,8 @@ void AppListPresenterImpl::Show(int64_t display_id) {
   }
 
   is_visible_ = true;
-  if (app_list_) {
-    app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-    app_list_->OnVisibilityChanged(GetTargetVisibility(), display_id);
-  }
+  NotifyTargetVisibilityChanged(GetTargetVisibility());
+  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 
   if (view_) {
     ScheduleAnimation();
@@ -106,10 +109,8 @@ void AppListPresenterImpl::Dismiss() {
   DCHECK(view_);
 
   is_visible_ = false;
-  if (app_list_) {
-    app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-    app_list_->OnVisibilityChanged(GetTargetVisibility(), GetDisplayId());
-  }
+  NotifyTargetVisibilityChanged(GetTargetVisibility());
+  NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
@@ -141,14 +142,6 @@ bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_visible_;
 }
 
-void AppListPresenterImpl::SetAppList(mojom::AppListPtr app_list) {
-  DCHECK(app_list);
-  app_list_ = std::move(app_list);
-  // Notify the app list interface of the current [target] visibility.
-  app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-  app_list_->OnVisibilityChanged(IsVisible(), GetDisplayId());
-}
-
 void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
                                                      float background_opacity) {
   if (!is_visible_)
@@ -159,9 +152,9 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
 }
 
 void AppListPresenterImpl::EndDragFromShelf(
-    mojom::AppListState app_list_state) {
+    app_list::AppListViewState app_list_state) {
   if (view_) {
-    if (app_list_state == mojom::AppListState::CLOSED ||
+    if (app_list_state == AppListViewState::CLOSED ||
         view_->app_list_state() == AppListViewState::CLOSED) {
       view_->Dismiss();
     } else {
@@ -248,6 +241,32 @@ int64_t AppListPresenterImpl::GetDisplayId() {
       .id();
 }
 
+void AppListPresenterImpl::NotifyVisibilityChanged(bool visible,
+                                                   int64_t display_id) {
+  // Skip adjacent same changes.
+  if (last_visible_ == visible && last_display_id_ == display_id)
+    return;
+  last_visible_ = visible;
+  last_display_id_ = display_id;
+
+  if (controller_)
+    controller_->OnVisibilityChanged(visible);
+
+  // Notify the Shell and its observers of the app list visibility change.
+  aura::Window* root = ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
+  ash::Shell::Get()->NotifyAppListVisibilityChanged(visible, root);
+}
+
+void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible) {
+  // Skip adjacent same changes.
+  if (last_target_visible_ == visible)
+    return;
+  last_target_visible_ = visible;
+
+  if (controller_)
+    controller_->OnTargetVisibilityChanged(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl,  aura::client::FocusChangeObserver implementation:
 
@@ -287,8 +306,7 @@ void AppListPresenterImpl::OnWidgetDestroying(views::Widget* widget) {
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
-  if (app_list_)
-    app_list_->OnVisibilityChanged(visible, GetDisplayId());
+  NotifyVisibilityChanged(visible, GetDisplayId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_router.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
@@ -131,7 +131,7 @@ bool AcceleratorRouter::ShouldProcessAcceleratorNow(
   if (accelerator_controller->IsPreferred(accelerator))
     return true;
 
-  return Shell::Get()->app_list()->GetTargetVisibility();
+  return Shell::Get()->app_list_controller()->GetTargetVisibility();
 }
 
 }  // namespace ash

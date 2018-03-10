@@ -10,24 +10,26 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/public/interfaces/app_list.mojom.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+
+namespace app_list {
+class SearchModel;
+}  // namespace app_list
 
 namespace ui {
 class MenuModel;
 }  // namespace ui
 
 class ChromeAppListItem;
-class SearchModel;
 
-class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
-                                  public AppListModelUpdater {
+class ChromeAppListModelUpdater : public AppListModelUpdater {
  public:
   explicit ChromeAppListModelUpdater(Profile* profile);
   ~ChromeAppListModelUpdater() override;
 
-  app_list::AppListModel* GetModel() override;
-  app_list::SearchModel* GetSearchModel() override;
+  void SetActive(bool active) override;
 
   // AppListModelUpdater:
   void AddItem(std::unique_ptr<ChromeAppListItem> app_item) override;
@@ -67,6 +69,9 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   // Methods only for visiting Chrome items that never talk to ash.
   void ActivateChromeItem(const std::string& id, int event_flags) override;
   ChromeAppListItem* AddChromeItem(std::unique_ptr<ChromeAppListItem> app_item);
+  void RemoveChromeItem(const std::string& id);
+  void MoveChromeItemToFolder(const std::string& id,
+                              const std::string& folder_id);
 
   // Methods for item querying.
   ChromeAppListItem* FindItem(const std::string& id) override;
@@ -101,33 +106,24 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
       bool update_name,
       bool update_folder) override;
 
-  // Overridden frome app_list::AppListModelObserver:
-  // TODO(hejq): We temporarily put them here to make tests happy.
-  void OnAppListItemAdded(app_list::AppListItem* item) override;
-  void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
-  void OnAppListItemDeleted(const std::string& id) override;
-  void OnAppListItemUpdated(app_list::AppListItem* item) override;
+  // Methods to handle model update from ash:
+  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) override;
+  void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
+  void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
 
   void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 
  private:
-  // TODO(hejq): Move the following methods to ash.
-  ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(
-      const std::string& oem_folder_id,
-      const std::string& oem_folder_name,
-      const syncer::StringOrdinal& preferred_oem_position);
-  syncer::StringOrdinal GetOemFolderPos();
-  app_list::AppListFolderItem* FindAshFolderItem(const std::string& folder_id);
-  std::unique_ptr<app_list::AppListItem> CreateAppListItem(
-      ash::mojom::AppListItemMetadataPtr metadata);
-
-  std::unique_ptr<app_list::AppListModel> model_;
-  std::unique_ptr<app_list::SearchModel> search_model_;
+  app_list::SearchModel* search_model_ = nullptr;
   // A map from a ChromeAppListItem's id to its unique pointer. This item set
   // matches the one in AppListModel.
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;
   Profile* const profile_ = nullptr;
   AppListModelUpdaterDelegate* delegate_ = nullptr;
+  ash::mojom::AppListController* app_list_controller_ = nullptr;
+  bool search_engine_is_google_ = false;
+
+  base::WeakPtrFactory<ChromeAppListModelUpdater> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListModelUpdater);
 };

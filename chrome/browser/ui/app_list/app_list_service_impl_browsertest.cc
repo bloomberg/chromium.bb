@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
 // Tests that the AppListViewDelegate is created lazily.
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
   EXPECT_FALSE(test_api_->view_delegate());
-  service_->ShowForProfile(browser()->profile());
+  service_->GetViewDelegate();
   EXPECT_TRUE(test_api_->view_delegate());
 }
 

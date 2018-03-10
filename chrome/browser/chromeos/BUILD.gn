@@ -172,7 +172,6 @@ source_set("chromeos") {
     "//services/ui/public/interfaces/display",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
-    "//ash/app_list/presenter:mojom",
     "//components/sync",
     "//printing",
     "//services/ui/public/cpp",

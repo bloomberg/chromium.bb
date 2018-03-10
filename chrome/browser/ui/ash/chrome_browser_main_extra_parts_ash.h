@@ -20,6 +20,7 @@ class UserActivityDetector;
 }
 
 class AccessibilityControllerClient;
+class AppListClientImpl;
 class AshShellInit;
 class AutoConnectNotifier;
 class CastConfigClientMediaRouter;
@@ -80,6 +81,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Initialized in PreProfileInit in all configs after Shell init:
   std::unique_ptr<AccessibilityControllerClient>
       accessibility_controller_client_;
+  std::unique_ptr<AppListClientImpl> app_list_client_;
   std::unique_ptr<ChromeNewWindowClient> chrome_new_window_client_;
   std::unique_ptr<ImeControllerClient> ime_controller_client_;
   std::unique_ptr<SessionControllerClient> session_controller_client_;

@@ -12,7 +12,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -504,7 +504,7 @@ void HandleToggleAppList(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  Shell::Get()->app_list()->ToggleAppList(
+  Shell::Get()->app_list_controller()->ToggleAppList(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
           .id(),
@@ -690,7 +690,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       break;
   }
 
-  Shell::Get()->app_list()->ToggleVoiceInteractionSession();
+  Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
 }
 
 void HandleSuspend() {

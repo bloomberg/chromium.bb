@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "ash/app_list/presenter/app_list.h"
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
@@ -13,8 +13,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -41,9 +39,9 @@ IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
 
   // Click the app list button to show the app list.
   ash::Shell* shell = ash::Shell::Get();
-  auto* service = AppListServiceAsh::GetInstance();
-  auto* presenter = service->GetAppListPresenter();
-  EXPECT_FALSE(shell->app_list()->GetTargetVisibility());
+  auto* controller = shell->app_list_controller();
+  auto* presenter = controller->presenter();
+  EXPECT_FALSE(controller->GetTargetVisibility());
   EXPECT_FALSE(presenter->GetTargetVisibility());
   EXPECT_EQ(0u, app_list_container->children().size());
   EXPECT_FALSE(app_list_button->is_showing_app_list());
@@ -51,23 +49,20 @@ IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
       app_list_button->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   // Flush the mojo message from Ash to Chrome to show the app list.
-  shell->app_list()->FlushForTesting();
+  controller->FlushForTesting();
   EXPECT_TRUE(presenter->GetTargetVisibility());
   // Flush the mojo message from Chrome to Ash reporting the visibility change.
-  auto* presenter_service = service->app_list_presenter_service();
-  presenter_service->FlushForTesting();
-  EXPECT_TRUE(shell->app_list()->GetTargetVisibility());
+  EXPECT_TRUE(controller->GetTargetVisibility());
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_TRUE(app_list_button->is_showing_app_list());
 
   // Click the button again to dismiss the app list; it will animate to close.
   generator.ClickLeftButton();
   // Flush the mojo message from Ash to Chrome to hide the app list.
-  shell->app_list()->FlushForTesting();
+  controller->FlushForTesting();
   EXPECT_FALSE(presenter->GetTargetVisibility());
   // Flush the mojo message from Chrome to Ash reporting the visibility change.
-  presenter_service->FlushForTesting();
-  EXPECT_FALSE(shell->app_list()->GetTargetVisibility());
+  EXPECT_FALSE(controller->GetTargetVisibility());
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_FALSE(app_list_button->is_showing_app_list());
 }

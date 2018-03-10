@@ -13,8 +13,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
-#include "ui/app_list/views/app_list_item_view.h"
-#include "ui/app_list/views/apps_grid_view.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -29,7 +27,7 @@ using AppListControllerDelegateAshTest = extensions::PlatformAppBrowserTest;
 
 // Test AppListControllerDelegateAsh::IsAppOpen for extension apps.
 IN_PROC_BROWSER_TEST_F(AppListControllerDelegateAshTest, IsExtensionAppOpen) {
-  AppListControllerDelegateAsh delegate(nullptr);
+  AppListControllerDelegateAsh delegate;
   EXPECT_FALSE(delegate.IsAppOpen("fake_extension_app_id"));
 
   base::FilePath extension_path = test_data_dir_.AppendASCII("app");
@@ -50,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerDelegateAshTest, IsExtensionAppOpen) {
 
 // Test AppListControllerDelegateAsh::IsAppOpen for platform apps.
 IN_PROC_BROWSER_TEST_F(AppListControllerDelegateAshTest, IsPlatformAppOpen) {
-  AppListControllerDelegateAsh delegate(nullptr);
+  AppListControllerDelegateAsh delegate;
   EXPECT_FALSE(delegate.IsAppOpen("fake_platform_app_id"));
 
   const extensions::Extension* app = InstallPlatformApp("minimal");

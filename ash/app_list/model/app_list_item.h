@@ -18,7 +18,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 class FastShowPickler;
-class ChromeAppListModelUpdater;
 
 namespace ash {
 class AppListControllerImpl;
@@ -95,9 +94,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   bool is_folder() const { return metadata_->is_folder; }
 
  protected:
-  // TODO(hejq): remove this when we have mojo interfaces.
-  friend class ::ChromeAppListModelUpdater;
-
   friend class ::FastShowPickler;
   friend class ash::AppListControllerImpl;
   friend class AppListItemList;

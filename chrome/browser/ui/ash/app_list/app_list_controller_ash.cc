@@ -6,27 +6,32 @@
 
 #include <utility>
 
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
-AppListControllerDelegateAsh::AppListControllerDelegateAsh(
-    app_list::AppListPresenterImpl* app_list_presenter)
-    : app_list_presenter_(app_list_presenter) {}
+AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
 
 AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
+void AppListControllerDelegateAsh::SetAppListController(
+    ash::mojom::AppListController* app_list_controller) {
+  app_list_controller_ = app_list_controller;
+}
+
 void AppListControllerDelegateAsh::DismissView() {
-  app_list_presenter_->Dismiss();
+  if (!app_list_controller_)
+    return;
+  app_list_controller_->DismissAppList();
 }
 
 int64_t AppListControllerDelegateAsh::GetAppListDisplayId() {
@@ -39,11 +44,12 @@ void AppListControllerDelegateAsh::SetAppListDisplayId(int64_t display_id) {
 
 void AppListControllerDelegateAsh::GetAppInfoDialogBounds(
     GetAppInfoDialogBoundsCallback callback) {
-  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
-  gfx::Rect bounds = gfx::Rect();
-  if (app_list_view)
-    bounds = app_list_view->GetAppInfoDialogBounds();
-  std::move(callback).Run(bounds);
+  if (!app_list_controller_) {
+    LOG(ERROR) << "app_list_controller_ is null";
+    std::move(callback).Run(gfx::Rect());
+    return;
+  }
+  app_list_controller_->GetAppInfoDialogBounds(std::move(callback));
 }
 
 bool AppListControllerDelegateAsh::IsAppPinned(const std::string& app_id) {
@@ -69,15 +75,9 @@ AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {
-  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
-  if (app_list_view)
-    app_list_view->SetAppListOverlayVisible(true);
 }
 
 void AppListControllerDelegateAsh::OnCloseChildDialog() {
-  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
-  if (app_list_view)
-    app_list_view->SetAppListOverlayVisible(false);
 }
 
 void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,

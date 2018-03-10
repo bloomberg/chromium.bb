@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "ash/app_list/presenter/app_list.h"
 #include "ash/shell.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"

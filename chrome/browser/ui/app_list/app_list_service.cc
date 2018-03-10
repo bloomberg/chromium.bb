@@ -148,7 +148,6 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
 bool AppListService::HandleLaunchCommandLine(
     const base::CommandLine& command_line,
     Profile* launch_profile) {
-  InitAll(launch_profile, launch_profile->GetPath());
   if (!command_line.HasSwitch(switches::kShowAppList))
     return false;
 

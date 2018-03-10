@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -273,7 +273,7 @@ bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {
 }
 
 void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
-  Shell::Get()->app_list()->ProcessMouseWheelEvent(event);
+  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

@@ -11,12 +11,13 @@
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
-class AppListPresenterService;
+class AppListClientImpl;
 
 namespace app_list {
-class AppListPresenterImpl;
-}
+class SearchModel;
+}  // namespace app_list
 
 namespace base {
 template <typename T>
@@ -31,10 +32,12 @@ class AppListServiceAsh : public AppListServiceImpl {
  public:
   static AppListServiceAsh* GetInstance();
 
-  app_list::AppListPresenterImpl* GetAppListPresenter();
+  // Returns a pointer to control the app list views in ash.
+  ash::mojom::AppListController* GetAppListController();
 
-  // AppListService overrides:
-  void Init(Profile* initial_profile) override;
+  // TODO(hejq): Search model migration is not done yet. Chrome still accesses
+  //             it directly in non-mus+ash mode.
+  app_list::SearchModel* GetSearchModelFromAsh();
 
   // ProfileAttributesStorage::Observer overrides:
   // On ChromeOS this should never happen. On other platforms, there is always a
@@ -42,9 +45,22 @@ class AppListServiceAsh : public AppListServiceImpl {
   // TODO(calamity): Ash shouldn't observe the ProfileAttributesStorage at all.
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
-  AppListPresenterService* app_list_presenter_service() {
-    return app_list_presenter_service_.get();
+  // AppListService overrides:
+  bool IsAppListVisible() const override;
+  bool GetTargetVisibility() const override;
+  void FlushForTesting() override;
+
+  // Updates app list (target) visibility from AppListClientImpl.
+  void set_app_list_visible(bool visible) { app_list_visible_ = visible; }
+  void set_app_list_target_visible(bool visible) {
+    app_list_target_visible_ = visible;
   }
+
+  // Sets the pointers to the app list controller in Ash, and the app list
+  // client in Chrome.
+  void SetAppListControllerAndClient(
+      ash::mojom::AppListController* app_list_controller,
+      AppListClientImpl* app_list_client);
 
  private:
   friend struct base::DefaultSingletonTraits<AppListServiceAsh>;
@@ -63,7 +79,6 @@ class AppListServiceAsh : public AppListServiceImpl {
   void ShowForAppInstall(Profile* profile,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override;
-  bool IsAppListVisible() const override;
   void DismissAppList() override;
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override;
@@ -74,9 +89,12 @@ class AppListServiceAsh : public AppListServiceImpl {
   void CreateForProfile(Profile* default_profile) override;
   void DestroyAppList() override;
 
-  std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;
-  std::unique_ptr<AppListControllerDelegateAsh> controller_delegate_;
-  std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
+  AppListControllerDelegateAsh controller_delegate_;
+  ash::mojom::AppListController* app_list_controller_ = nullptr;
+  AppListClientImpl* app_list_client_ = nullptr;
+
+  bool app_list_visible_ = false;
+  bool app_list_target_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };

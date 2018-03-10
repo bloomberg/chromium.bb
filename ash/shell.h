@@ -37,10 +37,6 @@ class WindowManagerClient;
 class WindowTreeClient;
 }  // namespace aura
 
-namespace app_list {
-class AppList;
-}  // namespace app_list
-
 namespace display {
 class DisplayChangeObserver;
 class DisplayConfigurator;
@@ -83,7 +79,6 @@ class AccessibilityController;
 class AccessibilityDelegate;
 class AshDisplayController;
 class AppListControllerImpl;
-class AppListDelegateImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AutoclickController;
@@ -313,7 +308,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return accessibility_delegate_.get();
   }
   ::wm::ActivationClient* activation_client();
-  app_list::AppList* app_list() { return app_list_.get(); }
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
   }
@@ -707,7 +701,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
-  std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
@@ -813,8 +806,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   aura::Window* scoped_root_window_for_new_windows_ = nullptr;
 
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
-
-  std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
 

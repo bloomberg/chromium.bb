@@ -13,14 +13,6 @@ FakeAppListModelUpdater::FakeAppListModelUpdater() {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() {}
 
-app_list::AppListModel* FakeAppListModelUpdater::GetModel() {
-  return nullptr;
-}
-
-app_list::SearchModel* FakeAppListModelUpdater::GetSearchModel() {
-  return nullptr;
-}
-
 void FakeAppListModelUpdater::AddItem(std::unique_ptr<ChromeAppListItem> item) {
   items_.push_back(std::move(item));
 }

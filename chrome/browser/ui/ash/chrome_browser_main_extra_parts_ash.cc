@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/docked_magnifier/docked_magnifier_client.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/auto_connect_notifier.h"
@@ -204,6 +205,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
+
+  app_list_client_ = std::make_unique<AppListClientImpl>();
 
   // Must be available at login screen, so initialize before profile.
   accessibility_controller_client_ =

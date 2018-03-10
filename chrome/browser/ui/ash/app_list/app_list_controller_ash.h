@@ -14,13 +14,15 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "ui/display/types/display_constants.h"
 
-namespace app_list {
-class AppListPresenterImpl;
-}
+namespace ash {
+namespace mojom {
+class AppListController;
+}  // namespace mojom
+}  // namespace ash
 
 class AppListControllerDelegateAsh : public AppListControllerDelegate {
  public:
-  explicit AppListControllerDelegateAsh(app_list::AppListPresenterImpl*);
+  AppListControllerDelegateAsh();
   ~AppListControllerDelegateAsh() override;
 
   // AppListControllerDelegate overrides:
@@ -50,6 +52,9 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
                  int event_flags,
                  int64_t display_id) override;
 
+  // Sets the pointer to the app list controller in Ash.
+  void SetAppListController(ash::mojom::AppListController* app_list_controller);
+
  private:
   ash::ShelfLaunchSource AppListSourceToLaunchSource(AppListSource source);
 
@@ -57,7 +62,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   int64_t display_id_ = display::kInvalidDisplayId;
 
   // Not owned.
-  app_list::AppListPresenterImpl* app_list_presenter_;
+  ash::mojom::AppListController* app_list_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
 };

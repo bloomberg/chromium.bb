@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -88,9 +87,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
 
   if (profile_) {
     DCHECK(model_updater_);
-    // |search_controller_| will be destroyed on profile switch. Before that,
-    // delete |model_|'s search results to clear any dangling pointers.
-    model_updater_->GetSearchModel()->results()->DeleteAll();
+    model_updater_->SetActive(false);
 
     search_resource_manager_.reset();
     search_controller_.reset();
@@ -118,6 +115,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
   model_updater_ = syncable_service->GetModelUpdater();
+  model_updater_->SetActive(true);
 
   // After |model_updater_| is initialized, make a GetWallpaperColors mojo call
   // to set wallpaper colors for |model_updater_|.
@@ -164,11 +162,13 @@ AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
 }
 
 app_list::AppListModel* AppListViewDelegate::GetModel() {
-  return model_updater_->GetModel();
+  NOTREACHED();
+  return nullptr;
 }
 
 app_list::SearchModel* AppListViewDelegate::GetSearchModel() {
-  return model_updater_->GetSearchModel();
+  NOTREACHED();
+  return nullptr;
 }
 
 void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
