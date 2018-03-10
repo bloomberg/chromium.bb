@@ -3566,6 +3566,8 @@ int AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
       return EVENT_OBJECT_FOCUS;
+    case ax::mojom::Event::kLiveRegionChanged:
+      return EVENT_OBJECT_LIVEREGIONCHANGED;
     case ax::mojom::Event::kMenuStart:
       return EVENT_SYSTEM_MENUSTART;
     case ax::mojom::Event::kMenuEnd:

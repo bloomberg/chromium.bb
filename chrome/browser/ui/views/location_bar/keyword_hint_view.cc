@@ -67,7 +67,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 
   // Use leaf alert role so that name is spoken by screen reader, but redundant
   // child label text is not also spoken.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kGenericContainer);
   GetViewAccessibility().OverrideIsLeaf();
 }
 
@@ -125,8 +125,8 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
                       trailing_label_->text());
   }
 
-  // Fire an accessibility alert event, causing the hint to be spoken.
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  // Fire an accessibility event, causing the hint to be spoken.
+  NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged, true);
 }
 
 gfx::Size KeywordHintView::CalculatePreferredSize() const {
