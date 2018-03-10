@@ -435,7 +435,7 @@ void XRSession::UpdateInputSourceState(
 
     input_source->SetEmulatedPosition(desc->emulated_position);
 
-    if (desc->pointer_offset) {
+    if (desc->pointer_offset && desc->pointer_offset->matrix.has_value()) {
       const WTF::Vector<float>& m = desc->pointer_offset->matrix.value();
       std::unique_ptr<TransformationMatrix> pointer_matrix =
           TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
@@ -445,7 +445,7 @@ void XRSession::UpdateInputSourceState(
     }
   }
 
-  if (state->grip) {
+  if (state->grip && state->grip->matrix.has_value()) {
     const Vector<float>& m = state->grip->matrix.value();
     std::unique_ptr<TransformationMatrix> grip_matrix =
         TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
