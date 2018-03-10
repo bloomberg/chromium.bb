@@ -2920,13 +2920,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardAblationExperimentDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardAblationExperiment)},
-    {"enable-autofill-credit-card-dropdown-google-pay-branding",
-     flag_descriptions::kEnableAutofillCreditCardDropdownGooglePayBrandingName,
-     flag_descriptions::
-         kEnableAutofillCreditCardDropdownGooglePayBrandingDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillCreditCardDropdownGooglePayBranding)},
     {"enable-autofill-credit-card-last-used-date-display",
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayName,
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayDescription,
@@ -2942,13 +2935,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
-    {"enable-autofill-credit-card-upload-google-pay-branding",
-     flag_descriptions::kEnableAutofillCreditCardUploadGooglePayBrandingName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadGooglePayBrandingDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamUseGooglePayBranding)},
     {"enable-autofill-credit-card-upload-send-detected-values",
      flag_descriptions::kEnableAutofillCreditCardUploadSendDetectedValuesName,
      flag_descriptions::
@@ -2963,12 +2949,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberName,
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillSendBillingCustomerNumber)},
-    {"enable-autofill-use-new-settings-name-in-dropdown",
-     flag_descriptions::kEnableAutofillUseNewSettingsNameInDropdownName,
-     flag_descriptions::kEnableAutofillUseNewSettingsNameInDropdownDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUseNewSettingsNameInDropdown)},
 
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,

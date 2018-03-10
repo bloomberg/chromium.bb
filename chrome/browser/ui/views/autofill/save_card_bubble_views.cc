@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -41,9 +40,6 @@
 namespace autofill {
 
 namespace {
-
-// Fixed width of the bubble, in dip.
-const int kBubbleWidth = 395;
 
 // Dimensions of the Google Pay logo.
 const int kGooglePayLogoWidth = 57;
@@ -213,14 +209,10 @@ bool SaveCardBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamUseGooglePayBranding)) {
-    const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_BUBBLE_PREFERRED_WIDTH) -
-                      margins().width();
-    return gfx::Size(width, GetHeightForWidth(width));
-  }
-  return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 bool SaveCardBubbleViews::ShouldShowCloseButton() const {
@@ -233,19 +225,14 @@ base::string16 SaveCardBubbleViews::GetWindowTitle() const {
 }
 
 gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamUseGooglePayBranding)) {
-    return gfx::ImageSkiaOperations::CreateTiledImage(
-        gfx::CreateVectorIcon(kGooglePayLogoWithVerticalSeparatorIcon,
-                              gfx::kPlaceholderColor),
-        /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
-  }
-  return gfx::CreateVectorIcon(kGoogleGLogoIcon, 16, gfx::kPlaceholderColor);
+  return gfx::ImageSkiaOperations::CreateTiledImage(
+      gfx::CreateVectorIcon(kGooglePayLogoWithVerticalSeparatorIcon,
+                            gfx::kPlaceholderColor),
+      /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
 }
 
 bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
-  // We show the window icon (Google "G" or Google Pay logo) in non-local save
-  // scenarios.
+  // We show the window icon (the Google Pay logo) in non-local save scenarios.
   return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP;
 }
 

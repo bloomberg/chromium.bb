@@ -200,18 +200,11 @@ extern const char kEnableAsmWasmDescription[];
 extern const char kEnableAutofillCreditCardAblationExperimentDisplayName[];
 extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 
-extern const char kEnableAutofillCreditCardDropdownGooglePayBrandingName[];
-extern const char
-    kEnableAutofillCreditCardDropdownGooglePayBrandingDescription[];
-
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
 extern const char kEnableAutofillCreditCardUploadCvcPromptName[];
 extern const char kEnableAutofillCreditCardUploadCvcPromptDescription[];
-
-extern const char kEnableAutofillCreditCardUploadGooglePayBrandingName[];
-extern const char kEnableAutofillCreditCardUploadGooglePayBrandingDescription[];
 
 extern const char kEnableAutofillCreditCardUploadSendDetectedValuesName[];
 extern const char
@@ -225,9 +218,6 @@ extern const char kEnableAutofillSendBillingCustomerNumberDescription[];
 
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
-
-extern const char kEnableAutofillUseNewSettingsNameInDropdownName[];
-extern const char kEnableAutofillUseNewSettingsNameInDropdownDescription[];
 
 extern const char kEnableAutofillNativeDropdownViewsName[];
 extern const char kEnableAutofillNativeDropdownViewsDescription[];

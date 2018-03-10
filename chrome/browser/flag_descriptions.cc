@@ -272,12 +272,6 @@ const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
 const char kEnableAutofillCreditCardAblationExperimentDescription[] =
     "If enabled, credit card autofill suggestions will not display.";
 
-const char kEnableAutofillCreditCardDropdownGooglePayBrandingName[] =
-    "Show the Google Pay logo in the Autofill credit card dropdown";
-const char kEnableAutofillCreditCardDropdownGooglePayBrandingDescription[] =
-    "If enabled, shows the Google Pay logo in the Autofill credit card "
-    "dropdown.";
-
 const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
     "Display the last used date of a credit card in autofill.";
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
@@ -288,12 +282,6 @@ const char kEnableAutofillCreditCardUploadCvcPromptName[] =
 const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
     "If enabled, requests missing CVC when offering to upload credit cards to "
     "Google Payments.";
-
-const char kEnableAutofillCreditCardUploadGooglePayBrandingName[] =
-    "Enable Google Pay branding when offering credit card upload";
-const char kEnableAutofillCreditCardUploadGooglePayBrandingDescription[] =
-    "If enabled, shows the Google Pay logo, a shorter header message, and a "
-    "narrower dialog when credit card upload to Google Payments is offered.";
 
 const char kEnableAutofillCreditCardUploadSendDetectedValuesName[] =
     "Always send metadata on detected form values for Autofill credit card "
@@ -316,12 +304,6 @@ const char kEnableAutofillSendBillingCustomerNumberName[] =
 const char kEnableAutofillSendBillingCustomerNumberDescription[] =
     "If enabled, autofill sends billing customer number when calling Google "
     "Payments.";
-
-const char kEnableAutofillUseNewSettingsNameInDropdownName[] =
-    "Show a new Autofill settings string in the Autofill dropdown";
-const char kEnableAutofillUseNewSettingsNameInDropdownDescription[] =
-    "If enabled, shows a new Autofill settings string in the Autofill "
-    "dropdown.";
 
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";

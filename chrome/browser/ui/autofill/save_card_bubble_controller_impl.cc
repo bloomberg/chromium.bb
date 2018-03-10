@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
@@ -137,15 +136,10 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   if (is_uploading_) {
-    if (is_currently_requesting_cvc_) {
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE);
-    }
     return l10n_util::GetStringUTF16(
-        base::FeatureList::IsEnabled(
-            features::kAutofillUpstreamUseGooglePayBranding)
-            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3
-            : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V2);
+        is_currently_requesting_cvc_
+            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE
+            : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
   }
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
 }
