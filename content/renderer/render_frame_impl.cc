@@ -836,9 +836,7 @@ class RenderFrameImpl::FrameURLLoaderFactory
     frame_->UpdatePeakMemoryStats();
 
     mojom::KeepAliveHandlePtr keep_alive_handle;
-    if (base::FeatureList::IsEnabled(
-            features::kKeepAliveRendererForKeepaliveRequests) &&
-        request.GetKeepalive()) {
+    if (request.GetKeepalive()) {
       frame_->GetFrameHost()->IssueKeepAliveHandle(
           mojo::MakeRequest(&keep_alive_handle));
     }

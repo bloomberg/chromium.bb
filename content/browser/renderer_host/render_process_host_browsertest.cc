@@ -140,24 +140,6 @@ class NonSpareRendererContentBrowserClient : public TestContentBrowserClient {
   }
 };
 
-class RenderProcessHostWithKeepAliveOptionEnabledTest
-    : public RenderProcessHostTest {
- public:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kKeepAliveRendererForKeepaliveRequests);
-    RenderProcessHostTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Sometimes the renderer process's ShutdownRequest (corresponding to the
 // ViewMsg_WasSwappedOut from a previous navigation) doesn't arrive until after
 // the browser process decides to re-use the renderer for a new purpose.  This
@@ -730,8 +712,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
-                       KeepAliveRendererProcess) {
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -758,8 +739,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
-                       KeepAliveRendererProcess_Hung) {
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -786,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        FetchKeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));

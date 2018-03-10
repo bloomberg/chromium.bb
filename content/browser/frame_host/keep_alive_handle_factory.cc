@@ -37,22 +37,10 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
 
   void DetachLater() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto timeout = timeout_;
-    int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
-        features::kKeepAliveRendererForKeepaliveRequests, "timeout_in_sec",
-        timeout.InSeconds());
-    // Adopt only "reasonable" values.
-    if (timeout_set_by_finch_in_sec > 0 && timeout_set_by_finch_in_sec <= 60) {
-      timeout = base::TimeDelta::FromSeconds(timeout_set_by_finch_in_sec);
-    } else {
-      DVLOG(0) << "'timeout_in_sec' param for "
-               << "'keep-alive-renderer-for-keepalive-requests' is ignored "
-               << "due to out of range.";
-    }
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&Context::Detach, weak_ptr_factory_.GetWeakPtr()),
-        timeout);
+        timeout_);
   }
 
   void AddBinding(std::unique_ptr<mojom::KeepAliveHandle> impl,
