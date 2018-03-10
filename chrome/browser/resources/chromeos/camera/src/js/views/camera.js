@@ -1935,6 +1935,8 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
         onFailure();
         return;
       }
+      // Disable audio stream until video recording is started.
+      this.enableAudio_(false);
     }
 
     // Mute to avoid echo from the captured audio.
@@ -1958,8 +1960,6 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
         }
       }.bind(this), 100);
 
-      // Disable audio stream unless it's video recording.
-      this.enableAudio_(false);
       this.capturing_ = true;
       var onAnimationFrame = function() {
         if (!this.running_)
