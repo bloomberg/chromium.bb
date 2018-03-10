@@ -95,7 +95,6 @@ Pointer::~Pointer() {
   delegate_->OnPointerDestroying(this);
   if (focus_surface_) {
     focus_surface_->RemoveSurfaceObserver(this);
-    focus_surface_->UnregisterCursorProvider(this);
   }
   if (pinch_delegate_)
     pinch_delegate_->OnPointerDestroying(this);
@@ -149,10 +148,6 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
 
 void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
   pinch_delegate_ = delegate;
-}
-
-gfx::NativeCursor Pointer::GetCursor() {
-  return cursor_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -358,7 +353,6 @@ void Pointer::SetFocus(Surface* surface,
     focus_surface_->RemoveSurfaceObserver(this);
     // Require SetCursor() to be called and cursor to be re-defined in
     // response to each OnPointerEnter() call.
-    focus_surface_->UnregisterCursorProvider(this);
     focus_surface_ = nullptr;
     cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
   }
@@ -368,7 +362,6 @@ void Pointer::SetFocus(Surface* surface,
     location_ = location;
     focus_surface_ = surface;
     focus_surface_->AddSurfaceObserver(this);
-    focus_surface_->RegisterCursorProvider(this);
   }
   delegate_->OnPointerFrame();
 }

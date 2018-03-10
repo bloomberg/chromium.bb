@@ -60,9 +60,6 @@ class Pointer : public SurfaceTreeHost,
   // Set delegate for pinch events.
   void SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate);
 
-  // Returns the current cursor for the pointer.
-  gfx::NativeCursor GetCursor();
-
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
 
