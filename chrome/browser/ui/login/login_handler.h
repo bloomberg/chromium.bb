@@ -256,6 +256,13 @@ class LoginHandler : public content::LoginDelegate,
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
 
+  // Default to |false|. Must be set to |true| anytime the login handler is
+  // shown.
+  bool has_shown_login_handler_;
+
+  // ReleaseSoon() should be called exactly once to destroy the object.
+  bool release_soon_has_been_called_;
+
 #if !defined(OS_ANDROID)
   std::unique_ptr<PopunderPreventer> popunder_preventer_;
 #endif
