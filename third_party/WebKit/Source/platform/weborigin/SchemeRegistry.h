@@ -144,7 +144,7 @@ class PLATFORM_EXPORT SchemeRegistry {
       PolicyAreas = kPolicyAreaAll);
 
   // Schemes which bypass Secure Context checks defined in
-  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
+  // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy
   static void RegisterURLSchemeBypassingSecureContextCheck(
       const String& scheme);
   static bool SchemeShouldBypassSecureContextCheck(const String& scheme);

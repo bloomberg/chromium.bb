@@ -92,7 +92,7 @@ class WebSecurityOrigin {
   // Returns true if the origin loads resources either from the local
   // machine or over the network from a
   // cryptographically-authenticated origin, as described in
-  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
+  // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy.
   BLINK_PLATFORM_EXPORT bool IsPotentiallyTrustworthy() const;
 
   // Returns a string representation of the WebSecurityOrigin.  The empty
