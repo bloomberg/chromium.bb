@@ -2,8 +2,8 @@
 <head>
 <style>
 @font-face {
-  font-family:ahem-4sec;
-  src: url(slow-ahem-loading.cgi?delay=4000);
+  font-family:ahem-3sec;
+  src: url(slow-ahem-loading.cgi?delay=3000);
 }
 @font-face {
   font-family:ahem-8sec;
@@ -18,7 +18,7 @@
   border: 1px solid;
 }
 #span1 {
-  font-family: ahem-4sec, Arial;
+  font-family: ahem-3sec, Arial;
 }
 #span2 {
   font-family: ahem-8sec, Arial;
@@ -30,21 +30,21 @@
 </head>
 <body>
 
-Ahem after 5 seconds:
+Ahem after 4 seconds:
 <br/>
 <span class="testspan" id="span1" style="display: none;">
 abcdefg
 </span>
 <br/>
 
-Arial after 5 seconds:
+Arial after 4 seconds:
 <br/>
 <span class="testspan" id="span2" style="display: none;">
 abcdefg
 </span>
 <br/>
 
-Blank after 5 seconds:
+Blank after 4 seconds:
 <br/>
 <span class="testspan" id="span3" style="display: none;">
 abcdefg
@@ -66,7 +66,7 @@ window.onload = function() {
     displayElementAfter("span1", 0);
     displayElementAfter("span2", 0);
     displayElementAfter("span3", 3000);
-    setTimeout(function() { if (window.testRunner) testRunner.notifyDone(); }, 5000);
+    setTimeout(function() { if (window.testRunner) testRunner.notifyDone(); }, 4000);
 };
 
 </script>
