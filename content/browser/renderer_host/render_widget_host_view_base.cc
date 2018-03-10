@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -167,6 +168,15 @@ void RenderWidgetHostViewBase::CopyFromSurface(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(SkBitmap());
+}
+
+viz::mojom::FrameSinkVideoCapturerPtr
+RenderWidgetHostViewBase::CreateVideoCapturer() {
+  viz::mojom::FrameSinkVideoCapturerPtr video_capturer;
+  GetHostFrameSinkManager()->CreateVideoCapturer(
+      mojo::MakeRequest(&video_capturer));
+  video_capturer->ChangeTarget(GetFrameSinkId());
+  return video_capturer;
 }
 
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {

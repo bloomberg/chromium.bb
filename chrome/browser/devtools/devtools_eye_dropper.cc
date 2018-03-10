@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "cc/paint/skia_paint_canvas.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/cursor_info.h"
 #include "content/public/common/screen_info.h"
+#include "media/base/limits.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -27,6 +30,9 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       last_cursor_x_(-1),
       last_cursor_y_(-1),
       host_(nullptr),
+      video_consumer_binding_(this),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       weak_factory_(this) {
   mouse_event_callback_ =
       base::Bind(&DevToolsEyeDropper::HandleMouseEvent, base::Unretained(this));
@@ -44,6 +50,29 @@ DevToolsEyeDropper::~DevToolsEyeDropper() {
 void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
   host_ = host;
   host_->AddMouseEventCallback(mouse_event_callback_);
+
+  // TODO(crbug.com/813929): Use video capturer even if viz is not enabled.
+  if (!enable_viz_)
+    return;
+
+  // Capturing a full-page screenshot can be costly so we shouldn't do it too
+  // often. We can capture at a lower frame rate without hurting the user
+  // experience.
+  constexpr static int kMaxFrameRate = 15;
+
+  // Create and configure the video capturer.
+  video_capturer_ = host_->GetView()->CreateVideoCapturer();
+  video_capturer_->SetResolutionConstraints(
+      gfx::Size(1, 1),
+      gfx::Size(media::limits::kMaxDimension, media::limits::kMaxDimension),
+      false);
+  video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
+                                       kMaxFrameRate);
+
+  // Start video capture.
+  viz::mojom::FrameSinkVideoConsumerPtr consumer;
+  video_consumer_binding_.Bind(mojo::MakeRequest(&consumer));
+  video_capturer_->Start(std::move(consumer));
 }
 
 void DevToolsEyeDropper::DetachFromHost() {
@@ -53,6 +82,8 @@ void DevToolsEyeDropper::DetachFromHost() {
   content::CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypePointer;
   host_->SetCursor(cursor_info);
+  video_consumer_binding_.Close();
+  video_capturer_.reset();
   host_ = nullptr;
 }
 
@@ -85,7 +116,7 @@ void DevToolsEyeDropper::DidReceiveCompositorFrame() {
 }
 
 void DevToolsEyeDropper::UpdateFrame() {
-  if (!host_ || !host_->GetView())
+  if (enable_viz_ || !host_ || !host_->GetView())
     return;
 
   // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
@@ -106,6 +137,7 @@ void DevToolsEyeDropper::ResetFrame() {
 }
 
 void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap) {
+  DCHECK(!enable_viz_);
   if (bitmap.drawsNothing())
     return;
   frame_ = bitmap;
@@ -271,3 +303,42 @@ void DevToolsEyeDropper::UpdateCursor() {
                                    kHotspotOffset * device_scale_factor);
   host_->SetCursor(cursor_info);
 }
+
+void DevToolsEyeDropper::OnFrameCaptured(
+    mojo::ScopedSharedBufferHandle buffer,
+    uint32_t buffer_size,
+    ::media::mojom::VideoFrameInfoPtr info,
+    const gfx::Rect& update_rect,
+    const gfx::Rect& content_rect,
+    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+  if (!buffer.is_valid()) {
+    callbacks->Done();
+    return;
+  }
+  mojo::ScopedSharedBufferMapping mapping = buffer->Map(buffer_size);
+  if (!mapping) {
+    DLOG(ERROR) << "Shared memory mapping failed.";
+    return;
+  }
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapExternalData(
+      info->pixel_format, info->coded_size, info->visible_rect,
+      info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
+      buffer_size, info->timestamp);
+  if (!frame)
+    return;
+  frame->AddDestructionObserver(base::BindOnce(
+      [](mojo::ScopedSharedBufferMapping mapping) {}, std::move(mapping)));
+
+  SkBitmap skbitmap;
+  skbitmap.allocN32Pixels(info->visible_rect.width(),
+                          info->visible_rect.height());
+  cc::SkiaPaintCanvas canvas(skbitmap);
+  video_renderer_.Copy(frame, &canvas, media::Context3D());
+
+  frame_ = skbitmap;
+  UpdateCursor();
+}
+
+void DevToolsEyeDropper::OnTargetLost(const viz::FrameSinkId& frame_sink_id) {}
+
+void DevToolsEyeDropper::OnStopped() {}

@@ -45,6 +45,7 @@ include_rules = [
   "+media/capture",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
+  "+media/renderers",
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",
@@ -74,6 +75,7 @@ include_rules = [
   "+services/ui/common",
   "+services/ui/public",
   "+services/ui/service.h",
+  "+services/viz/privileged",
   "+skia/ext",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
