@@ -229,10 +229,6 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // The callback to call when the handle is signaled.
   ReadyCallbackWithState callback_;
 
-  // Tracks if the SimpleWatcher has already notified of unsatisfiability. This
-  // is used to prevent redundant notifications in AUTOMATIC mode.
-  bool unsatisfiable_ = false;
-
   // Tag used to ID memory allocations that originated from notifications in
   // this watcher.
   const char* heap_profiler_tag_ = nullptr;

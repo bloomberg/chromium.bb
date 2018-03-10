@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,6 +79,39 @@ TEST_F(SimpleWatcherTest, WatchUnsatisfiable) {
       MOJO_RESULT_OK,
       b_watcher.Watch(b.get(), MOJO_HANDLE_SIGNAL_READABLE, NotReached()));
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, b_watcher.Arm());
+}
+
+TEST_F(SimpleWatcherTest, WatchFailedPreconditionNoSpam) {
+  DataPipe pipe;
+  bool had_failed_precondition = false;
+
+  SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC);
+  MojoResult rc =
+      watcher.Watch(pipe.consumer_handle.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                    OnReady([&](MojoResult result) {
+                      EXPECT_FALSE(had_failed_precondition);
+                      switch (result) {
+                        case MOJO_RESULT_OK:
+                          const void* begin;
+                          uint32_t num_bytes;
+                          pipe.consumer_handle->BeginReadData(
+                              &begin, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+                          pipe.consumer_handle->EndReadData(num_bytes);
+                          break;
+                        case MOJO_RESULT_FAILED_PRECONDITION:
+                          had_failed_precondition = true;
+                          break;
+                      }
+                    }));
+  EXPECT_EQ(MOJO_RESULT_OK, rc);
+
+  uint32_t size = 5;
+  EXPECT_EQ(MOJO_RESULT_OK, pipe.producer_handle->WriteData(
+                                "hello", &size, MOJO_WRITE_DATA_FLAG_NONE));
+  base::RunLoop().RunUntilIdle();
+  pipe.producer_handle.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(had_failed_precondition);
 }
 
 TEST_F(SimpleWatcherTest, WatchInvalidHandle) {
