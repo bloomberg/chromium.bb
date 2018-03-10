@@ -2464,13 +2464,31 @@ void QuicChromiumClientSession::OnReadError(
     int result,
     const DatagramClientSocket* socket) {
   DCHECK(socket != nullptr);
+  base::UmaHistogramSparse("Net.QuicSession.ReadError.AnyNetwork", -result);
   if (socket != GetDefaultSocket()) {
-    // Ignore read errors from old sockets that are no longer active.
+    base::UmaHistogramSparse("Net.QuicSession.ReadError.OtherNetworks",
+                             -result);
+    // Ignore read errors from sockets that are not affecting the current
+    // network, i.e., sockets that are no longer active and probing socket.
     // TODO(jri): Maybe clean up old sockets on error.
     return;
   }
+
+  base::UmaHistogramSparse("Net.QuicSession.ReadError.CurrentNetwork", -result);
+  if (IsCryptoHandshakeConfirmed()) {
+    base::UmaHistogramSparse(
+        "Net.QuicSession.ReadError.CurrentNetwork.HandshakeConfirmed", -result);
+  }
+
+  if (migration_pending_) {
+    // Ignore read errors during pending migration. Connection will be closed if
+    // pending migration failed or timed out.
+    base::UmaHistogramSparse("Net.QuicSession.ReadError.PendingMigration",
+                             -result);
+    return;
+  }
+
   DVLOG(1) << "Closing session on read error: " << result;
-  base::UmaHistogramSparse("Net.QuicSession.ReadError", -result);
   connection()->CloseConnection(QUIC_PACKET_READ_ERROR, ErrorToString(result),
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }
