@@ -1651,6 +1651,8 @@ static void get_ls_tile_buffer(
     copy_data = tile_buffers[row - offset][col].data;
     copy_size = tile_buffers[row - offset][col].size;
     size = 0;
+  } else {
+    size += AV1_MIN_TILE_SIZE_BYTES;
   }
 
   *data += tile_size_bytes;
@@ -1772,7 +1774,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile length");
 
-    size = mem_get_varsize(*data, tile_size_bytes);
+    size = mem_get_varsize(*data, tile_size_bytes) + AV1_MIN_TILE_SIZE_BYTES;
     *data += tile_size_bytes;
 
     if (size > (size_t)(data_end - *data))

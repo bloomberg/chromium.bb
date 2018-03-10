@@ -3383,6 +3383,7 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
           mem_put_varsize(dst + wpos, tsb, tile_header);
           wpos += tsb;
 
+          tile_header += AV1_MIN_TILE_SIZE_BYTES;
           memmove(dst + wpos, dst + rpos, tile_header);
           rpos += tile_header;
           wpos += tile_header;
@@ -3407,6 +3408,7 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
       tile_size = mem_get_le32(dst + rpos);
       rpos += 4;
       mem_put_varsize(dst + wpos, tsb, tile_size);
+      tile_size += AV1_MIN_TILE_SIZE_BYTES;
       wpos += tsb;
     }
 
@@ -3671,7 +3673,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
         if (have_tiles) {
           // tile header: size of this tile, or copy offset
-          uint32_t tile_header = tile_size;
+          uint32_t tile_header = tile_size - AV1_MIN_TILE_SIZE_BYTES;
           const int tile_copy_mode =
               ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256)
                   ? 1
@@ -3824,7 +3826,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       aom_stop_encode(&mode_bc);
 #endif
       tile_size = mode_bc.pos;
-      assert(tile_size > 0);
+      assert(tile_size >= AV1_MIN_TILE_SIZE_BYTES);
 
 #if CONFIG_TRAILING_BITS
       // similar to add_trailing_bits, but specific to end of last tile
@@ -3854,7 +3856,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       if (!is_last_tile_in_tg) {
         // size of this tile
-        mem_put_le32(buf->data, tile_size);
+        mem_put_le32(buf->data, tile_size - AV1_MIN_TILE_SIZE_BYTES);
       } else {
         // write current tile group size
         const uint32_t obu_payload_size = curr_tg_data_size - obu_header_size;
