@@ -3057,14 +3057,9 @@ void RenderFrameHostImpl::BeginNavigation(
       frame_tree_node(), validated_params, std::move(begin_params));
 }
 
-void RenderFrameHostImpl::SubresourceResponseStarted(const GURL& url,
-                                                     const GURL& referrer,
-                                                     const std::string& method,
-                                                     ResourceType resource_type,
-                                                     const std::string& ip,
-                                                     uint32_t cert_status) {
-  delegate_->SubresourceResponseStarted(url, referrer, method, resource_type,
-                                        ip, cert_status);
+void RenderFrameHostImpl::SubresourceResponseStarted(
+    mojom::SubresourceLoadInfoPtr subresource_load_info) {
+  delegate_->SubresourceResponseStarted(std::move(subresource_load_info));
 }
 
 namespace {

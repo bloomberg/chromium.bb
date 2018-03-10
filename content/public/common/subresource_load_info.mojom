@@ -1,0 +1,32 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "content/public/common/resource_type.mojom";
+import "net/interfaces/ip_address.mojom";
+import "url/mojom/url.mojom";
+
+// Information pertaining to subresource loading.
+// This will be passed to SubresourceResponse callback methods.
+struct SubresourceLoadInfo {
+  // The URL of the response.
+  url.mojom.Url url;
+
+  // The response referrer.
+  url.mojom.Url referrer;
+
+  // The request method used to fetch this response.
+  string method;
+
+  // The resource type.
+  ResourceType resource_type;
+
+  // The host IP.
+  net.interfaces.IPAddress? ip;
+
+  // Bitmask of status info of the SSL certificate.
+  // See net/cert/cert_status_flags.h
+  uint32 cert_status;
+};
