@@ -719,7 +719,7 @@ def _download(url):
         raise
 
 
-def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
+def apply_rietveld_issue(issue, patchset, root, _rev_map, _revision,
                          oauth2_file, whitelist=None, blacklist=None):
   apply_issue_bin = ('apply_issue.bat' if sys.platform.startswith('win')
                      else 'apply_issue')
@@ -728,7 +728,7 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
          '--root_dir', root,
          # Tell apply_issue how to fetch the patch.
          '--issue', issue,
-         '--server', server,
+         '--server', 'codereview.chromium.org',
          # Always run apply_issue.py, otherwise it would see update.flag
          # and then bail out.
          '--force',
@@ -867,11 +867,10 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    target_cpu, patch_root, issue, patchset, rietveld_server,
-                    gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
-                    revision_mapping, apply_issue_oauth2_file, shallow,
-                    refs, git_cache_dir, cleanup_dir, gerrit_reset,
-                    disable_syntax_validation):
+                    target_cpu, patch_root, issue, patchset, gerrit_repo,
+                    gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
+                    apply_issue_oauth2_file, shallow, refs, git_cache_dir,
+                    cleanup_dir, gerrit_reset, disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -893,8 +892,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       target = '/'.join([relative_root, 'DEPS']).lstrip('/')
       print '  relative root is %r, target is %r' % (relative_root, target)
       if issue:
-        apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
-                             revision_mapping, git_ref, apply_issue_oauth2_file,
+        apply_rietveld_issue(issue, patchset, patch_root, revision_mapping,
+                             git_ref, apply_issue_oauth2_file,
                              whitelist=[target])
         already_patched.append(target)
       elif gerrit_ref:
@@ -936,9 +935,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
 
   # Apply the rest of the patch here (sans DEPS)
   if issue:
-    apply_rietveld_issue(issue, patchset, patch_root, rietveld_server,
-                         revision_mapping, git_ref, apply_issue_oauth2_file,
-                         blacklist=already_patched)
+    apply_rietveld_issue(issue, patchset, patch_root, revision_mapping, git_ref,
+                         apply_issue_oauth2_file, blacklist=already_patched)
   elif gerrit_ref and not applied_gerrit_patch:
     # If gerrit_ref was for solution's main repository, it has already been
     # applied above. This chunk is executed only for patches to DEPS-ed in
@@ -1007,9 +1005,6 @@ def parse_args():
   parse.add_option('--root', dest='patch_root',
                    help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
-  parse.add_option('--rietveld_server',
-                   default='codereview.chromium.org',
-                   help='Rietveld server.')
   parse.add_option('--gerrit_repo',
                    help='Gerrit repository to pull the ref from.')
   parse.add_option('--gerrit_ref', help='Gerrit ref to apply.')
@@ -1159,7 +1154,6 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           patch_root=options.patch_root,
           issue=options.issue,
           patchset=options.patchset,
-          rietveld_server=options.rietveld_server,
           gerrit_repo=options.gerrit_repo,
           gerrit_ref=options.gerrit_ref,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,

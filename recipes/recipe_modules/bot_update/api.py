@@ -12,14 +12,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, issue, patch_issue, patchset, patch_set,
                repository, patch_repository_url, gerrit_ref, patch_ref,
-               patch_gerrit_url, rietveld, revision, parent_got_revision,
+               patch_gerrit_url, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._issue = issue or patch_issue
     self._patchset = patchset or patch_set
     self._repository = repository or patch_repository_url
     self._gerrit_ref = gerrit_ref or patch_ref
     self._gerrit = patch_gerrit_url
-    self._rietveld = rietveld
     self._revision = revision
     self._parent_got_revision = parent_got_revision
     self._deps_revision_overrides = deps_revision_overrides
@@ -80,8 +79,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     Args:
       gclient_config: The gclient configuration to use when running bot_update.
         If omitted, the current gclient configuration is used.
-      rietveld: The rietveld server to use. If omitted, will infer from
-        the 'rietveld' property.
       issue: The rietveld issue number to use. If omitted, will infer from
         the 'issue' property.
       patchset: The rietveld issue patchset to use. If omitted, will infer from
@@ -93,6 +90,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         be unique for the whole build.
     """
     assert use_site_config_creds is None, "use_site_config_creds is deprecated"
+    assert rietveld is None, "rietveld is deprecated"
 
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -169,7 +167,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # How to find the patch, if any (issue/patchset).
         ['--issue', issue],
         ['--patchset', patchset],
-        ['--rietveld_server', rietveld or self._rietveld],
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],
         ['--apply_issue_oauth2_file', oauth2_json_file],

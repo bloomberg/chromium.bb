@@ -151,7 +151,6 @@ class BotUpdateUnittests(unittest.TestCase):
       'patch_root': None,
       'issue': None,
       'patchset': None,
-      'rietveld_server': None,
       'gerrit_repo': None,
       'gerrit_ref': None,
       'gerrit_rebase_patch_ref': None,

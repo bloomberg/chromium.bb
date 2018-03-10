@@ -1,8 +1,0 @@
-[
-  {
-    "name": "$result",
-    "reason": "build path is not defined. This is typical for LUCI builds. LUCI does not support rietveld.apply_issue; use bot_update instead",
-    "recipe_result": null,
-    "status_code": 1
-  }
-]

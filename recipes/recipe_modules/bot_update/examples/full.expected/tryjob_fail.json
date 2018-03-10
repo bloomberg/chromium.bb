@@ -18,8 +18,6 @@
       "12345",
       "--patchset",
       "654321",
-      "--rietveld_server",
-      "https://rietveld.example.com/",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",

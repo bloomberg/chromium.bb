@@ -12,7 +12,6 @@ DEPS = [
   'recipe_engine/runtime',
   'recipe_engine/source_manifest',
   'recipe_engine/step',
-  'rietveld',
   'tryserver',
 ]
 
@@ -30,8 +29,7 @@ PROPERTIES = {
   # Legacy Gerrit fields.
   'event.patchSet.ref': Property(default=None, param_name='gerrit_ref'),
 
-  # Rietveld-only fields.
-  'rietveld': Property(default=None),  # Stores Url of Rietveld server.
+  # Rietveld-only (?) fields.
   'issue': Property(default=None),
   'patchset': Property(default=None),
   'repository': Property(default=None),
