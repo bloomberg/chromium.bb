@@ -1601,6 +1601,43 @@ TEST_F(PortsTest, RemotePeerStatusAfterRemotePortMerge) {
   EXPECT_TRUE(node1.node().CanShutdownCleanly());
 }
 
+TEST_F(PortsTest, RetransmitUserMessageEvents) {
+  // Ensures that user message events can be retransmitted properly.
+  TestNode node0(0);
+  AddNode(&node0);
+
+  PortRef a, b;
+  node0.node().CreatePortPair(&a, &b);
+
+  // Ping.
+  const char* kMessage = "hey";
+  ScopedMessage message;
+  EXPECT_EQ(OK, node0.SendStringMessage(a, kMessage));
+  ASSERT_TRUE(node0.ReadMessage(b, &message));
+  EXPECT_TRUE(MessageEquals(message, kMessage));
+
+  // Pong.
+  EXPECT_EQ(OK, node0.node().SendUserMessage(b, std::move(message)));
+  EXPECT_FALSE(message);
+  ASSERT_TRUE(node0.ReadMessage(a, &message));
+  EXPECT_TRUE(MessageEquals(message, kMessage));
+
+  // Ping again.
+  EXPECT_EQ(OK, node0.node().SendUserMessage(a, std::move(message)));
+  EXPECT_FALSE(message);
+  ASSERT_TRUE(node0.ReadMessage(b, &message));
+  EXPECT_TRUE(MessageEquals(message, kMessage));
+
+  // Pong again!
+  EXPECT_EQ(OK, node0.node().SendUserMessage(b, std::move(message)));
+  EXPECT_FALSE(message);
+  ASSERT_TRUE(node0.ReadMessage(a, &message));
+  EXPECT_TRUE(MessageEquals(message, kMessage));
+
+  EXPECT_EQ(OK, node0.node().ClosePort(a));
+  EXPECT_EQ(OK, node0.node().ClosePort(b));
+}
+
 }  // namespace test
 }  // namespace ports
 }  // namespace edk
