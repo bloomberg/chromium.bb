@@ -656,9 +656,20 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('new.pydeps', [], action='A'),
     ]
 
+    self.mock_input_api.CreateMockFileInPath(
+        [x.LocalPath() for x in self.mock_input_api.AffectedFiles(
+            include_deletes=True)])
     results = self._RunCheck()
     self.assertEqual(1, len(results))
     self.assertTrue('PYDEPS_FILES' in str(results[0]))
+
+  def testPydepNotInSrc(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('new.pydeps', [], action='A'),
+    ]
+    self.mock_input_api.CreateMockFileInPath([])
+    results = self._RunCheck()
+    self.assertEqual(0, len(results))
 
   def testRemovedPydep(self):
     # PRESUBMIT._CheckPydepsNeedsUpdating is only implemented for Android.
@@ -668,7 +679,9 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.mock_input_api.files = [
       MockAffectedFile(PRESUBMIT._ALL_PYDEPS_FILES[0], [], action='D'),
     ]
-
+    self.mock_input_api.CreateMockFileInPath(
+        [x.LocalPath() for x in self.mock_input_api.AffectedFiles(
+            include_deletes=True)])
     results = self._RunCheck()
     self.assertEqual(1, len(results))
     self.assertTrue('PYDEPS_FILES' in str(results[0]))
