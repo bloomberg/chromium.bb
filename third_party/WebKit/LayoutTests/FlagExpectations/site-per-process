@@ -142,8 +142,6 @@ Bug(none) external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-m
 Bug(none) external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/004.html [ Timeout ]
 Bug(none) external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
-Bug(none) external/wpt/webmessaging/event.origin.sub.htm [ Failure ]
-Bug(none) external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
 Bug(none) virtual/outofblink-cors/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 
