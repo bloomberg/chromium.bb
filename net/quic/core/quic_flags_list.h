@@ -202,3 +202,12 @@ QUIC_FLAG(
 // If true, QUIC streams are registered in the QuicStream constructor instead
 // of in the QuicSpdyStream constructor.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early, false)
+
+// If this flag and
+// FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
+// are both ture, QUIC will clear queued packets before sending connectivity
+// probing packets.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
+    false)
