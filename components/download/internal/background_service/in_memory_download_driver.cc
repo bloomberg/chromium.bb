@@ -47,10 +47,10 @@ DriverEntry CreateDriverEntry(const InMemoryDownload& download) {
 }  // namespace
 
 InMemoryDownloadFactory::InMemoryDownloadFactory(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(url_loader_factory),
       blob_context_getter_(blob_context_getter),
       io_task_runner_(io_task_runner) {}
 
@@ -61,9 +61,10 @@ std::unique_ptr<InMemoryDownload> InMemoryDownloadFactory::Create(
     const RequestParams& request_params,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     InMemoryDownload::Delegate* delegate) {
+  DCHECK(url_loader_factory_);
   return std::make_unique<InMemoryDownloadImpl>(
-      guid, request_params, traffic_annotation, delegate,
-      request_context_getter_, blob_context_getter_, io_task_runner_);
+      guid, request_params, traffic_annotation, delegate, url_loader_factory_,
+      blob_context_getter_, io_task_runner_);
 }
 
 InMemoryDownloadDriver::InMemoryDownloadDriver(

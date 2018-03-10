@@ -14,13 +14,11 @@
 #include "base/single_thread_task_runner.h"
 #include "components/download/internal/background_service/blob_task_proxy.h"
 #include "components/download/public/background_service/download_params.h"
-#include "net/base/completion_callback.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_response_writer.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace net {
-class URLFetcher;
 struct NetworkTrafficAnnotationTag;
 }  // namespace net
 
@@ -78,9 +76,7 @@ class InMemoryDownload {
     FAILED,
 
     // Download is completed, and data is successfully saved as a blob.
-    // 1. We guarantee the states of network responses.
-    // 2. Do not guarantee the state of blob data. The consumer of blob
-    // should validate its state when using it on IO thread.
+    // Guarantee the blob is fully constructed.
     COMPLETE,
   };
 
@@ -129,14 +125,15 @@ class InMemoryDownload {
   DISALLOW_COPY_AND_ASSIGN(InMemoryDownload);
 };
 
-// Implementation of InMemoryDownload and uses URLFetcher as network backend.
+// Implementation of InMemoryDownload and uses SimpleURLLoader as network
+// backend.
 // Threading contract:
 // 1. This object lives on the main thread.
 // 2. Reading/writing IO buffer from network is done on another thread,
 // based on |request_context_getter_|. When complete, main thread is notified.
 // 3. After network IO is done, Blob related work is done on IO thread with
 // |blob_task_proxy_|, then notify the result to main thread.
-class InMemoryDownloadImpl : public net::URLFetcherDelegate,
+class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
                              public InMemoryDownload {
  public:
   InMemoryDownloadImpl(
@@ -144,51 +141,13 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
       const RequestParams& request_params,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       Delegate* delegate,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      network::mojom::URLLoaderFactory* url_loader_factory,
       BlobTaskProxy::BlobContextGetter blob_context_getter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
   ~InMemoryDownloadImpl() override;
 
  private:
-  // Response writer that supports pause and resume operations.
-  class ResponseWriter : public net::URLFetcherResponseWriter {
-   public:
-    ResponseWriter(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-    ~ResponseWriter() override;
-
-    // Pause writing data from pipe into |data_|.
-    void Pause();
-
-    // Resume writing data from the pipe into |data_|.
-    void Resume();
-
-    // Take the data, must be called after the network layer completes its job.
-    std::unique_ptr<std::string> TakeData();
-
-   private:
-    // net::URLFetcherResponseWriter implementation.
-    int Initialize(const net::CompletionCallback& callback) override;
-    int Write(net::IOBuffer* buffer,
-              int num_bytes,
-              const net::CompletionCallback& callback) override;
-    int Finish(int net_error, const net::CompletionCallback& callback) override;
-
-    void PauseOnIO();
-    void ResumeOnIO();
-
-    // Download data, should be moved to avoid extra copy.
-    std::unique_ptr<std::string> data_;
-
-    bool paused_on_io_;
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-    // When paused, cached callback to trigger the next read. Must be set and
-    // called on fetcher's IO thread.
-    net::CompletionCallback write_callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
-  };
-
   // InMemoryDownload implementation.
   void Start() override;
   void Pause() override;
@@ -197,16 +156,11 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override;
   size_t EstimateMemoryUsage() const override;
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  // Handles response code and change the state accordingly.
-  // Returns if the response code is considered as successful code.
-  bool HandleResponseCode(int response_code);
+  // network::SimpleURLLoaderStreamConsumer implementation.
+  void OnDataReceived(base::StringPiece string_piece,
+                      base::OnceClosure resume) override;
+  void OnComplete(bool success) override;
+  void OnRetry(base::OnceClosure start_retry) override;
 
   // Saves the download data into blob storage.
   void SaveAsBlob();
@@ -218,8 +172,11 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   // call.
   void NotifyDelegateDownloadComplete();
 
-  // Sends the network request.
+  // Sends a new network request.
   void SendRequest();
+
+  // Resets local states.
+  void Reset();
 
   // Request parameters of the download.
   const RequestParams request_params_;
@@ -227,17 +184,11 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   // Traffic annotation of the request.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  // Used to send requests to servers. Also contains the download data in its
-  // string buffer. We should avoid extra copy on the data and release the
-  // memory when needed.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // Used to send requests to servers.
+  std::unique_ptr<network::SimpleURLLoader> loader_;
 
-  // Owned by |url_fetcher_|. Lives on fetcher's delegate thread, perform
-  // network IO on fetcher's IO thread.
-  ResponseWriter* response_writer_;
-
-  // Request context getter used by |url_fetcher_|.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // Used to handle network response.
+  network::mojom::URLLoaderFactory* url_loader_factory_;
 
   // Worker that does blob related task on IO thread.
   std::unique_ptr<BlobTaskProxy> blob_task_proxy_;
@@ -252,6 +203,12 @@ class InMemoryDownloadImpl : public net::URLFetcherDelegate,
   Delegate* delegate_;
 
   bool paused_;
+
+  // Data downloaded from network, should be moved to avoid extra copy.
+  std::string data_;
+
+  // Cached callback to let network backend continue to pull data.
+  base::OnceClosure resume_callback_;
 
   // Ensures Delegate::OnDownloadComplete is only called once.
   bool completion_notified_;

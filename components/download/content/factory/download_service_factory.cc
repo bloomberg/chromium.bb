@@ -23,7 +23,7 @@
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "content/public/browser/storage_partition.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
@@ -111,12 +111,16 @@ DownloadService* BuildInMemoryDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
     const base::FilePath& storage_dir,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   auto config = Configuration::CreateFromFinch();
+  auto* url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
+  DCHECK(url_loader_factory);
   auto download_factory = std::make_unique<InMemoryDownloadFactory>(
-      request_context_getter, blob_context_getter, io_task_runner);
+      url_loader_factory, blob_context_getter, io_task_runner);
   auto driver =
       std::make_unique<InMemoryDownloadDriver>(std::move(download_factory));
   auto store = std::make_unique<NoopStore>();

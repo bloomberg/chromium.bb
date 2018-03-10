@@ -5,6 +5,8 @@ include_rules = [
   "+base",
   "+jni",
   "+net",
+  "+services/network/public",
+  "+services/network/test",
   "+storage/browser",
   "+storage/common",
 ]
