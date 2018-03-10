@@ -22,9 +22,21 @@ class Rect;
 class Size;
 }
 
+namespace mojo {
+template <class T>
+class InterfacePtr;
+}
+
 namespace ui {
 class TextInputClient;
 }
+
+namespace viz {
+namespace mojom {
+class FrameSinkVideoCapturer;
+using FrameSinkVideoCapturerPtr = mojo::InterfacePtr<FrameSinkVideoCapturer>;
+}  // namespace mojom
+}  // namespace viz
 
 namespace content {
 
@@ -167,7 +179,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Copies the given subset of the view's surface, optionally scales it, and
   // returns the result as a bitmap via the provided callback. This is meant for
   // one-off snapshots. For continuous video capture of the surface, please use
-  // viz::FrameSinkManager::CreateVideoCapturer() instead.
+  // CreateVideoCapturer() instead.
   //
   // |src_rect| is either the subset of the view's surface, in view coordinates,
   // or empty to indicate that all of it should be copied. This is NOT the same
@@ -189,6 +201,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
+
+  // Creates a video capturer, which will allow the caller to receive a stream
+  // of media::VideoFrames captured from this view. The capturer is configured
+  // to target this view, so there is no need to call ChangeTarget() before
+  // Start(). See viz.mojom.FrameSinkVideoCapturer for documentation.
+  virtual viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() = 0;
 
   // Notification that a node was touched.
   // The |editable| parameter indicates if the node is editable, for e.g.

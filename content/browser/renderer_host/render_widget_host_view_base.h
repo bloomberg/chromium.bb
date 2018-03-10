@@ -119,6 +119,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
+  viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() override;
   void FocusedNodeTouched(bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
   float GetDeviceScaleFactor() const final;
