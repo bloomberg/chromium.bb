@@ -25,24 +25,24 @@
 
 interface TypeConversions {
     attribute long testLong;
-    [EnforceRange, ImplementedAs=testLong] attribute long testEnforceRangeLong;
+    [ImplementedAs=testLong] attribute [EnforceRange] long testEnforceRangeLong;
     attribute unsigned long testUnsignedLong;
-    [EnforceRange, ImplementedAs=testUnsignedLong] attribute unsigned long testEnforceRangeUnsignedLong;
+    [ImplementedAs=testUnsignedLong] attribute [EnforceRange] unsigned long testEnforceRangeUnsignedLong;
 
     attribute long long testLongLong;
-    [EnforceRange, ImplementedAs=testLongLong] attribute long long testEnforceRangeLongLong;
+    [ImplementedAs=testLongLong] attribute [EnforceRange] long long testEnforceRangeLongLong;
     attribute unsigned long long testUnsignedLongLong;
-    [EnforceRange, ImplementedAs=testUnsignedLongLong] attribute unsigned long long testEnforceRangeUnsignedLongLong;
+    [ImplementedAs=testUnsignedLongLong] attribute [EnforceRange] unsigned long long testEnforceRangeUnsignedLongLong;
 
     attribute byte testByte;
-    [EnforceRange, ImplementedAs=testByte] attribute byte testEnforceRangeByte;
+    [ImplementedAs=testByte] attribute [EnforceRange] byte testEnforceRangeByte;
     attribute octet testOctet;
-    [EnforceRange, ImplementedAs=testOctet] attribute octet testEnforceRangeOctet;
+    [ImplementedAs=testOctet] attribute [EnforceRange] octet testEnforceRangeOctet;
 
     attribute short testShort;
-    [EnforceRange, ImplementedAs=testShort] attribute short testEnforceRangeShort;
+    [ImplementedAs=testShort] attribute [EnforceRange] short testEnforceRangeShort;
     attribute unsigned short testUnsignedShort;
-    [EnforceRange, ImplementedAs=testUnsignedShort] attribute unsigned short testEnforceRangeUnsignedShort;
+    [ImplementedAs=testUnsignedShort] attribute [EnforceRange] unsigned short testEnforceRangeUnsignedShort;
 
     attribute ByteString testByteString;
     void setTestByteString(ByteString byteString);
