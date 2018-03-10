@@ -331,31 +331,31 @@ size_t CountCookiesForPossibleDeletion(
 
 }  // namespace
 
-CookieMonster::CookieMonster(PersistentCookieStore* store)
+CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store)
     : CookieMonster(
-          store,
+          std::move(store),
           nullptr,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
 
-CookieMonster::CookieMonster(PersistentCookieStore* store,
+CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              ChannelIDService* channel_id_service)
     : CookieMonster(
-          store,
+          std::move(store),
           channel_id_service,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
 
-CookieMonster::CookieMonster(PersistentCookieStore* store,
+CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              base::TimeDelta last_access_threshold)
-    : CookieMonster(store, nullptr, last_access_threshold) {}
+    : CookieMonster(std::move(store), nullptr, last_access_threshold) {}
 
-CookieMonster::CookieMonster(PersistentCookieStore* store,
+CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              ChannelIDService* channel_id_service,
                              base::TimeDelta last_access_threshold)
     : initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       seen_global_task_(false),
-      store_(store),
+      store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
       channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
