@@ -9,7 +9,8 @@
        },
        "requires": {
          "*": [ "app" ],
-        "service_manager": [ "service_manager:all_users" ]
+         "content_browser": [ "font_loader" ],
+         "service_manager": [ "service_manager:all_users" ]
        }
      }
   }

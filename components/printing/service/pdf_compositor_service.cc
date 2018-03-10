@@ -21,6 +21,11 @@
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
+#elif defined(OS_MACOSX)
+#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#include "third_party/WebKit/public/platform/Platform.h"
 #endif
 
 namespace {
@@ -67,6 +72,24 @@ void PdfCompositorService::PrepareToStart() {
   DCHECK(discardable_shared_memory_manager_);
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // Check that we have sandbox support on this platform.
+  DCHECK(blink::Platform::Current()->GetSandboxSupport());
+#endif
+
+#if defined(OS_MACOSX)
+  // Check that font access is granted.
+  // This doesn't do comprehensive tests to make sure fonts can work properly.
+  // It is just a quick and simple check to catch things like improper sandbox
+  // policy setup.
+  DCHECK(SkFontMgr::RefDefault()->countFamilies());
+
+  // Initialize a connection to FontLoaderMac service so blink platform's web
+  // sandbox support can communicate with it to load font.
+  content::UtilityThread::Get()->InitializeFontLoaderMac(
+      context()->connector());
+#endif
 }
 
 void PdfCompositorService::OnStart() {

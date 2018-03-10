@@ -379,6 +379,19 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   WaitUntilMessagesReceived();
 }
 
+// Printing preview a simple webpage when site per process is enabled.
+// Test that the basic oopif printing should succeed. The test should not crash
+// or timed out. There could be other reasons that cause the test fail, but the
+// most obvious ones would be font access outage or web sandbox support being
+// absent because we explicitly check these when pdf compositor service starts.
+IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, BasicPrint) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
 // Printing a web page with a dead subframe for site per process should succeed.
 // This test passes whenever the print preview is rendered. This should not be
 // a timed out test which indicates the print preview hung.

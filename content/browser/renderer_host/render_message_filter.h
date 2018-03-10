@@ -115,10 +115,6 @@ class CONTENT_EXPORT RenderMessageFilter
   void HasGpuProcess(HasGpuProcessCallback callback) override;
   void SetThreadPriority(int32_t ns_tid,
                          base::ThreadPriority priority) override;
-  // Messages for OOP font loading.  Only used for MACOSX.
-  void LoadFont(const base::string16& font_to_load,
-                float font_point_size,
-                LoadFontCallback callback) override;
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 

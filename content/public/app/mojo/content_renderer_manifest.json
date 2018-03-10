@@ -31,6 +31,7 @@
         "content_browser": [
           "dwrite_font_proxy",
           "field_trials",
+          "font_loader",
           "renderer"
         ],
         "metrics": [ "url_keyed_metrics" ],

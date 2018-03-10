@@ -75,7 +75,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/common/mac/font_loader.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 #if defined(OS_LINUX)
@@ -194,17 +193,6 @@ void RenderMessageFilter::CreateFullscreenWidget(
   render_widget_helper_->CreateNewFullscreenWidget(opener_id, std::move(widget),
                                                    &route_id);
   std::move(callback).Run(route_id);
-}
-
-void RenderMessageFilter::LoadFont(const base::string16& font_name,
-                                   float font_point_size,
-                                   LoadFontCallback callback) {
-#if defined(OS_MACOSX)
-  FontLoader::LoadFont(font_name, font_point_size, std::move(callback));
-#else
-  // TODO(https://crbug.com/676224): remove this reporting.
-  mojo::ReportBadMessage("LoadFont is OS_MACOSX only.");
-#endif  // defined(OS_MACOSX)
 }
 
 #if defined(OS_LINUX)

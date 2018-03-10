@@ -38,6 +38,8 @@ namespace blink {
 // Put methods here that are required due to sandbox restrictions.
 class WebSandboxSupport {
  public:
+  virtual ~WebSandboxSupport() {}
+
   // Given an input font - |srcFont| [which can't be loaded due to sandbox
   // restrictions]. Return a font belonging to an equivalent font file
   // that can be used to access the font and a unique identifier corresponding

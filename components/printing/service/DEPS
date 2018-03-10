@@ -9,4 +9,5 @@ include_rules = [
   "+services/service_manager/public/mojom",
   "+skia",
   "+third_party/skia",
+  "+third_party/WebKit/public/platform", # Test web sandbox support.
 ]
