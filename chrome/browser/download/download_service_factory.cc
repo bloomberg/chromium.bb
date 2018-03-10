@@ -29,7 +29,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
@@ -79,10 +78,6 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   // Build in memory download service for incognito profile.
   if (context->IsOffTheRecord() &&
       base::FeatureList::IsEnabled(download::kDownloadServiceIncognito)) {
-    scoped_refptr<net::URLRequestContextGetter> url_request_context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            Profile::FromBrowserContext(context))
-            ->GetURLRequestContext();
     content::BrowserContext::BlobContextGetter blob_context_getter =
         content::BrowserContext::GetBlobStorageContext(context);
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
@@ -90,8 +85,8 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
             content::BrowserThread::IO);
 
     return download::BuildInMemoryDownloadService(
-        context, std::move(clients), base::FilePath(), url_request_context,
-        blob_context_getter, io_task_runner);
+        context, std::move(clients), base::FilePath(), blob_context_getter,
+        io_task_runner);
   } else {
     // Build download service for normal profile.
     base::FilePath storage_dir;

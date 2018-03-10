@@ -17,10 +17,6 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace download {
 
 class DownloadService;
@@ -49,7 +45,6 @@ DownloadService* BuildInMemoryDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
     const base::FilePath& storage_dir,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 

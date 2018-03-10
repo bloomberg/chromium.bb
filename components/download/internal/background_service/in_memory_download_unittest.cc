@@ -4,16 +4,14 @@
 
 #include "components/download/internal/background_service/in_memory_download.h"
 
-#include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/base/io_buffer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,18 +20,9 @@
 namespace download {
 namespace {
 
-// Posts a dummy task on |task_runner| and wait for its callback, to drain all
-// previous tasks on |task_runner|.
-void DrainPreviousTasks(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  base::RunLoop run_loop;
-
-  auto dummy_task = []() {};
-  task_runner->PostTaskAndReply(FROM_HERE, base::BindRepeating(dummy_task),
-                                run_loop.QuitClosure());
-
-  run_loop.Run();
-}
+const char kTestDownloadData[] =
+    "In earlier tellings, the dog had a better reputation than the cat, "
+    "however the president veto it.";
 
 // Dummy callback used for IO_PENDING state in blob operations, this is not
 // called when the blob operation is done, but called when chained with other
@@ -78,14 +67,10 @@ class InMemoryDownloadTest : public testing::Test {
   ~InMemoryDownloadTest() override = default;
 
   void SetUp() override {
-    test_server_.ServeFilesFromDirectory(GetTestDataDirectory());
-    ASSERT_TRUE(test_server_.Start());
-
     io_thread_.reset(new base::Thread("Network and Blob IO thread"));
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
-    request_context_getter_ =
-        new net::TestURLRequestContextGetter(io_thread_->task_runner());
+
     base::RunLoop loop;
     io_thread_->task_runner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -103,17 +88,11 @@ class InMemoryDownloadTest : public testing::Test {
   }
 
  protected:
-  base::FilePath GetTestDataDirectory() {
-    base::FilePath test_data_dir;
-    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    return test_data_dir.AppendASCII("components/test/data/download");
-  }
-
   // Helper method to create a download with request_params.
   void CreateDownload(const RequestParams& request_params) {
     download_ = std::make_unique<InMemoryDownloadImpl>(
         base::GenerateGUID(), request_params, TRAFFIC_ANNOTATION_FOR_TESTS,
-        delegate(), request_context_getter_,
+        delegate(), &url_loader_factory_,
         base::BindRepeating(&BlobStorageContextGetter,
                             blob_storage_context_.get()),
         io_thread_->task_runner());
@@ -121,9 +100,8 @@ class InMemoryDownloadTest : public testing::Test {
 
   InMemoryDownload* download() { return download_.get(); }
   MockDelegate* delegate() { return &mock_delegate_; }
-  net::EmbeddedTestServer* test_server() { return &test_server_; }
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter() {
-    return request_context_getter_;
+  network::TestURLLoaderFactory* url_loader_factory() {
+    return &url_loader_factory_;
   }
 
   // Verifies if data read from |blob| is identical as |expected|.
@@ -174,56 +152,27 @@ class InMemoryDownloadTest : public testing::Test {
   std::unique_ptr<InMemoryDownloadImpl> download_;
   MockDelegate mock_delegate_;
 
-  // Used by URLFetcher network backend.
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  // Used by SimpleURLLoader network backend.
+  network::TestURLLoaderFactory url_loader_factory_;
 
   // Memory backed blob storage that can never page to disk.
   std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
-
-  net::EmbeddedTestServer test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryDownloadTest);
 };
 
 TEST_F(InMemoryDownloadTest, DownloadTest) {
   RequestParams request_params;
-  request_params.url = test_server()->GetURL("/text_data.json");
   CreateDownload(request_params);
+  url_loader_factory()->AddResponse(request_params.url.spec(),
+                                    kTestDownloadData);
+  // TODO(xingliu): More tests on pause/resume.
   download()->Start();
   delegate()->WaitForCompletion();
 
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
   auto blob = download()->ResultAsBlob();
-
-  std::string expected;
-  EXPECT_TRUE(ReadFileToString(
-      GetTestDataDirectory().AppendASCII("text_data.json"), &expected));
-  VerifyBlobData(expected, blob.get());
-}
-
-TEST_F(InMemoryDownloadTest, PauseResume) {
-  RequestParams request_params;
-  request_params.url = test_server()->GetURL("/text_data.json");
-  CreateDownload(request_params);
-
-  // Pause before sending request.
-  download()->Pause();
-  download()->Start();
-
-  // Force to return ERR_IO_PENDING on network thread in
-  // InMemoryDownloadImpl::ResponseWriter::Write.
-  DrainPreviousTasks(request_context_getter()->GetNetworkTaskRunner());
-
-  download()->Resume();
-  delegate()->WaitForCompletion();
-
-  EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
-  auto blob = download()->ResultAsBlob();
-
-  std::string expected;
-  EXPECT_TRUE(ReadFileToString(
-      GetTestDataDirectory().AppendASCII("text_data.json"), &expected));
-  VerifyBlobData(expected, blob.get());
+  VerifyBlobData(kTestDownloadData, blob.get());
 }
 
 }  // namespace

@@ -87,6 +87,7 @@ static_library("internal") {
     "//components/download/public/background_service:public",
     "//components/leveldb_proto",
     "//net",
+    "//services/network/public/cpp",
     "//storage/browser",
   ]
 
@@ -152,7 +153,7 @@ source_set("unit_tests") {
     "//components/download/internal/background_service/test:test_support",
     "//components/download/public/background_service/test:test_support",
     "//components/leveldb_proto:test_support",
-    "//net:test_support",
+    "//services/network:test_support",
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
