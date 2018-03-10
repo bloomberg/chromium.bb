@@ -536,9 +536,11 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
                     ui::LatencyInfo /* latency_info */)
 
-// Sets the viewport intersection on the widget for an out-of-process iframe.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetViewportIntersection,
-                    gfx::Rect /* viewport_intersection */)
+// Sets the viewport intersection and compositor raster area on the widget for
+// an out-of-process iframe.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetViewportIntersection,
+                    gfx::Rect /* viewport_intersection */,
+                    gfx::Rect /* compositor_visible_rect */)
 
 // Sets the inert bit on an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetIsInert, bool /* inert */)

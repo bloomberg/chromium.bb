@@ -1088,6 +1088,15 @@ void LayerTreeHost::SetViewportSizeAndScale(
   }
 }
 
+void LayerTreeHost::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
+  if (visible_rect == viewport_visible_rect_)
+    return;
+
+  viewport_visible_rect_ = visible_rect;
+  SetPropertyTreesNeedRebuild();
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::SetBrowserControlsHeight(float top_height,
                                              float bottom_height,
                                              bool shrink) {
@@ -1396,6 +1405,7 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   RecordGpuRasterizationHistogram(host_impl);
 
   host_impl->SetViewportSize(device_viewport_size_);
+  host_impl->SetViewportVisibleRect(viewport_visible_rect_);
   host_impl->SetDebugState(debug_state_);
 }
 

@@ -135,7 +135,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
                             const ScreenInfo& screen_info,
                             uint64_t sequence_number,
                             const viz::SurfaceId& surface_id);
-  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
+  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
+                                    const gfx::Rect& compositor_visible_rect);
   void OnVisibilityChanged(bool visible);
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,

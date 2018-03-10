@@ -444,10 +444,12 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 }
 
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
-    const gfx::Rect& viewport_intersection) {
-  if (host_)
-    host_->Send(new ViewMsg_SetViewportIntersection(host_->GetRoutingID(),
-                                                    viewport_intersection));
+    const gfx::Rect& viewport_intersection,
+    const gfx::Rect& compositor_visible_rect) {
+  if (host_) {
+    host_->Send(new ViewMsg_SetViewportIntersection(
+        host_->GetRoutingID(), viewport_intersection, compositor_visible_rect));
+  }
 }
 
 void RenderWidgetHostViewChildFrame::SetIsInert() {
@@ -795,7 +797,8 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   // spammy way to do this, but triggering on SendScreenRects() is reasonable
   // until somebody figures that out. RWHVCF::Init() is too early.
   if (frame_connector_) {
-    UpdateViewportIntersection(frame_connector_->ViewportIntersection());
+    UpdateViewportIntersection(frame_connector_->viewport_intersection_rect(),
+                               frame_connector_->compositor_visible_rect());
     SetIsInert();
     UpdateRenderThrottlingStatus();
   }

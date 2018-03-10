@@ -1949,6 +1949,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   screen_info_ = new_screen_info;
 
   if (compositor_) {
+    compositor_->SetViewportVisibleRect(ViewportVisibleRect());
     // Note carefully that the DSF specified in |new_screen_info| is not the
     // DSF used by the compositor during device emulation!
     compositor_->SetViewportSizeAndScale(
@@ -2013,10 +2014,14 @@ void RenderWidget::OnUpdateWindowScreenRect(
 }
 
 void RenderWidget::OnSetViewportIntersection(
-    const gfx::Rect& viewport_intersection) {
+    const gfx::Rect& viewport_intersection,
+    const gfx::Rect& compositor_visible_rect) {
   if (auto* frame_widget = GetFrameWidget()) {
     DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
+    viewport_intersection_ = viewport_intersection;
+    compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection);
+    compositor_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
 
@@ -2805,5 +2810,10 @@ PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
   return nullptr;
 }
 #endif
+
+gfx::Rect RenderWidget::ViewportVisibleRect() {
+  return for_oopif_ ? compositor_visible_rect_
+                    : gfx::Rect(compositor_viewport_pixel_size_);
+}
 
 }  // namespace content

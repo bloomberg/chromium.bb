@@ -204,6 +204,9 @@ class CONTENT_EXPORT RenderWidget
   gfx::Point host_context_menu_location() const {
     return host_context_menu_location_;
   }
+  const gfx::Size& visible_viewport_size() const {
+    return visible_viewport_size_;
+  }
 
   void set_owner_delegate(RenderWidgetOwnerDelegate* owner_delegate) {
     DCHECK(!owner_delegate_);
@@ -582,7 +585,8 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
-  void OnSetViewportIntersection(const gfx::Rect& viewport_intersection);
+  void OnSetViewportIntersection(const gfx::Rect& viewport_intersection,
+                                 const gfx::Rect& compositor_visible_rect);
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
@@ -628,6 +632,11 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_resize_ack();
   void set_next_paint_is_repaint_ack();
   void reset_next_paint_is_resize_ack();
+
+  // Returns a rect that the compositor needs to raster. For a main frame this
+  // is always the entire viewprot, but for out-of-process iframes this can be
+  // constrained to limit overdraw.
+  gfx::Rect ViewportVisibleRect();
 
   // QueueMessage implementation extracted into a static method for easy
   // testing.
@@ -983,6 +992,9 @@ class CONTENT_EXPORT RenderWidget
   // acked was received. This helps us make sure we don't ack a resize before
   // it's committed.
   bool did_commit_after_resize_ = false;
+
+  gfx::Rect viewport_intersection_;
+  gfx::Rect compositor_visible_rect_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

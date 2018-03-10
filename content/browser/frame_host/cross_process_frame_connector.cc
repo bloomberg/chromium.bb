@@ -295,10 +295,13 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
-    const gfx::Rect& viewport_intersection) {
+    const gfx::Rect& viewport_intersection,
+    const gfx::Rect& compositor_visible_rect) {
   viewport_intersection_rect_ = viewport_intersection;
+  compositor_visible_rect_ = compositor_visible_rect;
   if (view_)
-    view_->UpdateViewportIntersection(viewport_intersection);
+    view_->UpdateViewportIntersection(viewport_intersection,
+                                      compositor_visible_rect);
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {

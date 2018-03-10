@@ -778,6 +778,11 @@ void RenderWidgetCompositor::SetViewportSizeAndScale(
       device_viewport_size, device_scale_factor, local_surface_id);
 }
 
+void RenderWidgetCompositor::SetViewportVisibleRect(
+    const gfx::Rect& visible_rect) {
+  layer_tree_host_->SetViewportVisibleRect(visible_rect);
+}
+
 viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }

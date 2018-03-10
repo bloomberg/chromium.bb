@@ -1408,6 +1408,10 @@ gfx::Size LayerTreeImpl::device_viewport_size() const {
   return host_impl_->device_viewport_size();
 }
 
+gfx::Rect LayerTreeImpl::viewport_visible_rect() const {
+  return host_impl_->viewport_visible_rect();
+}
+
 DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
   return host_impl_->debug_rect_history();
 }

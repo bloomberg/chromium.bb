@@ -60,8 +60,10 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
     last_surface_info_ = surface_info;
   }
 
-  void SetViewportIntersection(const gfx::Rect& intersection) {
+  void SetViewportIntersection(const gfx::Rect& intersection,
+                               const gfx::Rect& compositor_visible_rect) {
     viewport_intersection_rect_ = intersection;
+    compositor_visible_rect_ = compositor_visible_rect;
   }
 
   RenderWidgetHostViewBase* GetParentRenderWidgetHostView() override {
@@ -236,7 +238,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
 // whenever screen rects are updated.
 TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
   gfx::Rect intersection_rect(5, 5, 100, 80);
-  test_frame_connector_->SetViewportIntersection(intersection_rect);
+  test_frame_connector_->SetViewportIntersection(intersection_rect,
+                                                 intersection_rect);
 
   MockRenderProcessHost* process =
       static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
@@ -248,9 +251,11 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
       process->sink().GetUniqueMessageMatching(
           ViewMsg_SetViewportIntersection::ID);
   ASSERT_TRUE(intersection_update);
-  std::tuple<gfx::Rect> sent_rect;
-  ViewMsg_SetViewportIntersection::Read(intersection_update, &sent_rect);
-  EXPECT_EQ(intersection_rect, std::get<0>(sent_rect));
+  std::tuple<gfx::Rect, gfx::Rect> sent_rects;
+
+  ViewMsg_SetViewportIntersection::Read(intersection_update, &sent_rects);
+  EXPECT_EQ(intersection_rect, std::get<0>(sent_rects));
+  EXPECT_EQ(intersection_rect, std::get<1>(sent_rects));
 }
 
 // Tests specific to non-scroll-latching behaviour.

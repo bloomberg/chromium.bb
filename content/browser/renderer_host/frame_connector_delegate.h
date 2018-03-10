@@ -160,8 +160,14 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   // Returns a rect that represents the intersection of the current view's
   // content bounds with the top-level browser viewport.
-  const gfx::Rect& ViewportIntersection() const {
+  const gfx::Rect& viewport_intersection_rect() const {
     return viewport_intersection_rect_;
+  }
+
+  // Returns a rect in physical pixels that indicates the area of the current
+  // view's content bounds that should be rastered by the compositor.
+  const gfx::Rect& compositor_visible_rect() const {
+    return compositor_visible_rect_;
   }
 
   // Returns the viz::LocalSurfaceId propagated from the parent to be used by
@@ -232,6 +238,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // This is here rather than in the implementation class so that
   // ViewportIntersection() can return a reference.
   gfx::Rect viewport_intersection_rect_;
+
+  gfx::Rect compositor_visible_rect_;
 
   ScreenInfo screen_info_;
   gfx::Size local_frame_size_in_dip_;
