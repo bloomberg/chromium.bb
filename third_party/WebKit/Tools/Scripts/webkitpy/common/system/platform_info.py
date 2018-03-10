@@ -74,7 +74,7 @@ class PlatformInfo(object):
         if self.is_mac():
             output = self._executive.run_command(['system_profiler', 'SPDisplaysDataType'],
                                                  error_handler=self._executive.ignore_error)
-            if output and 'Retina: Yes' in output:
+            if output and re.search(r'Resolution:.*Retina$', output, re.MULTILINE):
                 return True
         return False
 
