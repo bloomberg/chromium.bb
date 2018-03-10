@@ -33,6 +33,7 @@ class MEDIA_EXPORT PipelineController {
     STOPPED,
     STARTING,
     PLAYING,
+    PLAYING_OR_SUSPENDED,
     SEEKING,
     SUSPENDING,
     SUSPENDED,
@@ -85,6 +86,11 @@ class MEDIA_EXPORT PipelineController {
   // |seeked_cb| callback will also have |time_updated| set to true; it
   // indicates that the seek was requested by Blink and a time update is
   // expected so that Blink can fire the seeked event.
+  //
+  // Note: This will not resume the pipeline if it is in the suspended state; a
+  // call to Resume() is required. |seeked_cb_| will not be called until the
+  // later Resume() completes. The intention is to avoid unnecessary wake-ups
+  // for suspended players.
   void Seek(base::TimeDelta time, bool time_updated);
 
   // Request that |pipeline_| be suspended. This is a no-op if |pipeline_| has
@@ -189,6 +195,10 @@ class MEDIA_EXPORT PipelineController {
   base::TimeDelta pending_seek_time_;
   bool pending_suspend_ = false;
   bool pending_resume_ = false;
+
+  // Set to true during Start(). Indicates that |seeked_cb_| must be fired once
+  // we've completed startup.
+  bool pending_startup_ = false;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PipelineController> weak_factory_;

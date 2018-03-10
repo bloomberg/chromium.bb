@@ -49,6 +49,7 @@ void PipelineController::Start(Pipeline::StartType start_type,
 
   // Once the pipeline is started, we want to call the seeked callback but
   // without a time update.
+  pending_startup_ = true;
   pending_seeked_cb_ = true;
   state_ = State::STARTING;
 
@@ -57,7 +58,10 @@ void PipelineController::Start(Pipeline::StartType start_type,
   is_static_ = is_static;
   pipeline_->Start(start_type, demuxer, renderer_factory_cb_.Run(), client,
                    base::Bind(&PipelineController::OnPipelineStatus,
-                              weak_factory_.GetWeakPtr(), State::PLAYING));
+                              weak_factory_.GetWeakPtr(),
+                              start_type == Pipeline::StartType::kNormal
+                                  ? State::PLAYING
+                                  : State::PLAYING_OR_SUSPENDED));
 }
 
 void PipelineController::Seek(base::TimeDelta time, bool time_updated) {
@@ -131,6 +135,12 @@ void PipelineController::OnPipelineStatus(State expected_state,
   State old_state = state_;
   state_ = expected_state;
 
+  // Resolve ambiguity of the current state if we may have suspended in startup.
+  if (state_ == State::PLAYING_OR_SUSPENDED) {
+    waiting_for_seek_ = false;
+    state_ = pipeline_->IsSuspended() ? State::SUSPENDED : State::PLAYING;
+  }
+
   if (state_ == State::PLAYING) {
     // Start(), Seek(), or Resume() completed; we can be sure that
     // |demuxer_| got the seek it was waiting for.
@@ -142,9 +152,6 @@ void PipelineController::OnPipelineStatus(State expected_state,
       DCHECK(!pipeline_->IsSuspended());
       resumed_cb_.Run();
     }
-
-    if (old_state == State::STARTING && pipeline_->IsSuspended())
-      state_ = State::SUSPENDED;
   }
 
   if (state_ == State::SUSPENDED) {
@@ -239,19 +246,21 @@ void PipelineController::Dispatch() {
     return;
   }
 
-  // If |state_| is PLAYING or SUSPENDED and we didn't trigger an operation
-  // above then we are in a stable state. If there is a seeked callback pending,
-  // emit it.
-  if (state_ == State::PLAYING || state_ == State::SUSPENDED) {
-    if (pending_seeked_cb_) {
-      // |seeked_cb_| may be reentrant, so update state first and return
-      // immediately.
-      pending_seeked_cb_ = false;
-      bool was_pending_time_updated = pending_time_updated_;
-      pending_time_updated_ = false;
-      seeked_cb_.Run(was_pending_time_updated);
-      return;
-    }
+  // If |state_| is PLAYING and we didn't trigger an operation above then we
+  // are in a stable state. If there is a seeked callback pending, emit it.
+  //
+  // We also need to emit it if we completed suspended startup.
+  if (pending_seeked_cb_ &&
+      (state_ == State::PLAYING ||
+       (state_ == State::SUSPENDED && pending_startup_))) {
+    // |seeked_cb_| may be reentrant, so update state first and return
+    // immediately.
+    pending_startup_ = false;
+    pending_seeked_cb_ = false;
+    bool was_pending_time_updated = pending_time_updated_;
+    pending_time_updated_ = false;
+    seeked_cb_.Run(was_pending_time_updated);
+    return;
   }
 }
 
