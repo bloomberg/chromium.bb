@@ -671,8 +671,7 @@ void LayoutBox::ScrollRectToVisibleRecursive(
   bool restricted_by_line_clamp = false;
   if (ContainingBlock()) {
     parent_box = ContainingBlock();
-    restricted_by_line_clamp =
-        !ContainingBlock()->Style()->LineClamp().IsNone();
+    restricted_by_line_clamp = ContainingBlock()->Style()->HasLineClamp();
   }
 
   if (!IsLayoutView() && HasOverflowClip() && !restricted_by_line_clamp) {
@@ -1163,7 +1162,7 @@ void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
 
   bool restricted_by_line_clamp = false;
   if (Parent())
-    restricted_by_line_clamp = !Parent()->Style()->LineClamp().IsNone();
+    restricted_by_line_clamp = Parent()->Style()->HasLineClamp();
 
   if (HasOverflowClip() && !restricted_by_line_clamp) {
     PaintLayerScrollableArea* scrollable_area = GetScrollableArea();

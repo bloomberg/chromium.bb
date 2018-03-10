@@ -3148,9 +3148,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "external",
-      include_paths: ["core/style/LineClampValue.h"],
-      default_value: "LineClampValue()",
-      type_name: "LineClampValue",
+      default_value: "0",
+      type_name: "int",
     },
     {
       name: "-webkit-margin-after-collapse",

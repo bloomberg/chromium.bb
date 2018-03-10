@@ -334,8 +334,7 @@ void LayoutDeprecatedFlexibleBox::StyleWillChange(
     StyleDifference diff,
     const ComputedStyle& new_style) {
   const ComputedStyle* old_style = Style();
-  if (old_style && !old_style->LineClamp().IsNone() &&
-      new_style.LineClamp().IsNone())
+  if (old_style && old_style->HasLineClamp() && !new_style.HasLineClamp())
     ClearLineClamp();
 
   LayoutBlock::StyleWillChange(diff, new_style);
@@ -868,8 +867,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
   // We confine the line clamp ugliness to vertical flexible boxes (thus keeping
   // it out of
   // mainstream block layout); this is not really part of the XUL box model.
-  bool have_line_clamp = !Style()->LineClamp().IsNone();
-  if (have_line_clamp)
+  if (Style()->HasLineClamp())
     ApplyLineClamp(iterator, relayout_children);
 
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
@@ -897,7 +895,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
       }
 
       SubtreeLayoutScope layout_scope(*child);
-      if (!have_line_clamp &&
+      if (!Style()->HasLineClamp() &&
           (relayout_children || (child->IsAtomicInlineLevel() &&
                                  (child->Style()->Width().IsPercentOrCalc() ||
                                   child->Style()->Height().IsPercentOrCalc()))))
@@ -1157,9 +1155,6 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
   UseCounter::Count(GetDocument(), WebFeature::kLineClamp);
   UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLineClamp);
 
-  if (Style()->LineClamp().IsPercentage())
-    UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLineClampPercentage);
-
   LayoutBox* child = FirstChildBox();
   if (!child) {
     UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLineClampNoChildren);
@@ -1205,11 +1200,9 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
   // Get the number of lines and then alter all block flow children with auto
   // height to use the
   // specified height. We always try to leave room for at least one line.
-  LineClampValue line_clamp = Style()->LineClamp();
-  int num_visible_lines =
-      line_clamp.IsPercentage()
-          ? std::max(1, (max_line_count + 1) * line_clamp.Value() / 100)
-          : line_clamp.Value();
+  int num_visible_lines = Style()->LineClamp();
+  DCHECK_GT(num_visible_lines, 0);
+
   if (num_visible_lines >= max_line_count)
     return;
 

@@ -14,13 +14,9 @@ const CSSValue* WebkitLineClamp::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().GetType() != kPercentageToken &&
-      range.Peek().GetType() != kNumberToken)
+  if (range.Peek().GetType() != kNumberToken)
     return nullptr;
-  CSSPrimitiveValue* clamp_value =
-      CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
-  if (clamp_value)
-    return clamp_value;
+
   // When specifying number of lines, don't allow 0 as a valid value.
   return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
@@ -31,12 +27,10 @@ const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node* styled_node,
     bool allow_visited_style) const {
-  if (style.LineClamp().IsNone())
+  if (!style.HasLineClamp())
     return CSSIdentifierValue::Create(CSSValueNone);
-  return CSSPrimitiveValue::Create(
-      style.LineClamp().Value(), style.LineClamp().IsPercentage()
-                                     ? CSSPrimitiveValue::UnitType::kPercentage
-                                     : CSSPrimitiveValue::UnitType::kNumber);
+  return CSSPrimitiveValue::Create(style.LineClamp(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

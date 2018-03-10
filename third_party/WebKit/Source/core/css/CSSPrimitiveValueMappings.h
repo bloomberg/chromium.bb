@@ -38,7 +38,6 @@
 #include "core/css/CSSReflectionDirection.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "core/style/LineClampValue.h"
 #include "core/style/SVGComputedStyleDefs.h"
 #include "platform/Length.h"
 #include "platform/ThemeTypes.h"
@@ -85,25 +84,6 @@ template <>
 inline float CSSPrimitiveValue::ConvertTo() const {
   DCHECK(IsNumber());
   return clampTo<float>(GetDoubleValue());
-}
-
-template <>
-inline CSSPrimitiveValue::CSSPrimitiveValue(LineClampValue i)
-    : CSSValue(kPrimitiveClass) {
-  Init(i.IsPercentage() ? UnitType::kPercentage : UnitType::kInteger);
-  value_.num = static_cast<double>(i.Value());
-}
-
-template <>
-inline LineClampValue CSSPrimitiveValue::ConvertTo() const {
-  if (GetType() == UnitType::kInteger)
-    return LineClampValue(clampTo<int>(value_.num), LineClampType::kLineCount);
-
-  if (GetType() == UnitType::kPercentage)
-    return LineClampValue(clampTo<int>(value_.num), LineClampType::kPercentage);
-
-  NOTREACHED();
-  return LineClampValue();
 }
 
 // TODO(sashab): Move these to CSSIdentifierValueMappings.h, and update to use
