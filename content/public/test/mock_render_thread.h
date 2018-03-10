@@ -20,6 +20,10 @@
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
+#if defined(OS_MACOSX)
+#include "mojo/public/cpp/system/buffer.h"
+#endif
+
 struct FrameHostMsg_CreateChildFrame_Params;
 
 namespace IPC {
@@ -87,6 +91,12 @@ class MockRenderThread : public RenderThread {
 #if defined(OS_WIN)
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
+#elif defined(OS_MACOSX)
+  bool LoadFont(const base::string16& font_name,
+                float font_point_size,
+                uint32_t* out_buffer_size,
+                mojo::ScopedSharedBufferHandle* out_font_data,
+                uint32_t* out_font_id) override;
 #endif
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::Connector* GetConnector() override;

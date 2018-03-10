@@ -43,6 +43,8 @@ target(link_target_type, "child") {
     "child_process.h",
     "child_process_sandbox_support_impl_linux.cc",
     "child_process_sandbox_support_impl_linux.h",
+    "child_process_sandbox_support_impl_mac.cc",
+    "child_process_sandbox_support_impl_mac.h",
     "child_thread_impl.cc",
     "child_thread_impl.h",
     "dwrite_font_proxy/dwrite_font_proxy_init_impl_win.cc",

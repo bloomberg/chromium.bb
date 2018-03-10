@@ -31,7 +31,8 @@ namespace printing {
 
 // In order to test PdfCompositorService, this class overrides PrepareToStart()
 // to do nothing. So the test discardable memory allocator set up by
-// PdfCompositorServiceTest will be used.
+// PdfCompositorServiceTest will be used. Also checks for the service setup are
+// skipped since we don't have those setups in unit tests.
 class PdfCompositorTestService : public printing::PdfCompositorService {
  public:
   explicit PdfCompositorTestService(const std::string& creator)

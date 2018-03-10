@@ -5,7 +5,12 @@
 #ifndef CONTENT_PUBLIC_UTILITY_UTILITY_THREAD_H_
 #define CONTENT_PUBLIC_UTILITY_UTILITY_THREAD_H_
 
+#include "build/build_config.h"
 #include "content/public/child/child_thread.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace content {
 
@@ -23,6 +28,20 @@ class CONTENT_EXPORT UtilityThread : virtual public ChildThread {
 
   // Initializes blink if it hasn't already been initialized.
   virtual void EnsureBlinkInitialized() = 0;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+  // Initializes blink with web sandbox support.
+  virtual void EnsureBlinkInitializedWithSandboxSupport() = 0;
+#endif
+
+#if defined(OS_MACOSX)
+  // Initializes a connection to FontLoaderMac service.
+  // Generic utility processes don't possess the content_browser's font_loader
+  // capability to access the interface. Specialized utility processes, such as
+  // pdf_compositor service, do require it.
+  virtual void InitializeFontLoaderMac(
+      service_manager::Connector* connector) = 0;
+#endif
 };
 
 }  // namespace content

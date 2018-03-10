@@ -44,6 +44,8 @@ struct WebFontRenderStyle;
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 class WebSandboxSupport {
  public:
+  virtual ~WebSandboxSupport() {}
+
   // Get information to instantiate a font which contains glyphs for the given
   // Unicode code-point.
   //   character: a UTF-32 codepoint

@@ -40,7 +40,7 @@ namespace content {
 
 class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
  public:
-  virtual ~SandboxSupport() {}
+  ~SandboxSupport() override {}
 
 #if defined(OS_MACOSX)
   bool LoadFont(CTFontRef srcFont, CGFontRef* out, uint32_t* fontID) override;

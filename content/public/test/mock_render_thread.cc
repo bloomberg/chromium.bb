@@ -89,12 +89,6 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
 
-  void LoadFont(const base::string16& font_name,
-                const float font_size_point,
-                LoadFontCallback callback) override {
-    NOTREACHED();
-  }
-
  private:
   MockRenderThread* const thread_;
 };
@@ -263,8 +257,15 @@ void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 
 void MockRenderThread::ReleaseCachedFonts() {
 }
-
-#endif  // OS_WIN
+#elif defined(OS_MACOSX)
+bool MockRenderThread::LoadFont(const base::string16& font_name,
+                                float font_point_size,
+                                uint32_t* out_buffer_size,
+                                mojo::ScopedSharedBufferHandle* out_font_data,
+                                uint32_t* out_font_id) {
+  return false;  // Not implemented.
+}
+#endif
 
 ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
   return nullptr;

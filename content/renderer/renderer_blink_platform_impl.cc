@@ -127,6 +127,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
+#include "content/child/child_process_sandbox_support_impl_mac.h"
 #include "content/common/mac/font_loader.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
@@ -235,7 +236,7 @@ class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
 class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
-  virtual ~SandboxSupport() {}
+  ~SandboxSupport() override {}
 
 #if defined(OS_MACOSX)
   bool LoadFont(CTFontRef src_font,
@@ -635,33 +636,7 @@ bool RendererBlinkPlatformImpl::FileUtilities::GetFileInfo(
 bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
                                                          CGFontRef* out,
                                                          uint32_t* font_id) {
-  uint32_t font_data_size;
-  base::ScopedCFTypeRef<CFStringRef> name_ref(
-      CTFontCopyPostScriptName(src_font));
-  base::string16 font_name = SysCFStringRefToUTF16(name_ref);
-  float font_point_size = CTFontGetSize(src_font);
-  mojo::ScopedSharedBufferHandle font_data;
-  if (!RenderThreadImpl::current()->render_message_filter()->LoadFont(
-          font_name, font_point_size, &font_data_size, &font_data, font_id)) {
-    *out = NULL;
-    *font_id = 0;
-    return false;
-  }
-
-  if (font_data_size == 0 || !font_data.is_valid() || *font_id == 0) {
-    LOG(ERROR) << "Bad response from RenderProcessHostMsg_LoadFont() for "
-               << font_name;
-    *out = NULL;
-    *font_id = 0;
-    return false;
-  }
-
-  // TODO(jeremy): Need to call back into WebKit to make sure that the font
-  // isn't already activated, based on the font id.  If it's already
-  // activated, don't reactivate it here - crbug.com/72727 .
-
-  return FontLoader::CGFontRefFromBuffer(std::move(font_data), font_data_size,
-                                         out);
+  return content::LoadFont(src_font, out, font_id);
 }
 
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
