@@ -11,6 +11,6 @@
   RuntimeEnabled=CSSTypedOM,
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] interface CSSUnitValue : CSSNumericValue {
-  [EnforceRange] attribute double value;
+  attribute double value;
   readonly attribute DOMString unit;
 };

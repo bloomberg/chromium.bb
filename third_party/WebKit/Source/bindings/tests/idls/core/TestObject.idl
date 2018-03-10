@@ -149,7 +149,7 @@ interface TestObject {
     [Custom=Getter] readonly attribute object customGetterReadonlyObjectAttribute;
     [Custom=Setter] attribute long customSetterLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
-    [EnforceRange] attribute long enforceRangeLongAttribute;
+    attribute [EnforceRange] long enforceRangeLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
     [Custom=Getter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
