@@ -151,7 +151,7 @@ void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
   if (stream->GetVideoTracks().size() > 0) {
-    GetOrCreateVideoAdapter(stream->label())->SetMediaStream(stream);
+    GetOrCreateVideoAdapter(stream->id())->SetMediaStream(stream);
   } else if (stream->GetAudioTracks().size() > 0) {
     audio_adapter_.reset(new WebrtcAudioSinkAdapter(stream, audio_consumer_));
   } else {
@@ -161,7 +161,7 @@ void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
     scoped_refptr<webrtc::MediaStreamInterface> stream) {
-  if (video_adapter_ && video_adapter_->label() == stream->label())
+  if (video_adapter_ && video_adapter_->label() == stream->id())
     video_adapter_.reset();
 }
 
