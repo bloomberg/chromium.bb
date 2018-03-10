@@ -45,11 +45,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // we should classify the new URL.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void SubresourceResponseStarted(const GURL& url,
-                                  const GURL& referrer,
-                                  const std::string& method,
-                                  content::ResourceType resource_type,
-                                  const std::string& ip) override;
+  void SubresourceResponseStarted(const content::mojom::SubresourceLoadInfo&
+                                      subresource_load_info) override;
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.

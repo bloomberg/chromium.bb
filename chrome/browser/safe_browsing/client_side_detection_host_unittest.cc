@@ -1234,4 +1234,17 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckValidCached) {
   // means we will not extract malware features.
   ExpectShouldClassifyForMalwareResult(false);
 }
+
+TEST_F(ClientSideDetectionHostTest,
+       SubresourceResponseStartedSkipsMissingIPAddress) {
+  auto subresource_load_info = content::mojom::SubresourceLoadInfo::New();
+  subresource_load_info->url = GURL("http://host1.com");
+  subresource_load_info->referrer = GURL("http://host2.com");
+  subresource_load_info->method = "GET";
+  subresource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
+  subresource_load_info->cert_status = 0;
+  csd_host_->SubresourceResponseStarted(*subresource_load_info);
+
+  EXPECT_EQ(0u, GetBrowseInfo()->ips.size());
+}
 }  // namespace safe_browsing

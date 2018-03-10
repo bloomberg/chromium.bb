@@ -4031,18 +4031,14 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // AddNewContents method call.
 }
 
-void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
-                                                 const GURL& referrer,
-                                                 const std::string& method,
-                                                 ResourceType resource_type,
-                                                 const std::string& ip,
-                                                 net::CertStatus cert_status) {
+void WebContentsImpl::SubresourceResponseStarted(
+    mojom::SubresourceLoadInfoPtr subresource_load_info) {
   for (auto& observer : observers_) {
-    observer.SubresourceResponseStarted(url, referrer, method, resource_type,
-                                        ip);
+    observer.SubresourceResponseStarted(*subresource_load_info);
   }
 
-  controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
+  controller_.ssl_manager()->DidStartResourceResponse(
+      subresource_load_info->url, subresource_load_info->cert_status);
   SetNotWaitingForResponse();
 }
 
