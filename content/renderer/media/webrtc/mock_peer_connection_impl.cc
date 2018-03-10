@@ -31,9 +31,9 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
  public:
   size_t count() override { return streams_.size(); }
   MediaStreamInterface* at(size_t index) override { return streams_[index]; }
-  MediaStreamInterface* find(const std::string& label) override {
+  MediaStreamInterface* find(const std::string& id) override {
     for (size_t i = 0; i < streams_.size(); ++i) {
-      if (streams_[i]->label() == label)
+      if (streams_[i]->id() == id)
         return streams_[i];
     }
     return nullptr;
@@ -277,8 +277,8 @@ rtc::scoped_refptr<webrtc::RtpSenderInterface> MockPeerConnectionImpl::AddTrack(
       return nullptr;
   }
   for (auto* stream : streams) {
-    if (!local_streams_->find(stream->label())) {
-      stream_label_ = stream->label();
+    if (!local_streams_->find(stream->id())) {
+      stream_label_ = stream->id();
       local_streams_->AddStream(stream);
     }
   }

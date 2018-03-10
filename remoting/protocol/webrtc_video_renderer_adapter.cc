@@ -73,7 +73,7 @@ WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
 
 void WebrtcVideoRendererAdapter::SetMediaStream(
     scoped_refptr<webrtc::MediaStreamInterface> media_stream) {
-  DCHECK_EQ(media_stream->label(), label());
+  DCHECK_EQ(media_stream->id(), label());
 
   media_stream_ = std::move(media_stream);
 

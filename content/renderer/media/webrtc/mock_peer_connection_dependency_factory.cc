@@ -40,7 +40,7 @@ static typename V::iterator FindTrack(V* vector,
   return it;
 };
 
-MockMediaStream::MockMediaStream(const std::string& label) : label_(label) {}
+MockMediaStream::MockMediaStream(const std::string& id) : id_(id) {}
 
 bool MockMediaStream::AddTrack(AudioTrackInterface* track) {
   audio_track_vector_.push_back(track);
@@ -74,8 +74,8 @@ bool MockMediaStream::RemoveTrack(VideoTrackInterface* track) {
   return true;
 }
 
-std::string MockMediaStream::label() const {
-  return label_;
+std::string MockMediaStream::id() const {
+  return id_;
 }
 
 AudioTrackVector MockMediaStream::GetAudioTracks() {
