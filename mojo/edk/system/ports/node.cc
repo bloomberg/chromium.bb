@@ -345,6 +345,10 @@ int Node::GetMessage(const PortRef& port_ref,
       DCHECK(locker.port()->state == Port::kReceiving);
       locker.port()->message_queue.set_signalable(true);
     }
+
+    // The user may retransmit this message from another port. We reset the
+    // sequence number so that the message will get a new one if that happens.
+    (*message)->set_sequence_num(0);
   }
 
   return OK;
