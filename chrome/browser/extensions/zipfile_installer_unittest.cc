@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -19,12 +22,16 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/unzip_service/unzip_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "services/data_decoder/data_decoder_service.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -81,12 +88,27 @@ struct MockExtensionRegistryObserver : public ExtensionRegistryObserver {
   base::Closure quit_closure;
 };
 
+struct UnzipFileFilterTestCase {
+  const base::FilePath::CharType* input;
+  const bool should_unzip;
+};
+
 }  // namespace
 
 class ZipFileInstallerTest : public testing::Test {
  public:
   ZipFileInstallerTest()
-      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    service_manager::TestConnectorFactory::NameToServiceMap services;
+    services.insert(std::make_pair("data_decoder",
+                                   data_decoder::DataDecoderService::Create()));
+    services.insert(
+        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
+    test_connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForServices(
+            std::move(services));
+    connector_ = test_connector_factory_->CreateConnector();
+  }
 
   void SetUp() override {
     extensions::LoadErrorReporter::Init(/*enable_noisy_errors=*/false);
@@ -121,14 +143,25 @@ class ZipFileInstallerTest : public testing::Test {
                         .AppendASCII("zipfile_installer")
                         .AppendASCII(zip_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
-
     zipfile_installer_ = ZipFileInstaller::Create(
+        connector_.get(),
         MakeRegisterInExtensionServiceCallback(extension_service_));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ZipFileInstaller::LoadFromZipFile,
                                   zipfile_installer_, original_path));
     observer_.WaitForInstall(expect_error);
+  }
+
+  void RunZipFileFilterTest(
+      const std::vector<UnzipFileFilterTestCase>& cases,
+      base::RepeatingCallback<bool(const base::FilePath&)>& filter) {
+    for (size_t i = 0; i < cases.size(); ++i) {
+      base::FilePath input(cases[i].input);
+      bool observed = filter.Run(input);
+      EXPECT_EQ(cases[i].should_unzip, observed)
+          << "i: " << i << ", input: " << input.value();
+    }
   }
 
  protected:
@@ -148,6 +181,11 @@ class ZipFileInstallerTest : public testing::Test {
   // ChromeOS needs a user manager to instantiate an extension service.
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
+
+ private:
+  std::unique_ptr<service_manager::TestConnectorFactory>
+      test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 TEST_F(ZipFileInstallerTest, GoodZip) {
@@ -163,6 +201,51 @@ TEST_F(ZipFileInstallerTest, ZipWithPublicKey) {
   RunInstaller("public_key.zip", /*expect_error=*/false);
   const char kIdForPublicKey[] = "ikppjpenhoddphklkpdfdfdabbakkpal";
   EXPECT_EQ(observer_.last_extension_installed, kIdForPublicKey);
+}
+
+TEST_F(ZipFileInstallerTest, NonTheme_FileExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
+      {FILE_PATH_LITERAL("foo"), true},
+      {FILE_PATH_LITERAL("foo.nexe"), true},
+      {FILE_PATH_LITERAL("foo.dll"), true},
+      {FILE_PATH_LITERAL("foo.jpg.exe"), false},
+      {FILE_PATH_LITERAL("foo.exe"), false},
+      {FILE_PATH_LITERAL("foo.EXE"), false},
+      {FILE_PATH_LITERAL("file_without_extension"), true},
+  };
+  base::RepeatingCallback<bool(const base::FilePath&)> filter =
+      base::BindRepeating(&ZipFileInstaller::ShouldExtractFile, false);
+  RunZipFileFilterTest(cases, filter);
+}
+
+TEST_F(ZipFileInstallerTest, Theme_FileExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
+      {FILE_PATH_LITERAL("image.jpg"), true},
+      {FILE_PATH_LITERAL("IMAGE.JPEG"), true},
+      {FILE_PATH_LITERAL("test/image.bmp"), true},
+      {FILE_PATH_LITERAL("test/IMAGE.gif"), true},
+      {FILE_PATH_LITERAL("test/image.WEBP"), true},
+      {FILE_PATH_LITERAL("test/dir/file.image.png"), true},
+      {FILE_PATH_LITERAL("manifest.json"), true},
+      {FILE_PATH_LITERAL("other.html"), false},
+      {FILE_PATH_LITERAL("file_without_extension"), true},
+  };
+  base::RepeatingCallback<bool(const base::FilePath&)> filter =
+      base::BindRepeating(&ZipFileInstaller::ShouldExtractFile, true);
+  RunZipFileFilterTest(cases, filter);
+}
+
+TEST_F(ZipFileInstallerTest, ManifestExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
+      {FILE_PATH_LITERAL("manifest.json"), true},
+      {FILE_PATH_LITERAL("MANIFEST.JSON"), true},
+      {FILE_PATH_LITERAL("test/manifest.json"), false},
+      {FILE_PATH_LITERAL("manifest.json/test"), false},
+      {FILE_PATH_LITERAL("other.file"), false},
+  };
+  base::RepeatingCallback<bool(const base::FilePath&)> filter =
+      base::BindRepeating(&ZipFileInstaller::IsManifestFile);
+  RunZipFileFilterTest(cases, filter);
 }
 
 }  // namespace extensions

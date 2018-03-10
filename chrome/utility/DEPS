@@ -29,7 +29,6 @@ include_rules = [
   "+content/public/utility",
   "+extensions/common",
   "+extensions/buildflags",
-  "+extensions/utility",
   "+media",
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",

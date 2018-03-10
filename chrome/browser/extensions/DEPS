@@ -37,6 +37,9 @@ specific_include_rules = {
     # TODO(mash): Remove. http://crbug.com/678705
     "+ash/shell.h",
   ],
+  "zipfile_installer_unittest.cc": [
+    "+services/data_decoder",
+  ],
   "test_extension_system.cc": [
     "+services/data_decoder",
   ],

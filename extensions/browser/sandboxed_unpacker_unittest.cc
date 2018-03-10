@@ -17,6 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
+#include "components/unzip_service/public/cpp/test_unzip_service.h"
+#include "components/unzip_service/unzip_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -28,8 +30,10 @@
 #include "extensions/common/switches.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/test/test_extensions_client.h"
+#include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
@@ -128,10 +132,30 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
 
-    sandboxed_unpacker_ = new SandboxedUnpacker(
-        test_data_decoder_service_.connector()->Clone(), Manifest::INTERNAL,
-        Extension::NO_FLAGS, extensions_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), client_);
+    InitSanboxedUnpacker(/*data_decode_service=*/nullptr,
+                         /*unzip_service=*/nullptr);
+  }
+
+  void InitSanboxedUnpacker(
+      std::unique_ptr<service_manager::Service> data_decode_service,
+      std::unique_ptr<service_manager::Service> unzip_service) {
+    service_manager::TestConnectorFactory::NameToServiceMap services;
+    if (!data_decode_service)
+      data_decode_service = data_decoder::DataDecoderService::Create();
+    if (!unzip_service)
+      unzip_service = unzip::UnzipService::CreateService();
+    services.insert(
+        std::make_pair("data_decoder", std::move(data_decode_service)));
+    services.insert(std::make_pair("unzip_service", std::move(unzip_service)));
+    test_connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForServices(
+            std::move(services));
+    connector_ = test_connector_factory_->CreateConnector();
+
+    sandboxed_unpacker_ =
+        new SandboxedUnpacker(connector_->Clone(), Manifest::INTERNAL,
+                              Extension::NO_FLAGS, extensions_dir_.GetPath(),
+                              base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
   void TearDown() override {
@@ -178,20 +202,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     client_->WaitForUnpack();
   }
 
-  void SimulateUtilityProcessCrash() {
-    sandboxed_unpacker_->CreateTempDirectory();
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SandboxedUnpacker::StartUtilityProcessIfNeeded,
-                   sandboxed_unpacker_));
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&SandboxedUnpacker::UtilityProcessCrashed,
-                   sandboxed_unpacker_));
-  }
-
   bool InstallSucceeded() const { return !client_->temp_dir().empty(); }
 
   base::FilePath GetInstallPath() const {
@@ -222,12 +232,14 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   }
 
  protected:
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
   base::ScopedTempDir extensions_dir_;
   MockSandboxedUnpackerClient* client_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
+  std::unique_ptr<service_manager::TestConnectorFactory>
+      test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
@@ -353,6 +365,34 @@ TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
   EXPECT_EQ(base::string16(), GetInstallError());
 }
 
+// The following tests simulate the utility services failling.
+TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
+  InitSanboxedUnpacker(
+      /*data_decoder_service=*/nullptr,
+      std::make_unique<unzip::CrashyUnzipService>());
+  SetupUnpacker("good_package.crx", "");
+  EXPECT_FALSE(InstallSucceeded());
+  EXPECT_FALSE(GetInstallError().empty());
+}
+
+TEST_F(SandboxedUnpackerTest, JsonParserFails) {
+  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
+                           /*crash_json=*/true, /*crash_image=*/false),
+                       /*unzip_service=*/nullptr);
+  SetupUnpacker("good_package.crx", "");
+  EXPECT_FALSE(InstallSucceeded());
+  EXPECT_FALSE(GetInstallError().empty());
+}
+
+TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
+  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
+                           /*crash_json=*/false, /*crash_image=*/true),
+                       /*unzip_service=*/nullptr);
+  SetupUnpacker("good_package.crx", "");
+  EXPECT_FALSE(InstallSucceeded());
+  EXPECT_FALSE(GetInstallError().empty());
+}
+
 // SandboxedUnpacker is ref counted and is reference by callbacks and
 // InterfacePtrs. This tests that it gets deleted as expected (so that no extra
 // refs are left).
@@ -362,27 +402,6 @@ TEST_F(SandboxedUnpackerTest, DeletedOnSuccess) {
 
 TEST_F(SandboxedUnpackerTest, DeletedOnFailure) {
   TestSandboxedUnpackerDeleted("bad_image.crx", /*expect_success=*/false);
-}
-
-class SandboxedUnpackerTestWithRealIOThread : public SandboxedUnpackerTest {
- public:
-  SandboxedUnpackerTestWithRealIOThread()
-      : SandboxedUnpackerTest(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
-
-  void TearDown() override {
-    // The utility process task could still be running.  Ensure it is fully
-    // finished before ending the test.
-    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-    SandboxedUnpackerTest::TearDown();
-  }
-};
-
-TEST_F(SandboxedUnpackerTestWithRealIOThread, UtilityProcessCrash) {
-  SimulateUtilityProcessCrash();
-  client_->WaitForUnpack();
-  // Check that there is an error message.
-  EXPECT_NE(base::string16(), GetInstallError());
 }
 
 }  // namespace extensions

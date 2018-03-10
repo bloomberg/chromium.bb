@@ -25,15 +25,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/unzip_service/public/cpp/unzip.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
+#include "extensions/browser/zipfile_installer.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_resource_path_normalizer.h"
-#include "extensions/common/extension_unpacker.mojom.h"
 #include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
@@ -233,6 +234,9 @@ SandboxedUnpacker::SandboxedUnpacker(
   CHECK_GT(location, Manifest::INVALID_LOCATION);
   CHECK_LT(location, Manifest::NUM_LOCATIONS);
 
+  // The connector should not be bound to any thread yet.
+  DCHECK(!connector_->IsBound());
+
   // Use a random instance ID to guarantee the connection is to a new data
   // decoder service (running in its own process).
   data_decoder_identity_ = service_manager::Identity(
@@ -323,9 +327,20 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackLinkFreeCrxPathLength",
                         link_free_crx_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SandboxedUnpacker::Unzip, this, link_free_crx_path));
+  // Make sure to create the directory where the extension will be unzipped, as
+  // the unzipper service requires it.
+  base::FilePath unzipped_dir =
+      link_free_crx_path.DirName().AppendASCII(kTempExtensionName);
+  base::File::Error error;
+  if (!base::CreateDirectoryAndGetError(unzipped_dir, &error)) {
+    LOG(ERROR) << "Failed to created directory " << unzipped_dir.value()
+               << " with error " << error;
+    ReportFailure(UNZIP_FAILED,
+                  l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR));
+    return;
+  }
+
+  Unzip(link_free_crx_path, unzipped_dir);
 }
 
 void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
@@ -348,8 +363,8 @@ void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  unpacker_io_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&SandboxedUnpacker::Unpack, this, extension_root_));
 }
 
@@ -373,63 +388,23 @@ SandboxedUnpacker::~SandboxedUnpacker() {
     unpacker_io_task_runner_->DeleteSoon(FROM_HERE, std::move(connector_));
 }
 
-void SandboxedUnpacker::StartUtilityProcessIfNeeded() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (utility_process_mojo_client_)
-    return;
-
-  utility_process_mojo_client_ = std::make_unique<
-      content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>(
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME));
-  utility_process_mojo_client_->set_error_callback(
-      base::Bind(&SandboxedUnpacker::UtilityProcessCrashed, this));
-
-  utility_process_mojo_client_->set_exposed_directory(temp_dir_.GetPath());
-
-  utility_process_mojo_client_->Start();
-}
-
-void SandboxedUnpacker::UtilityProcessCrashed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  utility_process_mojo_client_.reset();
-
-  unpacker_io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SandboxedUnpacker::ReportFailure, this,
-          UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
-          l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-              ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")) +
-              ASCIIToUTF16(". ") +
-              l10n_util::GetStringUTF16(
-                  IDS_EXTENSION_INSTALL_PROCESS_CRASHED)));
-}
-
-void SandboxedUnpacker::Unzip(const base::FilePath& crx_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  StartUtilityProcessIfNeeded();
+void SandboxedUnpacker::Unzip(const base::FilePath& crx_path,
+                              const base::FilePath& unzipped_dir) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(crx_path.DirName() == temp_dir_.GetPath());
-  base::FilePath unzipped_dir =
-      crx_path.DirName().AppendASCII(kTempExtensionName);
 
-  utility_process_mojo_client_->service()->Unzip(
-      crx_path, unzipped_dir,
-      base::BindOnce(&SandboxedUnpacker::UnzipDone, this, unzipped_dir));
+  ZipFileInstaller::Create(connector_.get(),
+                           base::BindOnce(&SandboxedUnpacker::UnzipDone, this))
+      ->LoadFromZipFileInDir(crx_path, unzipped_dir);
 }
 
-void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
-                                  bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void SandboxedUnpacker::UnzipDone(const base::FilePath& zip_file,
+                                  const base::FilePath& unzip_dir,
+                                  const std::string& error) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
-  utility_process_mojo_client_.reset();
-
-  if (!success) {
-    utility_process_mojo_client_.reset();
+  if (!error.empty()) {
     unpacker_io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -438,22 +413,18 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SandboxedUnpacker::Unpack, this, directory));
+  Unpack(unzip_dir);
 }
 
 void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(directory.DirName() == temp_dir_.GetPath());
 
   base::FilePath manifest_path = extension_root_.Append(kManifestFilename);
-  unpacker_io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SandboxedUnpacker::ParseJsonFile, this, manifest_path,
-          base::BindOnce(&SandboxedUnpacker::ReadManifestDone, this)));
+
+  ParseJsonFile(manifest_path,
+                base::BindOnce(&SandboxedUnpacker::ReadManifestDone, this));
 }
 
 void SandboxedUnpacker::ReadManifestDone(
@@ -606,6 +577,12 @@ void SandboxedUnpacker::ImageSanitizationDone(
       error =
           l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
                                      ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE"));
+      break;
+    case ImageSanitizer::Status::kServiceError:
+      failure_reason = UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL;
+      error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+          ASCIIToUTF16("ERROR_UTILITY_PROCESS_CRASH"));
       break;
     default:
       NOTREACHED();
@@ -786,7 +763,6 @@ void SandboxedUnpacker::ReportUnpackingError(base::StringPiece error) {
 
 void SandboxedUnpacker::UnpackExtensionFailed(const base::string16& error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
-
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
       l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE, error));

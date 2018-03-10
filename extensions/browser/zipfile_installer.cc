@@ -6,18 +6,32 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "components/unzip_service/public/cpp/unzip.h"
+#include "components/unzip_service/public/interfaces/unzipper.mojom.h"
 #include "extensions/browser/extension_file_task_runner.h"
-#include "extensions/common/extension_unpacker.mojom.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/manifest.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace extensions {
 
 namespace {
 
-const char kExtensionHandlerTempDirError[] =
+constexpr char kExtensionHandlerTempDirError[] =
     "Could not create temporary directory for zipped extension.";
-const char kExtensionHandlerFileUnzipError[] =
+constexpr char kExtensionHandlerFileUnzipError[] =
     "Could not unzip extension for install.";
+
+constexpr const base::FilePath::CharType* kAllowedThemeFiletypes[] = {
+    FILE_PATH_LITERAL(".bmp"),  FILE_PATH_LITERAL(".gif"),
+    FILE_PATH_LITERAL(".jpeg"), FILE_PATH_LITERAL(".jpg"),
+    FILE_PATH_LITERAL(".json"), FILE_PATH_LITERAL(".png"),
+    FILE_PATH_LITERAL(".webp")};
 
 base::Optional<base::FilePath> PrepareAndGetUnzipDir(
     const base::FilePath& zip_file) {
@@ -36,22 +50,49 @@ base::Optional<base::FilePath> PrepareAndGetUnzipDir(
   return unzip_dir;
 }
 
-}  // namespace
+base::Optional<std::string> ReadFileContent(const base::FilePath& path) {
+  base::AssertBlockingAllowed();
 
-namespace extensions {
+  std::string content;
+  return base::ReadFileToString(path, &content) ? content
+                                                : base::Optional<std::string>();
+}
+
+}  // namespace
 
 // static
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
+    service_manager::Connector* connector,
     DoneCallback done_callback) {
+  DCHECK(connector);
   DCHECK(done_callback);
-  return base::WrapRefCounted(new ZipFileInstaller(std::move(done_callback)));
+  return base::WrapRefCounted(
+      new ZipFileInstaller(connector, std::move(done_callback)));
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LoadFromZipFileImpl(zip_file, base::FilePath());
+}
+
+void ZipFileInstaller::LoadFromZipFileInDir(const base::FilePath& zip_file,
+                                            const base::FilePath& unzip_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!unzip_dir.empty());
+  LoadFromZipFileImpl(zip_file, unzip_dir);
+}
+
+void ZipFileInstaller::LoadFromZipFileImpl(const base::FilePath& zip_file,
+                                           const base::FilePath& unzip_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!zip_file.empty());
 
   zip_file_ = zip_file;
+
+  if (!unzip_dir.empty()) {
+    Unzip(unzip_dir);
+    return;
+  }
 
   base::PostTaskAndReplyWithResult(
       GetExtensionFileTaskRunner().get(), FROM_HERE,
@@ -59,8 +100,9 @@ void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
       base::BindOnce(&ZipFileInstaller::Unzip, this));
 }
 
-ZipFileInstaller::ZipFileInstaller(DoneCallback done_callback)
-    : done_callback_(std::move(done_callback)) {}
+ZipFileInstaller::ZipFileInstaller(service_manager::Connector* connector,
+                                   DoneCallback done_callback)
+    : done_callback_(std::move(done_callback)), connector_(connector) {}
 
 ZipFileInstaller::~ZipFileInstaller() = default;
 
@@ -71,28 +113,75 @@ void ZipFileInstaller::Unzip(base::Optional<base::FilePath> unzip_dir) {
     ReportFailure(std::string(kExtensionHandlerTempDirError));
     return;
   }
-  DCHECK(!utility_process_mojo_client_);
 
-  utility_process_mojo_client_ = std::make_unique<
-      content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>(
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
-  utility_process_mojo_client_->set_error_callback(
-      base::Bind(&ZipFileInstaller::UnzipDone, this, *unzip_dir, false));
+  unzip::UnzipWithFilter(
+      connector_->Clone(), zip_file_, *unzip_dir,
+      base::BindRepeating(&ZipFileInstaller::IsManifestFile),
+      base::BindOnce(&ZipFileInstaller::ManifestUnzipped, this, *unzip_dir));
+}
 
-  utility_process_mojo_client_->set_exposed_directory(*unzip_dir);
+void ZipFileInstaller::ManifestUnzipped(const base::FilePath& unzip_dir,
+                                        bool success) {
+  if (!success) {
+    ReportFailure(kExtensionHandlerFileUnzipError);
+    return;
+  }
 
-  utility_process_mojo_client_->Start();
+  base::PostTaskAndReplyWithResult(
+      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&ReadFileContent, unzip_dir.Append(kManifestFilename)),
+      base::BindOnce(&ZipFileInstaller::ManifestRead, this, unzip_dir));
+}
 
-  utility_process_mojo_client_->service()->Unzip(
-      zip_file_, *unzip_dir,
-      base::BindOnce(&ZipFileInstaller::UnzipDone, this, *unzip_dir));
+void ZipFileInstaller::ManifestRead(
+    const base::FilePath& unzip_dir,
+    base::Optional<std::string> manifest_content) {
+  if (!manifest_content) {
+    ReportFailure(std::string(kExtensionHandlerFileUnzipError));
+    return;
+  }
+
+  data_decoder::SafeJsonParser::Parse(
+      connector_, *manifest_content,
+      base::Bind(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
+      base::Bind(&ZipFileInstaller::ManifestParsingFailed, this));
+}
+
+void ZipFileInstaller::ManifestParsingFailed(const std::string& error) {
+  ReportFailure(std::string(kExtensionHandlerFileUnzipError));
+}
+
+void ZipFileInstaller::ManifestParsed(
+    const base::FilePath& unzip_dir,
+    std::unique_ptr<base::Value> manifest_value) {
+  std::unique_ptr<base::DictionaryValue> manifest_dictionary =
+      base::DictionaryValue::From(std::move(manifest_value));
+  if (!manifest_dictionary) {
+    ReportFailure(std::string(kExtensionHandlerFileUnzipError));
+    return;
+  }
+
+  Manifest manifest(Manifest::INTERNAL, std::move(manifest_dictionary));
+
+  unzip::UnzipFilterCallback filter = base::BindRepeating(
+      [](bool is_theme, const base::FilePath& file_path) -> bool {
+        // Note that we ignore the manifest as it has already been extracted and
+        // would cause the unzipping to fail.
+        return ZipFileInstaller::ShouldExtractFile(is_theme, file_path) &&
+               !ZipFileInstaller::IsManifestFile(file_path);
+      },
+      manifest.is_theme());
+
+  // TODO(crbug.com/645263): This silently ignores blocked file types.
+  //                         Add install warnings.
+  unzip::UnzipWithFilter(
+      connector_->Clone(), zip_file_, unzip_dir, filter,
+      base::BindOnce(&ZipFileInstaller::UnzipDone, this, unzip_dir));
 }
 
 void ZipFileInstaller::UnzipDone(const base::FilePath& unzip_dir,
                                  bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  utility_process_mojo_client_.reset();
 
   if (!success) {
     ReportFailure(kExtensionHandlerFileUnzipError);
@@ -106,6 +195,28 @@ void ZipFileInstaller::ReportFailure(const std::string& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::move(done_callback_).Run(zip_file_, base::FilePath(), error);
+}
+
+// static
+bool ZipFileInstaller::ShouldExtractFile(bool is_theme,
+                                         const base::FilePath& file_path) {
+  if (is_theme) {
+    const base::FilePath::StringType extension =
+        base::ToLowerASCII(file_path.FinalExtension());
+    // Allow filenames with no extension.
+    if (extension.empty())
+      return true;
+    return base::ContainsValue(kAllowedThemeFiletypes, extension);
+  }
+  return !base::FilePath::CompareEqualIgnoreCase(file_path.FinalExtension(),
+                                                 FILE_PATH_LITERAL(".exe"));
+}
+
+// static
+bool ZipFileInstaller::IsManifestFile(const base::FilePath& file_path) {
+  CHECK(!file_path.IsAbsolute());
+  return base::FilePath::CompareEqualIgnoreCase(file_path.value(),
+                                                kManifestFilename);
 }
 
 }  // namespace extensions

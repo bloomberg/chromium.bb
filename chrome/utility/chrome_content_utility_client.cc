@@ -51,7 +51,6 @@
 #include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
 #include "chrome/utility/extensions/extensions_handler.h"
-#include "extensions/utility/utility_handler.h"
 #if defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
@@ -118,10 +117,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 
 void ChromeContentUtilityClient::UtilityThreadStarted() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::utility_handler::UtilityThreadStarted();
-#endif
-
 #if defined(OS_WIN)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   utility_process_running_elevated_ = command_line->HasSwitch(
@@ -137,10 +132,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
     return;
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::utility_handler::ExposeInterfacesToBrowser(
-      registry.get(), utility_process_running_elevated_);
-#endif
   // If our process runs with elevated privileges, only add elevated Mojo
   // interfaces to the interface registry.
   if (!utility_process_running_elevated_) {

@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "content/public/browser/utility_process_mojo_client.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -39,10 +38,6 @@ class Connector;
 
 namespace extensions {
 class Extension;
-
-namespace mojom {
-class ExtensionUnpacker;
-}
 
 class SandboxedUnpackerClient
     : public base::RefCountedDeleteOnSequence<SandboxedUnpackerClient> {
@@ -85,9 +80,8 @@ class SandboxedUnpackerClient
 
 // SandboxedUnpacker does work to optionally unpack and then validate/sanitize
 // an extension, either starting from a crx file, or else an already unzipped
-// directory (eg., from a differential update). This is done in a sandboxed
-// subprocess to protect the browser process from parsing complex data formats
-// like JPEG or JSON from untrusted sources.
+// directory (eg., from a differential update). The parsing of complex data
+// formats like JPEG or JSON is performed in specific, sandboxed services.
 //
 // Unpacking an extension using this class makes changes to its source, such as
 // transcoding all images to PNG, parsing all message catalogs, and rewriting
@@ -96,8 +90,7 @@ class SandboxedUnpackerClient
 //
 // Lifetime management:
 //
-// This class is ref-counted by each call it makes to itself on another thread,
-// and by UtilityProcessMojoClient.
+// This class is ref-counted by each call it makes to itself on another thread.
 //
 // Additionally, we hold a reference to our own client so that the client lives
 // long enough to receive the result of unpacking.
@@ -229,15 +222,12 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool ValidateSignature(const base::FilePath& crx_path,
                          const std::string& expected_hash);
 
-  // Ensures the utility process is created.
-  void StartUtilityProcessIfNeeded();
-
-  // Utility process crashed or failed while trying to install.
-  void UtilityProcessCrashed();
-
   // Unzips the extension into directory.
-  void Unzip(const base::FilePath& crx_path);
-  void UnzipDone(const base::FilePath& directory, bool success);
+  void Unzip(const base::FilePath& crx_path,
+             const base::FilePath& unzipped_dir);
+  void UnzipDone(const base::FilePath& zip_file,
+                 const base::FilePath& unzip_dir,
+                 const std::string& error);
 
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
@@ -341,10 +331,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Sequenced task runner where file I/O operations will be performed.
   scoped_refptr<base::SequencedTaskRunner> unpacker_io_task_runner_;
-
-  // Utility client used for sending tasks to the utility process.
-  std::unique_ptr<content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>
-      utility_process_mojo_client_;
 
   // The normalized path of the install icon path, retrieved from the manifest.
   base::FilePath install_icon_path_;

@@ -6,7 +6,6 @@
 #define EXTENSIONS_TEST_TEST_CONTENT_UTILITY_CLIENT_H_
 
 #include "content/public/utility/content_utility_client.h"
-#include "extensions/utility/utility_handler.h"
 
 namespace extensions {
 

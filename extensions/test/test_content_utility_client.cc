@@ -17,10 +17,7 @@ TestContentUtilityClient::TestContentUtilityClient() = default;
 TestContentUtilityClient::~TestContentUtilityClient() = default;
 
 void TestContentUtilityClient::UtilityThreadStarted() {
-  utility_handler::UtilityThreadStarted();
-
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  utility_handler::ExposeInterfacesToBrowser(registry.get(), false);
   content::ChildThread::Get()
       ->GetServiceManagerConnection()
       ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
