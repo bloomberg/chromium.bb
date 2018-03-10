@@ -48,8 +48,6 @@ namespace {
 SkColor kGreyTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
 SkColor const kWarningColor = gfx::kGoogleRed700;
-SkColor const kLightShadingColor = SkColorSetARGB(7, 0, 0, 0);
-SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 }  // namespace
 
@@ -198,9 +196,6 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
       storage_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,
           provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
-  storage_row_->SetBorder(
-      views::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
-  storage_row_->SetBackground(views::CreateSolidBackground(kLightShadingColor));
 
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
