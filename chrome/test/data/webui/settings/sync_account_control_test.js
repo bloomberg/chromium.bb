@@ -155,7 +155,7 @@ cr.define('settings_sync_account_control', function() {
 
             assertVisible(testElement.$$('#dropdown-arrow'), true);
             assertFalse(
-                testElement.$$('#sync-logo-container').hasAttribute('syncing'));
+                testElement.$$('#sync-icon-container').hasAttribute('syncing'));
 
             testElement.$$('#dropdown-arrow').click();
             Polymer.dom.flush();
@@ -208,7 +208,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#dropdown-arrow'), false);
       assertVisible(testElement.$$('#promo-headers'), false);
       assertTrue(
-          testElement.$$('#sync-logo-container').hasAttribute('syncing'));
+          testElement.$$('#sync-icon-container').hasAttribute('syncing'));
       assertFalse(!!testElement.$$('#menu'));
 
       const userInfo = testElement.$$('#user-info');
