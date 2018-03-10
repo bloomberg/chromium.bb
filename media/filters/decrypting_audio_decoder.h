@@ -118,6 +118,10 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   std::unique_ptr<AudioTimestampHelper> timestamp_helper_;
 
+  // Once Initialized() with encrypted content support, if the stream changes to
+  // clear content, we want to ensure this decoder remains used.
+  bool support_clear_content_;
+
   base::WeakPtr<DecryptingAudioDecoder> weak_this_;
   base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
 

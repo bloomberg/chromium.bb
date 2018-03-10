@@ -25,6 +25,11 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/libaom/av1_features.h"
 
+#if !defined(OS_ANDROID)
+#include "media/filters/decrypting_audio_decoder.h"
+#include "media/filters/decrypting_video_decoder.h"
+#endif
+
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "media/filters/aom_video_decoder.h"
 #endif
@@ -76,6 +81,11 @@ DefaultRendererFactory::CreateAudioDecoders(
   // Create our audio decoders and renderer.
   std::vector<std::unique_ptr<AudioDecoder>> audio_decoders;
 
+#if !defined(OS_ANDROID)
+  audio_decoders.push_back(
+      std::make_unique<DecryptingAudioDecoder>(media_task_runner, media_log_));
+#endif
+
 #if BUILDFLAG(ENABLE_FFMPEG)
   audio_decoders.push_back(
       std::make_unique<FFmpegAudioDecoder>(media_task_runner, media_log_));
@@ -101,6 +111,12 @@ DefaultRendererFactory::CreateVideoDecoders(
 
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
+
+#if !defined(OS_ANDROID)
+  video_decoders.push_back(MaybeUseGpuMemoryBufferWrapper(
+      gpu_factories, media_task_runner, worker_task_runner,
+      std::make_unique<DecryptingVideoDecoder>(media_task_runner, media_log_)));
+#endif
 
   // Prefer an external decoder since one will only exist if it is hardware
   // accelerated.

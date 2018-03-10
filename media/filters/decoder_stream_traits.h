@@ -21,8 +21,6 @@ namespace media {
 class AudioBuffer;
 class AudioDecoderConfig;
 class CdmContext;
-class DecryptingAudioDecoder;
-class DecryptingVideoDecoder;
 class DemuxerStream;
 class VideoDecoderConfig;
 class VideoFrame;
@@ -38,7 +36,6 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   using OutputType = AudioBuffer;
   using DecoderType = AudioDecoder;
   using DecoderConfigType = AudioDecoderConfig;
-  using DecryptingDecoderType = DecryptingAudioDecoder;
   using InitCB = AudioDecoder::InitCB;
   using OutputCB = AudioDecoder::OutputCB;
   using WaitingForDecryptionKeyCB = AudioDecoder::WaitingForDecryptionKeyCB;
@@ -79,7 +76,6 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   using OutputType = VideoFrame;
   using DecoderType = VideoDecoder;
   using DecoderConfigType = VideoDecoderConfig;
-  using DecryptingDecoderType = DecryptingVideoDecoder;
   using InitCB = VideoDecoder::InitCB;
   using OutputCB = VideoDecoder::OutputCB;
   using WaitingForDecryptionKeyCB = VideoDecoder::WaitingForDecryptionKeyCB;
