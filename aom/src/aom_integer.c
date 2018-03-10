@@ -27,6 +27,7 @@ size_t aom_uleb_size_in_bytes(uint64_t value) {
 int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value,
                     size_t *length) {
   if (buffer && value) {
+    *value = 0;
     for (size_t i = 0; i < kMaximumLeb128Size && i < available; ++i) {
       const uint8_t decoded_byte = *(buffer + i) & kLeb128ByteMask;
       *value |= ((uint64_t)decoded_byte) << (i * 7);

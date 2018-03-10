@@ -31,8 +31,8 @@ TEST(AomLeb128, DecodeTest) {
   const uint8_t leb128_bytes[num_leb128_bytes] = { 0xE5, 0x8E, 0x26 };
   const uint64_t expected_value = 0x98765;  // 624485
   const size_t expected_length = 3;
-  uint64_t value = 0;
-  size_t length = 0;
+  uint64_t value = ~0ULL;  // make sure value is cleared by the function
+  size_t length;
   ASSERT_EQ(
       aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value, &length), 0);
   ASSERT_EQ(expected_value, value);
@@ -68,8 +68,8 @@ TEST(AomLeb128, EncodeDecodeTest) {
                             &bytes_written),
             0);
   ASSERT_EQ(bytes_written, 3u);
-  uint64_t decoded_value = 0;
-  size_t decoded_length = 0;
+  uint64_t decoded_value;
+  size_t decoded_length;
   aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value,
                   &decoded_length);
   ASSERT_EQ(value, decoded_value);
@@ -101,8 +101,8 @@ TEST(AomLeb128, FixedSizeEncodeDecodeTest) {
                                  &write_buffer[0], &bytes_written),
       0);
   ASSERT_EQ(bytes_written, 4u);
-  uint64_t decoded_value = 0;
-  size_t decoded_length = 0;
+  uint64_t decoded_value;
+  size_t decoded_length;
   aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value,
                   &decoded_length);
   ASSERT_EQ(value, decoded_value);
@@ -124,7 +124,7 @@ TEST(AomLeb128, DecodeFailTest) {
     kLeb128PadByte, kLeb128PadByte, kLeb128PadByte,
     kLeb128PadByte, kLeb128PadByte, 0
   };
-  uint64_t decoded_value = 0;
+  uint64_t decoded_value;
 
   // Test that decode fails when result would be valid 9 byte integer.
   ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize + 1,
