@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/app_list/presenter/app_list.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
 #include "ash/shell.h"

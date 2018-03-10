@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/menu_utils.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -15,14 +16,20 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/rect.h"
 
-AppListClientImpl::AppListClientImpl(ash::mojom::AppListController* controller)
-    : binding_(this) {
+AppListClientImpl::AppListClientImpl() : binding_(this) {
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &app_list_controller_);
   ash::mojom::AppListClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  controller->SetClient(std::move(client));
+  app_list_controller_->SetClient(std::move(client));
+  AppListServiceAsh::GetInstance()->SetAppListControllerAndClient(
+      app_list_controller_.get(), this);
 }
 
 AppListClientImpl::~AppListClientImpl() = default;
@@ -74,11 +81,11 @@ void AppListClientImpl::ContextMenuItemSelected(const std::string& id,
 }
 
 void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
-  app_list_target_visible_ = visible;
+  AppListServiceAsh::GetInstance()->set_app_list_target_visible(visible);
 }
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
-  app_list_visible_ = visible;
+  AppListServiceAsh::GetInstance()->set_app_list_visible(visible);
 }
 
 void AppListClientImpl::StartVoiceInteractionSession() {
@@ -99,18 +106,25 @@ void AppListClientImpl::ToggleVoiceInteractionSession() {
 
 void AppListClientImpl::OnFolderCreated(
     ash::mojom::AppListItemMetadataPtr item) {
-  NOTIMPLEMENTED();
+  DCHECK(item->is_folder);
+  GetViewDelegate()->model_updater_->OnFolderCreated(std::move(item));
 }
 
 void AppListClientImpl::OnFolderDeleted(
     ash::mojom::AppListItemMetadataPtr item) {
-  NOTIMPLEMENTED();
+  DCHECK(item->is_folder);
+  GetViewDelegate()->model_updater_->OnFolderDeleted(std::move(item));
 }
 
 void AppListClientImpl::OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) {
-  NOTIMPLEMENTED();
+  GetViewDelegate()->model_updater_->OnItemUpdated(std::move(item));
 }
 
 AppListViewDelegate* AppListClientImpl::GetViewDelegate() {
   return AppListServiceAsh::GetInstance()->GetViewDelegate();
+}
+
+void AppListClientImpl::FlushMojoForTesting() {
+  app_list_controller_.FlushForTesting();
+  binding_.FlushForTesting();
 }

@@ -3,36 +3,17 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 assert(use_aura)
 
-mojom("mojom") {
-  sources = [
-    "app_list_presenter.mojom",
-  ]
-  deps = [
-    "//services/ui/public/interfaces",
-  ]
-
-  component_output_prefix = "app_list_presenter_mojom"
-  export_class_attribute = "APP_LIST_PRESENTER_EXPORT"
-  export_define = "APP_LIST_PRESENTER_IMPLEMENTATION=1"
-  export_header = "ash/app_list/presenter/app_list_presenter_export.h"
-}
-
 component("presenter") {
   sources = [
-    "app_list.cc",
-    "app_list.h",
     "app_list_delegate.h",
     "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
     "app_list_presenter_delegate_factory.h",
     "app_list_presenter_export.h",
-    "app_list_presenter_impl.cc",
-    "app_list_presenter_impl.h",
     "app_list_view_delegate_factory.cc",
     "app_list_view_delegate_factory.h",
   ]
@@ -40,7 +21,6 @@ component("presenter") {
   defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
 
   public_deps = [
-    ":mojom",
     "//base",
     "//mojo/public/cpp/bindings",
     "//ui/app_list",
@@ -59,8 +39,6 @@ static_library("test_support") {
   sources = [
     "test/app_list_presenter_impl_test_api.cc",
     "test/app_list_presenter_impl_test_api.h",
-    "test/test_app_list_presenter.cc",
-    "test/test_app_list_presenter.h",
     "test/test_app_list_view_delegate_factory.cc",
     "test/test_app_list_view_delegate_factory.h",
 
@@ -70,7 +48,6 @@ static_library("test_support") {
   ]
 
   public_deps = [
-    ":mojom",
     ":presenter",
   ]
   deps = [
@@ -92,6 +69,7 @@ test("app_list_presenter_unittests") {
   deps = [
     ":presenter",
     ":test_support",
+    "//ash:ash",
     "//base",
     "//base/test:test_support",
     "//mojo/edk/system",

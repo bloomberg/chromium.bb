@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/presenter/app_list.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/app_list_button.h"

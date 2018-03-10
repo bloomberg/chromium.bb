@@ -73,6 +73,11 @@ class ChromeAppListItem {
   void SetFolderId(const std::string& folder_id);
   void SetPosition(const syncer::StringOrdinal& position);
 
+  // Setting the folder id of this item.
+  // Note: this method won't make changes to Ash and it should be called by
+  //       this item itself or the model updater.
+  void SetChromeFolderId(const std::string& folder_id);
+
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
 
@@ -120,10 +125,6 @@ class ChromeAppListItem {
   // Get the context menu of a certain app. This could be different for
   // different kinds of items.
   virtual app_list::AppContextMenu* GetAppContextMenu();
-
-  void set_chrome_folder_id(const std::string& folder_id) {
-    metadata_->folder_id = folder_id;
-  }
 
  private:
   ash::mojom::AppListItemMetadataPtr metadata_;

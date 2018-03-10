@@ -4,7 +4,7 @@
 
 #include "ash/system/tray_drag_controller.h"
 
-#include "ash/app_list/presenter/app_list.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -23,7 +23,7 @@ void TrayDragController::ProcessGestureEvent(ui::GestureEvent* event,
   }
 
   // Disable the tray view swiping if the app list is opened.
-  if (Shell::Get()->app_list()->IsVisible())
+  if (Shell::Get()->app_list_controller()->IsVisible())
     return;
 
   tray_view_ = tray_view;

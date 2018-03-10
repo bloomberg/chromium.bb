@@ -10,8 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
@@ -41,8 +39,10 @@ class AppListModelUpdater {
 
   virtual ~AppListModelUpdater() {}
 
-  virtual app_list::AppListModel* GetModel() = 0;
-  virtual app_list::SearchModel* GetSearchModel() = 0;
+  // Set whether this model updater is active.
+  // When we have multiple user profiles, only the active one has access to the
+  // model. All others profile can only cache model changes in Chrome.
+  virtual void SetActive(bool active) {}
 
   // For AppListModel:
   virtual void AddItem(std::unique_ptr<ChromeAppListItem> item) {}
@@ -122,6 +122,11 @@ class AppListModelUpdater {
       const std::string& result_id) = 0;
   virtual app_list::SearchResult* GetResultByTitle(
       const std::string& title) = 0;
+
+  // Methods for handle model updates in ash:
+  virtual void OnFolderCreated(ash::mojom::AppListItemMetadataPtr item) = 0;
+  virtual void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) = 0;
+  virtual void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) = 0;
 
   virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
 };

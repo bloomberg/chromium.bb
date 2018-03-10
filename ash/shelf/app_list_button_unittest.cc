@@ -109,7 +109,6 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   GetEventGenerator().GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   RunAllPendingInMessageLoop();
-  Shell::Get()->app_list()->FlushForTesting();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(

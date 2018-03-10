@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
-#include "ui/app_list/views/app_list_view.h"
 
 class AppListClientImpl;
 
@@ -110,7 +109,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Unowned pointer to the associated profile. May change if SetProfileByPath
   // is called.
   Profile* profile_;
-
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.
   AppListModelUpdater* model_updater_;

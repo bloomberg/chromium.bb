@@ -61,12 +61,14 @@ class AppListServiceDisabled : public AppListService {
 
   Profile* GetCurrentAppListProfile() override { return nullptr; }
   bool IsAppListVisible() const override { return false; }
+  bool GetTargetVisibility() const override { return false; }
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override {}
   AppListControllerDelegate* GetControllerDelegate() override {
     return nullptr;
   }
   void CreateShortcut() override {}
+  void FlushForTesting() override {}
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };
@@ -106,14 +108,6 @@ void OpenAppsPage(Profile* fallback_profile) {
 // static
 AppListService* AppListService::Get() {
   return AppListServiceDisabled::GetInstance();
-}
-
-// static
-void AppListService::InitAll(Profile* initial_profile,
-                             const base::FilePath& profile_path) {
-#if defined(OS_MACOSX)
-  InitAppsPageLegacyShimHandler(&OpenAppsPage);
-#endif
 }
 
 // static

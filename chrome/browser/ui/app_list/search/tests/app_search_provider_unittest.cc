@@ -140,7 +140,6 @@ class AppSearchProviderTest : public AppListTestBase {
 
  private:
   base::SimpleTestClock clock_;
-  std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;

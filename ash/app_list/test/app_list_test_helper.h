@@ -8,8 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
-#include "ash/app_list/presenter/app_list.h"
-#include "ash/app_list/presenter/test/test_app_list_presenter.h"
+#include "ash/app_list/test/test_app_list_client.h"
 #include "ui/app_list/app_list_constants.h"
 
 namespace app_list {
@@ -17,6 +16,8 @@ class AppListView;
 }  // namespace app_list
 
 namespace ash {
+
+class AppListControllerImpl;
 
 class AppListTestHelper {
  public:
@@ -62,9 +63,8 @@ class AppListTestHelper {
   app_list::AppListView* GetAppListView();
 
  private:
-  app_list::AppList* app_list_ = nullptr;
-  std::unique_ptr<app_list::test::TestAppListPresenter>
-      app_list_presenter_service_;
+  AppListControllerImpl* app_list_controller_ = nullptr;
+  std::unique_ptr<TestAppListClient> app_list_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestHelper);
 };

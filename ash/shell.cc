@@ -17,8 +17,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/app_list_delegate_impl.h"
-#include "ash/app_list/presenter/app_list.h"
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
@@ -651,7 +649,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       window_selector_controller_(std::make_unique<WindowSelectorController>()),
-      app_list_(std::make_unique<app_list::AppList>()),
       tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
@@ -799,9 +796,6 @@ Shell::~Shell() {
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
-  // AppListDelegateImpl depends upon AppList.
-  app_list_delegate_impl_.reset();
-
   app_list_controller_.reset();
 
   // These members access Shell in their destructors.
@@ -918,8 +912,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   wallpaper_controller_ = std::make_unique<WallpaperController>();
-
-  app_list_delegate_impl_ = std::make_unique<AppListDelegateImpl>();
 
   // TODO(sky): move creation to ShellPort.
   if (config != Config::MASH)

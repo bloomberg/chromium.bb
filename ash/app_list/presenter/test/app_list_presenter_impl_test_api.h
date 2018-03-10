@@ -5,6 +5,8 @@
 #ifndef ASH_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
 #define ASH_APP_LIST_PRESENTER_TEST_APP_LIST_PRESENTER_IMPL_TEST_API_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 
 namespace app_list {
@@ -21,6 +23,9 @@ class AppListPresenterImplTestApi {
 
   AppListView* view();
   AppListPresenterDelegate* presenter_delegate();
+
+  void NotifyVisibilityChanged(bool visible, int64_t display_id);
+  void NotifyTargetVisibilityChanged(bool visible);
 
  private:
   AppListPresenterImpl* const presenter_;

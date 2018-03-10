@@ -9,17 +9,22 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_view_delegate_mash.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/app_list_constants.h"
+
+namespace ui {
+class MouseWheelEvent;
+}  // namespace ui
 
 namespace ash {
 
@@ -39,7 +44,6 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   app_list::AppListModel* model() { return &model_; }
   app_list::SearchModel* search_model() { return &search_model_; }
   app_list::AppListPresenterImpl* presenter() { return &presenter_; }
-  mojom::AppListClient* client() { return client_.get(); }
 
   // mojom::AppListController:
   void SetClient(mojom::AppListClientPtr client_ptr) override;
@@ -89,6 +93,41 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   void OnAppListItemAdded(app_list::AppListItem* item) override;
   void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
   void OnAppListItemUpdated(app_list::AppListItem* item) override;
+
+  // Methods used in ash:
+  bool GetTargetVisibility() const;
+  bool IsVisible() const;
+  void Show(int64_t display_id, app_list::AppListShowSource show_source);
+  void UpdateYPositionAndOpacity(int y_position_in_screen,
+                                 float background_opacity);
+  void EndDragFromShelf(app_list::AppListViewState app_list_state);
+  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+  void ToggleAppList(int64_t display_id,
+                     app_list::AppListShowSource show_source);
+  app_list::AppListViewState GetAppListViewState();
+
+  // Methods of |client_|:
+  void StartSearch(const base::string16& raw_query);
+  void OpenSearchResult(const std::string& result_id, int event_flags);
+  void InvokeSearchResultAction(const std::string& result_id,
+                                int action_index,
+                                int event_flags);
+  void ViewShown(int64_t display_id);
+  void ViewClosing();
+  void ActivateItem(const std::string& id, int event_flags);
+  using GetContextMenuModelCallback =
+      AppListViewDelegateMash::GetContextMenuModelCallback;
+  void GetContextMenuModel(const std::string& id,
+                           GetContextMenuModelCallback callback);
+  void ContextMenuItemSelected(const std::string& id,
+                               int command_id,
+                               int event_flags);
+  void OnVisibilityChanged(bool visible);
+  void OnTargetVisibilityChanged(bool visible);
+  void StartVoiceInteractionSession();
+  void ToggleVoiceInteractionSession();
+
+  void FlushForTesting();
 
  private:
   syncer::StringOrdinal GetOemFolderPos();

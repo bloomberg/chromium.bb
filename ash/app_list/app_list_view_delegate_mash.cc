@@ -29,24 +29,23 @@ app_list::SearchModel* AppListViewDelegateMash::GetSearchModel() {
 }
 
 void AppListViewDelegateMash::StartSearch(const base::string16& raw_query) {
-  owner_->client()->StartSearch(raw_query);
+  owner_->StartSearch(raw_query);
 }
 
 void AppListViewDelegateMash::OpenSearchResult(const std::string& result_id,
                                                int event_flags) {
-  owner_->client()->OpenSearchResult(result_id, event_flags);
+  owner_->OpenSearchResult(result_id, event_flags);
 }
 
 void AppListViewDelegateMash::InvokeSearchResultAction(
     const std::string& result_id,
     int action_index,
     int event_flags) {
-  owner_->client()->InvokeSearchResultAction(result_id, action_index,
-                                             event_flags);
+  owner_->InvokeSearchResultAction(result_id, action_index, event_flags);
 }
 
 void AppListViewDelegateMash::ViewShown(int64_t display_id) {
-  owner_->client()->ViewShown(display_id);
+  owner_->ViewShown(display_id);
 }
 
 void AppListViewDelegateMash::Dismiss() {
@@ -54,7 +53,7 @@ void AppListViewDelegateMash::Dismiss() {
 }
 
 void AppListViewDelegateMash::ViewClosing() {
-  owner_->client()->ViewClosing();
+  owner_->ViewClosing();
 }
 
 void AppListViewDelegateMash::GetWallpaperProminentColors(
@@ -64,19 +63,19 @@ void AppListViewDelegateMash::GetWallpaperProminentColors(
 
 void AppListViewDelegateMash::ActivateItem(const std::string& id,
                                            int event_flags) {
-  owner_->client()->ActivateItem(id, event_flags);
+  owner_->ActivateItem(id, event_flags);
 }
 
 void AppListViewDelegateMash::GetContextMenuModel(
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  owner_->client()->GetContextMenuModel(id, std::move(callback));
+  owner_->GetContextMenuModel(id, std::move(callback));
 }
 
 void AppListViewDelegateMash::ContextMenuItemSelected(const std::string& id,
                                                       int command_id,
                                                       int event_flags) {
-  owner_->client()->ContextMenuItemSelected(id, command_id, event_flags);
+  owner_->ContextMenuItemSelected(id, command_id, event_flags);
 }
 
 void AppListViewDelegateMash::AddObserver(

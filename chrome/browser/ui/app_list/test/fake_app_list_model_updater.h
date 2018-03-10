@@ -20,9 +20,6 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   FakeAppListModelUpdater();
   ~FakeAppListModelUpdater() override;
 
-  // AppListModelUpdater:
-  app_list::AppListModel* GetModel() override;
-  app_list::SearchModel* GetSearchModel() override;
   // For AppListModel:
   void AddItem(std::unique_ptr<ChromeAppListItem> item) override;
   void AddItemToFolder(std::unique_ptr<ChromeAppListItem> item,
@@ -66,6 +63,10 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       const {
     return search_results_;
   }
+
+  void OnFolderCreated(ash::mojom::AppListItemMetadataPtr folder) override {}
+  void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override {}
+  void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override {}
 
   void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 

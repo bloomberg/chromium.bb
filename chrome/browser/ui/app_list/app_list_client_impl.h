@@ -16,7 +16,7 @@ class AppListViewDelegate;
 
 class AppListClientImpl : public ash::mojom::AppListClient {
  public:
-  explicit AppListClientImpl(ash::mojom::AppListController* controller);
+  AppListClientImpl();
   ~AppListClientImpl() override;
 
   // ash::mojom::AppListClient:
@@ -33,6 +33,7 @@ class AppListClientImpl : public ash::mojom::AppListClient {
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
+
   void OnAppListTargetVisibilityChanged(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
   void StartVoiceInteractionSession() override;
@@ -42,15 +43,14 @@ class AppListClientImpl : public ash::mojom::AppListClient {
   void OnFolderDeleted(ash::mojom::AppListItemMetadataPtr item) override;
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
 
-  bool IsAppListTargetVisible() const { return app_list_target_visible_; }
-  bool IsAppListVisible() const { return app_list_visible_; }
+  // Flushes all pending mojo call to Ash for testing.
+  void FlushMojoForTesting();
 
  private:
   AppListViewDelegate* GetViewDelegate();
 
   mojo::Binding<ash::mojom::AppListClient> binding_;
-  bool app_list_target_visible_ = false;
-  bool app_list_visible_ = false;
+  ash::mojom::AppListControllerPtr app_list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListClientImpl);
 };

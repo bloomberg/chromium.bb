@@ -63,7 +63,11 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
 
   bool IsAppListVisible() const override { return !!showing_for_profile_; }
 
+  bool GetTargetVisibility() const override { return IsAppListVisible(); }
+
   AppListControllerDelegate* GetControllerDelegate() override { return NULL; }
+
+  void FlushForTesting() override {}
 
   // AppListServiceImpl overrides:
   void DestroyAppList() override { ++destroy_app_list_call_count_; }

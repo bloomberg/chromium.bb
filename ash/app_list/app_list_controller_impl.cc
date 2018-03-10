@@ -16,6 +16,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "extensions/common/constants.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -49,10 +50,14 @@ class ViewDelegateFactoryImpl : public app_list::AppListViewDelegateFactory {
 
 namespace ash {
 
+// TODO(hejq): Get rid of AppListPresenterDelegateFactory and pass in
+// ash::AppListPresenterDelegate directly.
 AppListControllerImpl::AppListControllerImpl()
     : view_delegate_(this),
-      presenter_(std::make_unique<AppListPresenterDelegateFactory>(
-          std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_))) {
+      presenter_(
+          std::make_unique<AppListPresenterDelegateFactory>(
+              std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_)),
+          this) {
   model_.AddObserver(this);
 }
 
@@ -276,6 +281,119 @@ void AppListControllerImpl::OnAppListItemWillBeDeleted(
 
 void AppListControllerImpl::OnAppListItemUpdated(app_list::AppListItem* item) {
   client_->OnItemUpdated(item->CloneMetadata());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods used in Ash
+
+bool AppListControllerImpl::GetTargetVisibility() const {
+  return presenter_.GetTargetVisibility();
+}
+
+bool AppListControllerImpl::IsVisible() const {
+  return presenter_.IsVisible();
+}
+
+void AppListControllerImpl::Show(int64_t display_id,
+                                 app_list::AppListShowSource show_source) {
+  UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
+                            show_source, app_list::kMaxAppListToggleMethod);
+  presenter_.Show(display_id);
+}
+
+void AppListControllerImpl::UpdateYPositionAndOpacity(
+    int y_position_in_screen,
+    float background_opacity) {
+  presenter_.UpdateYPositionAndOpacity(y_position_in_screen,
+                                       background_opacity);
+}
+
+void AppListControllerImpl::EndDragFromShelf(
+    app_list::AppListViewState app_list_state) {
+  presenter_.EndDragFromShelf(app_list_state);
+}
+
+void AppListControllerImpl::ProcessMouseWheelEvent(
+    const ui::MouseWheelEvent& event) {
+  presenter_.ProcessMouseWheelOffset(event.offset().y());
+}
+
+void AppListControllerImpl::ToggleAppList(
+    int64_t display_id,
+    app_list::AppListShowSource show_source) {
+  if (!IsVisible()) {
+    UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
+                              show_source, app_list::kMaxAppListToggleMethod);
+  }
+  presenter_.ToggleAppList(display_id);
+}
+
+app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
+  return model_.state_fullscreen();
+}
+
+void AppListControllerImpl::FlushForTesting() {
+  bindings_.FlushForTesting();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods of |client_|:
+
+void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
+  client_->StartSearch(raw_query);
+}
+
+void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
+                                             int event_flags) {
+  client_->OpenSearchResult(result_id, event_flags);
+}
+
+void AppListControllerImpl::InvokeSearchResultAction(
+    const std::string& result_id,
+    int action_index,
+    int event_flags) {
+  client_->InvokeSearchResultAction(result_id, action_index, event_flags);
+}
+
+void AppListControllerImpl::ViewShown(int64_t display_id) {
+  client_->ViewShown(display_id);
+}
+
+void AppListControllerImpl::ViewClosing() {
+  client_->ViewClosing();
+}
+
+void AppListControllerImpl::ActivateItem(const std::string& id,
+                                         int event_flags) {
+  client_->ActivateItem(id, event_flags);
+}
+
+void AppListControllerImpl::GetContextMenuModel(
+    const std::string& id,
+    GetContextMenuModelCallback callback) {
+  client_->GetContextMenuModel(id, std::move(callback));
+}
+
+void AppListControllerImpl::ContextMenuItemSelected(const std::string& id,
+                                                    int command_id,
+                                                    int event_flags) {
+  client_->ContextMenuItemSelected(id, command_id, event_flags);
+}
+
+void AppListControllerImpl::OnVisibilityChanged(bool visible) {
+  client_->OnAppListVisibilityChanged(visible);
+}
+
+void AppListControllerImpl::OnTargetVisibilityChanged(bool visible) {
+  client_->OnAppListTargetVisibilityChanged(visible);
+}
+
+void AppListControllerImpl::StartVoiceInteractionSession() {
+  client_->StartVoiceInteractionSession();
+}
+
+void AppListControllerImpl::ToggleVoiceInteractionSession() {
+  client_->ToggleVoiceInteractionSession();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

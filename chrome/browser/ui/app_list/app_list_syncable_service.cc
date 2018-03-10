@@ -7,7 +7,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/app_list/model/app_list_model_observer.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
