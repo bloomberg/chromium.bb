@@ -42,6 +42,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
@@ -126,8 +127,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void ScheduleAnimation(const PlatformFrameView*) override {
     // Calling scheduleAnimation on m_webView so WebViewTestProxy will call
     // beginFrame.
-    if (LayoutTestSupport::IsRunningLayoutTest())
-      popup_->web_view_->MainFrameImpl()->FrameWidget()->ScheduleAnimation();
+    if (LayoutTestSupport::IsRunningLayoutTest()) {
+      popup_->web_view_->MainFrameImpl()
+          ->FrameWidgetImpl()
+          ->ScheduleAnimation();
+    }
 
     if (popup_->layer_tree_view_) {
       popup_->layer_tree_view_->SetNeedsBeginFrame();

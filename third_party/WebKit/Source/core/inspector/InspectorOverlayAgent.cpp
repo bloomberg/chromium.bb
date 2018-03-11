@@ -202,13 +202,6 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
 
   void InvalidateRect(const IntRect&) override { overlay_->Invalidate(); }
 
-  void ScheduleAnimation(const PlatformFrameView* frame_view) override {
-    if (overlay_->in_layout_)
-      return;
-
-    client_->ScheduleAnimation(frame_view);
-  }
-
  private:
   InspectorOverlayChromeClient(ChromeClient& client,
                                InspectorOverlayAgent& overlay)

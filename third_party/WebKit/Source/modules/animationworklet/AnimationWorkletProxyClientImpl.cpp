@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/graphics/CompositorMutatorImpl.h"
 

@@ -11,6 +11,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
@@ -390,7 +391,7 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   // Make sure that a resize that comes in while there's no root layer is
   // honoured when we attach to the layer tree.
   WebFrameWidgetBase* main_frame_widget =
-      WebView()->MainFrameImpl()->FrameWidget();
+      WebView()->MainFrameImpl()->FrameWidgetImpl();
   main_frame_widget->SetRootGraphicsLayer(nullptr);
   WebView()->Resize(IntSize(320, 240));
 

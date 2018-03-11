@@ -32,6 +32,7 @@
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
@@ -334,7 +335,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
-  owning_web_view_->MainFrameImpl()->FrameWidget()->ScheduleAnimation();
+  owning_web_view_->MainFrameImpl()->FrameWidgetImpl()->ScheduleAnimation();
 }
 
 void LinkHighlightImpl::ClearGraphicsLayerLinkHighlightPointer() {
