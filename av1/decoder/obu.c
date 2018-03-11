@@ -363,6 +363,10 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
+    if (data_end < data + length_field_size) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
     av1_init_read_bit_buffer(pbi, &rb, data + length_field_size, data_end);
 
     if (read_obu_header(&rb, &obu_header) != AOM_CODEC_OK) {
@@ -436,6 +440,11 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_OBU_FRAME
       case OBU_TILE_GROUP:
         if (!frame_header_received) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return;
+        }
+        if (data_end < data + obu_payload_offset ||
+            data_end < data + payload_size) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
