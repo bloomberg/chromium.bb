@@ -62,6 +62,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
@@ -2446,7 +2447,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   TestBidirectionalDelegate delegate;
   stream_impl->Start(&bidi_request_info, NetLogWithSource(),
                      /*send_request_headers_automatically=*/true, &delegate,
-                     nullptr);
+                     nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   delegate.WaitUntilDone();
 
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
@@ -2573,7 +2574,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   TestBidirectionalDelegate delegate;
   stream_impl->Start(&bidi_request_info, NetLogWithSource(),
                      /*send_request_headers_automatically=*/true, &delegate,
-                     nullptr);
+                     nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   delegate.WaitUntilDone();
 
   // Make sure the BidirectionalStream negotiated goes through QUIC.
