@@ -217,8 +217,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   std::unique_ptr<VideoDecoderSelector> decoder_selector_;
 
-  StrictMock<MockVideoDecoder>* decoder_1_;
-  StrictMock<MockVideoDecoder>* decoder_2_;
+  StrictMock<MockVideoDecoder>* decoder_1_ = nullptr;
+  StrictMock<MockVideoDecoder>* decoder_2_ = nullptr;
   std::vector<std::unique_ptr<VideoDecoder>> all_decoders_;
   std::unique_ptr<VideoDecoder> selected_decoder_;
 
