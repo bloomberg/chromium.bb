@@ -112,16 +112,6 @@ bool Frame::IsMainFrame() const {
   return !Tree().Parent();
 }
 
-bool Frame::IsLocalRoot() const {
-  if (IsRemoteFrame())
-    return false;
-
-  if (!Tree().Parent())
-    return true;
-
-  return Tree().Parent()->IsRemoteFrame();
-}
-
 HTMLFrameOwnerElement* Frame::DeprecatedLocalOwner() const {
   return owner_ && owner_->IsLocal() ? ToHTMLFrameOwnerElement(owner_)
                                      : nullptr;

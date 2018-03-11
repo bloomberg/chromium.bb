@@ -857,7 +857,7 @@ Frame* FocusController::FocusedOrMainFrame() const {
   // deal with RemoteFrames cross-process focus transfers.
   for (Frame* frame = &page_->MainFrame()->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalRoot())
+    if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot())
       return frame;
   }
 

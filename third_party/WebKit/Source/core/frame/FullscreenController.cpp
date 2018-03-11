@@ -119,7 +119,7 @@ void FullscreenController::DidExitFullscreen() {
       continue;
     }
 
-    DCHECK(frame->IsLocalRoot());
+    DCHECK(frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot());
     if (Document* document = ToLocalFrame(frame)->GetDocument()) {
       if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document))
         fullscreen->DidExitFullscreen();
