@@ -29,6 +29,7 @@
 #include "net/spdy/core/spdy_header_block.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -329,11 +330,34 @@ void BidirectionalStream::OnBidirectionalStreamImplReady(
     std::unique_ptr<BidirectionalStreamImpl> stream) {
   DCHECK(!stream_impl_);
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("bidirectional_stream", R"(
+        semantics {
+          sender: "Bidirectional Stream"
+          description:
+            "Bidirectional stream is used to exchange data with a server on "
+            "behalf of an RPC API."
+          trigger:
+            "When an application makes an RPC to the server."
+          data:
+            "Any arbitrary data."
+          destination: OTHER
+          destination_other:
+            "Any destination that the application chooses."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature is not used in Chrome."
+          policy_exception_justification:
+            "This feature is not used in Chrome."
+        }
+    )");
+
   stream_request_.reset();
   stream_impl_ = std::move(stream);
   stream_impl_->Start(request_info_.get(), net_log_,
                       send_request_headers_automatically_, this,
-                      std::move(timer_));
+                      std::move(timer_), traffic_annotation);
 }
 
 void BidirectionalStream::OnWebSocketHandshakeStreamReady(

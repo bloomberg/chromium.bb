@@ -15,6 +15,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class Timer;
@@ -103,7 +104,8 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
                      const NetLogWithSource& net_log,
                      bool send_request_headers_automatically,
                      BidirectionalStreamImpl::Delegate* delegate,
-                     std::unique_ptr<base::Timer> timer) = 0;
+                     std::unique_ptr<base::Timer> timer,
+                     const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Sends request headers to server.
   // When |send_request_headers_automatically_| is

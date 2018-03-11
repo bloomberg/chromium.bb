@@ -25,6 +25,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,7 +134,8 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
              const NetLogWithSource& net_log) {
     stream_->Start(request, net_log,
                    /*send_request_headers_automatically=*/false, this,
-                   std::make_unique<base::Timer>(false, false));
+                   std::make_unique<base::Timer>(false, false),
+                   TRAFFIC_ANNOTATION_FOR_TESTS);
     not_expect_callback_ = false;
   }
 

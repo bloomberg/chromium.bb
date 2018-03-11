@@ -41,7 +41,8 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
              const NetLogWithSource& net_log,
              bool send_request_headers_automatically,
              BidirectionalStreamImpl::Delegate* delegate,
-             std::unique_ptr<base::Timer> timer) override;
+             std::unique_ptr<base::Timer> timer,
+             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   void SendRequestHeaders() override;
   int ReadData(IOBuffer* buffer, int buffer_len) override;
   void SendvData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
