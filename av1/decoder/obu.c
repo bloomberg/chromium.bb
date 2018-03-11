@@ -146,6 +146,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 #endif
 
+  pbi->seqence_header_ready = 1;
+
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
 

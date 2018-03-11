@@ -2633,6 +2633,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
+  if (!pbi->seqence_header_ready) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No sequence header");
+  }
+
   cm->last_frame_type = cm->frame_type;
   cm->last_intra_only = cm->intra_only;
 
