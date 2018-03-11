@@ -343,6 +343,10 @@ Bug: 768828
                 basename_map[source_header] = dest_base.replace('.idl', '.h')
                 pattern += re.escape(source_header) + '|'
                 idl_headers.add(source_header)
+            elif source_base.endswith('.proto'):
+                source_header = source_base.replace('.proto', '.pb.h')
+                basename_map[source_header] = dest_base.replace('.proto', '.pb.h')
+                pattern += re.escape(source_header) + '|'
         _log.info('Rename %d files for snake_case', len(basename_map))
         self._basename_map = basename_map
         self._basename_re = re.compile(pattern[0:len(pattern) - 1] + ')(?=["\']|$)')
