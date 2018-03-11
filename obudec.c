@@ -114,7 +114,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
       warn("Failed to read OBU.\n");
       return 1;
     }
-    *bytes_read += obu_size;
+    *bytes_read += (size_t)obu_size;
 
     OBU_TYPE obu_type;
     if (get_obu_type(data[length_field_size], &obu_type) != 0) {
@@ -126,7 +126,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
       // Stop when a temporal delimiter is found
       // fprintf(stderr, "Found temporal delimiter, ending temporal unit\n");
       // prevent decoder to start decoding another frame from this buffer
-      *bytes_read -= obu_size;
+      *bytes_read -= (size_t)obu_size;
       break;
     }
 
@@ -138,7 +138,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
       const int curr_layer_id = (obu_extension_header >> 3) & 0x3;
       if (curr_layer_id && (curr_layer_id > last_layer_id)) {
         // new enhancement layer
-        *bytes_read -= obu_size;
+        *bytes_read -= (size_t)obu_size;
         const int i_obu_size = (int)obu_size;
         fseek(infile, -i_obu_size, SEEK_CUR);
         break;
