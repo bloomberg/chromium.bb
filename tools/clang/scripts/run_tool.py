@@ -92,7 +92,7 @@ def _PruneGitFiles(git_files, paths):
         most = middle - 1
       else:
         least = middle + 1
-    while git_files[least].startswith(path):
+    while least < len(git_files) and git_files[least].startswith(path):
       pruned_list.append(git_files[least])
       least += 1
     git_index = least
