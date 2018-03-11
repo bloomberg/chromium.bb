@@ -1399,8 +1399,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
-
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;

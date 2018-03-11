@@ -18,7 +18,6 @@
 extern "C" {
 #endif
 
-#define MVREF_NEIGHBOURS 9
 #define MVREF_ROWS 3
 #define MVREF_COLS 3
 
@@ -32,79 +31,6 @@ typedef struct position {
   int row;
   int col;
 } POSITION;
-
-typedef enum {
-  BOTH_ZERO = 0,
-  ZERO_PLUS_PREDICTED = 1,
-  BOTH_PREDICTED = 2,
-  NEW_PLUS_NON_INTRA = 3,
-  BOTH_NEW = 4,
-  INTRA_PLUS_NON_INTRA = 5,
-  BOTH_INTRA = 6,
-  INVALID_CASE = 9
-} motion_vector_context;
-
-// This is used to figure out a context for the ref blocks. The code flattens
-// an array that would have 3 possible counts (0, 1 & 2) for 3 choices by
-// adding 9 for each intra block, 3 for each zero mv and 1 for each new
-// motion vector. This single number is then converted into a context
-// with a single lookup ( counter_to_context ).
-static const int mode_2_counter[] = {
-  9,  // DC_PRED
-  9,  // V_PRED
-  9,  // H_PRED
-  9,  // D45_PRED
-  9,  // D135_PRED
-  9,  // D113_PRED
-  9,  // D157_PRED
-  9,  // D203_PRED
-  9,  // D67_PRED
-  9,  // SMOOTH_PRED
-  9,  // SMOOTH_V_PRED
-  9,  // SMOOTH_H_PRED
-  9,  // PAETH_PRED
-  0,  // NEARESTMV
-  0,  // NEARMV
-  3,  // GLOBALMV
-  1,  // NEWMV
-  0,  // NEAREST_NEARESTMV
-  0,  // NEAR_NEARMV
-  1,  // NEAREST_NEWMV
-  1,  // NEW_NEARESTMV
-  1,  // NEAR_NEWMV
-  1,  // NEW_NEARMV
-  3,  // GLOBAL_GLOBALMV
-  1,  // NEW_NEWMV
-};
-
-// There are 3^3 different combinations of 3 counts that can be either 0,1 or
-// 2. However the actual count can never be greater than 2 so the highest
-// counter we need is 18. 9 is an invalid counter that's never used.
-static const int counter_to_context[19] = {
-  BOTH_PREDICTED,        // 0
-  NEW_PLUS_NON_INTRA,    // 1
-  BOTH_NEW,              // 2
-  ZERO_PLUS_PREDICTED,   // 3
-  NEW_PLUS_NON_INTRA,    // 4
-  INVALID_CASE,          // 5
-  BOTH_ZERO,             // 6
-  INVALID_CASE,          // 7
-  INVALID_CASE,          // 8
-  INTRA_PLUS_NON_INTRA,  // 9
-  INTRA_PLUS_NON_INTRA,  // 10
-  INVALID_CASE,          // 11
-  INTRA_PLUS_NON_INTRA,  // 12
-  INVALID_CASE,          // 13
-  INVALID_CASE,          // 14
-  INVALID_CASE,          // 15
-  INVALID_CASE,          // 16
-  INVALID_CASE,          // 17
-  BOTH_INTRA             // 18
-};
-
-static const int idx_n_column_to_subblock[4][2] = {
-  { 1, 2 }, { 1, 3 }, { 3, 2 }, { 3, 3 }
-};
 
 // clamp_mv_ref
 #define MV_BORDER (16 << 3)  // Allow 16 pels in 1/8th pel units
