@@ -540,7 +540,7 @@ static void setup_ref_mv_list(
 #if USE_CUR_GM_REFMV
     int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
-    int mi_row, int mi_col, int16_t *mode_context, int compound_search) {
+    int mi_row, int mi_col, int16_t *mode_context) {
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
   MV_REFERENCE_FRAME rf[2];
@@ -554,13 +554,7 @@ static void setup_ref_mv_list(
 
   av1_set_ref_frame(rf, ref_frame);
   mode_context[ref_frame] = 0;
-  if (!compound_search) {
-    refmv_count[ref_frame] = 0;
-  } else {
-    refmv_count[ref_frame] = 0;
-    // refmv_count[rf[0]] = 0;
-    // refmv_count[rf[1]] = 0;
-  }
+  refmv_count[ref_frame] = 0;
 
   // Find valid maximum row/col offset.
   if (xd->up_available) {
@@ -992,10 +986,8 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],
                       CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
-                      int16_t *compound_mode_context,
                       int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int mi_row,
-                      int mi_col, find_mv_refs_sync sync, void *const data,
-                      int16_t *mode_context, int compound_search) {
+                      int mi_col, int16_t *mode_context) {
   int_mv zeromv[2];
   BLOCK_SIZE bsize = mi->mbmi.sb_type;
   MV_REFERENCE_FRAME rf[2];
@@ -1025,28 +1017,11 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     zeromv[0].as_int = zeromv[1].as_int = 0;
   }
 
-  if (compound_search) {
-    int_mv zeromv1[2];
-    zeromv1[0].as_int = zeromv[0].as_int;
-    zeromv1[1].as_int = zeromv[1].as_int;
-    setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack,
-                      mv_ref_list,
+  setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
 #if USE_CUR_GM_REFMV
-                      zeromv1,
+                    zeromv,
 #endif  // USE_CUR_GM_REFMV
-                      mi_row, mi_col, mode_context, compound_search);
-  } else {
-    setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack,
-                      mv_ref_list,
-#if USE_CUR_GM_REFMV
-                      zeromv,
-#endif  // USE_CUR_GM_REFMV
-                      mi_row, mi_col, mode_context, compound_search);
-  }
-
-  (void)compound_mode_context;
-  (void)data;
-  (void)sync;
+                    mi_row, mi_col, mode_context);
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,

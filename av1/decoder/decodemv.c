@@ -734,8 +734,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     int_mv ref_mvs[INTRA_FRAME + 1][MAX_MV_REF_CANDIDATES];
 
     av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, xd->ref_mv_count,
-                     xd->ref_mv_stack, NULL, ref_mvs, mi_row, mi_col, NULL,
-                     NULL, inter_mode_ctx, 0);
+                     xd->ref_mv_stack, ref_mvs, mi_row, mi_col, inter_mode_ctx);
 
     int_mv nearestmv, nearmv;
 
@@ -1395,7 +1394,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES] = { { { 0 } } };
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
-  int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -1408,21 +1406,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-  if (is_compound) {
-    MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
-    av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
-                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
-                     (void *)pbi, inter_mode_ctx, 1);
-  } else {
-    MV_REFERENCE_FRAME frame = mbmi->ref_frame[0];
-    av1_find_mv_refs(cm, xd, mi, frame, xd->ref_mv_count, xd->ref_mv_stack,
-                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
-                     (void *)pbi, inter_mode_ctx, 0);
-  }
+  MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
+  av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
+                   ref_mvs, mi_row, mi_col, inter_mode_ctx);
 
-  int mode_ctx = 0;
-
-  mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);
+  int mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
   if (mbmi->skip_mode) {

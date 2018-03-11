@@ -5576,9 +5576,8 @@ static void setup_buffer_inter(
 
   // Gets an initial list of candidate vectors from neighbours and orders them
   av1_find_mv_refs(cm, xd, mi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->compound_mode_context,
-                   mbmi_ext->ref_mvs, mi_row, mi_col, NULL, NULL,
-                   mbmi_ext->mode_context, 0);
+                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                   mbmi_ext->mode_context);
 
 // Candidate refinement carried out at encoder and decoder
 #if CONFIG_AMVR
@@ -7851,9 +7850,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
   int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
   av1_find_mv_refs(cm, xd, mi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->compound_mode_context,
-                   mbmi_ext->ref_mvs, mi_row, mi_col, NULL, NULL,
-                   mbmi_ext->mode_context, 0);
+                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                   mbmi_ext->mode_context);
 
   int_mv nearestmv, nearmv;
 #if CONFIG_AMVR
@@ -8520,9 +8518,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     MODE_INFO *const mi = xd->mi[0];
     x->mbmi_ext->mode_context[ref_frame] = 0;
     av1_find_mv_refs(cm, xd, mi, ref_frame, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, mbmi_ext->compound_mode_context,
-                     mbmi_ext->ref_mvs, mi_row, mi_col, NULL, NULL,
-                     mbmi_ext->mode_context, 0);
+                     mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                     mbmi_ext->mode_context);
   }
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
