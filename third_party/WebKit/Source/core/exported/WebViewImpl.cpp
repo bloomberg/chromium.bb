@@ -75,6 +75,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -160,7 +161,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebFrameWidget.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMeaningfulLayout.h"
@@ -550,7 +550,7 @@ WebInputEventResult WebViewImpl::HandleMouseWheel(
     const WebMouseWheelEvent& event) {
   // Halt an in-progress fling on a wheel tick.
   if (!event.has_precise_scrolling_deltas) {
-    if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
+    if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
       widget->EndActiveFlingAnimation();
   }
   HidePopups();
@@ -570,7 +570,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
   switch (event.GetType()) {
     case WebInputEvent::kGestureFlingStart:
     case WebInputEvent::kGestureFlingCancel: {
-      if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
+      if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
         event_result = widget->HandleGestureFlingEvent(event);
 
       client_->DidHandleGestureEvent(event, event_cancelled);
@@ -966,7 +966,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
                String(event.text).Utf8());
 
   // Halt an in-progress fling on a key event.
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
+  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
     widget->EndActiveFlingAnimation();
 
   // Please refer to the comments explaining the m_suppressNextKeypressEvent
@@ -1837,7 +1837,7 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
   if (!MainFrameImpl())
     return;
 
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
+  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
     widget->UpdateGestureAnimation(last_frame_time_monotonic);
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
@@ -1877,7 +1877,7 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
     WebWidgetClient* client =
-        WebLocalFrameImpl::FromFrame(frame)->FrameWidget()->Client();
+        WebLocalFrameImpl::FromFrame(frame)->FrameWidgetImpl()->Client();
 
     if (should_dispatch_first_visually_non_empty_layout_ &&
         view->IsVisuallyNonEmpty()) {
@@ -2002,7 +2002,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
 
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel.
-  if (MainFrameImpl()->FrameWidget()->DoingDragAndDrop() &&
+  if (MainFrameImpl()->FrameWidgetImpl()->DoingDragAndDrop() &&
       input_event.GetType() != WebInputEvent::kPointerCancel)
     return WebInputEventResult::kHandledSuppressed;
 
@@ -2024,14 +2024,14 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   UIEventWithKeyState::ClearNewTabModifierSetFromIsolatedWorld();
 
   bool is_pointer_locked = false;
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget()) {
+  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl()) {
     if (WebWidgetClient* client = widget->Client())
       is_pointer_locked = client->IsPointerLocked();
   }
 
   if (is_pointer_locked &&
       WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    MainFrameImpl()->FrameWidget()->PointerLockMouseEvent(coalesced_event);
+    MainFrameImpl()->FrameWidgetImpl()->PointerLockMouseEvent(coalesced_event);
     return WebInputEventResult::kHandledSystem;
   }
 
@@ -3359,7 +3359,7 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   if (!MainFrameImpl())
     return;
 
-  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidget())
+  if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
     widget->EndActiveFlingAnimation();
 }
 

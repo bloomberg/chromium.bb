@@ -386,8 +386,8 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client)
     : WebRemoteFrame(scope),
-      frame_client_(RemoteFrameClientImpl::Create(this)),
       client_(client),
+      frame_client_(RemoteFrameClientImpl::Create(this)),
       self_keep_alive_(this) {
   DCHECK(client);
 }

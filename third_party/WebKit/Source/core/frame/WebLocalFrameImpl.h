@@ -37,7 +37,6 @@
 #include "core/exported/WebInputMethodControllerImpl.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebFrameWidgetBase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
@@ -52,7 +51,7 @@ namespace blink {
 
 class ChromePrintContext;
 class IntSize;
-class LocalFrameClient;
+class LocalFrameClientImpl;
 class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
@@ -61,6 +60,7 @@ struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
 class WebDevToolsAgentImpl;
 class WebFrameClient;
+class WebFrameWidgetBase;
 class WebNode;
 class WebPerformance;
 class WebPlugin;
@@ -315,7 +315,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   float DistanceToNearestFindMatch(const WebFloatPoint&) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
-  WebFrameWidgetBase* FrameWidget() const override;
+  WebFrameWidget* FrameWidget() const override;
   void CopyImageAt(const WebPoint&) override;
   void SaveImageAt(const WebPoint&) override;
   void SetEngagementLevel(mojom::EngagementLevel) override;
@@ -397,6 +397,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebFrameClient* Client() const { return client_; }
   void SetClient(WebFrameClient* client) { client_ = client; }
 
+  WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }
+
   ContentSettingsClient& GetContentSettingsClient() {
     return content_settings_client_;
   };
@@ -427,20 +429,24 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
+  // TODO(dcheng): Remove this and make |FrameWidget()| always return something
+  // useful.
   WebFrameWidgetBase* LocalRootFrameWidget();
-
-  // Sets the local core frame and registers destruction observers.
-  void SetCoreFrame(LocalFrame*);
 
   virtual void Trace(blink::Visitor*);
 
  private:
+  friend LocalFrameClientImpl;
+
   WebLocalFrameImpl(WebTreeScopeType,
                     WebFrameClient*,
                     blink::InterfaceRegistry*);
   WebLocalFrameImpl(WebRemoteFrame*,
                     WebFrameClient*,
                     blink::InterfaceRegistry*);
+
+  // Sets the local core frame and registers destruction observers.
+  void SetCoreFrame(LocalFrame*);
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebLocalFrameImpl.
@@ -464,21 +470,22 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void BindDevToolsAgentRequest(mojom::blink::DevToolsAgentAssociatedRequest);
 
-  Member<LocalFrameClient> local_frame_client_;
+  WebFrameClient* client_;
+
+  // TODO(dcheng): Inline this field directly rather than going through Member.
+  const Member<LocalFrameClientImpl> local_frame_client_;
 
   // The embedder retains a reference to the WebCore LocalFrame while it is
   // active in the DOM. This reference is released when the frame is removed
-  // from the DOM or the entire page is closed.  FIXME: These will need to
-  // change to WebFrame when we introduce WebFrameProxy.
+  // from the DOM or the entire page is closed.
   Member<LocalFrame> frame_;
-
-  Member<WebDevToolsAgentImpl> dev_tools_agent_;
 
   // This is set if the frame is the root of a local frame tree, and requires a
   // widget for layout.
   Member<WebFrameWidgetBase> frame_widget_;
 
-  WebFrameClient* client_;
+  Member<WebDevToolsAgentImpl> dev_tools_agent_;
+
   WebAutofillClient* autofill_client_;
   ContentSettingsClient content_settings_client_;
   std::unique_ptr<SharedWorkerRepositoryClientImpl>

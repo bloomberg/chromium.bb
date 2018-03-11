@@ -147,7 +147,7 @@
 #include "core/frame/SmartClip.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebFrameWidgetImpl.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -1722,8 +1722,8 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     WebFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrame(scope),
-      local_frame_client_(LocalFrameClientImpl::Create(this)),
       client_(client),
+      local_frame_client_(LocalFrameClientImpl::Create(this)),
       autofill_client_(nullptr),
       input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
@@ -1854,9 +1854,11 @@ void WebLocalFrameImpl::CreateFrameView() {
     return;
 
   bool is_main_frame = !Parent();
-  IntSize initial_size = (is_main_frame || !FrameWidget())
+  // TODO(dcheng): Can this be better abstracted away? It's pretty ugly that
+  // only local roots are special-cased here.
+  IntSize initial_size = (is_main_frame || !frame_widget_)
                              ? web_view->MainFrameSize()
-                             : (IntSize)FrameWidget()->Size();
+                             : static_cast<IntSize>(frame_widget_->Size());
   Color base_background_color = web_view->BaseBackgroundColor();
   if (!is_main_frame && Parent()->IsWebRemoteFrame())
     base_background_color = Color::kTransparent;
@@ -1875,8 +1877,8 @@ void WebLocalFrameImpl::CreateFrameView() {
       input_events_scale_factor_for_emulation_);
   GetFrame()->View()->SetDisplayMode(web_view->DisplayMode());
 
-  if (FrameWidget())
-    FrameWidget()->DidCreateLocalRootView();
+  if (frame_widget_)
+    frame_widget_->DidCreateLocalRootView();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame* frame) {
@@ -2470,7 +2472,7 @@ void WebLocalFrameImpl::SetFrameWidget(WebFrameWidgetBase* frame_widget) {
   frame_widget_ = frame_widget;
 }
 
-WebFrameWidgetBase* WebLocalFrameImpl::FrameWidget() const {
+WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
 }
 
@@ -2651,7 +2653,7 @@ void WebLocalFrameImpl::SetSpellCheckPanelHostClient(
 }
 
 WebFrameWidgetBase* WebLocalFrameImpl::LocalRootFrameWidget() {
-  return LocalRoot()->FrameWidget();
+  return LocalRoot()->FrameWidgetImpl();
 }
 
 Node* WebLocalFrameImpl::ContextMenuNodeInner() const {

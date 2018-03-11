@@ -88,8 +88,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   RemoteFrame* GetFrame() const { return frame_.Get(); }
 
-  void SetCoreFrame(RemoteFrame*);
-
   WebRemoteFrameClient* Client() const { return client_; }
 
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
@@ -97,7 +95,11 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void Trace(blink::Visitor*);
 
  private:
+  friend class RemoteFrameClientImpl;
+
   WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
+
+  void SetCoreFrame(RemoteFrame*);
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrameImpl.
@@ -106,9 +108,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   bool IsWebRemoteFrame() const override;
   WebRemoteFrame* ToWebRemoteFrame() override;
 
+  WebRemoteFrameClient* client_;
+  // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
-  WebRemoteFrameClient* client_;
 
   // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

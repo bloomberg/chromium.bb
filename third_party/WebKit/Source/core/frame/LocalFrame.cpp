@@ -56,6 +56,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -459,9 +460,10 @@ void LocalFrame::IntrinsicSizingInfoChanged(
     return;
   // Notify the owner. For remote frame owners, notify via
   // an IPC to the parent renderer; otherwise notify directly.
+  // TODO(dcheng): Move this into a virtual on FrameOwner.
   if (Owner()->IsRemote()) {
     WebLocalFrameImpl::FromFrame(this)
-        ->FrameWidget()
+        ->FrameWidgetImpl()
         ->IntrinsicSizingInfoChanged(sizing_info);
   } else {
     Owner()->IntrinsicSizingInfoChanged();
