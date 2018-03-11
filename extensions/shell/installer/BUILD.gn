@@ -10,8 +10,9 @@ import("//extensions/buildflags/buildflags.gni")
 assert(enable_extensions)
 
 declare_args() {
-  enable_app_shell_installer = is_desktop_linux && current_cpu == "x64" &&
-                               !is_component_build && !using_sanitizer
+  enable_app_shell_installer =
+      is_desktop_linux && is_chrome_branded && current_cpu == "x64" &&
+      !is_component_build && !using_sanitizer
 }
 
 # Meta-target that forwards to the installer of the correct type (if any).
