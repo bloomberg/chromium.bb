@@ -42,18 +42,26 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     AddHitTestRegion(fuzz, regions, frame_sink_ids);
 }
 
+class Environment {
+ public:
+  Environment() {
+    // Initialize environment so that we can create the mojo shared memory
+    // handles.
+    base::CommandLine::Init(0, nullptr);
+    mojo::edk::Init();
+  }
+};
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
+  // Initialize the environment only once.
+  static Environment environment;
+
   // If there isn't enough memory to have a single AggregatedHitTestRegion, then
   // skip.
   if (num_bytes < sizeof(viz::AggregatedHitTestRegion))
     return 0;
-
-  // Initialize environment so that we can create the mojo shared memory
-  // handles.
-  base::CommandLine::Init(0, nullptr);
-  mojo::edk::Init();
 
   // Create the list of AggregatedHitTestRegion objects.
   std::vector<viz::AggregatedHitTestRegion> regions;
