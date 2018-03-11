@@ -26,7 +26,7 @@ def relative_dest(fs, filename):
         dest = filename
     else:
         raise ValueError('|filename| must start with "common", "public", or "Source": %s' % filename)
-    if filename.endswith(('.h', '.cpp', '.mm', '.idl', '.typemap', 'Settings.json5')):
+    if filename.endswith(('.h', '.cpp', '.mm', '.idl', '.typemap', '.proto', 'Settings.json5')):
         dirname, basename = fs.split(dest)
         basename, ext = fs.splitext(basename)
         # Skip some inspector-related files. #includes for these files are
