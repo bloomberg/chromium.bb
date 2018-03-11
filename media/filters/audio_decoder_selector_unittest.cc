@@ -224,8 +224,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   std::unique_ptr<AudioDecoderSelector> decoder_selector_;
 
-  StrictMock<MockAudioDecoder>* decoder_1_;
-  StrictMock<MockAudioDecoder>* decoder_2_;
+  StrictMock<MockAudioDecoder>* decoder_1_ = nullptr;
+  StrictMock<MockAudioDecoder>* decoder_2_ = nullptr;
   std::vector<std::unique_ptr<AudioDecoder>> all_decoders_;
   std::unique_ptr<AudioDecoder> selected_decoder_;
 
