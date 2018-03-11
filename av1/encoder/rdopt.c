@@ -1785,11 +1785,12 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
           recon = (uint8_t *)recon16;
 
         if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-          aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
-                                   NULL, 0, bsw, bsh, xd->bd);
+          av1_highbd_convolve_2d_copy_sr(
+              CONVERT_TO_SHORTPTR(dst), dst_stride, CONVERT_TO_SHORTPTR(recon),
+              MAX_TX_SIZE, bsw, bsh, NULL, NULL, 0, 0, NULL, xd->bd);
         } else {
-          aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL,
-                            0, bsw, bsh);
+          av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh,
+                                  NULL, NULL, 0, 0, NULL);
         }
 
         const PLANE_TYPE plane_type = get_plane_type(plane);
