@@ -69,9 +69,17 @@ async_test(t => {
     if (xhr.readyState != xhr.DONE)
       return;
 
-    assert_equals(xhr.status, 0, 'status');
-    assert_equals(xhr.response, null, 'response');
-    t.done();
+
+    assert_equals(xhr.status, 200, 'status');
+    assert_equals(xhr.getAllResponseHeaders(), 'content-type: text/html;charset=utf-8\r\n', 'getAllResponseheaders()');
+    assert_equals(xhr.response.size, 6);
+    assert_equals(xhr.response.type, 'text/html');
+    var reader = new FileReader;
+    reader.readAsText(xhr.response);
+    reader.onloadend = t.step_func(function() {
+      assert_equals(reader.result, '\u6587\u5b57', 'result');
+      t.done();
+    });
   });
   xhr.send();
 }, "Test parsing a data URL. UTF-8 data into Blob.");

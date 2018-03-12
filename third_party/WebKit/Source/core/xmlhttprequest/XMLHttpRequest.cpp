@@ -1115,10 +1115,13 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   }
 
   // When responseType is set to "blob", we redirect the downloaded data to a
-  // file-handle directly.
+  // file-handle directly, except for data: URLs, since those are loaded by
+  // renderer side code, and don't support being downloaded to a file.
   // TODO: implement this for network service code path. http://crbug.com/754493
-  if (!RuntimeEnabledFeatures::NetworkServiceEnabled())
-    downloading_to_file_ = GetResponseTypeCode() == kResponseTypeBlob;
+  if (!RuntimeEnabledFeatures::NetworkServiceEnabled()) {
+    downloading_to_file_ =
+        GetResponseTypeCode() == kResponseTypeBlob && !url_.ProtocolIsData();
+  }
   if (downloading_to_file_) {
     request.SetDownloadToFile(true);
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
