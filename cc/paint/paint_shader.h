@@ -106,6 +106,9 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   ~PaintShader() override;
 
+  void set_has_animated_images() { has_animated_images_ = true; }
+  bool has_animated_images() const { return has_animated_images_; }
+
   SkMatrix GetLocalMatrix() const {
     return local_matrix_ ? *local_matrix_ : SkMatrix::I();
   }
@@ -196,6 +199,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   // the PaintShader but we always construct it at creation time to ensure that
   // accesses to it are thread-safe.
   sk_sp<SkShader> cached_shader_;
+
+  bool has_animated_images_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaintShader);
 };

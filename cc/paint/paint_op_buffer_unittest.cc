@@ -3102,6 +3102,7 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
       record_buffer, SkRect::MakeWH(10.f, 10.f),
       SkShader::TileMode::kRepeat_TileMode,
       SkShader::TileMode::kRepeat_TileMode, nullptr);
+  shader->set_has_animated_images();
   auto buffer = sk_make_sp<PaintOpBuffer>();
   buffer->push<ScaleOp>(0.5f, 0.8f);
   PaintFlags flags;

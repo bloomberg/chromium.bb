@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/auto_reset.h"
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -270,8 +271,19 @@ class DiscardableImageGenerator {
       canvas.setMatrix(SkMatrix::MakeRectToRect(flags.getShader()->tile(),
                                                 scaled_tile_rect,
                                                 SkMatrix::kFill_ScaleToFit));
+      base::AutoReset<bool> auto_reset(&iterating_record_shaders_, true);
+      size_t prev_image_set_size = image_set_.size();
       GatherDiscardableImages(flags.getShader()->paint_record().get(), &op_rect,
                               &canvas);
+
+      // We only track animated images for PaintShaders. If we added any entry
+      // to the |image_set_|, this shader any has animated images.
+      // Note that it is thread-safe to set the |has_animated_images| bit on
+      // PaintShader here since the analysis is done on the main thread, before
+      // the PaintOpBuffer is used for rasterization.
+      DCHECK_GE(image_set_.size(), prev_image_set_size);
+      if (image_set_.size() > prev_image_set_size)
+        const_cast<PaintShader*>(flags.getShader())->set_has_animated_images();
     }
   }
 
@@ -319,9 +331,16 @@ class DiscardableImageGenerator {
           paint_image.reset_animation_sequence_id());
     }
 
-    image_set_.emplace_back(
-        DrawImage(std::move(paint_image), src_irect, filter_quality, matrix),
-        image_rect);
+    // If we are iterating images in a record shader, only track them if they
+    // are animated. We defer decoding of images in record shaders to skia, but
+    // we still need to track animated images to invalidate and advance the
+    // animation in cc.
+    bool add_image = !iterating_record_shaders_ || paint_image.ShouldAnimate();
+    if (add_image) {
+      image_set_.emplace_back(
+          DrawImage(std::move(paint_image), src_irect, filter_quality, matrix),
+          image_rect);
+    }
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>> image_set_;
@@ -329,6 +348,7 @@ class DiscardableImageGenerator {
   std::vector<DiscardableImageMap::AnimatedImageMetadata>
       animated_images_metadata_;
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
+  bool iterating_record_shaders_ = false;
 
   // Statistics about the number of images and pixels that will require color
   // conversion if the target color space is not sRGB.
