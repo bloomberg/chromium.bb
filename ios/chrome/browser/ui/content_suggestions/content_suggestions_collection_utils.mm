@@ -23,6 +23,9 @@
 namespace {
 
 // Spacing between tiles.
+const CGFloat kHorizontalSpacingRegularXRegular = 19;
+const CGFloat kHorizontalSpacingOther = 9;
+const CGFloat kVerticalSpacing = 16;
 const CGFloat kSpacingIPhone = 16;
 const CGFloat kSpacingIPad = 24;
 
@@ -75,7 +78,8 @@ const CGFloat kNonGoogleSearchHeaderHeightIPad = 10;
 // Returns the width necessary to fit |numberOfItem| items, with no padding on
 // the side.
 CGFloat widthForNumberOfItem(NSUInteger numberOfItem) {
-  return (numberOfItem - 1) * content_suggestions::spacingBetweenTiles() +
+  return (numberOfItem - 1) *
+             content_suggestions::horizontalSpacingBetweenTiles() +
          numberOfItem * [ContentSuggestionsMostVisitedCell defaultSize].width;
 }
 }
@@ -102,24 +106,40 @@ NSUInteger numberOfTilesForWidth(CGFloat availableWidth) {
   return 1;
 }
 
-CGFloat spacingBetweenTiles() {
-  return IsIPadIdiom() ? kSpacingIPad : kSpacingIPhone;
+CGFloat horizontalSpacingBetweenTiles() {
+  if (IsUIRefreshPhase1Enabled()) {
+    return (!IsCompactWidth() && !IsCompactHeight())
+               ? kHorizontalSpacingRegularXRegular
+               : kHorizontalSpacingOther;
+  } else {
+    return IsIPadIdiom() ? kSpacingIPad : kSpacingIPhone;
+  }
+}
+
+CGFloat verticalSpacingBetweenTiles() {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kVerticalSpacing;
+  } else {
+    return horizontalSpacingBetweenTiles();
+  }
 }
 
 CGFloat centeredTilesMarginForWidth(CGFloat width) {
-  NSUInteger columns = numberOfTilesForWidth(width - 2 * spacingBetweenTiles());
+  CGFloat horizontalSpace = horizontalSpacingBetweenTiles();
+  NSUInteger columns = numberOfTilesForWidth(width - 2 * horizontalSpace);
   CGFloat whitespace =
-      width - columns * [ContentSuggestionsMostVisitedCell defaultSize].width -
-      (columns - 1) * spacingBetweenTiles();
+      width -
+      (columns * [ContentSuggestionsMostVisitedCell defaultSize].width) -
+      ((columns - 1) * horizontalSpace);
   CGFloat margin = AlignValueToPixel(whitespace / 2);
   if (IsUIRefreshPhase1Enabled()) {
     // Allow for less spacing as an edge case on smaller devices.
-    if (margin < spacingBetweenTiles()) {
+    if (margin < horizontalSpace) {
       DCHECK(width < 400);  // For now this is only expected on small widths.
       return fmaxf(margin, 0);
     }
   } else {
-    DCHECK(margin >= spacingBetweenTiles());
+    DCHECK(margin > horizontalSpace);
   }
   return margin;
 }
