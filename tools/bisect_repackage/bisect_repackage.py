@@ -235,7 +235,13 @@ def download_build(cp_num, revision_map, zip_file_name, context):
   remote_file_path = '%s/%s_%s.zip' % (context.original_remote_path,
                                        context.file_prefix,
                                        revision_map[cp_num])
-  cloud_storage.Get(context.original_gs_bucket, remote_file_path, zip_file_name)
+  try:
+    cloud_storage.Get(context.original_gs_bucket,
+                      remote_file_path, zip_file_name)
+  except Exception, e:
+    logging.warning('Failed to download: %s, error: %s', zip_file_name, e)
+    return False
+  return True
 
 
 def upload_build(zip_file, context):
@@ -247,14 +253,8 @@ def upload_build(zip_file, context):
 def download_revision_map(context):
   """Downloads the revision map in original_gs_url in context."""
   download_file = '%s/%s' % (context.repackage_remote_path, REVISION_MAP_FILE)
-  try:
-    cloud_storage.Get(context.original_gs_bucket,
-                      remote_file_path, zip_file_name)
-  except Exception, e:
-    logging.warning('Failed to download: %s, error: %s', zip_file_name, e)
-    return False
-  return True
-
+  cloud_storage.Get(context.repackage_gs_bucket, download_file,
+                    context.revision_file)
 
 def get_revision_map(context):
   """Downloads and returns the revision map in repackage_gs_url in context."""
