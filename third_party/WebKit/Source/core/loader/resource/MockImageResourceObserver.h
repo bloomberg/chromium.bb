@@ -5,11 +5,13 @@
 #ifndef MockImageResourceObserver_h
 #define MockImageResourceObserver_h
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/loader/fetch/ResourceStatus.h"
-#include <memory>
 
 namespace blink {
 
@@ -17,7 +19,7 @@ class MockImageResourceObserver final : public ImageResourceObserver {
  public:
   static std::unique_ptr<MockImageResourceObserver> Create(
       ImageResourceContent* content) {
-    return WTF::WrapUnique(new MockImageResourceObserver(content));
+    return base::WrapUnique(new MockImageResourceObserver(content));
   }
   ~MockImageResourceObserver() override;
 

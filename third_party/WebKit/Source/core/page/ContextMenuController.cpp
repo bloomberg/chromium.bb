@@ -26,7 +26,10 @@
 
 #include "core/page/ContextMenuController.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
@@ -58,7 +61,6 @@
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebMenuSourceType.h"
 #include "public/web/WebContextMenuData.h"
 #include "public/web/WebFrameClient.h"
@@ -147,7 +149,7 @@ std::unique_ptr<ContextMenu> ContextMenuController::CreateContextMenu(
 
   hit_test_result_ = result;
 
-  return WTF::WrapUnique(new ContextMenu);
+  return std::make_unique<ContextMenu>();
 }
 
 void ContextMenuController::ShowContextMenu(MouseEvent* mouse_event) {

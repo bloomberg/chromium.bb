@@ -5,6 +5,8 @@
 #include "core/paint/FilterPainter.h"
 
 #include <memory>
+#include <utility>
+
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/PaintLayer.h"
@@ -15,7 +17,6 @@
 #include "platform/graphics/paint/FilterDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -50,10 +51,10 @@ FilterPainter::FilterPainter(PaintLayer& layer,
       clip_rect.HasRadius()) {
     // Apply clips outside the filter. See discussion about these clips
     // in PaintLayerPainter regarding "clipping in the presence of filters".
-    clip_recorder_ = WTF::WrapUnique(new LayerClipRecorder(
+    clip_recorder_ = std::make_unique<LayerClipRecorder>(
         context, layer, DisplayItem::kClipLayerFilter, clip_rect,
         painting_info.root_layer, LayoutPoint(), paint_flags,
-        layer.GetLayoutObject()));
+        layer.GetLayoutObject());
   }
 
   if (!context.GetPaintController().DisplayItemConstructionIsDisabled()) {

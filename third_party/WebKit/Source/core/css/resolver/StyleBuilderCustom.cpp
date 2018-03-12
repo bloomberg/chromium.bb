@@ -39,6 +39,8 @@
  */
 
 #include <memory>
+#include <utility>
+
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
@@ -79,7 +81,6 @@
 #include "core/style/StyleNonInheritedVariables.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 
@@ -769,9 +770,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
       const auto list_style_type =
           CssValueIDToPlatformEnum<EListStyleType>(counter_value->ListStyle());
       std::unique_ptr<CounterContent> counter =
-          WTF::WrapUnique(new CounterContent(
+          std::make_unique<CounterContent>(
               AtomicString(counter_value->Identifier()), list_style_type,
-              AtomicString(counter_value->Separator())));
+              AtomicString(counter_value->Separator()));
       next_content = ContentData::Create(std::move(counter));
     } else if (item->IsIdentifierValue()) {
       QuoteType quote_type;

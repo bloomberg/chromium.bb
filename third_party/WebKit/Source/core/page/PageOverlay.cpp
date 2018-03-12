@@ -29,6 +29,9 @@
 #include "core/page/PageOverlay.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetBase.h"
@@ -39,7 +42,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayer.h"
 
 namespace blink {
@@ -47,7 +49,7 @@ namespace blink {
 std::unique_ptr<PageOverlay> PageOverlay::Create(
     WebLocalFrameImpl* frame_impl,
     std::unique_ptr<PageOverlay::Delegate> delegate) {
-  return WTF::WrapUnique(new PageOverlay(frame_impl, std::move(delegate)));
+  return base::WrapUnique(new PageOverlay(frame_impl, std::move(delegate)));
 }
 
 PageOverlay::PageOverlay(WebLocalFrameImpl* frame_impl,

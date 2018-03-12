@@ -32,6 +32,7 @@
 #define FileReaderLoader_h
 
 #include <memory>
+
 #include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -39,7 +40,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"

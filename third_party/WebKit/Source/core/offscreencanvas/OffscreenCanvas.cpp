@@ -5,6 +5,8 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 
 #include <memory>
+#include <utility>
+
 #include "core/css/CSSFontSelector.h"
 #include "core/css/OffscreenFontSelector.h"
 #include "core/css/StyleEngine.h"
@@ -222,9 +224,9 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
-    frame_dispatcher_ = WTF::WrapUnique(new OffscreenCanvasFrameDispatcherImpl(
+    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcherImpl>(
         this, client_id_, sink_id_, placeholder_canvas_id_, size_.Width(),
-        size_.Height()));
+        size_.Height());
   }
   return frame_dispatcher_.get();
 }

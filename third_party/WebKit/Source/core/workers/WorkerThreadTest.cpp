@@ -5,6 +5,8 @@
 #include "core/workers/WorkerThread.h"
 
 #include <memory>
+#include <utility>
+
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorTaskRunner.h"
@@ -13,7 +15,6 @@
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,7 +75,7 @@ class WorkerThreadTest : public ::testing::Test {
     reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
     security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
     worker_thread_ =
-        WTF::WrapUnique(new WorkerThreadForTest(nullptr, *reporting_proxy_));
+        std::make_unique<WorkerThreadForTest>(nullptr, *reporting_proxy_);
     lifecycle_observer_ = new MockWorkerThreadLifecycleObserver(
         worker_thread_->GetWorkerThreadLifecycleContext());
   }

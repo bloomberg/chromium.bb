@@ -27,9 +27,10 @@
 #define ContentData_h
 
 #include <memory>
+#include <utility>
+
 #include "core/style/CounterContent.h"
 #include "core/style/StyleImage.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -156,7 +157,7 @@ class CounterContentData final : public ContentData {
 
   ContentData* CloneInternal() const override {
     std::unique_ptr<CounterContent> counter_data =
-        WTF::WrapUnique(new CounterContent(*Counter()));
+        std::make_unique<CounterContent>(*Counter());
     return Create(std::move(counter_data));
   }
 

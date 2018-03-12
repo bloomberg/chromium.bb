@@ -29,7 +29,9 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
+
 #include <memory>
+
 #include "core/css/StyleEngine.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
@@ -67,7 +69,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
@@ -931,9 +932,9 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
   if (parser_paused_) {
     script_start_position_ = GetTextPosition();
     pending_callbacks_.push_back(
-        WTF::WrapUnique(new PendingStartElementNSCallback(
+        std::make_unique<PendingStartElementNSCallback>(
             local_name, prefix, uri, nb_namespaces, libxml_namespaces,
-            nb_attributes, nb_defaulted, libxml_attributes)));
+            nb_attributes, nb_defaulted, libxml_attributes));
     return;
   }
 
@@ -1112,9 +1113,9 @@ void XMLDocumentParser::GetError(XMLErrors::ErrorType type,
   vsnprintf(formatted_message, sizeof(formatted_message) - 1, message, args);
 
   if (parser_paused_) {
-    pending_callbacks_.push_back(WTF::WrapUnique(new PendingErrorCallback(
+    pending_callbacks_.push_back(std::make_unique<PendingErrorCallback>(
         type, reinterpret_cast<const xmlChar*>(formatted_message), LineNumber(),
-        ColumnNumber())));
+        ColumnNumber()));
     return;
   }
 
@@ -1242,8 +1243,9 @@ void XMLDocumentParser::InternalSubset(const String& name,
     return;
 
   if (parser_paused_) {
-    pending_callbacks_.push_back(WTF::WrapUnique(
-        new PendingInternalSubsetCallback(name, external_id, system_id)));
+    pending_callbacks_.push_back(
+        std::make_unique<PendingInternalSubsetCallback>(name, external_id,
+                                                        system_id));
     return;
   }
 

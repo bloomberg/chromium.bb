@@ -31,6 +31,8 @@
 #include <functional>
 #include <list>
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/frame/FrameTestHelpers.h"
@@ -38,7 +40,6 @@
 #include "core/html_element_type_helpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCache.h"
 #include "public/platform/WebPrerender.h"
@@ -67,7 +68,7 @@ class TestWebPrerendererClient : public WebPrerendererClient {
 
   void SetExtraDataForNextPrerender(WebPrerender::ExtraData* extra_data) {
     DCHECK(!extra_data_);
-    extra_data_ = WTF::WrapUnique(extra_data);
+    extra_data_ = base::WrapUnique(extra_data);
   }
 
   WebPrerender ReleaseWebPrerender() {

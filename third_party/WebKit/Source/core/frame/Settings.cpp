@@ -28,9 +28,9 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ Settings::Settings()
       is_shadow_page_(false) SETTINGS_INITIALIZER_LIST {}
 
 std::unique_ptr<Settings> Settings::Create() {
-  return WTF::WrapUnique(new Settings);
+  return base::WrapUnique(new Settings);
 }
 
 SETTINGS_SETTER_BODIES

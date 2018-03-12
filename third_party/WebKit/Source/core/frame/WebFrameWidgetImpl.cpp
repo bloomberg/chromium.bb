@@ -76,7 +76,6 @@
 #include "platform/graphics/CompositorMutatorImpl.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
@@ -474,8 +473,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseUp:
         event_type = EventTypeNames::mouseup;
-        gesture_indicator = WTF::WrapUnique(
-            new UserGestureIndicator(std::move(mouse_capture_gesture_token_)));
+        gesture_indicator = std::make_unique<UserGestureIndicator>(
+            std::move(mouse_capture_gesture_token_));
         break;
       default:
         NOTREACHED();

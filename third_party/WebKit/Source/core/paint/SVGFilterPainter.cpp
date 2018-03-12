@@ -4,6 +4,8 @@
 
 #include "core/paint/SVGFilterPainter.h"
 
+#include <utility>
+
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/svg/SVGFilterElement.h"
@@ -12,14 +14,13 @@
 #include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   // Create a new context so the contents of the filter can be drawn and cached.
   paint_controller_ = PaintController::Create();
-  context_ = WTF::WrapUnique(new GraphicsContext(*paint_controller_));
+  context_ = std::make_unique<GraphicsContext>(*paint_controller_);
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     // Use initial_context_'s current paint chunk properties so that any new

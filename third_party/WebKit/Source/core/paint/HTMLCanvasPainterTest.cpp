@@ -4,6 +4,9 @@
 
 #include "core/paint/HTMLCanvasPainter.h"
 
+#include <memory>
+#include <utility>
+
 #include "core/frame/LocalFrameView.h"
 #include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
@@ -64,9 +67,9 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
 
   std::unique_ptr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(
       const IntSize& size) {
-    return WTF::WrapUnique(new Canvas2DLayerBridge(
+    return std::make_unique<Canvas2DLayerBridge>(
         size, 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
-        CanvasColorParams()));
+        CanvasColorParams());
   }
 
  private:

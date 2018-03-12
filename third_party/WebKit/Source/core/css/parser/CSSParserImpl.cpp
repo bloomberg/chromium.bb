@@ -6,6 +6,8 @@
 
 #include <bitset>
 #include <memory>
+#include <utility>
+
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -33,7 +35,6 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -984,7 +985,7 @@ void CSSParserImpl::ConsumeDeclarationValue(CSSParserTokenRange range,
 
 std::unique_ptr<Vector<double>> CSSParserImpl::ConsumeKeyframeKeyList(
     CSSParserTokenRange range) {
-  std::unique_ptr<Vector<double>> result = WTF::WrapUnique(new Vector<double>);
+  std::unique_ptr<Vector<double>> result = std::make_unique<Vector<double>>();
   while (true) {
     range.ConsumeWhitespace();
     const CSSParserToken& token = range.ConsumeIncludingWhitespace();

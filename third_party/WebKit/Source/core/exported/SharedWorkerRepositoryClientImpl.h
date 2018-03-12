@@ -34,10 +34,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -50,7 +50,7 @@ class CORE_EXPORT SharedWorkerRepositoryClientImpl final
  public:
   static std::unique_ptr<SharedWorkerRepositoryClientImpl> Create(
       WebSharedWorkerRepositoryClient* client) {
-    return WTF::WrapUnique(new SharedWorkerRepositoryClientImpl(client));
+    return base::WrapUnique(new SharedWorkerRepositoryClientImpl(client));
   }
 
   ~SharedWorkerRepositoryClientImpl() override = default;

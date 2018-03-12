@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
@@ -406,7 +407,7 @@ Response InspectorOverlayAgent::highlightRect(
     Maybe<protocol::DOM::RGBA> color,
     Maybe<protocol::DOM::RGBA> outline_color) {
   std::unique_ptr<FloatQuad> quad =
-      WTF::WrapUnique(new FloatQuad(FloatRect(x, y, width, height)));
+      std::make_unique<FloatQuad>(FloatRect(x, y, width, height));
   InnerHighlightQuad(std::move(quad), std::move(color),
                      std::move(outline_color));
   return Response::OK();
@@ -490,7 +491,7 @@ void InspectorOverlayAgent::Invalidate() {
 
   if (!page_overlay_) {
     page_overlay_ = PageOverlay::Create(
-        frame_impl_, WTF::WrapUnique(new InspectorPageOverlayDelegate(*this)));
+        frame_impl_, std::make_unique<InspectorPageOverlayDelegate>(*this));
   }
 
   page_overlay_->Update();

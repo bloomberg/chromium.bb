@@ -32,12 +32,12 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -114,7 +114,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   std::unique_ptr<WebAssociatedURLLoader> CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions options =
           WebAssociatedURLLoaderOptions()) {
-    return WTF::WrapUnique(MainFrame()->CreateAssociatedURLLoader(options));
+    return base::WrapUnique(MainFrame()->CreateAssociatedURLLoader(options));
   }
 
   // WebAssociatedURLLoaderClient implementation.

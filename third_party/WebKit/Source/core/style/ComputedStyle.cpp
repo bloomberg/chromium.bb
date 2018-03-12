@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
 #include "core/animation/css/CSSAnimationData.h"
@@ -64,7 +65,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/SaturatedArithmetic.h"
 #include "platform/wtf/SizeAssertions.h"
 #include "public/platform/WebOverscrollBehavior.h"
@@ -446,7 +446,7 @@ ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
   ComputedStyle* result = pseudo.get();
 
   if (!cached_pseudo_styles_)
-    cached_pseudo_styles_ = WTF::WrapUnique(new PseudoStyleCache);
+    cached_pseudo_styles_ = std::make_unique<PseudoStyleCache>();
 
   cached_pseudo_styles_->push_back(std::move(pseudo));
 
@@ -1283,7 +1283,7 @@ CounterDirectiveMap& ComputedStyle::AccessCounterDirectives() {
   std::unique_ptr<CounterDirectiveMap>& map =
       MutableCounterDirectivesInternal();
   if (!map)
-    map = WTF::WrapUnique(new CounterDirectiveMap);
+    map = std::make_unique<CounterDirectiveMap>();
   return *map;
 }
 

@@ -28,6 +28,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSetDocument.h"
 #include "core/css/StyleChangeReason.h"
@@ -122,7 +125,6 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
@@ -290,9 +292,9 @@ void LocalFrameView::Reset() {
   last_viewport_size_ = IntSize();
   last_zoom_factor_ = 1.0f;
   tracked_object_paint_invalidations_ =
-      WTF::WrapUnique(g_initial_track_all_paint_invalidations
-                          ? new Vector<ObjectPaintInvalidation>
-                          : nullptr);
+      base::WrapUnique(g_initial_track_all_paint_invalidations
+                           ? new Vector<ObjectPaintInvalidation>
+                           : nullptr);
   visually_non_empty_character_count_ = 0;
   visually_non_empty_pixel_count_ = 0;
   is_visually_non_empty_ = false;
@@ -1578,7 +1580,7 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
 void LocalFrameView::AddViewportConstrainedObject(LayoutObject& object) {
   if (!viewport_constrained_objects_) {
     viewport_constrained_objects_ =
-        WTF::WrapUnique(new ViewportConstrainedObjectSet);
+        std::make_unique<ViewportConstrainedObjectSet>();
   }
 
   if (!viewport_constrained_objects_->Contains(&object)) {
@@ -3961,9 +3963,9 @@ void LocalFrameView::SetTracksPaintInvalidations(
       continue;
     if (auto* layout_view = ToLocalFrame(frame)->ContentLayoutObject()) {
       layout_view->GetFrameView()->tracked_object_paint_invalidations_ =
-          WTF::WrapUnique(track_paint_invalidations
-                              ? new Vector<ObjectPaintInvalidation>
-                              : nullptr);
+          base::WrapUnique(track_paint_invalidations
+                               ? new Vector<ObjectPaintInvalidation>
+                               : nullptr);
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         if (!paint_controller_)
           paint_controller_ = PaintController::Create();
@@ -4023,7 +4025,7 @@ LocalFrameView::TrackedObjectPaintInvalidationsAsJSON() const {
 
 void LocalFrameView::AddResizerArea(LayoutBox& resizer_box) {
   if (!resizer_areas_)
-    resizer_areas_ = WTF::WrapUnique(new ResizerAreaSet);
+    resizer_areas_ = std::make_unique<ResizerAreaSet>();
   resizer_areas_->insert(&resizer_box);
 }
 

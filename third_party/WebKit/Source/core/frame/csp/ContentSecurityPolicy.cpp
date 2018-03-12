@@ -26,6 +26,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
@@ -63,7 +64,6 @@
 #include "platform/weborigin/ReportingServiceProxyPtrHolder.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/NotFound.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringHasher.h"
 #include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -425,7 +425,7 @@ void ContentSecurityPolicy::SetOverrideURLForSelf(const KURL& url) {
 std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::Headers()
     const {
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-      WTF::WrapUnique(new Vector<CSPHeaderAndType>);
+      std::make_unique<Vector<CSPHeaderAndType>>();
   for (const auto& policy : policies_) {
     CSPHeaderAndType header_and_type(policy->Header(), policy->HeaderType());
     headers->push_back(header_and_type);

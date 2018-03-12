@@ -30,6 +30,7 @@
 
 #include "core/frame/FullscreenController.h"
 
+#include "base/memory/ptr_util.h"
 #include "core/dom/Document.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
@@ -58,7 +59,7 @@ WebFrameClient& GetWebFrameClient(LocalFrame& frame) {
 
 std::unique_ptr<FullscreenController> FullscreenController::Create(
     WebViewImpl* web_view_base) {
-  return WTF::WrapUnique(new FullscreenController(web_view_base));
+  return base::WrapUnique(new FullscreenController(web_view_base));
 }
 
 FullscreenController::FullscreenController(WebViewImpl* web_view_base)

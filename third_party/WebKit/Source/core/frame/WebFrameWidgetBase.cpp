@@ -4,6 +4,9 @@
 
 #include "core/frame/WebFrameWidgetBase.h"
 
+#include <memory>
+#include <utility>
+
 #include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/WebInputEventConversion.h"
@@ -320,8 +323,8 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       break;
     case WebInputEvent::kMouseUp:
       event_type = EventTypeNames::mouseup;
-      gesture_indicator = WTF::WrapUnique(
-          new UserGestureIndicator(std::move(pointer_lock_gesture_token_)));
+      gesture_indicator = std::make_unique<UserGestureIndicator>(
+          std::move(pointer_lock_gesture_token_));
       break;
     case WebInputEvent::kMouseMove:
       event_type = EventTypeNames::mousemove;

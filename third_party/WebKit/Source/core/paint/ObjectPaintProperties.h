@@ -6,14 +6,16 @@
 #define ObjectPaintProperties_h
 
 #include <memory>
+#include <utility>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -38,7 +40,7 @@ class CORE_EXPORT ObjectPaintProperties {
 
  public:
   static std::unique_ptr<ObjectPaintProperties> Create() {
-    return WTF::WrapUnique(new ObjectPaintProperties());
+    return base::WrapUnique(new ObjectPaintProperties());
   }
 
   // The hierarchy of the transform subtree created by a LayoutObject is as

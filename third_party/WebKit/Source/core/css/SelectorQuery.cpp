@@ -27,6 +27,9 @@
 #include "core/css/SelectorQuery.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/parser/CSSParser.h"
@@ -39,7 +42,6 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/html_names.h"
-#include "platform/wtf/PtrUtil.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.
 // #define RELEASE_QUERY_STATS
@@ -470,7 +472,7 @@ void SelectorQuery::Execute(
 
 std::unique_ptr<SelectorQuery> SelectorQuery::Adopt(
     CSSSelectorList selector_list) {
-  return WTF::WrapUnique(new SelectorQuery(std::move(selector_list)));
+  return base::WrapUnique(new SelectorQuery(std::move(selector_list)));
 }
 
 SelectorQuery::SelectorQuery(CSSSelectorList selector_list)

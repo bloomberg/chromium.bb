@@ -26,6 +26,9 @@
 #include "core/paint/LinkHighlightImpl.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/exported/WebSettingsImpl.h"
@@ -49,7 +52,6 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
@@ -69,7 +71,7 @@ namespace blink {
 std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(
     Node* node,
     WebViewImpl* owning_web_view) {
-  return WTF::WrapUnique(new LinkHighlightImpl(node, owning_web_view));
+  return base::WrapUnique(new LinkHighlightImpl(node, owning_web_view));
 }
 
 LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)

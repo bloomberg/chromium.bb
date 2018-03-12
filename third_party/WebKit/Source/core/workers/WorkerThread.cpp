@@ -26,8 +26,10 @@
 
 #include "core/workers/WorkerThread.h"
 
-#include <limits.h>
+#include <limits>
 #include <memory>
+#include <utility>
+
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessageStorage.h"
@@ -319,9 +321,9 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
       devtools_worker_token_(base::UnguessableToken::Create()),
       loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
-      shutdown_event_(WTF::WrapUnique(
-          new WaitableEvent(WaitableEvent::ResetPolicy::kManual,
-                            WaitableEvent::InitialState::kNonSignaled))),
+      shutdown_event_(std::make_unique<WaitableEvent>(
+          WaitableEvent::ResetPolicy::kManual,
+          WaitableEvent::InitialState::kNonSignaled)),
       worker_thread_lifecycle_context_(new WorkerThreadLifecycleContext) {
   DCHECK(IsMainThread());
   MutexLocker lock(ThreadSetMutex());

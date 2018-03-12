@@ -29,6 +29,8 @@
 
 #include "core/dom/Document.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -251,7 +253,6 @@
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/CharacterNames.h"
@@ -2786,7 +2787,7 @@ void Document::Shutdown() {
   frame_ = nullptr;
 
   document_outlive_time_reporter_ =
-      WTF::WrapUnique(new DocumentOutliveTimeReporter(this));
+      std::make_unique<DocumentOutliveTimeReporter>(this);
 }
 
 void Document::RemoveAllEventListeners() {
@@ -4865,9 +4866,9 @@ Document::EventFactorySet& Document::EventFactories() {
 
 const OriginAccessEntry& Document::AccessEntryFromURL() {
   if (!access_entry_from_url_) {
-    access_entry_from_url_ = WTF::WrapUnique(
-        new OriginAccessEntry(Url().Protocol(), Url().Host(),
-                              OriginAccessEntry::kAllowRegisterableDomains));
+    access_entry_from_url_ = std::make_unique<OriginAccessEntry>(
+        Url().Protocol(), Url().Host(),
+        OriginAccessEntry::kAllowRegisterableDomains);
   }
   return *access_entry_from_url_;
 }

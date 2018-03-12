@@ -61,7 +61,6 @@
 #include "platform/graphics/SquashingDisallowedReasons.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -1022,7 +1021,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   ClipRectsCache* GetClipRectsCache() const { return clip_rects_cache_.get(); }
   ClipRectsCache& EnsureClipRectsCache() const {
     if (!clip_rects_cache_)
-      clip_rects_cache_ = WTF::WrapUnique(new ClipRectsCache);
+      clip_rects_cache_ = std::make_unique<ClipRectsCache>();
     return *clip_rects_cache_;
   }
   void ClearClipRectsCache() const { clip_rects_cache_.reset(); }
@@ -1165,7 +1164,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   PaintLayerRareData& EnsureRareData() {
     if (!rare_data_)
-      rare_data_ = WTF::WrapUnique(new PaintLayerRareData);
+      rare_data_ = std::make_unique<PaintLayerRareData>();
     return *rare_data_;
   }
 

@@ -32,13 +32,14 @@
 #define PageScaleConstraintsSet_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -49,7 +50,7 @@ class CORE_EXPORT PageScaleConstraintsSet {
 
  public:
   static std::unique_ptr<PageScaleConstraintsSet> Create() {
-    return WTF::WrapUnique(new PageScaleConstraintsSet);
+    return base::WrapUnique(new PageScaleConstraintsSet);
   }
 
   void SetDefaultConstraints(const PageScaleConstraints&);

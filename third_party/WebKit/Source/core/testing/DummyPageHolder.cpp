@@ -31,6 +31,8 @@
 #include "core/testing/DummyPageHolder.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -38,7 +40,6 @@
 #include "core/frame/VisualViewport.h"
 #include "core/loader/EmptyClients.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -47,7 +48,7 @@ std::unique_ptr<DummyPageHolder> DummyPageHolder::Create(
     Page::PageClients* page_clients,
     LocalFrameClient* local_frame_client,
     FrameSettingOverrideFunction setting_overrider) {
-  return WTF::WrapUnique(new DummyPageHolder(
+  return base::WrapUnique(new DummyPageHolder(
       initial_view_size, page_clients, local_frame_client, setting_overrider));
 }
 

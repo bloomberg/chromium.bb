@@ -7,6 +7,8 @@
 
 #if DCHECK_IS_ON()
 
+#include <memory>
+
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -132,8 +134,9 @@ class FindObjectPropertiesNeedingUpdateScope {
       original_properties_ = properties->Clone();
 
     if (fragment_data_.HasLocalBorderBoxProperties()) {
-      original_local_border_box_properties_ = WTF::WrapUnique(
-          new PropertyTreeState(fragment_data_.LocalBorderBoxProperties()));
+      original_local_border_box_properties_ =
+          std::make_unique<PropertyTreeState>(
+              fragment_data_.LocalBorderBoxProperties());
     }
   }
 

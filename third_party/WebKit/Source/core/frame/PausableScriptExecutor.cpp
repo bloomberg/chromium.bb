@@ -5,6 +5,8 @@
 #include "core/frame/PausableScriptExecutor.h"
 
 #include <memory>
+#include <utility>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -13,7 +15,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/TaskType.h"
 #include "public/web/WebScriptExecutionCallback.h"
@@ -111,7 +112,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
     std::unique_ptr<UserGestureIndicator> gesture_indicator;
     if (gesture_token_) {
       gesture_indicator =
-          WTF::WrapUnique(new UserGestureIndicator(std::move(gesture_token_)));
+          std::make_unique<UserGestureIndicator>(std::move(gesture_token_));
     }
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
                                      frame->GetDocument(),
