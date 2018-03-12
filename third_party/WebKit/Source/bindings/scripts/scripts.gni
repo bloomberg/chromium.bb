@@ -513,7 +513,7 @@ template("generate_global_constructors") {
 # Parameters:
 #   sources = a list of source IDL files.
 #   component = component for which to generate origin trial feature bindings
-#       ("Core" or "Modules")
+#       ("core" or "modules")
 #   output_dir = output directory to generate cpp file and header file.
 #   deps = dependencies
 #
@@ -528,8 +528,8 @@ template("generate_origin_trial_features") {
 
     inputs = [
                "//third_party/WebKit/Source/bindings/scripts/utilities.py",
-               "//third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesFor${invoker.component}.cpp.tmpl",
-               "//third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesFor${invoker.component}.h.tmpl",
+               "//third_party/WebKit/Source/bindings/templates/origin_trial_features_for_${invoker.component}.cc.tmpl",
+               "//third_party/WebKit/Source/bindings/templates/origin_trial_features_for_${invoker.component}.h.tmpl",
                idl_files_list,
              ] + invoker.sources
 
@@ -551,8 +551,8 @@ template("generate_origin_trial_features") {
     ]
 
     outputs = [
-      "${invoker.output_dir}/OriginTrialFeaturesFor${invoker.component}.cpp",
-      "${invoker.output_dir}/OriginTrialFeaturesFor${invoker.component}.h",
+      "${invoker.output_dir}/origin_trial_features_for_${invoker.component}.cc",
+      "${invoker.output_dir}/origin_trial_features_for_${invoker.component}.h",
     ]
 
     # TODO: This should not always require modules; For core features, this

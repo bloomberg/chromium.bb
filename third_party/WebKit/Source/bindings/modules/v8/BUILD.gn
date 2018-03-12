@@ -59,7 +59,7 @@ generate_origin_trial_features("bindings_modules_origin_trial_features") {
   sources =
       modules_idl_files + modules_global_constructors_generated_idl_files +
       modules_dependency_idl_files
-  component = "Modules"
+  component = "modules"
   output_dir = bindings_modules_output_dir + "/v8"
   deps = [
     "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",

@@ -192,7 +192,7 @@ def parse_options():
     parser.add_option('--info-dir')
     parser.add_option('--target-component',
                       type='choice',
-                      choices=['Core', 'Modules'],
+                      choices=['core', 'modules'],
                       help='target component to generate code')
     parser.add_option('--idl-files-list')
     # TODO(tkent): Remove the option after the great mv. crbug.com/760462
@@ -213,25 +213,23 @@ def generate_origin_trial_features(info_provider, options, idl_filenames):
     # from the global info provider and the supplied list of IDL files.
     feature_info = origin_trial_features_info(info_provider,
                                               reader, idl_filenames,
-                                              options.target_component.lower(),
+                                              options.target_component,
                                               options.snake_case_generated_files)
 
     # Convert that mapping into the context required for the Jinja2 templates.
     template_context = origin_trial_features_context(
         MODULE_PYNAME, feature_info, options.snake_case_generated_files)
 
+    file_basename = 'origin_trial_features_for_%s' % options.target_component
+
     # Generate and write out the header file
-    header_text = render_template(jinja_env.get_template(
-        'OriginTrialFeaturesFor%s.h.tmpl' % options.target_component.title()), template_context)
-    header_path = posixpath.join(options.output_directory,
-                                 'OriginTrialFeaturesFor%s.h' % options.target_component.title())
+    header_text = render_template(jinja_env.get_template(file_basename + '.h.tmpl'), template_context)
+    header_path = posixpath.join(options.output_directory, file_basename + '.h')
     write_file(header_text, header_path)
 
     # Generate and write out the implementation file
-    cpp_text = render_template(jinja_env.get_template(
-        'OriginTrialFeaturesFor%s.cpp.tmpl' % options.target_component.title()), template_context)
-    cpp_path = posixpath.join(options.output_directory,
-                              'OriginTrialFeaturesFor%s.cpp' % options.target_component.title())
+    cpp_text = render_template(jinja_env.get_template(file_basename + '.cc.tmpl'), template_context)
+    cpp_path = posixpath.join(options.output_directory, file_basename + '.cc')
     write_file(cpp_text, cpp_path)
 
 
@@ -239,7 +237,7 @@ def main():
     options = parse_options()
 
     info_provider = create_component_info_provider(
-        os.path.normpath(options.info_dir), options.target_component.lower())
+        os.path.normpath(options.info_dir), options.target_component)
     idl_filenames = map(str.strip, open(options.idl_files_list))
 
     generate_origin_trial_features(info_provider, options, idl_filenames)

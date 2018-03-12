@@ -4,7 +4,7 @@
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 
-#include "bindings/modules/v8/OriginTrialFeaturesForModules.h"
+#include "bindings/modules/v8/origin_trial_features_for_modules.h"
 #include "bindings/modules/v8/serialization/SerializedScriptValueForModulesFactory.h"
 #include "platform/bindings/V8PerIsolateData.h"
 

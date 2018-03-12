@@ -2,9 +2,8 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "bindings/modules/v8/OriginTrialFeaturesForModules.h"
+#include "bindings/core/v8/origin_trial_features_for_core.h"
 
-#include "bindings/core/v8/OriginTrialFeaturesForCore.h"
 {% for include in includes %}
 #include "{{include}}"
 {% endfor %}
@@ -12,25 +11,37 @@
 namespace blink {
 
 namespace {
-InstallOriginTrialFeaturesFunction
-    g_original_install_origin_trial_features_function = nullptr;
+InstallOriginTrialFeaturesFunction g_old_install_origin_trial_features_function =
+    nullptr;
 InstallPendingOriginTrialFeatureFunction
-    g_original_install_pending_origin_trial_feature_function = nullptr;
+    g_old_install_pending_origin_trial_feature_function = nullptr;
 
-void InstallOriginTrialFeaturesForModules(
+void InstallOriginTrialFeaturesForCore(
     const WrapperTypeInfo* wrapper_type_info,
     const ScriptState* script_state,
     v8::Local<v8::Object> prototype_object,
     v8::Local<v8::Function> interface_object) {
-  (*g_original_install_origin_trial_features_function)(
+  (*g_old_install_origin_trial_features_function)(
       wrapper_type_info, script_state, prototype_object, interface_object);
 
-  {% if installers_by_interface %}
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return;
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
+  // TODO(iclelland): Unify ContextFeatureSettings with the rest of the
+  // conditional features.
+  if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
+    auto* settings = ContextFeatureSettings::From(
+        execution_context,
+        ContextFeatureSettings::CreationMode::kDontCreateIfNotExists);
+    if (settings && settings->isMojoJSEnabled()) {
+      v8::Local<v8::Object> instance_object =
+          script_state->GetContext()->Global();
+      V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
+                              interface_object);
+    }
+  }
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
   {% for interface in installers_by_interface %}
@@ -47,14 +58,11 @@ void InstallOriginTrialFeaturesForModules(
     {% endfor %}
   }
   {% endfor %}
-  {% endif %}
 }
 
-void InstallPendingOriginTrialFeatureForModules(
-    const String& feature,
-    const ScriptState* script_state) {
-  (*g_original_install_pending_origin_trial_feature_function)(feature,
-                                                             script_state);
+void InstallPendingOriginTrialFeatureForCore(const String& feature,
+                                             const ScriptState* script_state) {
+  (*g_old_install_pending_origin_trial_feature_function)(feature, script_state);
 
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
@@ -86,14 +94,12 @@ void InstallPendingOriginTrialFeatureForModules(
 
 }  // namespace
 
-void RegisterInstallOriginTrialFeaturesForModules() {
-  RegisterInstallOriginTrialFeaturesForCore();
-  g_original_install_origin_trial_features_function =
-      SetInstallOriginTrialFeaturesFunction(
-          &InstallOriginTrialFeaturesForModules);
-  g_original_install_pending_origin_trial_feature_function =
+void RegisterInstallOriginTrialFeaturesForCore() {
+  g_old_install_origin_trial_features_function =
+      SetInstallOriginTrialFeaturesFunction(&InstallOriginTrialFeaturesForCore);
+  g_old_install_pending_origin_trial_feature_function =
       SetInstallPendingOriginTrialFeatureFunction(
-          &InstallPendingOriginTrialFeatureForModules);
+          &InstallPendingOriginTrialFeatureForCore);
 }
 
 }  // namespace blink

@@ -1,12 +1,24 @@
-{% filter format_blink_cpp_source_code %}
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-{% include 'copyright_block.txt' %}
+// This file has been auto-generated from the Jinja2 template
+// third_party/WebKit/Source/bindings/templates/origin_trial_features_for_core.cc.tmpl
+// by the script generate_origin_trial_features.py.
+// DO NOT MODIFY!
 
-#include "bindings/core/v8/OriginTrialFeaturesForCore.h"
+// clang-format off
 
-{% for include in includes %}
-#include "{{include}}"
-{% endfor %}
+#include "bindings/core/v8/origin_trial_features_for_core.h"
+
+#include "bindings/core/v8/V8TestObject.h"
+#include "bindings/core/v8/V8Window.h"
+#include "core/context_features/ContextFeatureSettings.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/Frame.h"
+#include "core/origin_trials/origin_trials.h"
+#include "platform/bindings/OriginTrialFeatures.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
@@ -44,20 +56,12 @@ void InstallOriginTrialFeaturesForCore(
   }
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
-  {% for interface in installers_by_interface %}
-  if (wrapper_type_info == &{{interface.v8_class}}::wrapperTypeInfo) {
-    {% if interface.is_global %}
-    v8::Local<v8::Object> instance_object =
-        script_state->GetContext()->Global();
-    {% endif %}
-    {% for installer in interface.installers %}
-    if ({{installer.condition}}(execution_context)) {
-      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
-          isolate, world, {% if interface.is_global %}instance_object{% else %}v8::Local<v8::Object>(){% endif %}, prototype_object, interface_object);
+  if (wrapper_type_info == &V8TestObject::wrapperTypeInfo) {
+    if (OriginTrials::featureNameEnabled(execution_context)) {
+      V8TestObject::installFeatureName(
+          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
-    {% endfor %}
   }
-  {% endfor %}
 }
 
 void InstallPendingOriginTrialFeatureForCore(const String& feature,
@@ -66,30 +70,18 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
 
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
-  {% if installers_by_feature %}
   v8::Local<v8::Object> prototype_object;
   v8::Local<v8::Function> interface_object;
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
-  {% for feature in installers_by_feature %}
-  if (feature == {{feature.name_constant}}) {
-    {% for installer in feature.installers %}
-    {% if installer.interface_is_global %}
-    {{installer.v8_class_or_partial}}::{{installer.install_method}}(
-        isolate, world, script_state->GetContext()->Global(),
-        v8::Local<v8::Object>(), v8::Local<v8::Function>());
-    {% else %}
+  if (feature == OriginTrials::kFeatureNameTrialName) {
     if (context_data->GetExistingConstructorAndPrototypeForType(
-            &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
-      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+            &V8TestObject::wrapperTypeInfo, &prototype_object, &interface_object)) {
+      V8TestObject::installFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
-    {% endif %}
-    {% endfor %}
   }
-  {% endfor %}
-  {% endif %}
 }
 
 }  // namespace
@@ -103,5 +95,3 @@ void RegisterInstallOriginTrialFeaturesForCore() {
 }
 
 }  // namespace blink
-
-{% endfilter %}{# format_blink_cpp_source_code #}

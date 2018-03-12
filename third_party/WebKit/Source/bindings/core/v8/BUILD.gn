@@ -151,7 +151,7 @@ generated_core_callback_function_files = [
 generate_origin_trial_features("bindings_core_origin_trial_features") {
   sources = core_idl_files + core_idl_with_modules_dependency_files +
             core_global_constructors_generated_idl_files
-  component = "Core"
+  component = "core"
   output_dir = bindings_core_output_dir + "/v8"
   deps = [
     "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
