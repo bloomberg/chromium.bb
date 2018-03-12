@@ -1237,8 +1237,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           } else {
             assert(masked_compound_used);
             if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
-              counts->compound_interinter[bsize]
-                                         [mbmi->interinter_compound_type - 1]++;
+              ++counts
+                    ->compound_type[bsize][mbmi->interinter_compound_type - 1];
               if (allow_update_cdf) {
                 update_cdf(fc->compound_type_cdf[bsize],
                            mbmi->interinter_compound_type - 1,

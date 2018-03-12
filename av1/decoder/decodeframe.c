@@ -3256,9 +3256,8 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.interintra)));
   assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
                  sizeof(cm->counts.wedge_interintra)));
-  assert(!memcmp(cm->counts.compound_interinter,
-                 zero_counts.compound_interinter,
-                 sizeof(cm->counts.compound_interinter)));
+  assert(!memcmp(cm->counts.compound_type, zero_counts.compound_type,
+                 sizeof(cm->counts.compound_type)));
   assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
                  sizeof(cm->counts.motion_mode)));
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,

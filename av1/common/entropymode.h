@@ -226,7 +226,7 @@ typedef struct FRAME_COUNTS {
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
-  unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
+  unsigned int compound_type[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
