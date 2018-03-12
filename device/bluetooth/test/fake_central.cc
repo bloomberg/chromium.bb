@@ -170,7 +170,6 @@ void FakeCentral::SimulateGATTServicesChanged(
     std::move(callback).Run(false);
     return;
   }
-  fake_peripheral->SimulateGATTServicesChanged();
 
   std::move(callback).Run(true);
 }
