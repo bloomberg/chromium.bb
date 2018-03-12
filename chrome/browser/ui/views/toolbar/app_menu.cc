@@ -56,6 +56,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -318,6 +319,12 @@ class AppMenuView : public views::View,
   }
 
   // Overridden from views::View.
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::View::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kMenu;
+  }
+
+  // Overridden from views::View.
   void SchedulePaintInRect(const gfx::Rect& r) override {
     // Normally when the mouse enters/exits a button the buttons invokes
     // SchedulePaint. As part of the button border (InMenuButtonBackground) is
@@ -504,6 +511,10 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::NO_BORDER));
 
+    // An accessibility role of kAlert will ensure that any updates to the zoom
+    // level can be picked up by screen readers.
+    zoom_label_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+
     AddChildView(zoom_label_);
     zoom_label_max_width_valid_ = false;
 
@@ -513,7 +524,7 @@ class AppMenu::ZoomView : public AppMenuView {
 
     fullscreen_button_ = new FullscreenButton(this);
     // all buttons on menu should must be a custom button in order for
-    // the keyboard navigation work.
+    // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
     gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -639,7 +650,9 @@ class AppMenu::ZoomView : public AppMenuView {
                                     contents->GetMinimumZoomPercent());
     }
     zoom_label_->SetText(base::FormatPercent(zoom));
-    zoom_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+    // An alert notification will ensure that the zoom label is always announced
+    // even if is not focusable.
+    zoom_label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
     zoom_label_max_width_valid_ = false;
   }
 

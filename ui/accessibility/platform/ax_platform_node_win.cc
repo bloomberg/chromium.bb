@@ -347,9 +347,17 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
 
   // Menu items fire selection events but Windows screen readers work reliably
   // with focus events. Remap here.
-  if (event_type == ax::mojom::Event::kSelection &&
-      GetData().role == ax::mojom::Role::kMenuItem)
-    event_type = ax::mojom::Event::kFocus;
+  if (event_type == ax::mojom::Event::kSelection) {
+    // A menu item could have something other than a role of
+    // |ROLE_SYSTEM_MENUITEM|. Zoom modification controls for example have a
+    // role of button.
+    auto* parent =
+        static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+    if (MSAARole() == ROLE_SYSTEM_MENUITEM ||
+        (parent && parent->MSAARole() == ROLE_SYSTEM_MENUPOPUP)) {
+      event_type = ax::mojom::Event::kFocus;
+    }
+  }
 
   int native_event = MSAAEvent(event_type);
   if (native_event < EVENT_MIN)
