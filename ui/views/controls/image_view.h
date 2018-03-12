@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
@@ -98,11 +99,8 @@ class VIEWS_EXPORT ImageView : public View {
   // properties.
   gfx::Point ComputeImageOrigin(const gfx::Size& image_size) const;
 
-  // Whether the image size is set.
-  bool image_size_set_;
-
   // The actual image size.
-  gfx::Size image_size_;
+  base::Optional<gfx::Size> image_size_;
 
   // The underlying image.
   gfx::ImageSkia image_;
