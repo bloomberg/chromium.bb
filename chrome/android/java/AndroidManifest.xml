@@ -377,14 +377,11 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
         </activity>
         <!-- This alias allows us to dynamically toggle whether the Chrome icon shows up in Daydream
-             home. It starts off disabled and is enabled dynamically via a feature flag when Chrome
-             is started. -->
+             home. It defaults to enabled, but can be turned off via a feature flag. -->
         <activity-alias android:name="com.google.android.apps.chrome.VrIntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.vr.VrMainActivity"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true">
-            <!-- These icons are placeholders, and only show up behind a flag that's disabled by
-                 default. -->
             <meta-data android:name="com.google.android.vr.icon"
                 android:resource="@drawable/daydream_icon_foreground" />
             <meta-data android:name="com.google.android.vr.icon_background"
