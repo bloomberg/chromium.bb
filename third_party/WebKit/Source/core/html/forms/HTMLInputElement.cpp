@@ -342,11 +342,6 @@ void HTMLInputElement::EndEditing() {
   frame->GetPage()->GetChromeClient().DidEndEditingOnTextField(*this);
 }
 
-void HTMLInputElement::HandleFocusEvent(Element* old_focused_element,
-                                        WebFocusType type) {
-  input_type_->EnableSecureTextInput();
-}
-
 void HTMLInputElement::DispatchFocusInEvent(
     const AtomicString& event_type,
     Element* old_focused_element,
@@ -359,7 +354,6 @@ void HTMLInputElement::DispatchFocusInEvent(
 }
 
 void HTMLInputElement::HandleBlurEvent() {
-  input_type_->DisableSecureTextInput();
   input_type_view_->HandleBlurEvent();
 }
 

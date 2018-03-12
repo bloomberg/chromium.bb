@@ -75,6 +75,10 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/secure_password_input.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -1049,6 +1053,11 @@ void Textfield::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Textfield::OnFocus() {
+#if defined(OS_MACOSX)
+  if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
+#endif  // defined(OS_MACOSX)
+
   GetRenderText()->set_focused(true);
   if (ShouldShowCursor()) {
     UpdateCursorViewPosition();
@@ -1092,6 +1101,10 @@ void Textfield::OnBlur() {
     FocusRing::Uninstall(this);
   SchedulePaint();
   View::OnBlur();
+
+#if defined(OS_MACOSX)
+  password_input_enabler_.reset();
+#endif  // defined(OS_MACOSX)
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {

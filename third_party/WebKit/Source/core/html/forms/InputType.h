@@ -154,8 +154,6 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
 
   virtual bool IsKeyboardFocusable() const;
   virtual bool ShouldShowFocusRingOnMouseFocus() const;
-  virtual void EnableSecureTextInput();
-  virtual void DisableSecureTextInput();
   virtual bool CanBeSuccessfulSubmitButton();
   virtual bool MatchesDefaultPseudoClass();
 

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
@@ -37,6 +38,12 @@
 namespace base {
 class TimeDelta;
 }
+
+#if defined(OS_MACOSX)
+namespace ui {
+class ScopedPasswordInputEnabler;
+}
+#endif  // defined(OS_MACOSX)
 
 namespace views {
 
@@ -577,6 +584,11 @@ class VIEWS_EXPORT Textfield : public View,
 
   // View containing the text cursor.
   View cursor_view_;
+
+#if defined(OS_MACOSX)
+  // Used to track active password input sessions.
+  std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
+#endif  // defined(OS_MACOSX)
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

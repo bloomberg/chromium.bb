@@ -375,7 +375,6 @@ class CORE_EXPORT HTMLInputElement
 
   void UpdatePlaceholderText() final;
   bool IsEmptyValue() const final { return InnerEditorValue().IsEmpty(); }
-  void HandleFocusEvent(Element* old_focused_element, WebFocusType) final;
   void HandleBlurEvent() final;
   void DispatchFocusInEvent(const AtomicString& event_type,
                             Element* old_focused_element,

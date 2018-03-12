@@ -460,10 +460,6 @@ bool InputType::ShouldShowFocusRingOnMouseFocus() const {
   return false;
 }
 
-void InputType::EnableSecureTextInput() {}
-
-void InputType::DisableSecureTextInput() {}
-
 void InputType::CountUsage() {}
 
 bool InputType::ShouldRespectAlignAttribute() {

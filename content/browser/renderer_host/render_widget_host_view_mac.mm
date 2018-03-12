@@ -57,6 +57,7 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
+#import "ui/base/cocoa/secure_password_input.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -279,23 +280,6 @@ void ExtractUnderlines(NSAttributedString* string,
     }
     i = range.location + range.length;
   }
-}
-
-// EnablePasswordInput() and DisablePasswordInput() are copied from
-// enableSecureTextInput() and disableSecureTextInput() functions in
-// third_party/WebKit/WebCore/platform/SecureTextInput.cpp
-// But we don't call EnableSecureEventInput() and DisableSecureEventInput()
-// here, because they are already called in webkit and they are system wide
-// functions.
-void EnablePasswordInput() {
-  CFArrayRef inputSources = TISCreateASCIICapableInputSourceList();
-  TSMSetDocumentProperty(0, kTSMDocumentEnabledInputSourcesPropertyTag,
-                         sizeof(CFArrayRef), &inputSources);
-  CFRelease(inputSources);
-}
-
-void DisablePasswordInput() {
-  TSMRemoveDocumentProperty(0, kTSMDocumentEnabledInputSourcesPropertyTag);
 }
 
 float FlipYFromRectToScreen(float y, float rect_height) {
@@ -1692,15 +1676,12 @@ RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
-  if (active) {
-    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)
-      EnablePasswordInput();
-    else
-      DisablePasswordInput();
-  } else {
-    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD)
-      DisablePasswordInput();
-  }
+  const bool should_enable_password_input =
+      active && GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD;
+  if (should_enable_password_input)
+    password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
+  else
+    password_input_enabler_.reset();
 }
 
 void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(

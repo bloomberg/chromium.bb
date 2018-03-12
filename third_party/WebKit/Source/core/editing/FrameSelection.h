@@ -178,12 +178,8 @@ class CORE_EXPORT FrameSelection final
   bool FrameIsFocusedAndActive() const;
   void PageActivationChanged();
 
-  void SetUseSecureKeyboardEntryWhenActive(bool);
-
   bool IsHandleVisible() const { return is_handle_visible_; }
   bool ShouldShrinkNextTap() const { return should_shrink_next_tap_; }
-
-  void UpdateSecureKeyboardEntryIfActive();
 
   // Returns true if a word is selected.
   bool SelectWordAroundCaret();
@@ -249,8 +245,6 @@ class CORE_EXPORT FrameSelection final
 
   void FocusedOrActiveStateChanged();
 
-  void SetUseSecureKeyboardEntry(bool);
-
   GranularityStrategy* GetGranularityStrategy();
 
   IntRect ComputeRectToScroll(RevealExtentOption);
@@ -281,7 +275,6 @@ class CORE_EXPORT FrameSelection final
   std::unique_ptr<GranularityStrategy> granularity_strategy_;
 
   const Member<FrameCaret> frame_caret_;
-  bool use_secure_keyboard_entry_when_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSelection);
 };

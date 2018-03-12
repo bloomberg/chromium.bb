@@ -68,6 +68,10 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/secure_password_input.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -3489,6 +3493,23 @@ TEST_F(TextfieldTest, LookUpItemUpdate) {
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kTextTwo));
 }
 
+TEST_F(TextfieldTest, SecurePasswordInput) {
+  InitTextfield();
+  ASSERT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+
+  // Shouldn't enable secure input if it's not a password textfield.
+  textfield_->OnFocus();
+  EXPECT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+
+  // Single matched calls immediately update IsPasswordInputEnabled().
+  textfield_->OnFocus();
+  EXPECT_TRUE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+
+  textfield_->OnBlur();
+  EXPECT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+}
 #endif  // defined(OS_MACOSX)
 
 TEST_F(TextfieldTest, AccessibilitySelectionEvents) {
