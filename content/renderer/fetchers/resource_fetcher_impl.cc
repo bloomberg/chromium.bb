@@ -304,7 +304,7 @@ void ResourceFetcherImpl::Start(
         << "GETs can't have bodies.";
   }
 
-  request_.request_context = request_context;
+  request_.fetch_request_context_type = request_context;
   request_.site_for_cookies = frame->GetDocument().SiteForCookies();
   if (!frame->GetDocument().GetSecurityOrigin().IsNull()) {
     request_.request_initiator =
