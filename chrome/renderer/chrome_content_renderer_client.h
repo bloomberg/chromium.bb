@@ -169,6 +169,7 @@ class ChromeContentRendererClient
       const content::RenderFrame* render_frame,
       blink::mojom::PageVisibilityState* override_state) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
+  bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
   std::unique_ptr<blink::WebSpeechSynthesizer> OverrideSpeechSynthesizer(
