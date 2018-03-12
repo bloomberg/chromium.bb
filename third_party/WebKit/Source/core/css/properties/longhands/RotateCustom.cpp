@@ -4,9 +4,9 @@
 
 #include "core/css/properties/longhands/rotate.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css_value_keywords.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/runtime_enabled_features.h"
 

@@ -24,7 +24,7 @@
 
 #include "core/layout/LayoutThemeDefault.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css_value_keywords.h"
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/DataResourceHelper.h"

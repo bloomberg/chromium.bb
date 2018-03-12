@@ -4,9 +4,9 @@
 
 #include "core/css/properties/longhands/font_variant_caps.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/ComputedStyleUtils.h"
+#include "core/css_value_keywords.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

@@ -24,8 +24,8 @@
 
 #include "core/html/HTMLTableCellElement.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"

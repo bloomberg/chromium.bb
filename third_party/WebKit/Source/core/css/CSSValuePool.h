@@ -28,7 +28,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCustomIdentValue.h"
@@ -40,6 +39,7 @@
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 

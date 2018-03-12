@@ -27,8 +27,8 @@
 #include "core/html/forms/HTMLTextAreaElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css/StyleChangeReason.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ShadowRoot.h"

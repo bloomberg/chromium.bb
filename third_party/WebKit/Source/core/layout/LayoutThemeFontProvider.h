@@ -26,8 +26,8 @@
 #ifndef LayoutThemeFontProvider_h
 #define LayoutThemeFontProvider_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
+#include "core/css_value_keywords.h"
 #include "platform/fonts/FontSelectionTypes.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"

@@ -1184,12 +1184,12 @@ code_generator("make_core_generated_css_value_keywords") {
   ]
   other_inputs = [ "../build/scripts/gperf.py" ]
   templates = [
-    "../build/scripts/core/css/templates/CSSValueKeywords.cpp.tmpl",
-    "../build/scripts/core/css/templates/CSSValueKeywords.h.tmpl",
+    "../build/scripts/core/css/templates/css_value_keywords.cc.tmpl",
+    "../build/scripts/core/css/templates/css_value_keywords.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/CSSValueKeywords.cpp",
-    "$blink_core_output_dir/CSSValueKeywords.h",
+    "$blink_core_output_dir/css_value_keywords.cc",
+    "$blink_core_output_dir/css_value_keywords.h",
   ]
   other_args = [
     "--gperf",

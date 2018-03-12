@@ -25,11 +25,11 @@
 #include "core/html/HTMLBodyElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Attribute.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/LocalFrame.h"

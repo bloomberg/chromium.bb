@@ -17,8 +17,8 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
     def __init__(self, file_paths):
         json5_generator.Writer.__init__(self, file_paths)
         self._outputs = {
-            "CSSValueKeywords.h": self.generate_header,
-            "CSSValueKeywords.cpp": self.generate_implementation
+            "css_value_keywords.h": self.generate_header,
+            "css_value_keywords.cc": self.generate_implementation
         }
 
         self._value_keywords = self.json5_file.name_dictionaries
@@ -36,7 +36,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
                     'value keywords should have the prefix "-internal-".'
         self._keyword_count = len(self._value_keywords) + first_keyword_id
 
-    @template_expander.use_jinja('core/css/templates/CSSValueKeywords.h.tmpl')
+    @template_expander.use_jinja('core/css/templates/css_value_keywords.h.tmpl')
     def generate_header(self):
         return {
             'value_keywords': self._value_keywords,
@@ -52,7 +52,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         ]
 
     @gperf.use_jinja_gperf_template(
-        'core/css/templates/CSSValueKeywords.cpp.tmpl',
+        'core/css/templates/css_value_keywords.cc.tmpl',
         ['-Q', 'CSSValueStringPool'])
     def generate_implementation(self):
         keyword_offsets = []

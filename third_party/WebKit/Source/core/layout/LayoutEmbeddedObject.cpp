@@ -24,7 +24,7 @@
 
 #include "core/layout/LayoutEmbeddedObject.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css_value_keywords.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

@@ -29,7 +29,6 @@
 
 #include "core/css/MediaQueryEvaluator.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSResolutionUnits.h"
 #include "core/css/CSSToLengthConversionData.h"
@@ -40,6 +39,7 @@
 #include "core/css/MediaValuesInitialViewport.h"
 #include "core/css/media_feature_names.h"
 #include "core/css/resolver/MediaQueryResult.h"
+#include "core/css_value_keywords.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

@@ -4,7 +4,6 @@
 
 #include "core/css/resolver/CSSVariableResolver.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -22,6 +21,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"

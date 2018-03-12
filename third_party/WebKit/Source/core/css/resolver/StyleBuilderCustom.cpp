@@ -41,7 +41,6 @@
 #include <memory>
 #include <utility>
 
-#include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -68,6 +67,7 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/style/ComputedStyle.h"

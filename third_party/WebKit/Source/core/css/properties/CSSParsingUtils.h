@@ -5,10 +5,10 @@
 #ifndef CSSParsingUtils_h
 #define CSSParsingUtils_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css_value_keywords.h"
 #include "core/style/GridArea.h"
 
 namespace blink {
