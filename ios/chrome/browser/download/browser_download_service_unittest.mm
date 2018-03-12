@@ -62,9 +62,7 @@ class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
       : browser_state_(browser_state_builder_.Build()) {
-    feature_list_.InitWithFeatures(
-        {web::features::kNewPassKitDownload, web::features::kNewFileDownload},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(web::features::kNewFileDownload);
 
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);

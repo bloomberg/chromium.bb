@@ -16,9 +16,6 @@ extern const base::Feature kContextMenuElementPostMessage;
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 
-// Used to enable PassKit download on top of ios/web Download API.
-extern const base::Feature kNewPassKitDownload;
-
 // Used to enable new Download Manager UI and backend.
 extern const base::Feature kNewFileDownload;
 

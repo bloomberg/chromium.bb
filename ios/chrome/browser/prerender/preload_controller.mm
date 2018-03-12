@@ -520,16 +520,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return 0;
 }
 
-- (void)webController:(CRWWebController*)webController
-    didLoadPassKitObject:(NSData*)data {
-  DCHECK(webState_);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  SEL selector = @selector(webController:didLoadPassKitObject:);
-  if ([tab respondsToSelector:selector]) {
-    [tab webController:webController didLoadPassKitObject:data];
-  }
-}
-
 #pragma mark - ManageAccountsDelegate
 
 - (void)onManageAccounts {
