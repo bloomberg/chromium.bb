@@ -386,29 +386,26 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
           volumeInfo.volumeType) >= 0;
 
   if (!localFile) {
-    switch (type) {
-      case 'image':
-        if (item.thumbnailUrl) {
-          return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-              .then(function(result) {
-                if (result.status === 'success')
-                  params.contentUrl = result.data;
-                return params;
-              }.bind(this));
-        }
-        break;
-      case 'video':
-        if (item.thumbnailUrl) {
-          return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-              .then(function(result) {
-                if (result.status === 'success') {
-                  params.videoPoster = result.data;
-                }
-                return params;
-              });
-        }
-        break;
+    // For Drive files, display a thumbnail if there is one.
+    if (item.thumbnailUrl) {
+      return this.loadThumbnailFromDrive_(item.thumbnailUrl)
+          .then(function(result) {
+            if (result.status === 'success') {
+              if (params.type == 'video') {
+                params.videoPoster = result.data;
+              } else if (params.type == 'image') {
+                params.contentUrl = result.data;
+              } else {
+                // TODO(sashab): Rather than re-use 'image', create a new type
+                // here, e.g. 'thumbnail'.
+                params.type = 'image';
+                params.contentUrl = result.data;
+              }
+            }
+            return params;
+          }.bind(this));
     }
+
     // We ask user to open it with external app.
     return Promise.resolve(params);
   }
