@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "content/common/content_export.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
@@ -49,6 +50,7 @@ class CONTENT_EXPORT SignedExchangeHeader {
   SignedExchangeHeader();
   SignedExchangeHeader(const SignedExchangeHeader&);
   SignedExchangeHeader(SignedExchangeHeader&&);
+  SignedExchangeHeader& operator=(SignedExchangeHeader&&);
   ~SignedExchangeHeader();
 
   void AddResponseHeader(base::StringPiece name, base::StringPiece value);
@@ -68,12 +70,21 @@ class CONTENT_EXPORT SignedExchangeHeader {
     return response_headers_;
   }
 
+  const SignedExchangeHeaderParser::Signature& signature() const {
+    return signature_;
+  }
+  void SetSignatureForTesting(
+      const SignedExchangeHeaderParser::Signature& sig) {
+    signature_ = sig;
+  }
+
  private:
   GURL request_url_;
   std::string request_method_;
 
   net::HttpStatusCode response_code_;
   std::map<std::string, std::string> response_headers_;
+  SignedExchangeHeaderParser::Signature signature_;
 };
 
 }  // namespace content

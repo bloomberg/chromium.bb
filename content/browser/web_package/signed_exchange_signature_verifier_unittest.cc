@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -13,20 +14,18 @@ namespace content {
 namespace {
 
 TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
-  SignedExchangeSignatureVerifier::Input input;
-  input.method = "GET";
-  input.url = "https://example.com/index.html";
-  input.response_code = 200;
-  input.response_headers.insert(
-      std::make_pair("content-type", "text/html; charset=utf-8"));
-  input.response_headers.insert(
-      std::make_pair("content-encoding", "mi-sha256"));
-  input.response_headers.insert(std::make_pair("unsigned-header", "foobar"));
-  input.response_headers.insert(std::make_pair(
-      "signed-headers", "\"content-type\", \"content-encoding\""));
+  SignedExchangeHeader header;
+  header.set_request_method("GET");
+  header.set_request_url(GURL("https://example.com/index.html"));
+  header.set_response_code(net::HTTP_OK);
+  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  header.AddResponseHeader("content-encoding", "mi-sha256");
+  header.AddResponseHeader("unsigned-header", "foobar");
+  header.AddResponseHeader("signed-headers",
+                           "\"content-type\", \"content-encoding\"");
 
   base::Optional<std::vector<uint8_t>> encoded =
-      SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(input);
+      SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(header);
   ASSERT_TRUE(encoded.has_value());
 
   static const uint8_t kExpected[] = {
@@ -113,41 +112,45 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
           kCertPEM, arraysize(kCertPEM), net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeSignatureVerifier::Input input;
-  input.method = "GET";
-  input.url = "https://example.com/index.html";
-  input.response_code = 200;
-  input.response_headers.insert(
-      std::make_pair("content-type", "text/html; charset=utf-8"));
-  input.response_headers.insert(
-      std::make_pair("content-encoding", "mi-sha256"));
-  input.response_headers.insert(std::make_pair(
-      "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ"));
-  input.response_headers.insert(std::make_pair(
-      "signed-headers", "\"content-type\", \"content-encoding\", \"mi\""));
-  input.signature = (*signature)[0];
-  input.certificate = certlist[0];
+  SignedExchangeHeader header;
+  header.set_request_method("GET");
+  header.set_request_url(GURL("https://example.com/index.html"));
+  header.set_response_code(net::HTTP_OK);
+  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  header.AddResponseHeader("content-encoding", "mi-sha256");
+  header.AddResponseHeader(
+      "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ");
+  header.AddResponseHeader("signed-headers",
+                           "\"content-type\", \"content-encoding\", \"mi\"");
+  header.SetSignatureForTesting((*signature)[0]);
+
+  auto certificate = certlist[0];
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
-            SignedExchangeSignatureVerifier::Verify(input));
+            SignedExchangeSignatureVerifier::Verify(header, certificate));
 
-  SignedExchangeSignatureVerifier::Input corrupted_input(input);
-  corrupted_input.url = "https://example.com/bad.html";
+  SignedExchangeHeader corrupted_header(header);
+  corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(corrupted_input));
+      SignedExchangeSignatureVerifier::Verify(corrupted_header, certificate));
 
-  SignedExchangeSignatureVerifier::Input badsig_input(input);
-  badsig_input.signature.sig[0]++;
+  SignedExchangeHeader badsig_header(header);
+  SignedExchangeHeaderParser::Signature badsig = header.signature();
+  badsig.sig[0]++;
+  badsig_header.SetSignatureForTesting(badsig);
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(badsig_input));
+      SignedExchangeSignatureVerifier::Verify(badsig_header, certificate));
 
-  SignedExchangeSignatureVerifier::Input badsigsha256_input(input);
-  badsigsha256_input.signature.cert_sha256->data[0]++;
+  SignedExchangeHeader badsigsha256_header(header);
+  SignedExchangeHeaderParser::Signature badsigsha256 = header.signature();
+  badsigsha256.cert_sha256->data[0]++;
+  badsigsha256_header.SetSignatureForTesting(badsigsha256);
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
-      SignedExchangeSignatureVerifier::Verify(badsigsha256_input));
+      SignedExchangeSignatureVerifier::Verify(badsigsha256_header,
+                                              certificate));
 }
 
 }  // namespace
