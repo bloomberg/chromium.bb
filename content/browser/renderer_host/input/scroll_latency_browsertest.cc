@@ -128,6 +128,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, SmoothWheelScroll) {
   size_t num_samples = 0;
 
   while (num_samples == 0) {
+    FetchHistogramsFromChildProcesses();
     num_samples =
         histogram_tester
             .GetAllSamples(
