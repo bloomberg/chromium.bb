@@ -11,11 +11,12 @@
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/atomicops.h"
-#include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
+#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
+#include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -46,20 +47,12 @@ Atomic32 g_operations_in_flight;
 // When set to true, threads should not enter lock-free paths.
 Atomic32 g_fast_path_is_closed;
 
-// Number of bytes left to form the sample being collected.
-AtomicWord g_bytes_left;
-
-// Current sample size to be accumulated. Basically:
-// <bytes accumulated toward sample> == g_current_interval - g_bytes_left
-AtomicWord g_current_interval;
-
 // Sampling interval parameter, the mean value for intervals between samples.
 AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
 
 // Last generated sample ordinal number.
 uint32_t g_last_sample_ordinal = 0;
 
-SamplingHeapProfiler* g_sampling_heap_profiler_instance;
 void (*g_hooks_install_callback)();
 Atomic32 g_hooks_installed;
 
@@ -167,6 +160,12 @@ void PartitionFreeHook(void* address) {
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
+ThreadLocalStorage::Slot& AccumulatedBytesTLS() {
+  static base::NoDestructor<base::ThreadLocalStorage::Slot>
+      accumulated_bytes_tls;
+  return *accumulated_bytes_tls;
+}
+
 }  // namespace
 
 SamplingHeapProfiler::Sample::Sample(size_t size,
@@ -178,14 +177,23 @@ SamplingHeapProfiler::Sample::Sample(const Sample&) = default;
 
 SamplingHeapProfiler::Sample::~Sample() = default;
 
+SamplingHeapProfiler* SamplingHeapProfiler::instance_;
+
 SamplingHeapProfiler::SamplingHeapProfiler() {
-  g_sampling_heap_profiler_instance = this;
+  instance_ = this;
+}
+
+// static
+void SamplingHeapProfiler::InitTLSSlot() {
+  // Preallocate the TLS slot early, so it can't cause reentracy issues
+  // when sampling is started.
+  ignore_result(AccumulatedBytesTLS().Get());
 }
 
 // static
 void SamplingHeapProfiler::InstallAllocatorHooksOnce() {
   static bool hook_installed = InstallAllocatorHooks();
-  base::debug::Alias(&hook_installed);
+  ignore_result(hook_installed);
 }
 
 // static
@@ -193,7 +201,7 @@ bool SamplingHeapProfiler::InstallAllocatorHooks() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
-  base::debug::Alias(&g_allocator_dispatch);
+  ignore_result(g_allocator_dispatch);
   DLOG(WARNING)
       << "base::allocator shims are not available for memory sampling.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -225,10 +233,6 @@ void SamplingHeapProfiler::SetHooksInstallCallback(
 
 uint32_t SamplingHeapProfiler::Start() {
   InstallAllocatorHooksOnce();
-  size_t next_interval =
-      GetNextSampleInterval(base::subtle::Acquire_Load(&g_sampling_interval));
-  base::subtle::Release_Store(&g_current_interval, next_interval);
-  base::subtle::Release_Store(&g_bytes_left, next_interval);
   base::subtle::Barrier_AtomicIncrement(&g_running, 1);
   return g_last_sample_ordinal;
 }
@@ -276,39 +280,29 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
   if (UNLIKELY(!base::subtle::NoBarrier_Load(&g_running)))
     return;
 
-  // Lock-free algorithm decreases number of bytes left to form a sample.
-  // The thread that makes it to reach zero is responsible for recording
-  // a sample.
-  AtomicWord bytes_left = base::subtle::NoBarrier_AtomicIncrement(
-      &g_bytes_left, -static_cast<AtomicWord>(size));
-  if (LIKELY(bytes_left > 0))
+  // TODO(alph): On MacOS it may call the hook several times for a single
+  // allocation. Handle the case.
+
+  intptr_t accumulated_bytes =
+      reinterpret_cast<intptr_t>(AccumulatedBytesTLS().Get());
+  accumulated_bytes += size;
+  if (LIKELY(accumulated_bytes < 0)) {
+    AccumulatedBytesTLS().Set(reinterpret_cast<void*>(accumulated_bytes));
     return;
+  }
 
-  // Return if g_bytes_left was already zero or below before we decreased it.
-  // That basically means that another thread in fact crossed the threshold.
-  if (LIKELY(bytes_left + static_cast<AtomicWord>(size) <= 0))
-    return;
+  size_t mean_interval = base::subtle::NoBarrier_Load(&g_sampling_interval);
+  size_t samples = accumulated_bytes / mean_interval;
+  accumulated_bytes %= mean_interval;
 
-  // Only one thread that crossed the threshold is running the code below.
-  // It is going to be recording the sample.
+  do {
+    accumulated_bytes -= GetNextSampleInterval(mean_interval);
+    ++samples;
+  } while (accumulated_bytes >= 0);
 
-  size_t accumulated = base::subtle::Acquire_Load(&g_current_interval);
-  size_t next_interval =
-      GetNextSampleInterval(base::subtle::NoBarrier_Load(&g_sampling_interval));
+  AccumulatedBytesTLS().Set(reinterpret_cast<void*>(accumulated_bytes));
 
-  // Make sure g_current_interval is set before updating g_bytes_left.
-  base::subtle::Release_Store(&g_current_interval, next_interval);
-
-  // Put the next sampling interval to g_bytes_left, thus allowing threads to
-  // start accumulating bytes towards the next sample.
-  // Simultaneously extract the current value (which is negative or zero)
-  // and take it into account when calculating the number of bytes
-  // accumulated for the current sample.
-  accumulated -=
-      base::subtle::NoBarrier_AtomicExchange(&g_bytes_left, next_interval);
-
-  g_sampling_heap_profiler_instance->DoRecordAlloc(accumulated, size, address,
-                                                   kSkipBaseAllocatorFrames);
+  instance_->DoRecordAlloc(samples * mean_interval, size, address, skip_frames);
 }
 
 void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
@@ -331,8 +325,6 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
                                          size_t size,
                                          void* address,
                                          uint32_t skip_frames) {
-  // TODO(alph): It's better to use a recursive mutex and move the check
-  // inside the critical section.
   if (entered_.Get())
     return;
   base::AutoLock lock(mutex_);
@@ -364,10 +356,10 @@ void SamplingHeapProfiler::RecordFree(void* address) {
   bool maybe_sampled = true;  // Pessimistically assume allocation was sampled.
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, 1);
   if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed)))
-    maybe_sampled = g_sampling_heap_profiler_instance->samples_.count(address);
+    maybe_sampled = instance_->samples_.count(address);
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, -1);
   if (maybe_sampled)
-    g_sampling_heap_profiler_instance->DoRecordFree(address);
+    instance_->DoRecordFree(address);
 }
 
 void SamplingHeapProfiler::DoRecordFree(void* address) {
@@ -398,15 +390,19 @@ void SamplingHeapProfiler::SuppressRandomnessForTest(bool suppress) {
 void SamplingHeapProfiler::AddSamplesObserver(SamplesObserver* observer) {
   base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
+  entered_.Set(true);
   observers_.push_back(observer);
+  entered_.Set(false);
 }
 
 void SamplingHeapProfiler::RemoveSamplesObserver(SamplesObserver* observer) {
   base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
+  entered_.Set(true);
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   CHECK(it != observers_.end());
   observers_.erase(it);
+  entered_.Set(false);
 }
 
 std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(

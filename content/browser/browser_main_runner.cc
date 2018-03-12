@@ -74,6 +74,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
       const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
 
+      base::SamplingHeapProfiler::InitTLSSlot();
       if (parameters.command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
         base::SamplingHeapProfiler* profiler =
             base::SamplingHeapProfiler::GetInstance();

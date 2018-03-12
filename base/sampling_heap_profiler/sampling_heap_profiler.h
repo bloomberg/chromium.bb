@@ -49,6 +49,10 @@ class BASE_EXPORT SamplingHeapProfiler {
     virtual void SampleRemoved(uint32_t id) = 0;
   };
 
+  // Must be called early during the process initialization. It creates and
+  // reserves a TLS slot.
+  static void InitTLSSlot();
+
   // This is an entry point for plugging in an external allocator.
   // Profiler will invoke the provided callback upon initialization.
   // The callback should install hooks onto the corresponding memory allocator
@@ -93,6 +97,8 @@ class BASE_EXPORT SamplingHeapProfiler {
   base::Lock mutex_;
   std::unordered_map<void*, Sample> samples_;
   std::vector<SamplesObserver*> observers_;
+
+  static SamplingHeapProfiler* instance_;
 
   friend class base::NoDestructor<SamplingHeapProfiler>;
 

@@ -94,6 +94,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   const base::CommandLine& command_line = parameters.command_line;
 
+  base::SamplingHeapProfiler::InitTLSSlot();
   if (command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
     base::SamplingHeapProfiler* profiler =
         base::SamplingHeapProfiler::GetInstance();

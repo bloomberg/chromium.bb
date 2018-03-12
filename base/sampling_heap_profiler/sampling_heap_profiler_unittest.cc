@@ -5,6 +5,7 @@
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 
 #include <stdlib.h>
+#include <cinttypes>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/debug/alias.h"
@@ -46,6 +47,7 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
 };
 
 TEST_F(SamplingHeapProfilerTest, CollectSamples) {
+  SamplingHeapProfiler::InitTLSSlot();
   SamplesCollector collector(10000);
   SamplingHeapProfiler* profiler = SamplingHeapProfiler::GetInstance();
   profiler->SuppressRandomnessForTest(true);
@@ -96,10 +98,14 @@ class MyThread2 : public SimpleThread {
 };
 
 void CheckAllocationPattern(void (*allocate_callback)()) {
+  SamplingHeapProfiler::InitTLSSlot();
   SamplingHeapProfiler* profiler = SamplingHeapProfiler::GetInstance();
   profiler->SuppressRandomnessForTest(false);
   profiler->SetSamplingInterval(10240);
-  for (int i = 0; i < 40; ++i) {
+  base::TimeTicks t0 = base::TimeTicks::Now();
+  std::map<size_t, size_t> sums;
+  const int iterations = 40;
+  for (int i = 0; i < iterations; ++i) {
     uint32_t id = profiler->Start();
     allocate_callback();
     std::vector<SamplingHeapProfiler::Sample> samples =
@@ -110,10 +116,22 @@ void CheckAllocationPattern(void (*allocate_callback)()) {
       buckets[sample.size] += sample.total;
     }
     for (auto& it : buckets) {
-      if (it.first == 400 || it.first == 700 || it.first == 20480)
-        printf("%u,", static_cast<uint32_t>(it.second));
+      if (it.first != 400 && it.first != 700 && it.first != 20480)
+        continue;
+      sums[it.first] += it.second;
+      printf("%zu,", it.second);
     }
     printf("\n");
+  }
+
+  printf("Time taken %" PRIu64 "ms\n",
+         (base::TimeTicks::Now() - t0).InMilliseconds());
+
+  for (auto sum : sums) {
+    intptr_t expected = sum.first * kNumberOfAllocations;
+    intptr_t actual = sum.second / iterations;
+    printf("%zu:\tmean: %zu\trelative error: %.2f%%\n", sum.first, actual,
+           100. * (actual - expected) / expected);
   }
 }
 
