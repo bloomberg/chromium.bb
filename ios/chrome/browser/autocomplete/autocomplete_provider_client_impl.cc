@@ -193,6 +193,8 @@ void AutocompleteProviderClientImpl::OnAutocompleteControllerResultReady(
   // iOS currently has no client for this event.
 }
 
-bool AutocompleteProviderClientImpl::IsTabOpenWithURL(const GURL& url) {
+bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
+    const GURL& url,
+    const AutocompleteInput* input) {
   return false;
 }

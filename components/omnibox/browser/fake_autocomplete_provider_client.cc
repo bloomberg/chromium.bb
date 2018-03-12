@@ -81,6 +81,8 @@ FakeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return shortcuts_backend_;
 }
 
-bool FakeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
+bool FakeAutocompleteProviderClient::IsTabOpenWithURL(
+    const GURL& url,
+    const AutocompleteInput* input) {
   return is_tab_open_with_url_;
 }

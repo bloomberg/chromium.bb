@@ -723,7 +723,7 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
   // options page to close a page that might be open to extension content.
   // However, if the options page opens inside the chrome://extensions page, we
   // can override an existing page.
-  // Note: default ref behavior is IGNORE_REF, which is correct.
+  // Note: ref behavior is to ignore.
   params.path_behavior = open_in_tab ? NavigateParams::RESPECT
                                      : NavigateParams::IGNORE_AND_NAVIGATE;
   params.url = url_to_navigate;

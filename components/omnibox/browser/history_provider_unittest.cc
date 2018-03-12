@@ -73,7 +73,7 @@ TEST_F(HistoryProviderTest, ConvertsOpenTabsCorrectly) {
   // Have IsTabOpenWithURL() return true.
   client()->set_is_tab_open_with_url(true);
 
-  provider()->ConvertOpenTabMatches();
+  provider()->ConvertOpenTabMatches(nullptr);
 
   EXPECT_EQ(base::UTF8ToUTF16("Switch to tab"),
             provider()->matches_[0].description);

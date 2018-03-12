@@ -90,7 +90,10 @@ class MockAutocompleteProviderClient
                void(history::KeywordID keyword_id, const base::string16& term));
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
-  bool IsTabOpenWithURL(const GURL& url) override { return false; }
+  bool IsTabOpenWithURL(const GURL& url,
+                        const AutocompleteInput* input) override {
+    return false;
+  }
 
   void set_template_url_service(std::unique_ptr<TemplateURLService> service) {
     template_url_service_ = std::move(service);
