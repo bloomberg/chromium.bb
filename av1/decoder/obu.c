@@ -276,7 +276,7 @@ static void read_metadata_scalability(const uint8_t *data, size_t sz) {
 #endif
 
 static size_t read_metadata(const uint8_t *data, size_t sz) {
-  assert(sz >= 2);
+  if (sz < 2) return sz;  // Invalid data size.
   const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
 
   if (metadata_type == OBU_METADATA_TYPE_PRIVATE_DATA) {
