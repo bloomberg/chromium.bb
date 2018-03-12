@@ -5,7 +5,7 @@
 crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Pass ]
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Pass ]
 
-# https://crbug.com/794631: Recent regression.
+# https://crbug.com/794631: OOPIFs VS feature policy VS opaque origins?
 crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-allowed-by-feature-policy.https.sub.html [ Failure ]
 
@@ -88,7 +88,6 @@ crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.js [ Ti
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
 # http/ flaky tests w/ --site-per-process
-crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 
@@ -105,11 +104,12 @@ crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
-# https://crbug.com/788390: Autoplay feature policy tests failing on the Windows FYI bot.
-crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
-crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
-crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
-crbug.com/788390 [ Win ] http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
+# https://crbug.com/819800: Feature policy propagation trouble?  Test synchronization issue?
+crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
+
+# https://crbug.com/820617: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.
+crbug.com/820617 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Failure ]
+crbug.com/820617 external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
 
 # The tests below set document.domain.  Such tests are skipped, because they
 # cannot work when same-site WPT origins are isolated from each other via
@@ -133,17 +133,7 @@ Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passin
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Skip ]
 
 # TODO(lukasza, alexmos): Triage these failures.
-Bug(none) external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
-Bug(none) external/wpt/xhr/xmlhttprequest-sync-default-feature-policy.sub.html [ Timeout ]
-Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
-Bug(none) external/wpt/css-fonts/font-display/font-display.html [ Crash ]
-Bug(none) external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
-Bug(none) external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Failure ]
-Bug(none) external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/004.html [ Timeout ]
-Bug(none) external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
-Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
-Bug(none) virtual/outofblink-cors/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-url-allow.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-none-block.html [ Pass Timeout ]
@@ -153,7 +143,6 @@ crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ance
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-same-in-cross-url-allow.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Pass Timeout ]
-crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-composite-image.html [ Pass Timeout ]
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Pass Timeout ]
