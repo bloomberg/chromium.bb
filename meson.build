@@ -186,10 +186,10 @@ else
   dep_rt = []
 endif
 dep_m = cc.find_library('m', required : false)
-if cc.has_header('sys/sysctl.h')
+if cc.compiles('#include <sys/sysctl.h>', name : 'sys/sysctl.h works')
   config.set10('HAVE_SYS_SYSCTL_H', true)
 endif
-if cc.has_header('sys/select.h')
+if cc.compiles('#include <sys/select.h>', name : 'sys/select.h works')
   config.set10('HAVE_SYS_SELECT_H', true)
 endif
 if cc.has_header_symbol('sys/sysmacros.h', 'major')
