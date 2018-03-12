@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(() => {
+  var arrayBuffer = new ArrayBuffer(32);
+  postMessage(null, '*', [arrayBuffer]);
+  assert_throws('DataCloneError', () => {
+    postMessage(null, '*', [arrayBuffer]);
+  });
+}, "Exception should be thrown if ArrayBuffer is neutered before serialization.");
+
+test(() => {
+  var arrayBuffer = new ArrayBuffer(32);
+  postMessage(null, '*', [arrayBuffer]);
+  assert_throws('DataCloneError', () => {
+    postMessage({
+      get a() { assert_unreached('DataCloneError should be thrown first.'); }
+    }, '*', [arrayBuffer]);
+  });
+}, "Exception for neutered ArrayBuffer should be thrown before serialization.");
+
+test(() => {
+  var arrayBuffer = new ArrayBuffer(32);
+  assert_throws('DataCloneError', () => {
+    postMessage({
+      get a() { postMessage(null, '*', [arrayBuffer]); }
+    }, '*', [arrayBuffer]);
+  });
+}, "Exception should be thrown if ArrayBuffer is neutered during serialization.");
+</script>
