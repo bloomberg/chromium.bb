@@ -5,9 +5,9 @@
 #include "core/paint/TextPainter.h"
 
 #include <memory>
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/api/LineLayoutText.h"

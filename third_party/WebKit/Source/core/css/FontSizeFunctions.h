@@ -23,7 +23,7 @@
 #ifndef FontSizeFunctions_h
 #define FontSizeFunctions_h
 
-#include "core/CSSValueKeywords.h"
+#include "core/css_value_keywords.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

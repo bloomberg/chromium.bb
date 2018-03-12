@@ -21,8 +21,8 @@
 #include "core/html/HTMLDetailsElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"

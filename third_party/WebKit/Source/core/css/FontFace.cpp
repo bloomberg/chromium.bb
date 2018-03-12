@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -51,6 +50,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/parser/AtRuleDescriptorParser.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

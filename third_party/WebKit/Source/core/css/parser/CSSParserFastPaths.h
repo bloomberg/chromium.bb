@@ -5,8 +5,8 @@
 #ifndef CSSParserFastPaths_h
 #define CSSParserFastPaths_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"

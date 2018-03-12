@@ -22,8 +22,8 @@
 
 #include "core/html/HTMLLIElement.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Document.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/html/ListItemOrdinal.h"

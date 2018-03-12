@@ -29,7 +29,6 @@
 
 #include "core/css/resolver/ViewportStyleResolver.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyValueSet.h"
@@ -40,6 +39,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"

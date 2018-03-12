@@ -5,8 +5,8 @@
 #ifndef CSSGridAutoRepeatValue_h
 #define CSSGridAutoRepeatValue_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
+#include "core/css_value_keywords.h"
 
 namespace blink {
 

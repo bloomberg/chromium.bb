@@ -4,8 +4,8 @@
 
 #include "core/css/properties/longhands/text_size_adjust.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css_value_keywords.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

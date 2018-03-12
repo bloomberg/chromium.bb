@@ -24,7 +24,7 @@
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <math.h>
-#import "core/CSSValueKeywords.h"
+#import "core/css_value_keywords.h"
 #import "core/fileapi/FileList.h"
 #import "core/html_names.h"
 #import "core/layout/LayoutProgress.h"

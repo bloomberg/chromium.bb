@@ -4,9 +4,9 @@
 
 #include "core/css/properties/longhands/webkit_perspective_origin_y.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css_value_keywords.h"
 
 namespace blink {
 namespace CSSLonghand {

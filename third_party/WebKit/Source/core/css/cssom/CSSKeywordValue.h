@@ -6,9 +6,9 @@
 #define CSSKeywordValue_h
 
 #include "base/macros.h"
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css_value_keywords.h"
 
 namespace blink {
 

@@ -24,7 +24,7 @@
 
 #include "core/css/resolver/FontBuilder.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

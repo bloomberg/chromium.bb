@@ -27,12 +27,12 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"

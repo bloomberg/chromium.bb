@@ -21,7 +21,7 @@
 
 #include "core/layout/LayoutTheme.h"
 
-#include "core/CSSValueKeywords.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"

@@ -29,11 +29,11 @@
 #ifndef MediaQueryExp_h
 #define MediaQueryExp_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/media_feature_names.h"
+#include "core/css_value_keywords.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

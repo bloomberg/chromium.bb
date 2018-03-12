@@ -4,13 +4,13 @@
 
 #include "core/css/properties/longhands/grid_template_areas.h"
 
-#include "core/CSSValueKeywords.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/ComputedStyleUtils.h"
+#include "core/css_value_keywords.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/GridArea.h"
 

@@ -28,7 +28,6 @@
 #include "core/editing/Editor.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSValueKeywords.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -36,6 +35,7 @@
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSValueList.h"
 #include "core/css_property_names.h"
+#include "core/css_value_keywords.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/events/Event.h"
