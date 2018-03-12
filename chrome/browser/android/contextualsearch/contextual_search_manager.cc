@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/contextual_search/browser/contextual_search_js_api_service_impl.h"

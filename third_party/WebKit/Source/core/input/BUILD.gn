@@ -37,4 +37,7 @@ blink_core_sources("input") {
     "TouchList.cpp",
     "TouchList.h",
   ]
+  deps = [
+    "//third_party/WebKit/public:features",
+  ]
 }
