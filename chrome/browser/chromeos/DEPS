@@ -2,6 +2,8 @@ include_rules = [
   # TODO(crbug.com/678705): Convert to using mojo interfaces in
   # //ash/public/interfaces and eliminate this.
   "!ash",
+  # Public interfaces are OK.
+  "+ash/public",
 
   # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/chromeos to chrome/browser/ui/views/chromeos

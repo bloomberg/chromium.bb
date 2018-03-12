@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeLoginTest,
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
   EXPECT_TRUE(IsMonoAudioEnabled());
 
-  session_manager::SessionManager::Get()->SessionStarted();
+  StartUserSession(GetParam());
 
   // Confirms that the features keep enabled after session starts.
   EXPECT_TRUE(IsLargeCursorEnabled());

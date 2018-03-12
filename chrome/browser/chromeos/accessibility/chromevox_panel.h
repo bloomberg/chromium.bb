@@ -28,6 +28,10 @@ class ChromeVoxPanel : public views::WidgetDelegate {
 
   aura::Window* GetRootWindow();
 
+  // Closes the panel immediately, deleting the WebView/WebContents.
+  void CloseNow();
+
+  // Closes the panel asynchronously.
   void Close();
 
   // WidgetDelegate overrides.
@@ -47,6 +51,9 @@ class ChromeVoxPanel : public views::WidgetDelegate {
   void ExitFullscreen();
   void DisableSpokenFeedback();
   void Focus();
+
+  // Sends a request to the ash window manager.
+  void SetAccessibilityPanelFullscreen(bool fullscreen);
 
   views::Widget* widget_;
   std::unique_ptr<ChromeVoxPanelWebContentsObserver> web_contents_observer_;

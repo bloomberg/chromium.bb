@@ -51,6 +51,10 @@ interface AccessibilityController {
 
   // Sets the focus highlight rect using |bounds_in_screen|.
   SetFocusHighlightRect(gfx.mojom.Rect bounds_in_screen);
+
+  // Sets whether the accessibility panel is filling the entire screen (e.g. to
+  // show the expanded UI for the ChromeVox spoken feedback extension).
+  SetAccessibilityPanelFullscreen(bool fullscreen);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.

@@ -129,10 +129,6 @@ class ASH_EXPORT AccessibilityController
   // countdown.
   void PlaySpokenFeedbackToggleCountdown(int tick_count);
 
-  // Sets whether the accessibility panel is filling the entire screen.
-  // TODO(jamescook): Convert to mojo interface.
-  void SetAccessibilityPanelFullscreen(bool fullscreen);
-
   // Public because a11y features like screen magnifier and tap dragging are
   // managed outside of this controller.
   void NotifyAccessibilityStatusChanged(
@@ -143,6 +139,7 @@ class ASH_EXPORT AccessibilityController
   void SetDarkenScreen(bool darken) override;
   void BrailleDisplayStateChanged(bool connected) override;
   void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override;
+  void SetAccessibilityPanelFullscreen(bool fullscreen) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

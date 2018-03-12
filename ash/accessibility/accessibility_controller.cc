@@ -325,19 +325,6 @@ void AccessibilityController::NotifyAccessibilityStatusChanged(
     observer.OnAccessibilityStatusChanged(notify);
 }
 
-void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
-  // The accessibility panel is only shown on the primary display.
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::Window* container =
-      Shell::GetContainer(root, kShellWindowId_AccessibilityPanelContainer);
-  // TODO(jamescook): Avoid this cast by moving ash::AccessibilityObserver
-  // ownership to this class and notifying it on ChromeVox fullscreen updates.
-  AccessibilityPanelLayoutManager* layout =
-      static_cast<AccessibilityPanelLayoutManager*>(
-          container->layout_manager());
-  layout->SetPanelFullscreen(fullscreen);
-}
-
 void AccessibilityController::SetClient(
     mojom::AccessibilityControllerClientPtr client) {
   client_ = std::move(client);
@@ -364,6 +351,19 @@ void AccessibilityController::SetFocusHighlightRect(
   if (!accessibility_highlight_controller_)
     return;
   accessibility_highlight_controller_->SetFocusHighlightRect(bounds_in_screen);
+}
+
+void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
+  // The accessibility panel is only shown on the primary display.
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  aura::Window* container =
+      Shell::GetContainer(root, kShellWindowId_AccessibilityPanelContainer);
+  // TODO(jamescook): Avoid this cast by moving ash::AccessibilityObserver
+  // ownership to this class and notifying it on ChromeVox fullscreen updates.
+  AccessibilityPanelLayoutManager* layout =
+      static_cast<AccessibilityPanelLayoutManager*>(
+          container->layout_manager());
+  layout->SetPanelFullscreen(fullscreen);
 }
 
 void AccessibilityController::OnSigninScreenPrefServiceInitialized(
