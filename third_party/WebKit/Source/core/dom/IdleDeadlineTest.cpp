@@ -28,7 +28,6 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override {}
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) override {
     return nullptr;
   }

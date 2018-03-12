@@ -367,10 +367,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
       mutator_(nullptr),
-      scheduler_(Platform::Current()
-                     ->CurrentThread()
-                     ->Scheduler()
-                     ->CreateWebViewScheduler(this, this)),
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
@@ -932,28 +928,6 @@ void WebViewImpl::AcceptLanguagesChanged() {
     return;
 
   GetPage()->AcceptLanguagesChanged();
-}
-
-void WebViewImpl::ReportIntervention(const WebString& message) {
-  if (!MainFrameImpl())
-    return;
-  WebConsoleMessage console_message(WebConsoleMessage::kLevelWarning, message);
-  MainFrameImpl()->AddMessageToConsole(console_message);
-}
-
-void WebViewImpl::RequestBeginMainFrameNotExpected(bool new_state) {
-  if (layer_tree_view_) {
-    layer_tree_view_->RequestBeginMainFrameNotExpected(new_state);
-  }
-}
-
-void WebViewImpl::SetPageFrozen(bool frozen) {
-  if (!GetPage())
-    return;
-  GetPage()->SetLifecycleState(frozen ? PageLifecycleState::kFrozen
-                                      : GetPage()->IsPageVisible()
-                                            ? PageLifecycleState::kActive
-                                            : PageLifecycleState::kHidden);
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
@@ -1605,8 +1579,6 @@ void WebViewImpl::Close() {
     page_->WillBeDestroyed();
     page_.Clear();
   }
-
-  scheduler_.reset();
 
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
@@ -3118,7 +3090,7 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
 }
 
 void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
-  scheduler_->AudioStateChanged(is_audio_playing);
+  GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
 }
 
 WebHitTestResult WebViewImpl::HitTestResultAt(const WebPoint& point) {
@@ -3773,20 +3745,20 @@ void WebViewImpl::UpdateDeviceEmulationTransform() {
 }
 
 WebViewScheduler* WebViewImpl::Scheduler() const {
-  return scheduler_.get();
+  DCHECK(GetPage());
+  return GetPage()->GetPageScheduler();
 }
 
 void WebViewImpl::SetVisibilityState(
     mojom::PageVisibilityState visibility_state,
     bool is_initial_state) {
-  if (GetPage()) {
-    page_->SetVisibilityState(visibility_state, is_initial_state);
-  }
+  DCHECK(GetPage());
+  GetPage()->SetVisibilityState(visibility_state, is_initial_state);
 
   bool visible = visibility_state == mojom::PageVisibilityState::kVisible;
   if (layer_tree_view_ && !override_compositor_visibility_)
     layer_tree_view_->SetVisible(visible);
-  scheduler_->SetPageVisible(visible);
+  GetPage()->GetPageScheduler()->SetPageVisible(visible);
 }
 
 void WebViewImpl::SetCompositorVisibility(bool is_visible) {

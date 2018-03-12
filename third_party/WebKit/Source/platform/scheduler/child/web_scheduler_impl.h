@@ -40,7 +40,6 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   base::SingleThreadTaskRunner* V8TaskRunner() override;
   base::SingleThreadTaskRunner* CompositorTaskRunner() override;
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) override;
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override
       WARN_UNUSED_RESULT;

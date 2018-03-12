@@ -5,15 +5,13 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 
+#include <memory>
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
-#include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -22,15 +20,6 @@ namespace blink {
 // TODO(skyostil): Replace this class with RendererScheduler.
 class PLATFORM_EXPORT WebScheduler {
  public:
-  class PLATFORM_EXPORT InterventionReporter {
-   public:
-    virtual ~InterventionReporter() = default;
-
-    // The scheduler has performed an intervention, described by |message|,
-    // which should be reported to the developer.
-    virtual void ReportIntervention(const WebString& message) = 0;
-  };
-
   using RendererPauseHandle = scheduler::RendererScheduler::RendererPauseHandle;
 
   virtual ~WebScheduler() = default;
@@ -79,7 +68,6 @@ class PLATFORM_EXPORT WebScheduler {
   // Creates a new WebViewScheduler for a given WebView. Must be called from
   // the associated WebThread.
   virtual std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) = 0;
 
   // Pauses the scheduler. See RendererScheduler::PauseRenderer for details.

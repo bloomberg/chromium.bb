@@ -42,9 +42,8 @@ class WebViewSchedulerImplTest : public ::testing::Test {
     scheduler_.reset(new RendererSchedulerImpl(
         CreateTaskQueueManagerForTest(nullptr, mock_task_runner_, &clock_),
         base::nullopt));
-    web_view_scheduler_.reset(
-        new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(),
-                                 DisableBackgroundTimerThrottling()));
+    web_view_scheduler_.reset(new WebViewSchedulerImpl(
+        nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
     web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
         nullptr, WebFrameScheduler::FrameType::kSubframe);
   }
@@ -176,7 +175,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
       web_view_scheduler2->CreateWebFrameSchedulerImpl(
           nullptr, WebFrameScheduler::FrameType::kSubframe);
@@ -870,7 +869,7 @@ TEST_F(WebViewSchedulerImplTest, BackgroundTimerThrottling) {
       std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   web_view_scheduler_.reset(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
   web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
@@ -926,7 +925,7 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
       std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
 

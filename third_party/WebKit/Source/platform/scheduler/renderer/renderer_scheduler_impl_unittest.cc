@@ -3247,7 +3247,7 @@ TEST_F(RendererSchedulerImplTest,
 class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
  public:
   WebViewSchedulerImplForTest(RendererSchedulerImpl* scheduler)
-      : WebViewSchedulerImpl(nullptr, nullptr, scheduler, false) {}
+      : WebViewSchedulerImpl(nullptr, scheduler, false) {}
   ~WebViewSchedulerImplForTest() override = default;
 
   void ReportIntervention(const std::string& message) override {
@@ -3819,7 +3819,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
 TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler =
       base::WrapUnique(new WebViewSchedulerImpl(
-          nullptr, nullptr, scheduler_.get(),
+          nullptr, scheduler_.get(),
           false /* disable_background_timer_throttling */));
   scheduler_->AddWebViewScheduler(web_view_scheduler.get());
 
@@ -3909,7 +3909,7 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   // traced value. This test checks that no internal checks fire during this.
 
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler1 = base::WrapUnique(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
   scheduler_->AddWebViewScheduler(web_view_scheduler1.get());
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
@@ -3917,7 +3917,7 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2 = base::WrapUnique(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
   scheduler_->AddWebViewScheduler(web_view_scheduler2.get());
 
   CPUTimeBudgetPool* time_budget_pool =

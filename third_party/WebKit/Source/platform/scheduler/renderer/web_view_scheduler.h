@@ -5,23 +5,25 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/wtf/Functional.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/BlameContext.h"
-
-#include <memory>
 
 namespace blink {
 
+// TODO(yutak): Rename this class to PageScheduler.
 class PLATFORM_EXPORT WebViewScheduler {
  public:
   class PLATFORM_EXPORT WebViewSchedulerDelegate {
    public:
     virtual ~WebViewSchedulerDelegate() = default;
 
+    virtual void ReportIntervention(const WTF::String& message) = 0;
     virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
-    virtual void SetPageFrozen(bool) = 0;
+    virtual void SetPageFrozen(bool frozen) = 0;
   };
 
   virtual ~WebViewScheduler() = default;
