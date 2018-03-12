@@ -53,6 +53,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSiteNotificationChannels,
     &features::kSimplifiedFullscreenUI,
     &features::kSoundContentSetting,
+    &features::kUnifiedConsent,
     &features::kVrBrowsing,
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
