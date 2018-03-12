@@ -80,6 +80,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Returns whether the ModernMediaControlsEnabled runtime flag is on.
   static bool IsModern();
 
+  // Returns whether the event is considered a touch event.
+  static bool IsTouchEvent(Event*);
+
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
@@ -226,6 +229,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   };
 
   bool ShouldHideMediaControls(unsigned behavior_flags = 0) const;
+  bool AreVideoControlsHovered() const;
   void HideMediaControlsTimerFired(TimerBase*);
   void StartHideMediaControlsIfNecessary();
   void StartHideMediaControlsTimer();

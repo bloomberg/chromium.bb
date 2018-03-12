@@ -306,6 +306,11 @@ bool MediaControlsImpl::IsModern() {
   return RuntimeEnabledFeatures::ModernMediaControlsEnabled();
 }
 
+bool MediaControlsImpl::IsTouchEvent(Event* event) {
+  return event->IsTouchEvent() || event->IsGestureEvent() ||
+         (event->IsMouseEvent() && ToMouseEvent(event)->FromTouch());
+}
+
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
     : HTMLDivElement(media_element.GetDocument()),
       MediaControls(media_element),
@@ -846,7 +851,7 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 
   // Don't hide if the mouse is over the controls.
   const bool ignore_controls_hover = behavior_flags & kIgnoreControlsHover;
-  if (!ignore_controls_hover && panel_->IsHovered())
+  if (!ignore_controls_hover && AreVideoControlsHovered())
     return false;
 
   // Don't hide if the mouse is over the video area.
@@ -872,6 +877,15 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
     return false;
 
   return true;
+}
+
+bool MediaControlsImpl::AreVideoControlsHovered() const {
+  DCHECK(MediaElement().IsHTMLVideoElement());
+
+  if (IsModern())
+    return media_button_panel_->IsHovered() || timeline_->IsHovered();
+
+  return panel_->IsHovered();
 }
 
 void MediaControlsImpl::UpdatePlayState() {
@@ -1189,16 +1203,14 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   // event, to allow the hide-timer to do the right thing when it fires.
   // FIXME: Preferably we would only do this when we're actually handling the
   // event here ourselves.
-  bool is_touch_event =
-      event->IsTouchEvent() || event->IsGestureEvent() ||
-      (event->IsMouseEvent() && ToMouseEvent(event)->FromTouch());
+  bool is_touch_event = IsTouchEvent(event);
   hide_timer_behavior_flags_ |=
       is_touch_event ? kIgnoreControlsHover : kIgnoreNone;
 
   // Touch events are treated differently to avoid fake mouse events to trigger
   // random behavior. The expect behaviour for touch is that a tap will show the
   // controls and they will hide when the timer to hide fires.
-  if (is_touch_event && !IsModern()) {
+  if (is_touch_event) {
     if (event->type() != EventTypeNames::gesturetap)
       return;
 
@@ -1236,11 +1248,6 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
       is_mouse_over_controls_ = false;
       StopHideMediaControlsTimer();
     }
-    return;
-  }
-
-  if (event->type() == EventTypeNames::click) {
-    MaybeToggleControlsFromTap();
     return;
   }
 

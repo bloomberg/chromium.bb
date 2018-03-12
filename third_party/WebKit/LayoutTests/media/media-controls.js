@@ -394,6 +394,18 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
   ], callback);
 }
 
+function singleTouchAtCoordinates(xPos, yPos, callback) {
+  chrome.gpuBenchmarking.pointerActionSequence([
+    {
+      source: 'touch',
+      actions: [
+        { name: 'pointerDown', x: xPos, y: yPos },
+        { name: 'pointerUp' }
+      ]
+    }
+  ], callback);
+}
+
 function enableDoubleTapToJumpForTest(t) {
   var doubleTapToJumpOnVideoEnabledValue =
       internals.runtimeFlags.doubleTapToJumpOnVideoEnabled;
