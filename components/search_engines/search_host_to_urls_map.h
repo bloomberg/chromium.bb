@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
 #define COMPONENTS_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/search_engines/template_url_service.h"
 
 // Holds the host to template url mappings for the search providers. WARNING:
@@ -36,16 +38,16 @@ class SearchHostToURLsMap {
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
-  TemplateURL* GetTemplateURLForHost(const std::string& host);
+  TemplateURL* GetTemplateURLForHost(base::StringPiece host);
 
   // Return the TemplateURLSet for the given the |host| or NULL if there are
   // none.
-  TemplateURLSet* GetURLsForHost(const std::string& host);
+  TemplateURLSet* GetURLsForHost(base::StringPiece host);
 
  private:
   friend class SearchHostToURLsMapTest;
 
-  typedef std::map<std::string, TemplateURLSet> HostToURLsMap;
+  typedef std::map<std::string, TemplateURLSet, std::less<>> HostToURLsMap;
 
   // Adds many URLs to the map.
   void Add(const TemplateURLService::OwnedTemplateURLVector& template_urls,
