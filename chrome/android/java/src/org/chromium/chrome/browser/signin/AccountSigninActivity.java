@@ -16,6 +16,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -67,7 +68,13 @@ public class AccountSigninActivity extends AppCompatActivity
             return false;
         }
 
-        context.startActivity(createIntentForDefaultSigninFlow(context, accessPoint, false));
+        final Intent intent;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            intent = SigninActivity.createIntent(context, accessPoint, false);
+        } else {
+            intent = createIntentForDefaultSigninFlow(context, accessPoint, false);
+        }
+        context.startActivity(intent);
         return true;
     }
 
