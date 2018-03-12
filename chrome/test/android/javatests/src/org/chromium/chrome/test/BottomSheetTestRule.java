@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.Features;
@@ -147,10 +146,6 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         return getActivity().getBottomSheet();
     }
 
-    public BottomSheetContentController getBottomSheetContentController() {
-        return getActivity().getBottomSheetContentController();
-    }
-
     /**
      * Set the bottom sheet's state on the UI thread.
      *
@@ -173,15 +168,6 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
 
     public BottomSheetContent getBottomSheetContent() {
         return getBottomSheet().getCurrentSheetContent();
-    }
-
-    /**
-     * @param itemId The id of the MenuItem corresponding to the {@link BottomSheetContent} to
-     *               select.
-     */
-    public void selectBottomSheetContent(int itemId) {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> getBottomSheetContentController().selectItem(itemId));
     }
 
     /**

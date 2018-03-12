@@ -115,6 +115,7 @@ import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.suggestions.ContextualSuggestionsManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -139,7 +140,6 @@ import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
@@ -258,7 +258,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ToolbarManager mToolbarManager;
     private FindToolbarManager mFindToolbarManager;
     private BottomSheet mBottomSheet;
-    private BottomSheetContentController mBottomSheetContentController;
+    private ContextualSuggestionsManager mContextualSuggestionsManager;
     private FadingBackgroundView mFadingBackgroundView;
 
     // Time in ms that it took took us to inflate the initial layout
@@ -658,15 +658,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Nullable
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
-    }
-
-    /**
-     * Get the Chrome Home bottom sheet content controller if it exists.
-     * @return The {@link BottomSheetContentController} or null.
-     */
-    @Nullable
-    public BottomSheetContentController getBottomSheetContentController() {
-        return mBottomSheetContentController;
     }
 
     /**
@@ -1143,11 +1134,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet = null;
         }
 
-        if (mBottomSheetContentController != null) {
-            mBottomSheetContentController.destroy();
-            mBottomSheetContentController = null;
-        }
-
         if (mTabModelsInitialized) {
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
@@ -1272,10 +1258,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             });
             mFadingBackgroundView.addObserver(mBottomSheet);
 
-            mBottomSheetContentController =
-                    (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
-                            .inflate();
-            mBottomSheetContentController.init(mBottomSheet, mTabModelSelector, this);
+            mContextualSuggestionsManager = new ContextualSuggestionsManager(
+                    this, mBottomSheet, getTabModelSelector(), getSnackbarManager());
         }
     }
 

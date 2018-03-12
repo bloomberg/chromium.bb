@@ -780,21 +780,6 @@
             ]
         }
     ],
-    "ChromeHomeBottomNavLabels": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeHomeBottomNavLabels"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeHomeInactivitySheetExpansion": [
         {
             "platforms": [
@@ -823,9 +808,6 @@
                     "name": "DropAllButFirstThumbnail",
                     "enable_features": [
                         "ChromeHomeDropAllButFirstThumbnail"
-                    ],
-                    "disable_features": [
-                        "ChromeHomeDestroySuggestions"
                     ]
                 }
             ]

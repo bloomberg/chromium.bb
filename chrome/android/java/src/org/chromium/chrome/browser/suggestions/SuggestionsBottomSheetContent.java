@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -211,11 +210,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     @Override
-    public boolean isUsingLightToolbarTheme() {
-        return false;
-    }
-
-    @Override
     public boolean isIncognitoThemedContent() {
         return false;
     }
@@ -239,18 +233,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     @Override
-    public int getType() {
-        return BottomSheetContentController.TYPE_SUGGESTIONS;
-    }
-
-    @Override
     public boolean applyDefaultTopPadding() {
         return false;
-    }
-
-    @Override
-    public void scrollToTop() {
-        mRecyclerView.smoothScrollToPosition(0);
     }
 
     private void maybeUpdateContextualSuggestions() {

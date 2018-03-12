@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.MediumTest;
 
@@ -17,11 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
-import org.chromium.chrome.browser.download.DownloadSheetContent;
-import org.chromium.chrome.browser.history.HistorySheetContent;
-import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -205,35 +199,5 @@ public class BottomSheetObserverTest {
         mBottomSheetTestRule.setSheetOffsetFromBottom(halfHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
         assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-    }
-
-    /**
-     * Test the onSheetContentChanged event.
-     */
-    @Test
-    @MediumTest
-    public void testSheetContentChanged() throws InterruptedException, TimeoutException {
-        CallbackHelper callbackHelper = mObserver.mContentChangedCallbackHelper;
-
-        int callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_bookmarks);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertTrue(mBottomSheetTestRule.getBottomSheetContent() instanceof BookmarkSheetContent);
-
-        callbackCount++;
-        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_history);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertTrue(mBottomSheetTestRule.getBottomSheetContent() instanceof HistorySheetContent);
-
-        callbackCount++;
-        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_downloads);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertTrue(mBottomSheetTestRule.getBottomSheetContent() instanceof DownloadSheetContent);
-
-        callbackCount++;
-        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_home);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertTrue(mBottomSheetTestRule.getBottomSheetContent()
-                           instanceof SuggestionsBottomSheetContent);
     }
 }

@@ -8,11 +8,8 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.components.feature_engagement.EventConstants;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,17 +54,6 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
             new CachedMetrics.ActionEvent("Android.ChromeHome.HalfState");
     private static final CachedMetrics.ActionEvent ACTION_FULL_STATE =
             new CachedMetrics.ActionEvent("Android.ChromeHome.FullState");
-
-    private static final CachedMetrics.ActionEvent ACTION_SHOW_SUGGESTIONS =
-            new CachedMetrics.ActionEvent("Android.ChromeHome.ShowSuggestions");
-    private static final CachedMetrics.ActionEvent ACTION_SHOW_DOWNLOADS =
-            new CachedMetrics.ActionEvent("Android.ChromeHome.ShowDownloads");
-    private static final CachedMetrics.ActionEvent ACTION_SHOW_BOOKMARKS =
-            new CachedMetrics.ActionEvent("Android.ChromeHome.ShowBookmarks");
-    private static final CachedMetrics.ActionEvent ACTION_SHOW_HISTORY =
-            new CachedMetrics.ActionEvent("Android.ChromeHome.ShowHistory");
-    private static final CachedMetrics.ActionEvent ACTION_SHOW_INCOGNITO_HOME =
-            new CachedMetrics.ActionEvent("Android.ChromeHome.ShowIncognitoHome");
 
     private static final CachedMetrics.ActionEvent ACTION_OPENED_BY_SWIPE =
             new CachedMetrics.ActionEvent("Android.ChromeHome.OpenedBySwipe");
@@ -143,40 +129,6 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
         } else if (newState == BottomSheet.SHEET_STATE_FULL) {
             ACTION_FULL_STATE.record();
         }
-    }
-
-    @Override
-    public void onSheetContentChanged(BottomSheetContent newContent) {
-        // Return early if the sheet content is being set during initialization (previous content
-        // is null) or while the sheet is closed (sheet content being reset), so that we only
-        // record actions when the user explicitly takes an action.
-        if (mLastContent == null || !mIsSheetOpen || newContent == null) {
-            mLastContent = newContent;
-            return;
-        }
-
-        int contentType = newContent.getType();
-
-        if (contentType == BottomSheetContentController.TYPE_SUGGESTIONS) {
-            ACTION_SHOW_SUGGESTIONS.record();
-        } else if (contentType == BottomSheetContentController.TYPE_DOWNLOADS) {
-            ACTION_SHOW_DOWNLOADS.record();
-        } else if (contentType == BottomSheetContentController.TYPE_BOOKMARKS) {
-            ACTION_SHOW_BOOKMARKS.record();
-        } else if (contentType == BottomSheetContentController.TYPE_HISTORY) {
-            ACTION_SHOW_HISTORY.record();
-        } else if (contentType == BottomSheetContentController.TYPE_INCOGNITO_HOME) {
-            ACTION_SHOW_INCOGNITO_HOME.record();
-        }
-
-        if (contentType == BottomSheetContentController.TYPE_DOWNLOADS
-                || contentType == BottomSheetContentController.TYPE_BOOKMARKS
-                || contentType == BottomSheetContentController.TYPE_HISTORY) {
-            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
-                    .notifyEvent(EventConstants.CHROME_HOME_NON_HOME_CONTENT_SHOWN);
-        }
-
-        mLastContent = newContent;
     }
 
     /**

@@ -90,9 +90,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetPaddingUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -231,9 +228,6 @@ public class LocationBarLayout extends FrameLayout
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
     private boolean mIsEmphasizingHttpsScheme;
-
-    @Nullable
-    private BottomSheetContent mOmniboxSuggestionsSheetContent;
 
     private Runnable mShowSuggestions;
 
@@ -1721,12 +1715,6 @@ public class LocationBarLayout extends FrameLayout
                 return mSuggestionList.getMaxMatchContentsWidth();
             }
         });
-
-        // Must be done after the child view is added to the omnibox suggestions sheet content.
-        if (mBottomSheet != null) {
-            BottomSheetPaddingUtils.applyPaddingToContent(
-                    mOmniboxSuggestionsSheetContent, mBottomSheet);
-        }
     }
 
     /**
@@ -2342,68 +2330,9 @@ public class LocationBarLayout extends FrameLayout
     private void initOmniboxResultsContainer() {
         if (mOmniboxResultsContainer != null) return;
 
-        // If the bottom sheet exists, use it as the means to display the omnibox suggestions.
-        if (mBottomSheet != null) {
-            mOmniboxResultsContainer = new FrameLayout(getContext());
-            LayoutParams groupParams =
-                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            mOmniboxResultsContainer.setLayoutParams(groupParams);
-
-            mOmniboxSuggestionsSheetContent = new BottomSheetContent() {
-                @Override
-                public View getContentView() {
-                    return mOmniboxResultsContainer;
-                }
-
-                @Override
-                public List<View> getViewsForPadding() {
-                    return CollectionUtil.newArrayList(mSuggestionList);
-                }
-
-                @Nullable
-                @Override
-                public View getToolbarView() {
-                    return null;
-                }
-
-                @Override
-                public boolean isUsingLightToolbarTheme() {
-                    return false;
-                }
-
-                @Override
-                public boolean isIncognitoThemedContent() {
-                    return mToolbarDataProvider != null && mToolbarDataProvider.isIncognito();
-                }
-
-                @Override
-                public int getVerticalScrollOffset() {
-                    // On certain pages, the suggestions list is not shown.
-                    if (mSuggestionList == null || !mSuggestionList.isShown()) return 0;
-                    return mSuggestionList.getVerticalScroll();
-                }
-
-                @Override
-                public void destroy() {}
-
-                @Override
-                public int getType() {
-                    return BottomSheetContentController.TYPE_AUXILIARY_CONTENT;
-                }
-
-                @Override
-                public boolean applyDefaultTopPadding() {
-                    return false;
-                }
-
-                @Override
-                public void scrollToTop() {}
-            };
-        } else {
-            ViewStub overlayStub =
-                    (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
-            mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
-        }
+        ViewStub overlayStub =
+                (ViewStub) getRootView().findViewById(R.id.omnibox_results_container_stub);
+        mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
     }
 
     private void updateOmniboxResultsContainer() {
@@ -2418,23 +2347,13 @@ public class LocationBarLayout extends FrameLayout
     private void updateOmniboxResultsContainerVisibility(boolean visible) {
         if (mOmniboxResultsContainer == null) return;
 
-        // If the bottom sheet is managing the display of the suggestions, view visibility does not
-        // need to be set here.
-        if (mBottomSheet != null && mUrlBar != null) {
-            boolean showingOmniboxSuggestions =
-                    mBottomSheet.getCurrentSheetContent() == mOmniboxSuggestionsSheetContent;
-            if (visible && !showingOmniboxSuggestions) {
-                mBottomSheet.showContent(mOmniboxSuggestionsSheetContent);
-            }
-        } else {
-            boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == VISIBLE;
-            if (currentlyVisible == visible) return;
+        boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == VISIBLE;
+        if (currentlyVisible == visible) return;
 
-            if (visible) {
-                mOmniboxResultsContainer.setVisibility(VISIBLE);
-            } else {
-                mOmniboxResultsContainer.setVisibility(INVISIBLE);
-            }
+        if (visible) {
+            mOmniboxResultsContainer.setVisibility(VISIBLE);
+        } else {
+            mOmniboxResultsContainer.setVisibility(INVISIBLE);
         }
     }
 

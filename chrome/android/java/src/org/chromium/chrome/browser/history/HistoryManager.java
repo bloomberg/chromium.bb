@@ -43,9 +43,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.selection.SelectableBottomSheetContent.SelectableBottomSheetContentManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
@@ -60,8 +58,7 @@ import java.util.List;
  */
 public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver,
                                        SelectionObserver<HistoryItem>, SearchDelegate,
-                                       SnackbarController, PrefObserver,
-                                       SelectableBottomSheetContentManager<HistoryItem> {
+                                       SnackbarController, PrefObserver {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
@@ -240,30 +237,16 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         return false;
     }
 
-    @Override
+    /**
+     * @return The view that shows the main browsing history UI.
+     */
     public ViewGroup getView() {
         return mSelectableListLayout;
     }
 
-    @Override
-    public RecyclerView getRecyclerView() {
-        return mRecyclerView;
-    }
-
-    @Override
-    public TextView getEmptyView() {
-        return mEmptyView;
-    }
-
-    @Override
-    public SelectableListToolbar<HistoryItem> detachToolbarView() {
-        return mSelectableListLayout.detachToolbarView();
-    }
-
     /**
-     * Called when the bottom sheet content/activity/native page is destroyed.
+     * Called when the activity/native page is destroyed.
      */
-    @Override
     public void onDestroyed() {
         mSelectableListLayout.onDestroyed();
         mHistoryAdapter.onDestroyed();
@@ -496,5 +479,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     @Override
     public void onDismissNoAction(Object actionData) {
         // Handler for the link copied snackbar. Do nothing.
+    }
+
+    @VisibleForTesting
+    TextView getEmptyViewForTests() {
+        return mEmptyView;
     }
 }

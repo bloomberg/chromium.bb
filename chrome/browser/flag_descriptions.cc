@@ -1788,11 +1788,6 @@ const char kChromeDuplexName[] = "Chrome Duplex";
 const char kChromeDuplexDescription[] =
     "Enables Chrome Duplex, split toolbar Chrome Home, on Android.";
 
-const char kChromeHomeBottomNavLabelsName[] =
-    "Chrome Home bottom navigation menu item labels.";
-const char kChromeHomeBottomNavLabelsDescription[] =
-    "Enables text labels for Chrome Home bottom navigation menu items.";
-
 const char kChromeHomeEnableSurveyName[] = "Enable Chrome Home survey";
 const char kChromeHomeEnableSurveyDescription[] =
     "If enabled, the survey process will allow surveys using sample "

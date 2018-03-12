@@ -1093,9 +1093,6 @@ extern const char kBackgroundLoaderForDownloadsDescription[];
 extern const char kChromeDuplexName[];
 extern const char kChromeDuplexDescription[];
 
-extern const char kChromeHomeBottomNavLabelsName[];
-extern const char kChromeHomeBottomNavLabelsDescription[];
-
 extern const char kChromeHomeEnableSurveyName[];
 extern const char kChromeHomeEnableSurveyDescription[];
 

@@ -270,16 +270,6 @@ public class SelectableListLayout<E>
     }
 
     /**
-     * Removes the toolbar view from this view and returns it so that it may be re-attached
-     * elsewhere.
-     * @return The toolbar view.
-     */
-    public SelectableListToolbar<E> detachToolbarView() {
-        removeView(mToolbar);
-        return mToolbar;
-    }
-
-    /**
      * Called when a search is starting.
      */
     public void onStartSearch() {

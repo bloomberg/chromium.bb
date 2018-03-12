@@ -26,9 +26,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.widget.selection.SelectableBottomSheetContent.SelectableBottomSheetContentManager;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
-import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -41,7 +39,6 @@ import java.util.Stack;
  * {@link BookmarkActivity} (phone) and {@link BookmarkPage} (tablet).
  */
 public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
-                                        SelectableBottomSheetContentManager<BookmarkId>,
                                         PartnerBookmarksReader.FaviconUpdateObserver {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
@@ -207,7 +204,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     /**
      * Destroys and cleans up itself. This must be called after done using this class.
      */
-    @Override
     public void onDestroyed() {
         mIsDestroyed = true;
 
@@ -258,24 +254,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         return false;
     }
 
-    @Override
+    /**
+     * @return The view that shows the main browsing history UI.
+     */
     public View getView() {
         return mMainView;
-    }
-
-    @Override
-    public RecyclerView getRecyclerView() {
-        return mRecyclerView;
-    }
-
-    @Override
-    public TextView getEmptyView() {
-        return mEmptyView;
-    }
-
-    @Override
-    public SelectableListToolbar<BookmarkId> detachToolbarView() {
-        return mSelectableListLayout.detachToolbarView();
     }
 
     /**
@@ -500,6 +483,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     @VisibleForTesting
     public BookmarkUndoController getUndoControllerForTests() {
         return mUndoController;
+    }
+
+    @VisibleForTesting
+    public RecyclerView getRecyclerViewForTests() {
+        return mRecyclerView;
     }
 
     /**

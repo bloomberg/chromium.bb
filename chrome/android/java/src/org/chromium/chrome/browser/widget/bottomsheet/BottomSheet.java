@@ -13,7 +13,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -36,7 +35,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -49,7 +47,6 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -328,11 +325,6 @@ public class BottomSheet
         View getToolbarView();
 
         /**
-         * @return Whether or not the toolbar is currently using a lightly colored background.
-         */
-        boolean isUsingLightToolbarTheme();
-
-        /**
          * @return Whether or not the content is themed for incognito (i.e. dark colors).
          */
         boolean isIncognitoThemedContent();
@@ -348,20 +340,9 @@ public class BottomSheet
         void destroy();
 
         /**
-         * @return The {@link BottomSheetContentController.ContentType} for this content.
-         */
-        @ContentType
-        int getType();
-
-        /**
          * @return Whether the default top padding should be applied to the content view.
          */
         boolean applyDefaultTopPadding();
-
-        /**
-         * Called to scroll to the top of {@link BottomSheetContent}.
-         */
-        void scrollToTop();
     }
 
     /**
@@ -505,17 +486,6 @@ public class BottomSheet
             @Override
             public void onLoadUrl(String url) {
                 recordVelocityForNavigation();
-            }
-
-            @Override
-            public void onSheetContentChanged(BottomSheetContent newContent) {
-                if (newContent == null) return;
-                @ContentType
-                int contentId = newContent.getType();
-                if (contentId != BottomSheetContentController.TYPE_SUGGESTIONS
-                        && contentId != BottomSheetContentController.TYPE_INCOGNITO_HOME) {
-                    recordVelocityForNavigation();
-                }
             }
 
             /**
@@ -822,9 +792,6 @@ public class BottomSheet
 
     @Override
     public int loadUrl(LoadUrlParams params, boolean incognito) {
-        // Load chrome://bookmarks, downloads, and history in the bottom sheet.
-        if (handleNativePageUrl(params.getUrl())) return TabLoadStatus.PAGE_LOAD_FAILED;
-
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
         assert mTabModelSelector != null;
@@ -842,37 +809,6 @@ public class BottomSheet
         setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.NAVIGATION);
 
         return tabLoadStatus;
-    }
-
-    /**
-     * If the URL scheme is "chrome", we try to load bookmarks, downloads, and history in the
-     * bottom sheet.
-     *
-     * @param url The URL to be loaded.
-     * @return Whether or not the URL was loaded in the sheet.
-     */
-    private boolean handleNativePageUrl(String url) {
-        if (url == null) return false;
-
-        Uri uri = Uri.parse(url);
-        if (!UrlConstants.CHROME_SCHEME.equals(uri.getScheme())
-                && !UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
-            return false;
-        }
-
-        if (UrlConstants.BOOKMARKS_HOST.equals(uri.getHost())) {
-            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
-                    R.id.action_bookmarks);
-        } else if (UrlConstants.DOWNLOADS_HOST.equals(uri.getHost())) {
-            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
-                    R.id.action_downloads);
-        } else if (UrlConstants.HISTORY_HOST.equals(uri.getHost())) {
-            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
-                    R.id.action_history);
-        } else {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -1591,16 +1527,6 @@ public class BottomSheet
      */
     public int getToolbarContainerHeight() {
         return mToolbarHolder != null ? mToolbarHolder.getHeight() : 0;
-    }
-
-    /**
-     * @return The height of the bottom navigation menu. Returns 0 if the {@link ChromeActivity} or
-     * {@link BottomSheetContentController} are null.
-     */
-    public int getBottomNavHeight() {
-        BottomSheetContentController contentController =
-                mActivity != null ? mActivity.getBottomSheetContentController() : null;
-        return contentController != null ? contentController.getBottomNavHeight() : 0;
     }
 
     /**

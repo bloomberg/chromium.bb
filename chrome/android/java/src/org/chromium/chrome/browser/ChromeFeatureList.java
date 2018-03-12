@@ -162,8 +162,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUPLEX = "ChromeDuplex";
     // TODO(mdjones): Remove CHROME_HOME completely.
     public static final String CHROME_HOME = "ChromeHome";
-    public static final String CHROME_HOME_BOTTOM_NAV_LABELS = "ChromeHomeBottomNavLabels";
-    public static final String CHROME_HOME_DESTROY_SUGGESTIONS = "ChromeHomeDestroySuggestions";
     public static final String CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL =
             "ChromeHomeDropAllButFirstThumbnail";
     public static final String CHROME_HOME_INACTIVITY_SHEET_EXPANSION =

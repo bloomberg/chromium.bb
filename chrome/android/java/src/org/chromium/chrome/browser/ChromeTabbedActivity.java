@@ -926,26 +926,11 @@ public class ChromeTabbedActivity
     }
 
     private void turnOnHighlightForDownloadHomeTextBubble() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            getBottomSheetContentController().setHighlightItemId(R.id.action_downloads);
-            if (getBottomSheet().isUsingExpandButton()) {
-                ViewHighlighter.turnOnHighlight(findViewById(R.id.expand_sheet_button), true);
-            }
-        } else {
-            getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
-        }
+        getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
     }
 
     private void turnOffHighlightForDownloadHomeTextBubble() {
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            if (getBottomSheetContentController() == null) return;
-            getBottomSheetContentController().setHighlightItemId(null);
-            if (getBottomSheet().isUsingExpandButton()) {
-                ViewHighlighter.turnOffHighlight(findViewById(R.id.expand_sheet_button));
-            }
-        } else {
-            getAppMenuHandler().setMenuHighlight(null);
-        }
+        getAppMenuHandler().setMenuHighlight(null);
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {
