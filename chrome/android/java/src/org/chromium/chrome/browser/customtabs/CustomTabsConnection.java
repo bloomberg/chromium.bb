@@ -283,6 +283,8 @@ public class CustomTabsConnection {
                     json.put(key, bundleToJson((Bundle) o));
                 } else if (o instanceof Integer || o instanceof Long || o instanceof Boolean) {
                     json.put(key, o);
+                } else if (o == null) {
+                    json.put(key, JSONObject.NULL);
                 } else {
                     json.put(key, o.toString());
                 }
@@ -606,6 +608,7 @@ public class CustomTabsConnection {
     }
 
     public boolean updateVisuals(final CustomTabsSessionToken session, Bundle bundle) {
+        if (mLogRequests) Log.w(TAG, "updateVisuals: %s", bundleToJson(bundle));
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         boolean result = true;
@@ -904,13 +907,7 @@ public class CustomTabsConnection {
      */
     public void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
         if (mLogRequests) {
-            Log.w(TAG, "onHandledIntent, URL = " + url);
-            Bundle extras = intent.getExtras();
-            if (extras != null) {
-                for (String key : extras.keySet()) {
-                    Log.w(TAG, "  extra: " + key + " = " + extras.get(key));
-                }
-            }
+            Log.w(TAG, "onHandledIntent, URL: %s, extras:", bundleToJson(intent.getExtras()));
         }
 
         // If we still have pending warmup tasks, don't continue as they would only delay intent

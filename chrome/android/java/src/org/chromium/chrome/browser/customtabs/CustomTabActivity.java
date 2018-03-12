@@ -39,6 +39,7 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -491,7 +492,10 @@ public class CustomTabActivity extends ChromeActivity {
                         return false;
                     }
                     int index = mIntentDataProvider.getCustomToolbarButtonIndexForId(id);
-                    assert index != -1;
+                    if (index == -1) {
+                        Log.w(TAG, "Invalid ID for custom toolbar button: %s", id);
+                        return false;
+                    }
                     getToolbarManager().updateCustomActionButton(
                             index, params.getIcon(getResources()), description);
                 } else {
