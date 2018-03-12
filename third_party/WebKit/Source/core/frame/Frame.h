@@ -100,7 +100,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual FrameView* View() const = 0;
 
   bool IsMainFrame() const;
-  bool IsLocalRoot() const;
 
   FrameOwner* Owner() const;
   void SetOwner(FrameOwner*);

@@ -2574,7 +2574,7 @@ double WebViewImpl::ZoomLevel() {
 
 void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
                                                        float zoom_factor) {
-  if (frame->IsLocalRoot()) {
+  if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot()) {
     LocalFrame* local_frame = ToLocalFrame(frame);
     if (Document* document = local_frame->GetDocument()) {
       if (!document->IsPluginDocument() ||
