@@ -22,6 +22,7 @@
 #include "core/page/Page.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -43,6 +44,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMRectList.h"
 #include "core/html/media/HTMLMediaElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/AutoscrollController.h"
@@ -111,6 +113,9 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 
 Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
   Page* page = Create(page_clients);
+  page->SetPageScheduler(
+      Platform::Current()->CurrentThread()->Scheduler()->CreateWebViewScheduler(
+          page));
 
   if (opener) {
     // Before: ... -> opener -> next -> ...
@@ -761,6 +766,8 @@ void Page::WillBeDestroyed() {
   main_frame_ = nullptr;
 
   PageVisibilityNotifier::NotifyContextDestroyed();
+
+  page_scheduler_.reset();
 }
 
 void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
@@ -771,6 +778,50 @@ ScrollbarTheme& Page::GetScrollbarTheme() const {
   if (settings_->GetForceAndroidOverlayScrollbar())
     return ScrollbarThemeOverlay::MobileTheme();
   return ScrollbarTheme::DeprecatedStaticGetTheme();
+}
+
+WebViewScheduler* Page::GetPageScheduler() const {
+  return page_scheduler_.get();
+}
+
+void Page::SetPageScheduler(std::unique_ptr<WebViewScheduler> page_scheduler) {
+  page_scheduler_ = std::move(page_scheduler);
+}
+
+void Page::ReportIntervention(const String& text) {
+  if (LocalFrame* local_frame = DeprecatedLocalMainFrame()) {
+    ConsoleMessage* message =
+        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel, text,
+                               SourceLocation::Create(String(), 0, 0, nullptr));
+    local_frame->GetDocument()->AddConsoleMessage(message);
+  }
+}
+
+void Page::RequestBeginMainFrameNotExpected(bool new_state) {
+  if (!main_frame_ || !main_frame_->IsLocalFrame())
+    return;
+
+  if (LocalFrame* main_frame = DeprecatedLocalMainFrame()) {
+    if (!main_frame->Client()) {
+      // This can happen while swapping out web frames because the scheduler can
+      // be invoked in the middle of Oilpan allocation.
+      // TODO(https://crbug.com/820893): Figure out how to avoid this
+      // complicated corner case. As written, it's not clear WebViewScheduler
+      // does this correctly for OOPIF anyway since it only talks to the root
+      // WebLayerTreeView, but a page with OOPIFs also has local roots.
+      return;
+    }
+    if (WebLayerTreeView* layer_tree_view =
+            chrome_client_->GetWebLayerTreeView(main_frame)) {
+      layer_tree_view->RequestBeginMainFrameNotExpected(new_state);
+    }
+  }
+}
+
+void Page::SetPageFrozen(bool frozen) {
+  SetLifecycleState(frozen ? PageLifecycleState::kFrozen
+                           : IsPageVisible() ? PageLifecycleState::kActive
+                                             : PageLifecycleState::kHidden);
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}

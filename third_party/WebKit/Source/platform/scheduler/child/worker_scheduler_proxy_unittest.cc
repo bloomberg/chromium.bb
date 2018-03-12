@@ -91,7 +91,6 @@ class WorkerSchedulerProxyTest : public ::testing::Test {
             base::nullopt)),
         web_view_scheduler_(
             std::make_unique<WebViewSchedulerImpl>(nullptr,
-                                                   nullptr,
                                                    renderer_scheduler_.get(),
                                                    false)),
         frame_scheduler_(web_view_scheduler_->CreateWebFrameSchedulerImpl(

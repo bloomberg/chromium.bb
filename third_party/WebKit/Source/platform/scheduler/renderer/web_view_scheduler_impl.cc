@@ -94,12 +94,10 @@ BackgroundThrottlingSettings GetBackgroundThrottlingSettings() {
 }  // namespace
 
 WebViewSchedulerImpl::WebViewSchedulerImpl(
-    WebScheduler::InterventionReporter* intervention_reporter,
     WebViewScheduler::WebViewSchedulerDelegate* delegate,
     RendererSchedulerImpl* renderer_scheduler,
     bool disable_background_timer_throttling)
-    : intervention_reporter_(intervention_reporter),
-      renderer_scheduler_(renderer_scheduler),
+    : renderer_scheduler_(renderer_scheduler),
       page_visibility_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
@@ -175,7 +173,7 @@ void WebViewSchedulerImpl::OnNavigation() {
 }
 
 void WebViewSchedulerImpl::ReportIntervention(const std::string& message) {
-  intervention_reporter_->ReportIntervention(WebString::FromUTF8(message));
+  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
 }
 
 base::TimeTicks WebViewSchedulerImpl::EnableVirtualTime() {
@@ -331,7 +329,7 @@ void WebViewSchedulerImpl::OnThrottlingReported(
       "for more details",
       throttling_duration.InSecondsF());
 
-  intervention_reporter_->ReportIntervention(WebString::FromUTF8(message));
+  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
 }
 
 void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {

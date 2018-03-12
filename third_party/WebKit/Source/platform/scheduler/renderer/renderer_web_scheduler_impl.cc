@@ -40,12 +40,11 @@ RendererWebSchedulerImpl::PauseScheduler() {
 
 std::unique_ptr<blink::WebViewScheduler>
 RendererWebSchedulerImpl::CreateWebViewScheduler(
-    InterventionReporter* intervention_reporter,
     WebViewScheduler::WebViewSchedulerDelegate* delegate) {
-  return base::WrapUnique(new WebViewSchedulerImpl(
-      intervention_reporter, delegate, renderer_scheduler_,
-      !blink::RuntimeEnabledFeatures::
-          TimerThrottlingForBackgroundTabsEnabled()));
+  return base::WrapUnique(
+      new WebViewSchedulerImpl(delegate, renderer_scheduler_,
+                               !blink::RuntimeEnabledFeatures::
+                                   TimerThrottlingForBackgroundTabsEnabled()));
 }
 
 base::TimeTicks RendererWebSchedulerImpl::MonotonicallyIncreasingVirtualTime()

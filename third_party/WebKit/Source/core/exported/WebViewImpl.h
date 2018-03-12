@@ -48,7 +48,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
-#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -91,14 +90,10 @@ class WebLocalFrameImpl;
 class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
-class WebViewScheduler;
 
-class CORE_EXPORT WebViewImpl final
-    : public WebView,
-      public RefCounted<WebViewImpl>,
-      public PageWidgetEventHandler,
-      public WebScheduler::InterventionReporter,
-      public WebViewScheduler::WebViewSchedulerDelegate {
+class CORE_EXPORT WebViewImpl final : public WebView,
+                                      public RefCounted<WebViewImpl>,
+                                      public PageWidgetEventHandler {
  public:
   static WebViewImpl* Create(WebViewClient*,
                              mojom::PageVisibilityState,
@@ -237,13 +232,6 @@ class CORE_EXPORT WebViewImpl final
   void SetShowScrollBottleneckRects(bool) override;
   void AcceptLanguagesChanged() override;
   void FreezePage() override;
-
-  // WebScheduler::InterventionReporter implementation:
-  void ReportIntervention(const WebString& message) override;
-
-  // WebViewScheduler::WebViewSchedulerDelegate implementation:
-  void RequestBeginMainFrameNotExpected(bool new_state) override;
-  void SetPageFrozen(bool frozen) override;
 
   void DidUpdateFullscreenSize();
 
@@ -675,8 +663,6 @@ class CORE_EXPORT WebViewImpl final
   WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
 
   WebPageImportanceSignals page_importance_signals_;
-
-  std::unique_ptr<WebViewScheduler> scheduler_;
 
   // TODO(lfg): This is used in order to disable compositor visibility while
   // the page is still visible. This is needed until the WebView and WebWidget

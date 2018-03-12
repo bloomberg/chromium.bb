@@ -71,8 +71,7 @@ base::SingleThreadTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
 
 std::unique_ptr<blink::WebViewScheduler>
 WebSchedulerImpl::CreateWebViewScheduler(
-    InterventionReporter*,
-    WebViewScheduler::WebViewSchedulerDelegate*) {
+    WebViewScheduler::WebViewSchedulerDelegate* delegate) {
   NOTREACHED();
   return nullptr;
 }

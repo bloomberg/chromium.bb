@@ -36,11 +36,9 @@ class WebFrameSchedulerImpl;
 
 class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  public:
-  WebViewSchedulerImpl(
-      WebScheduler::InterventionReporter* intervention_reporter,
-      WebViewScheduler::WebViewSchedulerDelegate* delegate,
-      RendererSchedulerImpl* renderer_scheduler,
-      bool disable_background_timer_throttling);
+  WebViewSchedulerImpl(WebViewScheduler::WebViewSchedulerDelegate*,
+                       RendererSchedulerImpl*,
+                       bool disable_background_timer_throttling);
 
   ~WebViewSchedulerImpl() override;
 
@@ -110,7 +108,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   TraceableVariableController tracing_controller_;
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
-  WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
   RendererSchedulerImpl* renderer_scheduler_;
 
   PageVisibilityState page_visibility_;
