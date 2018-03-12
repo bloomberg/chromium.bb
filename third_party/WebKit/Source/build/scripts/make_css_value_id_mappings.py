@@ -100,7 +100,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, json5_file_paths):
         super(CSSValueIDMappingsWriter, self).__init__(json5_file_paths)
         self._outputs = {
-            'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
+            'css_value_id_mappings_generated.h': self.generate_css_value_mappings,
         }
         self.css_values_dictionary_file = json5_file_paths[2]
         css_properties = self.css_properties.longhands
@@ -113,8 +113,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         css_properties = keyword_utils.sort_keyword_properties_by_canonical_order(
             css_properties, json5_file_paths[2], self.default_parameters)
 
-
-    @template_expander.use_jinja('templates/CSSValueIDMappingsGenerated.h.tmpl')
+    @template_expander.use_jinja('templates/css_value_id_mappings_generated.h.tmpl')
     def generate_css_value_mappings(self):
         mappings = {}
         include_paths = set()
