@@ -15,21 +15,6 @@ namespace aura {
 
 namespace {
 
-const int kMouseInset = -5;
-const int kTouchInset = -10;
-
-// Custom WindowTargeter that expands hit-test regions of child windows.
-class TestWindowTargeter : public WindowTargeter {
- public:
-  TestWindowTargeter() {
-    SetInsets(gfx::Insets(kMouseInset), gfx::Insets(kTouchInset));
-  }
-  ~TestWindowTargeter() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTargeter);
-};
-
 // Custom WindowTargeter that replaces hit-test area on a window with a frame
 // rectangle and a hole in the middle 1/3.
 //  ----------------------
@@ -189,7 +174,12 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 
 // Tests that the hit-test regions get expanded with a custom event targeter.
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
-  window3()->SetEventTargeter(std::make_unique<TestWindowTargeter>());
+  constexpr int kMouseInset = -5;
+  constexpr int kTouchInset = -10;
+  auto targeter = std::make_unique<aura::WindowTargeter>();
+  targeter->SetInsets(gfx::Insets(kMouseInset), gfx::Insets(kTouchInset));
+  window3()->SetEventTargeter(std::move(targeter));
+
   window2()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 2));
   const auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);

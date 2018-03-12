@@ -210,16 +210,9 @@ typedef TouchSelectionControllerImpl::EditingHandleView EditingHandleView;
 // cursor and expanding the hit-test area just below the visible drag handle.
 class TouchHandleWindowTargeter : public aura::WindowTargeter {
  public:
-  TouchHandleWindowTargeter() = default;
-  ~TouchHandleWindowTargeter() override = default;
-
   void SetHitTestOffset(int offset) {
-    const gfx::Insets insets(offset, 0, -offset, 0);
-    SetInsets(insets, insets);
+    SetInsets(gfx::Insets(offset, 0, -offset, 0));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TouchHandleWindowTargeter);
 };
 
 // A View that displays the text selection handle.

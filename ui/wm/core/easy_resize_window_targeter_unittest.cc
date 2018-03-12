@@ -20,15 +20,6 @@ class TestEasyResizeWindowTargeter : public EasyResizeWindowTargeter {
  public:
   explicit TestEasyResizeWindowTargeter(aura::Window* window)
       : EasyResizeWindowTargeter(window, gfx::Insets(), gfx::Insets()) {}
-  ~TestEasyResizeWindowTargeter() override = default;
-
-  void SetInsets(const gfx::Insets& mouse_extend,
-                 const gfx::Insets& touch_extend) {
-    EasyResizeWindowTargeter::SetInsets(mouse_extend, touch_extend);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEasyResizeWindowTargeter);
 };
 
 }  // namespace
