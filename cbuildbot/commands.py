@@ -557,7 +557,7 @@ def RunCrosConfigHost(buildroot, board, args):
     Output of the tool
   """
   tool = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, 'usr', 'bin',
-                      'cros_config_host_py')
+                      'cros_config_host')
   if not os.path.isfile(tool):
     return None
   tool = path_util.ToChrootPath(tool)
@@ -571,7 +571,7 @@ def RunCrosConfigHost(buildroot, board, args):
   if result.returncode:
     # Show the output for debugging purposes.
     if 'No such file or directory' not in result.error:
-      print('cros_config_host_py failed: %s\n' % result.error, file=sys.stderr)
+      print('cros_config_host failed: %s\n' % result.error, file=sys.stderr)
     return None
   return result.output.strip().splitlines()
 

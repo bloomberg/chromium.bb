@@ -894,7 +894,7 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     self.rc.SetDefaultCmdResult(output='pyro\nreef\nsnappy\n')
     build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                              'usr', 'bin')
-    osutils.Touch(os.path.join(build_bin, 'cros_config_host_py'), makedirs=True)
+    osutils.Touch(os.path.join(build_bin, 'cros_config_host'), makedirs=True)
     result = commands.GetModels(self._buildroot, self._board)
     self.assertEquals(result, ['pyro', 'reef', 'snappy'])
 

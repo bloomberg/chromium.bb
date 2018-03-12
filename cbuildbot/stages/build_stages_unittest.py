@@ -343,7 +343,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     """Test that firmware versions are extracted correctly for unibuilds."""
 
     def _HookRunCommand(rc):
-      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host_py'),
+      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host'),
                       output='reef\npyro\nelectro')
       rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
                       output='''
@@ -376,7 +376,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     osutils.Touch(update, makedirs=True)
 
     cros_config_host = os.path.join(self.build_root,
-                                    'chroot/usr/bin/cros_config_host_py')
+                                    'chroot/usr/bin/cros_config_host')
     osutils.Touch(cros_config_host, makedirs=True)
 
     self._mock_configurator = _HookRunCommand
@@ -403,12 +403,12 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""
     def _HookRunCommandCrosConfigHost(rc):
-      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host_py'),
+      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host'),
                       output='reef')
 
     self._update_metadata = True
     cros_config_host = os.path.join(self.build_root,
-                                    'chroot/usr/bin/cros_config_host_py')
+                                    'chroot/usr/bin/cros_config_host')
     osutils.Touch(cros_config_host, makedirs=True)
     self._mock_configurator = _HookRunCommandCrosConfigHost
     self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
