@@ -1375,6 +1375,20 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
   }
 }
 
+// Note: Fixed size intermediate buffers, place limits on parameters
+// of some functions. 2d filtering proceeds in 2 steps:
+//   (1) Interpolate horizontally into an intermediate buffer, temp.
+//   (2) Interpolate temp vertically to derive the sub-pixel result.
+// Deriving the maximum number of rows in the temp buffer (135):
+// --Smallest scaling factor is x1/2 ==> y_step_q4 = 32 (Normative).
+// --Largest block size is 128x128 pixels.
+// --128 rows in the downscaled frame span a distance of (128 - 1) * 32 in the
+//   original frame (in 1/16th pixel units).
+// --Must round-up because block may be located at sub-pixel position.
+// --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
+// --((128 - 1) * 32 + 15) >> 4 + 8 = 263.
+#define WIENER_MAX_EXT_SIZE 263
+
 static INLINE int horz_scalar_product(const uint8_t *a, const int16_t *b) {
   int sum = 0;
   for (int k = 0; k < SUBPEL_TAPS; ++k) sum += a[k] * b[k];
@@ -1475,7 +1489,7 @@ void av1_wiener_convolve_add_src_hip_c(const uint8_t *src, ptrdiff_t src_stride,
   const InterpKernel *const filters_y = get_filter_base(filter_y);
   const int y0_q4 = get_filter_offset(filter_y, filters_y);
 
-  uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
+  uint16_t temp[WIENER_MAX_EXT_SIZE * MAX_SB_SIZE];
   const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
@@ -1553,19 +1567,7 @@ void av1_highbd_wiener_convolve_add_src_hip_c(
   const InterpKernel *const filters_y = get_filter_base(filter_y);
   const int y0_q4 = get_filter_offset(filter_y, filters_y);
 
-  // Note: Fixed size intermediate buffer, temp, places limits on parameters.
-  // 2d filtering proceeds in 2 steps:
-  //   (1) Interpolate horizontally into an intermediate buffer, temp.
-  //   (2) Interpolate temp vertically to derive the sub-pixel result.
-  // Deriving the maximum number of rows in the temp buffer (135):
-  // --Smallest scaling factor is x1/2 ==> y_step_q4 = 32 (Normative).
-  // --Largest block size is 64x64 pixels.
-  // --64 rows in the downscaled frame span a distance of (64 - 1) * 32 in the
-  //   original frame (in 1/16th pixel units).
-  // --Must round-up because block may be located at sub-pixel position.
-  // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
-  // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
-  uint16_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
+  uint16_t temp[WIENER_MAX_EXT_SIZE * MAX_SB_SIZE];
   const int intermediate_height =
       (((h - 1) * y_step_q4 + y0_q4) >> SUBPEL_BITS) + SUBPEL_TAPS;
 
