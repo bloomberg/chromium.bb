@@ -64,13 +64,10 @@ void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
   // TODO(crbug.com/789381): plumb through enough information to be able to
   // distinguish between extension install failures and user-cancellations of
   // the app install dialog.
-  if (IsExperimentalAppBannersEnabled()) {
-    SendBannerPromptRequest();  // Reprompt.
-    return;
-  }
-  // Call Terminate() to terminate the flow but don't record a dismiss metric
-  // here because the banner isn't necessarily dismissed.
-  Terminate();
+  SendBannerDismissed();
+  TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
+  AppBannerSettingsHelper::RecordBannerDismissEvent(
+      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
 }
 
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
