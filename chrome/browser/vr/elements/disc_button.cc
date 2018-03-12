@@ -64,6 +64,11 @@ void DiscButton::OnSetName() {
   foreground_->set_owner_name_for_test(name());
 }
 
+void DiscButton::OnSetCornerRadii(const CornerRadii& radii) {
+  Button::OnSetCornerRadii(radii);
+  foreground_->SetCornerRadii(radii);
+}
+
 void DiscButton::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                           int target_property_id,
                                           cc::KeyframeModel* animation) {

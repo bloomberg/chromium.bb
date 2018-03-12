@@ -80,7 +80,6 @@ enum UiElementName {
   kLoadingIndicator,
   kLoadingIndicatorForeground,
   kCloseButton,
-  kVoiceSearchButton,
   kScreenDimmer,
   kExitWarningText,
   kExitWarningBackground,

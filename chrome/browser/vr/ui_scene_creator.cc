@@ -2073,33 +2073,26 @@ void UiSceneCreator::CreateOmnibox() {
           },
           base::Unretained(omnibox_text_field.get()))));
 
-  auto mic_icon =
-      Create<VectorIcon>(kOmniboxVoiceSearchButton, kPhaseForeground, 100);
-  mic_icon->SetIcon(vector_icons::kMicIcon);
-  mic_icon->SetSize(kOmniboxTextFieldIconSizeDMM, kOmniboxTextFieldIconSizeDMM);
-  VR_BIND_COLOR(model_, mic_icon.get(), &ColorScheme::omnibox_text,
-                &VectorIcon::SetColor);
-
-  auto mic_icon_box = Create<Button>(
-      kVoiceSearchButton, kPhaseForeground,
+  auto mic_button = Create<DiscButton>(
+      kOmniboxVoiceSearchButton, kPhaseForeground,
       base::BindRepeating(
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
-          base::Unretained(browser_), base::Unretained(ui_)));
-  mic_icon_box->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
-  mic_icon_box->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
-                        kOmniboxTextFieldIconButtonSizeDMM);
-  mic_icon_box->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
-  mic_icon_box->SetSounds(kSoundButtonHover, kSoundButtonClick,
-                          audio_delegate_);
-  VR_BIND_VISIBILITY(mic_icon_box,
+          base::Unretained(browser_), base::Unretained(ui_)),
+      vector_icons::kMicIcon, audio_delegate_);
+  mic_button->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
+                      kOmniboxTextFieldIconButtonSizeDMM);
+  mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+  mic_button->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
+  mic_button->SetSounds(kSoundButtonHover, kSoundButtonClick, audio_delegate_);
+
+  VR_BIND_VISIBILITY(mic_button,
                      model->speech.has_or_can_request_audio_permission &&
                          !model->incognito &&
                          !model->capturing_state.audio_capture_enabled);
 
-  VR_BIND_BUTTON_COLORS(model_, mic_icon_box.get(),
+  VR_BIND_BUTTON_COLORS(model_, mic_button.get(),
                         &ColorScheme::omnibox_voice_search_button_colors,
                         &Button::SetButtonColors);
-  mic_icon_box->AddChild(std::move(mic_icon));
 
   auto left_spacer = Create<Rect>(kNone, kPhaseNone);
   left_spacer->SetSize(kOmniboxTextMarginDMM, kOmniboxTextHeightDMM);
@@ -2116,7 +2109,7 @@ void UiSceneCreator::CreateOmnibox() {
   text_field_layout->AddChild(std::move(left_spacer));
   text_field_layout->AddChild(std::move(omnibox_text_field));
   text_field_layout->AddChild(std::move(middle_spacer));
-  text_field_layout->AddChild(std::move(mic_icon_box));
+  text_field_layout->AddChild(std::move(mic_button));
   text_field_layout->AddChild(std::move(right_spacer));
 
   // Set up the vector binding to manage suggestions dynamically.
