@@ -29,17 +29,20 @@ BINARY_INFO = collections.namedtuple('BINARY_INFO',
                                      ['platform', 'arch', 'hash', 'name'])
 
 
-def GetCommandOutput(command):
-  """Runs the command list, returning its output.
+def GetCommandOutput(command, env=None):
+  """Runs the command list, returning its output (stdout).
 
-  Prints the given command (which should be a list of one or more strings),
-  then runs it and returns its output (stdout) as a string.
+  Args:
+    command: (list of strings) a command with arguments
+
+    env: (dict or None) optional environment for the command. If None,
+      inherits the existing environment, otherwise completely overrides it.
 
   From chromium_utils.
   """
   devnull = open(os.devnull, 'w')
   proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=devnull,
-                          bufsize=1)
+                          bufsize=1, env=env)
   output = proc.communicate()[0]
   return output
 
@@ -89,19 +92,52 @@ def GetSharedLibraryDependenciesLinux(binary):
   return result
 
 
+def GetDeveloperDirMac():
+  """Finds a good DEVELOPER_DIR value to run Mac dev tools.
+
+  It checks the existing DEVELOPER_DIR and `xcode-select -p` and uses
+  one of those if the folder exists, and falls back to one of the
+  existing system folders with dev tools.
+
+  Returns:
+    (string) path to assign to DEVELOPER_DIR env var.
+  """
+  candidate_paths = []
+  if 'DEVELOPER_DIR' in os.environ:
+    candidate_paths.append(os.environ['DEVELOPER_DIR'])
+  candidate_paths.extend([
+    GetCommandOutput(['xcode-select', '-p']).strip(),
+    # Most Mac 10.1[0-2] bots have at least one Xcode installed.
+    '/Applications/Xcode.app',
+    '/Applications/Xcode9.0.app',
+    '/Applications/Xcode8.0.app',
+    # Mac 10.13 bots don't have any Xcode installed, but have CLI tools as a
+    # temporary workaround.
+    '/Library/Developer/CommandLineTools',
+  ])
+  for path in candidate_paths:
+    if os.path.exists(path):
+      return path
+  print 'WARNING: no value found for DEVELOPER_DIR. Some commands may fail.'
+
+
 def GetSharedLibraryDependenciesMac(binary, exe_path):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
   loader_path = os.path.dirname(binary)
-  otool = GetCommandOutput(['otool', '-l', binary]).splitlines()
+  env = os.environ.copy()
+  developer_dir = GetDeveloperDirMac()
+  if developer_dir:
+    env['DEVELOPER_DIR'] = developer_dir
+  otool = GetCommandOutput(['otool', '-l', binary], env=env).splitlines()
   rpaths = []
   for idx, line in enumerate(otool):
     if line.find('cmd LC_RPATH') != -1:
       m = re.match(' *path (.*) \(offset .*\)$', otool[idx+2])
       rpaths.append(m.group(1))
 
-  otool = GetCommandOutput(['otool', '-L', binary]).splitlines()
+  otool = GetCommandOutput(['otool', '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
   deps = []
   for line in otool:
