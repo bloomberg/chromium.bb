@@ -254,11 +254,19 @@ Browser* BrowserNavigatorTest::NavigateHelper(
     const GURL& url,
     Browser* browser,
     WindowOpenDisposition disposition) {
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+
   NavigateParams params(MakeNavigateParams(browser));
   params.disposition = disposition;
   params.url = url;
   params.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&params);
+
+  if (params.disposition != WindowOpenDisposition::SWITCH_TO_TAB)
+    observer.Wait();
+
   return params.browser;
 }
 
@@ -317,56 +325,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   // No tab contents should have been created
   EXPECT_EQ(previous_tab_contents_count,
             created_tab_contents_count_);
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_SingletonTabRespectingRef) {
-  GURL singleton_ref_url1("http://maps.google.com/#a");
-  GURL singleton_ref_url2("http://maps.google.com/#b");
-  GURL singleton_ref_url3("http://maps.google.com/");
-
-  chrome::AddSelectedTabWithURL(browser(), singleton_ref_url1,
-                                ui::PAGE_TRANSITION_LINK);
-
-  // We should have one browser with 2 tabs, 2nd selected.
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-
-  // Navigate to singleton_url2.
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  params.url = singleton_ref_url2;
-  Navigate(&params);
-
-  // We should now have 2 tabs, the 2nd one selected.
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-
-  // Navigate to singleton_url2, but with respect ref set.
-  params = MakeNavigateParams();
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  params.url = singleton_ref_url2;
-  params.ref_behavior = NavigateParams::RESPECT_REF;
-  Navigate(&params);
-
-  // We should now have 3 tabs, the 3th one selected.
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(3, browser()->tab_strip_model()->count());
-  EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
-
-  // Navigate to singleton_url3.
-  params = MakeNavigateParams();
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  params.url = singleton_ref_url3;
-  params.ref_behavior = NavigateParams::RESPECT_REF;
-  Navigate(&params);
-
-  // We should now have 4 tabs, the 4th one selected.
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(4, browser()->tab_strip_model()->count());
-  EXPECT_EQ(3, browser()->tab_strip_model()->active_index());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -692,6 +650,31 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
                  WindowOpenDisposition::SWITCH_TO_TAB);
 }
 
+// This test verifies that IsTabOpenWithURL() and GetIndexOfExistingTab()
+// will not discriminate between http and https.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SchemeMismatchTabSwitchTest) {
+  GURL navigate_url("https://maps.google.com/");
+  GURL search_url("http://maps.google.com/");
+
+  // Generate history so the tab isn't closed.
+  NavigateHelper(GURL("chrome://dino/"), browser(),
+                 WindowOpenDisposition::CURRENT_TAB);
+
+  NavigateHelper(navigate_url, browser(),
+                 WindowOpenDisposition::NEW_BACKGROUND_TAB);
+
+  // We must be on another tab than the target for it to be found and
+  // switched to.
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  ChromeAutocompleteProviderClient client(browser()->profile());
+  EXPECT_TRUE(client.IsTabOpenWithURL(search_url, nullptr));
+
+  NavigateHelper(search_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB);
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+}
+
 // This test verifies that we're picking the correct browser and tab to
 // switch to. It verifies that we don't recommend the active tab, and that,
 // when switching, we don't mistakenly pick the current browser.
@@ -713,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
   // actively avoid it (because the user almost certainly doesn't want to
   // switch to the tab they're already on). While we are not on the target
   // tab, make sure the provider client recommends our other window.
-  EXPECT_TRUE(client.IsTabOpenWithURL(singleton_url));
+  EXPECT_TRUE(client.IsTabOpenWithURL(singleton_url, nullptr));
 
   // Navigate to the singleton again.
   Browser* test_browser = NavigateHelper(singleton_url, middle_browser,
@@ -724,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
   EXPECT_EQ(orig_browser, test_browser);
   // Now that we're on the tab, make sure the provider client doesn't
   // recommend it.
-  EXPECT_FALSE(client.IsTabOpenWithURL(singleton_url));
+  EXPECT_FALSE(client.IsTabOpenWithURL(singleton_url, nullptr));
 }
 
 // This test verifies that "switch to tab" prefers the latest used browser,
@@ -1121,39 +1104,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(GetClearBrowsingDataURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
-}
-
-// This test verifies that constructing params with disposition = SINGLETON_TAB
-// and IGNORE_AND_STAY_PUT opens an existing tab with the matching URL (minus
-// the path).
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_SingletonTabExistingSubPath_IgnorePath2) {
-  GURL singleton_url1(GetContentSettingsURL());
-  chrome::AddSelectedTabWithURL(browser(), singleton_url1,
-                                ui::PAGE_TRANSITION_LINK);
-  chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
-                                ui::PAGE_TRANSITION_LINK);
-
-  // We should have one browser with 3 tabs, the 3rd selected.
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(3, browser()->tab_strip_model()->count());
-  EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
-
-  // Navigate to singleton_url1.
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  params.url = GetClearBrowsingDataURL();
-  params.window_action = NavigateParams::SHOW_WINDOW;
-  params.path_behavior = NavigateParams::IGNORE_AND_STAY_PUT;
-  Navigate(&params);
-
-  // The middle tab should now be selected.
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(3, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(singleton_url1,
             ShortenUberURL(browser()->tab_strip_model()->
                 GetActiveWebContents()->GetURL()));
 }

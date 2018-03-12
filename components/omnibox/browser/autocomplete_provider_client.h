@@ -142,9 +142,11 @@ class AutocompleteProviderClient {
   // configure the provider if desired.
   virtual void ConfigureKeywordProvider(KeywordProvider* keyword_provider) {}
 
-  // Called to find out if there is an open tab with the given URL within
-  // the current profile.
-  virtual bool IsTabOpenWithURL(const GURL& url) = 0;
+  // Called to find out if there is an open tab with the given URL within the
+  // current profile. |input| can be null; match is more precise (e.g. scheme
+  // presence) if provided.
+  virtual bool IsTabOpenWithURL(const GURL& url,
+                                const AutocompleteInput* input) = 0;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_PROVIDER_CLIENT_H_

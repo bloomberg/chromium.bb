@@ -49,7 +49,8 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     in_memory_url_index_ = std::move(index);
   }
 
-  bool IsTabOpenWithURL(const GURL& url) override;
+  bool IsTabOpenWithURL(const GURL& url,
+                        const AutocompleteInput* input) override;
   void set_is_tab_open_with_url(bool is_open) {
     is_tab_open_with_url_ = is_open;
   }

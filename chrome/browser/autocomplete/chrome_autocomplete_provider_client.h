@@ -66,12 +66,17 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   void StartServiceWorker(const GURL& destination_url) override;
   void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) override;
-  bool IsTabOpenWithURL(const GURL& url) override;
+  bool IsTabOpenWithURL(const GURL& url,
+                        const AutocompleteInput* input) override;
 
   // For testing.
   void set_storage_partition(content::StoragePartition* storage_partition) {
     storage_partition_ = storage_partition;
   }
+
+  bool StrippedURLsAreEqual(const GURL& url1,
+                            const GURL& url2,
+                            const AutocompleteInput* input);
 
  private:
   Profile* profile_;

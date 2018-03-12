@@ -34,6 +34,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -363,7 +364,9 @@ void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(
 }
 
 // TODO(crbug.com/46623): Maintain a map of URL->WebContents for fast look-up.
-bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
+bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
+    const GURL& url,
+    const AutocompleteInput* input) {
 #if !defined(OS_ANDROID)
   Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
   content::WebContents* active_tab = nullptr;
@@ -376,11 +379,28 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);
-        if (web_contents != active_tab && web_contents->GetVisibleURL() == url)
+        if (web_contents != active_tab &&
+            StrippedURLsAreEqual(web_contents->GetLastCommittedURL(), url,
+                                 input))
           return true;
       }
     }
   }
 #endif  // !defined(OS_ANDROID)
   return false;
+}
+
+bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
+    const GURL& url1,
+    const GURL& url2,
+    const AutocompleteInput* input) {
+  AutocompleteInput empty_input;
+  if (!input)
+    input = &empty_input;
+  TemplateURLService* template_url_service = GetTemplateURLService();
+  return AutocompleteMatch::GURLToStrippedGURL(url1, AutocompleteInput(),
+                                               template_url_service,
+                                               base::string16()) ==
+         AutocompleteMatch::GURLToStrippedGURL(
+             url2, *input, template_url_service, base::string16());
 }
