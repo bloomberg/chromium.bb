@@ -36,34 +36,10 @@ struct ProxyRules {
   ProxyList fallback_proxies;
 };
 
-// This mirrors net::ProxyConfigSource.
-enum ProxyConfigSource {
-  PROXY_CONFIG_SOURCE_UNKNOWN,
-  PROXY_CONFIG_SOURCE_SYSTEM,
-  PROXY_CONFIG_SOURCE_SYSTEM_FAILED,
-  PROXY_CONFIG_SOURCE_GSETTINGS,
-  PROXY_CONFIG_SOURCE_KDE,
-  PROXY_CONFIG_SOURCE_ENV,
-  PROXY_CONFIG_SOURCE_CUSTOM,
-  PROXY_CONFIG_SOURCE_TEST
-};
-
 // These fields mirror those of net::ProxyConfig.
 struct ProxyConfig {
   bool auto_detect;
   url.mojom.Url pac_url;
   bool pac_mandatory;
   ProxyRules proxy_rules;
-  ProxyConfigSource source;
-};
-
-// Interface for pushing proxy configuration updates to a NetworkContext.
-interface ProxyConfigClient {
-  OnProxyConfigUpdated(ProxyConfig proxy_config);
-};
-
-// Called periodically when the current ProxyConfig is in use, as a hint that
-// it might be a good time to double-check the proxy configuration.
-interface ProxyConfigPollerClient {
-  OnLazyProxyConfigPoll();
 };

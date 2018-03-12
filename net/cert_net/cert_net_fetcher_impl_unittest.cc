@@ -21,6 +21,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/test/url_request/url_request_hanging_read_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
@@ -52,7 +53,8 @@ class RequestContext : public URLRequestContext {
     storage_.set_cert_transparency_verifier(
         std::make_unique<MultiLogCTVerifier>());
     storage_.set_ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>());
-    storage_.set_proxy_resolution_service(ProxyResolutionService::CreateFixed(no_proxy));
+    storage_.set_proxy_resolution_service(ProxyResolutionService::CreateFixed(
+        ProxyConfigWithAnnotation(no_proxy, TRAFFIC_ANNOTATION_FOR_TESTS)));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(
         std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));

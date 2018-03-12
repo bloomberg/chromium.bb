@@ -174,7 +174,8 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     // Set the |proxy_resolution_service| to use |test_case.proxy_server| for requests.
     std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
         net::ProxyResolutionService::CreateFixedFromPacResult(
-            test_case.proxy_server.ToPacString()));
+            test_case.proxy_server.ToPacString(),
+            TRAFFIC_ANNOTATION_FOR_TESTS));
     context.set_proxy_resolution_service(proxy_resolution_service.get());
     context.Init();
 

@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -214,10 +215,6 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
     return task_runner_;
   }
 
-  ProxyConfigSource GetConfigSource() override {
-    return PROXY_CONFIG_SOURCE_TEST;
-  }
-
   bool GetString(StringSetting key, std::string* result) override {
     const char* value = strings_table.Get(key);
     if (value) {
@@ -307,11 +304,12 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   // default glib main loop, which is the glib thread).
   void SetupAndInitialFetch() {
     config_service_->SetupAndFetchInitialConfig(
-        base::ThreadTaskRunnerHandle::Get(), main_thread_.task_runner());
+        base::ThreadTaskRunnerHandle::Get(), main_thread_.task_runner(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
   }
   // Synchronously gets the proxy config.
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(
-      ProxyConfig* config) {
+      ProxyConfigWithAnnotation* config) {
     main_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&SyncConfigGetter::GetLatestConfigOnIOThread,
                               base::Unretained(this)));
@@ -344,11 +342,12 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 
  private:
   void OnProxyConfigChanged(
-      const ProxyConfig& config,
+      const ProxyConfigWithAnnotation& config,
       ProxyConfigService::ConfigAvailability availability) override {
     // If the configuration changed to |expected_pac_url_| signal the event.
     base::AutoLock lock(lock_);
-    if (config.has_pac_url() && config.pac_url() == expected_pac_url_) {
+    if (config.value().has_pac_url() &&
+        config.value().pac_url() == expected_pac_url_) {
       expected_pac_url_ = GURL();
       matches_pac_url_event_.Signal();
     }
@@ -388,7 +387,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 
   // The config obtained by |main_thread_| and read back by the main
   // thread.
-  ProxyConfig proxy_config_;
+  ProxyConfigWithAnnotation proxy_config_;
 
   // Return value from GetLatestProxyConfig().
   ProxyConfigService::ConfigAvailability get_latest_config_result_;
@@ -753,9 +752,9 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGSettingsTest) {
                                     tests[i].description.c_str()));
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     MockSettingGetter* setting_getter = new MockSettingGetter;
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env), setting_getter));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), setting_getter, TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     setting_getter->values = tests[i].values;
     sync_config_getter.SetupAndInitialFetch();
     ProxyConfigService::ConfigAvailability availability =
@@ -763,9 +762,9 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGSettingsTest) {
     EXPECT_EQ(tests[i].availability, availability);
 
     if (availability == ProxyConfigService::CONFIG_VALID) {
-      EXPECT_EQ(tests[i].auto_detect, config.auto_detect());
-      EXPECT_EQ(tests[i].pac_url, config.pac_url());
-      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.proxy_rules()));
+      EXPECT_EQ(tests[i].auto_detect, config.value().auto_detect());
+      EXPECT_EQ(tests[i].pac_url, config.value().pac_url());
+      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.value().proxy_rules()));
     }
   }
 }
@@ -1083,18 +1082,18 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values = tests[i].values;
     MockSettingGetter* setting_getter = new MockSettingGetter;
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env), setting_getter));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), setting_getter, TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     ProxyConfigService::ConfigAvailability availability =
         sync_config_getter.SyncGetLatestProxyConfig(&config);
     EXPECT_EQ(tests[i].availability, availability);
 
     if (availability == ProxyConfigService::CONFIG_VALID) {
-      EXPECT_EQ(tests[i].auto_detect, config.auto_detect());
-      EXPECT_EQ(tests[i].pac_url, config.pac_url());
-      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.proxy_rules()));
+      EXPECT_EQ(tests[i].auto_detect, config.value().auto_detect());
+      EXPECT_EQ(tests[i].pac_url, config.value().pac_url());
+      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.value().proxy_rules()));
     }
   }
 }
@@ -1102,17 +1101,17 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
 TEST_F(ProxyConfigServiceLinuxTest, GSettingsNotification) {
   std::unique_ptr<MockEnvironment> env(new MockEnvironment);
   MockSettingGetter* setting_getter = new MockSettingGetter;
-  ProxyConfigServiceLinux* service =
-      new ProxyConfigServiceLinux(std::move(env), setting_getter);
+  ProxyConfigServiceLinux* service = new ProxyConfigServiceLinux(
+      std::move(env), setting_getter, TRAFFIC_ANNOTATION_FOR_TESTS);
   SyncConfigGetter sync_config_getter(service);
-  ProxyConfig config;
+  ProxyConfigWithAnnotation config;
 
   // Start with no proxy.
   setting_getter->values.mode = "none";
   sync_config_getter.SetupAndInitialFetch();
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
             sync_config_getter.SyncGetLatestProxyConfig(&config));
-  EXPECT_FALSE(config.auto_detect());
+  EXPECT_FALSE(config.value().auto_detect());
 
   // Now set to auto-detect.
   setting_getter->values.mode = "auto";
@@ -1120,7 +1119,7 @@ TEST_F(ProxyConfigServiceLinuxTest, GSettingsNotification) {
   service->OnCheckProxyConfigSettings();
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
             sync_config_getter.SyncGetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.auto_detect());
+  EXPECT_TRUE(config.value().auto_detect());
 }
 
 TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
@@ -1680,9 +1679,9 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
     // Force the KDE getter to be used and tell it where the test is.
     env->values.DESKTOP_SESSION = "kde4";
     env->values.KDEHOME = kde_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     // Overwrite the kioslaverc file.
     base::WriteFile(kioslaverc_, tests[i].kioslaverc.c_str(),
                     tests[i].kioslaverc.length());
@@ -1692,9 +1691,9 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
     EXPECT_EQ(tests[i].availability, availability);
 
     if (availability == ProxyConfigService::CONFIG_VALID) {
-      EXPECT_EQ(tests[i].auto_detect, config.auto_detect());
-      EXPECT_EQ(tests[i].pac_url, config.pac_url());
-      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.proxy_rules()));
+      EXPECT_EQ(tests[i].auto_detect, config.value().auto_detect());
+      EXPECT_EQ(tests[i].pac_url, config.value().pac_url());
+      EXPECT_TRUE(tests[i].proxy_rules.Matches(config.value().proxy_rules()));
     }
   }
 }
@@ -1728,14 +1727,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_TRUE(config.auto_detect());
-    EXPECT_EQ(GURL(), config.pac_url());
+    EXPECT_TRUE(config.value().auto_detect());
+    EXPECT_EQ(GURL(), config.value().pac_url());
   }
 
   // Now create .kde4 and put a kioslaverc in the config directory.
@@ -1749,14 +1748,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_FALSE(config.auto_detect());
-    EXPECT_EQ(slaverc4_pac_url, config.pac_url());
+    EXPECT_FALSE(config.value().auto_detect());
+    EXPECT_EQ(slaverc4_pac_url, config.value().pac_url());
   }
 
   {
@@ -1764,14 +1763,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde";
     env->values.HOME = user_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_TRUE(config.auto_detect());
-    EXPECT_EQ(GURL(), config.pac_url());
+    EXPECT_TRUE(config.value().auto_detect());
+    EXPECT_EQ(GURL(), config.value().pac_url());
   }
 
   {
@@ -1780,14 +1779,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
     env->values.KDEHOME = kde_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_TRUE(config.auto_detect());
-    EXPECT_EQ(GURL(), config.pac_url());
+    EXPECT_TRUE(config.value().auto_detect());
+    EXPECT_EQ(GURL(), config.value().pac_url());
   }
 
   // Finally, make the .kde4 config directory older than the .kde directory
@@ -1799,14 +1798,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     std::unique_ptr<MockEnvironment> env(new MockEnvironment);
     env->values.DESKTOP_SESSION = "kde4";
     env->values.HOME = user_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_TRUE(config.auto_detect());
-    EXPECT_EQ(GURL(), config.pac_url());
+    EXPECT_TRUE(config.value().auto_detect());
+    EXPECT_EQ(GURL(), config.value().pac_url());
   }
 
   // For KDE 5 create ${HOME}/.config and put a kioslaverc in the directory.
@@ -1820,14 +1819,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
     env->values.XDG_CURRENT_DESKTOP = "KDE";
     env->values.KDE_SESSION_VERSION = "5";
     env->values.HOME = user_home_.value().c_str();
-    SyncConfigGetter sync_config_getter(
-        new ProxyConfigServiceLinux(std::move(env)));
-    ProxyConfig config;
+    SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+        std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+    ProxyConfigWithAnnotation config;
     sync_config_getter.SetupAndInitialFetch();
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
               sync_config_getter.SyncGetLatestProxyConfig(&config));
-    EXPECT_FALSE(config.auto_detect());
-    EXPECT_TRUE(slaverc5_rules.Matches(config.proxy_rules()));
+    EXPECT_FALSE(config.value().auto_detect());
+    EXPECT_TRUE(slaverc5_rules.Matches(config.value().proxy_rules()));
   }
 }
 
@@ -1847,14 +1846,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   std::unique_ptr<MockEnvironment> env(new MockEnvironment);
   env->values.DESKTOP_SESSION = "kde4";
   env->values.HOME = user_home_.value().c_str();
-  SyncConfigGetter sync_config_getter(
-      new ProxyConfigServiceLinux(std::move(env)));
-  ProxyConfig config;
+  SyncConfigGetter sync_config_getter(new ProxyConfigServiceLinux(
+      std::move(env), TRAFFIC_ANNOTATION_FOR_TESTS));
+  ProxyConfigWithAnnotation config;
   sync_config_getter.SetupAndInitialFetch();
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID,
             sync_config_getter.SyncGetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.has_pac_url());
-  EXPECT_EQ(GURL("http://version1/wpad.dat"), config.pac_url());
+  EXPECT_TRUE(config.value().has_pac_url());
+  EXPECT_EQ(GURL("http://version1/wpad.dat"), config.value().pac_url());
 
   //-----------------------------------------------------
 

@@ -38,7 +38,8 @@ class TestURLRequestContextWithProxy : public net::TestURLRequestContext {
   explicit TestURLRequestContextWithProxy(const std::string& pac_result)
       : TestURLRequestContext(true) {
     context_storage_.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixedFromPacResult(pac_result));
+        net::ProxyResolutionService::CreateFixedFromPacResult(
+            pac_result, TRAFFIC_ANNOTATION_FOR_TESTS));
     // net::MockHostResolver maps all hosts to localhost.
     auto host_resolver = std::make_unique<net::MockHostResolver>();
     context_storage_.set_host_resolver(std::move(host_resolver));
@@ -544,7 +545,9 @@ TEST_F(ProxyResolvingClientSocketTest, URLSanitized) {
   net::MockAsyncProxyResolverFactory* proxy_resolver_factory_raw =
       proxy_resolver_factory.get();
   net::ProxyResolutionService service(
-      std::make_unique<net::ProxyConfigServiceFixed>(proxy_config),
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation(proxy_config,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS)),
       std::move(proxy_resolver_factory), nullptr);
   context->set_proxy_resolution_service(&service);
   context->Init();

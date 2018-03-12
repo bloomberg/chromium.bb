@@ -6,14 +6,15 @@
 
 namespace net {
 
-ProxyConfigServiceFixed::ProxyConfigServiceFixed(const ProxyConfig& pc)
-    : pc_(pc) {
-}
+ProxyConfigServiceFixed::ProxyConfigServiceFixed(
+    const ProxyConfigWithAnnotation& pc)
+    : pc_(pc) {}
 
 ProxyConfigServiceFixed::~ProxyConfigServiceFixed() = default;
 
 ProxyConfigService::ConfigAvailability
-    ProxyConfigServiceFixed::GetLatestProxyConfig(ProxyConfig* config) {
+ProxyConfigServiceFixed::GetLatestProxyConfig(
+    ProxyConfigWithAnnotation* config) {
   *config = pc_;
   return CONFIG_VALID;
 }

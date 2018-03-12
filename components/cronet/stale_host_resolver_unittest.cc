@@ -525,8 +525,9 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
-  builder.set_proxy_config_service(base::WrapUnique(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+  builder.set_proxy_config_service(
+      base::WrapUnique(new net::ProxyConfigServiceFixed(
+          net::ProxyConfigWithAnnotation::CreateDirect())));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
 
   // Duplicate StaleCache test case to ensure StaleHostResolver was created:

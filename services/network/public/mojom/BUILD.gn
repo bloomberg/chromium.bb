@@ -67,6 +67,7 @@ mojom("mojom") {
     "network_service_test.mojom",
     "network_types.mojom",
     "proxy_config.mojom",
+    "proxy_config_with_annotation.mojom",
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
     "url_loader.mojom",

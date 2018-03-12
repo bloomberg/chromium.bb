@@ -598,7 +598,8 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest, URLRedirectCycle) {
 TEST_F(DataReductionProxyBypassStatsEndToEndTest,
        BypassedBytesProxyOverridden) {
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
-      net::ProxyResolutionService::CreateFixed("http://test.com:80"));
+      net::ProxyResolutionService::CreateFixed("http://test.com:80",
+                                               TRAFFIC_ANNOTATION_FOR_TESTS));
   set_proxy_resolution_service(proxy_resolution_service.get());
   InitializeContext();
 

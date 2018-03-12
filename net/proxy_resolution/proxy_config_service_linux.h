@@ -19,8 +19,8 @@
 #include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -70,9 +70,6 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // Returns NULL if it does not matter.
     virtual const scoped_refptr<base::SequencedTaskRunner>&
     GetNotificationTaskRunner() = 0;
-
-    // Returns the source of proxy settings.
-    virtual ProxyConfigSource GetConfigSource() = 0;
 
     // These are all the values that can be fetched. We used to just use the
     // corresponding paths in gconf for these, but gconf is now obsolete and
@@ -170,12 +167,17 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
   class Delegate : public base::RefCountedThreadSafe<Delegate> {
    public:
+    // Sets the |env_var_getter| to empty.
+    Delegate();
+
     // Normal constructor.
-    explicit Delegate(std::unique_ptr<base::Environment> env_var_getter);
+    explicit Delegate(std::unique_ptr<base::Environment> env_var_getter,
+                      const NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Constructor for testing.
     Delegate(std::unique_ptr<base::Environment> env_var_getter,
-             SettingGetter* setting_getter);
+             SettingGetter* setting_getter,
+             const NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Synchronously obtains the proxy configuration. If gconf,
     // gsettings, or kioslaverc are used, also enables notifications for
@@ -186,7 +188,8 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // notifications can post tasks to it (and for assertions).
     void SetUpAndFetchInitialConfig(
         const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-        const scoped_refptr<base::SequencedTaskRunner>& main_task_runner);
+        const scoped_refptr<base::SequencedTaskRunner>& main_task_runner,
+        const NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Handler for setting change notifications: fetches a new proxy
     // configuration from settings, and if this config is different
@@ -199,7 +202,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     void AddObserver(Observer* observer);
     void RemoveObserver(Observer* observer);
     ProxyConfigService::ConfigAvailability GetLatestProxyConfig(
-        ProxyConfig* config);
+        ProxyConfigWithAnnotation* config);
 
     // Posts a call to OnDestroy() to the glib or a file task runner,
     // depending on the setting getter in use. Called from
@@ -225,7 +228,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
                             ProxyServer* result_server);
     // Returns a proxy config based on the environment variables, or empty value
     // on failure.
-    base::Optional<ProxyConfig> GetConfigFromEnv();
+    base::Optional<ProxyConfigWithAnnotation> GetConfigFromEnv();
 
     // Obtains host and port config settings and parses a proxy server
     // specification from it and puts it in result. Returns true if the
@@ -234,11 +237,12 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
                               ProxyServer* result_server);
     // Returns a proxy config based on the settings, or empty value
     // on failure.
-    base::Optional<ProxyConfig> GetConfigFromSettings();
+    base::Optional<ProxyConfigWithAnnotation> GetConfigFromSettings();
 
     // This method is posted from the glib thread to the main TaskRunner to
     // carry the new config information.
-    void SetNewProxyConfig(const base::Optional<ProxyConfig>& new_config);
+    void SetNewProxyConfig(
+        const base::Optional<ProxyConfigWithAnnotation>& new_config);
 
     // This method is run on the getter's notification thread.
     void SetUpNotifications();
@@ -249,12 +253,12 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // Cached proxy configuration, to be returned by
     // GetLatestProxyConfig. Initially populated from the glib thread, but
     // afterwards only accessed from the main TaskRunner.
-    base::Optional<ProxyConfig> cached_config_;
+    base::Optional<ProxyConfigWithAnnotation> cached_config_;
 
     // A copy kept on the glib thread of the last seen proxy config, so as
     // to avoid posting a call to SetNewProxyConfig when we get a
     // notification but the config has not actually changed.
-    base::Optional<ProxyConfig> reference_config_;
+    base::Optional<ProxyConfigWithAnnotation> reference_config_;
 
     // The task runner for the glib thread, aka main browser thread. This thread
     // is where we run the glib main loop (see
@@ -272,6 +276,8 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
     base::ObserverList<Observer> observers_;
 
+    MutableNetworkTrafficAnnotationTag traffic_annotation_;
+
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
@@ -282,16 +288,21 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
   // For testing: take alternate setting and env var getter implementations.
   explicit ProxyConfigServiceLinux(
-      std::unique_ptr<base::Environment> env_var_getter);
-  ProxyConfigServiceLinux(std::unique_ptr<base::Environment> env_var_getter,
-                          SettingGetter* setting_getter);
+      std::unique_ptr<base::Environment> env_var_getter,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
+  ProxyConfigServiceLinux(
+      std::unique_ptr<base::Environment> env_var_getter,
+      SettingGetter* setting_getter,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~ProxyConfigServiceLinux() override;
 
   void SetupAndFetchInitialConfig(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-    delegate_->SetUpAndFetchInitialConfig(glib_task_runner, io_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      const NetworkTrafficAnnotationTag& traffic_annotation) {
+    delegate_->SetUpAndFetchInitialConfig(glib_task_runner, io_task_runner,
+                                          traffic_annotation);
   }
   void OnCheckProxyConfigSettings() {
     delegate_->OnCheckProxyConfigSettings();
@@ -302,7 +313,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   ProxyConfigService::ConfigAvailability GetLatestProxyConfig(
-      ProxyConfig* config) override;
+      ProxyConfigWithAnnotation* config) override;
 
  private:
   scoped_refptr<Delegate> delegate_;

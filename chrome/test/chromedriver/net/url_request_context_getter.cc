@@ -27,7 +27,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     builder.DisableHttpCache();
     builder.set_proxy_config_service(
         std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfig::CreateDirect()));
+            net::ProxyConfigWithAnnotation::CreateDirect()));
     url_request_context_ = builder.Build();
   }
   return url_request_context_.get();

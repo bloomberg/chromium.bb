@@ -27,6 +27,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/proxy_service_mojo.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,7 +135,9 @@ class ProxyServiceMojoTest : public testing::Test {
     proxy_resolution_service_ = network::CreateProxyServiceUsingMojoFactory(
         test_mojo_proxy_resolver_factory_.CreateFactoryInterface(),
         std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
+            net::ProxyConfigWithAnnotation(
+                net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
+                TRAFFIC_ANNOTATION_FOR_TESTS)),
         base::WrapUnique(fetcher_),
         std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
         &mock_host_resolver_, &net_log_, &network_delegate_);

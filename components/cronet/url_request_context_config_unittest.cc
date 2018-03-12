@@ -77,7 +77,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -170,7 +170,7 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -223,7 +223,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -279,7 +279,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -335,7 +335,7 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -390,7 +390,7 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -443,7 +443,7 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
@@ -503,7 +503,7 @@ TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       std::make_unique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   EXPECT_EQ("foreign-language",
             context->http_user_agent_settings()->GetAcceptLanguage());

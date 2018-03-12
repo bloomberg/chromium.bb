@@ -8,7 +8,6 @@
 #include "base/component_export.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "net/proxy_resolution/proxy_config_source.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "services/network/public/mojom/proxy_config.mojom-shared.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -88,16 +87,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
                    net::ProxyConfig::ProxyRules* out_proxy_rules);
 };
 
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource> {
- public:
-  static network::mojom::ProxyConfigSource ToMojom(
-      net::ProxyConfigSource net_proxy_config_source);
-  static bool FromMojom(
-      network::mojom::ProxyConfigSource mojo_proxy_config_source,
-      net::ProxyConfigSource* out);
-};
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
@@ -111,9 +100,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const net::ProxyConfig::ProxyRules& proxy_rules(
       const net::ProxyConfig& r) {
     return r.proxy_rules();
-  }
-  static net::ProxyConfigSource source(const net::ProxyConfig& r) {
-    return r.source();
   }
   static bool Read(network::mojom::ProxyConfigDataView data,
                    net::ProxyConfig* out_proxy_config);

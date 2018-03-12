@@ -356,7 +356,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   if (!network_context_params->initial_proxy_config &&
       !network_context_params->proxy_config_client_request.is_pending()) {
     network_context_params->initial_proxy_config =
-        net::ProxyConfig::CreateDirect();
+        net::ProxyConfigWithAnnotation::CreateDirect();
   }
   builder->set_proxy_config_service(std::make_unique<ProxyConfigServiceMojo>(
       std::move(network_context_params->proxy_config_client_request),

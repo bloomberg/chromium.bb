@@ -8,6 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +25,7 @@ class TestProxyConfigServiceObserver
   ~TestProxyConfigServiceObserver() override {}
 
   void OnProxyConfigChanged(
-      const net::ProxyConfig& config,
+      const net::ProxyConfigWithAnnotation& config,
       net::ProxyConfigService::ConfigAvailability availability) override {
     // The ProxyConfigServiceMojo only sends on availability state.
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID, availability);
@@ -33,10 +34,10 @@ class TestProxyConfigServiceObserver
 
     // The passed in config should match the one that GetLatestProxyConfig
     // returns.
-    net::ProxyConfig retrieved_config;
+    net::ProxyConfigWithAnnotation retrieved_config;
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
               service_->GetLatestProxyConfig(&retrieved_config));
-    EXPECT_TRUE(observed_config_.Equals(retrieved_config));
+    EXPECT_TRUE(observed_config_.value().Equals(retrieved_config.value()));
     ++config_changes_;
   }
 
@@ -48,10 +49,12 @@ class TestProxyConfigServiceObserver
   }
 
   // Returns last observed config.
-  const net::ProxyConfig& observed_config() const { return observed_config_; }
+  const net::ProxyConfigWithAnnotation& observed_config() const {
+    return observed_config_;
+  }
 
  private:
-  net::ProxyConfig observed_config_;
+  net::ProxyConfigWithAnnotation observed_config_;
 
   net::ProxyConfigService* const service_;
   int config_changes_ = 0;
@@ -70,12 +73,12 @@ TEST(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
 
   mojom::ProxyConfigClientPtr config_client;
   ProxyConfigServiceMojo proxy_config_service(
-      mojo::MakeRequest(&config_client), base::Optional<net::ProxyConfig>(),
-      nullptr);
+      mojo::MakeRequest(&config_client),
+      base::Optional<net::ProxyConfigWithAnnotation>(), nullptr);
   TestProxyConfigServiceObserver observer(&proxy_config_service);
   proxy_config_service.AddObserver(&observer);
 
-  net::ProxyConfig proxy_config;
+  net::ProxyConfigWithAnnotation proxy_config;
   // The service should start without a config.
   EXPECT_EQ(net::ProxyConfigService::CONFIG_PENDING,
             proxy_config_service.GetLatestProxyConfig(&proxy_config));
@@ -87,24 +90,26 @@ TEST(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
 
   for (const auto& proxy_config : proxy_configs) {
     // Set the proxy configuration to something that does not match the old one.
-    config_client->OnProxyConfigUpdated(proxy_config);
+    config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+        proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
     scoped_task_environment.RunUntilIdle();
     EXPECT_EQ(1, observer.GetAndResetConfigChanges());
-    EXPECT_TRUE(proxy_config.Equals(observer.observed_config()));
-    net::ProxyConfig retrieved_config;
+    EXPECT_TRUE(proxy_config.Equals(observer.observed_config().value()));
+    net::ProxyConfigWithAnnotation retrieved_config;
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
               proxy_config_service.GetLatestProxyConfig(&retrieved_config));
-    EXPECT_TRUE(proxy_config.Equals(retrieved_config));
+    EXPECT_TRUE(proxy_config.Equals(retrieved_config.value()));
 
     // Set the proxy configuration to the same value again. There should be not
     // be another proxy config changed notification.
-    config_client->OnProxyConfigUpdated(proxy_config);
+    config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+        proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
     scoped_task_environment.RunUntilIdle();
     EXPECT_EQ(0, observer.GetAndResetConfigChanges());
-    EXPECT_TRUE(proxy_config.Equals(observer.observed_config()));
+    EXPECT_TRUE(proxy_config.Equals(observer.observed_config().value()));
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
               proxy_config_service.GetLatestProxyConfig(&retrieved_config));
-    EXPECT_TRUE(proxy_config.Equals(retrieved_config));
+    EXPECT_TRUE(proxy_config.Equals(retrieved_config.value()));
   }
 
   proxy_config_service.RemoveObserver(&observer);

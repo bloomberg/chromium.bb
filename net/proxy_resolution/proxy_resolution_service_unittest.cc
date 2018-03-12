@@ -31,6 +31,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -139,13 +140,13 @@ class MockProxyConfigService: public ProxyConfigService {
  public:
   explicit MockProxyConfigService(const ProxyConfig& config)
       : availability_(CONFIG_VALID),
-        config_(config) {
-  }
+        config_(
+            ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   explicit MockProxyConfigService(const std::string& pac_url)
       : availability_(CONFIG_VALID),
-        config_(ProxyConfig::CreateFromCustomPacURL(GURL(pac_url))) {
-  }
+        config_(ProxyConfig::CreateFromCustomPacURL(GURL(pac_url)),
+                TRAFFIC_ANNOTATION_FOR_TESTS) {}
 
   void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
@@ -155,13 +156,14 @@ class MockProxyConfigService: public ProxyConfigService {
     observers_.RemoveObserver(observer);
   }
 
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* results) override {
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* results) override {
     if (availability_ == CONFIG_VALID)
       *results = config_;
     return availability_;
   }
 
-  void SetConfig(const ProxyConfig& config) {
+  void SetConfig(const ProxyConfigWithAnnotation& config) {
     availability_ = CONFIG_VALID;
     config_ = config;
     for (auto& observer : observers_)
@@ -170,7 +172,7 @@ class MockProxyConfigService: public ProxyConfigService {
 
  private:
   ConfigAvailability availability_;
-  ProxyConfig config_;
+  ProxyConfigWithAnnotation config_;
   base::ObserverList<Observer, true> observers_;
 };
 
@@ -729,7 +731,6 @@ TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
   // to ProxyInfo after the proxy is resolved via a PAC script.
   ProxyConfig config =
       ProxyConfig::CreateFromCustomPacURL(GURL("http://foopy/proxy.pac"));
-  config.set_source(PROXY_CONFIG_SOURCE_TEST);
 
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
   MockAsyncProxyResolver resolver;
@@ -753,7 +754,8 @@ TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
-  EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
+  EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+            info.traffic_annotation());
   EXPECT_TRUE(info.did_use_pac_script());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
@@ -1632,13 +1634,12 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
   }
 }
 
-TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
+TEST_F(ProxyServiceTest, ProxyConfigTrafficAnnotationPropagates) {
   // Test that the proxy config source is set correctly when resolving proxies
   // using manual proxy rules. Namely, the config source should only be set if
   // any of the rules were applied.
   {
     ProxyConfig config;
-    config.set_source(PROXY_CONFIG_SOURCE_TEST);
     config.proxy_rules().ParseFromString("https=foopy2:8080");
     ProxyResolutionService service(
         std::make_unique<MockProxyConfigService>(config), nullptr, nullptr);
@@ -1649,12 +1650,12 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
                                   callback.callback(), nullptr, nullptr,
                                   NetLogWithSource());
     ASSERT_THAT(rv, IsOk());
-    // Should be SOURCE_TEST, even if there are no HTTP proxies configured.
-    EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
+    // Should be test, even if there are no HTTP proxies configured.
+    EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+              info.traffic_annotation());
   }
   {
     ProxyConfig config;
-    config.set_source(PROXY_CONFIG_SOURCE_TEST);
     config.proxy_rules().ParseFromString("https=foopy2:8080");
     ProxyResolutionService service(
         std::make_unique<MockProxyConfigService>(config), nullptr, nullptr);
@@ -1665,12 +1666,12 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
                                   callback.callback(), nullptr, nullptr,
                                   NetLogWithSource());
     ASSERT_THAT(rv, IsOk());
-    // Used the HTTPS proxy. So source should be TEST.
-    EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
+    // Used the HTTPS proxy. So traffic annotation should test.
+    EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+              info.traffic_annotation());
   }
   {
     ProxyConfig config;
-    config.set_source(PROXY_CONFIG_SOURCE_TEST);
     ProxyResolutionService service(
         std::make_unique<MockProxyConfigService>(config), nullptr, nullptr);
     GURL test_url("http://www.google.com");
@@ -1680,8 +1681,9 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
                                   callback.callback(), nullptr, nullptr,
                                   NetLogWithSource());
     ASSERT_THAT(rv, IsOk());
-    // ProxyConfig is empty. Source should still be TEST.
-    EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
+    // ProxyConfig is empty. Traffic annotation should still be TEST.
+    EXPECT_EQ(MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+              info.traffic_annotation());
   }
 }
 
@@ -2502,7 +2504,7 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   //
   // This new configuration no longer has auto_detect set, so
   // jobs should complete synchronously now as direct-connect.
-  config_service->SetConfig(ProxyConfig::CreateDirect());
+  config_service->SetConfig(ProxyConfigWithAnnotation::CreateDirect());
 
   // Start another request -- the effective configuration has changed.
   ProxyInfo info2;

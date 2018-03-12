@@ -104,7 +104,8 @@ class TestURLRequestContextWithDataReductionProxy
                                               net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
     context_storage_.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixed(origin.ToURI()));
+        net::ProxyResolutionService::CreateFixed(origin.ToURI(),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS));
     set_network_delegate(delegate);
   }
 
@@ -233,7 +234,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     std::string proxy_name = origin.ToURI();
     proxy_resolution_service_ =
         net::ProxyResolutionService::CreateFixedFromPacResult(
-            "PROXY " + proxy_name + "; DIRECT");
+            "PROXY " + proxy_name + "; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
 
     context_.set_proxy_resolution_service(proxy_resolution_service_.get());
 

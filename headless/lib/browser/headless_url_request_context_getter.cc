@@ -28,6 +28,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -146,8 +147,11 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     builder.set_data_enabled(true);
     builder.set_file_enabled(true);
     if (proxy_config_) {
+      // TODO(https://crbug.com/656607): Add proper traffic annotation.
       builder.set_proxy_resolution_service(
-          net::ProxyResolutionService::CreateFixed(*proxy_config_));
+          net::ProxyResolutionService::CreateFixed(
+              net::ProxyConfigWithAnnotation(
+                  *proxy_config_, NO_TRAFFIC_ANNOTATION_BUG_656607)));
     } else {
       builder.set_proxy_config_service(std::move(proxy_config_service_));
     }

@@ -7,6 +7,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,8 +30,8 @@ TEST_P(URLRequestContextMemoryDumpTest, MemoryDumpProvider) {
       new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
   URLRequestContextBuilder builder;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  builder.set_proxy_config_service(
-      std::make_unique<ProxyConfigServiceFixed>(ProxyConfig::CreateDirect()));
+  builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
+      ProxyConfigWithAnnotation::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   std::unique_ptr<URLRequestContext> context(builder.Build());
   context->OnMemoryDump(dump_args, process_memory_dump.get());

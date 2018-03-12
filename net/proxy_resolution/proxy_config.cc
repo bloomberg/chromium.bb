@@ -190,10 +190,7 @@ const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
   return NULL;
 }
 
-ProxyConfig::ProxyConfig()
-    : auto_detect_(false),
-      pac_mandatory_(false),
-      source_(PROXY_CONFIG_SOURCE_UNKNOWN) {}
+ProxyConfig::ProxyConfig() : auto_detect_(false), pac_mandatory_(false) {}
 
 ProxyConfig::ProxyConfig(const ProxyConfig& config) = default;
 
@@ -271,9 +268,6 @@ std::unique_ptr<base::DictionaryValue> ProxyConfig::ToValue() const {
       dict->Set("bypass_list", std::move(list));
     }
   }
-
-  // Output the source.
-  dict->SetString("source", ProxyConfigSourceToString(source_));
 
   return dict;
 }

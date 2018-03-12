@@ -130,11 +130,10 @@ class NetWatcher :
 
   // net::ProxyConfigService::Observer implementation.
   void OnProxyConfigChanged(
-      const net::ProxyConfig& config,
+      const net::ProxyConfigWithAnnotation& config,
       net::ProxyConfigService::ConfigAvailability availability) override {
-    LOG(INFO) << "OnProxyConfigChanged("
-              << ProxyConfigToString(config) << ", "
-              << ConfigAvailabilityToString(availability) << ")";
+    LOG(INFO) << "OnProxyConfigChanged(" << ProxyConfigToString(config.value())
+              << ", " << ConfigAvailabilityToString(availability) << ")";
   }
 
  private:
@@ -196,12 +195,11 @@ int main(int argc, char* argv[]) {
                    net::NetworkChangeNotifier::GetConnectionType());
 
   {
-    net::ProxyConfig config;
+    net::ProxyConfigWithAnnotation config;
     const net::ProxyConfigService::ConfigAvailability availability =
         proxy_config_service->GetLatestProxyConfig(&config);
-    LOG(INFO) << "Initial proxy config: "
-              << ProxyConfigToString(config) << ", "
-              << ConfigAvailabilityToString(availability);
+    LOG(INFO) << "Initial proxy config: " << ProxyConfigToString(config.value())
+              << ", " << ConfigAvailabilityToString(availability);
   }
 
   LOG(INFO) << "Watching for network events...";

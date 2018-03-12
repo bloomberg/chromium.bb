@@ -61,8 +61,8 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
 
     URLRequestContextBuilder builder;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-    builder.set_proxy_config_service(
-        std::make_unique<ProxyConfigServiceFixed>(ProxyConfig::CreateDirect()));
+    builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
+        ProxyConfigWithAnnotation::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
     builder.set_reporting_policy(std::move(policy));
     builder.set_network_error_logging_enabled(true);

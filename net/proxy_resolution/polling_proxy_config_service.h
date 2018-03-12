@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -24,21 +25,24 @@ class NET_EXPORT_PRIVATE PollingProxyConfigService : public ProxyConfigService {
   // ProxyConfigService implementation:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override;
   void OnLazyPoll() override;
 
  protected:
   // Function for retrieving the current proxy configuration.
   // Implementors must be threadsafe as the function will be invoked from
   // worker threads.
-  typedef void (*GetConfigFunction)(ProxyConfig*);
+  typedef void (*GetConfigFunction)(NetworkTrafficAnnotationTag,
+                                    ProxyConfigWithAnnotation*);
 
   // Creates a polling-based ProxyConfigService which will test for new
   // settings at most every |poll_interval| time by calling |get_config_func|
   // on a worker thread.
   PollingProxyConfigService(
       base::TimeDelta poll_interval,
-      GetConfigFunction get_config_func);
+      GetConfigFunction get_config_func,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~PollingProxyConfigService() override;
 

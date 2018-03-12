@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/polling_proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace base {
 namespace win {
@@ -49,7 +50,7 @@ namespace net {
 class NET_EXPORT_PRIVATE ProxyConfigServiceWin
     : public PollingProxyConfigService {
  public:
-  ProxyConfigServiceWin();
+  ProxyConfigServiceWin(const NetworkTrafficAnnotationTag& traffic_annotation);
   ~ProxyConfigServiceWin() override;
 
   // Overrides a function from PollingProxyConfigService.
@@ -68,7 +69,9 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
   // This is called whenever one of the registry keys we are watching change.
   void OnObjectSignaled(base::win::RegKey* key);
 
-  static void GetCurrentProxyConfig(ProxyConfig* config);
+  static void GetCurrentProxyConfig(
+      const NetworkTrafficAnnotationTag traffic_annotation,
+      ProxyConfigWithAnnotation* config);
 
   // Set |config| using the proxy configuration values of |ie_config|.
   static void SetFromIEConfig(

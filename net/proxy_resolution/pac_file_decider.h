@@ -20,7 +20,7 @@
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "url/gurl.h"
 
@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   // manual settings, and decided whether to use auto-detect or the custom PAC
   // URL. Finally, if auto-detect was used we may now have resolved that to a
   // specific script URL.
-  int Start(const ProxyConfig& config,
+  int Start(const ProxyConfigWithAnnotation& config,
             const base::TimeDelta wait_delay,
             bool fetch_pac_bytes,
             const CompletionCallback& callback);
@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   // requests.  Does not call OnShutdown on the [Dhcp]PacFileFetcher.
   void OnShutdown();
 
-  const ProxyConfig& effective_config() const;
+  const ProxyConfigWithAnnotation& effective_config() const;
 
   const scoped_refptr<PacFileData>& script_data() const;
 
@@ -191,11 +191,13 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   base::TimeDelta wait_delay_;
   base::OneShotTimer wait_timer_;
 
+  net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
+
   // Whether to do DNS quick check
   bool quick_check_enabled_;
 
   // Results.
-  ProxyConfig effective_config_;
+  ProxyConfigWithAnnotation effective_config_;
   scoped_refptr<PacFileData> script_data_;
 
   AddressList wpad_addresses_;

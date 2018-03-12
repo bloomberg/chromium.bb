@@ -52,8 +52,9 @@ class CHROMEOS_EXPORT ProxyConfigServiceImpl
   ~ProxyConfigServiceImpl() override;
 
   // PrefProxyConfigTrackerImpl implementation.
-  void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
-                            const net::ProxyConfig& config) override;
+  void OnProxyConfigChanged(
+      ProxyPrefs::ConfigState config_state,
+      const net::ProxyConfigWithAnnotation& config) override;
 
   // NetworkStateHandlerObserver implementation.
   void DefaultNetworkChanged(const NetworkState* network) override;

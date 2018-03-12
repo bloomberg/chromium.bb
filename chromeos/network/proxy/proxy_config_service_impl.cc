@@ -36,7 +36,7 @@ namespace {
 bool GetNetworkProxyConfig(const PrefService* profile_prefs,
                            const PrefService* local_state_prefs,
                            const NetworkState& network,
-                           net::ProxyConfig* proxy_config,
+                           net::ProxyConfigWithAnnotation* proxy_config,
                            ::onc::ONCSource* onc_source) {
   std::unique_ptr<ProxyConfigDictionary> proxy_dict =
       proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
@@ -89,10 +89,10 @@ ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
 
 void ProxyConfigServiceImpl::OnProxyConfigChanged(
     ProxyPrefs::ConfigState config_state,
-    const net::ProxyConfig& config) {
+    const net::ProxyConfigWithAnnotation& config) {
   VLOG(1) << "Got prefs change: "
           << ProxyPrefs::ConfigStateToDebugString(config_state)
-          << ", mode=" << static_cast<int>(config.proxy_rules().type);
+          << ", mode=" << static_cast<int>(config.value().proxy_rules().type);
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
@@ -181,7 +181,7 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
     const PrefService* profile_prefs,
     const PrefService* local_state_prefs) {
   // Apply Pref Proxy configuration if available.
-  net::ProxyConfig pref_proxy_config;
+  net::ProxyConfigWithAnnotation pref_proxy_config;
   ProxyPrefs::ConfigState pref_state =
       PrefProxyConfigTrackerImpl::ReadPrefConfig(profile_prefs,
                                                  &pref_proxy_config);
@@ -223,11 +223,11 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   const NetworkState* network = handler->DefaultNetwork();
 
   // Get prefs proxy config if available.
-  net::ProxyConfig pref_config;
+  net::ProxyConfigWithAnnotation pref_config;
   ProxyPrefs::ConfigState pref_state = GetProxyConfig(&pref_config);
 
   // Get network proxy config if available.
-  net::ProxyConfig network_config;
+  net::ProxyConfigWithAnnotation network_config;
   net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
   bool ignore_proxy = true;
@@ -240,7 +240,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
 
     // If network is shared but use-shared-proxies is off, use direct mode.
     if (ignore_proxy) {
-      network_config = net::ProxyConfig();
+      network_config = net::ProxyConfigWithAnnotation::CreateDirect();
       network_availability = net::ProxyConfigService::CONFIG_VALID;
     } else if (network_proxy_configured) {
       // Network is private or shared with user using shared proxies.
@@ -251,7 +251,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
 
   // Determine effective proxy config, either from prefs or network.
   ProxyPrefs::ConfigState effective_config_state;
-  net::ProxyConfig effective_config;
+  net::ProxyConfigWithAnnotation effective_config;
   GetEffectiveProxyConfig(pref_state, pref_config, network_availability,
                           network_config, ignore_proxy, &effective_config_state,
                           &effective_config);
@@ -263,15 +263,18 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   if (effective_config_state == ProxyPrefs::CONFIG_SYSTEM)
     effective_config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
   // If config is manual, add rule to bypass local host.
-  if (effective_config.proxy_rules().type !=
+  if (effective_config.value().proxy_rules().type !=
       net::ProxyConfig::ProxyRules::Type::EMPTY) {
-    effective_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+    net::ProxyConfig proxy_config = effective_config.value();
+    proxy_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+    effective_config = net::ProxyConfigWithAnnotation(
+        proxy_config, effective_config.traffic_annotation());
   }
   PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
                                                    effective_config);
   if (VLOG_IS_ON(1)) {
     std::unique_ptr<base::DictionaryValue> config_dict(
-        effective_config.ToValue());
+        effective_config.value().ToValue());
     VLOG(1) << this << ": Proxy changed: "
             << ProxyPrefs::ConfigStateToDebugString(effective_config_state)
             << ", " << *config_dict;

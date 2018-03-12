@@ -131,12 +131,6 @@ class NET_EXPORT ProxyInfo {
   // to call this function.
   const ProxyServer& proxy_server() const { return proxy_list_.Get(); }
 
-  // Returns the source for configuration settings used for proxy resolution.
-  ProxyConfigSource config_source() const { return config_source_; }
-
-  // Returns traffic annotation tag based on current config source.
-  const NetworkTrafficAnnotationTag traffic_annotation() const;
-
   // See description in ProxyList::ToPacString().
   std::string ToPacString() const;
 
@@ -170,6 +164,15 @@ class NET_EXPORT ProxyInfo {
     return proxy_resolve_end_time_;
   }
 
+  void set_traffic_annotation(
+      const MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+    traffic_annotation_ = traffic_annotation;
+  }
+
+  MutableNetworkTrafficAnnotationTag traffic_annotation() const {
+    return traffic_annotation_;
+  }
+
  private:
   friend class ProxyResolutionService;
   FRIEND_TEST_ALL_PREFIXES(ProxyInfoTest, UseVsOverrideProxyList);
@@ -192,8 +195,8 @@ class NET_EXPORT ProxyInfo {
   // List of proxies that have been tried already.
   ProxyRetryInfoMap proxy_retry_info_;
 
-  // The source of the proxy settings used,
-  ProxyConfigSource config_source_;
+  // The traffic annotation of the used proxy config.
+  MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   // Whether the proxy result represent a proxy bypass.
   bool did_bypass_proxy_;

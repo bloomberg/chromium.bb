@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "net/base/network_config_watcher_mac.h"
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -27,14 +27,16 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   // This instance is expected to be operated and deleted on
   // |sequenced_task_runner| (however it may be constructed elsewhere).
   explicit ProxyConfigServiceMac(
-      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
   ~ProxyConfigServiceMac() override;
 
  public:
   // ProxyConfigService implementation:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override;
 
  private:
   class Helper;
@@ -61,7 +63,7 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   void OnNetworkConfigChange(CFArrayRef changed_keys);
 
   // Called when the proxy configuration has changed, to notify the observers.
-  void OnProxyConfigChanged(const ProxyConfig& new_config);
+  void OnProxyConfigChanged(const ProxyConfigWithAnnotation& new_config);
 
   Forwarder forwarder_;
   std::unique_ptr<const NetworkConfigWatcherMac> config_watcher_;
@@ -70,12 +72,14 @@ class ProxyConfigServiceMac : public ProxyConfigService {
 
   // Holds the last system proxy settings that we fetched.
   bool has_fetched_config_;
-  ProxyConfig last_config_fetched_;
+  ProxyConfigWithAnnotation last_config_fetched_;
 
   scoped_refptr<Helper> helper_;
 
   // The task runner that |this| will be operated on.
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMac);
 };

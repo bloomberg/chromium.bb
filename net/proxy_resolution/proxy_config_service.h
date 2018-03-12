@@ -9,7 +9,7 @@
 
 namespace net {
 
-class ProxyConfig;
+class ProxyConfigWithAnnotation;
 
 // Service for watching when the proxy settings have changed.
 class NET_EXPORT ProxyConfigService {
@@ -33,7 +33,7 @@ class NET_EXPORT ProxyConfigService {
     // the new availability status and can be CONFIG_UNSET or CONFIG_VALID (in
     // which case |config| contains the configuration). Implementors must not
     // pass CONFIG_PENDING.
-    virtual void OnProxyConfigChanged(const ProxyConfig& config,
+    virtual void OnProxyConfigChanged(const ProxyConfigWithAnnotation& config,
                                       ConfigAvailability availability) = 0;
   };
 
@@ -51,7 +51,8 @@ class NET_EXPORT ProxyConfigService {
   // some point in the future once the configuration is available.
   // Note that to avoid re-entrancy problems, implementations should not
   // dispatch any change notifications from within this function.
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) = 0;
+  virtual ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) = 0;
 
   // ProxyResolutionService will call this periodically during periods of
   // activity. It can be used as a signal for polling-based implementations.

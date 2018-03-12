@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace net {
 
@@ -23,9 +23,12 @@ namespace net {
 class PollingProxyConfigService::Core
     : public base::RefCountedThreadSafe<PollingProxyConfigService::Core> {
  public:
-  Core(base::TimeDelta poll_interval, GetConfigFunction get_config_func)
+  Core(base::TimeDelta poll_interval,
+       GetConfigFunction get_config_func,
+       const NetworkTrafficAnnotationTag& traffic_annotation)
       : get_config_func_(get_config_func),
         poll_interval_(poll_interval),
+        traffic_annotation_(traffic_annotation),
         have_initialized_origin_runner_(false),
         has_config_(false),
         poll_task_outstanding_(false),
@@ -38,7 +41,7 @@ class PollingProxyConfigService::Core
     origin_task_runner_ = NULL;
   }
 
-  bool GetLatestProxyConfig(ProxyConfig* config) {
+  bool GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
     LazyInitializeOriginLoop();
     DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
@@ -101,8 +104,8 @@ class PollingProxyConfigService::Core
   ~Core() = default;
 
   void PollAsync(GetConfigFunction func) {
-    ProxyConfig config;
-    func(&config);
+    ProxyConfigWithAnnotation config;
+    func(traffic_annotation_, &config);
 
     base::AutoLock lock(lock_);
     if (origin_task_runner_.get()) {
@@ -112,7 +115,7 @@ class PollingProxyConfigService::Core
   }
 
   // Called after the worker thread has finished retrieving a configuration.
-  void GetConfigCompleted(const ProxyConfig& config) {
+  void GetConfigCompleted(const ProxyConfigWithAnnotation& config) {
     DCHECK(poll_task_outstanding_);
     poll_task_outstanding_ = false;
 
@@ -121,7 +124,7 @@ class PollingProxyConfigService::Core
 
     DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
-    if (!has_config_ || !last_config_.Equals(config)) {
+    if (!has_config_ || !last_config_.value().Equals(config.value())) {
       // If the configuration has changed, notify the observers.
       has_config_ = true;
       last_config_ = config;
@@ -147,9 +150,11 @@ class PollingProxyConfigService::Core
 
   GetConfigFunction get_config_func_;
   base::ObserverList<Observer> observers_;
-  ProxyConfig last_config_;
+  ProxyConfigWithAnnotation last_config_;
   base::TimeTicks last_poll_time_;
   base::TimeDelta poll_interval_;
+
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::Lock lock_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
@@ -169,7 +174,8 @@ void PollingProxyConfigService::RemoveObserver(Observer* observer) {
 }
 
 ProxyConfigService::ConfigAvailability
-    PollingProxyConfigService::GetLatestProxyConfig(ProxyConfig* config) {
+PollingProxyConfigService::GetLatestProxyConfig(
+    ProxyConfigWithAnnotation* config) {
   return core_->GetLatestProxyConfig(config) ? CONFIG_VALID : CONFIG_PENDING;
 }
 
@@ -179,9 +185,9 @@ void PollingProxyConfigService::OnLazyPoll() {
 
 PollingProxyConfigService::PollingProxyConfigService(
     base::TimeDelta poll_interval,
-    GetConfigFunction get_config_func)
-    : core_(new Core(poll_interval, get_config_func)) {
-}
+    GetConfigFunction get_config_func,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
+    : core_(new Core(poll_interval, get_config_func, traffic_annotation)) {}
 
 PollingProxyConfigService::~PollingProxyConfigService() {
   core_->Orphan();

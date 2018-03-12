@@ -4,19 +4,20 @@
 
 module network.mojom;
 
+import "mojo/common/file_path.mojom";
+import "mojo/common/time.mojom";
+import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/proxy_config_with_annotation.mojom";
+import "services/network/public/mojom/restricted_cookie_manager.mojom";
+import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
-import "services/network/public/mojom/restricted_cookie_manager.mojom";
-import "mojo/common/file_path.mojom";
-import "mojo/common/time.mojom";
+import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
-import "services/network/public/mojom/udp_socket.mojom";
-import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 
 [Native]
 struct AuthChallengeInfo;
@@ -94,7 +95,7 @@ struct NetworkContextParams {
   // |proxy_config_client_request|.
   //
   // If both are null, the NetworkContext will not use a proxy.
-  ProxyConfig? initial_proxy_config;
+  ProxyConfigWithAnnotation? initial_proxy_config;
   ProxyConfigClient&? proxy_config_client_request;
 
   // If |proxy_config_client_request| is non-null, this is called during

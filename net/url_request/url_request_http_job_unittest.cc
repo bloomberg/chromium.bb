@@ -261,7 +261,7 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ProxyResolutionService::CreateFixedFromPacResult(
-          proxy_server.ToPacString());
+          proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockWrite writes[] = {MockWrite(kSimpleProxyGetMockWrite)};
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET)};
@@ -310,7 +310,8 @@ TEST(URLRequestHttpJobWithProxy,
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString() + "; " +
-          ProxyServer::Direct().ToPacString());
+              ProxyServer::Direct().ToPacString(),
+          TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
