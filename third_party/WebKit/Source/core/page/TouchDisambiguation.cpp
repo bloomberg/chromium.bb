@@ -103,7 +103,8 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
       contents_point,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
           HitTestRequest::kListBased,
-      LayoutSize(touch_point_padding, touch_point_padding));
+      LayoutRectOutsets(touch_point_padding, touch_point_padding,
+                        touch_point_padding, touch_point_padding));
   const HeapListHashSet<Member<Node>>& hit_results =
       result.ListBasedTestResult();
 

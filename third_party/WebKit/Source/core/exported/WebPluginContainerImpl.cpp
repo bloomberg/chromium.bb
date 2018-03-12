@@ -565,9 +565,14 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   // FIXME: We'll be off by 1 when the width or height is even.
   LayoutPoint center = document_rect.Center();
   // Make the rect we're checking (the point surrounded by padding rects)
-  // contained inside the requested rect. (Note that -1/2 is 0.)
-  LayoutSize padding((document_rect.Width() - 1) / 2,
-                     (document_rect.Height() - 1) / 2);
+  // contained inside the requested rect.
+  // TODO(pdr): This logic for calculating padding is only needed because the
+  // hit test rect for a point has non-zero dimensions. This can be simplified
+  // when the hit test rect is 0px x 0px, see: HitTestLocation::RectForPoint.
+  LayoutRect hit_rect = HitTestLocation::RectForPoint(center);
+  LayoutRectOutsets padding(
+      hit_rect.Y() - document_rect.Y(), document_rect.MaxX() - hit_rect.MaxX(),
+      document_rect.MaxY() - hit_rect.MaxY(), hit_rect.X() - document_rect.X());
   HitTestResult result = frame->GetEventHandler().HitTestResultAtPoint(
       center,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |

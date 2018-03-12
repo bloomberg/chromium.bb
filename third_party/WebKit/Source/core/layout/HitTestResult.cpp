@@ -62,15 +62,8 @@ HitTestResult::HitTestResult(const HitTestRequest& request,
 
 HitTestResult::HitTestResult(const HitTestRequest& request,
                              const LayoutPoint& center_point,
-                             unsigned top_padding,
-                             unsigned right_padding,
-                             unsigned bottom_padding,
-                             unsigned left_padding)
-    : hit_test_location_(center_point,
-                         top_padding,
-                         right_padding,
-                         bottom_padding,
-                         left_padding),
+                             const LayoutRectOutsets& padding)
+    : hit_test_location_(center_point, padding),
       hit_test_request_(request),
       cacheable_(true),
       point_in_inner_node_frame_(center_point),
@@ -414,9 +407,8 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
   if (GetHitTestRequest().PenetratingList())
     return kContinueHitTesting;
 
-  return rect.Contains(LayoutRect(location.BoundingBox()))
-             ? kStopHitTesting
-             : kContinueHitTesting;
+  return rect.Contains(location.BoundingBox()) ? kStopHitTesting
+                                               : kContinueHitTesting;
 }
 
 ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
@@ -435,8 +427,8 @@ ListBasedHitTestBehavior HitTestResult::AddNodeToListBasedTestResult(
   if (GetHitTestRequest().PenetratingList())
     return kContinueHitTesting;
 
-  return region.Contains(location.BoundingBox()) ? kStopHitTesting
-                                                 : kContinueHitTesting;
+  return region.Contains(location.EnclosingIntRect()) ? kStopHitTesting
+                                                      : kContinueHitTesting;
 }
 
 void HitTestResult::Append(const HitTestResult& other) {

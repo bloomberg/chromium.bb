@@ -59,8 +59,8 @@ bool EllipsisBox::NodeAtPoint(HitTestResult& result,
   box_origin.MoveBy(accumulated_offset);
   LayoutRect bounds_rect(box_origin, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      bounds_rect.Intersects(LayoutRect(HitTestLocation::RectForPoint(
-          location_in_container.Point(), 0, 0, 0, 0)))) {
+      bounds_rect.Intersects(
+          HitTestLocation::RectForPoint(location_in_container.Point()))) {
     GetLineLayoutItem().UpdateHitTestResult(
         result,
         location_in_container.Point() - ToLayoutSize(adjusted_location));

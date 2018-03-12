@@ -1717,13 +1717,12 @@ bool PaintLayer::HitTest(HitTestResult& result) {
   PaintLayer* inside_layer = HitTestLayer(this, nullptr, result, hit_test_area,
                                           hit_test_location, false);
   if (!inside_layer && IsRootLayer()) {
-    IntRect hit_rect = hit_test_location.BoundingBox();
     bool fallback = false;
     // If we didn't hit any layers but are still inside the document
     // bounds, then we should fallback to hitting the document.
     // For rect-based hit test, we do the fallback only when the hit-rect
     // is totally within the document bounds.
-    if (hit_test_area.Contains(LayoutRect(hit_rect))) {
+    if (hit_test_area.Contains(hit_test_location.BoundingBox())) {
       fallback = true;
 
       // Mouse dragging outside the main document should also be

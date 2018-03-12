@@ -343,8 +343,10 @@ void PointerEventManager::AdjustTouchPointerEvent(
   LayoutPoint hit_test_point = frame_->View()->RootFrameToContents(
       LayoutPoint(pointer_event.PositionInWidget()));
   HitTestResult hit_test_result =
-      frame_->GetEventHandler().HitTestResultAtPoint(hit_test_point, hit_type,
-                                                     padding);
+      frame_->GetEventHandler().HitTestResultAtPoint(
+          hit_test_point, hit_type,
+          LayoutRectOutsets(padding.Height(), padding.Width(), padding.Height(),
+                            padding.Width()));
 
   Node* adjusted_node = nullptr;
   IntPoint adjusted_point;

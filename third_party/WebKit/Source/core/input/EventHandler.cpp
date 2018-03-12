@@ -234,10 +234,10 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
 HitTestResult EventHandler::HitTestResultAtPoint(
     const LayoutPoint& point,
     HitTestRequest::HitTestRequestType hit_type,
-    const LayoutSize& padding) {
+    const LayoutRectOutsets& padding) {
   TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
 
-  DCHECK((hit_type & HitTestRequest::kListBased) || padding.IsEmpty());
+  DCHECK((hit_type & HitTestRequest::kListBased) || padding.IsZero());
 
   // We always send hitTestResultAtPoint to the main frame if we have one,
   // otherwise we might hit areas that are obscured by higher frames.
@@ -258,10 +258,7 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
   // it always allows child frame content.
   HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent);
-  HitTestResult result(request, point, padding.Height().ToUnsigned(),
-                       padding.Width().ToUnsigned(),
-                       padding.Height().ToUnsigned(),
-                       padding.Width().ToUnsigned());
+  HitTestResult result(request, point, padding);
 
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
   // the first layout because until then, there is nothing shown on the screen -
@@ -1436,7 +1433,7 @@ bool EventHandler::BestClickableNodeForHitTestResult(
   IntPoint touch_center =
       frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
   IntRect touch_rect = frame_->View()->ContentsToRootFrame(
-      result.GetHitTestLocation().BoundingBox());
+      result.GetHitTestLocation().EnclosingIntRect());
 
   HeapVector<Member<Node>, 11> nodes;
   CopyToVector(result.ListBasedTestResult(), nodes);
@@ -1456,7 +1453,7 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
   IntPoint touch_center =
       frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
   IntRect touch_rect = frame_->View()->ContentsToRootFrame(
-      result.GetHitTestLocation().BoundingBox());
+      result.GetHitTestLocation().EnclosingIntRect());
   HeapVector<Member<Node>, 11> nodes;
   CopyToVector(result.ListBasedTestResult(), nodes);
 
@@ -1697,7 +1694,9 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   LayoutPoint hit_test_point(frame_->View()->RootFrameToContents(
       adjusted_event.PositionInRootFrame()));
   HitTestResult hit_test_result = HitTestResultAtPoint(
-      hit_test_point, hit_type | HitTestRequest::kReadOnly, padding);
+      hit_test_point, hit_type | HitTestRequest::kReadOnly,
+      LayoutRectOutsets(padding.Height(), padding.Width(), padding.Height(),
+                        padding.Width()));
 
   if (hit_test_result.IsRectBasedTest()) {
     // Adjust the location of the gesture to the most likely nearby node, as

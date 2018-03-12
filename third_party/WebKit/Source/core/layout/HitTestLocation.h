@@ -46,10 +46,7 @@ class CORE_EXPORT HitTestLocation {
   HitTestLocation(const FloatPoint&, const FloatQuad&);
   // Pass non-zero padding values to perform a rect-based hit test.
   HitTestLocation(const LayoutPoint& center_point,
-                  unsigned top_padding,
-                  unsigned right_padding,
-                  unsigned bottom_padding,
-                  unsigned left_padding);
+                  const LayoutRectOutsets& padding);
   HitTestLocation(const HitTestLocation&, const LayoutSize& offset);
   HitTestLocation(const HitTestLocation&);
   ~HitTestLocation();
@@ -61,13 +58,26 @@ class CORE_EXPORT HitTestLocation {
   // Rect-based hit test related methods.
   bool IsRectBasedTest() const { return is_rect_based_; }
   bool IsRectilinear() const { return is_rectilinear_; }
-  IntRect BoundingBox() const { return bounding_box_; }
+  const LayoutRect& BoundingBox() const { return bounding_box_; }
+  IntRect EnclosingIntRect() const {
+    return ::blink::EnclosingIntRect(bounding_box_);
+  }
 
-  static IntRect RectForPoint(const LayoutPoint&,
-                              unsigned top_padding,
-                              unsigned right_padding,
-                              unsigned bottom_padding,
-                              unsigned left_padding);
+  // Returns the 1px x 1px hit test rect for a point.
+  // TODO(pdr): Use a 0px x 0px rect for point-based tests and switch to
+  // inclusive intersection checks which work with empty rects. Rect-based hit
+  // testing is used even for point-based tests so a non-empty rect is currently
+  // needed for LayoutRect::Intersects (see |HitTestLocation::IntersectsRect|).
+  static LayoutRect RectForPoint(const LayoutPoint& point) {
+    return LayoutRect(FlooredIntPoint(point), IntSize(1, 1));
+  }
+  static LayoutRect RectForPoint(const LayoutPoint& point,
+                                 const LayoutRectOutsets& padding) {
+    LayoutRect rect = RectForPoint(point);
+    rect.ExpandEdges(padding.Top(), padding.Right(), padding.Bottom(),
+                     padding.Left());
+    return rect;
+  }
 
   bool Intersects(const LayoutRect&) const;
   bool Intersects(const FloatRect&) const;
@@ -82,9 +92,10 @@ class CORE_EXPORT HitTestLocation {
   bool IntersectsRect(const RectType&, const RectType& bounding_box) const;
   void Move(const LayoutSize& offset);
 
-  // This is cached forms of the more accurate point and area below.
+  // These are cached forms of the more accurate |transformed_point_| and
+  // |transformed_rect_|, below.
   LayoutPoint point_;
-  IntRect bounding_box_;
+  LayoutRect bounding_box_;
 
   FloatPoint transformed_point_;
   FloatQuad transformed_rect_;
