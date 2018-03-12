@@ -2916,10 +2916,6 @@ const char kVrIconInDaydreamHomeName[] = "Chrome icon in Daydream Home";
 const char kVrIconInDaydreamHomeDescription[] =
     "Adds an icon to Daydream Home that allows launching Chrome in VR.";
 
-const char kVrLaunchIntentsName[] = "VR intents";
-const char kVrLaunchIntentsDescription[] =
-    "Allow intents to launch Chrome in VR mode.";
-
 const char kWebVrAutopresentFromIntentName[] =
     "WebVR auto presentation from intents";
 const char kWebVrAutopresentFromIntentDescription[] =

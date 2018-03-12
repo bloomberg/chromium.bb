@@ -85,7 +85,6 @@ extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kVrBrowsingInCustomTab;
 extern const base::Feature kVrBrowsingNativeAndroidUi;
 extern const base::Feature kVrIconInDaydreamHome;
-extern const base::Feature kVrLaunchIntents;
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
 extern const base::Feature kWebVrAutopresentFromIntent;
 extern const base::Feature kWebVrCardboardSupport;
