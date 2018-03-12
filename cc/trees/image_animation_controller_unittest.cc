@@ -737,6 +737,48 @@ TEST_F(ImageAnimationControllerTest, ResetAnimations) {
   controller_->UnregisterAnimationDriver(data.paint_image_id, &driver);
 }
 
+TEST_F(ImageAnimationControllerTest, ResetAnimationStateMapOnNavigation) {
+  std::vector<FrameMetadata> first_image_frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(2)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3))};
+  DiscardableImageMap::AnimatedImageMetadata first_data(
+      PaintImage::GetNextId(), PaintImage::CompletionState::DONE,
+      first_image_frames, kAnimationLoopOnce, 0);
+  controller_->UpdateAnimatedImage(first_data);
+  FakeAnimationDriver first_driver;
+  controller_->RegisterAnimationDriver(first_data.paint_image_id,
+                                       &first_driver);
+
+  std::vector<FrameMetadata> second_image_frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(5)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3))};
+  DiscardableImageMap::AnimatedImageMetadata second_data(
+      PaintImage::GetNextId(), PaintImage::CompletionState::DONE,
+      second_image_frames, kAnimationLoopOnce, 0);
+  controller_->UpdateAnimatedImage(second_data);
+  FakeAnimationDriver second_driver;
+  controller_->RegisterAnimationDriver(second_data.paint_image_id,
+                                       &second_driver);
+
+  controller_->AnimateForSyncTree(now_);
+
+  controller_->UnregisterAnimationDriver(first_data.paint_image_id,
+                                         &first_driver);
+  EXPECT_EQ(controller_->animation_state_map_size_for_testing(), 2u);
+
+  // Fake navigation and activation.
+  controller_->set_did_navigate();
+  controller_->DidActivate();
+
+  // Animation state map entries without drivers will be purged on navigation.
+  EXPECT_EQ(controller_->animation_state_map_size_for_testing(), 1u);
+
+  controller_->UnregisterAnimationDriver(second_data.paint_image_id,
+                                         &second_driver);
+
+  EXPECT_EQ(controller_->animation_state_map_size_for_testing(), 1u);
+}
+
 class ImageAnimationControllerNoResyncTest
     : public ImageAnimationControllerTest {
  protected:

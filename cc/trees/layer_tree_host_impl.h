@@ -644,7 +644,7 @@ class CC_EXPORT LayerTreeHostImpl
   void QueueImageDecode(int request_id, const PaintImage& image);
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
 
-  void ClearImageCacheOnNavigation();
+  void DidNavigate();
 
   bool CanConsumeDelta(const ScrollNode& scroll_node,
                        const ScrollState& scroll_state);
