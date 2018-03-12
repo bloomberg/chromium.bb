@@ -105,7 +105,6 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.load_flags = 0;
   request.plugin_child_id = -1;
   request.resource_type = type;
-  request.request_context = 0;
   request.appcache_host_id = kAppCacheNoHostId;
   request.download_to_file = false;
   request.should_reset_appcache = false;

@@ -85,9 +85,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // The priority of this request determined by Blink.
   net::RequestPriority priority = net::IDLE;
 
-  // Used by plugin->browser requests to get the correct net::URLRequestContext.
-  uint32_t request_context = 0;
-
   // Indicates which frame (or worker context) the request is being loaded into,
   // or kAppCacheNoHostId.
   int appcache_host_id = 0;

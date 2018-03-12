@@ -62,7 +62,8 @@ std::unique_ptr<ResourceRequest> PreflightController::CreatePreflightRequest(
   preflight_request->url = request.url;
   preflight_request->method = "OPTIONS";
   preflight_request->priority = request.priority;
-  preflight_request->request_context = request.request_context;
+  preflight_request->fetch_request_context_type =
+      request.fetch_request_context_type;
   preflight_request->referrer = request.referrer;
   preflight_request->referrer_policy = request.referrer_policy;
 
