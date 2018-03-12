@@ -74,7 +74,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -165,7 +164,6 @@ NSString* const kTabUrlKey = @"url";
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
-@synthesize passKitDialogProvider = passKitDialogProvider_;
 @synthesize dialogDelegate = dialogDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 
@@ -417,7 +415,6 @@ NSString* const kTabUrlKey = @"url";
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
   self.overscrollActionsControllerDelegate = nil;
-  self.passKitDialogProvider = nil;
 
   [_openInController detachFromWebController];
   _openInController = nil;
@@ -530,11 +527,6 @@ NSString* const kTabUrlKey = @"url";
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
   return [self.tabHeadersDelegate tabHeaderHeightForTab:self];
-}
-
-- (void)webController:(CRWWebController*)webController
-    didLoadPassKitObject:(NSData*)data {
-  [self.passKitDialogProvider presentPassKitDialog:data];
 }
 
 #pragma mark - Private methods

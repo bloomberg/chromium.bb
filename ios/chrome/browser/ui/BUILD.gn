@@ -455,7 +455,6 @@ source_set("ui_internal") {
     "AssetsLibrary.framework",
     "MessageUI.framework",
     "MobileCoreServices.framework",
-    "PassKit.framework",
     "Photos.framework",
     "QuartzCore.framework",
     "StoreKit.framework",

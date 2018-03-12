@@ -98,21 +98,6 @@ source_set("session_certificate_policy_cache") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("crw_pass_kit_downloader") {
-  deps = [
-    "//base",
-    "//components/url_formatter",
-    "//ios/web/public",
-  ]
-
-  sources = [
-    "crw_pass_kit_downloader.h",
-    "crw_pass_kit_downloader.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("error_translation_util") {
   deps = [
     "//base",

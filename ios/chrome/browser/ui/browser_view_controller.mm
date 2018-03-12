@@ -6,7 +6,6 @@
 
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <PassKit/PassKit.h>
 #import <QuartzCore/QuartzCore.h>
 
 #include <stdint.h>
@@ -229,7 +228,6 @@
 #import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
@@ -430,7 +428,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     NetExportTabHelperDelegate,
                                     OverscrollActionsControllerDelegate,
                                     PageInfoPresentation,
-                                    PassKitDialogProvider,
                                     PasswordControllerDelegate,
                                     PreloadControllerDelegate,
                                     QRScannerPresenting,
@@ -2969,7 +2966,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   tab.dialogDelegate = self;
-  tab.passKitDialogProvider = self;
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = self;
   }
@@ -3030,7 +3026,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   tab.dialogDelegate = nil;
-  tab.passKitDialogProvider = nil;
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = nil;
   }
@@ -3320,35 +3315,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // The voice search bar on iPhone is displayed at the bottom of a tab.
     CGRect visibleFrame = [[_model currentTab].webController visibleFrame];
     return CGRectGetMaxY(visibleFrame) - kVoiceSearchBarHeight;
-  }
-}
-
-#pragma mark - PassKitDialogProvider methods
-
-- (void)presentPassKitDialog:(NSData*)data {
-  NSError* error = nil;
-  PKPass* pass = nil;
-  if (data)
-    pass = [[PKPass alloc] initWithData:data error:&error];
-  if (error || !data) {
-    if ([_model currentTab]) {
-      DCHECK(_model.currentTab.webState);
-      infobars::InfoBarManager* infoBarManager =
-          InfoBarManagerImpl::FromWebState(_model.currentTab.webState);
-      // TODO(crbug.com/227994): Infobar cleanup (infoBarManager should never be
-      //            NULL, replace if with DCHECK).
-      if (infoBarManager)
-        [_dependencyFactory showPassKitErrorInfoBarForManager:infoBarManager];
-    }
-  } else {
-    PKAddPassesViewController* passKitViewController =
-        [_dependencyFactory newPassKitViewControllerForPass:pass];
-    if (passKitViewController) {
-      [self presentViewController:passKitViewController
-                         animated:YES
-                       completion:^{
-                       }];
-    }
   }
 }
 

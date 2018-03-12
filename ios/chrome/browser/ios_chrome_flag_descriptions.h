@@ -100,11 +100,6 @@ extern const char kShareCanonicalURLDescription[];
 extern const char kSlimNavigationManagerName[];
 extern const char kSlimNavigationManagerDescription[];
 
-// Title and description for the flag to enable PassKit with ios/web Donwload
-// API.
-extern const char kNewPassKitDownloadName[];
-extern const char kNewPassKitDownloadDescription[];
-
 // Title and description for the flag to enable new Download Manager UI and
 // backend.
 extern const char kNewFileDownloadName[];

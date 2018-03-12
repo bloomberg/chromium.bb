@@ -79,7 +79,6 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
-#import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
@@ -365,9 +364,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // The receiver of JavaScripts.
   CRWJSInjectionReceiver* _jsInjectionReceiver;
 
-  // Handles downloading PassKit data for WKWebView. Lazy initialized.
-  CRWPassKitDownloader* _passKitDownloader;
-
   // Backs up property with the same name.
   std::unique_ptr<web::MojoFacade> _mojoFacade;
 
@@ -430,9 +426,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // -[self webViewURLDidChange] must be called every time when WKWebView.URL is
 // changed.
 @property(weak, nonatomic, readonly) NSDictionary* WKWebViewObservers;
-// Downloader for PassKit files. Lazy initialized.
-// DEPRECATED - Do not use this property. http://crbug.com/787943
-@property(weak, nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
 // The web view's view of the current URL. During page transitions
 // this may not be the same as the session history's view of the current URL.
@@ -1982,9 +1975,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)loadCancelled {
-  if (!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload)) {
-    [_passKitDownloader cancelPendingDownload];
-  }
   if (_loadPhase != web::PAGE_LOADED) {
     _loadPhase = web::PAGE_LOADED;
     if (!_isHalted) {
@@ -2165,34 +2155,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
   }
   return _mojoFacade.get();
-}
-
-- (CRWPassKitDownloader*)passKitDownloader {
-  DCHECK(!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload));
-  if (_passKitDownloader) {
-    return _passKitDownloader;
-  }
-  __weak CRWWebController* weakSelf = self;
-  web::PassKitCompletionHandler passKitCompletion = ^(NSData* data) {
-    CRWWebController* strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-    // Cancel load to update web state, since the PassKit download happens
-    // through a separate flow. This follows the same flow as when PassKit is
-    // downloaded through UIWebView.
-    [strongSelf loadCancelled];
-    SEL didLoadPassKitObject = @selector(webController:didLoadPassKitObject:);
-    id<CRWWebDelegate> delegate = [strongSelf delegate];
-    if ([delegate respondsToSelector:didLoadPassKitObject]) {
-      [delegate webController:strongSelf didLoadPassKitObject:data];
-    }
-  };
-  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-  _passKitDownloader = [[CRWPassKitDownloader alloc]
-      initWithContextGetter:browserState->GetRequestContext()
-          completionHandler:passKitCompletion];
-  return _passKitDownloader;
 }
 
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
@@ -2940,11 +2902,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)handleLoadError:(NSError*)error
           forNavigation:(WKNavigation*)navigation {
-  NSString* MIMEType = [_pendingNavigationInfo MIMEType];
-  if (!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) &&
-      [_passKitDownloader isMIMETypePassKitType:MIMEType]) {
-    return;
-  }
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
   // In cases where a Plug-in handles the load do not take any further action.
@@ -2983,6 +2940,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // WebStatePolicyDecider or the navigation was a download navigation.
     NSString* errorURLSpec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
     NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
+    NSString* MIMEType = [_pendingNavigationInfo MIMEType];
     if (!base::FeatureList::IsEnabled(web::features::kNewFileDownload) &&
         ![MIMEType isEqualToString:@"application/vnd.apple.pkpass"]) {
       // This block is executed to handle legacy download navigation.
@@ -3007,13 +2965,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if ([_openedApplicationURL containsObject:errorURL])
       return;
 
-    if (base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) ||
-        base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
-      // This navigation was a download navigation and embedder now has a chance
-      // to start the download task.
-      _webStateImpl->SetIsLoading(false);
-      return;
-    }
+    // This navigation was a download navigation and embedder now has a chance
+    // to start the download task.
+    _webStateImpl->SetIsLoading(false);
+    return;
 
     // The wrapper error uses the URL of the error and not the requested URL
     // (which can be different in case of a redirect) to match desktop Chrome
@@ -4339,11 +4294,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              responseURL, contentDisposition, contentLength,
                              base::SysNSStringToUTF8(MIMEType), transition);
     BOOL isPassKit = [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
-    if (!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) &&
-        isPassKit) {
-      [self.passKitDownloader downloadPassKitFileWithURL:responseURL];
-    }
-
     if (isPassKit ||
         base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
       // Discard the pending item to ensure that the current URL is not

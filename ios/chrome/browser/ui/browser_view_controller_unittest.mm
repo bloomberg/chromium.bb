@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/error_page_content.h"
-#import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -77,7 +76,7 @@ using web::WebStateImpl;
 
 // Private methods in BrowserViewController to test.
 @interface BrowserViewController (
-    Testing)<CRWNativeContentProvider, PassKitDialogProvider, TabModelObserver>
+    Testing)<CRWNativeContentProvider, TabModelObserver>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
 - (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
@@ -205,9 +204,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     id factory = [OCMockObject
         mockForClass:[BrowserViewControllerDependencyFactory class]];
     [[[factory stub] andReturn:bvcHelper_] newBrowserViewControllerHelper];
-    [[[factory stub] andReturn:passKitViewController_]
-        newPassKitViewControllerForPass:nil];
-    [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];
 
     tabModel_ = tabModel;
     tab_ = currentTab;
@@ -337,32 +333,6 @@ TEST_F(BrowserViewControllerTest,
     EXPECT_FALSE(webStateImpl_->IsLoading());
 
   EXPECT_OCMOCK_VERIFY(tabMock);
-}
-
-TEST_F(BrowserViewControllerTest, TestPassKitDialogDisplayed) {
-  // Create a good Pass and make sure the controller is displayed.
-  base::FilePath pass_path;
-  ASSERT_TRUE(PathService::Get(ios::DIR_TEST_DATA, &pass_path));
-  pass_path = pass_path.Append(FILE_PATH_LITERAL("testpass.pkpass"));
-  NSData* passKitObject = [NSData
-      dataWithContentsOfFile:base::SysUTF8ToNSString(pass_path.value())];
-  EXPECT_TRUE(passKitObject);
-  [[dependencyFactory_ expect] newPassKitViewControllerForPass:OCMOCK_ANY];
-  [bvc_ presentPassKitDialog:passKitObject];
-  EXPECT_OCMOCK_VERIFY(dependencyFactory_);
-}
-
-TEST_F(BrowserViewControllerTest, TestPassKitErrorInfoBarDisplayed) {
-  // Create a bad Pass and make sure the controller is not displayed.
-  base::FilePath bad_pass_path;
-  ASSERT_TRUE(PathService::Get(ios::DIR_TEST_DATA, &bad_pass_path));
-  bad_pass_path = bad_pass_path.Append(FILE_PATH_LITERAL("testbadpass.pkpass"));
-  NSData* badPassKitObject = [NSData
-      dataWithContentsOfFile:base::SysUTF8ToNSString(bad_pass_path.value())];
-  EXPECT_TRUE(badPassKitObject);
-  [[dependencyFactory_ reject] newPassKitViewControllerForPass:OCMOCK_ANY];
-  [bvc_ presentPassKitDialog:badPassKitObject];
-  EXPECT_OCMOCK_VERIFY(dependencyFactory_);
 }
 
 TEST_F(BrowserViewControllerTest, TestClearPresentedState) {

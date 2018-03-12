@@ -150,7 +150,6 @@ source_set("web_internal") {
     "external_app_launching_state.mm",
     "external_apps_launch_policy_decider.h",
     "external_apps_launch_policy_decider.mm",
-    "passkit_dialog_provider.h",
     "print_tab_helper.h",
     "print_tab_helper.mm",
     "web_state_printer.h",
