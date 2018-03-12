@@ -151,6 +151,7 @@
           "blink::mojom::PresentationService",
           "blink::mojom::QuotaDispatcherHost",
           "blink::mojom::TextSuggestionHost",
+          "blink::mojom::UnhandledTapNotifier",
           "blink::mojom::WebBluetoothService",
           "blink::mojom::WebSocket",
 

@@ -30,6 +30,9 @@ public class ContextualSearchTabHelper
     /** The Tab that this helper tracks. */
     private final Tab mTab;
 
+    // Device scale factor.
+    private final float mPxToDp;
+
     /** Notification handler for Contextual Search events. */
     private TemplateUrlServiceObserver mTemplateUrlObserver;
 
@@ -73,6 +76,11 @@ public class ContextualSearchTabHelper
         if (NetworkChangeNotifier.isInitialized()) {
             NetworkChangeNotifier.addConnectionTypeObserver(this);
         }
+        float scaleFactor = 1.f;
+        if (tab != null && tab.getActivity() != null && tab.getActivity().getResources() != null) {
+            scaleFactor /= tab.getActivity().getResources().getDisplayMetrics().density;
+        }
+        mPxToDp = scaleFactor;
     }
 
     // ============================================================================================
@@ -219,6 +227,7 @@ public class ContextualSearchTabHelper
                             contextualSearchManager.getContextualSearchSelectionClient()));
             contextualSearchManager.suppressContextualSearchForSmartSelection(
                     mSelectionClientManager.isSmartSelectionEnabledInChrome());
+            nativeInstallUnhandledTapNotifierIfNeeded(mNativeHelper, webContents, mPxToDp);
         }
     }
 
@@ -303,6 +312,20 @@ public class ContextualSearchTabHelper
         }
     }
 
+    /**
+     * Notifies this helper to show the Unhandled Tap UI due to a tap at the given pixel
+     * coordinates.
+     */
+    @CalledByNative
+    void onShowUnhandledTapUIIfNeeded(int x, int y) {
+        // Only notify the manager if we currently have a valid listener.
+        if (mGestureStateListener != null && getContextualSearchManager(mTab) != null) {
+            getContextualSearchManager(mTab).onShowUnhandledTapUIIfNeeded(x, y);
+        }
+    }
+
     private native long nativeInit(Profile profile);
+    private native void nativeInstallUnhandledTapNotifierIfNeeded(
+            long nativeContextualSearchTabHelper, WebContents webContents, float pxToDpScaleFactor);
     private native void nativeDestroy(long nativeContextualSearchTabHelper);
 }

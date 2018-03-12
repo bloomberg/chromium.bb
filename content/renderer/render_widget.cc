@@ -93,7 +93,6 @@
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
-#include "third_party/WebKit/public/web/WebTappedInfo.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -149,7 +148,6 @@ using blink::WebRange;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTappedInfo;
 using blink::WebTextDirection;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
@@ -2510,30 +2508,6 @@ blink::WebScreenInfo RenderWidget::GetScreenInfo() {
 
   return web_screen_info;
 }
-
-#if defined(OS_ANDROID)
-void RenderWidget::ShowUnhandledTapUIIfNeeded(
-    const WebTappedInfo& tapped_info) {
-  // Unpack tapped_info. TODO(donnd): inline unpacking.
-  bool page_changed = tapped_info.PageChanged();
-  const WebNode& tapped_node = tapped_info.GetNode();
-  const WebPoint& tapped_position = tapped_info.Position();
-  bool should_trigger = !page_changed && tapped_node.IsTextNode() &&
-                        !tapped_node.IsContentEditable() &&
-                        !tapped_node.IsInsideFocusableElementOrARIAWidget();
-  if (should_trigger) {
-    float x_px =
-        IsUseZoomForDSFEnabled()
-            ? tapped_position.x
-            : tapped_position.x * GetWebScreenInfo().device_scale_factor;
-    float y_px =
-        IsUseZoomForDSFEnabled()
-            ? tapped_position.y
-            : tapped_position.y * GetWebScreenInfo().device_scale_factor;
-    Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_, x_px, y_px));
-  }
-}
-#endif
 
 void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
                                          bool event_cancelled) {
