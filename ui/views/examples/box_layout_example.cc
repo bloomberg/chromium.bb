@@ -193,7 +193,7 @@ void ChildPanel::ContentsChanged(Textfield* sender,
 
 Textfield* ChildPanel::CreateTextfield() {
   Textfield* textfield = new Textfield();
-  textfield->set_default_width_in_chars(3);
+  textfield->SetDefaultWidthInChars(3);
   textfield->SizeToPreferredSize();
   textfield->SetText(base::ASCIIToUTF16("0"));
   textfield->set_controller(this);
@@ -242,7 +242,7 @@ Textfield* BoxLayoutExample::CreateRawTextfield(int& horizontal_pos,
                                                 bool add) {
   Textfield* text_field = new Textfield();
   text_field->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
-  text_field->set_default_width_in_chars(3);
+  text_field->SetDefaultWidthInChars(3);
   text_field->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
   text_field->SizeToPreferredSize();
   text_field->SetText(base::ASCIIToUTF16("0"));

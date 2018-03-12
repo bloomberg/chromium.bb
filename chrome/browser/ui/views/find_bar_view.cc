@@ -49,7 +49,11 @@
 namespace {
 
 // The default number of average characters that the text box will be.
-const int kDefaultCharWidth = 30;
+constexpr int kDefaultCharWidth = 30;
+
+// The minimum allowable width in chars for the find_text_ view. This ensures
+// the view can at least display the caret and some number of characters.
+constexpr int kMinimumCharWidth = 1;
 
 // The match count label is like a normal label, but can process events (which
 // makes it easier to forward events to the text input --- see
@@ -114,7 +118,8 @@ FindBarView::FindBarView(FindBarHost* host)
       find_next_button_(views::CreateVectorImageButton(this)),
       close_button_(views::CreateVectorImageButton(this)) {
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
-  find_text_->set_default_width_in_chars(kDefaultCharWidth);
+  find_text_->SetDefaultWidthInChars(kDefaultCharWidth);
+  find_text_->SetMinimumWidthInChars(kMinimumCharWidth);
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
@@ -202,7 +207,8 @@ FindBarView::FindBarView(FindBarHost* host)
       views::BoxLayout::kHorizontal,
       gfx::Insets(provider->GetInsetsMetric(INSETS_TOAST) - horizontal_margin),
       0));
-  manager->SetFlexForView(find_text_, 1);
+
+  manager->SetFlexForView(find_text_, 1, true);
 }
 
 FindBarView::~FindBarView() {

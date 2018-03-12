@@ -14,7 +14,7 @@ views::Textfield* CreateCvcTextfield() {
   views::Textfield* textfield = new views::Textfield();
   textfield->set_placeholder_text(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
-  textfield->set_default_width_in_chars(8);
+  textfield->SetDefaultWidthInChars(8);
   textfield->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
   return textfield;
 }
