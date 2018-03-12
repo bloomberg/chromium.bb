@@ -1129,6 +1129,8 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
       cm->buffer_pool->frame_bufs[ref_frame_idx].mi_cols != cm->mi_cols)
     return 0;
 
+  if (cm->buffer_pool->frame_bufs[ref_frame_idx].allow_mvs == 0) return 0;
+
   int ref_frame_index =
       cm->buffer_pool->frame_bufs[ref_frame_idx].cur_frame_offset;
   unsigned int *ref_rf_idx =
