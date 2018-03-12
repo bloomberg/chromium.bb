@@ -187,4 +187,10 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertSHA256) {
   EXPECT_FALSE(signatures.has_value());
 }
 
+TEST_F(SignedExchangeHeaderParserTest, OpenQuoteAtEnd) {
+  const char hdr_string[] = "sig1; sig=\"";
+  auto signatures = SignedExchangeHeaderParser::ParseSignature(hdr_string);
+  EXPECT_FALSE(signatures.has_value());
+}
+
 }  // namespace content
