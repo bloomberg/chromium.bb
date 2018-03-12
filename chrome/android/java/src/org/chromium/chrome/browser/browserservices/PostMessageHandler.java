@@ -32,7 +32,7 @@ public class PostMessageHandler
     private boolean mMessageChannelCreated;
     private boolean mBoundToService;
     private AppWebMessagePort[] mChannel;
-    private Uri mOrigin;
+    private Uri mPostMessageUri;
     private String mPackageName;
 
     /**
@@ -77,7 +77,7 @@ public class PostMessageHandler
         // Can't reset with the same web contents twice.
         if (webContents.equals(mWebContents)) return;
         mWebContents = webContents;
-        if (mOrigin == null) return;
+        if (mPostMessageUri == null) return;
         new WebContentsObserver(webContents) {
             private boolean mNavigatedOnce;
 
@@ -125,7 +125,7 @@ public class PostMessageHandler
         mChannel[0].setMessageCallback(mMessageCallback, null);
 
         webContents.postMessageToFrame(
-                null, "", mOrigin.toString(), "", new AppWebMessagePort[] {mChannel[1]});
+                null, "", mPostMessageUri.toString(), "", new AppWebMessagePort[] {mChannel[1]});
 
         mMessageChannelCreated = true;
         if (mBoundToService) notifyMessageChannelReady(null);
@@ -139,11 +139,11 @@ public class PostMessageHandler
     }
 
     /**
-     * Sets the postMessage origin for this session to the given {@link Uri}.
-     * @param origin The origin value to be set.
+     * Sets the postMessage postMessageUri for this session to the given {@link Uri}.
+     * @param postMessageUri The postMessageUri value to be set.
      */
-    public void initializeWithOrigin(Uri origin) {
-        mOrigin = origin;
+    public void initializeWithPostMessageUri(Uri postMessageUri) {
+        mPostMessageUri = postMessageUri;
         if (mWebContents != null && !mWebContents.isDestroyed()) {
             initializeWithWebContents(mWebContents);
         }
@@ -191,17 +191,18 @@ public class PostMessageHandler
     }
 
     @Override
-    public void onOriginVerified(String packageName, Uri origin, boolean result) {
+    public void onOriginVerified(String packageName, Origin origin, boolean result) {
         if (!result) return;
-        initializeWithOrigin(origin);
+        initializeWithPostMessageUri(
+                OriginVerifier.getPostMessageUriFromVerifiedOrigin(packageName, origin));
     }
 
     /**
-     * @return The origin that has been declared for this handler.
+     * @return The PostMessage Uri that has been declared for this handler.
      */
     @VisibleForTesting
-    public Uri getOriginForTesting() {
-        return mOrigin;
+    public Uri getPostMessageUriForTesting() {
+        return mPostMessageUri;
     }
 
     /**

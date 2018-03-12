@@ -40,13 +40,13 @@ public class OriginVerifierTest {
     private static final String SHA_256_FINGERPRINT = ChromeVersionInfo.isOfficialBuild()
             ? SHA_256_FINGERPRINT_OFFICIAL
             : SHA_256_FINGERPRINT_PUBLIC;
-    private static final Uri TEST_HTTPS_ORIGIN_1 = Uri.parse("https://www.example.com");
-    private static final Uri TEST_HTTPS_ORIGIN_2 = Uri.parse("https://www.android.com");
-    private static final Uri TEST_HTTP_ORIGIN = Uri.parse("http://www.android.com");
+    private static final Origin TEST_HTTPS_ORIGIN_1 = new Origin("https://www.example.com");
+    private static final Origin TEST_HTTPS_ORIGIN_2 = new Origin("https://www.android.com");
+    private static final Origin TEST_HTTP_ORIGIN = new Origin("http://www.android.com");
 
     private class TestOriginVerificationListener implements OriginVerificationListener {
         @Override
-        public void onOriginVerified(String packageName, Uri origin, boolean verified) {
+        public void onOriginVerified(String packageName, Origin origin, boolean verified) {
             mLastPackageName = packageName;
             mLastOrigin = origin;
             mLastVerified = verified;
@@ -58,7 +58,7 @@ public class OriginVerifierTest {
     private OriginVerifier mUseAsOriginVerifier;
     private OriginVerifier mHandleAllUrlsVerifier;
     private volatile String mLastPackageName;
-    private volatile Uri mLastOrigin;
+    private volatile Origin mLastOrigin;
     private volatile boolean mLastVerified;
 
     @Before
@@ -81,7 +81,8 @@ public class OriginVerifierTest {
     @Test
     @SmallTest
     public void testOnlyHttpsAllowed() throws InterruptedException {
-        ThreadUtils.postOnUiThread(() -> mHandleAllUrlsVerifier.start(Uri.parse("LOL")));
+        ThreadUtils.postOnUiThread(()
+                -> mHandleAllUrlsVerifier.start(new Origin(Uri.parse("LOL"))));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertFalse(mLastVerified);
@@ -117,8 +118,6 @@ public class OriginVerifierTest {
             }
         }));
         Assert.assertEquals(mLastPackageName, PACKAGE_NAME);
-        Assert.assertEquals(mLastOrigin,
-                OriginVerifier.getPostMessageOriginFromVerifiedOrigin(
-                        PACKAGE_NAME, TEST_HTTPS_ORIGIN_1));
+        Assert.assertEquals(mLastOrigin, TEST_HTTPS_ORIGIN_1);
     }
 }

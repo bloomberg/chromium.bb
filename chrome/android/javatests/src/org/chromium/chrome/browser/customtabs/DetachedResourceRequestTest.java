@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
@@ -26,6 +25,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -84,7 +84,7 @@ public class DetachedResourceRequestTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             String packageName = mContext.getPackageName();
             OriginVerifier.addVerifiedOriginForPackage(
-                    packageName, Uri.parse(ORIGIN), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                    packageName, new Origin(ORIGIN), CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(session, ORIGIN));
         });
     }
@@ -211,8 +211,8 @@ public class DetachedResourceRequestTest {
         Assert.assertTrue(mConnection.newSession(session));
         CustomTabsTestUtils.warmUpAndWait();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            OriginVerifier.addVerifiedOriginForPackage(mContext.getPackageName(), Uri.parse(origin),
-                    CustomTabsService.RELATION_USE_AS_ORIGIN);
+            OriginVerifier.addVerifiedOriginForPackage(mContext.getPackageName(),
+                    new Origin(origin), CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(session, origin));
         });
         return session;
