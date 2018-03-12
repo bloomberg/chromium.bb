@@ -251,13 +251,6 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   Supplementable<LocalFrame>::Trace(visitor);
 }
 
-bool LocalFrame::IsLocalRoot() const {
-  if (!Tree().Parent())
-    return true;
-
-  return Tree().Parent()->IsRemoteFrame();
-}
-
 void LocalFrame::Navigate(Document& origin_document,
                           const KURL& url,
                           bool replace_current_item,
