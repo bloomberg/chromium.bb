@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_return_code.h"
@@ -18,7 +20,7 @@ namespace device {
 
 // Device abstraction for an individual U2F device. A U2F device defines the
 // standardized Register, Sign, and GetVersion methods.
-class U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
  public:
   enum class ProtocolVersion {
     U2F_V2,

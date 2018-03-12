@@ -8,12 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
+#include "base/macros.h"
 #include "device/fido/u2f_ble_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 
-class MockU2fBleConnection : public U2fBleConnection {
+class COMPONENT_EXPORT(DEVICE_FIDO) MockU2fBleConnection
+    : public U2fBleConnection {
  public:
   explicit MockU2fBleConnection(std::string device_address);
   ~MockU2fBleConnection() override;
@@ -45,6 +48,8 @@ class MockU2fBleConnection : public U2fBleConnection {
  private:
   ConnectionStatusCallback connection_status_callback_;
   ReadCallback read_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockU2fBleConnection);
 };
 
 }  // namespace device

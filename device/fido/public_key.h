@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace device {
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-attestation-data.
-class PublicKey {
+class COMPONENT_EXPORT(DEVICE_FIDO) PublicKey {
  public:
   virtual ~PublicKey();
 

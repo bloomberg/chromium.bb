@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/response_data.h"
@@ -18,7 +19,7 @@ namespace device {
 // Corresponds to a CTAP AuthenticatorGetAssertion response.
 // See mapping from a U2F response to a CTAP response
 // at https://goo.gl/eZTacx.
-class SignResponseData : public ResponseData {
+class COMPONENT_EXPORT(DEVICE_FIDO) SignResponseData : public ResponseData {
  public:
   static base::Optional<SignResponseData> CreateFromU2fSignResponse(
       const std::vector<uint8_t>& relying_party_id_hash,

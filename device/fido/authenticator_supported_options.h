@@ -5,6 +5,7 @@
 #ifndef DEVICE_FIDO_AUTHENTICATOR_SUPPORTED_OPTIONS_H_
 #define DEVICE_FIDO_AUTHENTICATOR_SUPPORTED_OPTIONS_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
@@ -13,7 +14,7 @@ namespace device {
 
 // Represents CTAP device properties and capabilities received as a response to
 // AuthenticatorGetInfo command.
-class AuthenticatorSupportedOptions {
+class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
  public:
   AuthenticatorSupportedOptions();
   AuthenticatorSupportedOptions(AuthenticatorSupportedOptions&& other);
