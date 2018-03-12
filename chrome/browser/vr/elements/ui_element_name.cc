@@ -81,7 +81,6 @@ static const char* g_ui_element_name_strings[] = {
     "kLoadingIndicator",
     "kLoadingIndicatorForeground",
     "kCloseButton",
-    "kVoiceSearchButton",
     "kScreenDimmer",
     "kExitWarningText",
     "kExitWarningBackground",

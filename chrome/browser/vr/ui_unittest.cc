@@ -254,11 +254,11 @@ TEST_F(UiTest, VoiceSearchHiddenInIncognito) {
 
   model_->push_mode(kModeEditingOmnibox);
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_TRUE(IsVisible(kVoiceSearchButton));
+  EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 
   model_->incognito = true;
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+  EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
 }
 
 TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
@@ -267,11 +267,11 @@ TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
   model_->push_mode(kModeEditingOmnibox);
   model_->speech.has_or_can_request_audio_permission = true;
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_TRUE(IsVisible(kVoiceSearchButton));
+  EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 
   model_->speech.has_or_can_request_audio_permission = false;
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+  EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
 }
 
 TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
@@ -281,11 +281,11 @@ TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
   model_->speech.has_or_can_request_audio_permission = true;
   model_->capturing_state.audio_capture_enabled = false;
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_TRUE(IsVisible(kVoiceSearchButton));
+  EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 
   model_->capturing_state.audio_capture_enabled = true;
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+  EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
 }
 
 TEST_F(UiTest, UiModeWebVr) {

@@ -32,6 +32,7 @@ class DiscButton : public Button {
   void OnStateUpdated() override;
   void OnSetDrawPhase() override;
   void OnSetName() override;
+  void OnSetCornerRadii(const CornerRadii& radii) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
                                 cc::KeyframeModel* keyframe_model) override;
