@@ -75,7 +75,17 @@ void AppListControllerImpl::BindRequest(
 }
 
 void AppListControllerImpl::AddItem(AppListItemMetadataPtr item_data) {
-  model_.AddItem(CreateAppListItem(std::move(item_data)));
+  const std::string folder_id = item_data->folder_id;
+  if (folder_id.empty()) {
+    model_.AddItem(CreateAppListItem(std::move(item_data)));
+  } else {
+    // When we're setting a whole model of a profile, each item may have its
+    // folder id set properly. However, |AppListModel::AddItemToFolder| requires
+    // the item to add is not in the target folder yet, and sets its folder id
+    // later. So we should clear the folder id here to avoid breaking checks.
+    item_data->folder_id.clear();
+    AddItemToFolder(std::move(item_data), folder_id);
+  }
 }
 
 void AppListControllerImpl::AddItemToFolder(AppListItemMetadataPtr item_data,
@@ -167,7 +177,7 @@ void AppListControllerImpl::SetModelData(
   search_model_.DeleteAllResults();
 
   // Populate new models. First populate folders and then other items to avoid
-  // automatically creating items in |AddItemToFolder|.
+  // automatically creating folder items in |AddItemToFolder|.
   for (auto& app : apps) {
     if (!app->is_folder)
       continue;
@@ -177,11 +187,7 @@ void AppListControllerImpl::SetModelData(
   for (auto& app : apps) {
     if (!app)
       continue;
-    const std::string folder_id = app->folder_id;
-    if (folder_id.empty())
-      AddItem(std::move(app));
-    else
-      AddItemToFolder(std::move(app), folder_id);
+    AddItem(std::move(app));
   }
   search_model_.SetSearchEngineIsGoogle(is_search_engine_google);
 }
