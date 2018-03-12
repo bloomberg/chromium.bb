@@ -1124,7 +1124,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   color: rgb(79, 129, 232);
   font-size: 13px;
   font-weight: 500;
-  height: 32px;
+  height: 2.5em;
 }
 
 .banner-close {

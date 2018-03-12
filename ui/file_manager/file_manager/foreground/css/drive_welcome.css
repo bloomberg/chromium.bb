@@ -26,8 +26,9 @@
 
 /* Header welcome banner. */
 .drive-welcome.header {
+  background-color: rgb(79, 129, 232);
   flex: none;
-  height: 128px;
+  height: 130px;
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
@@ -40,7 +41,6 @@
 }
 
 .drive-welcome.header .drive-welcome-wrapper {
-  background-color: rgb(79, 129, 232);
   color: white;
   display: flex;
   flex-direction: row;
