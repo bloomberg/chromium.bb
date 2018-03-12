@@ -628,6 +628,12 @@ const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorNotAvailable[] = "org.bluez.Error.NotAvailable";
 }  // namespace bluetooth_media_transport
 
+namespace bluez_object_manager {
+// BlueZ daemon Object Manager service identifiers.
+const char kBluezObjectManagerServiceName[] = "org.bluez";
+const char kBluezObjectManagerServicePath[] = "/";
+}  // namespace bluez_object_manager
+
 namespace bluetooth_object_manager {
 // Bluetooth daemon Object Manager service identifiers.
 const char kBluetoothObjectManagerServiceName[] = "org.bluez";
