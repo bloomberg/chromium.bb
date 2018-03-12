@@ -38,15 +38,6 @@ namespace base {
 
 namespace {
 
-// A constant to be stored in the dummy field and later verified. This could
-// be either 32 or 64 bit but clang won't truncate the value without an error.
-// TODO(bcwhite): Remove this once crbug/736675 is fixed.
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-constexpr uintptr_t kDummyValue = 0xFEEDC0DEDEADBEEF;
-#else
-constexpr uintptr_t kDummyValue = 0xDEADBEEF;
-#endif
-
 bool ReadHistogramArguments(PickleIterator* iter,
                             std::string* histogram_name,
                             int* flags,
@@ -538,47 +529,6 @@ void Histogram::WriteAscii(std::string* output) const {
   WriteAsciiImpl(true, "\n", output);
 }
 
-bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
-                                          int identifier) const {
-  enum Fields : int {
-    kUnloggedBucketRangesField,
-    kUnloggedSamplesField,
-    kLoggedSamplesField,
-    kIdField,
-    kHistogramNameField,
-    kFlagsField,
-    kLoggedBucketRangesField,
-    kDummyField,
-  };
-
-  uint32_t bad_fields = 0;
-  if (!unlogged_samples_)
-    bad_fields |= 1 << kUnloggedSamplesField;
-  else if (!unlogged_samples_->bucket_ranges())
-    bad_fields |= 1 << kUnloggedBucketRangesField;
-  if (!logged_samples_)
-    bad_fields |= 1 << kLoggedSamplesField;
-  else if (!logged_samples_->bucket_ranges())
-    bad_fields |= 1 << kLoggedBucketRangesField;
-  else if (logged_samples_->id() == 0)
-    bad_fields |= 1 << kIdField;
-  if (flags() == 0)
-    bad_fields |= 1 << kFlagsField;
-  if (dummy_ != kDummyValue)
-    bad_fields |= 1 << kDummyField;
-
-  const bool is_valid = (bad_fields & ~(1 << kFlagsField)) == 0;
-  if (is_valid || !crash_if_invalid)
-    return is_valid;
-
-  // Abort if a problem is found (except "flags", which could legally be zero).
-  std::string debug_string = base::StringPrintf(
-      "%s/%" PRIu32 "#%d", histogram_name(), bad_fields, identifier);
-  CHECK(false) << debug_string;
-  debug::Alias(&bad_fields);
-  return false;
-}
-
 void Histogram::SerializeInfoImpl(Pickle* pickle) const {
   DCHECK(bucket_ranges()->HasValidChecksum());
   pickle->WriteString(histogram_name());
@@ -594,7 +544,7 @@ Histogram::Histogram(const char* name,
                      Sample minimum,
                      Sample maximum,
                      const BucketRanges* ranges)
-    : HistogramBase(name), dummy_(kDummyValue) {
+    : HistogramBase(name) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(new SampleVector(HashMetricName(name), ranges));
@@ -609,7 +559,7 @@ Histogram::Histogram(const char* name,
                      const DelayedPersistentAllocation& logged_counts,
                      HistogramSamples::Metadata* meta,
                      HistogramSamples::Metadata* logged_meta)
-    : HistogramBase(name), dummy_(kDummyValue) {
+    : HistogramBase(name) {
   // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
   CHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(

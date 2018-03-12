@@ -208,15 +208,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
   void WriteHTMLGraph(std::string* output) const override;
   void WriteAscii(std::string* output) const override;
 
-  // Validates the histogram contents. If |crash_if_invalid| is true and the
-  // histogram is invalid, this will trigger a CHECK. Otherwise, it will return
-  // a bool indicating if the histogram is valid. |corrupted_count| is extra
-  // information the caller can provide about the number of corrupt histograms
-  // if available.
-  // TODO(bcwhite): Remove this after crbug/736675.
-  bool ValidateHistogramContents(bool crash_if_invalid,
-                                 int identifier) const override;
-
  protected:
   // This class, defined entirely within the .cc file, contains all the
   // common logic for building a Histogram and can be overridden by more
@@ -317,13 +308,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Accumulation of all samples that have been logged with SnapshotDelta().
   std::unique_ptr<SampleVectorBase> logged_samples_;
-
-  // This is a dummy field placed where corruption is frequently seen on
-  // current Android builds. The hope is that it will mitigate the problem
-  // sufficiently to continue with the M61 beta branch while investigation
-  // into the true problem continues.
-  // TODO(bcwhite): Remove this once crbug/736675 is fixed.
-  const uintptr_t dummy_;
 
 #if DCHECK_IS_ON()  // Don't waste memory if it won't be used.
   // Flag to indicate if PrepareFinalDelta has been previously called. It is

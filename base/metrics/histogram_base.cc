@@ -128,11 +128,6 @@ uint32_t HistogramBase::FindCorruption(const HistogramSamples& samples) const {
   return NO_INCONSISTENCIES;
 }
 
-bool HistogramBase::ValidateHistogramContents(bool crash_if_invalid,
-                                              int corrupted_count) const {
-  return true;
-}
-
 void HistogramBase::WriteJSON(std::string* output,
                               JSONVerbosityLevel verbosity_level) const {
   Count count;
