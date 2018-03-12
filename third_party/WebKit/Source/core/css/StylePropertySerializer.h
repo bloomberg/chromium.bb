@@ -50,6 +50,7 @@ class StylePropertySerializer {
   String Get2Values(const StylePropertyShorthand&) const;
   String Get4Values(const StylePropertyShorthand&) const;
   String BorderSpacingValue(const StylePropertyShorthand&) const;
+  String PageBreakPropertyValue(const StylePropertyShorthand&) const;
   String GetShorthandValue(const StylePropertyShorthand&,
                            String separator = " ") const;
   String FontValue() const;

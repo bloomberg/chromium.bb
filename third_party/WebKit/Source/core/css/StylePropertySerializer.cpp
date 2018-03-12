@@ -518,6 +518,12 @@ String StylePropertySerializer::GetPropertyValue(
       return Get2Values(scrollMarginBlockShorthand());
     case CSSPropertyScrollMarginInline:
       return Get2Values(scrollMarginInlineShorthand());
+    case CSSPropertyPageBreakAfter:
+      return PageBreakPropertyValue(pageBreakAfterShorthand());
+    case CSSPropertyPageBreakBefore:
+      return PageBreakPropertyValue(pageBreakBeforeShorthand());
+    case CSSPropertyPageBreakInside:
+      return PageBreakPropertyValue(pageBreakInsideShorthand());
     default:
       return String();
   }
@@ -1054,6 +1060,20 @@ String StylePropertySerializer::BackgroundRepeatPropertyValue() const {
     AppendBackgroundRepeatValue(builder, x_value, y_value);
   }
   return builder.ToString();
+}
+
+String StylePropertySerializer::PageBreakPropertyValue(
+    const StylePropertyShorthand& shorthand) const {
+  const CSSValue* value =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
+  CSSValueID value_id = ToCSSIdentifierValue(value)->GetValueID();
+  // https://drafts.csswg.org/css-break/#page-break-properties
+  if (value_id == CSSValuePage)
+    return "always";
+  if (value_id == CSSValueAuto || value_id == CSSValueLeft ||
+      value_id == CSSValueRight || value_id == CSSValueAvoid)
+    return value->CssText();
+  return String();
 }
 
 }  // namespace blink
