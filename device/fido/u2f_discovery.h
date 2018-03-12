@@ -25,8 +25,8 @@ namespace device {
 
 class U2fDevice;
 
-namespace internal {
-class ScopedU2fDiscoveryFactory;
+namespace test {
+class ScopedFakeU2fDiscoveryFactory;
 }
 
 class U2fDiscovery {
@@ -79,7 +79,7 @@ class U2fDiscovery {
   base::ObserverList<Observer> observers_;
 
  private:
-  friend class internal::ScopedU2fDiscoveryFactory;
+  friend class test::ScopedFakeU2fDiscoveryFactory;
 
   // Factory function can be overridden by tests to construct fakes.
   using FactoryFuncPtr = decltype(&Create);
@@ -88,38 +88,6 @@ class U2fDiscovery {
   DISALLOW_COPY_AND_ASSIGN(U2fDiscovery);
 };
 
-namespace internal {
-
-// Base class for a scoped override of U2fDiscovery::Create, used in unit tests,
-// layout tests, and when running with the Web Authn Testing API enabled.
-//
-// While there is a subclass instance in scope, calls to the factory method will
-// be hijacked such that the derived class's CreateU2fDiscovery method will be
-// invoked instead.
-class ScopedU2fDiscoveryFactory {
- public:
-  ScopedU2fDiscoveryFactory();
-  ~ScopedU2fDiscoveryFactory();
-
- protected:
-  virtual std::unique_ptr<U2fDiscovery> CreateU2fDiscovery(
-      U2fTransportProtocol transport,
-      ::service_manager::Connector* connector) = 0;
-
- private:
-  static std::unique_ptr<U2fDiscovery>
-  ForwardCreateU2fDiscoveryToCurrentFactory(
-      U2fTransportProtocol transport,
-      ::service_manager::Connector* connector);
-
-  static ScopedU2fDiscoveryFactory* g_current_factory;
-  ScopedU2fDiscoveryFactory* original_factory_;
-  U2fDiscovery::FactoryFuncPtr original_factory_func_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedU2fDiscoveryFactory);
-};
-
-}  // namespace internal
 }  // namespace device
 
 #endif  // DEVICE_FIDO_U2F_DISCOVERY_H_
