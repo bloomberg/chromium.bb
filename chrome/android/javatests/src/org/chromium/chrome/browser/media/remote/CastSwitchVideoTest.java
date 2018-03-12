@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.media.MediaSwitches;
 
 import java.util.concurrent.TimeoutException;
 
@@ -34,7 +35,8 @@ import java.util.concurrent.TimeoutException;
  * Test that other videos are played locally when casting
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "disable-features=" + MediaSwitches.USE_MODERN_MEDIA_CONTROLS})
 public class CastSwitchVideoTest {
     @Rule
     public CastTestRule mCastTestRule = new CastTestRule();

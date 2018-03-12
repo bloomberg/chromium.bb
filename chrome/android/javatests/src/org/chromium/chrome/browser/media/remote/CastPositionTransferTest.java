@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.media.MediaSwitches;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,8 @@ import java.util.concurrent.TimeoutException;
  * the remote player.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "disable-features=" + MediaSwitches.USE_MODERN_MEDIA_CONTROLS})
 @RetryOnFailure
 public class CastPositionTransferTest {
     @Rule

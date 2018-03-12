@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.media.MediaSwitches;
 
 import java.util.concurrent.TimeoutException;
 
@@ -34,7 +35,8 @@ import java.util.concurrent.TimeoutException;
  * video.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "disable-features=" + MediaSwitches.USE_MODERN_MEDIA_CONTROLS})
 public class CastStartStopTest {
     @Rule
     public CastTestRule mCastTestRule = new CastTestRule();
