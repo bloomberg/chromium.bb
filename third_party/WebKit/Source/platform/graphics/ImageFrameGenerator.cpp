@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "SkData.h"
 #include "platform/graphics/ImageDecodingStore.h"

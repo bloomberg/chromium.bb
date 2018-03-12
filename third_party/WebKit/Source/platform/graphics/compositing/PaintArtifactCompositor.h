@@ -6,7 +6,6 @@
 #define PaintArtifactCompositor_h
 
 #include <memory>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"

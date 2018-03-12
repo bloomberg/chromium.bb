@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
