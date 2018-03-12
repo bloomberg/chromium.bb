@@ -132,4 +132,34 @@ bool U2fDiscovery::RemoveDevice(base::StringPiece device_id) {
   return true;
 }
 
+// ScopedU2fDiscoveryFactory -------------------------------------------------
+
+namespace internal {
+
+ScopedU2fDiscoveryFactory::ScopedU2fDiscoveryFactory() {
+  original_factory_ = std::exchange(g_current_factory, this);
+  original_factory_func_ =
+      std::exchange(U2fDiscovery::g_factory_func_,
+                    &ForwardCreateU2fDiscoveryToCurrentFactory);
+}
+
+ScopedU2fDiscoveryFactory::~ScopedU2fDiscoveryFactory() {
+  g_current_factory = original_factory_;
+  U2fDiscovery::g_factory_func_ = original_factory_func_;
+}
+
+// static
+std::unique_ptr<U2fDiscovery>
+ScopedU2fDiscoveryFactory::ForwardCreateU2fDiscoveryToCurrentFactory(
+    U2fTransportProtocol transport,
+    ::service_manager::Connector* connector) {
+  DCHECK(g_current_factory);
+  return g_current_factory->CreateU2fDiscovery(transport, connector);
+}
+
+// static
+ScopedU2fDiscoveryFactory* ScopedU2fDiscoveryFactory::g_current_factory =
+    nullptr;
+
+}  // namespace internal
 }  // namespace device
