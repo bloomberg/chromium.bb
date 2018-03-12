@@ -480,9 +480,12 @@ class NotificationPlatformBridgeWinImpl
   void SetReadyCallback(
       NotificationPlatformBridge::NotificationBridgeReadyCallback callback) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    std::move(callback).Run(
-        com_functions_initialized_ && IsToastActivatorRegistered() &&
-        InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled());
+    bool enabled = com_functions_initialized_ && IsToastActivatorRegistered() &&
+                   InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled();
+    bool success = content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback), enabled));
+    DCHECK(success);
   }
 
   void HandleEvent(winui::Notifications::IToastNotification* notification,
