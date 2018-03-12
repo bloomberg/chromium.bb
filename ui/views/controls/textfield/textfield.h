@@ -161,9 +161,10 @@ class VIEWS_EXPORT Textfield : public View,
   void SetFontList(const gfx::FontList& font_list);
 
   // Sets the default width of the text control. See default_width_in_chars_.
-  void set_default_width_in_chars(int default_width) {
-    default_width_in_chars_ = default_width;
-  }
+  void SetDefaultWidthInChars(int default_width);
+
+  // Sets the minimum width of the text control. See minimum_width_in_chars_.
+  void SetMinimumWidthInChars(int minimum_width);
 
   // Sets the text to display when empty.
   void set_placeholder_text(const base::string16& text) {
@@ -243,6 +244,7 @@ class VIEWS_EXPORT Textfield : public View,
   // View overrides:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
   const char* GetClassName() const override;
   void SetBorder(std::unique_ptr<Border> b) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
@@ -493,8 +495,15 @@ class VIEWS_EXPORT Textfield : public View,
   bool read_only_;
 
   // The default number of average characters for the width of this text field.
-  // This will be reported as the "desired size". Defaults to 0.
+  // This will be reported as the "desired size". Must be set to >=
+  // minimum_width_in_chars_. Defaults to 0.
   int default_width_in_chars_;
+
+  // The minimum allowed width of this text field in average characters. This
+  // will be reported as the minimum size. Must be set to <=
+  // default_width_in_chars_. Setting this to -1 will cause GetMinimumSize() to
+  // return View::GetMinimumSize(). Defaults to -1.
+  int minimum_width_in_chars_;
 
   // Flags indicating whether various system colors should be used, and if not,
   // what overriding color values should be used instead.

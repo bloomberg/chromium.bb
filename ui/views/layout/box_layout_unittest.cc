@@ -884,4 +884,31 @@ TEST_F(BoxLayoutTest, NegativeBetweenChildSpacing) {
   EXPECT_EQ(gfx::Rect(0, 10, 20, 15), v2->bounds());
 }
 
+TEST_F(BoxLayoutTest, MinimumChildSize) {
+  BoxLayout* layout = host_->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets()));
+  StaticSizedView* v1 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v1);
+  StaticSizedView* v2 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v2);
+
+  v1->set_minimum_size(gfx::Size(10, 20));
+  layout->SetFlexForView(v1, 1, true);
+
+  gfx::Size preferred_size = layout->GetPreferredSize(host_.get());
+  EXPECT_EQ(40, preferred_size.width());
+  EXPECT_EQ(20, preferred_size.height());
+
+  host_->SetBounds(0, 0, 15, 20);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 20), v1->bounds());
+  EXPECT_EQ(gfx::Rect(10, 0, 5, 20), v2->bounds());
+
+  v1->set_minimum_size(gfx::Size(5, 20));
+
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 5, 20), v1->bounds());
+  EXPECT_EQ(gfx::Rect(5, 0, 10, 20), v2->bounds());
+}
+
 }  // namespace views

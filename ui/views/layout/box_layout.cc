@@ -106,12 +106,15 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
 BoxLayout::~BoxLayout() {
 }
 
-void BoxLayout::SetFlexForView(const View* view, int flex_weight) {
+void BoxLayout::SetFlexForView(const View* view,
+                               int flex_weight,
+                               bool use_min_size) {
   DCHECK(host_);
   DCHECK(view);
   DCHECK_EQ(host_, view->parent());
   DCHECK_GE(flex_weight, 0);
-  flex_map_[view] = flex_weight;
+  flex_map_[view].flex_weight = flex_weight;
+  flex_map_[view].use_min_size = use_min_size;
 }
 
 void BoxLayout::ClearFlexForView(const View* view) {
@@ -250,8 +253,9 @@ void BoxLayout::Layout(View* host) {
 
     // Calculate flex padding.
     int current_padding = 0;
-    if (GetFlexForView(child.view()) > 0) {
-      current_flex += GetFlexForView(child.view());
+    int child_flex = GetFlexForView(child.view());
+    if (child_flex > 0) {
+      current_flex += child_flex;
       int quot = (main_free_space * current_flex) / flex_sum;
       int rem = (main_free_space * current_flex) % flex_sum;
       current_padding = quot - total_padding;
@@ -265,7 +269,12 @@ void BoxLayout::Layout(View* host) {
     // TODO(bruthig): Use the allocated width to determine the cross axis size.
     // See https://crbug.com/682266.
     int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
-    SetMainAxisSize(child_main_axis_size + current_padding, &bounds);
+    int child_min_size = GetMinimumSizeForView(child.view());
+    if (child_min_size > 0 && !collapse_margins_spacing_)
+      child_min_size += child.margins().width();
+    SetMainAxisSize(
+        std::max(child_min_size, child_main_axis_size + current_padding),
+        &bounds);
     if (MainAxisSize(bounds) > 0 || GetFlexForView(child.view()) > 0)
       main_position += MainAxisSize(bounds) +
                        MainAxisMarginBetweenViews(
@@ -359,7 +368,16 @@ int BoxLayout::GetFlexForView(const View* view) const {
   if (it == flex_map_.end())
     return default_flex_;
 
-  return it->second;
+  return it->second.flex_weight;
+}
+
+int BoxLayout::GetMinimumSizeForView(const View* view) const {
+  FlexMap::const_iterator it = flex_map_.find(view);
+  if (it == flex_map_.end() || !it->second.use_min_size)
+    return 0;
+
+  return (orientation_ == kHorizontal) ? view->GetMinimumSize().width()
+                                       : view->GetMinimumSize().height();
 }
 
 int BoxLayout::MainAxisSize(const gfx::Rect& rect) const {
