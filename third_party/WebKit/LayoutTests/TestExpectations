@@ -3007,6 +3007,11 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ S
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
+# Workaround crbug.com/817175 . Very difficult to fix with old-world compositing. Pass with SPv2.
+crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
+crbug.com/817175 virtual/disable-spv175/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
+crbug.com/817175 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
+
 # RSA key generation is intrinsically very slow. Even when marked as [ Slow ], these tests can still time out.
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSA-OAEP.https.worker.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSA-PSS.https.worker.html [ Pass Timeout ]

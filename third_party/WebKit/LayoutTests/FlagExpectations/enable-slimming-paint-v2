@@ -98,6 +98,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
+crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 
 Bug(none) paint/invalidation/clip/clip-flex-text.html [ Pass Failure ]
