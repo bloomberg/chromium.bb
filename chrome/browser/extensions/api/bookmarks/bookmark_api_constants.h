@@ -26,6 +26,7 @@ extern const char kModifySpecialError[];
 extern const char kEditBookmarksDisabled[];
 extern const char kModifyManagedError[];
 extern const char kInvalidParamError[];
+extern const char kCannotSetUrlOfFolderError[];
 
 }  // namespace bookmark_api_constants
 }  // namespace extensions

@@ -695,6 +695,11 @@ bool BookmarksUpdateFunction::RunOnReady() {
     error_ = keys::kModifySpecialError;
     return false;
   }
+  if (!url.is_empty() && node->is_folder()) {
+    error_ = keys::kCannotSetUrlOfFolderError;
+    return false;
+  }
+
   if (has_title)
     model->SetTitle(node, title);
   if (!url.is_empty())
