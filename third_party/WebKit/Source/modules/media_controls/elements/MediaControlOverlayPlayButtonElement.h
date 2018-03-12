@@ -79,6 +79,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   void MaybeJump(int);
 
   TaskRunnerTimer<MediaControlOverlayPlayButtonElement> tap_timer_;
+  WTF::Optional<bool> tap_was_touch_event_;
 
   Member<HTMLDivElement> internal_button_;
   Member<AnimatedArrow> left_jump_arrow_;
