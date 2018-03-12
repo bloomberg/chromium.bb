@@ -65,11 +65,7 @@ class PeerPidReceiver : public IPC::mojom::Channel {
       : binding_(this, std::move(request)),
         on_peer_pid_set_(on_peer_pid_set),
         message_expectation_(message_expectation) {}
-  ~PeerPidReceiver() override {
-    bool expected_message =
-        message_expectation_ != MessageExpectation::kNotExpected;
-    EXPECT_EQ(expected_message, received_message_);
-  }
+  ~PeerPidReceiver() override {}
 
   // mojom::Channel:
   void SetPeerPid(int32_t pid) override {
@@ -81,7 +77,6 @@ class PeerPidReceiver : public IPC::mojom::Channel {
                base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
                    handles) override {
     ASSERT_NE(MessageExpectation::kNotExpected, message_expectation_);
-    received_message_ = true;
 
     IPC::Message message(reinterpret_cast<const char*>(data.data()),
                          static_cast<uint32_t>(data.size()));
@@ -101,8 +96,6 @@ class PeerPidReceiver : public IPC::mojom::Channel {
   const base::Closure on_peer_pid_set_;
   MessageExpectation message_expectation_;
   int32_t peer_pid_ = -1;
-
-  bool received_message_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PeerPidReceiver);
 };
