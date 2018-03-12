@@ -51,7 +51,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
-  void DisableSync() override;
+  void ApplyDisableSyncChanges(
+      std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
@@ -62,9 +63,13 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;
 
- private:
-  friend class DeviceInfoSyncBridgeTest;
+  // For testing only.
+  static std::unique_ptr<ModelTypeStore> DestroyAndStealStoreForTest(
+      std::unique_ptr<DeviceInfoSyncBridge> bridge);
+  bool IsPulseTimerRunningForTest() const;
+  void ForcePulseForTest();
 
+ private:
   // Cache of all syncable and local data, stored by device cache guid.
   using ClientIdToSpecifics =
       std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;

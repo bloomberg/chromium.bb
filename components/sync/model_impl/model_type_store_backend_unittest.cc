@@ -187,6 +187,44 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
   ASSERT_EQ("id2", missing_id_list[0]);
 }
 
+// Test that DeleteDataAndMetadataForPrefix correctly deletes records by prefix.
+TEST_F(ModelTypeStoreBackendTest, DeleteDataAndMetadataForPrefix) {
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+
+  auto write_batch = std::make_unique<leveldb::WriteBatch>();
+  write_batch->Put("prefix1:id1", "data1");
+  write_batch->Put("prefix2:id2", "data2");
+  write_batch->Put("prefix2:id3", "data3");
+  write_batch->Put("prefix3:id4", "data4");
+  base::Optional<ModelError> error =
+      backend->WriteModifications(std::move(write_batch));
+  ASSERT_FALSE(error) << error->ToString();
+
+  error = backend->DeleteDataAndMetadataForPrefix("prefix2:");
+  EXPECT_FALSE(error) << error->ToString();
+
+  {
+    ModelTypeStore::RecordList record_list;
+    error = backend->ReadAllRecordsWithPrefix("prefix2:", &record_list);
+    EXPECT_FALSE(error) << error->ToString();
+    EXPECT_EQ(0UL, record_list.size());
+  }
+
+  {
+    ModelTypeStore::RecordList record_list;
+    error = backend->ReadAllRecordsWithPrefix("prefix1:", &record_list);
+    EXPECT_FALSE(error) << error->ToString();
+    EXPECT_EQ(1UL, record_list.size());
+  }
+
+  {
+    ModelTypeStore::RecordList record_list;
+    error = backend->ReadAllRecordsWithPrefix("prefix3:", &record_list);
+    EXPECT_FALSE(error) << error->ToString();
+    EXPECT_EQ(1UL, record_list.size());
+  }
+}
+
 // Test that only one backend got create when we ask two backend with same path,
 // and after de-reference the backend, the backend will be deleted.
 TEST_F(ModelTypeStoreBackendTest, TwoSameBackendTest) {

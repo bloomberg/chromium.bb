@@ -135,7 +135,14 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync
   // metadata, and then destroys the change processor.
-  virtual void DisableSync();
+  void DisableSync();
+
+  // Similar to ApplySyncChanges() but called by the processor when sync
+  // is in the process of being disabled. |delete_metadata_change_list| contains
+  // a change list to remove all metadata that the processor knows about, but
+  // the bridge may decide to implement deletion by other means.
+  virtual void ApplyDisableSyncChanges(
+      std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
   // Needs to be informed about any model change occurring via Delete() and
   // Put(). The changing metadata should be stored to persistent storage before

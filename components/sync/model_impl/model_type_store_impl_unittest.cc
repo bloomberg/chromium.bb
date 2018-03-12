@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -21,6 +22,10 @@ namespace syncer {
 
 namespace {
 
+using testing::IsEmpty;
+using testing::Not;
+using testing::SizeIs;
+
 sync_pb::ModelTypeState CreateModelTypeState(const std::string& value) {
   sync_pb::ModelTypeState state;
   state.set_encryption_key_name(value);
@@ -31,6 +36,13 @@ sync_pb::EntityMetadata CreateEntityMetadata(const std::string& value) {
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash(value);
   return metadata;
+}
+
+MATCHER(IsEmptyMetadataBatch, "") {
+  return arg != nullptr &&
+         sync_pb::ModelTypeState().SerializeAsString() ==
+             arg->GetModelTypeState().SerializeAsString() &&
+         arg->TakeAllMetadata().empty();
 }
 
 }  // namespace
@@ -230,6 +242,30 @@ TEST_F(ModelTypeStoreImplTest, WriteThenRead) {
                  {{"id1", CreateEntityMetadata("metadata1")}});
 }
 
+// Test that records that DeleteAllDataAndMetadata() deletes everything.
+TEST_F(ModelTypeStoreImplTest, WriteThenDeleteAll) {
+  CreateStore();
+  WriteTestData();
+
+  {
+    std::unique_ptr<ModelTypeStore::RecordList> data_records;
+    std::unique_ptr<MetadataBatch> metadata_batch;
+    ReadStoreContents(store(), &data_records, &metadata_batch);
+    ASSERT_THAT(*data_records, SizeIs(2));
+    ASSERT_THAT(metadata_batch, Not(IsEmptyMetadataBatch()));
+  }
+
+  store()->DeleteAllDataAndMetadata(base::DoNothing());
+
+  {
+    std::unique_ptr<ModelTypeStore::RecordList> data_records;
+    std::unique_ptr<MetadataBatch> metadata_batch;
+    ReadStoreContents(store(), &data_records, &metadata_batch);
+    EXPECT_THAT(*data_records, IsEmpty());
+    EXPECT_THAT(metadata_batch, IsEmptyMetadataBatch());
+  }
+}
+
 // Test that if ModelTypeState is not set then ReadAllMetadata still succeeds
 // and returns entry metadata records.
 TEST_F(ModelTypeStoreImplTest, MissingModelTypeState) {
@@ -314,6 +350,48 @@ TEST_F(ModelTypeStoreImplTest, TwoStoresWithSharedBackend) {
   EXPECT_THAT(*data_records,
               testing::ElementsAre(RecordMatches("key", "data2")));
   VerifyMetadata(std::move(metadata_batch), state2, {{"key", metadata2}});
+}
+
+// Test that records that DeleteAllDataAndMetadata() does not delete data from
+// another store when the backend is shared.
+TEST_F(ModelTypeStoreImplTest, DeleteAllWithSharedBackend) {
+  std::unique_ptr<ModelTypeStore> store_1;
+  std::unique_ptr<ModelTypeStore> store_2;
+  CreateStoreCaptureReference(AUTOFILL, &store_1);
+  CreateStoreCaptureReference(BOOKMARKS, &store_2);
+
+  const sync_pb::EntityMetadata metadata1 = CreateEntityMetadata("metadata1");
+  const sync_pb::EntityMetadata metadata2 = CreateEntityMetadata("metadata2");
+
+  WriteData(store_1.get(), "key", "data1");
+  WriteMetadata(store_1.get(), "key", metadata1);
+
+  WriteData(store_2.get(), "key", "data2");
+  WriteMetadata(store_2.get(), "key", metadata2);
+
+  {
+    std::unique_ptr<ModelTypeStore::RecordList> data_records;
+    std::unique_ptr<MetadataBatch> metadata_batch;
+    ReadStoreContents(store_1.get(), &data_records, &metadata_batch);
+    ASSERT_THAT(*data_records, SizeIs(1));
+    ASSERT_THAT(metadata_batch, Not(IsEmptyMetadataBatch()));
+    ReadStoreContents(store_2.get(), &data_records, &metadata_batch);
+    ASSERT_THAT(*data_records, SizeIs(1));
+    ASSERT_THAT(metadata_batch, Not(IsEmptyMetadataBatch()));
+  }
+
+  store_2->DeleteAllDataAndMetadata(base::DoNothing());
+
+  {
+    std::unique_ptr<ModelTypeStore::RecordList> data_records;
+    std::unique_ptr<MetadataBatch> metadata_batch;
+    ReadStoreContents(store_1.get(), &data_records, &metadata_batch);
+    EXPECT_THAT(*data_records, SizeIs(1));
+    EXPECT_THAT(metadata_batch, Not(IsEmptyMetadataBatch()));
+    ReadStoreContents(store_2.get(), &data_records, &metadata_batch);
+    EXPECT_THAT(*data_records, IsEmpty());
+    EXPECT_THAT(metadata_batch, IsEmptyMetadataBatch());
+  }
 }
 
 }  // namespace syncer

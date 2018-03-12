@@ -99,6 +99,9 @@ class UserEventSyncBridgeTest : public testing::Test {
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
         mock_processor_.FactoryForBridgeTest(), &test_global_id_mapper_);
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+    ON_CALL(*processor(), DisableSync()).WillByDefault(Invoke([this]() {
+      bridge_->ApplyDisableSyncChanges({});
+    }));
   }
 
   std::string GetStorageKey(const UserEventSpecifics& specifics) {
@@ -191,10 +194,6 @@ TEST_F(UserEventSyncBridgeTest, DisableSync) {
 
   EXPECT_CALL(*processor(), DisableSync());
   bridge()->DisableSync();
-
-  // Disabling deletes records through multiple round trips, if we quickly call
-  // GetAllData() we're going to beat the deletions to the storage task.
-  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(GetAllData(), IsEmpty());
 }

@@ -167,8 +167,7 @@ void ClientTagBasedModelTypeProcessor::DisableSync() {
     change_list->ClearMetadata(kv.second->storage_key());
   }
   change_list->ClearModelTypeState();
-  // Nothing to do if this fails, so just ignore the error it might return.
-  bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+  bridge_->ApplyDisableSyncChanges(std::move(change_list));
 }
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
