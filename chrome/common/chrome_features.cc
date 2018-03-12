@@ -545,7 +545,7 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 // Enables or disables the creation of (legacy) supervised users. Does not
 // affect existing supervised users.
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disabled committed interstitials for Supervised User
 // interstitials.
