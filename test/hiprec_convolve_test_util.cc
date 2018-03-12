@@ -71,6 +71,7 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
   const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
   const int num_iters = GET_PARAM(2);
   int i, j;
+  const ConvolveParams conv_params = get_conv_params_wiener(8);
 
   uint8_t *input_ = new uint8_t[h * w];
   uint8_t *input = input_;
@@ -97,9 +98,9 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
     int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
     av1_wiener_convolve_add_src_hip_c(input + offset_r * w + offset_c, w,
                                       output, out_w, hkernel, 16, vkernel, 16,
-                                      out_w, out_h);
+                                      out_w, out_h, &conv_params);
     test_impl(input + offset_r * w + offset_c, w, output2, out_w, hkernel, 16,
-              vkernel, 16, out_w, out_h);
+              vkernel, 16, out_w, out_h, &conv_params);
 
     for (j = 0; j < out_w * out_h; ++j)
       ASSERT_EQ(output[j], output2[j])
@@ -116,6 +117,7 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
   const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
   const int num_iters = GET_PARAM(2) / 500;
   int i, j, k;
+  const ConvolveParams conv_params = get_conv_params_wiener(8);
 
   uint8_t *input_ = new uint8_t[h * w];
   uint8_t *input = input_;
@@ -143,7 +145,7 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
       for (k = 3; k < w - out_w - 4; k++) {
         av1_wiener_convolve_add_src_hip_c(input + j * w + k, w, output, out_w,
                                           hkernel, 16, vkernel, 16, out_w,
-                                          out_h);
+                                          out_h, &conv_params);
       }
     }
   }
@@ -156,7 +158,7 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
         test_impl(input + j * w + k, w, output2, out_w, hkernel, 16, vkernel,
-                  16, out_w, out_h);
+                  16, out_w, out_h, &conv_params);
       }
     }
   }
@@ -207,6 +209,7 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
   const int num_iters = GET_PARAM(2);
   const int bd = GET_PARAM(3);
   int i, j;
+  const ConvolveParams conv_params = get_conv_params_wiener(bd);
 
   uint16_t *input = new uint16_t[h * w];
 
@@ -236,9 +239,9 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
     int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
     av1_highbd_wiener_convolve_add_src_hip_c(
         input_ptr + offset_r * w + offset_c, w, output_ptr, out_w, hkernel, 16,
-        vkernel, 16, out_w, out_h, bd);
+        vkernel, 16, out_w, out_h, &conv_params, bd);
     test_impl(input_ptr + offset_r * w + offset_c, w, output2_ptr, out_w,
-              hkernel, 16, vkernel, 16, out_w, out_h, bd);
+              hkernel, 16, vkernel, 16, out_w, out_h, &conv_params, bd);
 
     for (j = 0; j < out_w * out_h; ++j)
       ASSERT_EQ(output[j], output2[j])
@@ -257,6 +260,7 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
   const int num_iters = GET_PARAM(2) / 500;
   const int bd = GET_PARAM(3);
   int i, j, k;
+  const ConvolveParams conv_params = get_conv_params_wiener(bd);
 
   uint16_t *input = new uint16_t[h * w];
 
@@ -285,9 +289,9 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
   for (i = 0; i < num_iters; ++i) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
-        av1_highbd_wiener_convolve_add_src_hip_c(input_ptr + j * w + k, w,
-                                                 output_ptr, out_w, hkernel, 16,
-                                                 vkernel, 16, out_w, out_h, bd);
+        av1_highbd_wiener_convolve_add_src_hip_c(
+            input_ptr + j * w + k, w, output_ptr, out_w, hkernel, 16, vkernel,
+            16, out_w, out_h, &conv_params, bd);
       }
     }
   }
@@ -300,7 +304,7 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
         test_impl(input_ptr + j * w + k, w, output2_ptr, out_w, hkernel, 16,
-                  vkernel, 16, out_w, out_h, bd);
+                  vkernel, 16, out_w, out_h, &conv_params, bd);
       }
     }
   }

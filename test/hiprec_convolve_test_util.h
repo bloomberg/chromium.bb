@@ -20,6 +20,7 @@
 
 #include "./av1_rtcd.h"
 #include "aom_ports/aom_timer.h"
+#include "av1/common/convolve.h"
 #include "av1/common/mv.h"
 
 namespace libaom_test {
@@ -30,7 +31,8 @@ typedef void (*hiprec_convolve_func)(const uint8_t *src, ptrdiff_t src_stride,
                                      uint8_t *dst, ptrdiff_t dst_stride,
                                      const int16_t *filter_x, int x_step_q4,
                                      const int16_t *filter_y, int y_step_q4,
-                                     int w, int h);
+                                     int w, int h,
+                                     const ConvolveParams *conv_params);
 
 typedef std::tr1::tuple<int, int, int, hiprec_convolve_func>
     HiprecConvolveParam;
@@ -59,7 +61,8 @@ namespace AV1HighbdHiprecConvolve {
 typedef void (*highbd_hiprec_convolve_func)(
     const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
     ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
-    const int16_t *filter_y, int y_step_q4, int w, int h, int bps);
+    const int16_t *filter_y, int y_step_q4, int w, int h,
+    const ConvolveParams *conv_params, int bps);
 
 typedef std::tr1::tuple<int, int, int, int, highbd_hiprec_convolve_func>
     HighbdHiprecConvolveParam;

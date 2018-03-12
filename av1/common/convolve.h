@@ -125,6 +125,20 @@ static INLINE ConvolveParams get_conv_params(int ref, int do_average, int plane,
   return get_conv_params_no_round(ref, do_average, plane, NULL, 0, 0, bd);
 }
 
+static INLINE ConvolveParams get_conv_params_wiener(int bd) {
+  ConvolveParams conv_params;
+  (void)bd;
+  conv_params.ref = 0;
+  conv_params.do_average = 0;
+  conv_params.is_compound = 0;
+  conv_params.round_0 = WIENER_ROUND0_BITS;
+  conv_params.round_1 = WIENER_ROUND1_BITS;
+  conv_params.dst = NULL;
+  conv_params.dst_stride = 0;
+  conv_params.plane = 0;
+  return conv_params;
+}
+
 void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    uint8_t *dst, int dst_stride, int w, int h,
                                    InterpFilters interp_filters,

@@ -27,7 +27,8 @@
 void av1_highbd_wiener_convolve_add_src_hip_avx2(
     const uint8_t *src8, ptrdiff_t src_stride, uint8_t *dst8,
     ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
-    const int16_t *filter_y, int y_step_q4, int w, int h, int bd) {
+    const int16_t *filter_y, int y_step_q4, int w, int h,
+    const ConvolveParams *conv_params, int bd) {
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));
   (void)x_step_q4;
@@ -81,7 +82,7 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
     const __m256i coeffs_67 = yy_set_m128i(coeffs_67_128, coeffs_67_128);
 
     const __m256i round_const = _mm256_set1_epi32(
-        (1 << (WIENER_ROUND0_BITS - 1)) + (1 << (bd + FILTER_BITS - 1)));
+        (1 << (conv_params->round_0 - 1)) + (1 << (bd + FILTER_BITS - 1)));
 
     for (int i = 0; i < intermediate_height; ++i) {
       for (int j = 0; j < w; j += 16) {
@@ -112,12 +113,12 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
         const __m256i res_even_sum = _mm256_add_epi32(
             _mm256_add_epi32(res_0, res_4), _mm256_add_epi32(res_2, res_6));
         const __m256i res_even = _mm256_srai_epi32(
-            _mm256_add_epi32(res_even_sum, round_const), WIENER_ROUND0_BITS);
+            _mm256_add_epi32(res_even_sum, round_const), conv_params->round_0);
 
         const __m256i res_odd_sum = _mm256_add_epi32(
             _mm256_add_epi32(res_1, res_5), _mm256_add_epi32(res_3, res_7));
         const __m256i res_odd = _mm256_srai_epi32(
-            _mm256_add_epi32(res_odd_sum, round_const), WIENER_ROUND0_BITS);
+            _mm256_add_epi32(res_odd_sum, round_const), conv_params->round_0);
 
         // Reduce to 16-bit precision and pack even- and odd-index results
         // back into one register. The _mm256_packs_epi32 intrinsic returns
@@ -163,8 +164,9 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
     // coeffs [ f7 f6 f7 f6 f7 f6 f7 f6 ][ f7 f6 f7 f6 f7 f6 f7 f6 ]
     const __m256i coeffs_67 = yy_set_m128i(coeffs_67_128, coeffs_67_128);
 
-    const __m256i round_const = _mm256_set1_epi32(
-        (1 << (WIENER_ROUND1_BITS - 1)) - (1 << (bd + WIENER_ROUND1_BITS - 1)));
+    const __m256i round_const =
+        _mm256_set1_epi32((1 << (conv_params->round_1 - 1)) -
+                          (1 << (bd + conv_params->round_1 - 1)));
 
     for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; j += 16) {
@@ -221,9 +223,9 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
         const __m256i res_hi = _mm256_unpackhi_epi32(res_even, res_odd);
 
         const __m256i res_lo_round = _mm256_srai_epi32(
-            _mm256_add_epi32(res_lo, round_const), WIENER_ROUND1_BITS);
+            _mm256_add_epi32(res_lo, round_const), conv_params->round_1);
         const __m256i res_hi_round = _mm256_srai_epi32(
-            _mm256_add_epi32(res_hi, round_const), WIENER_ROUND1_BITS);
+            _mm256_add_epi32(res_hi, round_const), conv_params->round_1);
 
         // Reduce to 16-bit precision and pack into the correct order:
         // [ 15 14 13 12 11 10 9 8 ][ 7 6 5 4 3 2 1 0 ]

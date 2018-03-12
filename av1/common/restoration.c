@@ -559,14 +559,15 @@ static void wiener_filter_stripe(const RestorationUnitInfo *rui,
   (void)tmpbuf;
   (void)bit_depth;
   assert(bit_depth == 8);
+  const ConvolveParams conv_params = get_conv_params_wiener(8);
 
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, (stripe_width - j + 15) & ~15);
     const uint8_t *src_p = src + j;
     uint8_t *dst_p = dst + j;
-    wiener_convolve_add_src(src_p, src_stride, dst_p, dst_stride,
-                            rui->wiener_info.hfilter, 16,
-                            rui->wiener_info.vfilter, 16, w, stripe_height);
+    wiener_convolve_add_src(
+        src_p, src_stride, dst_p, dst_stride, rui->wiener_info.hfilter, 16,
+        rui->wiener_info.vfilter, 16, w, stripe_height, &conv_params);
   }
 }
 
@@ -1187,7 +1188,7 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
   }
 }
 
-#define highbd_wiener_convolve_add_src av1_highbd_wiener_convolve_add_src_hip
+#define highbd_wiener_convolve_add_src av1_highbd_wiener_convolve_add_src_hip_c
 
 static void wiener_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                         int stripe_width, int stripe_height,
@@ -1196,14 +1197,16 @@ static void wiener_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                         int dst_stride, int32_t *tmpbuf,
                                         int bit_depth) {
   (void)tmpbuf;
+  const ConvolveParams conv_params = get_conv_params_wiener(bit_depth);
 
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, (stripe_width - j + 15) & ~15);
     const uint8_t *src8_p = src8 + j;
     uint8_t *dst8_p = dst8 + j;
-    highbd_wiener_convolve_add_src(
-        src8_p, src_stride, dst8_p, dst_stride, rui->wiener_info.hfilter, 16,
-        rui->wiener_info.vfilter, 16, w, stripe_height, bit_depth);
+    highbd_wiener_convolve_add_src(src8_p, src_stride, dst8_p, dst_stride,
+                                   rui->wiener_info.hfilter, 16,
+                                   rui->wiener_info.vfilter, 16, w,
+                                   stripe_height, &conv_params, bit_depth);
   }
 }
 

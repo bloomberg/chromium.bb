@@ -20,7 +20,8 @@
 void av1_wiener_convolve_add_src_hip_sse2(
     const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
     ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4,
-    const int16_t *filter_y, int y_step_q4, int w, int h) {
+    const int16_t *filter_y, int y_step_q4, int w, int h,
+    const ConvolveParams *conv_params) {
   const int bd = 8;
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));
@@ -57,8 +58,8 @@ void av1_wiener_convolve_add_src_hip_sse2(
     // coeffs 6 7 6 7 6 7 6 7
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
-    const __m128i round_const = _mm_set1_epi32((1 << (WIENER_ROUND0_BITS - 1)) +
-                                               (1 << (bd + FILTER_BITS - 1)));
+    const __m128i round_const = _mm_set1_epi32(
+        (1 << (conv_params->round_0 - 1)) + (1 << (bd + FILTER_BITS - 1)));
 
     for (i = 0; i < intermediate_height; ++i) {
       for (j = 0; j < w; j += 8) {
@@ -78,7 +79,7 @@ void av1_wiener_convolve_add_src_hip_sse2(
         __m128i res_even = _mm_add_epi32(_mm_add_epi32(res_0, res_4),
                                          _mm_add_epi32(res_2, res_6));
         res_even = _mm_srai_epi32(_mm_add_epi32(res_even, round_const),
-                                  WIENER_ROUND0_BITS);
+                                  conv_params->round_0);
 
         // Filter odd-index pixels
         const __m128i src_1 = _mm_unpacklo_epi8(_mm_srli_si128(data, 1), zero);
@@ -93,7 +94,7 @@ void av1_wiener_convolve_add_src_hip_sse2(
         __m128i res_odd = _mm_add_epi32(_mm_add_epi32(res_1, res_5),
                                         _mm_add_epi32(res_3, res_7));
         res_odd = _mm_srai_epi32(_mm_add_epi32(res_odd, round_const),
-                                 WIENER_ROUND0_BITS);
+                                 conv_params->round_0);
 
         // Pack in the column order 0, 2, 4, 6, 1, 3, 5, 7
         __m128i res = _mm_packs_epi32(res_even, res_odd);
@@ -123,8 +124,9 @@ void av1_wiener_convolve_add_src_hip_sse2(
     // coeffs 6 7 6 7 6 7 6 7
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
-    const __m128i round_const = _mm_set1_epi32(
-        (1 << (WIENER_ROUND1_BITS - 1)) - (1 << (bd + WIENER_ROUND1_BITS - 1)));
+    const __m128i round_const =
+        _mm_set1_epi32((1 << (conv_params->round_1 - 1)) -
+                       (1 << (bd + conv_params->round_1 - 1)));
 
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; j += 8) {
@@ -178,9 +180,9 @@ void av1_wiener_convolve_add_src_hip_sse2(
         const __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
 
         const __m128i res_lo_round = _mm_srai_epi32(
-            _mm_add_epi32(res_lo, round_const), WIENER_ROUND1_BITS);
+            _mm_add_epi32(res_lo, round_const), conv_params->round_1);
         const __m128i res_hi_round = _mm_srai_epi32(
-            _mm_add_epi32(res_hi, round_const), WIENER_ROUND1_BITS);
+            _mm_add_epi32(res_hi, round_const), conv_params->round_1);
 
         const __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
         __m128i res_8bit = _mm_packus_epi16(res_16bit, res_16bit);
