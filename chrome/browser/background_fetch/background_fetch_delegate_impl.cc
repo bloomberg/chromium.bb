@@ -24,8 +24,7 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
     : download_service_(
           DownloadServiceFactory::GetInstance()->GetForBrowserContext(profile)),
       offline_content_aggregator_(
-          offline_items_collection::OfflineContentAggregatorFactory::
-              GetForBrowserContext(profile)),
+          OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
       weak_ptr_factory_(this) {
   offline_content_aggregator_->RegisterProvider("background_fetch", this);
 }

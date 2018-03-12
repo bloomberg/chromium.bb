@@ -22,8 +22,8 @@ JNI_OfflineContentAggregatorFactory_GetOfflineContentAggregatorForProfile(
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
   offline_items_collection::OfflineContentAggregator* aggregator =
-      offline_items_collection::OfflineContentAggregatorFactory::GetInstance()
-          ->GetForBrowserContext(profile);
+      OfflineContentAggregatorFactory::GetInstance()->GetForBrowserContext(
+          profile);
   return offline_items_collection::android::OfflineContentAggregatorBridge::
       GetBridgeForOfflineContentAggregator(aggregator);
 }
