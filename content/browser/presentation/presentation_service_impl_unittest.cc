@@ -134,6 +134,11 @@ class MockPresentationServiceDelegate
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
+  MOCK_METHOD3(GetMediaController,
+               std::unique_ptr<content::MediaController>(
+                   int render_process_id,
+                   int render_frame_id,
+                   const std::string& presentation_id));
 
   // PresentationConnectionMessage is move-only.
   // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the

@@ -22,6 +22,7 @@
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/media_controller.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
 namespace content {
@@ -188,6 +189,11 @@ class MediaRouter : public KeyedService {
   // Returns the media routes that currently exist. To get notified whenever
   // there is a change to the media routes, subclass MediaRoutesObserver.
   virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
+
+  // Returns a controller that directly sends commands to media within a route.
+  // Returns a nullptr if no controller can be be found from |route_id|.
+  virtual std::unique_ptr<content::MediaController> GetMediaController(
+      const MediaRoute::Id& route_id) = 0;
 
 #if !defined(OS_ANDROID)
   // Returns a controller for sending media commands to a route. Returns a

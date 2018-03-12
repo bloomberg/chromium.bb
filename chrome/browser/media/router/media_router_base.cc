@@ -84,6 +84,11 @@ std::vector<MediaRoute> MediaRouterBase::GetCurrentRoutes() const {
   return internal_routes_observer_->current_routes;
 }
 
+std::unique_ptr<content::MediaController> MediaRouterBase::GetMediaController(
+    const MediaRoute::Id& route_id) {
+  return nullptr;
+}
+
 #if !defined(OS_ANDROID)
 scoped_refptr<MediaRouteController> MediaRouterBase::GetRouteController(
     const MediaRoute::Id& route_id) {
