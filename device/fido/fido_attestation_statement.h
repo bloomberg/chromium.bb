@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "components/cbor/cbor_values.h"
@@ -18,8 +17,7 @@
 namespace device {
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#fido-u2f-attestation
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
-    : public AttestationStatement {
+class FidoAttestationStatement : public AttestationStatement {
  public:
   static std::unique_ptr<FidoAttestationStatement>
   CreateFromU2fRegisterResponse(base::span<const uint8_t> u2f_data);

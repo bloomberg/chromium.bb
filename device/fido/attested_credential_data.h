@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -19,7 +18,7 @@ namespace device {
 class PublicKey;
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-attestation-data
-class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
+class AttestedCredentialData {
  public:
   static base::Optional<AttestedCredentialData> CreateFromU2fRegisterResponse(
       base::span<const uint8_t> u2f_data,

@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -29,7 +28,7 @@ class U2fBleFrameContinuationFragment;
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-bt-protocol-v1.2-ps-20170411.html#h2_framing
 //
 // TODO(crbug/763303): Consider refactoring U2fMessage to support BLE frames.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
+class U2fBleFrame {
  public:
   // The values which can be carried in the |data| section of a KEEPALIVE
   // message sent from an authenticator.
@@ -98,7 +97,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrame {
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-bt-protocol-v1.2-ps-20170411.html#h2_framing-fragmentation
 //
 // Note: This class and its subclasses don't own the |data|.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameFragment {
+class U2fBleFrameFragment {
  public:
   base::span<const uint8_t> fragment() const { return fragment_; }
   virtual size_t Serialize(std::vector<uint8_t>* buffer) const = 0;
@@ -114,8 +113,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameFragment {
 };
 
 // An initialization fragment of a frame.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameInitializationFragment
-    : public U2fBleFrameFragment {
+class U2fBleFrameInitializationFragment : public U2fBleFrameFragment {
  public:
   static bool Parse(base::span<const uint8_t> data,
                     U2fBleFrameInitializationFragment* fragment);
@@ -139,8 +137,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameInitializationFragment
 };
 
 // A continuation fragment of a frame.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameContinuationFragment
-    : public U2fBleFrameFragment {
+class U2fBleFrameContinuationFragment : public U2fBleFrameFragment {
  public:
   static bool Parse(base::span<const uint8_t> data,
                     U2fBleFrameContinuationFragment* fragment);
@@ -159,7 +156,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameContinuationFragment
 };
 
 // The helper used to construct a U2fBleFrame from a sequence of its fragments.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleFrameAssembler {
+class U2fBleFrameAssembler {
  public:
   explicit U2fBleFrameAssembler(
       const U2fBleFrameInitializationFragment& fragment);

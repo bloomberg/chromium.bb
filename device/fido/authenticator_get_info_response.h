@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -22,7 +21,7 @@ namespace device {
 // versions, options, AAGUID(Authenticator Attestation GUID), other
 // authenticator device information.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetInfo
-class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
+class AuthenticatorGetInfoResponse {
  public:
   AuthenticatorGetInfoResponse(CtapDeviceResponseCode response_code,
                                std::vector<std::string> versions,

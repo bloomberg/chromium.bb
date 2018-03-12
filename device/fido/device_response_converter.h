@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_get_info_response.h"
@@ -23,14 +22,12 @@ namespace device {
 
 // Parses response code from response received from the authenticator. If
 // unknown response code value is received, then CTAP2_ERR_OTHER is returned.
-COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer);
 
 // De-serializes CBOR encoded response, checks for valid CBOR map formatting,
 // and converts response to AuthenticatorMakeCredentialResponse object with
 // CBOR map keys that conform to format of attestation object defined by the
 // WebAuthN spec : https://w3c.github.io/webauthn/#fig-attStructs
-COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorMakeCredentialResponse>
 ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
                                const std::vector<uint8_t>& buffer);
@@ -38,14 +35,12 @@ ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
 // De-serializes CBOR encoded response to AuthenticatorGetAssertion /
 // AuthenticatorGetNextAssertion request to AuthenticatorGetAssertionResponse
 // object.
-COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetInfo request to
 // AuthenticatorGetInfoResponse object.
-COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer);

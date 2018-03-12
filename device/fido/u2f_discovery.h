@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,7 +29,7 @@ namespace test {
 class ScopedFakeU2fDiscoveryFactory;
 }
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
+class U2fDiscovery {
  public:
   class Observer {
    public:
