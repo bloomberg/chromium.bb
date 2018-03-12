@@ -1437,7 +1437,7 @@ int AXNodeObject::SetSize() const {
 }
 
 int AXNodeObject::AutoPosInSet() const {
-  AXObject* parent = ParentObject();
+  AXObject* parent = ParentObjectUnignored();
 
   // Do not continue if the children will need updating soon, because
   // the calculation requires all the siblings to remain stable.
@@ -1445,17 +1445,17 @@ int AXNodeObject::AutoPosInSet() const {
     return 0;
 
   int pos_in_set = 1;
-  auto siblings = parent->Children();
+  const AXObject::AXObjectVector siblings = parent->Children();
 
   AccessibilityRole role = RoleValue();
   int level = HierarchicalLevel();
   int index_in_parent = IndexInParent();
 
   for (int index = index_in_parent - 1; index >= 0; index--) {
-    const auto sibling = siblings[index];
+    const AXObject* sibling = siblings[index];
     AccessibilityRole sibling_role = sibling->RoleValue();
-    if (sibling_role == kSplitterRole)
-      break;  // Set stops at a separator
+    if (sibling_role == kSplitterRole || sibling_role == kGroupRole)
+      break;  // Set stops at a separator or an optgroup.
     if (sibling_role != role || sibling->AccessibilityIsIgnored())
       continue;
 
@@ -1473,7 +1473,7 @@ int AXNodeObject::AutoPosInSet() const {
 }
 
 int AXNodeObject::AutoSetSize() const {
-  AXObject* parent = ParentObject();
+  AXObject* parent = ParentObjectUnignored();
 
   // Do not continue if the children will need updating soon, because
   // the calculation requires all the siblings to remain stable.
@@ -1491,8 +1491,8 @@ int AXNodeObject::AutoSetSize() const {
   for (int index = index_in_parent + 1; index < sibling_count; index++) {
     const auto sibling = siblings[index];
     AccessibilityRole sibling_role = sibling->RoleValue();
-    if (sibling_role == kSplitterRole)
-      break;  // Set stops at a separator
+    if (sibling_role == kSplitterRole || sibling_role == kGroupRole)
+      break;  // Set stops at a separator or an optgroup.
     if (sibling_role != role || sibling->AccessibilityIsIgnored())
       continue;
 
