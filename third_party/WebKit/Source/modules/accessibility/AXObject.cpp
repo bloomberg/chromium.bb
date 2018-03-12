@@ -1633,10 +1633,10 @@ bool AXObject::SupportsRangeValue() const {
 }
 
 int AXObject::IndexInParent() const {
-  if (!ParentObject())
+  if (!ParentObjectUnignored())
     return 0;
 
-  const auto& siblings = ParentObject()->Children();
+  const auto& siblings = ParentObjectUnignored()->Children();
   int child_count = siblings.size();
 
   for (int index = 0; index < child_count; ++index) {
