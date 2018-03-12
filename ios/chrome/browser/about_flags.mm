@@ -47,7 +47,6 @@
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/user_feedback_features.h"
@@ -232,9 +231,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ui-refresh-phase-1", flag_descriptions::kUIRefreshPhase1Name,
      flag_descriptions::kUIRefreshPhase1Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIRefreshPhase1)},
-    {"recent-tabs-ui-reboot", flag_descriptions::kRecentTabsUIRebootName,
-     flag_descriptions::kRecentTabsUIRebootDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kRecentTabsUIReboot)},
+    {"collections-ui-reboot", flag_descriptions::kCollectionsUIRebootName,
+     flag_descriptions::kCollectionsUIRebootDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCollectionsUIReboot)},
     {"context-menu-element-post-message",
      flag_descriptions::kContextMenuElementPostMessageName,
      flag_descriptions::kContextMenuElementPostMessageDescription,

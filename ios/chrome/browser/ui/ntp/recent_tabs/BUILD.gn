@@ -67,17 +67,6 @@ source_set("recent_tabs") {
   libs = [ "UIKit.framework" ]
 }
 
-source_set("base_feature") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "recent_tabs_feature.h",
-    "recent_tabs_feature.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

@@ -9,3 +9,6 @@ const base::Feature kUIRefreshPhase1{"UIRefreshPhase1",
 
 const base::Feature kTabSwitcherTabGrid{"TabSwitcherTabGrid",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCollectionsUIReboot{"CollectionsUIReboot",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
