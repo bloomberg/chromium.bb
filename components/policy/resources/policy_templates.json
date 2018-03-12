@@ -11241,7 +11241,7 @@
           'caption': '''Password protection warning is triggered by password reuse on phishing page''',
         },
       ],
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11281,7 +11281,7 @@
           'caption': '''Password protection at-risk account flagging is triggered by password reuse on phishing page''',
         },
       ],
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11376,7 +11376,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11401,7 +11401,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11411,7 +11411,8 @@
       'caption': '''Configure the list of enterprise login URLs where password protection service should capture fingerprint of password.''',
       'tags': [],
       'desc': '''Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
-      This setting should only be used by GSuite users using a SSO/SMAL system.
+      This setting should only be used by GSuite users using a SSO/SAML system.
+      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture password fingerprints, please make sure your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
       If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
@@ -11421,7 +11422,7 @@
       'name': 'PasswordProtectionChangePasswordURL',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11431,7 +11432,8 @@
       'caption': '''Configure the change password URL.''',
       'tags': [],
       'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
-      This setting should only be used by GSuite users using a SSO/SMAL system.
+      This setting should only be used by GSuite users using a SSO/SAML system.
+      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the new password fingerprint on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       If this setting is enabled, then password protection service will send users to this URL to change their passwords if they've been phished.
       If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
