@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+// Animator object used when the active tab in the tab grid isn't currently
+// visible.
 @interface GridToHiddenTabAnimator
     : NSObject<UIViewControllerAnimatedTransitioning>
 
