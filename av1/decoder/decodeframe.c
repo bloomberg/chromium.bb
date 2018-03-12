@@ -62,6 +62,30 @@
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
+// Use only_chroma = 1 to only set the chroma planes
+static void set_planes_to_neutral_grey(AV1_COMMON *const cm,
+                                       MACROBLOCKD *const xd, int only_chroma) {
+  YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
+  const int val = 1 << (cm->bit_depth - 1);
+
+  for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
+    const int is_uv = plane > 0;
+    for (int row_idx = 0; row_idx < cur_buf->crop_heights[is_uv]; row_idx++) {
+      if (cm->use_highbitdepth) {
+        // TODO(yaowu): replace this with aom_memset16() for speed
+        for (int col_idx = 0; col_idx < cur_buf->crop_widths[is_uv];
+             col_idx++) {
+          uint16_t *base = CONVERT_TO_SHORTPTR(cur_buf->buffers[plane]);
+          base[row_idx * cur_buf->strides[is_uv] + col_idx] = val;
+        }
+      } else {
+        memset(&cur_buf->buffers[plane][row_idx * cur_buf->uv_stride], 1 << 7,
+               cur_buf->crop_widths[is_uv]);
+      }
+    }
+  }
+}
+
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
                                             aom_reader *const r, int plane,
@@ -2841,14 +2865,30 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     // Read all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
-        // Get buffer index
-        const int buf_idx = cm->ref_frame_map[ref_idx];
-        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
-
         // Read order hint from bit stream
         unsigned int frame_offset =
             aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
-        if (frame_offset != frame_bufs[buf_idx].cur_frame_offset) assert(0);
+
+        // Get buffer index
+        int buf_idx = cm->ref_frame_map[ref_idx];
+        assert(buf_idx < FRAME_BUFFERS);
+
+        if (buf_idx == -1) {
+          // If no corresponding buffer exists, allocate a new buffer with all
+          // pixels set to neutral grey.
+          buf_idx = get_free_fb(cm);
+          aom_alloc_frame_buffer(
+              &frame_bufs[buf_idx].buf, cm->seq_params.max_frame_width,
+              cm->seq_params.max_frame_height, cm->subsampling_x,
+              cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+              cm->byte_alignment);
+          set_planes_to_neutral_grey(cm, xd, 0);
+
+          cm->ref_frame_map[ref_idx] = buf_idx;
+          frame_bufs[buf_idx].cur_frame_offset = frame_offset;
+        } else {
+          assert(frame_offset == frame_bufs[buf_idx].cur_frame_offset);
+        }
       }
     }
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
@@ -3477,25 +3517,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
-  if (num_planes < 3) {
-    YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
-    const int val = 1 << (cm->bit_depth - 1);
-
-    for (int buf_idx = 1; buf_idx <= 2; buf_idx++) {
-      for (int row_idx = 0; row_idx < cur_buf->crop_heights[1]; row_idx++) {
-        if (cm->use_highbitdepth) {
-          // TODO(yaowu): replace this with aom_memset16() for speed
-          for (int col_idx = 0; col_idx < cur_buf->crop_widths[1]; col_idx++) {
-            uint16_t *base = CONVERT_TO_SHORTPTR(cur_buf->buffers[buf_idx]);
-            base[row_idx * cur_buf->uv_stride + col_idx] = val;
-          }
-        } else {
-          memset(&cur_buf->buffers[buf_idx][row_idx * cur_buf->uv_stride],
-                 1 << 7, cur_buf->crop_widths[1]);
-        }
-      }
-    }
-  }
+  if (num_planes < 3) set_planes_to_neutral_grey(cm, xd, 1);
 
   if (endTile != cm->tile_rows * cm->tile_cols - 1) {
     return;
