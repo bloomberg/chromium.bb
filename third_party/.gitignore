@@ -123,6 +123,7 @@
 /llvm-allocated-type
 /llvm-bootstrap
 /llvm-build
+/llvm-build-tools
 /lss
 /material_design_icons/src
 /mesa/src
