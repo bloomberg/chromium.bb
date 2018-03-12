@@ -249,9 +249,6 @@ void ServiceWorkerHandle::DispatchExtendableMessageEvent(
   }
   switch (provider_host_->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
-    // TODO(leonhsl): Move kForSharedWorker to the kUnknown block to clarify
-    // that currently a shared worker can not postMessage to a service worker.
-    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       service_worker_client_utils::GetClient(
           provider_host_.get(),
           base::BindOnce(&DispatchExtendableMessageEventFromClient, version_,
@@ -272,6 +269,9 @@ void ServiceWorkerHandle::DispatchExtendableMessageEvent(
                          provider_host_));
       return;
     }
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+    // Shared workers don't yet have access to ServiceWorker objects, so they
+    // can't postMessage to one (https://crbug.com/371690).
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;
   }
