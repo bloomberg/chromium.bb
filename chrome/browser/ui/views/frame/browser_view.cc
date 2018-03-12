@@ -1107,6 +1107,13 @@ void BrowserView::FocusAppMenu() {
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
+  // If an inactive bubble is showing this intentionally focuses that dialog to
+  // provide an easy access method to these dialogs without requring additional
+  // keyboard shortcuts or commands. To get back out to pane cycling the dialog
+  // needs to be accepted or dismissed.
+  if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
+    return;
+
   GetFocusManager()->RotatePaneFocus(
       forwards ?
           views::FocusManager::kForward : views::FocusManager::kBackward,
