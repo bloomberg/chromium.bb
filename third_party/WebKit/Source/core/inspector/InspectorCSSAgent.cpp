@@ -151,11 +151,11 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
                          HitTestRequest::kIgnoreClipping);
 
   LayoutPoint center = rect.Center();
-  unsigned left_padding, right_padding, top_padding, bottom_padding;
-  left_padding = right_padding = (rect.Width() / 2).ToUnsigned();
-  top_padding = bottom_padding = (rect.Height() / 2).ToUnsigned();
-  HitTestResult result(request, center, top_padding, right_padding,
-                       bottom_padding, left_padding);
+  LayoutUnit horizontal_padding = rect.Width() / 2;
+  LayoutUnit vertical_padding = rect.Height() / 2;
+  LayoutRectOutsets padding(vertical_padding, horizontal_padding,
+                            vertical_padding, horizontal_padding);
+  HitTestResult result(request, center, padding);
   document.GetFrame()->ContentLayoutObject()->HitTest(result);
   HeapVector<Member<Element>> elements;
   Node* previous_node = nullptr;

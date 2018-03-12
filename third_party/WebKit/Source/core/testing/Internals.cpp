@@ -1449,7 +1449,8 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
       hit_test_point,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
           HitTestRequest::kListBased,
-      LayoutSize(radius));
+      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
+                        radius.Width()));
 
   Node* target_node = nullptr;
   IntPoint adjusted_point;
@@ -1488,7 +1489,8 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(
       hit_test_point,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
           HitTestRequest::kListBased,
-      LayoutSize(radius));
+      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
+                        radius.Width()));
 
   Node* target_node = nullptr;
   IntPoint adjusted_point;
@@ -1523,7 +1525,8 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(
       hit_test_point,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
           HitTestRequest::kListBased,
-      LayoutSize(radius));
+      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
+                        radius.Width()));
 
   Node* target_node = nullptr;
   IntPoint adjusted_point;
@@ -1562,7 +1565,8 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
       hit_test_point,
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
           HitTestRequest::kListBased,
-      LayoutSize(radius));
+      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
+                        radius.Width()));
 
   Node* target_node = nullptr;
   IntPoint adjusted_point;
@@ -2039,15 +2043,15 @@ StaticNodeList* Internals::nodesFromRect(
 
   // When ignoreClipping is false, this method returns null for coordinates
   // outside of the viewport.
+  LayoutRectOutsets padding(top_padding, right_padding, bottom_padding,
+                            left_padding);
+  LayoutRect rect = HitTestLocation::RectForPoint(point, padding);
   if (!request.IgnoreClipping() &&
-      !frame_view->VisibleContentRect().Intersects(
-          HitTestLocation::RectForPoint(point, top_padding, right_padding,
-                                        bottom_padding, left_padding)))
+      !frame_view->VisibleContentRect().Intersects(EnclosingIntRect(rect)))
     return nullptr;
 
   HeapVector<Member<Node>> matches;
-  HitTestResult result(request, point, top_padding, right_padding,
-                       bottom_padding, left_padding);
+  HitTestResult result(request, point, padding);
   layout_view->HitTest(result);
   CopyToVector(result.ListBasedTestResult(), matches);
 

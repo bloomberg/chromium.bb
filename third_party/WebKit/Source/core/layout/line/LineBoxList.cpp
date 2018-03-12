@@ -198,8 +198,8 @@ bool LineBoxList::HitTest(LineLayoutBoxModel layout_object,
   if (!FirstLineBox())
     return false;
 
-  LayoutPoint point = location_in_container.Point();
-  IntRect hit_search_bounding_box = location_in_container.BoundingBox();
+  const LayoutPoint& point = location_in_container.Point();
+  IntRect hit_search_bounding_box = location_in_container.EnclosingIntRect();
 
   CullRect cull_rect(
       FirstLineBox()->IsHorizontal()

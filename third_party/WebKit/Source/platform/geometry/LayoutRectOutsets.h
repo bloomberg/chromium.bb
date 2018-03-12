@@ -83,6 +83,8 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   void SetBottom(LayoutUnit value) { bottom_ = value; }
   void SetLeft(LayoutUnit value) { left_ = value; }
 
+  bool IsZero() const { return !top_ && !right_ && !bottom_ && !left_; }
+
   void ClampNegativeToZero();
 
   void Unite(const LayoutRectOutsets&);

@@ -109,7 +109,8 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   HitTestRequest hit_request(HitTestRequest::kTouchEvent |
                              HitTestRequest::kListBased);
   LayoutPoint hit_location(2, 5);
-  HitTestResult hit_result(hit_request, hit_location, 2, 1, 2, 1);
+  LayoutRectOutsets padding(2, 1, 2, 1);
+  HitTestResult hit_result(hit_request, hit_location, padding);
   LayoutPoint hit_offset;
 
   bool hit_outcome = lots_of_boxes->HitTestCulledInline(

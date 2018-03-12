@@ -1188,6 +1188,31 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest) {
   EXPECT_FALSE(plugin_container_impl->IsRectTopmost(rect));
 }
 
+// Verify that IsRectTopmost works with odd and even dimensions.
+TEST_F(WebPluginContainerTest, IsRectTopmostTestWithOddAndEvenDimensions) {
+  RegisterMockedURL("plugin_container.html");
+  // Must outlive |web_view_helper|.
+  TestPluginWebFrameClient plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_container.html", &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+
+  WebPluginContainerImpl* even_plugin_container_impl =
+      ToWebPluginContainerImpl(GetWebPluginContainer(
+          web_view, WebString::FromUTF8("translated-plugin")));
+  even_plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
+  auto even_rect = even_plugin_container_impl->GetElement().BoundsInViewport();
+  EXPECT_TRUE(even_plugin_container_impl->IsRectTopmost(even_rect));
+
+  WebPluginContainerImpl* odd_plugin_container_impl =
+      ToWebPluginContainerImpl(GetWebPluginContainer(
+          web_view, WebString::FromUTF8("odd-dimensions-plugin")));
+  odd_plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
+  auto odd_rect = odd_plugin_container_impl->GetElement().BoundsInViewport();
+  EXPECT_TRUE(odd_plugin_container_impl->IsRectTopmost(odd_rect));
+}
+
 TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   RegisterMockedURL("plugin_container.html");
   RegisterMockedURL("plugin_containing_page.html");
