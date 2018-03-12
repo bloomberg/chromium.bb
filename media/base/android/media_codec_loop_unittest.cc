@@ -39,7 +39,7 @@ class MockMediaCodecLoopClient : public StrictMock<MediaCodecLoop::Client> {
   MOCK_CONST_METHOD0(IsAnyInputPending, bool());
   MOCK_METHOD0(ProvideInputData, MediaCodecLoop::InputData());
   MOCK_METHOD1(OnInputDataQueued, void(bool));
-  MOCK_METHOD1(OnDecodedEos, void(const MediaCodecLoop::OutputBuffer&));
+  MOCK_METHOD1(OnDecodedEos, bool(const MediaCodecLoop::OutputBuffer&));
   MOCK_METHOD1(OnDecodedFrame, bool(const MediaCodecLoop::OutputBuffer&));
   MOCK_METHOD0(OnOutputFormatChanged, bool());
   MOCK_METHOD0(OnCodecLoopError, void());
@@ -256,7 +256,7 @@ TEST_F(MediaCodecLoopTest, TestPendingWorkWithOutputBuffer) {
 }
 
 TEST_F(MediaCodecLoopTest, TestQueueEos) {
-  // Test sending an EOS to MCL => MCB =dequeue output=> MCL .
+  // Test sending an EOS to MCL => MCB =dequeue EOS=> MCL .
   ConstructCodecLoop();
   {
     InSequence _s;
@@ -275,7 +275,7 @@ TEST_F(MediaCodecLoopTest, TestQueueEos) {
     EosOutputBuffer eos;
     ExpectDequeueOutputBuffer(eos);
     EXPECT_CALL(Codec(), ReleaseOutputBuffer(eos.index, false));
-    EXPECT_CALL(*client_, OnDecodedEos(_)).Times(1);
+    EXPECT_CALL(*client_, OnDecodedEos(_)).Times(1).WillOnce(Return(true));
 
     // See TestUnqueuedEos.
     EXPECT_CALL(Codec(), DequeueOutputBuffer(_, _, _, _, _, _, _))
@@ -284,6 +284,33 @@ TEST_F(MediaCodecLoopTest, TestQueueEos) {
   }
   codec_loop_->DoPendingWork();
   // Don't WaitUntilIdle() here.  See TestUnqueuedEos.
+}
+
+TEST_F(MediaCodecLoopTest, TestQueueEosFailure) {
+  // Test sending an EOS to MCL => MCB =dequeue EOS fails=> MCL error.
+  ConstructCodecLoop();
+  {
+    InSequence _s;
+
+    ExpectIsAnyInputPending(true);
+    int input_buffer_index = 123;
+    ExpectDequeueInputBuffer(input_buffer_index);
+
+    MediaCodecLoop::InputData data;
+    data.is_eos = true;
+    ExpectProvideInputData(data);
+    EXPECT_CALL(Codec(), QueueEOS(input_buffer_index));
+    ExpectInputDataQueued(true);
+
+    // Now send the EOS back on the output queue.
+    EosOutputBuffer eos;
+    ExpectDequeueOutputBuffer(eos);
+    EXPECT_CALL(Codec(), ReleaseOutputBuffer(eos.index, false));
+    EXPECT_CALL(*client_, OnDecodedEos(_)).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(*client_, OnCodecLoopError()).Times(1);
+  }
+  codec_loop_->DoPendingWork();
+  // Don't WaitUntilIdle() here.
 }
 
 TEST_F(MediaCodecLoopTest, TestQueueInputData) {

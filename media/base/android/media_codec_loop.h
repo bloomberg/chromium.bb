@@ -173,8 +173,9 @@ class MEDIA_EXPORT MediaCodecLoop {
     // call back won't happen.
     virtual void OnInputDataQueued(bool success) = 0;
 
-    // Called when an EOS buffer is dequeued from the output.
-    virtual void OnDecodedEos(const OutputBuffer& out) = 0;
+    // Called when an EOS buffer is dequeued from the output.  If this returns
+    // false, then we transition to STATE_ERROR.
+    virtual bool OnDecodedEos(const OutputBuffer& out) = 0;
 
     // Processes the output buffer after it comes from MediaCodec.  The client
     // has the responsibility to release the codec buffer, though it doesn't
