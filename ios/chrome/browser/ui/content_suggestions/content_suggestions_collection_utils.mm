@@ -64,9 +64,7 @@ const CGFloat kTopSpacingMaterial = 24;
 const CGFloat kVoiceSearchButtonWidth = 48;
 
 // Height for the doodle frame.
-const CGFloat kGoogleSearchDoodleHeightRegularXRegular = 85;
-const CGFloat kGoogleSearchDoodleHeightOther = 68;
-const CGFloat kGoogleSearchDoodleHeightLegacy = 120;
+const CGFloat kGoogleSearchDoodleHeight = 120;
 
 // Height for the doodle frame when Google is not the default search engine.
 const CGFloat kNonGoogleSearchDoodleHeight = 60;
@@ -148,13 +146,7 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
   if (!IsIPadIdiom() && !logoIsShowing)
     return kNonGoogleSearchDoodleHeight;
 
-  if (IsUIRefreshPhase1Enabled()) {
-    if (!IsCompactWidth() && !IsCompactHeight())
-      return kGoogleSearchDoodleHeightRegularXRegular;
-    return kGoogleSearchDoodleHeightOther;
-  }
-
-  return kGoogleSearchDoodleHeightLegacy;
+  return kGoogleSearchDoodleHeight;
 }
 
 CGFloat doodleTopMargin(BOOL toolbarPresent) {
