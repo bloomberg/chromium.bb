@@ -25,6 +25,7 @@
 namespace net {
 class CertVerifier;
 class CertVerifyResult;
+class DrainableIOBuffer;
 class SourceStream;
 class URLRequestContextGetter;
 class X509Certificate;
@@ -76,9 +77,18 @@ class CONTENT_EXPORT SignedExchangeHandler {
   SignedExchangeHandler();
 
  private:
-  void ReadLoop();
-  void DidRead(bool completed_syncly, int result);
-  bool RunHeadersCallback();
+  enum class State {
+    kReadingHeadersLength,
+    kReadingHeaders,
+    kFetchingCertificate,
+    kHeadersCallbackCalled,
+  };
+
+  void SetupBuffers(size_t size);
+  void DoHeaderLoop();
+  void DidReadHeader(bool completed_syncly, int result);
+  bool ParseHeadersLength();
+  bool ParseHeadersAndFetchCertificate();
   void RunErrorCallback(net::Error);
 
   void OnCertReceived(
@@ -94,10 +104,12 @@ class CONTENT_EXPORT SignedExchangeHandler {
   ExchangeHeadersCallback headers_callback_;
   std::unique_ptr<net::SourceStream> source_;
 
-  // TODO(https://crbug.cxom/803774): Just for now. Implement the streaming
-  // parser.
-  scoped_refptr<net::IOBufferWithSize> read_buf_;
-  std::string original_body_string_;
+  State state_ = State::kReadingHeadersLength;
+  // Buffer used for header reading.
+  scoped_refptr<net::IOBuffer> header_buf_;
+  // Wrapper around |header_buf_| to progressively read fixed-size data.
+  scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
+  size_t headers_length_ = 0;
 
   std::unique_ptr<MerkleIntegritySourceStream> mi_stream_;
 
