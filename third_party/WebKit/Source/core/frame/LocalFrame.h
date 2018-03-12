@@ -163,10 +163,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&);
 
-  // A local root is the root of a connected subtree that contains only
-  // LocalFrames. The local root is responsible for coordinating input, layout,
-  // et cetera for that subtree of frames.
-  bool IsLocalRoot() const;
+  // This method is used to get the highest level LocalFrame in this
+  // frame's in-process subtree.
+  // FIXME: This is a temporary hack to support RemoteFrames, and callers
+  // should be updated to avoid storing things on the main frame.
   LocalFrame& LocalFrameRoot() const;
 
   // Note that the result of this function should not be cached: a frame is
