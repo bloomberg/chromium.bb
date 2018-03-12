@@ -83,7 +83,6 @@ class PLATFORM_EXPORT DisplayItem {
     kLinkHighlight,
     kImageAreaFocusRing,
     kPageOverlay,
-    kPageWidgetDelegateBackgroundFallback,
     kPopupContainerBorder,
     kPopupListBoxBackground,
     kPopupListBoxRow,
@@ -140,8 +139,7 @@ class PLATFORM_EXPORT DisplayItem {
     kClipPopupListBoxFrame,
     kClipScrollbarsToBoxBounds,
     kClipSelectionImage,
-    kPageWidgetDelegateClip,
-    kClipLast = kPageWidgetDelegateClip,
+    kClipLast = kClipSelectionImage,
 
     kEndClipFirst,
     kEndClipLast = kEndClipFirst + kClipLast - kClipFirst,

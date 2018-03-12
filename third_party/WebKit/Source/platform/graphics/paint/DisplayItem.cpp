@@ -80,7 +80,6 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(LinkHighlight);
     DEBUG_STRING_CASE(ImageAreaFocusRing);
     DEBUG_STRING_CASE(PageOverlay);
-    DEBUG_STRING_CASE(PageWidgetDelegateBackgroundFallback);
     DEBUG_STRING_CASE(PopupContainerBorder);
     DEBUG_STRING_CASE(PopupListBoxBackground);
     DEBUG_STRING_CASE(PopupListBoxRow);
@@ -152,7 +151,6 @@ static WTF::String ClipTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ClipPopupListBoxFrame);
     DEBUG_STRING_CASE(ClipScrollbarsToBoxBounds);
     DEBUG_STRING_CASE(ClipSelectionImage);
-    DEBUG_STRING_CASE(PageWidgetDelegateClip);
     DEFAULT_CASE;
   }
 }

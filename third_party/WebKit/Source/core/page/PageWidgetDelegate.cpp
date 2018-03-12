@@ -78,38 +78,31 @@ static void PaintInternal(Page& page,
   if (rect.IsEmpty())
     return;
 
-  PaintRecordBuilder builder;
-  {
-    GraphicsContext& paint_context = builder.Context();
+  // FIXME: device scale factor settings are layering violations and should
+  // not be used within Blink paint code.
+  float scale_factor = page.DeviceScaleFactorDeprecated();
+  canvas->save();
+  canvas->scale(scale_factor, scale_factor);
 
-    // FIXME: device scale factor settings are layering violations and should
-    // not be used within Blink paint code.
-    float scale_factor = page.DeviceScaleFactorDeprecated();
-    paint_context.SetDeviceScaleFactor(scale_factor);
+  IntRect dirty_rect(rect);
+  LocalFrameView* view = root.View();
+  if (view) {
+    DCHECK(view->GetLayoutView()->GetDocument().Lifecycle().GetState() ==
+           DocumentLifecycle::kPaintClean);
+    canvas->clipRect(dirty_rect);
 
-    AffineTransform scale;
-    scale.Scale(scale_factor);
-    TransformRecorder scale_recorder(paint_context, builder, scale);
-
-    IntRect dirty_rect(rect);
-    LocalFrameView* view = root.View();
-    if (view) {
-      DCHECK(view->GetLayoutView()->GetDocument().Lifecycle().GetState() ==
-             DocumentLifecycle::kPaintClean);
-      ClipRecorder clip_recorder(paint_context, builder,
-                                 DisplayItem::kPageWidgetDelegateClip,
-                                 dirty_rect);
-      view->PaintWithLifecycleUpdate(paint_context, global_paint_flags,
-                                     CullRect(dirty_rect));
-    } else {
-      DrawingRecorder recorder(
-          paint_context, builder,
-          DisplayItem::kPageWidgetDelegateBackgroundFallback);
-      paint_context.FillRect(dirty_rect, Color::kWhite);
-    }
+    PaintRecordBuilder builder;
+    builder.Context().SetDeviceScaleFactor(scale_factor);
+    view->PaintWithLifecycleUpdate(builder.Context(), global_paint_flags,
+                                   CullRect(dirty_rect));
+    builder.EndRecording(*canvas);
+  } else {
+    PaintFlags flags;
+    flags.setColor(SK_ColorWHITE);
+    canvas->drawRect(dirty_rect, flags);
   }
 
-  builder.EndRecording(*canvas);
+  canvas->restore();
 }
 
 void PageWidgetDelegate::Paint(Page& page,
