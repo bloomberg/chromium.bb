@@ -44,6 +44,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
+#include "components/cast_channel/cast_channel_util.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -2133,6 +2134,10 @@ const FeatureEntry kFeatureEntries[] = {
          "1",
          switches::kLoadMediaRouterComponentExtension,
          "0")},
+    {"media-router-cast-allow-all-ips",
+     flag_descriptions::kMediaRouterCastAllowAllIPsName,
+     flag_descriptions::kMediaRouterCastAllowAllIPsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(cast_channel::kCastAllowAllIPsFeature)},
 #endif  // !OS_ANDROID
 // Since Drive Search is not available when app list is disabled, flag guard
 // enable-drive-search-in-chrome-launcher flag.

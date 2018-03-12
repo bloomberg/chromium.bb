@@ -546,6 +546,9 @@ extern const char kLeftToRightUrlsDescription[];
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 
+extern const char kMediaRouterCastAllowAllIPsName[];
+extern const char kMediaRouterCastAllowAllIPsDescription[];
+
 extern const char kManualPasswordGenerationName[];
 extern const char kManualPasswordGenerationDescription[];
 
