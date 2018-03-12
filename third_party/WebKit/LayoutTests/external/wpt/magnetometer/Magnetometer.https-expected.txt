@@ -12,5 +12,6 @@ FAIL Magnetometer: Test that fresh reading is fetched on start() assert_equals: 
 FAIL Magnetometer: sensor readings can not be fired on the background tab assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
 FAIL Magnetometer: frequency hint works promise_test: Unhandled rejection with value: object "[object SensorErrorEvent]"
 FAIL Magnetometer: sensor receives suspend / resume notifications when  cross-origin subframe is focused assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Magnetometer: sensor reading is correct when options.referenceFrame is 'screen' assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
 Harness: the test ran to completion.
 
