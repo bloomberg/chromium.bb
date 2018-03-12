@@ -82,6 +82,11 @@
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 
+# Accessing cookies after they were set in onload handler is flaky:
+# https://crbug.com/820969.
+-ContentSettingsTest.BasicCookies
+-ContentSettingsTest.BasicCookiesHttps
+
 # https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
 # Addendum to the above: These three were previously marked as flaky. After
