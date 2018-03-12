@@ -27,10 +27,12 @@ namespace media {
 
 class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
  public:
-  GpuMemoryBufferDecoderWrapperTest() : config_(TestVideoConfig::Normal()) {
-    decoder_ = new testing::StrictMock<MockVideoDecoder>();
+  GpuMemoryBufferDecoderWrapperTest()
+      : config_(TestVideoConfig::Normal()),
+        decoder_(new testing::StrictMock<MockVideoDecoder>()),
+        mock_pool_(new MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_)) {
     gmb_decoder_ = std::make_unique<GpuMemoryBufferDecoderWrapper>(
-        std::make_unique<MockGpuMemoryBufferVideoFramePool>(&frame_ready_cbs_),
+        std::unique_ptr<MockGpuMemoryBufferVideoFramePool>(mock_pool_),
         std::unique_ptr<VideoDecoder>(decoder_));
   }
 
@@ -133,15 +135,16 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
     std::move(frame_ready_cbs_[2]).Run();
   }
 
+  const VideoDecoderConfig config_;
+
   base::TestMessageLoop message_loop_;
   std::vector<base::OnceClosure> frame_ready_cbs_;
 
   std::unique_ptr<GpuMemoryBufferDecoderWrapper> gmb_decoder_;
 
   // Owned by |gmb_decoder_|.
-  testing::StrictMock<MockVideoDecoder>* decoder_ = nullptr;
-
-  const VideoDecoderConfig config_;
+  testing::StrictMock<MockVideoDecoder>* decoder_;
+  MockGpuMemoryBufferVideoFramePool* mock_pool_;
 
   MOCK_METHOD1(OnInitDone, void(bool));
   MOCK_METHOD1(OnDecodeDone, void(DecodeStatus));
@@ -169,6 +172,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, InitializeReset) {
 
   EXPECT_CALL(*this, OnResetDone());
   EXPECT_CALL(*decoder_, Reset(_)).WillOnce(RunCallback<0>());
+  EXPECT_CALL(*mock_pool_, Abort());
   gmb_decoder_->Reset(base::BindRepeating(
       &GpuMemoryBufferDecoderWrapperTest::OnResetDone, base::Unretained(this)));
 
@@ -234,6 +238,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, ResetAbortsCopies) {
     // run after anything that might currently be on the task runner queue.
     EXPECT_CALL(*this, OnResetDone()).WillOnce(RunClosure(loop.QuitClosure()));
     EXPECT_CALL(*decoder_, Reset(_)).WillOnce(RunCallback<0>());
+    EXPECT_CALL(*mock_pool_, Abort());
     gmb_decoder_->Reset(BindToCurrentLoop(
         base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnResetDone,
                             base::Unretained(this))));
@@ -308,6 +313,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
                           base::Unretained(this)));
 
   // Technically the status here should be ABORTED, but it doesn't matter.
+  EXPECT_CALL(*mock_pool_, Abort());
   EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK));
   EXPECT_CALL(*decoder_, Reset(_)).WillOnce(RunCallback<0>());
   EXPECT_CALL(*this, OnResetDone()).WillOnce(RunClosure(loop.QuitClosure()));
@@ -361,6 +367,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
       base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
                           base::Unretained(this)));
 
+  EXPECT_CALL(*mock_pool_, Abort());
   EXPECT_CALL(*decoder_, Reset(_))
       .WillOnce(
           DoAll(RunClosure(base::BindRepeating(decode_cb, DecodeStatus::OK)),

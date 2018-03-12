@@ -78,6 +78,7 @@ void GpuMemoryBufferDecoderWrapper::Reset(const base::Closure& reset_cb) {
 
   // Abort any in-flight copies and stop any new ones from being started until
   // the next Decode() call (which will not occur until Reset() completes).
+  gmb_pool_->Abort();
   abort_copies_ = true;
   pending_copies_ = 0u;
   copy_factory_.InvalidateWeakPtrs();

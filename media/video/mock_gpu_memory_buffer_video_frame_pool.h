@@ -7,18 +7,19 @@
 
 #include "base/callback.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 
 class MockGpuMemoryBufferVideoFramePool : public GpuMemoryBufferVideoFramePool {
  public:
-  MockGpuMemoryBufferVideoFramePool(
-      std::vector<base::OnceClosure>* frame_ready_cbs)
-      : frame_ready_cbs_(frame_ready_cbs) {}
-  ~MockGpuMemoryBufferVideoFramePool() override = default;
+  explicit MockGpuMemoryBufferVideoFramePool(
+      std::vector<base::OnceClosure>* frame_ready_cbs);
+  ~MockGpuMemoryBufferVideoFramePool() override;
 
   void MaybeCreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
                                 FrameReadyCB frame_ready_cb) override;
+  MOCK_METHOD0(Abort, void());
 
  private:
   std::vector<base::OnceClosure>* frame_ready_cbs_;

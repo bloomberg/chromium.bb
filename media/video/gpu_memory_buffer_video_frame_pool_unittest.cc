@@ -440,4 +440,29 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, AtMostOneCopyInFlight) {
   RunUntilIdle();
 }
 
+// Test that Abort() stops any pending copies.
+TEST_F(GpuMemoryBufferVideoFramePoolTest, AbortCopies) {
+  scoped_refptr<VideoFrame> software_frame_1 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_1,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_1));
+
+  scoped_refptr<VideoFrame> software_frame_2 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_2,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_2));
+
+  media_task_runner_->RunUntilIdle();
+  EXPECT_GE(1u, copy_task_runner_->NumPendingTasks());
+  copy_task_runner_->RunUntilIdle();
+
+  gpu_memory_buffer_pool_->Abort();
+  media_task_runner_->RunUntilIdle();
+  EXPECT_EQ(0u, copy_task_runner_->NumPendingTasks());
+  RunUntilIdle();
+  ASSERT_FALSE(frame_2);
+}
+
 }  // namespace media
