@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 
@@ -75,6 +76,15 @@ bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
       break;
   }
   return false;
+}
+
+void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
+  StreamMixer::Get()->AddLoopbackAudioObserver(observer);
+}
+
+void CastMediaShlib::RemoveLoopbackAudioObserver(
+    LoopbackAudioObserver* observer) {
+  StreamMixer::Get()->RemoveLoopbackAudioObserver(observer);
 }
 
 }  // namespace media
