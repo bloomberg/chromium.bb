@@ -4,6 +4,8 @@
 
 #include "ash/touch/touch_devices_controller.h"
 
+#include <utility>
+
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -38,23 +40,6 @@ PrefService* GetActivePrefService() {
 }
 
 }  // namespace
-
-// Used to record pref started UMA. It is created on user session added and
-// destroyed on active user pref changed, which is a point of pref started.
-class TouchDevicesController::ScopedUmaRecorder {
- public:
-  ScopedUmaRecorder() = default;
-  ~ScopedUmaRecorder() {
-    PrefService* prefs = GetActivePrefService();
-    if (!prefs)
-      return;
-    UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started",
-                          prefs->GetBoolean(prefs::kTapDraggingEnabled));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedUmaRecorder);
-};
 
 // static
 void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
@@ -131,7 +116,10 @@ void TouchDevicesController::SetTouchscreenEnabled(
 }
 
 void TouchDevicesController::OnUserSessionAdded(const AccountId& account_id) {
-  scoped_uma_recorder_ = std::make_unique<ScopedUmaRecorder>();
+  uma_record_callback_ = base::BindOnce([](PrefService* prefs) {
+    UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started",
+                          prefs->GetBoolean(prefs::kTapDraggingEnabled));
+  });
 }
 
 void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
@@ -141,7 +129,8 @@ void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
 
 void TouchDevicesController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
-  scoped_uma_recorder_.reset();
+  if (uma_record_callback_)
+    std::move(uma_record_callback_).Run(prefs);
   ObservePrefs(prefs);
 }
 
