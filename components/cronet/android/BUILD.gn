@@ -342,8 +342,8 @@ cronet_impl_native_java_deps_to_package = [
   "//url:url_java",
 ]
 
-# cronet_impl_native_java.jar - native implementation of the Cronet engine.
-android_library("cronet_impl_native_java") {
+# cronet_impl_native_java_base.jar - native implementation of the Cronet engine.
+android_library("cronet_impl_native_java_base") {
   java_files = [
     "java/src/org/chromium/net/impl/BidirectionalStreamBuilderImpl.java",
     "java/src/org/chromium/net/impl/BidirectionalStreamNetworkException.java",
@@ -382,7 +382,7 @@ android_library("cronet_impl_native_java") {
 java_group("cronet_impl_all_java") {
   deps = [
     ":cronet_impl_common_java_base",
-    ":cronet_impl_native_java",
+    ":cronet_impl_native_java_base",
     ":cronet_impl_platform_java",
   ]
 }
@@ -858,7 +858,7 @@ test("cronet_unittests_android") {
 
   deps = [
     ":cronet_android_cert_proto",
-    ":cronet_impl_native_java",
+    ":cronet_impl_native_java_base",
     ":cronet_static",
     "//base",
     "//base/test:test_support",
@@ -899,7 +899,7 @@ action("extract_cronet_native_jars") {
   ]
 
   deps = [
-    ":cronet_impl_native_java",
+    ":cronet_impl_native_java_base",
   ]
   deps += cronet_impl_native_java_deps_to_package
 
@@ -1188,7 +1188,7 @@ jar_src("jar_cronet_impl_native_java_source") {
     "//url/android/java/src",
   ]
   source_deps = [
-    ":cronet_impl_native_java",
+    ":cronet_impl_native_java_base",
     "//base:base_java",
     "//net/android:net_java",
     "//url:url_java",
@@ -1475,7 +1475,7 @@ action("api_static_checks") {
         root_build_dir),
     "--impl_jar",
     rebase_path(
-        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_native_java.jar",
+        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_native_java_base.jar",
         root_build_dir),
     "--stamp",
     rebase_path(outputs[0], root_build_dir),
@@ -1483,7 +1483,7 @@ action("api_static_checks") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_java_base",
-    ":cronet_impl_native_java",
+    ":cronet_impl_native_java_base",
     ":cronet_impl_platform_java",
   ]
   inputs = [
