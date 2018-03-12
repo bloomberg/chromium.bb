@@ -2166,8 +2166,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
+// Flaky on Mus. See https://crbug.com/819285.
 IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
-                       InputDispatchEventsToOOPIF) {
+                       DISABLED_InputDispatchEventsToOOPIF) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/devtools/oopif-input.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
