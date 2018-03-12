@@ -4,8 +4,8 @@ layer at (0,0) size 800x305
   LayoutBlockFlow {HTML} at (0,0) size 800x305
     LayoutBlockFlow {BODY} at (8,16) size 784x281
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 444x19
-          text run at (0,0) width 444: "The look of the controls should not change when styled under strict mode."
+        LayoutText {#text} at (0,0) size 467x19
+          text run at (0,0) width 467: "The look of the controls should not change when styled under strict mode."
       LayoutBlockFlow (anonymous) at (0,36) size 784x245
         LayoutText {#text} at (320,225) size 4x19
           text run at (320,225) width 4: " "
@@ -30,17 +30,33 @@ layer at (8,260) size 320x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (4,0) size 30x32
         LayoutText {#text} at (0,8) size 30x15
           text run at (0,8) width 30: "/ 0:06"
-    LayoutSlider {INPUT} at (108,15) size 69x2
-      LayoutFlexibleBox {DIV} at (0,0) size 69x2
-        LayoutBlockFlow {DIV} at (-18,-23) size 105x48
-          LayoutBlockFlow {DIV} at (0,0) size 36x48
+    LayoutSlider {INPUT} at (108,1) size 69x30
+      LayoutFlexibleBox {DIV} at (0,14) size 69x2
     LayoutButton {INPUT} at (195,0) size 32x32
-    LayoutSlider {INPUT} at (245,15) size 25x2
-      LayoutFlexibleBox {DIV} at (0,0) size 25x2
-        LayoutBlockFlow {DIV} at (-18,-23) size 61x48
-          LayoutBlockFlow {DIV} at (25,0) size 36x48
+    LayoutSlider {INPUT} at (245,1) size 25x30
+      LayoutFlexibleBox {DIV} at (0,14) size 25x2
 layer at (296,260) size 32x32
   LayoutButton {INPUT} at (288,0) size 32x32
+layer at (98,276) size 105x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 105x0
+layer at (116,275) size 69x2
+  LayoutBlockFlow (positioned) {DIV} at (18,-1) size 69x2 [bgcolor=#DADADA]
+layer at (235,276) size 61x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 61x0
+layer at (253,275) size 25x2
+  LayoutBlockFlow (positioned) {DIV} at (18,-1) size 25x2 [bgcolor=#DADADA]
+layer at (116,275) size 69x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 69x2 [bgcolor=#5A5A5A]
+layer at (116,275) size 0x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#4285F4]
+layer at (253,275) size 0x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#5A5A5A]
+layer at (253,275) size 25x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 25x2 [bgcolor=#4285F4]
+layer at (98,252) size 36x48 backgroundClip at (8,260) size 320x32 clip at (8,260) size 320x32
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (0,-24) size 36x48
+layer at (260,252) size 36x48 backgroundClip at (8,260) size 320x32 clip at (8,260) size 320x32
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (25,-24) size 36x48
 layer at (332,52) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
     LayoutBlockFlow {DIV} at (0,208) size 320x32
@@ -57,14 +73,30 @@ layer at (332,260) size 320x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (4,0) size 30x32
         LayoutText {#text} at (0,8) size 30x15
           text run at (0,8) width 30: "/ 0:06"
-    LayoutSlider {INPUT} at (108,15) size 69x2
-      LayoutFlexibleBox {DIV} at (0,0) size 69x2
-        LayoutBlockFlow {DIV} at (-18,-23) size 105x48
-          LayoutBlockFlow {DIV} at (0,0) size 36x48
+    LayoutSlider {INPUT} at (108,1) size 69x30
+      LayoutFlexibleBox {DIV} at (0,14) size 69x2
     LayoutButton {INPUT} at (195,0) size 32x32
-    LayoutSlider {INPUT} at (245,15) size 25x2
-      LayoutFlexibleBox {DIV} at (0,0) size 25x2
-        LayoutBlockFlow {DIV} at (-18,-23) size 61x48
-          LayoutBlockFlow {DIV} at (25,0) size 36x48
+    LayoutSlider {INPUT} at (245,1) size 25x30
+      LayoutFlexibleBox {DIV} at (0,14) size 25x2
 layer at (620,260) size 32x32
   LayoutButton {INPUT} at (288,0) size 32x32
+layer at (422,276) size 105x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 105x0
+layer at (440,275) size 69x2
+  LayoutBlockFlow (positioned) {DIV} at (18,-1) size 69x2 [bgcolor=#DADADA]
+layer at (559,276) size 61x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 61x0
+layer at (577,275) size 25x2
+  LayoutBlockFlow (positioned) {DIV} at (18,-1) size 25x2 [bgcolor=#DADADA]
+layer at (440,275) size 69x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 69x2 [bgcolor=#5A5A5A]
+layer at (440,275) size 0x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#4285F4]
+layer at (577,275) size 0x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#5A5A5A]
+layer at (577,275) size 25x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 25x2 [bgcolor=#4285F4]
+layer at (422,252) size 36x48 backgroundClip at (332,260) size 320x32 clip at (332,260) size 320x32
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (0,-24) size 36x48
+layer at (584,252) size 36x48 backgroundClip at (332,260) size 320x32 clip at (332,260) size 320x32
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (25,-24) size 36x48

@@ -20,13 +20,11 @@ layer at (8,8) size 300x108
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108
 layer at (8,126) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32
 layer at (308,126) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32
     LayoutBlockFlow {DIV} at (0,0) size 300x32
 layer at (308,126) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32
 layer at (8,162) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
     LayoutBlockFlow {DIV} at (0,118) size 300x32
@@ -34,10 +32,8 @@ layer at (8,162) size 300x108
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108
 layer at (8,280) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32
 layer at (308,280) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32
     LayoutBlockFlow {DIV} at (0,0) size 300x32
 layer at (308,280) size 300x32
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
-    LayoutButton {INPUT} at (0,0) size 32x32
