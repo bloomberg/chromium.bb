@@ -284,7 +284,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->inter_mode_mask[BLOCK_128X64] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_128X128] = INTER_NEAREST;
     sf->partition_search_type = REFERENCE_PARTITION;
-    sf->default_min_partition_size = BLOCK_8X8;
     sf->reuse_inter_pred_sby = 1;
     sf->force_frame_boost =
         is_keyframe ||
