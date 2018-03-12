@@ -16,10 +16,6 @@
 #include "include/aom_mem_intrnl.h"
 #include "aom/aom_integer.h"
 
-#ifndef AOM_MAX_ALLOCABLE_MEMORY
-#define AOM_MAX_ALLOCABLE_MEMORY 8589934592  // 8 GB
-#endif
-
 #if defined(AOM_MAX_ALLOCABLE_MEMORY)
 // Returns 0 in case of overflow of nmemb * size.
 static int check_size_argument_overflow(uint64_t nmemb, uint64_t size) {
