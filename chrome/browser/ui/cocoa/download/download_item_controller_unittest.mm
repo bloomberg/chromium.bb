@@ -18,6 +18,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "ui/events/test/cocoa_test_event_utils.h"
 
 using ::testing::Return;
 using ::testing::ReturnRefOfCopy;
@@ -177,5 +178,34 @@ TEST_F(DownloadItemControllerTest, DismissesContextMenuWhenRemovedFromWindow) {
   EXPECT_TRUE(did_block);
 }
 
+// https://crbug.com/815161: Deleting the controller while the mouse button is
+// down should not crash. This crash only affects macOS 10.12 and older.
+TEST_F(DownloadItemControllerTest, DeleteWithMouseDownDoesNotCrash) {
+  NSView* item_view = [item_controller_ view];
+  NSRect item_frame = [item_view convertRect:item_view.bounds toView:nil];
+  NSPoint item_center = NSMakePoint(NSMidX(item_frame), NSMidY(item_frame));
+  NSEvent* mouse_down_event =
+      cocoa_test_event_utils::LeftMouseDownAtPointInWindow(item_center,
+                                                           test_window());
+  NSEvent* mouse_up_event =
+      cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp, 0);
+
+  // Verify that the pair of events activates the button (else this isn't
+  // testing anything).
+  EXPECT_CALL(*download_item_, OpenDownload());
+  [NSApp postEvent:mouse_up_event atStart:NO];
+  [NSApp sendEvent:mouse_down_event];
+  testing::Mock::VerifyAndClearExpectations(download_item_.get());
+
+  [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    [[item_controller_ view] removeFromSuperview];
+    item_controller_.reset();
+    [NSApp postEvent:mouse_up_event atStart:NO];
+  }];
+  [NSApp sendEvent:mouse_down_event];
+
+  // Verify that the block ran. At this point, the test would have crashed.
+  EXPECT_EQ(nullptr, item_controller_);
+}
 
 }  // namespace
