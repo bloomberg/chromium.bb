@@ -27,7 +27,7 @@ extern "C" {
 #define TX_SIZE_CONTEXTS 3
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
-#define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)
+#define INTER_COMPOUND_OFFSET(mode) (uint8_t)((mode)-NEAREST_NEARESTMV)
 
 // Number of possible contexts for a color index.
 // As can be seen from av1_get_palette_color_index_context(), the possible
