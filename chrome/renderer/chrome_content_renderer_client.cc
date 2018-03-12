@@ -1372,6 +1372,12 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
   return module_name == "Native Client";
 }
 
+bool ChromeContentRendererClient::IsOriginIsolatedPepperPlugin(
+    const base::FilePath& plugin_path) {
+  return plugin_path ==
+         base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath);
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
 bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
     const GURL& url,

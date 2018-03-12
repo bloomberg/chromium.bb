@@ -173,6 +173,11 @@ bool ContentRendererClient::IsExternalPepperPlugin(
   return false;
 }
 
+bool ContentRendererClient::IsOriginIsolatedPepperPlugin(
+    const base::FilePath& plugin_path) {
+  return false;
+}
+
 bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
   return false;
 }

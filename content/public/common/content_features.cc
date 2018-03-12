@@ -244,6 +244,10 @@ const base::Feature kPassiveDocumentEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether PDF files should be rendered in diffent processes based on origin.
+const base::Feature kPdfIsolation = {"PdfIsolation",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kPepper3DImageChromium {
