@@ -3,10 +3,6 @@
 # http://crbug.com/784941
 -CaptureScreenshotTest.*
 
-#### ui::LatencyInfo
-# Fails to receive histogram updates http://crbug.com/786151
--ScrollLatencyBrowserTest.*
-
 # OnGpuSwapBuffersCompletedInternal not called. http://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
 
