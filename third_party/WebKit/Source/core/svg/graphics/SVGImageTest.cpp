@@ -4,6 +4,9 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
@@ -14,7 +17,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -98,7 +100,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
       new TaskRunnerTimer<SVGImageChromeClient>(
           scheduler::GetSingleThreadTaskRunnerForTesting(), &chrome_client,
           &SVGImageChromeClient::AnimationTimerFired);
-  chrome_client.SetTimer(WTF::WrapUnique(timer));
+  chrome_client.SetTimer(base::WrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   PumpFrame();
@@ -127,7 +129,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
       new TaskRunnerTimer<SVGImageChromeClient>(
           scheduler::GetSingleThreadTaskRunnerForTesting(), &chrome_client,
           &SVGImageChromeClient::AnimationTimerFired);
-  chrome_client.SetTimer(WTF::WrapUnique(timer));
+  chrome_client.SetTimer(base::WrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   PumpFrame();

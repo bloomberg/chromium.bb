@@ -21,8 +21,10 @@
 #include "core/css/parser/CSSParserSelector.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSSelectorList.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -51,7 +53,7 @@ void CSSParserSelector::AdoptSelectorVector(
     Vector<std::unique_ptr<CSSParserSelector>>& selector_vector) {
   CSSSelectorList* selector_list = new CSSSelectorList(
       CSSSelectorList::AdoptSelectorVector(selector_vector));
-  selector_->SetSelectorList(WTF::WrapUnique(selector_list));
+  selector_->SetSelectorList(base::WrapUnique(selector_list));
 }
 
 void CSSParserSelector::SetSelectorList(

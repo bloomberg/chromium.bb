@@ -32,6 +32,7 @@
 #include "core/dom/events/EventTarget.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/SourceLocation.h"
@@ -54,7 +55,6 @@
 #include "platform/Histogram.h"
 #include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
@@ -752,7 +752,7 @@ bool EventTarget::FireEventListeners(Event* event,
   size_t i = 0;
   size_t size = entry.size();
   if (!d->firing_event_iterators)
-    d->firing_event_iterators = WTF::WrapUnique(new FiringEventIteratorVector);
+    d->firing_event_iterators = std::make_unique<FiringEventIteratorVector>();
   d->firing_event_iterators->push_back(
       FiringEventIterator(event->type(), i, size));
 

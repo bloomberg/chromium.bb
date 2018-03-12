@@ -23,14 +23,16 @@
 #ifndef CachedUAStyle_h
 #define CachedUAStyle_h
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/css/StyleColor.h"
 #include "core/style/FillLayer.h"
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -46,7 +48,7 @@ class CachedUAStyle {
 
  public:
   static std::unique_ptr<CachedUAStyle> Create(const ComputedStyle* style) {
-    return WTF::WrapUnique(new CachedUAStyle(style));
+    return base::WrapUnique(new CachedUAStyle(style));
   }
 
   bool BorderColorEquals(const ComputedStyle& other) const;

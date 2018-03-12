@@ -30,10 +30,12 @@
 
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 
-#include <limits.h>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -49,7 +51,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
@@ -170,9 +171,9 @@ WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode credentials_mode,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return WTF::WrapUnique(new ClientAdapter(loader, client, options,
-                                           fetch_request_mode, credentials_mode,
-                                           task_runner));
+  return base::WrapUnique(new ClientAdapter(loader, client, options,
+                                            fetch_request_mode,
+                                            credentials_mode, task_runner));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(

@@ -30,7 +30,6 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGMaskPainter.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -108,8 +107,8 @@ bool SVGPaintContext::ApplyClipMaskAndFilterIfNecessary() {
 
   if (!IsIsolationInstalled() &&
       SVGLayoutSupport::IsIsolationRequired(&object_)) {
-    compositing_recorder_ = WTF::WrapUnique(new CompositingRecorder(
-        GetPaintInfo().context, object_, SkBlendMode::kSrcOver, 1));
+    compositing_recorder_ = std::make_unique<CompositingRecorder>(
+        GetPaintInfo().context, object_, SkBlendMode::kSrcOver, 1);
   }
 
   return true;
@@ -154,10 +153,10 @@ void SVGPaintContext::ApplyCompositingIfNecessary() {
   if (opacity < 1 || blend_mode != WebBlendMode::kNormal) {
     const FloatRect compositing_bounds =
         object_.VisualRectInLocalSVGCoordinates();
-    compositing_recorder_ = WTF::WrapUnique(new CompositingRecorder(
+    compositing_recorder_ = std::make_unique<CompositingRecorder>(
         GetPaintInfo().context, object_,
         WebCoreCompositeToSkiaComposite(kCompositeSourceOver, blend_mode),
-        opacity, &compositing_bounds));
+        opacity, &compositing_bounds);
   }
 }
 
@@ -193,7 +192,7 @@ bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!filter)
     return true;
   filter_recording_context_ =
-      WTF::WrapUnique(new SVGFilterRecordingContext(GetPaintInfo().context));
+      std::make_unique<SVGFilterRecordingContext>(GetPaintInfo().context);
   filter_ = filter;
   GraphicsContext* filter_context = SVGFilterPainter(*filter).PrepareEffect(
       object_, *filter_recording_context_);
@@ -203,7 +202,7 @@ bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
   // Because the filter needs to cache its contents we replace the context
   // during filtering with the filter's context.
   filter_paint_info_ =
-      WTF::WrapUnique(new PaintInfo(*filter_context, paint_info_));
+      std::make_unique<PaintInfo>(*filter_context, paint_info_);
 
   // Because we cache the filter contents and do not invalidate on paint
   // invalidation rect changes, we need to paint the entire filter region

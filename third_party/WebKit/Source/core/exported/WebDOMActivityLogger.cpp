@@ -31,12 +31,14 @@
 #include "public/web/WebDOMActivityLogger.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/bindings/V8DOMActivityLogger.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -103,7 +105,7 @@ void SetDOMActivityLogger(int world_id,
   DCHECK(logger);
   V8DOMActivityLogger::SetActivityLogger(
       world_id, extension_id,
-      WTF::WrapUnique(new DOMActivityLoggerContainer(WTF::WrapUnique(logger))));
+      std::make_unique<DOMActivityLoggerContainer>(base::WrapUnique(logger)));
 }
 
 }  // namespace blink

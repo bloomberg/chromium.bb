@@ -141,7 +141,6 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
@@ -2084,8 +2083,8 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseUp:
         event_type = EventTypeNames::mouseup;
-        gesture_indicator = WTF::WrapUnique(
-            new UserGestureIndicator(std::move(mouse_capture_gesture_token_)));
+        gesture_indicator = std::make_unique<UserGestureIndicator>(
+            std::move(mouse_capture_gesture_token_));
         break;
       default:
         NOTREACHED();
@@ -2306,8 +2305,8 @@ void WebViewImpl::DidLosePointerLock() {
 
 WebSettingsImpl* WebViewImpl::SettingsImpl() {
   if (!web_settings_) {
-    web_settings_ = WTF::WrapUnique(
-        new WebSettingsImpl(&page_->GetSettings(), dev_tools_emulator_.Get()));
+    web_settings_ = std::make_unique<WebSettingsImpl>(
+        &page_->GetSettings(), dev_tools_emulator_.Get());
   }
   DCHECK(web_settings_);
   return web_settings_.get();

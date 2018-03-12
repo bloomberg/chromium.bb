@@ -5,6 +5,8 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -29,7 +31,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
@@ -57,7 +58,7 @@ constexpr char kFileName[] = "fox-null-terminated.html";
 class MockThreadableLoaderClient : public ThreadableLoaderClient {
  public:
   static std::unique_ptr<MockThreadableLoaderClient> Create() {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new ::testing::StrictMock<MockThreadableLoaderClient>);
   }
   MOCK_METHOD2(DidSendData, void(unsigned long long, unsigned long long));
@@ -440,10 +441,10 @@ class ThreadableLoaderTest
   ThreadableLoaderTest() {
     switch (GetParam()) {
       case kDocumentThreadableLoaderTest:
-        helper_ = WTF::WrapUnique(new DocumentThreadableLoaderTestHelper);
+        helper_ = std::make_unique<DocumentThreadableLoaderTestHelper>();
         break;
       case kWorkerThreadableLoaderTest:
-        helper_ = WTF::WrapUnique(new WorkerThreadableLoaderTestHelper());
+        helper_ = std::make_unique<WorkerThreadableLoaderTestHelper>();
         break;
     }
   }

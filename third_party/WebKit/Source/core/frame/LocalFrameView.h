@@ -27,6 +27,8 @@
 #define LocalFrameView_h
 
 #include <memory>
+#include <utility>
+
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/frame/FrameView.h"
@@ -866,11 +868,11 @@ class CORE_EXPORT LocalFrameView final
 
   // Recursively update frame tree. Each frame has its only
   // scroll on main reason. Given the following frame tree
-  //.. A...
-  //../.\..
-  //.B...C.
-  //.|.....
-  //.D.....
+  // .. A...
+  // ../.\..
+  // .B...C.
+  // .|.....
+  // .D.....
   // If B has fixed background-attachment but other frames
   // don't, both A and C should scroll on cc. Frame D should
   // scrolled on main thread as its ancestor B.

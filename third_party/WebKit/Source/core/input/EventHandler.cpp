@@ -29,6 +29,7 @@
 #include "core/input/EventHandler.h"
 
 #include <memory>
+#include <utility>
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "build/build_config.h"
@@ -95,7 +96,6 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
@@ -1010,10 +1010,10 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (frame_->LocalFrameRoot()
           .GetEventHandler()
           .last_mouse_down_user_gesture_token_) {
-    gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
+    gesture_indicator = std::make_unique<UserGestureIndicator>(
         std::move(frame_->LocalFrameRoot()
                       .GetEventHandler()
-                      .last_mouse_down_user_gesture_token_)));
+                      .last_mouse_down_user_gesture_token_));
   } else {
     gesture_indicator = Frame::NotifyUserActivation(frame_);
   }

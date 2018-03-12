@@ -26,6 +26,8 @@
 #define CounterDirectives_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/CheckedNumeric.h"
@@ -107,7 +109,7 @@ inline bool operator!=(const CounterDirectives& a, const CounterDirectives& b) {
 class CounterDirectiveMap : public HashMap<AtomicString, CounterDirectives> {
  public:
   std::unique_ptr<CounterDirectiveMap> Clone() const {
-    return WTF::WrapUnique(new CounterDirectiveMap(*this));
+    return base::WrapUnique(new CounterDirectiveMap(*this));
   }
 };
 

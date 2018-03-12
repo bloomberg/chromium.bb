@@ -4,12 +4,14 @@
 
 #include "core/style/StylePath.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
+
 #include "core/css/CSSPathValue.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/graphics/Path.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -34,7 +36,7 @@ StylePath* StylePath::EmptyPath() {
 
 const Path& StylePath::GetPath() const {
   if (!path_) {
-    path_ = WTF::WrapUnique(new Path);
+    path_ = std::make_unique<Path>();
     BuildPathFromByteStream(*byte_stream_, *path_);
   }
   return *path_;

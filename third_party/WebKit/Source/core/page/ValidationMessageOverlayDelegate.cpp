@@ -4,6 +4,9 @@
 
 #include "core/page/ValidationMessageOverlayDelegate.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/Element.h"
 #include "core/frame/Settings.h"
@@ -74,7 +77,7 @@ ValidationMessageOverlayDelegate::Create(Page& page,
                                          TextDirection message_dir,
                                          const String& sub_message,
                                          TextDirection sub_message_dir) {
-  return WTF::WrapUnique(new ValidationMessageOverlayDelegate(
+  return base::WrapUnique(new ValidationMessageOverlayDelegate(
       page, anchor, message, message_dir, sub_message, sub_message_dir));
 }
 

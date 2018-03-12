@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "v8/include/v8.h"
 
@@ -28,20 +28,20 @@ class CORE_EXPORT WorkerBackingThread final {
  public:
   static std::unique_ptr<WorkerBackingThread> Create(
       const WebThreadCreationParams& params) {
-    return WTF::WrapUnique(new WorkerBackingThread(params, false));
+    return base::WrapUnique(new WorkerBackingThread(params, false));
   }
   static std::unique_ptr<WorkerBackingThread> Create(WebThread* thread) {
-    return WTF::WrapUnique(new WorkerBackingThread(thread, false));
+    return base::WrapUnique(new WorkerBackingThread(thread, false));
   }
 
   // These are needed to suppress leak reports. See
   // https://crbug.com/590802 and https://crbug.com/v8/1428.
   static std::unique_ptr<WorkerBackingThread> CreateForTest(
       const WebThreadCreationParams& params) {
-    return WTF::WrapUnique(new WorkerBackingThread(params, true));
+    return base::WrapUnique(new WorkerBackingThread(params, true));
   }
   static std::unique_ptr<WorkerBackingThread> CreateForTest(WebThread* thread) {
-    return WTF::WrapUnique(new WorkerBackingThread(thread, true));
+    return base::WrapUnique(new WorkerBackingThread(thread, true));
   }
 
   ~WorkerBackingThread();

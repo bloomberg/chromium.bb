@@ -28,6 +28,9 @@
 
 #include "core/svg/graphics/SVGImageChromeClient.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -39,14 +42,13 @@ static const double kAnimationFrameDelay = 1.0 / 60;
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : image_(image),
-      animation_timer_(
-          WTF::WrapUnique(new TaskRunnerTimer<SVGImageChromeClient>(
-              blink::Platform::Current()
-                  ->CurrentThread()
-                  ->Scheduler()
-                  ->CompositorTaskRunner(),
-              this,
-              &SVGImageChromeClient::AnimationTimerFired))),
+      animation_timer_(std::make_unique<TaskRunnerTimer<SVGImageChromeClient>>(
+          blink::Platform::Current()
+              ->CurrentThread()
+              ->Scheduler()
+              ->CompositorTaskRunner(),
+          this,
+          &SVGImageChromeClient::AnimationTimerFired)),
       timeline_state_(kRunning) {}
 
 SVGImageChromeClient* SVGImageChromeClient::Create(SVGImage* image) {

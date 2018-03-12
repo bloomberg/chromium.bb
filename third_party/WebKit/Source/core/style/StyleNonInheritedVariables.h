@@ -5,6 +5,10 @@
 #ifndef StyleNonInheritedVariables_h
 #define StyleNonInheritedVariables_h
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSVariableData.h"
 #include "platform/wtf/Forward.h"
@@ -16,11 +20,11 @@ namespace blink {
 class StyleNonInheritedVariables {
  public:
   static std::unique_ptr<StyleNonInheritedVariables> Create() {
-    return WTF::WrapUnique(new StyleNonInheritedVariables);
+    return base::WrapUnique(new StyleNonInheritedVariables);
   }
 
   std::unique_ptr<StyleNonInheritedVariables> Clone() {
-    return WTF::WrapUnique(new StyleNonInheritedVariables(*this));
+    return base::WrapUnique(new StyleNonInheritedVariables(*this));
   }
 
   bool operator==(const StyleNonInheritedVariables& other) const;

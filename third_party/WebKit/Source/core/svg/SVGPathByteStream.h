@@ -21,7 +21,8 @@
 #define SVGPathByteStream_h
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -37,11 +38,11 @@ class SVGPathByteStream {
 
  public:
   static std::unique_ptr<SVGPathByteStream> Create() {
-    return WTF::WrapUnique(new SVGPathByteStream);
+    return base::WrapUnique(new SVGPathByteStream);
   }
 
   std::unique_ptr<SVGPathByteStream> Clone() const {
-    return WTF::WrapUnique(new SVGPathByteStream(data_));
+    return base::WrapUnique(new SVGPathByteStream(data_));
   }
 
   typedef Vector<unsigned char> Data;

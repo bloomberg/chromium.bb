@@ -33,9 +33,9 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextFeatures.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -43,7 +43,7 @@ class CORE_EXPORT ContextFeaturesClientImpl final
     : public ContextFeaturesClient {
  public:
   static std::unique_ptr<ContextFeaturesClientImpl> Create() {
-    return WTF::WrapUnique(new ContextFeaturesClientImpl());
+    return base::WrapUnique(new ContextFeaturesClientImpl());
   }
 
   bool IsEnabled(Document*,

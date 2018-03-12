@@ -29,12 +29,13 @@
 #include "core/dom/AXObjectCache.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/html_element_type_helpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebAXEnums.h"
@@ -61,7 +62,7 @@ AXObjectCache::~AXObjectCache() = default;
 
 std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::Create(
     Document& document) {
-  return WTF::WrapUnique(new ScopedAXObjectCache(document));
+  return base::WrapUnique(new ScopedAXObjectCache(document));
 }
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)

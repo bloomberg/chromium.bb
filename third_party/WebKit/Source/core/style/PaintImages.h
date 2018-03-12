@@ -6,9 +6,10 @@
 #define PaintImages_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/style/StyleImage.h"
 #include "platform/heap/Persistent.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -17,7 +18,7 @@ namespace blink {
 class PaintImages : public Vector<Persistent<StyleImage>> {
  public:
   std::unique_ptr<PaintImages> Clone() const {
-    return WTF::WrapUnique(new PaintImages(*this));
+    return base::WrapUnique(new PaintImages(*this));
   }
 };
 

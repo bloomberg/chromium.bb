@@ -23,11 +23,11 @@
 #define CSSParserSelector_h
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class CORE_EXPORT CSSParserSelector {
   explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
 
   static std::unique_ptr<CSSParserSelector> Create() {
-    return WTF::WrapUnique(new CSSParserSelector);
+    return std::make_unique<CSSParserSelector>();
   }
   static std::unique_ptr<CSSParserSelector> Create(const QualifiedName& name,
                                                    bool is_implicit = false) {

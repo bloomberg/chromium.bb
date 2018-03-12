@@ -31,12 +31,13 @@
 #include "core/css/invalidation/InvalidationSet.h"
 
 #include <memory>
+#include <utility>
+
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -212,25 +213,25 @@ void InvalidationSet::Destroy() const {
 
 HashSet<AtomicString>& InvalidationSet::EnsureClassSet() {
   if (!classes_)
-    classes_ = WTF::WrapUnique(new HashSet<AtomicString>);
+    classes_ = std::make_unique<HashSet<AtomicString>>();
   return *classes_;
 }
 
 HashSet<AtomicString>& InvalidationSet::EnsureIdSet() {
   if (!ids_)
-    ids_ = WTF::WrapUnique(new HashSet<AtomicString>);
+    ids_ = std::make_unique<HashSet<AtomicString>>();
   return *ids_;
 }
 
 HashSet<AtomicString>& InvalidationSet::EnsureTagNameSet() {
   if (!tag_names_)
-    tag_names_ = WTF::WrapUnique(new HashSet<AtomicString>);
+    tag_names_ = std::make_unique<HashSet<AtomicString>>();
   return *tag_names_;
 }
 
 HashSet<AtomicString>& InvalidationSet::EnsureAttributeSet() {
   if (!attributes_)
-    attributes_ = WTF::WrapUnique(new HashSet<AtomicString>);
+    attributes_ = std::make_unique<HashSet<AtomicString>>();
   return *attributes_;
 }
 

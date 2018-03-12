@@ -46,11 +46,11 @@
 
 #include <algorithm>
 #include <memory>
+
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -163,7 +163,7 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
         // Create the buffer if it doesn't exist yet.
         if (!pos_z_order_list_) {
           pos_z_order_list_ =
-              WTF::WrapUnique(new Vector<PaintLayerStackingNode*>);
+              std::make_unique<Vector<PaintLayerStackingNode*>>();
         }
         pos_z_order_list_->push_back(layer->StackingNode());
       }
@@ -187,7 +187,7 @@ void PaintLayerStackingNode::CollectLayers(
     std::unique_ptr<Vector<PaintLayerStackingNode*>>& buffer =
         (ZIndex() >= 0) ? pos_buffer : neg_buffer;
     if (!buffer)
-      buffer = WTF::WrapUnique(new Vector<PaintLayerStackingNode*>);
+      buffer = std::make_unique<Vector<PaintLayerStackingNode*>>();
     buffer->push_back(this);
   }
 

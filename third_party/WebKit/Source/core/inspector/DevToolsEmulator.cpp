@@ -4,6 +4,8 @@
 
 #include "core/inspector/DevToolsEmulator.h"
 
+#include <algorithm>
+
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
@@ -20,7 +22,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebSettings.h"
 
@@ -518,10 +519,10 @@ bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
   float page_scale_factor = page->PageScaleFactor();
   if (scaled_event.GetType() == WebInputEvent::kGesturePinchBegin) {
     WebFloatPoint gesture_position = scaled_event.PositionInRootFrame();
-    last_pinch_anchor_css_ = WTF::WrapUnique(new IntPoint(
-        RoundedIntPoint(gesture_position + frame_view->GetScrollOffset())));
+    last_pinch_anchor_css_ = std::make_unique<IntPoint>(
+        RoundedIntPoint(gesture_position + frame_view->GetScrollOffset()));
     last_pinch_anchor_dip_ =
-        WTF::WrapUnique(new IntPoint(FlooredIntPoint(gesture_position)));
+        std::make_unique<IntPoint>(FlooredIntPoint(gesture_position));
     last_pinch_anchor_dip_->Scale(page_scale_factor, page_scale_factor);
   }
   if (scaled_event.GetType() == WebInputEvent::kGesturePinchUpdate &&

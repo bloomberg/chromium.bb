@@ -5,6 +5,7 @@
 #include "core/workers/WorkerBackingThread.h"
 
 #include <memory>
+
 #include "base/location.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ContextSnapshot.h"
@@ -17,7 +18,6 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 
@@ -86,10 +86,11 @@ void WorkerBackingThread::InitializeOnBackingThread(
       isolate_, V8GCController::TraceDOMWrappers,
       ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
       ScriptWrappableMarkingVisitor::PerformCleanup);
-  if (RuntimeEnabledFeatures::V8IdleTasksEnabled())
+  if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
-        isolate_, WTF::WrapUnique(new V8IdleTaskRunner(
-                      BackingThread().PlatformThread().Scheduler())));
+        isolate_, std::make_unique<V8IdleTaskRunner>(
+                      BackingThread().PlatformThread().Scheduler()));
+  }
   if (is_owning_thread_)
     Platform::Current()->DidStartWorkerThread();
 

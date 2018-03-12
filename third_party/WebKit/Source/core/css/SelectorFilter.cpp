@@ -32,7 +32,6 @@
 
 #include "core/css/CSSSelector.h"
 #include "core/dom/Document.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -100,7 +99,7 @@ void SelectorFilter::PushParent(Element& parent) {
   if (parent_stack_.IsEmpty()) {
     DCHECK_EQ(parent, parent.GetDocument().documentElement());
     DCHECK(!ancestor_identifier_filter_);
-    ancestor_identifier_filter_ = WTF::WrapUnique(new IdentifierFilter);
+    ancestor_identifier_filter_ = std::make_unique<IdentifierFilter>();
     PushParentStackFrame(parent);
     return;
   }

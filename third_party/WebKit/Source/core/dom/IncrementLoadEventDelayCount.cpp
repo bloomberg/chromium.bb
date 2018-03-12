@@ -5,14 +5,15 @@
 #include "core/dom/IncrementLoadEventDelayCount.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Document.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 std::unique_ptr<IncrementLoadEventDelayCount>
 IncrementLoadEventDelayCount::Create(Document& document) {
-  return WTF::WrapUnique(new IncrementLoadEventDelayCount(document));
+  return base::WrapUnique(new IncrementLoadEventDelayCount(document));
 }
 
 IncrementLoadEventDelayCount::IncrementLoadEventDelayCount(Document& document)

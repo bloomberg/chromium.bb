@@ -31,10 +31,12 @@
 #include "core/exported/WebDocumentLoaderImpl.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceFilter.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
@@ -115,7 +117,7 @@ WebDocumentLoader::ExtraData* WebDocumentLoaderImpl::GetExtraData() const {
 void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
   // extraData can't be a std::unique_ptr because setExtraData is a WebKit API
   // function.
-  extra_data_ = WTF::WrapUnique(extra_data);
+  extra_data_ = base::WrapUnique(extra_data);
 }
 
 void WebDocumentLoaderImpl::SetNavigationStartTime(double navigation_start) {
@@ -169,7 +171,7 @@ void WebDocumentLoaderImpl::DetachFromFrame() {
 void WebDocumentLoaderImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
   DocumentLoader::SetSubresourceFilter(SubresourceFilter::Create(
-      *GetFrame()->GetDocument(), WTF::WrapUnique(subresource_filter)));
+      *GetFrame()->GetDocument(), base::WrapUnique(subresource_filter)));
 }
 
 void WebDocumentLoaderImpl::SetServiceWorkerNetworkProvider(

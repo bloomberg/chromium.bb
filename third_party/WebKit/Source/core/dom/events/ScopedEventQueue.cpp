@@ -31,10 +31,11 @@
 #include "core/dom/events/ScopedEventQueue.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventDispatcher.h"
 #include "core/dom/events/EventTarget.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -50,7 +51,7 @@ ScopedEventQueue::~ScopedEventQueue() {
 void ScopedEventQueue::Initialize() {
   DCHECK(!instance_);
   std::unique_ptr<ScopedEventQueue> instance =
-      WTF::WrapUnique(new ScopedEventQueue);
+      base::WrapUnique(new ScopedEventQueue);
   instance_ = instance.release();
 }
 

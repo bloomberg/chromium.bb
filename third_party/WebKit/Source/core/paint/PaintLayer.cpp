@@ -44,6 +44,8 @@
 
 #include "core/paint/PaintLayer.h"
 
+#include <limits>
+
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css_property_names.h"
 #include "core/dom/Document.h"
@@ -85,7 +87,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "platform/wtf/text/CString.h"
@@ -2626,7 +2627,7 @@ void PaintLayer::EnsureCompositedLayerMapping() {
     return;
 
   EnsureRareData().composited_layer_mapping =
-      WTF::WrapUnique(new CompositedLayerMapping(*this));
+      std::make_unique<CompositedLayerMapping>(*this);
   rare_data_->composited_layer_mapping->SetNeedsGraphicsLayerUpdate(
       kGraphicsLayerUpdateSubtree);
 
