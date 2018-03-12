@@ -26,17 +26,9 @@ html {
   --logo-iframe-height: var(--logo-height);
   --logo-iframe-resize-duration: 150ms;
   --logo-iframe-width: 500px;
-
   --tile-height: 128px;
   --tile-margin: 16px;
   --tile-width: 154px;
-  /* Two rows of tiles, margin between the rows, and 4px/8px of margin on top
-   * and bottom respectively. If you change this, also change the corresponding
-   * values in most_visited_single.css. */
-  --mv-tiles-height: calc(
-      4px + var(--tile-height) + var(--tile-margin) + var(--tile-height) + 8px);
-  /* Base height 16px, plus 8px each of padding on top and bottom. */
-  --mv-notice-height: calc(8px + 16px + 8px);
 
   --mv-notice-time: 10s;
 
@@ -89,6 +81,9 @@ button {
 }
 
 #ntp-contents {
+/*  margin: 0 auto;
+  text-align: -webkit-center;
+  width: var(--content-width);*/
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -100,7 +95,9 @@ button {
 }
 
 .non-google-page #ntp-contents {
-  justify-content: center;
+  left: calc(50% - var(--content-width)/2);
+  position: absolute;
+  top: calc(50% - 155px);
 }
 
 body.hide-fakebox-logo #logo,
@@ -398,10 +395,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 #most-visited {
-  height: 100%;
   margin-top: 56px;
-  max-height: calc(var(--mv-tiles-height) + var(--mv-notice-height));
-  overflow: hidden;
   text-align: -webkit-center;
   user-select: none;
 }
@@ -412,10 +406,11 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 #mv-tiles {
-  height: var(--mv-tiles-height);
+  /* Two rows of tiles of 128px each, 16px of spacing between the rows, and
+   * 4px/8px of margin on top and bottom respectively. If you change this, also
+   * change the corresponding values in most_visited_single.css. */
+  height: calc(2*var(--tile-height) + var(--tile-margin)  + 4px + 8px);
   margin: 0;
-  /* Clamp to the remaining window height minus space for #mv-notice. */
-  max-height: calc(100% - var(--mv-notice-height));
   position: relative;
   text-align: -webkit-auto;
   width: var(--content-width);
@@ -457,7 +452,7 @@ html[dir=rtl] #mv-notice-x {
   font-size: 12px;
   font-weight: bold;
   opacity: 1;
-  padding: 8px 0;
+  padding: 10px 0;
 }
 
 #mv-notice span {
