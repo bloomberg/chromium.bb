@@ -5,6 +5,9 @@
 #ifndef DEVICE_FIDO_ATTESTATION_STATEMENT_H_
 #define DEVICE_FIDO_ATTESTATION_STATEMENT_H_
 
+#include <string>
+
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "components/cbor/cbor_values.h"
 
@@ -17,7 +20,7 @@ namespace device {
 // - The set of attestation types supported by the format.
 // - The syntax of an attestation statement produced in this format.
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#cred-attestation.
-class AttestationStatement {
+class COMPONENT_EXPORT(DEVICE_FIDO) AttestationStatement {
  public:
   virtual ~AttestationStatement();
 
@@ -42,7 +45,8 @@ class AttestationStatement {
 // NoneAttestationStatement represents a “none” attestation, which is used when
 // attestation information will not be returned. See
 // https://w3c.github.io/webauthn/#none-attestation
-class NoneAttestationStatement : public AttestationStatement {
+class COMPONENT_EXPORT(DEVICE_FIDO) NoneAttestationStatement
+    : public AttestationStatement {
  public:
   NoneAttestationStatement();
 

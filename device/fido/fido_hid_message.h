@@ -12,9 +12,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
+#include "base/macros.h"
 #include "device/fido/ctap_constants.h"
 #include "device/fido/fido_hid_packet.h"
 
@@ -22,7 +24,7 @@ namespace device {
 
 // Represents HID message format defined by the specification at
 // https://fidoalliance.org/specs/fido-v2.0-rd-20161004/fido-client-to-authenticator-protocol-v2.0-rd-20161004.html#message-and-packet-structure
-class FidoHidMessage {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
  public:
   // Static functions to create CTAP/U2F HID commands.
   static std::unique_ptr<FidoHidMessage> Create(uint32_t channel_id,
@@ -61,6 +63,8 @@ class FidoHidMessage {
   CtapHidDeviceCommand cmd_ = CtapHidDeviceCommand::kCtapHidMsg;
   base::circular_deque<std::unique_ptr<FidoHidPacket>> packets_;
   size_t remaining_size_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FidoHidMessage);
 };
 
 }  // namespace device

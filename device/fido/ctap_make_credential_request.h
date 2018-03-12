@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -22,7 +23,7 @@ namespace device {
 // Object containing request parameters for AuthenticatorMakeCredential command
 // as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
-class CtapMakeCredentialRequest {
+class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
   CtapMakeCredentialRequest(
       std::vector<uint8_t> client_data_hash,

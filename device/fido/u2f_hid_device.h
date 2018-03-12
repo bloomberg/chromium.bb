@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/component_export.h"
+#include "base/macros.h"
 #include "device/fido/u2f_device.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -19,7 +21,7 @@ namespace device {
 
 class FidoHidMessage;
 
-class U2fHidDevice : public U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
  public:
   U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
                device::mojom::HidManager* hid_manager);
