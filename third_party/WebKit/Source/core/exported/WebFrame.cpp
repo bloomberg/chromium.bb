@@ -118,7 +118,6 @@ bool WebFrame::Swap(WebFrame* frame) {
       TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
                            TRACE_EVENT_SCOPE_THREAD, "frame", &local_frame);
     }
-    local_frame.SetIsProvisional(false);
   } else {
     ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
   }
@@ -364,12 +363,16 @@ void WebFrame::Close() {
 }
 
 void WebFrame::DetachFromParent() {
+  if (!Parent())
+    return;
+
   // TODO(dcheng): This should really just check if there's a parent, and call
   // RemoveChild() if so. Once provisional frames are removed, this check can be
   // simplified to just check Parent(). See https://crbug.com/578349.
-  const blink::Frame* frame = ToCoreFrame(*this);
-  if (frame->Owner() && frame->Owner()->ContentFrame() == frame)
-    Parent()->RemoveChild(this);
+  if (IsWebLocalFrame() && ToWebLocalFrame()->IsProvisional())
+    return;
+
+  Parent()->RemoveChild(this);
 }
 
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {

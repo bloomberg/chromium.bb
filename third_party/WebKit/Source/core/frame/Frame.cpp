@@ -83,6 +83,11 @@ void Frame::Detach(FrameDetachType type) {
   // its owning reference back to our owning LocalFrame.
   client_->Detached(type);
   client_ = nullptr;
+  // Mark the frame as detached once |client_| is null, as most of the frame has
+  // been torn down at this point.
+  // TODO(dcheng): Once https://crbug.com/820782 is fixed, Frame::Client() will
+  // also assert that it is only accessed when the frame is not detached.
+  lifecycle_.AdvanceTo(FrameLifecycle::kDetached);
   // TODO(dcheng): This currently needs to happen after calling
   // FrameClient::Detached() to make it easier for FrameClient::Detached()
   // implementations to detect provisional frames and avoid removing them from
@@ -92,16 +97,16 @@ void Frame::Detach(FrameDetachType type) {
 }
 
 void Frame::DisconnectOwnerElement() {
-  if (owner_) {
-    // Ocassionally, provisional frames need to be detached, but it shouldn't
-    // affect the frame tree structure. Make sure the frame owner's content
-    // frame actually refers to this frame before clearing it.
-    // TODO(dcheng): https://crbug.com/578349 tracks the cleanup for this once
-    // it's no longer needed.
-    if (owner_->ContentFrame() == this)
-      owner_->ClearContentFrame();
-    owner_ = nullptr;
-  }
+  if (!owner_)
+    return;
+
+  // TODO(https://crbug.com/578349): If this is a provisional frame, the frame
+  // owner doesn't actually point to this frame, so don't clear it. Note that
+  // this can't use IsProvisional() because the |client_| is null already.
+  if (owner_->ContentFrame() == this)
+    owner_->ClearContentFrame();
+
+  owner_ = nullptr;
 }
 
 Page* Frame::GetPage() const {

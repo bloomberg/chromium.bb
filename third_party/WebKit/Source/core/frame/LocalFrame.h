@@ -312,10 +312,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
     should_send_resource_timing_info_to_parent_ = false;
   }
 
-  void SetIsProvisional(bool is_provisional) {
-    is_provisional_ = is_provisional;
-  }
-  bool IsProvisional() const { return is_provisional_; }
+  // TODO(https://crbug.com/578349): provisional frames are a hack that should
+  // be removed.
+  bool IsProvisional() const;
 
   // Returns whether the frame is trying to save network data by showing a
   // preview.
@@ -377,8 +376,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const Member<FrameConsole> console_;
   const Member<InputMethodController> input_method_controller_;
   const Member<TextSuggestionController> text_suggestion_controller_;
-
-  bool is_provisional_ = false;
 
   int navigation_disable_count_;
   // TODO(dcheng): In theory, this could be replaced by checking the

@@ -106,7 +106,6 @@ void RemoteFrame::Detach(FrameDetachType type) {
   if (web_layer_)
     SetWebLayer(nullptr);
   Frame::Detach(type);
-  lifecycle_.AdvanceTo(FrameLifecycle::kDetached);
 }
 
 bool RemoteFrame::PrepareForCommit() {
