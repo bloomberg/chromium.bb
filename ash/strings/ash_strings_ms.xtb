@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">KETEPIKAN</translation>
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1550523713251050646">Klik untuk mendapatkan lagi pilihan</translation>
+<translation id="1567387640189251553">Papan kekunci lain telah disambungkan sejak kali terakhir anda memasukkan kata laluan. Papan kekunci ini mungkin sedang cuba mencuri ketukan kekunci anda.</translation>
 <translation id="1608626060424371292">Alih keluar pengguna ini</translation>
 <translation id="1621499497873603021">Masa yang tinggal sehingga bateri kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik automatik</translation>
+<translation id="1928739107511554905">Untuk mendapatkan kemas kini, gunakan skrin sentuh untuk memulakan semula Chromebook anda dengan papan kekunci yang dipasang.</translation>
 <translation id="1942830294380034169">Butang limpahan</translation>
 <translation id="1951012854035635156">Pembantu</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Berhenti menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="2144487987174258011">Mulakan semula untuk mengemas kini Pemain Adobe Flash</translation>
+<translation id="2191905770366256395">Papan kekunci anda yang boleh diceraikan memerlukan kemas kini kritikal</translation>
 <translation id="2208323208084708176">Mod desktop bersatu</translation>
 <translation id="2220572644011485463">PIN atau kata laluan</translation>
 <translation id="225680501294068881">Mengimbas untuk peranti...</translation>
@@ -60,6 +63,7 @@
 <translation id="2292698582925480719">Skala paparan</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
 <translation id="2338501278241028356">Hidupkan Bluetooth untuk menemui peranti berdekatan</translation>
+<translation id="2351266942280602854">Bahasa dan input</translation>
 <translation id="2352467521400612932">Tetapan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Tindakan mendayakan data mudah alih akan turut mendayakan Bluetooth.</translation>
@@ -75,6 +79,7 @@
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2675319268637823299">Pentadbir telah melarang log masuk berbilang untuk <ph name="USER_EMAIL" />.
     Semua pengguna mesti log keluar untuk meneruskan.</translation>
+<translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
@@ -101,6 +106,7 @@
 <translation id="3126069444801937830">Mulakan semula untuk mengemas kini</translation>
 <translation id="3147142846278915599">Pelancar (menyegerakkan apl...)</translation>
 <translation id="315116470104423982">Data mudah alih</translation>
+<translation id="3151786313568798007">Orientasi</translation>
 <translation id="3153444934357957346">Anda hanya boleh memiliki sehingga <ph name="MULTI_PROFILE_USER_LIMIT" /> akaun dalam log masuk berbilang.</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
 <translation id="3294437725009624529">Tetamu</translation>
@@ -122,6 +128,7 @@
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3631369015426612114">Benarkan pemberitahuan daripada yang berikut</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tangkap bahagian</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3771549900096082774">Mod Kontras Tinggi</translation>
@@ -133,6 +140,7 @@
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
 <translation id="3899995891769452915">Input suara</translation>
+<translation id="3900355044994618856">Sesi anda akan tamat dalam <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Tetapan audio</translation>
 <translation id="397105322502079400">Mengira...</translation>
@@ -165,6 +173,7 @@
 <translation id="4905614135390995787">Pintasan untuk menogol Mod Kontras Tinggi telah ditukar. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4961318399572185831">Hantar skrin</translation>
+<translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5207949376430453814">Serlahkan karet teks</translation>
 <translation id="5222676887888702881">Log keluar</translation>
@@ -176,6 +185,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Semua pengguna yang ada telah ditambahkan pada sesi ini.</translation>
 <translation id="5457599981699367932">Semak Imbas sebagai Tetamu</translation>
+<translation id="54609108002486618">Diuruskan</translation>
 <translation id="553675580533261935">Keluar daripada sesi</translation>
 <translation id="5548285847212963613">Sambungan "<ph name="EXTENSION_NAME" />" boleh membantu menyambung ke rangkaian ini.</translation>
 <translation id="5571066253365925590">Bluetooth didayakan</translation>
@@ -200,6 +210,7 @@
 <translation id="5977415296283489383">Fon kepala</translation>
 <translation id="5978382165065462689">Berkongsi kawalan skrin anda melalui Bantuan Jauh.</translation>
 <translation id="5980301590375426705">Keluar dari tetamu</translation>
+<translation id="598882571027504733">Untuk mendapatkan kemas kini, mulakan semula Chromebook dengan papan kekunci yang dipasang.</translation>
 <translation id="5992218262414051481">Mod Kontras Tinggi didayakan. Tekan Ctrl+Cari+H semula untuk mematikannya.</translation>
 <translation id="6018164090099858612">Keluar daripada mod cermin</translation>
 <translation id="6043212731627905357">Monitor ini tidak serasi dengan <ph name="DEVICE_TYPE" /> anda (monitor tidak disokong).</translation>
@@ -253,6 +264,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7067196344162293536">Auto putar</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
+<translation id="7131634465328662194">Anda akan dilog keluar secara automatik.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
@@ -309,9 +321,11 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambung semula...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">Pilih untuk Bercakap</translation>
 <translation id="8652175077544655965">Tutup tetapan</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
+<translation id="8734991477317290293">Papan kekunci mungkin sedang cuba mencuri ketukan kekunci anda</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka.
 
@@ -325,6 +339,7 @@ Pemberitahuan, tetingkap dan dialog seterusnya mungkin dipisahkan antara desktop
 <translation id="8921624153894383499">Google Assistant tidak bertutur dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
 <translation id="8940956008527784070">Bateri lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">Diuruskan oleh <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>

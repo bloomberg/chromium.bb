@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">显示比例</translation>
 <translation id="2303600792989757991">“切换窗口”概述</translation>
 <translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
+<translation id="2351266942280602854">语言和输入法</translation>
 <translation id="2352467521400612932">触控笔设置</translation>
 <translation id="2354174487190027830">正在激活“<ph name="NAME" />”</translation>
 <translation id="2365393535144473978">如果您启用移动数据网络，蓝牙亦会随之开启。</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。
     所有用户都必须先退出帐号才能继续。</translation>
+<translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="315116470104423982">移动数据</translation>
+<translation id="3151786313568798007">方向</translation>
 <translation id="3153444934357957346">使用多帐号登录时，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 个帐号。</translation>
 <translation id="3236488194889173876">没有可用的移动网络</translation>
 <translation id="3294437725009624529">访客</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">输入</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3631369015426612114">允许显示来自以下来源的通知</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">获取区域截图</translation>
 <translation id="371370241367527062">前置麦克风</translation>
 <translation id="3771549900096082774">高反差模式</translation>
@@ -177,6 +181,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="5457599981699367932">以访客身份浏览</translation>
+<translation id="54609108002486618">托管</translation>
 <translation id="553675580533261935">退出会话</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
@@ -310,6 +315,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">随选朗读</translation>
 <translation id="8652175077544655965">关闭设置</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
@@ -326,6 +332,7 @@
 <translation id="8921624153894383499">Google 智能助理不支持此语言。</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>

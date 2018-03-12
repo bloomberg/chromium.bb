@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">시크릿 모드로 새 창 열기</translation>
 <translation id="1299858300159559687">현재 페이지를 인쇄</translation>
 <translation id="1383876407941801731">검색</translation>
-<translation id="1439252533104567537">번호가 매겨진 탭으로 이동</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 또는 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">런처</translation>
 <translation id="152892567002884378">볼륨 크게</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">실행기의 다음 항목 강조표시</translation>
 <translation id="309173601632226815">실행기의 런처 버튼 강조표시</translation>
 <translation id="3105917916468784889">스크린샷 찍기</translation>
-<translation id="3118681365140644126">실행기 버튼의 강조표시 취소</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">주소 표시줄로 이동</translation>
 <translation id="3288816184963444640">현재 창 닫기</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">단축키 도우미 보기</translation>
 <translation id="4628718545549558538">상태 영역(계정 사진이 표시되는 위치) 열기</translation>
 <translation id="4642092649622328492">부분 스크린샷 찍기</translation>
-<translation id="4725377341024374454">실행기의 강조표시된 버튼 열기</translation>
 <translation id="4801989101741319327">다음 단어의 끝으로 이동</translation>
 <translation id="4916163929714267752">새 창에서 링크 열기</translation>
 <translation id="5034421018520995080">페이지 맨 위로 이동</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">이전 단어를 삭제</translation>
 <translation id="5928303187149237472">해상도 변경</translation>
 <translation id="5975083100439434680">축소</translation>
-<translation id="6011500873794669296">다음 영역 간 포커스 전환: 상태 영역(계정 사진이 표시되는 위치), 런처, 검색주소창, 북마크바(표시되는 경우), 열려 있는 웹페이지, 다운로드바(표시되는 경우)</translation>
 <translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="6045998054441862242">고대비 모드 사용</translation>
 <translation id="6052614013050385269">마우스 오른쪽 버튼으로 링크 클릭</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">새 탭에서 링크 열기</translation>
 <translation id="8609384513243082612">새 탭 열기</translation>
 <translation id="8644639153978066712">파일 앱에 숨겨진 파일 표시하기</translation>
-<translation id="8709893667941082515">검색 시 검색주소창으로 포커스 이동</translation>
 <translation id="8717459106217102612">이전 단어 또는 글자를 선택</translation>
 <translation id="8727232706774971183">알림 확인</translation>
 <translation id="88986195241502842">페이지 아래로</translation>

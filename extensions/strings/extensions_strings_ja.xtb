@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">パッケージが無効です: <ph name="ERROR_CODE" /></translation>
 <translation id="1140871961407805696">外向き</translation>
 <translation id="1196338895211115272">秘密鍵をエクスポートできませんでした。</translation>
-<translation id="1256619696651732561">拡張機能マニフェストのパーサー</translation>
 <translation id="1420684932347524586">ランダムな RSA 秘密鍵を生成できませんでした。</translation>
 <translation id="1445572445564823378">この拡張機能によって <ph name="PRODUCT_NAME" /> の速度が低下しています。<ph name="PRODUCT_NAME" /> のパフォーマンスを回復するには、この拡張機能を無効にしてください。</translation>
 <translation id="1468038450257740950">WebGL はサポートされていません。</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">コンテンツ スクリプトのファイル「<ph name="RELATIVE_PATH" />」を読み込むことができませんでした。UTF-8 でエンコードされていません。</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は管理者によってブロックされています。<ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">パッケージをインストールできませんでした: <ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">Zip ファイル インストーラ</translation>
 <translation id="3115238746683532089">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_ID" />、シリアル番号: <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3144135466825225871">crx ファイルを置き換えられませんでした。ファイルが使用されていないか確認してください。</translation>
 <translation id="3163201441334626963">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_ID" />）</translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">マニフェスト ファイルが見つからないか読み取れません</translation>
 <translation id="8636666366616799973">パッケージが無効です。詳細: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="8670869118777164560">別の拡張機能（<ph name="EXTENSION_NAME" />）がネットワーク リクエストを <ph name="ACTUAL_REDIRECT_DESTINATION" /> にリダイレクトしたため、この拡張機能はリクエストを <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> にリダイレクトできませんでした。</translation>
-<translation id="8712265948125780616">拡張機能の解凍機能</translation>
 <translation id="8761756413268424715">「<ph name="APP_NAME" />」が次のデバイスへのアクセスをリクエストしています:</translation>
 <translation id="8825366169884721447">ネットワーク リクエストのリクエスト ヘッダー「<ph name="HEADER_NAME" />」への変更内容が別の拡張機能（<ph name="EXTENSION_NAME" />）と競合したため、この拡張機能はヘッダーを変更できませんでした。</translation>
 <translation id="8885905466771744233">指定した拡張機能の秘密鍵は既に存在します。その鍵を再利用するか、先に削除してください。</translation>

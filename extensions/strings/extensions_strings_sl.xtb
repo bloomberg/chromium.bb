@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Paket je neveljaven: »<ph name="ERROR_CODE" />«.</translation>
 <translation id="1140871961407805696">Hrbtni</translation>
 <translation id="1196338895211115272">Zasebnega ključa ni bilo mogoče izvoziti.</translation>
-<translation id="1256619696651732561">Razčlenjevalnik manifesta razširitve</translation>
 <translation id="1420684932347524586">Ups! Ni bilo mogoče generirati naključnega zasebnega ključa RSA.</translation>
 <translation id="1445572445564823378">Ta razširitev upočasnjuje <ph name="PRODUCT_NAME" />. Onemogočite jo, če želite obnoviti delovanje storitve <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL ni podprt.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Datoteke »<ph name="RELATIVE_PATH" />« ni mogoče naložiti. Ni kodirana z UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ID razširitve »<ph name="EXTENSION_ID" />«) je blokiral skrbnik. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paketa »<ph name="ERROR_CODE" />« ni bilo mogoče namestiti</translation>
-<translation id="3097628171361913691">Namestitveni program za stiskanje datotek</translation>
 <translation id="3115238746683532089">Neznan izdelek <ph name="PRODUCT_ID" /> dobavitelja <ph name="VENDOR_ID" /> (serijska številka <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Datoteke .crx ni bilo mogoče zamenjati. Preverite, ali je datoteka v uporabi.</translation>
 <translation id="3163201441334626963">Neznan izdelek <ph name="PRODUCT_ID" /> dobavitelja <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Datoteka manifesta manjka ali pa je ni mogoče prebrati</translation>
 <translation id="8636666366616799973">Paket je neveljaven. Podrobnosti: »<ph name="ERROR_MESSAGE" />«.</translation>
 <translation id="8670869118777164560">Razširitvi ni uspelo preusmeriti omrežne zahteve <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, ker jo je druga razširitev (<ph name="EXTENSION_NAME" />) preusmerila na cilj <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Orodje za odpakiranje razširitev</translation>
 <translation id="8761756413268424715">Aplikacija »<ph name="APP_NAME" />« zahteva dostop do ene od vaših naprav:</translation>
 <translation id="8825366169884721447">Razširitvi ni uspelo spremeniti glave zahteve »<ph name="HEADER_NAME" />« omrežne zahteve, ker je sprememba v sporu z drugo razširitvijo (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Zasebni ključ za navedeno razširitev že obstaja. Uporabite ga znova ali pa ga izbrišite.</translation>

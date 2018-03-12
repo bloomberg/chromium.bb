@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">এই প্যাকেজটি অবৈধ: '<ph name="ERROR_CODE" />'৷</translation>
 <translation id="1140871961407805696">পেছন দিকে মুখ করা</translation>
 <translation id="1196338895211115272">ব্যক্তিগত কী রপ্তানি করতে ব্যর্থ৷</translation>
-<translation id="1256619696651732561">এক্সটেনশান ম্যানিফেস্ট বিশ্লেষক</translation>
 <translation id="1420684932347524586">এ বাবা! র‌্যান্ডম RSA ব্যক্তিগত কী জেনারেট করতে ব্যর্থ৷</translation>
 <translation id="1445572445564823378">এই এক্সটেনশানটির গতি কমে যাচ্ছে <ph name="PRODUCT_NAME" />৷ আপনাকে <ph name="PRODUCT_NAME" />-এর সম্পাদনা পুনঃস্থাপন করার জন্য এটিকে অক্ষম করা উচিত৷</translation>
 <translation id="1468038450257740950">WebGL সমর্থিত নয়৷</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">বর্তমান স্ক্রিপ্টটির জন্য <ph name="RELATIVE_PATH" /> ফাইলটি লোড করতে পারা যায়নি৷ এটি UTF-8 এনকোড হওয়া নেই৷</translation>
 <translation id="2903070246402204397">প্রশাসক <ph name="EXTENSION_NAME" /> (এক্সটেনশন আইডি "<ph name="EXTENSION_ID" />") ব্লক করেছে। <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">এই প্যাকেজটি ইনস্টল করতে পারেনি: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">জিপ ফাইল ইনস্টলার</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ফাইলটি প্রতিস্থাপন করতে ব্যর্থ৷ ফাইলটি ব্যবহার হচ্ছে কিনা দেখতে পরীক্ষা করুন৷</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> বিক্রেতার থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">ম্যানিফেস্ট ফাইলটি নেই অথবা পড়া যাবে না</translation>
 <translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE" />'৷</translation>
 <translation id="8670869118777164560">এই এক্সটেনশনটি <ph name="ATTEMPTED_REDIRECT_DESTINATION" />এ একটি নেটওয়ার্কের পুনঃনির্দেশ অনুরোধ করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) এটিকে <ph name="ACTUAL_REDIRECT_DESTINATION" /> এ পুনঃনির্দেশ করেছে৷</translation>
-<translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" আপনার একটি ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে:</translation>
 <translation id="8825366169884721447">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের অনুরোধ শীর্ষক "<ph name="HEADER_NAME" />" এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) এর সঙ্গে বিরোধ আছে৷</translation>
 <translation id="8885905466771744233">সুনির্দিষ্ট করা এক্সটেনশানটির ইতিমধ্যেই একটি ব্যক্তিগত কী আছে৷ এই কী-টি পুনঃব্যবহার করুন অথবা এটিকে প্রথমে মুছে দিন৷</translation>

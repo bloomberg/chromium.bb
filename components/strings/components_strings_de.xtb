@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="1126551341858583091">Die Größe auf dem lokalen Speicher ist <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
-<translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1151972924205500581">Passwort erforderlich</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="1340482604681802745">Abholadresse</translation>
-<translation id="1344588688991793829">AutoFill-Einstellungen für Chromium...</translation>
 <translation id="1348198688976932919">Die Website, die Sie aufrufen möchten, enthält gefährliche Apps</translation>
 <translation id="1374468813861204354">Vorschläge</translation>
 <translation id="1375198122581997741">Informationen zur Version</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Automatisch blockiert</translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
-<translation id="3039538478787849737">Karte in Google speichern?</translation>
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
 <translation id="3063697135517575841">Ihre Karte kann von Chrome zurzeit nicht bestätigt werden. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="3064966200440839136">Der Inkognitomodus wird beendet, um über eine externe Anwendung zu zahlen. Fortfahren?</translation>
@@ -665,6 +662,7 @@
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="5990559369517809815">Anfragen an den Server wurden durch eine Erweiterung blockiert.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">Jahr</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Seite 1}other{Seite #}}</translation>
 <translation id="6017850046339264347">Angreifer auf der Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> könnten betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten sammeln, um Sie auszuspionieren. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisiert)</translation>
@@ -1009,6 +1007,7 @@
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8978053250194585037">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Phishingaktivitäten<ph name="END_LINK" /> auf <ph name="SITE" /> festgestellt. Phishingwebsites geben sich als andere Websites aus, um Sie zu täuschen.</translation>
+<translation id="8987927404178983737">Monat</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Die Website, die Sie aufrufen möchten, enthält schädliche Programme</translation>
 <translation id="8997023839087525404">Der Server präsentierte ein Zertifikat, das nicht gemäß der Richtlinie zur Zertifikatstransparenz öffentlich offengelegt wurde. Dies ist für einige Zertifikate jedoch eine Voraussetzung, mit der sichergestellt wird, dass sie vertrauenswürdig sind und vor Angriffen schützen.</translation>

@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Μη έγκυρο πακέτο: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Πίσω κάμερα</translation>
 <translation id="1196338895211115272">Αποτυχία εξαγωγής ιδιωτικού κλειδιού.</translation>
-<translation id="1256619696651732561">Συντακτικός αναλυτής μανιφέστου επέκτασης</translation>
 <translation id="1420684932347524586">Αποτυχία δημιουργίας τυχαίου ιδιωτικού κλειδιού RSA.</translation>
 <translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME" />. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">Το WebGL δεν υποστηρίζεται.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Δεν ήταν δυνατή η φόρτωση του αρχείου "<ph name="RELATIVE_PATH" />" για το σενάριο περιεχομένου. Δεν έχει κωδικοποίηση UTF-8.</translation>
 <translation id="2903070246402204397">Η επέκταση <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") έχει αποκλειστεί από τον διαχειριστή. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Δεν ήταν δυνατή η εγκατάσταση του πακέτου: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Εργαλείο εγκατάστασης συμπιεσμένων αρχείων</translation>
 <translation id="3115238746683532089">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από τον προμηθευτή <ph name="VENDOR_ID" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Αποτυχία αντικατάστασης αρχείου crx. Ελέγξτε αν το αρχείο χρησιμοποιείται.</translation>
 <translation id="3163201441334626963">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από τον προμηθευτή <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Το αρχείο μανιφέστου λείπει ή δεν είναι δυνατή η ανάγνωσή του</translation>
 <translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Αυτή η επέκταση απέτυχε να ανακατευθύνει κάποιο αίτημα δικτύου στο <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) το ανακατεύθυνε στο <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>
 <translation id="8761756413268424715">Η εφαρμογή "<ph name="APP_NAME" />" ζητά πρόσβαση σε μία από τις συσκευές σας.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος "<ph name="HEADER_NAME" />" κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Υπάρχει ήδη ιδιωτικό κλειδί για τη συγκεκριμένη επέκταση. Χρησιμοποιήστε ξανά το κλειδί ή διαγράψτε το πρώτα.</translation>

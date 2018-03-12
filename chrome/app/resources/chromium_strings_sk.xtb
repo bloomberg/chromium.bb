@@ -53,6 +53,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2886012850691518054">Voliteľné: Pomôžte vylepšiť služby prehliadača Chromium tým, že nastavíte automatické odosielanie štatistík používania a správ o zlyhaní spoločnosti Google.</translation>
 <translation id="2898082584336937987">Nainštalujte si Chromium do telefónu. Pošleme vám správu SMS na telefón: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Informácie o prehliadači &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Chromium do jedného dňa znova spustite}few{Chromium do # dní znova spustite}many{Chromium do # dňa znova spustite}other{Chromium do # dní znova spustite}}</translation>
 <translation id="2977470724722393594">Prehliadač Chromium bol aktualizovaný</translation>
 <translation id="3032787606318309379">Pridáva sa do prehliadača Chromium...</translation>
 <translation id="3046695367536568084">Aplikácie môžete používať až po prihlásení do prehliadača Chromium. Prehliadaču Chromium tým umožníte synchronizovať vaše aplikácie, záložky, históriu, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
@@ -92,11 +93,13 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4222580632002216401">Prihlásili ste sa do prehliadača Chromium. Synchronizácia je zakázaná administrátorom.</translation>
 <translation id="4224199872375172890">Prehliadač Chromium bol aktualizovaný.</translation>
 <translation id="4230135487732243613">Chcete prepojiť údaje prehliadača Chromium s týmto účtom?</translation>
+<translation id="4260985389288095068">V počítači máte škodlivý softvér. Chromium ho môže odstrániť a uložiť vaše nastavenia, aby prehliadač znova normálne fungoval.</translation>
 <translation id="4271805377592243930">Pomoc s prehliadačom Chromium</translation>
 <translation id="4285930937574705105">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Chromium momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="4330585738697551178">Tento modul zvykne spôsobovať konflikt s prehliadačom Chromium.</translation>
 <translation id="4421155425831608516">Prihlásenie do prehliadača Chromium je zakázané správcom tohto zariadenia.</translation>
 <translation id="4423735387467980091">Prispôsobiť a spravovať Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium sa znova spustí do jednej hodiny}few{Chromium sa znova spustí do # hodín}many{Chromium sa znova spustí do # hodiny}other{Chromiumsa znova spustí do # hodín}}</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
 <translation id="4469812139324097969">Chromium je zastaraný, pretože nebol dlhší čas reštartovaný. K dispozícii je aktualizácia, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="4488554488975128561">Automatickým odosielaním niektorých informácií o systéme a obsahu stránok môžete prispieť k lepšiemu rozpoznávaniu nebezpečných aplikácií a webov a zvýšiť tak zabezpečenie prehliadača Chromium a zjednodušiť jeho používanie.</translation>

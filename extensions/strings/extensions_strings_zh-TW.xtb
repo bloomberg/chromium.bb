@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">套件無效：<ph name="ERROR_CODE" />。</translation>
 <translation id="1140871961407805696">後置鏡頭</translation>
 <translation id="1196338895211115272">匯出私密金鑰失敗。</translation>
-<translation id="1256619696651732561">擴充功能資訊清單剖析器</translation>
 <translation id="1420684932347524586">哎呀！產生隨機 RSA 私密金鑰失敗。</translation>
 <translation id="1445572445564823378">這個擴充功能使得 <ph name="PRODUCT_NAME" /> 運作變慢。建議你停用這個擴充功能，以恢復 <ph name="PRODUCT_NAME" /> 的效能。</translation>
 <translation id="1468038450257740950">系統不支援 WebGL。</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">無法載入內容指令碼的「<ph name="RELATIVE_PATH" />」檔案，因為該檔案未使用 UTF-8 編碼。</translation>
 <translation id="2903070246402204397">管理員已封鎖 <ph name="EXTENSION_NAME" /> (擴充功能 ID「<ph name="EXTENSION_ID" />」)。<ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">無法安裝套件：<ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">壓縮檔安裝程式</translation>
 <translation id="3115238746683532089">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">無法取代 crx 檔案，請檢查檔案是否正在使用中。</translation>
 <translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">資訊清單檔案遺失或無法讀取</translation>
 <translation id="8636666366616799973">套件無效，詳細資料：<ph name="ERROR_MESSAGE" />。</translation>
 <translation id="8670869118777164560">這個擴充功能無法將網路要求重新導向至 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因為其他擴充功能 (<ph name="EXTENSION_NAME" />) 已將要求重新導向至 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
-<translation id="8712265948125780616">擴充功能解壓縮工具</translation>
 <translation id="8761756413268424715">「<ph name="APP_NAME" />」要求存取你的其中一個裝置：</translation>
 <translation id="8825366169884721447">這個擴充功能無法修改網路要求的「<ph name="HEADER_NAME" />」要求標頭，因為修改動作與其他擴充功能 (<ph name="EXTENSION_NAME" />) 發生衝突。</translation>
 <translation id="8885905466771744233">所指定的擴充功能已有私密金鑰，請使用該金鑰，或先將它刪除。</translation>

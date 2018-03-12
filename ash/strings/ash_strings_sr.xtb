@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Размера приказа</translation>
 <translation id="2303600792989757991">Укључи/искључи преглед прозора</translation>
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
+<translation id="2351266942280602854">Језик и унос</translation>
 <translation id="2352467521400612932">Подешавања писаљке</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2675319268637823299">Администратор је забранио вишеструко пријављивање за <ph name="USER_EMAIL" />.
     Сви корисници морају да се одјаве да бисмо наставили са сесијом.</translation>
+<translation id="2718395828230677721">Ноћно светло</translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
+<translation id="3151786313568798007">Положај</translation>
 <translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
 <translation id="3294437725009624529">Гост</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Улаз</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3631369015426612114">Дозволи обавештења из следећих извора</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Сними област</translation>
 <translation id="371370241367527062">Предњи микрофон</translation>
 <translation id="3771549900096082774">Режим високог контраста</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>
+<translation id="54609108002486618">Управљани</translation>
 <translation id="553675580533261935">Напуштање сесије</translation>
 <translation id="5548285847212963613">Додатак „<ph name="EXTENSION_NAME" />“ може да помогне у повезивању са овом мрежом.</translation>
 <translation id="5571066253365925590">Bluetooth је омогућен</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
 <translation id="8639760480004882931">Преостало је <ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">Изаберите за говор</translation>
 <translation id="8652175077544655965">Затворите подешавања</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google помоћник не говори овај језик.</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">Управља <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофон се користи.</translation>

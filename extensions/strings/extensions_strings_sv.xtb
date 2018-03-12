@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Paketet är ogiltigt: <ph name="ERROR_CODE" />.</translation>
 <translation id="1140871961407805696">Vänd mot omgivningen</translation>
 <translation id="1196338895211115272">Det gick inte att exportera den privata nyckeln.</translation>
-<translation id="1256619696651732561">Textanalysator för tilläggsmanifest</translation>
 <translation id="1420684932347524586">Oj! Det gick inte att generera en slumpmässig privat RSA-nyckel.</translation>
 <translation id="1445572445564823378">Detta tillägg gör <ph name="PRODUCT_NAME" /> långsammare. Om du vill utnyttja den fulla prestandan i <ph name="PRODUCT_NAME" /> bör du inaktivera tillägget.</translation>
 <translation id="1468038450257740950">WebGL stöds inte.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Det gick inte att läsa in filen <ph name="RELATIVE_PATH" /> för innehållsskriptet. Den har inte kodats i UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (tilläggs-id <ph name="EXTENSION_ID" />) har blockerats av administratören. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Det gick inte att installera paketet <ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">Zip-filsinstallerare</translation>
 <translation id="3115238746683532089">Okänd produkt (<ph name="PRODUCT_ID" />) från leverantören <ph name="VENDOR_ID" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Det gick inte att ersätta CRX-filen. Kontrollera om filen används.</translation>
 <translation id="3163201441334626963">Okänd produkt (<ph name="PRODUCT_ID" />) från leverantören <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifestfilen saknas eller kan inte läsas</translation>
 <translation id="8636666366616799973">Paketet är ogiltigt. Information: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="8670869118777164560">Det gick inte att omdirigera nätverksbegäran till <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) omdirigerade det till <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Uppackare för tillägg</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> begär åtkomst till en av dina enheter:</translation>
 <translation id="8825366169884721447">Det här tillägget kunde inte ändra begäranderubriken <ph name="HEADER_NAME" /> för ett nätverk eftersom det uppstod en konflikt mellan ändringen och ett annat tillägg (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Det finns redan en privat nyckel för det angivna tillägget. Återanvänd den nyckeln eller ta bort den först.</translation>

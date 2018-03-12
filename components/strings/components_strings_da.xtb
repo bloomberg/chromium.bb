@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Fortryd omarrangering</translation>
 <translation id="1126551341858583091">Størrelsen på den lokale lagerplads er <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
-<translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1151972924205500581">En adgangskode er påkrævet</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="1340482604681802745">Afhentningsadresse</translation>
-<translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
 <translation id="1348198688976932919">Det website, du er på vej til, indeholder farlige apps</translation>
 <translation id="1374468813861204354">forslag</translation>
 <translation id="1375198122581997741">Om version</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Automatisk blokering</translation>
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
-<translation id="3039538478787849737">Vil du gemme kortet på din Google-konto?</translation>
 <translation id="3041612393474885105">Certifikatoplysninger</translation>
 <translation id="3063697135517575841">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
 <translation id="3064966200440839136">Du forlader inkognitotilstand for at betale via en ekstern applikation. Vil du fortsætte?</translation>
@@ -666,6 +663,7 @@
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="5990559369517809815">Anmodninger til serveren er blokeret af en udvidelse.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">År</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}one{Side #}other{Side #}}</translation>
 <translation id="6017850046339264347">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkroniseret)</translation>
@@ -1010,6 +1008,7 @@
 <translation id="8957210676456822347">Godkendelse af captive portal</translation>
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
 <translation id="8978053250194585037">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede phishing<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Phishing-websites udgiver sig for at være andre websites med det formål at narre dig.</translation>
+<translation id="8987927404178983737">Måned</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Det website, du er på vej til, indeholder skadelige programmer</translation>
 <translation id="8997023839087525404">Serveren viste et certifikat, der ikke blev fremvist offentligt ved hjælp af politikken for Certifikatsgennemsigtighed. Dette påkræves for nogle certifikater for at sikre, at de er troværdige, og beskytter mod hackere.</translation>

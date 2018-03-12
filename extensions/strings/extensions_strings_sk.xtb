@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Balík je neplatný: „<ph name="ERROR_CODE" />“</translation>
 <translation id="1140871961407805696">Nasmerovaný na okolie</translation>
 <translation id="1196338895211115272">Exportovanie súkromného kľúča zlyhalo.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">Generovanie náhodného súkromného kľúča RSA žiaľ zlyhalo.</translation>
 <translation id="1445572445564823378">Toto rozšírenie spomaľuje prehliadač <ph name="PRODUCT_NAME" />. Ak chcete obnoviť výkonnosť prehliadača <ph name="PRODUCT_NAME" />, zakážte ho.</translation>
 <translation id="1468038450257740950">Rozhranie WebGL nie je podporované.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Pre skript obsahu sa nepodarilo sa načítať súbor „<ph name="RELATIVE_PATH" />“. Nepoužíva kódovanie UTF-8.</translation>
 <translation id="2903070246402204397">Rozšírenie <ph name="EXTENSION_NAME" /> (ID rozšírenia: <ph name="EXTENSION_ID" />) je blokované správcom. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nepodarilo sa nainštalovať balík: <ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">Zip File Installer</translation>
 <translation id="3115238746683532089">Neznámy produkt <ph name="PRODUCT_ID" /> od dodávateľa <ph name="VENDOR_ID" /> (sériové číslo: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Súbor crx sa nepodarilo nahradiť. Skontrolujte, či je súbor používaný.</translation>
 <translation id="3163201441334626963">Neznámy produkt <ph name="PRODUCT_ID" /> od dodávateľa <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Súbor manifestu chýba alebo je nečitateľný</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Tomuto rozšíreniu sa nepodarilo presmerovať žiadosť o siete na stránky <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, pretože ju iné rozšírenie (<ph name="EXTENSION_NAME" />) presmerovalo na stránky <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="8761756413268424715">Aplikácia <ph name="APP_NAME" /> žiada o prístup k jednému z vašich zariadení:</translation>
 <translation id="8825366169884721447">Tomuto rozšíreniu sa nepodarilo upraviť hlavičku <ph name="HEADER_NAME" /> žiadosti o sieť, pretože táto úprava kolidovala s iným rozšírením (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Pre určené rozšírenie už existuje súkromný kľúč. Použite ho znova, alebo ho najprv odstráňte.</translation>

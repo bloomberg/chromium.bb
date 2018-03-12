@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
 <translation id="1126551341858583091">Размерът на локалното хранилище е <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
-<translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
 <translation id="1150979032973867961">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; операционната система на компютъра ви няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="1151972924205500581">Изисква се парола</translation>
 <translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK" />кеширано копие<ph name="END_LINK" /> на <ph name="URL" /></translation>
@@ -57,7 +56,6 @@
 <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Домейн за записване:</translation>
 <translation id="1340482604681802745">Адрес за вземане</translation>
-<translation id="1344588688991793829">Настройки за Автоматично попълване в Chromium...</translation>
 <translation id="1348198688976932919">На хоризонта се задава сайт с опасни приложения</translation>
 <translation id="1374468813861204354">предложения</translation>
 <translation id="1375198122581997741">Всичко за версията</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Автоматично блокирано</translation>
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
 <translation id="3037605927509011580">Ужас!</translation>
-<translation id="3039538478787849737">Картата да се запази ли в Google?</translation>
 <translation id="3041612393474885105">Информация за сертификата</translation>
 <translation id="3063697135517575841">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
@@ -666,6 +663,7 @@
 <translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
 <translation id="5990559369517809815">Заявките към сървъра са блокирани от разширение.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">Година</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}other{Страница #}}</translation>
 <translation id="6017850046339264347">Извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронизирани)</translation>
@@ -1009,6 +1007,7 @@
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
 <translation id="8978053250194585037">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри фишинг<ph name="END_LINK" /> на <ph name="SITE" />. Сайтовете за фишинг се представят за други уебсайтове с цел да ви подведат.</translation>
+<translation id="8987927404178983737">Месец</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">На хоризонта се задава сайт с опасни програми</translation>
 <translation id="8997023839087525404">Сървърът предостави сертификат, който не е разкрит публично чрез правило в Прозрачност на сертификатите. Това се изисква за някои сертификати с цел защита срещу хакери и за да е сигурно, че може да им се има доверие.</translation>

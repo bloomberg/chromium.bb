@@ -54,6 +54,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2898082584336937987">Namestite Chromium v telefonu. V telefon vam bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
+<translation id="2943431542152338750">{0,plural, =1{Chromium znova zaženite v enem dnevu}one{Chromium znova zaženite v # dnevu}two{Chromium znova zaženite v # dnevih}few{Chromium znova zaženite v # dnevih}other{Chromium znova zaženite v # dnevih}}</translation>
 <translation id="2977470724722393594">Chromium je posodobljen</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
 <translation id="3046695367536568084">Če želite uporabljati aplikacije, morate biti prijavljeni v Chromium. Ko se prijavite, lahko Chromium sinhronizira aplikacije, zaznamke, zgodovino in druge nastavitve v različnih napravah.</translation>
@@ -93,11 +94,13 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
 <translation id="4230135487732243613">Želite svoje podatke v Chromiumu povezati s tem računom?</translation>
+<translation id="4260985389288095068">V računalniku imate škodljivo programsko opremo. Chromium jo lahko odstrani in obnovi nastavitve, da bo brskalnik znova deloval kot običajno.</translation>
 <translation id="4271805377592243930">Pomoč za Chromium</translation>
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="4421155425831608516">Prijavo v Chromium je onemogočil skrbnik te naprave.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium se bo znova zagnal v eni uri}one{Chromium se bo znova zagnal v # uri}two{Chromium se bo znova zagnal v # urah}few{Chromium se bo znova zagnal v # urah}other{Chromium se bo znova zagnal v # urah}}</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4469812139324097969">Chromium je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="4488554488975128561">S samodejnim pošiljanjem nekaterih informacij o sistemu in vsebine strani Googlu, s čimer pomagate pri hitrejšem zaznavanju nevarnih aplikacij in spletnih mest, lahko pomagate narediti Chromium varnejši in preprostejši za uporabo.</translation>

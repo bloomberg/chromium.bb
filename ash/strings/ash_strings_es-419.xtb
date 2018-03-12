@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Escala de visualización</translation>
 <translation id="2303600792989757991">Activar vista general de ventanas</translation>
 <translation id="2338501278241028356">Activar Bluetooth para buscar los dispositivos cercanos</translation>
+<translation id="2351266942280602854">Teclado e idioma</translation>
 <translation id="2352467521400612932">Configuración de la pluma stylus</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Si habilitas los datos móviles, se habilitará Bluetooth.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Un administrador inhabilitó el acceso múltiple para <ph name="USER_EMAIL" />.
     Todos los usuarios deben salir de sus cuentas para continuar.</translation>
+<translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
 <translation id="3147142846278915599">Selector (sincronizando aplicaciones…)</translation>
 <translation id="315116470104423982">Datos móviles</translation>
+<translation id="3151786313568798007">Orientación</translation>
 <translation id="3153444934357957346">Puedes acceder a un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas con acceso múltiple.</translation>
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
 <translation id="3294437725009624529">Invitado</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3631369015426612114">Permitir notificaciones de las siguientes fuentes</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Captura parcial de pantalla</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
 <translation id="3771549900096082774">Modo de contraste alto</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
 <translation id="5457599981699367932">Navegar como invitado</translation>
+<translation id="54609108002486618">Gestionado</translation>
 <translation id="553675580533261935">Salir de la sesión</translation>
 <translation id="5548285847212963613">La extensión "<ph name="EXTENSION_NAME" />" puede ayudarte a conectarte a la red.</translation>
 <translation id="5571066253365925590">Bluetooth activado</translation>
@@ -309,6 +314,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
+<translation id="8649101189709089199">Seleccionar para pronunciar</translation>
 <translation id="8652175077544655965">Cerrar configuración</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
@@ -325,6 +331,7 @@ Es posible que las notificaciones, las ventanas y los diálogos posteriores se d
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">El micrófono está en uso.</translation>

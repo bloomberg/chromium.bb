@@ -63,6 +63,9 @@
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
 <translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
+<translation id="1219695476179627719">Spécifie si la version définie par <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> doit être rétablie sur l'appareil s'il exécute une version ultérieure.
+
+      La valeur par défaut est RollbackDisabled.</translation>
 <translation id="1221359380862872747">Charger les URL spécifiées lors de la connexion à la démonstration</translation>
 <translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
 <translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
@@ -533,6 +536,11 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si cette règle n'est pas définie, l'utilisateur peut décider s'il veut ou non utiliser la fonctionnalité de proxy pour la compression de données.</translation>
 <translation id="2587719089023392205">Définir <ph name="PRODUCT_NAME" /> comme navigateur par défaut</translation>
 <translation id="2592091433672667839">Durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion en mode Point de vente</translation>
+<translation id="2596260130957832043">Contrôle si l'authentification NTLMv2 est activée.
+
+          Toutes les versions récentes des serveurs Samba et Windows incluent l'authentification NTLMv2. La désactivation de cette fonctionnalité, qui réduit la sécurité de l'authentification, n'est conseillée qu'à des fins de rétrocompatibilité.
+
+          Lorsque cette règle n'est pas définie, la valeur par défaut "true" indique que l'authentification NTLMv2 est activée.</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
@@ -553,6 +561,7 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2682225790874070339">Désactiver Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
+<translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 
@@ -610,6 +619,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
       Si vous désactivez ce paramètre ou si vous ne définissez pas de valeur, l'aperçu avant impression utilisera par défaut l'imprimante qui a servi le plus récemment.
 
       Si vous activez ce paramètre, l'aperçu avant impression utilisera l'imprimante par défaut du système d'exploitation.</translation>
+<translation id="2867699958489427143">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS. Effectuez un Powerwash complet pendant le processus.</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2874209944580848064">Remarque concernant les appareils <ph name="PRODUCT_OS_NAME" /> compatibles avec les applications Android :</translation>
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>
@@ -645,6 +655,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="3021562480854470924">Nombre de versions intermédiaires autorisées pour le rollback</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
 <translation id="3034580675120919256">Permet de définir si les sites Web sont autorisés à exécuter JavaScript. L'exécution de JavaScript peut être soit autorisée pour tous les sites, soit refusée pour tous les sites. 
 
@@ -1072,6 +1083,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Si cette règle n'est pas définie, l'utilisateur peut décider d'afficher ou de masquer le raccourci des applications dans le menu contextuel de la barre des favoris.
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier, et le raccourci des applications est soit toujours visible, soit toujours masqué.</translation>
+<translation id="443454694385851356">Anciens types de chiffrement (option non sécurisée)</translation>
 <translation id="443665821428652897">Effacer les données de sites à la fermeture du navigateur (obsolète)</translation>
 <translation id="4439336120285389675">Répertorier les fonctionnalités abandonnées de la plate-forme en ligne à réactiver provisoirement.
 
@@ -1083,6 +1095,12 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
 <translation id="4449545651113180484">Faire pivoter l'écran vers la droite de 270 degrés</translation>
+<translation id="4459359100627756769">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est capturée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
+      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
+
+      Si ce paramètre est activé, le service de protection par mot de passe capture l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
+      Si ce paramètre est désactivé, le service de protection par mot de passe ne capture que l'empreinte numérique du mot de passe sur https://accounts.google.com.
+      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="4476769083125004742">Si cette règle est définie sur "<ph name="BLOCK_GEOLOCATION_SETTING" />", les applications Android n'ont pas accès aux informations de localisation. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, l'utilisateur est invité à donner son autorisation lorsqu'une application Android requiert ces informations.</translation>
@@ -1280,6 +1298,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5068140065960598044">Les règles relatives au cloud <ph name="PRODUCT_NAME" /> remplacent celles de la machine.</translation>
 <translation id="5085647276663819155">Désactiver l'aperçu avant impression</translation>
 <translation id="5090209345759901501">Appliquer le paramètre de contenu Flash à tous les contenus</translation>
+<translation id="5093540029655764852">Spécifie la fréquence (en jours) à laquelle un client modifie le mot de passe machine. Ce mot de passe, généré de manière aléatoire par le client, n'est pas accessible à l'utilisateur.
+
+      Tout comme les mots de passe utilisateur, les mots de passe machine doivent être modifiés régulièrement. La désactivation de cette règle ou la définition d'un nombre de jours élevé peut nuire à la sécurité, dans la mesure où elle laisse plus de temps aux pirates informatiques pour trouver le mot de passe machine et l'exploiter.
+
+      Si cette règle n'est pas définie, le mot de passe machine est modifié tous les 30 jours.
+
+      Si cette règle indique 0, la modification du mot de passe machine est désactivée.
+
+      Notez que la validité des mots de passe peut dépasser le délai spécifié en cas de mise hors connexion du client pendant une période plus longue.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
@@ -1306,6 +1333,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Définir la liste noire sur la valeur * revient à interdire toutes les extensions. Les utilisateurs ne peuvent alors installer que celles expressément répertoriées dans la liste blanche.
 
           Par défaut, toutes les extensions figurent sur la liste blanche. Toutefois, si toutes les extensions ont été mises sur la liste noire par la stratégie, seules les extensions expressément indiquées dans la liste blanche pourront être utilisées.</translation>
+<translation id="519247340330463721">Configurez les règles associées à la navigation sécurisée.</translation>
 <translation id="5192837635164433517">Permet l'utilisation de pages d'erreur alternatives qui sont intégrées à <ph name="PRODUCT_NAME" /> (comme "page introuvable") et empêche les utilisateurs de modifier ce paramètre. 
 
 Si vous activez ce paramètre, les pages d'erreur alternatives sont utilisées. 
@@ -1326,6 +1354,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5219844027738217407">Cette règle ne s'applique qu'au micro pour les applications Android. Lorsqu'elle est définie sur "True", le son du micro est coupé pour toutes les applications Android sans exception.</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
 <translation id="5247006254130721952">Bloquer les téléchargements dangereux</translation>
+<translation id="5248863213023520115">Définit les types de chiffrement autorisés lors des demandes de tickets Kerberos à partir d'un serveur <ph name="MS_AD_NAME" />.
+
+      Si cette règle indique "All", les types de chiffrement AES "aes256-cts-hmac-sha1-96" et "aes128-cts-hmac-sha1-96", ainsi que le type de chiffrement RC4 "rc4-hmac" sont autorisés. Le chiffrement AES prévaut toujours. Notez que le type de chiffrement RC4 n'est pas sécurisé et qu'il est donc conseillé de reconfigurer le serveur pour qu'il accepte le chiffrement AES, lorsque cela est possible.
+
+      Si cette règle indique "Strong" ou si elle n'est pas configurée, seuls les types de chiffrement AES sont autorisés.
+
+      Si cette règle indique "Legacy", seul le type de chiffrement RC4 est autorisé. Cette option n'est pas sécurisée et doit uniquement être utilisée dans des cas particuliers.
+
+      Consultez également la page https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Peut être recommandée</translation>
 <translation id="527237119693897329">Cette règle vous permet de spécifier les hôtes de messagerie native qui ne doivent pas être chargés.
 
@@ -1417,6 +1454,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. La session publique doit être configurée au préalable (voir |DeviceLocalAccounts|).
 
       Si cette règle n'est pas définie, aucune connexion automatique n'a lieu.</translation>
+<translation id="5526701598901867718">Tous les types de chiffrement (option non sécurisée)</translation>
 <translation id="5529037166721644841">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux appareils.
 
       La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.
@@ -1483,6 +1521,19 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
+<translation id="5784370777704871674">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+
+      Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
+
+      Si vous désactivez ce paramètre, la navigation sécurisée n'est jamais active.
+
+      Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni remplacer le paramètre "Activer la protection contre le hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas configurée, la navigation sécurisée est activée, mais les utilisateurs peuvent modifier ce paramètre.
+
+      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.
+
+      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="5795001131770861387">Active la compatibilité avec HTTP 0.9 sur les ports non utilisés par défaut</translation>
 <translation id="5809728392451418079">Définir le nom à afficher pour les comptes locaux des appareils</translation>
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
@@ -1725,6 +1776,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           Si vous choisissez de détecter automatiquement le serveur proxy, l'URL de script "http://wpad/wpad.dat" est transmise aux applications Android. Aucune autre partie du protocole d'auto-détection du proxy n'est utilisée.
 
           Si vous sélectionnez le script de proxy .pac, l'URL de script est fournie aux applications Android.</translation>
+<translation id="6473623140202114570">Configurez la liste des domaines sur lesquels la navigation sécurisée ne déclenchera aucun avertissement.</translation>
 <translation id="6491139795995924304">Autoriser le Bluetooth sur l'appareil</translation>
 <translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="6525955212636890608">Si vous activez ce paramètre, tout le contenu Flash intégré aux sites Web qui ont été définis pour autoriser Flash dans les paramètres de contenu (soit par l'utilisateur, soit par la règle d'entreprise) sera exécuté, y compris le contenu provenant d'autres sources ou de petite taille.
@@ -1816,6 +1868,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="6835883744948188639">Afficher une invite récurrente indiquant qu'un redémarrage est recommandé</translation>
+<translation id="6856743875250214792">Cette règle désormais obsolète a été supprimée dans M66, car elle servait uniquement aux tests internes et ne permettait pas de garantir la sécurité.
+
+      Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne sont pas répercutés dans les sessions utilisateur.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
 
@@ -1919,6 +1974,7 @@ Si elle est désactivée, les favoris ne sont pas importés.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
+<translation id="7072208053150563108">Fréquence de modification du mot de passe machine</translation>
 <translation id="7072406291414141328">Active la limitation de la bande passante réseau</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
 <translation id="7106631983877564505">Activer le verrouillage lorsque les appareils exécutant <ph name="PRODUCT_OS_NAME" /> sont inactifs ou en veille.
@@ -1937,6 +1993,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "False", le mode arrière-plan est désactivé et ne peut pas être contrôlé par l'utilisateur dans les paramètres du navigateur.
 
       Si cette règle n'est pas définie, le mode arrière-plan est désactivé initialement et peut être contrôlé par l'utilisateur dans les paramètres du navigateur.</translation>
+<translation id="7127892035367404455">Rétablir la version cible</translation>
 <translation id="7128918109610518786">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME" /> affiche dans la barre du lanceur d'applications.
 
       Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
@@ -2039,6 +2096,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
        Si cette règle est désactivée, l'utilisateur n'est pas autorisé à utiliser la vérification orthographique. La règle SpellcheckLanguage est également ignorée lorsque cette règle est désactivée.
       </translation>
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
+<translation id="7458437477941640506">Ne rétablissez pas la version cible si elle est antérieure à la version de l'OS. Les mises à jour seront également désactivées.</translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
 <translation id="7474249562477552702">Définir si les certificats signés par SHA-1 émis par les ancres d'approbation locales sont autorisés</translation>
 <translation id="7485481791539008776">Instructions de sélection de l'imprimante par défaut</translation>
@@ -2071,6 +2129,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--disk-cache-size".</translation>
+<translation id="759957074386651883">Paramètres de navigation sécurisée</translation>
 <translation id="7604169113182304895">Les applications Android peuvent avoir été volontairement conçues pour respecter cette liste, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
 <translation id="7612157962821894603">Options système à appliquer au démarrage de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Liste des schémas de protocole désactivés</translation>
@@ -2342,6 +2401,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="841977920223099909">Déclencheur de l'avertissement relatif à la protection par mot de passe</translation>
 <translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
 <translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
+<translation id="8433423491036718210">Configurez la liste des URL de connexion d'entreprise pour lesquelles le service de protection par mot de passe doit capturer l'empreinte numérique du mot de passe.</translation>
 <translation id="8451988835943702790">Utiliser la page "Nouvel onglet" comme page d'accueil</translation>
 <translation id="8459216513698220096">Détermine si la règle utilisateur du GPO de l'ordinateur est traitée et la méthode employée.
 
@@ -2360,6 +2420,16 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
+<translation id="8507835864888987300">Définit une version cible pour les mises à jour automatiques.
+
+      Cette règle spécifie le préfixe de la version cible que <ph name="PRODUCT_OS_NAME" /> doit installer. Si la version installée sur l'appareil est antérieure au préfixe défini, la dernière version associée à ce préfixe est installée. Si l'appareil exécute déjà une version ultérieure, les effets varient en fonction de la valeur de la règle <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Comme l'illustre l'exemple suivant, le format du préfixe tient compte des composants :
+
+      "" (ou non configuré) : installation de la dernière version disponible
+      "1412." : installation d'une version mineure de 1412 (par exemple, 1412.24.34 ou 1412.60.2)
+      "1412.2." : installation d'une version mineure de 1412.2 (par exemple, 1412.2.34 ou 1412.2.2)
+      "1412.24.34" : installation de cette version spécifique seulement
+
+      Avertissement : Il est déconseillé de configurer des restrictions de version, car cela pourrait empêcher les utilisateurs de recevoir des mises à jour logicielles et des correctifs de sécurité essentiels. Limiter les mises à jour à un préfixe de version spécifique pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8527932539502116028">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
 

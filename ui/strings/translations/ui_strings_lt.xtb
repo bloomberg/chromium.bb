@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Puslapį į viršų</translation>
 <translation id="2190355936436201913">(tuščias)</translation>
 <translation id="219905428774326614">Paleidimo priemonė, visos programos</translation>
+<translation id="2267918077332197517">Blokuoti visus šios svetainės pranešimus</translation>
 <translation id="2289052229480071835">Palieskite jutiklines sritis ekrane.</translation>
 <translation id="2295140143284145483">Apklausa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Kablelis</translation>
 <translation id="6397363302884558537">Baigti kalbėti</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prieš 1 sek.}one{Prieš # sek.}few{Prieš # sek.}many{Prieš # sek.}other{Prieš # sek.}}</translation>
+<translation id="6430678249303439055">Blokuoti visus šios programos pranešimus</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prieš 1 sekundę}one{Prieš # sekundę}few{Prieš # sekundes}many{Prieš # sekundės}other{Prieš # sekundžių}}</translation>
 <translation id="654149438358937226">Blokuoti visus pranešimus</translation>
 <translation id="6567071839949112727">spustelėti aukštesnio lygmens elementą</translation>

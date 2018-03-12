@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Görüntüyü ölçekle</translation>
 <translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
 <translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
+<translation id="2351266942280602854">Dil ve giriş</translation>
 <translation id="2352467521400612932">Ekran kalemi ayarları</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> etkinleştiriliyor</translation>
 <translation id="2365393535144473978">Mobil veri etkinleştirildiğinde Bluetooth açılır.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2675319268637823299">Bir yönetici <ph name="USER_EMAIL" /> için çoklu oturum açmayı engellemiş.
     Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
+<translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> ile yeniden bağlantı kuruluyor</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
 <translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="315116470104423982">Mobil veriler</translation>
+<translation id="3151786313568798007">Yön</translation>
 <translation id="3153444934357957346">Çoklu oturum açmada en fazla <ph name="MULTI_PROFILE_USER_LIMIT" /> hesabınız olabilir.</translation>
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
 <translation id="3294437725009624529">Misafir</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Giriş</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
 <translation id="3631369015426612114">Şunlardan gelen bildirimlere izin ver:</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Alan yakala</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
 <translation id="3771549900096082774">Yüksek Kontrast Modu</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
 <translation id="5457599981699367932">Misafir olarak Göz At</translation>
+<translation id="54609108002486618">Yönetilen</translation>
 <translation id="553675580533261935">Oturum kapatılıyor</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" uzantısı bu ağa bağlanmaya yardımcı olabilir.</translation>
 <translation id="5571066253365925590">Bluetooth etkin</translation>
@@ -310,6 +315,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>
+<translation id="8649101189709089199">Seç ve Dinle</translation>
 <translation id="8652175077544655965">Ayarları kapat</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
@@ -326,6 +332,7 @@ Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutul
 <translation id="8921624153894383499">Google Asistan bu dili konuşmuyor.</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE" />)</translation>
+<translation id="8995603266996330174">Yöneten: <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Kablosuz: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>

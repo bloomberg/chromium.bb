@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Package is invalid: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Environment-facing</translation>
 <translation id="1196338895211115272">Failed to export private key.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">Yikes! Failed to generate random RSA private key.</translation>
 <translation id="1445572445564823378">This extension is slowing down <ph name="PRODUCT_NAME" />. You should disable it to restore <ph name="PRODUCT_NAME" />'s performance.</translation>
 <translation id="1468038450257740950">WebGL is not supported.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Could not load file '<ph name="RELATIVE_PATH" />' for content script. It isn't UTF-8 encoded.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is blocked by the administrator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Could not install package: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Zip File Installer</translation>
 <translation id="3115238746683532089">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Failed to replace crx file. Check to see if the file is in use.</translation>
 <translation id="3163201441334626963">Unknown product <ph name="PRODUCT_ID" /> from vendor <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifest file is missing or unreadable</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> because another extension (<ph name="EXTENSION_NAME" />) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" is requesting access to one of your devices:</translation>
 <translation id="8825366169884721447">This extension failed to modify the request header "<ph name="HEADER_NAME" />" of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">A private key for specified extension already exists. Reuse that key or delete it first.</translation>

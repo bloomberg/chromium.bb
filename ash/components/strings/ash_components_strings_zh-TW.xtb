@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
 <translation id="1299858300159559687">列印目前網頁</translation>
 <translation id="1383876407941801731">搜尋</translation>
-<translation id="1439252533104567537">前往已編號的分頁</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> 鍵或 <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /> 鍵</translation>
 <translation id="1510238584712386396">啟動器</translation>
 <translation id="152892567002884378">調高音量</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">醒目顯示檔案櫃中的下一個項目</translation>
 <translation id="309173601632226815">醒目顯示檔案櫃中的啟動器按鈕</translation>
 <translation id="3105917916468784889">擷取螢幕畫面</translation>
-<translation id="3118681365140644126">取消檔案櫃按鈕的醒目顯示狀態</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">將焦點移至網址列</translation>
 <translation id="3288816184963444640">關閉目前的視窗</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
-<translation id="4725377341024374454">開啟檔案櫃中醒目顯示的按鈕</translation>
 <translation id="4801989101741319327">移至下一個字詞的結尾</translation>
 <translation id="4916163929714267752">在新視窗開啟連結</translation>
 <translation id="5034421018520995080">前往頁面頂端</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">刪除上一個字詞</translation>
 <translation id="5928303187149237472">變更螢幕解析度</translation>
 <translation id="5975083100439434680">縮小</translation>
-<translation id="6011500873794669296">在以下位置之間切換焦點：狀態區 (你的帳戶相片顯示位置)、啟動器網址列、書籤列 (如有顯示)、開啟下載內容列的網頁 (如有顯示)</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>
 <translation id="6045998054441862242">開啟高對比模式</translation>
 <translation id="6052614013050385269">以滑鼠右鍵按一下連結</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">在新分頁中開啟連結</translation>
 <translation id="8609384513243082612">開啟新分頁</translation>
 <translation id="8644639153978066712">顯示「檔案」應用程式中隱藏的檔案</translation>
-<translation id="8709893667941082515">將焦點移至網址列以便進行搜尋</translation>
 <translation id="8717459106217102612">選取上一個字詞或字母</translation>
 <translation id="8727232706774971183">查看通知</translation>
 <translation id="88986195241502842">Page Down 鍵</translation>

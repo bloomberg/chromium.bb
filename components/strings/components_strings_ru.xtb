@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
 <translation id="1126551341858583091">Место на карте памяти: <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
-<translation id="1132774398110320017">Настройки автозаполнения в Chrome...</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1151972924205500581">Необходимо ввести пароль</translation>
 <translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK" />кешированную версию<ph name="END_LINK" /> страницы <ph name="URL" /></translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Регистрация домена:</translation>
 <translation id="1340482604681802745">Адрес выдачи</translation>
-<translation id="1344588688991793829">Настройки автозаполнения в Chromium...</translation>
 <translation id="1348198688976932919">Сайт содержит опасные приложения</translation>
 <translation id="1374468813861204354">подсказки</translation>
 <translation id="1375198122581997741">Сведения о версии</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Заблокировано автоматически</translation>
 <translation id="3024663005179499861">Неверный тип политики</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
-<translation id="3039538478787849737">Сохранить карту в Google?</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
 <translation id="3063697135517575841">Не удалось подтвердить данные карты. Повторите попытку позже.</translation>
 <translation id="3064966200440839136">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>
@@ -665,6 +662,7 @@
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="5990559369517809815">Расширение заблокировало отправку запроса на сервер.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">Год</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}few{Страница #}many{Страница #}other{Страница #}}</translation>
 <translation id="6017850046339264347">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить вредоносные приложения, маскирующиеся под безопасные программы или собирающие данные, по которым вас можно отследить. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (данные синхронизируются)</translation>
@@ -1008,6 +1006,7 @@
 <translation id="8957210676456822347">Авторизация через адаптивный портал</translation>
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="8978053250194585037">Функция "Google Безопасный просмотр" недавно <ph name="BEGIN_LINK" />обнаружила попытку фишинга<ph name="END_LINK" /> на сайте <ph name="SITE" />. Будьте внимательны! Мошенники часто создают веб-страницы, похожие на знакомые вам сайты.</translation>
+<translation id="8987927404178983737">Месяц</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сайт содержит нежелательное ПО</translation>
 <translation id="8997023839087525404">Предоставленный сервером сертификат не проходил проверку безопасности. Она необходима в некоторых случаях, чтобы доказать, что сертификат надежен и защищает от злоумышленников.</translation>

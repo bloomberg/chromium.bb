@@ -62,6 +62,9 @@
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1204263402976895730">已启用企业打印机</translation>
+<translation id="1219695476179627719">指定是否要将已在运行较新版本的设备回滚到 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所设定的版本。
+
+      默认值为 RollbackDisabled。</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="123081309365616809">允许向设备投射内容</translation>
 <translation id="1257550411839719984">设置默认下载目录</translation>
@@ -486,6 +489,11 @@
       如果该政策未设置，用户可选择是否使用数据压缩代理功能。</translation>
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
+<translation id="2596260130957832043">控制是否启用 NTLMv2。
+
+          近期推出的所有 Samba 和 Windows 服务器版本都支持 NTLMv2。除非是为了实现向后兼容，否则请勿停用 NTLMv2（因为这样做会降低身份验证的安全性）。
+
+          如果未设置此政策，则默认值为 true，且系统会启用 NTLMv2。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
@@ -500,6 +508,7 @@
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2682225790874070339">在<ph name="PRODUCT_OS_NAME" />的“文件”应用中停用Google云端硬盘</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
+<translation id="2693108589792503178">配置用于更改密码的网址。</translation>
 <translation id="2731627323327011390">禁止 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> 证书</translation>
 <translation id="2742843273354638707">在“打开新的标签页”页面和 <ph name="PRODUCT_OS_NAME" />应用启动器中不显示“Chrome 网上应用店”应用和页脚链接。
 
@@ -557,6 +566,7 @@
       如果您停用此设置或不为其指定任何值，打印预览便会将最近使用过的打印机用作默认目标选项。
 
       如果您启用此设置，打印预览则会将操作系统默认打印机用作默认目标选项。</translation>
+<translation id="2867699958489427143">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。在此过程中，请执行完整的 Powerwash 操作。</translation>
 <translation id="2872961005593481000">关机</translation>
 <translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>
@@ -592,6 +602,7 @@
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
+<translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME" />关闭后继续运行后台应用</translation>
@@ -991,6 +1002,7 @@
       如果此政策未设置，用户将可以从书签栏上下文菜单中选择是否显示应用快捷方式。
 
       如果此政策已配置，用户将无法对其进行更改，并且书签栏中将始终显示或一律不显示应用快捷方式。</translation>
+<translation id="443454694385851356">旧版（不安全）</translation>
 <translation id="443665821428652897">在浏览器关闭时清除网站数据（已弃用）</translation>
 <translation id="4439336120285389675">指定要临时重新启用的已弃用网络平台功能的列表。
 
@@ -1002,6 +1014,12 @@
       </translation>
 <translation id="4442582539341804154">当设备进入待机或暂停状态时启用锁定</translation>
 <translation id="4449545651113180484">将屏幕顺时针旋转 270 度</translation>
+<translation id="4459359100627756769">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
+      此设置应仅供使用 SSO/SMAL 系统的 GSuite 用户使用。
+
+      如果启用了此设置，密码保护服务将会在这些网址上捕获密码指纹，以用于密码重用检测。
+      如果停用了或未设定此设置，密码保护服务则会仅在 https://accounts.google.com 上捕获密码指纹。
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
 <translation id="4476769083125004742">如果此政策设为 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 应用将无法使用位置信息。如果此政策设为任何其他值或未设置，那么当 Android 应用想使用位置信息时，它会询问用户是否同意。</translation>
@@ -1175,6 +1193,15 @@
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 云政策会替换机器政策。</translation>
 <translation id="5085647276663819155">停用打印预览</translation>
 <translation id="5090209345759901501">将 Flash 内容设置的涵盖面扩展至所有内容</translation>
+<translation id="5093540029655764852">指定客户端应以怎样的频率（单位：天）更改其设备帐号密码。密码是由客户端随机生成的，不会显示给用户。
+
+      和用户密码一样，设备密码也应定期更改。停用此政策或设置较多的天数可能会对安全性产生不利影响，因为这会让潜在攻击者有更多时间来找出设备帐号密码并使用该密码。
+
+      如果未设置此政策，客户端将会每 30 天更改一次设备帐号密码。
+
+      如果此政策设为 0，客户端则无法更改设备帐号密码。
+
+      请注意，如果客户端在较长时间内一直处于离线状态，那么即使指定的天数已过，密码也可能不会更改。</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
 <translation id="5130288486815037971">是否在 TLS 中启用 RC4 加密套件</translation>
@@ -1195,6 +1222,7 @@
       如果此政策未设置，则默认间隔为 3 分钟。系统所允许的最短间隔为 30 秒，最长间隔为 24 小时（低于 30 秒的值将被视为 30 秒，高于 24 小时的值将被视为 24 小时）。</translation>
 <translation id="5182055907976889880">在 <ph name="PRODUCT_OS_NAME" />中配置 Google 云端硬盘。</translation>
 <translation id="5183383917553127163">可让您指定不受黑名单影响的扩展程序。黑名单值“*”表示所有扩展程序均已列入黑名单，用户只能安装白名单中列出的扩展程序。默认情况下，所有扩展程序都列在白名单中，但如果所有扩展程序均已根据某个政策列入黑名单，则白名单可用于覆盖相关政策。</translation>
+<translation id="519247340330463721">配置与安全浏览功能相关的政策。</translation>
 <translation id="5192837635164433517">允许使用 <ph name="PRODUCT_NAME" />中内置的备用错误网页（例如“找不到网页”），并禁止用户更改此设置。如果您启用了此设置，系统就会使用备用错误网页。如果您停用了此设置，系统就不会使用备用错误网页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="5196805177499964601">屏蔽开发者模式。
 
@@ -1205,6 +1233,15 @@
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
 <translation id="523505283826916779">无障碍设置</translation>
 <translation id="5247006254130721952">拦截有危险的下载内容</translation>
+<translation id="5248863213023520115">设置可使用哪些加密类型从 <ph name="MS_AD_NAME" /> 服务器请求 Kerberos 凭单。
+
+      如果此政策设为“所有”，则允许使用 AES 加密类型“aes256-cts-hmac-sha1-96”和“aes128-cts-hmac-sha1-96”，以及 RC4 加密类型“rc4-hmac”。如果服务器同时支持这两种类型，则优先使用 AES 加密。请注意，RC4 加密不安全，所以如果可能的话，则应重新配置服务器，以支持 AES 加密。
+
+      如果此政策设为“强”或未设置，则仅允许使用 AES 加密类型。
+
+      如果此政策设为“旧版”，则仅允许使用 RC4 加密类型。此选项不安全，因此只有在非常特殊的情况下才应使用它。
+
+      另请访问 https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types。</translation>
 <translation id="5255162913209987122">可推荐</translation>
 <translation id="527237119693897329">允许您指定不应加载哪些本地消息传递主机。
 
@@ -1286,6 +1323,7 @@
       如果设置了此政策，则用户未与登录屏幕互动的时间达到指定的时长后，将会自动登录指定的会话。此公用自助终端必须已配置（参阅 |DeviceLocalAccounts|）。
 
       如果未设置此政策，则不会自动登录。</translation>
+<translation id="5526701598901867718">所有（不安全）</translation>
 <translation id="5529037166721644841">指定向设备管理服务查询设备政策信息的周期（以毫秒为单位）。
 
       设置此政策将会覆盖默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。低于 1800000 的值将被调整为 1800000，高于 86400000 的值将被调整为 86400000。
@@ -1352,6 +1390,19 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位。</translation>
+<translation id="5784370777704871674">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并禁止用户更改此设置。
+
+      如果您启用了此设置，安全浏览功能就会始终处于启用状态。
+
+      如果您停用了此设置，安全浏览功能则会始终处于停用状态。
+
+      如果您启用或停用了此设置，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改或替换“启用针对网上诱骗和恶意软件的防护功能”设置。
+
+      如果未设置此政策，系统将会启用此设置，不过用户可以更改此设置。
+
+      要想详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。
+
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="5795001131770861387">在非默认端口上启用 HTTP/0.9 支持</translation>
 <translation id="5809728392451418079">设置设备本地帐号的显示名称</translation>
 <translation id="5814301096961727113">设置登录屏幕上语音反馈的默认状态</translation>
@@ -1574,6 +1625,7 @@
           如果您选择自动检测代理服务器，则系统会向 Android 应用提供脚本网址“http://wpad/wpad.dat”，但不会使用代理自动检测协议的任何其他部分。
 
           如果您选择使用 .pac 代理脚本，则系统会向 Android 应用提供相应的脚本网址。</translation>
+<translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
 <translation id="6491139795995924304">允许在设备上使用蓝牙功能</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>
 <translation id="6525955212636890608">如果启用此设置，那么在内容设置中设为允许运行 Flash（无论是由用户还是由企业政策设置）的网站中内嵌的所有 Flash 内容（包括来自其他来源的内容或不重要的内容）都会运行。
@@ -1665,6 +1717,9 @@
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
 <translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
+<translation id="6856743875250214792">我们已在 M66 中弃用并移除了此政策，因为它仅用于内部测试且存在安全隐患。
+
+      指定要在 <ph name="PRODUCT_NAME" /> 启动时向其应用的实验性设置。指定的实验性设置仅会应用于登录屏幕。通过此政策设定的实验性设置不会反映在用户会话中。</translation>
 <translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 
@@ -1744,6 +1799,7 @@
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
+<translation id="7072208053150563108">设备密码更改率</translation>
 <translation id="7072406291414141328">启用调节网络带宽的功能</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" />设备进入待机或暂停状态时，启用锁定功能。
@@ -1762,6 +1818,7 @@
       如果此政策设为 False，系统将停用后台模式，并且用户无法在浏览器设置中控制该模式。
 
       如果此政策未设置，开始时系统将停用后台模式，但用户可以在浏览器设置中控制该模式。</translation>
+<translation id="7127892035367404455">回滚到目标版本</translation>
 <translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" />在启动程序栏中显示为固定应用的应用标识符。
 
       如果配置此政策，系统将会固定该组应用且不允许用户进行更改。
@@ -1862,6 +1919,7 @@
       如果此政策已停用，用户将无法使用拼写检查。停用此政策后，系统也会忽略 SpellcheckLanguage 政策。
       </translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
+<translation id="7458437477941640506">如果操作系统版本比目标版本新，则不会回滚到目标版本。相应更新也会被停用。</translation>
 <translation id="7469554574977894907">启用搜索建议</translation>
 <translation id="7474249562477552702">是否允许使用本地信任锚颁发的 SHA-1 签名证书</translation>
 <translation id="7485481791539008776">默认打印机选择规则</translation>
@@ -1892,6 +1950,7 @@
       如果此政策的值为0，系统将使用默认缓存大小，并且用户无法更改该默认值。
 
       如果未设置此政策，系统将使用默认缓存大小，并且用户可以使用“--disk-cache-size”标记覆盖默认值。</translation>
+<translation id="759957074386651883">安全浏览设置</translation>
 <translation id="7604169113182304895">Android 应用可能会主动选择采纳该列表。您无法强制此类应用采纳该列表。</translation>
 <translation id="7612157962821894603">在 <ph name="PRODUCT_NAME" /> 启动时应用于整个系统的设置</translation>
 <translation id="7614663184588396421">已停用协议架构的列表</translation>
@@ -2141,6 +2200,7 @@
 <translation id="841977920223099909">密码保护服务警告功能触发条件</translation>
 <translation id="8424255554404582727">设置显示屏默认旋转角度，每次重新启动后都重新应用设置的角度</translation>
 <translation id="8426231401662877819">将屏幕顺时针旋转 90 度</translation>
+<translation id="8433423491036718210">配置企业登录网址列表，以便密码保护服务从这些网址中捕获密码指纹。</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="8459216513698220096">指定是否处理计算机 GPO 中的用户政策以及如何处理。
 
@@ -2159,6 +2219,16 @@
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
+<translation id="8507835864888987300">为自动更新设定目标版本。
+
+      指定 <ph name="PRODUCT_OS_NAME" />应更新到的目标版本的前缀。如果相应设备所运行的版本早于指定的前缀，该设备便会更新到采用指定前缀的最新版本。如果相应设备所运行的版本已是较新版本，此政策的效果将会取决于 <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> 的值。前缀格式需按部分逐一指定，如下例所示： 
+
+      “”（或未配置）：更新到现有的最新版本。
+      “1412.”：更新到 1412 的任意次要版本（例如 1412.24.34 或 1412.60.2）
+      “1412.2.”：更新到 1412.2 的任意次要版本（例如 1412.2.34 或 1412.2.2）
+      “1412.24.34”：仅更新到此特定版本
+
+      警告：建议您不要配置版本限制，因为这可能会阻止用户接收软件更新和关键的安全修补程序。限制更新到特定版本前缀可能会将用户置于风险之中。</translation>
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="8527932539502116028">指定用户无法使用的打印机。
 

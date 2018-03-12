@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(empty)</translation>
 <translation id="219905428774326614">Launcher, all apps</translation>
+<translation id="2267918077332197517">Block all notifications from this site</translation>
 <translation id="2289052229480071835">Tap the touch targets on your screen.</translation>
 <translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Comma</translation>
 <translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec ago}other{# secs ago}}</translation>
+<translation id="6430678249303439055">Block all notifications from this app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 second ago}other{# seconds ago}}</translation>
 <translation id="654149438358937226">Block all notifications</translation>
 <translation id="6567071839949112727">click ancestor</translation>

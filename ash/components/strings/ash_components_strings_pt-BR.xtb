@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">Abrir uma nova janela no modo de navegação anônima</translation>
 <translation id="1299858300159559687">Imprimir a página atual</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
-<translation id="1439252533104567537">Ir para a guia numerada</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ou <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">Iniciador</translation>
 <translation id="152892567002884378">Aumentar volume</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">Destacar o próximo item na estante</translation>
 <translation id="309173601632226815">Destacar o botão de tela de início na estante</translation>
 <translation id="3105917916468784889">Faça uma captura de tela</translation>
-<translation id="3118681365140644126">Remover o destaque de um botão na estante</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">Ver assistente de atalhos do teclado</translation>
 <translation id="4628718545549558538">Abrir a área de status, onde a imagem da sua conta aparece</translation>
 <translation id="4642092649622328492">Fazer uma captura de tela parcial</translation>
-<translation id="4725377341024374454">Abrir o botão destacado na estante</translation>
 <translation id="4801989101741319327">Mover para o fim da próxima palavra</translation>
 <translation id="4916163929714267752">Abrir o link em uma nova janela</translation>
 <translation id="5034421018520995080">Ir para a parte superior da página</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">Excluir a palavra anterior</translation>
 <translation id="5928303187149237472">Alterar resolução da tela</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
-<translation id="6011500873794669296">Alternar foco entre: a área de status (onde a imagem da sua conta é exibida), tela de início, barra de endereço, barra de favoritos (se estiver visível), a página da Web que está aberta e a barra de downloads (se estiver visível)</translation>
 <translation id="6022924867608035986">Limpar texto da caixa de pesquisa</translation>
 <translation id="6045998054441862242">Ativar o modo de alto contraste</translation>
 <translation id="6052614013050385269">Clicar com o botão direito do mouse em um link</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">Abrir o link em uma nova guia</translation>
 <translation id="8609384513243082612">Abrir nova guia</translation>
 <translation id="8644639153978066712">Exibir arquivos ocultos no app Arquivos</translation>
-<translation id="8709893667941082515">Focar na barra de endereço para pesquisa</translation>
 <translation id="8717459106217102612">Selecionar palavra ou letra anterior</translation>
 <translation id="8727232706774971183">Ver suas notificações</translation>
 <translation id="88986195241502842">Página para baixo</translation>

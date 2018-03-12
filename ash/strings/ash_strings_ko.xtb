@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">디스플레이 배율</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
 <translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
+<translation id="2351266942280602854">언어 및 입력</translation>
 <translation id="2352467521400612932">스타일러스 설정</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">제출</translation>
 <translation id="2675319268637823299">관리자가 <ph name="USER_EMAIL" />의 멀티 로그인을 허용하지 않았습니다.
     계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
+<translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
+<translation id="3151786313568798007">방향</translation>
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3294437725009624529">손님</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">입력</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3631369015426612114">다음 항목에 알림 허용:</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
 <translation id="371370241367527062">전면 마이크</translation>
 <translation id="3771549900096082774">고대비 모드</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5457599981699367932">게스트로 로그인</translation>
+<translation id="54609108002486618">관리</translation>
 <translation id="553675580533261935">세션 종료</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>
+<translation id="8649101189709089199">텍스트 읽어주기</translation>
 <translation id="8652175077544655965">설정 닫기</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google 어시스턴트가 이 언어를 지원하지 않음</translation>
 <translation id="8938800817013097409">USB-C 기기(우측 후면 포트)</translation>
 <translation id="8940956008527784070">배터리 부족(<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">관리자: <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>

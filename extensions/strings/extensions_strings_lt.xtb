@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Paketas netinkamas: „<ph name="ERROR_CODE" />“.</translation>
 <translation id="1140871961407805696">Nukreiptas į aplinką</translation>
 <translation id="1196338895211115272">Nepavyko eksportuoti privačiojo rakto.</translation>
-<translation id="1256619696651732561">Plėtinio aprašo analizavimo įrankis</translation>
 <translation id="1420684932347524586">Oi! Nepavyko sukurti atsitiktinio RSA privačiojo rakto.</translation>
 <translation id="1445572445564823378">Dėl šio plėtinio lėčiau veikia „<ph name="PRODUCT_NAME" />“. Kad atkurtumėte „<ph name="PRODUCT_NAME" />“ našumą, turite jo neleisti.</translation>
 <translation id="1468038450257740950">„WebGL“ nepalaikomas.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Nepavyko įkelti turinio scenarijaus failo „<ph name="RELATIVE_PATH" />“. Jis nėra užkoduotas naudojant UTF-8.</translation>
 <translation id="2903070246402204397">„<ph name="EXTENSION_NAME" />“ (plėtinio ID „<ph name="EXTENSION_ID" />“) užblokavo administratorius. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nepavyko įdiegti paketo: „<ph name="ERROR_CODE" />“</translation>
-<translation id="3097628171361913691">ZIP failų diegimo programa</translation>
 <translation id="3115238746683532089">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš teikėjo „<ph name="VENDOR_ID" />“ (serijos numeris: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Nepavyko pakeisti CRX failo. Patikrinkite, ar failas naudojamas.</translation>
 <translation id="3163201441334626963">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš teikėjo „<ph name="VENDOR_ID" />“</translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Trūksta aprašo failo arba jis nenuskaitomas</translation>
 <translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
 <translation id="8761756413268424715">„<ph name="APP_NAME" />“ prašo leidimo pasiekti vieną iš jūsų įrenginių:</translation>
 <translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME" />“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME" />“).</translation>
 <translation id="8885905466771744233">Privatusis nurodyto plėtinio raktas jau yra. Naudokite šį raktą iš naujo arba pirmiausia jį ištrinkite.</translation>

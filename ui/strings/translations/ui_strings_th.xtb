@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">เลื่อนหน้าขึ้น</translation>
 <translation id="2190355936436201913">(ว่างเปล่า)</translation>
 <translation id="219905428774326614">Launcher, แอปทั้งหมด</translation>
+<translation id="2267918077332197517">บล็อกการแจ้งเตือนทั้งหมดจากเว็บไซต์นี้</translation>
 <translation id="2289052229480071835">แตะเป้าหมายการสัมผัสในหน้าจอ</translation>
 <translation id="2295140143284145483">แบบสำรวจ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/วินาที</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">จุลภาค</translation>
 <translation id="6397363302884558537">หยุดพูด</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
+<translation id="6430678249303439055">บล็อกการแจ้งเตือนทั้งหมดจากแอปนี้</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ 1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
 <translation id="654149438358937226">บล็อกการแจ้งเตือนทั้งหมด</translation>
 <translation id="6567071839949112727">คลิกต้นตระกูล</translation>

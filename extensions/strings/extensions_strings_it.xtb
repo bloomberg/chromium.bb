@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Il pacchetto non è valido: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Fotocamera posteriore</translation>
 <translation id="1196338895211115272">Operazione di esportazione della chiave privata non riuscita.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">Spiacenti, operazione di generazione della chiave privata RSA casuale non riuscita.</translation>
 <translation id="1445572445564823378">Questa estensione sta rallentando <ph name="PRODUCT_NAME" />. È necessario disabilitarla per ripristinare le prestazioni di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL non è supportato.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Impossibile caricare il file "<ph name="RELATIVE_PATH" />" per la trascrizione dei contenuti. Non è codificato in UTF-8.</translation>
 <translation id="2903070246402204397">L'estensione <ph name="EXTENSION_NAME" /> (ID "<ph name="EXTENSION_ID" />") è stata bloccata dall'amministratore. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Impossibile installare il pacchetto: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Zip File Installer</translation>
 <translation id="3115238746683532089">Prodotto sconosciuto <ph name="PRODUCT_ID" /> del fornitore <ph name="VENDOR_ID" /> (numero di serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Impossibile sostituire il file crx. Controlla se il file è in uso.</translation>
 <translation id="3163201441334626963">Prodotto sconosciuto <ph name="PRODUCT_ID" /> del fornitore <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">File manifest mancante o illeggibile</translation>
 <translation id="8636666366616799973">Il pacchetto non è valido. Dettagli: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perché un'altra estensione (<ph name="EXTENSION_NAME" />) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" richiede l'accesso a un dispositivo:</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Esiste già una chiave privata per l'estensione specificata. Riutilizza tale chiave o prima eliminala.</translation>

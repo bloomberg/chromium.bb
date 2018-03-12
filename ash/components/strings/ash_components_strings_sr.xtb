@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">Отворите нови прозор у режиму без архивирања</translation>
 <translation id="1299858300159559687">Штампајте тренутну страницу</translation>
 <translation id="1383876407941801731">Претражи</translation>
-<translation id="1439252533104567537">Идите на нумерисану картицу</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> или <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="152892567002884378">Појачајте звук</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">Истакните следећу ставку на полици</translation>
 <translation id="309173601632226815">Истакните дугме покретача на полици</translation>
 <translation id="3105917916468784889">Сними екран</translation>
-<translation id="3118681365140644126">Уклоните истицање са дугмета на полици</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Фокусирање траке за адресу</translation>
 <translation id="3288816184963444640">Затворите тренутно отворени прозор</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">Прегледајте помоћ за тастерске пречице</translation>
 <translation id="4628718545549558538">Отворите област статуса (где је слика налога)</translation>
 <translation id="4642092649622328492">Направите делимичан снимак екрана</translation>
-<translation id="4725377341024374454">Отворите истакнуто дугме на полици</translation>
 <translation id="4801989101741319327">Померите на крај следеће речи</translation>
 <translation id="4916163929714267752">Отворите линк у новом прозору</translation>
 <translation id="5034421018520995080">Идите на врх странице</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">Избришите претходну реч</translation>
 <translation id="5928303187149237472">Промените резолуцију екрана</translation>
 <translation id="5975083100439434680">Умањивање</translation>
-<translation id="6011500873794669296">Пребацујте фокус између: области статуса (где се приказује слика налога) Покретача, траке за адресу, траке са обележивачима (ако је видљива), веб-странице која је отворена, траке са преузимањима (ако је видљива)</translation>
 <translation id="6022924867608035986">Обришите текст из оквира за претрагу</translation>
 <translation id="6045998054441862242">Укључите режим високог контраста</translation>
 <translation id="6052614013050385269">Десни клик на линк</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">Отворите линк на новој картици</translation>
 <translation id="8609384513243082612">Отворите нову картицу</translation>
 <translation id="8644639153978066712">Прикажите скривене датотеке у апликацији Датотеке</translation>
-<translation id="8709893667941082515">Фокусирајте траку за адресу на претрагу</translation>
 <translation id="8717459106217102612">Изаберите претходну реч или слово</translation>
 <translation id="8727232706774971183">Прегледајте обавештења</translation>
 <translation id="88986195241502842">Страница надоле</translation>

@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Package incorrect : "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Caméra arrière</translation>
 <translation id="1196338895211115272">Échec d'exportation de la clé privée</translation>
-<translation id="1256619696651732561">Analyse des fichiers manifestes des extensions</translation>
 <translation id="1420684932347524586">Échec de génération de clé privée RSA aléatoire</translation>
 <translation id="1445572445564823378">Cette extension ralentit <ph name="PRODUCT_NAME" />. Vous devez la désactiver pour rétablir les performances de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL n'est pas compatible.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Impossible de charger le fichier "<ph name="RELATIVE_PATH" />" pour le script de contenu, car ce fichier n'est pas codé en UTF-8.</translation>
 <translation id="2903070246402204397">L'administrateur a bloqué l'extension <ph name="EXTENSION_NAME" /> (ID : <ph name="EXTENSION_ID" />). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Impossible d'installer le package : "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Décompression de fichiers .zip</translation>
 <translation id="3115238746683532089">Produit inconnu <ph name="PRODUCT_ID" /> du fournisseur <ph name="VENDOR_ID" /> (numéro de série : <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Échec lors du remplacement du fichier CRX. Vérifiez qu'il n'est pas en cours d'utilisation.</translation>
 <translation id="3163201441334626963">Produit inconnu <ph name="PRODUCT_ID" /> du fournisseur <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Fichier manifeste absent ou illisible</translation>
 <translation id="8636666366616799973">Package incorrect. Détails : "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Une requête réseau n'a pas pu être redirigée vers <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> par cette extension, car elle a été redirigée vers <ph name="ACTUAL_REDIRECT_DESTINATION" /> par une autre extension (<ph name="EXTENSION_NAME" />).</translation>
-<translation id="8712265948125780616">Décompression d'extensions</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> demande l'accès à l'un de vos appareils :</translation>
 <translation id="8825366169884721447">Le titre de demande d'une requête réseau ("<ph name="HEADER_NAME" />") n'a pas pu être modifié à partir de cette extension, car la modification demandée était en conflit avec une autre extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">L'extension indiquée est déjà associée à une clé privée. Utilisez cette clé ou supprimez-la.</translation>

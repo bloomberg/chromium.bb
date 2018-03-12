@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">O pacote é inválido: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Virada para o ambiente</translation>
 <translation id="1196338895211115272">Falha ao exportar chave privada.</translation>
-<translation id="1256619696651732561">Analisador de manifestos de extensão</translation>
 <translation id="1420684932347524586">Ora bolas! Falha ao gerar chave privada RSA aleatória.</translation>
 <translation id="1445572445564823378">Esta extensão está a tornar o <ph name="PRODUCT_NAME" /> lento. Deve desativá-la para restaurar o desempenho do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">O WebGL não é suportado.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Não foi possível carregar o ficheiro "<ph name="RELATIVE_PATH" />" para script de conteúdo. Não está codificado em UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ID de extensão "<ph name="EXTENSION_ID" />") está bloqueada pelo gestor. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Não foi possível instalar o pacote: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Instalador de ficheiros ZIP</translation>
 <translation id="3115238746683532089">Produto desconhecido <ph name="PRODUCT_ID" /> do fornecedor <ph name="VENDOR_ID" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Falha ao substituir o ficheiro crx. Verifique se o ficheiro está a ser utilizado.</translation>
 <translation id="3163201441334626963">Produto desconhecido <ph name="PRODUCT_ID" /> do fornecedor <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">O ficheiro de manifesto está em falta ou é ilegível.</translation>
 <translation id="8636666366616799973">O pacote é inválido. Detalhes: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Falha desta extensão ao redirecionar um pedido de rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, porque outra extensão (<ph name="EXTENSION_NAME" />) o redirecionou para <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Descompactador de extensões</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" está a solicitar acesso a um dos seus dispositivos:</translation>
 <translation id="8825366169884721447">Falha desta extensão ao modificar o cabeçalho do pedido "<ph name="HEADER_NAME" />" de um pedido de rede, porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Já existe uma chave privada para a extensão especificada. Volte a utilizar essa chave ou elimine-a primeiro.</translation>

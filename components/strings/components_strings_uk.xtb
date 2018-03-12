@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Відмінити перевпорядкування</translation>
 <translation id="1126551341858583091">Обсяг локальної пам’яті – <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кеш-пам’ять правила не пошкоджено</translation>
-<translation id="1132774398110320017">Налаштування автозаповнення Chrome…</translation>
 <translation id="1150979032973867961">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Операційна система вашого комп’ютера не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="1151972924205500581">Потрібен пароль</translation>
 <translation id="1152921474424827756">Відкрийте <ph name="BEGIN_LINK" />кешовану копію<ph name="END_LINK" /> <ph name="URL" /></translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Домен реєстрації:</translation>
 <translation id="1340482604681802745">Адреса отримання</translation>
-<translation id="1344588688991793829">Налаштування автозаповнення Chromium…</translation>
 <translation id="1348198688976932919">Сайт містить небезпечні додатки</translation>
 <translation id="1374468813861204354">пропозиції</translation>
 <translation id="1375198122581997741">Про версію</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Блокується автоматично</translation>
 <translation id="3024663005179499861">Неправильний тип правила</translation>
 <translation id="3037605927509011580">От халепа!</translation>
-<translation id="3039538478787849737">Зберегти картку в Google?</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3063697135517575841">Chrome не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
@@ -666,6 +663,7 @@
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="5990559369517809815">Надсилання запитів на сервер заблоковано розширенням.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">Рік</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
 <translation id="6017850046339264347">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш пристрій оманливі додатки, які видають себе за інший вміст або збирають дані для відстеження вашої активності. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронізовано)</translation>
@@ -1010,6 +1008,7 @@
 <translation id="8957210676456822347">Авторизація приєднаного порталу</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
 <translation id="8978053250194585037">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила фішинг<ph name="END_LINK" /> на сайті <ph name="SITE" />. Фішингові сайти видають себе за інші сайти, щоб ошукати вас.</translation>
+<translation id="8987927404178983737">Місяць</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сайт містить шкідливі програми</translation>
 <translation id="8997023839087525404">Сервер надав сертифікат без інформації про перевірку. Це обов’язкові дані для деяких сертифікатів. Вони підтверджують надійність сертифіката й захищають від атак зловмисників.</translation>

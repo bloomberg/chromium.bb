@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">പാക്കേജ് അസാധുവാണ്: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">പുറകുവശത്തുള്ള ക്യാമറ</translation>
 <translation id="1196338895211115272">സ്വകാര്യ കീ കയറ്റുമതി ചെയ്യുന്നതിന് പരാജയപ്പെട്ടു.</translation>
-<translation id="1256619696651732561">വിപുലീകരണ മാനിഫെസ്റ്റ് പാഴ്‌സർ</translation>
 <translation id="1420684932347524586">അയ്യോ! ക്രമരഹിത RSA സ്വകാര്യ കീ ജനറേറ്റ് ചെയ്യുന്നതിന് പരാജയപ്പെട്ടു. </translation>
 <translation id="1445572445564823378">ഈ വിപുലീകരണം <ph name="PRODUCT_NAME" />-നെ മന്ദഗതിയിലാക്കുന്നു. <ph name="PRODUCT_NAME" />-ന്റെ പ്രകടനം പുനഃസംഭരിക്കുന്നതിനായി നിങ്ങൾ അതിനെ അപ്രാപ്തമാക്കണം.</translation>
 <translation id="1468038450257740950">WebGL പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">ഉള്ളടക്ക സ്ക്രിപ്റ്റിനായി '<ph name="RELATIVE_PATH" />' ഫയല്‍‌ ലോഡുചെയ്യാന്‍‌ കഴിഞ്ഞില്ല. ഇത് UTF-8 എന്‍‌കോഡുചെയ്‌തതല്ല.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ ബ്ലോക്കുചെയ്‌തു. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">പാക്കേജ് ഇന്‍സ്റ്റാള്‍ ചെയ്യാന്‍ കഴിഞ്ഞില്ല: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Zip ഫയൽ ഇൻസ്റ്റാളർ</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ഫയലിലേക്കുള്ള പുനഃസ്ഥാപനം പരാജയപ്പെട്ടു. ഈ ഫയൽ ഉപയോഗത്തിലാണോ എന്ന് പരിശോധിച്ച് നോക്കുക.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">മാനിഫെസ്റ്റ് ഫയല്‍ നഷ്ടപ്പെട്ടിരിക്കുന്നു അല്ലെങ്കില്‍ റീഡ് ചെയ്യാനാവാത്തതാണ്</translation>
 <translation id="8636666366616799973">പാക്കേജ് അസാധുവാണ്. വിശദാംശങ്ങൾ: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">മറ്റൊരു വിപുലീകരണം (<ph name="EXTENSION_NAME" />), <ph name="ACTUAL_REDIRECT_DESTINATION" />-ലേക്ക് ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയെ റീഡയറക്റ്റുചെയ്‌തതിനാൽ അതിനെ <ph name="ATTEMPTED_REDIRECT_DESTINATION" />-ലേക്ക് റീഡയറക്റ്റുചെയ്യുന്നതിന് ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
-<translation id="8712265948125780616">വിപുലീകരണ അൺ‌പാക്കർ</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" നിങ്ങളുടെ ഉപകരണങ്ങളിൽ ഒരെണ്ണത്തിലേക്ക് ആക്‌സസ് അഭ്യർത്ഥിക്കുന്നു:</translation>
 <translation id="8825366169884721447">പരിഷ്‌ക്കാരം മറ്റൊരു (<ph name="EXTENSION_NAME" />) വിപുലീകരണവുമായി വൈരുദ്ധ്യം സൃഷ്‌ടിക്കുന്നതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയുടെ അഭ്യർത്ഥന തലക്കെട്ട് "<ph name="HEADER_NAME" />" പരിഷ്‌ക്കരിക്കുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
 <translation id="8885905466771744233">പ്രത്യേക വിപുലീകരണത്തിനുള്ള ഒരു സ്വകാര്യ കീ ഇതിനകം നിലവിലുണ്ട്. ആ കീ പുനരുപയോഗിക്കുക അല്ലെങ്കില്‍ ആദ്യം അത് ഇല്ലാതാക്കുക.</translation>

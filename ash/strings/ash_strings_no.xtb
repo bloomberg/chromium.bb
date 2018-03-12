@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
 <translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
+<translation id="2351266942280602854">Språk og inndata</translation>
 <translation id="2352467521400612932">Innstillinger for pekepenn</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Hvis du slår på mobildata, blir Bluetooth også slått på.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Send</translation>
 <translation id="2675319268637823299">En administrator har deaktivert multipålogging for <ph name="USER_EMAIL" />.
     Alle brukere må logge av for å fortsette.</translation>
+<translation id="2718395828230677721">Nattlys</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Kobler til <ph name="NAME" /> på nytt</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
+<translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3294437725009624529">Gjest</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Inndata</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3631369015426612114">Tillat varsler fra følgende</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Ta skjermdump av et område</translation>
 <translation id="371370241367527062">Mikrofon foran</translation>
 <translation id="3771549900096082774">Høykontrastmodus</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
 <translation id="5457599981699367932">Surf som gjest</translation>
+<translation id="54609108002486618">Administrert</translation>
 <translation id="553675580533261935">Avslutning av økten</translation>
 <translation id="5548285847212963613">Utvidelsen «<ph name="EXTENSION_NAME" />» kan hjelpe deg med å koble deg til dette nettverket.</translation>
 <translation id="5571066253365925590">Bluetooth er aktivert</translation>
@@ -309,6 +314,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Kobler til på nytt ...</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
+<translation id="8649101189709089199">Tekstopplesing</translation>
 <translation id="8652175077544655965">Lukk innstillingene</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
@@ -325,6 +331,7 @@ Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</t
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>

@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Pakken er ugyldig: <ph name="ERROR_CODE" />.</translation>
 <translation id="1140871961407805696">Bakkamera</translation>
 <translation id="1196338895211115272">Kan ikke eksportere privatnøkkelen.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">Beklager. Forsøket på å opprette tilfeldig RSA-privatnøkkel mislyktes.</translation>
 <translation id="1445572445564823378">Denne utvidelsen gjør <ph name="PRODUCT_NAME" /> tregere. Du bør deaktivere den for å gjenopprette ytelsen til <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL støttes ikke.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Kan ikke laste inn filen «<ph name="RELATIVE_PATH" />» for innholdsskript. Den er ikke UTF-8-kodet.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (utvidelses-ID «<ph name="EXTENSION_ID" />») er blokkert av administratoren. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Kunne ikke installere pakken: <ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">Zip File Installer</translation>
 <translation id="3115238746683532089">Ukjent produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /> (serienummer: <ph name="SERIAL_NUMBER" /> )</translation>
 <translation id="3144135466825225871">Kunne ikke erstatte .crx-fil. Kontrollér om filen er i bruk.</translation>
 <translation id="3163201441334626963">Ukjent produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifestfilen mangler eller kan ikke leses</translation>
 <translation id="8636666366616799973">Pakken er ugyldig. Detaljer: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Denne utvidelsen kunne ikke viderekoble en nettverksforespørsel til <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) viderekoblet den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="8761756413268424715">«<ph name="APP_NAME" />» ber om tilgang til én av enhetene dine:</translation>
 <translation id="8825366169884721447">Denne utvidelsen kunne ikke endre forespørselsoverskriften «<ph name="HEADER_NAME" />» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Det finnes allerede en privatnøkkel for det angitte etternavnet. Bruk denne nøkkelen eller slett den.</translation>

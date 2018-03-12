@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Pilihan: Bantu jadikan Chromium lebih baik dengan menghantar statistik penggunaan dan laporan ranap kepada Google secara automatik.</translation>
 <translation id="2898082584336937987">Pasang Chromium pada telefon anda. Kami akan menghantar SMS ke telefon anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Mengenai &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Lancarkan semula Chromium dalam masa sehari}other{Lancarkan semula Chromium dalam masa # hari}}</translation>
 <translation id="2977470724722393594">Chromium telah dikemas kini</translation>
 <translation id="3032787606318309379">Menambah ke Chromium...</translation>
 <translation id="3046695367536568084">Anda perlu log masuk ke Chromium untuk menggunakan apl. Tindakan ini membolehkan Chromium menyegerakkan apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti.</translation>
@@ -90,11 +91,13 @@
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4224199872375172890">Chromium telah dikemas kini</translation>
 <translation id="4230135487732243613">Paut data Chromium anda ke akaun ini?</translation>
+<translation id="4260985389288095068">Terdapat perisian yang berbahaya pada komputer anda. Chromium boleh mengalih keluar perisian tersebut dan memulihkan tetapan supaya penyemak imbas anda dapat berfungsi seperti biasa semula.</translation>
 <translation id="4271805377592243930">Dapatkan bantuan berkenaan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
 <translation id="4421155425831608516">Log masuk ke Chromium dilumpuhkan oleh pentadbir peranti ini.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium akan dilancarkan semula dalam masa sejam}other{Chromium akan dilancarkan semula dalam masa # jam}}</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4469812139324097969">Chromium sudah usang kerana telah lama tidak dilancarkan. Terdapat kemas kini tersedia dan akan digunakan sebaik sahaja anda melancarkannya semula.</translation>
 <translation id="4488554488975128561">Anda boleh membantu menjadikan Chromium lebih selamat dan mudah digunakan dengan menghantar secara automatik beberapa maklumat sistem dan kandungan halaman kepada Google untuk membantu mengesan apl dan tapak yang berbahaya.</translation>

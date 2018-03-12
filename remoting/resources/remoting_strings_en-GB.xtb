@@ -242,6 +242,7 @@ PC</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>
+<translation id="6502629188777329097">Securely access your computer</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="6541219117979389420">Application logs may include private information, including your identity (email address) and the names and properties of files and folders in Google Drive.</translation>
@@ -290,6 +291,7 @@ PC</translation>
 <translation id="7672203038394118626">Remote connections for this computer have been disabled.</translation>
 <translation id="7678209621226490279">Dock Left</translation>
 <translation id="7693372326588366043">Refresh the list of hosts</translation>
+<translation id="7714222945760997814">Report this</translation>
 <translation id="7782471917492991422">Please check your computer's power management settings and ensure that it is not configured to sleep when idle.</translation>
 <translation id="7810127880729796595">Show statistics (connection: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Some required components are missing. Please make sure that you're running the latest version of Chrome and try again.</translation>

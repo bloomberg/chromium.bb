@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Масштаб экрана</translation>
 <translation id="2303600792989757991">Переключить режим обзора</translation>
 <translation id="2338501278241028356">Включите Bluetooth, чтобы найти устройства</translation>
+<translation id="2351266942280602854">Языки и раскладки клавиатуры</translation>
 <translation id="2352467521400612932">Настройки стилуса</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Вместе с мобильным Интернетом включится Bluetooth.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2675319268637823299">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL" />.
     Чтобы вы смогли войти в этот аккаунт, все остальные пользователи должны выйти из него.</translation>
+<translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
+<translation id="3151786313568798007">Ориентация</translation>
 <translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3294437725009624529">Гость</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Вход</translation>
 <translation id="3626281679859535460">Яркость</translation>
 <translation id="3631369015426612114">Разрешить уведомления из следующих источников</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Снимок области</translation>
 <translation id="371370241367527062">Фронтальный микрофон</translation>
 <translation id="3771549900096082774">Режим высокой контрастности</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
 <translation id="5457599981699367932">Войти в гостевой режим</translation>
+<translation id="54609108002486618">Автоматическое управление</translation>
 <translation id="553675580533261935">Завершение сеанса</translation>
 <translation id="5548285847212963613">Подключиться к этой сети можно с помощью расширения "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5571066253365925590">Bluetooth включен</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: повторное подключение...</translation>
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="8639760480004882931">Батарея заряжена на <ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">Озвучивание при нажатии</translation>
 <translation id="8652175077544655965">Закрыть настройки</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
 <translation id="8940956008527784070">Низкий заряд батареи (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">В домене <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофон используется</translation>

@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Strona do góry</translation>
 <translation id="2190355936436201913">(puste)</translation>
 <translation id="219905428774326614">Menu ze wszystkimi aplikacjami</translation>
+<translation id="2267918077332197517">Blokuj wszystkie powiadomienia z tej strony internetowej</translation>
 <translation id="2289052229480071835">Kliknij docelowe obszary kliknięcia na ekranie.</translation>
 <translation id="2295140143284145483">Ankieta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Przecinek</translation>
 <translation id="6397363302884558537">Przestań mówić</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s temu}few{# s temu}many{# s temu}other{# s temu}}</translation>
+<translation id="6430678249303439055">Blokuj wszystkie powiadomienia z tej aplikacji</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{sekundę temu}few{# sekundy temu}many{# sekund temu}other{# sekundy temu}}</translation>
 <translation id="654149438358937226">Blokuj wszystkie powiadomienia</translation>
 <translation id="6567071839949112727">kliknij element nadrzędny</translation>

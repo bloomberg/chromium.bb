@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">الحزمة غير صالحة: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">الكاميرا الخلفية المواجهة للبيئة</translation>
 <translation id="1196338895211115272">تعذّر تصدير المفتاح الخاص.</translation>
-<translation id="1256619696651732561">محلل بيان الإضافة اللغوي</translation>
 <translation id="1420684932347524586">‏عذرًا! تعذّر إنشاء ملف خاص RSA عشوائي.</translation>
 <translation id="1445572445564823378">تتسبب هذه الإضافة في بطء <ph name="PRODUCT_NAME" />. يجب تعطيلها لاستعادة أداء <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">‏WebGL غير متوافق.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">‏تعذر تحميل الملف '<ph name="RELATIVE_PATH" />' للنص البرمجي للمحتوى. لأنه ليس بتشفير UTF-8.</translation>
 <translation id="2903070246402204397">تم حظر <ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") من قِبل المشرف. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">تعذر تثبيت الحزمة: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">‏مُثبت ملف Zip</translation>
 <translation id="3115238746683532089">المنتج غير معروف <ph name="PRODUCT_ID" /> من المورّد <ph name="VENDOR_ID" /> (الرقم التسلسلي <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">‏تعذّر استبدال ملف crx. تحقق ما إذا كان قيد الاستخدام.</translation>
 <translation id="3163201441334626963">المنتج غير معروف <ph name="PRODUCT_ID" /> من المورّد‬ <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">ملف البيان مفقود أو غير قابل للقراءة</translation>
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">تعذّرت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />) إلى <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>
 <translation id="8761756413268424715">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز من أجهزتك:</translation>
 <translation id="8825366169884721447">تعذّرت الإضافة في تعديل عنوان الطلب "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">يوجد مفتاح خاص للإضافة المحددة. أعد استخدام هذا المفتاح أو احذفه أولاً.</translation>

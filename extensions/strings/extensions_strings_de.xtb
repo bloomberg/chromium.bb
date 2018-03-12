@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Paket ist ungültig: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Rückkamera</translation>
 <translation id="1196338895211115272">Privater Schlüssel konnte nicht exportiert werden.</translation>
-<translation id="1256619696651732561">Erweiterungsmanifest-Parser</translation>
 <translation id="1420684932347524586">Der per Zufallsauswahl generierte private RSA-Schlüssel konnte nicht erstellt werden.</translation>
 <translation id="1445572445564823378">Diese Erweiterung verlangsamt die Ausführung von <ph name="PRODUCT_NAME" />. Deaktivieren Sie sie, um die Leistung von <ph name="PRODUCT_NAME" /> nicht zu beeinträchtigen.</translation>
 <translation id="1468038450257740950">WebGL wird nicht unterstützt.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Datei "<ph name="RELATIVE_PATH" />" konnte nicht für das Content-Skript geladen werden. Sie ist nicht UTF-8-codiert.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") wurde vom Administrator blockiert. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paket konnte nicht installiert werden: "<ph name="ERROR_CODE" />".</translation>
-<translation id="3097628171361913691">ZIP-Datei-Installationsprogramm</translation>
 <translation id="3115238746683532089">Unbekanntes Produkt <ph name="PRODUCT_ID" /> von Anbieter <ph name="VENDOR_ID" /> (Seriennummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">CRX-Datei konnte nicht ersetzt werden. Überprüfen Sie, ob die Datei verwendet wird.</translation>
 <translation id="3163201441334626963">Unbekanntes Produkt <ph name="PRODUCT_ID" /> von Anbieter <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifest-Datei fehlt oder ist nicht lesbar</translation>
 <translation id="8636666366616799973">Paket ist ungültig. Details: "<ph name="ERROR_MESSAGE" />"</translation>
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) sie an <ph name="ACTUAL_REDIRECT_DESTINATION" /> weitergeleitet hat.</translation>
-<translation id="8712265948125780616">Erweiterungsentpacker</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" fordert Zugriff auf eines Ihrer Geräte an:</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header "<ph name="HEADER_NAME" />" einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME" />) verursacht.</translation>
 <translation id="8885905466771744233">Es existiert bereits ein privater Schlüssel für die angegebene Erweiterung. Verwenden Sie diesen Schlüssel oder löschen Sie ihn zuerst.</translation>

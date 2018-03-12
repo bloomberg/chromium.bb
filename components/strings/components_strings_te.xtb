@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="1126551341858583091">స్థానిక నిల్వలో పరిమాణం <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
-<translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1151972924205500581">పాస్‌వర్డ్ అవసరం</translation>
 <translation id="1152921474424827756"><ph name="URL" /> యొక్క <ph name="BEGIN_LINK" />కాష్ చేయబడిన కాపీ<ph name="END_LINK" />ని ప్రాప్యత చేయండి</translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">నమోదిత డొమైన్:</translation>
 <translation id="1340482604681802745">పికప్ చిరునామా</translation>
-<translation id="1344588688991793829">Chromium స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="1348198688976932919">రాబోయే సైట్‌లో హానికరమైన యాప్‌లు ఉన్నాయి</translation>
 <translation id="1374468813861204354">సూచనలు</translation>
 <translation id="1375198122581997741">వెర్షన్ గురించి</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">స్వయంచాలకంగా బ్లాక్ చేయబడింది</translation>
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
-<translation id="3039538478787849737">కార్డ్‌ని Googleకు సేవ్ చేయాలా?</translation>
 <translation id="3041612393474885105">సర్టిఫికెట్ సమాచారం</translation>
 <translation id="3063697135517575841">Chrome ప్రస్తుతం మీ కార్డ్‌ను నిర్ధారించలేకపోయింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3064966200440839136">బాహ్య అనువర్తనం ద్వారా చెల్లించడానికి అజ్ఞాత మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
@@ -666,6 +663,7 @@
 <translation id="5989320800837274978">స్థిర ప్రాక్సీ సర్వర్‌లు లేదా ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడలేదు.</translation>
 <translation id="5990559369517809815">సర్వర్‌కు అభ్యర్థనలను ఒక పొడిగింపు బ్లాక్ చేయబడ్డాయి.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మోసపూరిత యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు, ఇవి వేరే వాటిలా కనిపించవచ్చు లేదా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించబడే డేటాని సేకరించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (సమకాలీకరించబడ్డాయి)</translation>
@@ -1010,6 +1008,7 @@
 <translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
 <translation id="8971063699422889582">సర్వర్ యొక్క ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="8978053250194585037">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />ఫిషింగ్‌ని గుర్తించింది<ph name="END_LINK" />. ఫిషింగ్ సైట్‌లు వేరే వెబ్‌సైట్‌ల వలె ప్రవర్తించడం ద్వారా మిమ్మల్ని మాయ చేయవచ్చు.</translation>
+<translation id="8987927404178983737">నెల</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">ఈ సైట్ హానికర ప్రోగ్రామ్‌లను కలిగి ఉంది</translation>
 <translation id="8997023839087525404">సర్వర్ ప్రమాణపత్ర పారదర్శకత విధానాన్ని ఉపయోగించి పబ్లిక్‌గా బహిరంగపరచబడని ప్రమాణపత్రాన్ని అందించింది. కొన్ని ప్రమాణపత్రాలకు, అవి విశ్వసనీయమైనవని మరియు దాడి చేసేవారి నుండి రక్షణ కల్పించగలవని నిర్ధారించడానికి, ఇది ఆవశ్యకం.</translation>

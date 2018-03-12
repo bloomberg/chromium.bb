@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Pakket is ongeldig: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Camera aan achterzijde</translation>
 <translation id="1196338895211115272">Exporteren van persoonlijke sleutel is mislukt.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">O nee! Kan geen willekeurige persoonlijke RSA-sleutel genereren.</translation>
 <translation id="1445572445564823378"><ph name="PRODUCT_NAME" /> wordt door deze extensie vertraagd. Schakel de extensie uit om de prestaties van <ph name="PRODUCT_NAME" /> te verbeteren.</translation>
 <translation id="1468038450257740950">WebGL wordt niet ondersteund.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Kan bestand '<ph name="RELATIVE_PATH" />' niet laden voor inhoudsscript. Het bestand bevat geen UTF-8-codering.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (extensie-ID '<ph name="EXTENSION_ID" />') is geblokkeerd door de beheerder. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Kan pakket niet installeren: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Zip File Installer</translation>
 <translation id="3115238746683532089">Onbekend product <ph name="PRODUCT_ID" /> van leverancier <ph name="VENDOR_ID" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Vervangen van crx-bestand is mislukt. Controleer of het bestand wordt gebruikt.</translation>
 <translation id="3163201441334626963">Onbekend product <ph name="PRODUCT_ID" /> van leverancier <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifestbestand ontbreekt of is onleesbaar</translation>
 <translation id="8636666366616799973">Pakket is ongeldig. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Deze extensie heeft een netwerkverzoek niet kunnen omleiden naar <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> omdat een andere extensie (<ph name="EXTENSION_NAME" />) het verzoek heeft omgeleid naar <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> vraagt om toegang tot een van je apparaten:</translation>
 <translation id="8825366169884721447">Deze extensie heeft de koptekst voor het verzoek '<ph name="HEADER_NAME" />' van een netwerkverzoek niet kunnen aanpassen, omdat de aanpassing zorgde voor een conflict met een andere extensie (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Er bestaat al een persoonlijke sleutel voor de opgegeven extensie. Gebruik die sleutel opnieuw of verwijder deze eerst.</translation>
