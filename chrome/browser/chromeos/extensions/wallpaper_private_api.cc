@@ -267,8 +267,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 
   bool show_backdrop_wallpapers = false;
 #if defined(GOOGLE_CHROME_BUILD)
-  show_backdrop_wallpapers = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kNewWallpaperPicker);
+  show_backdrop_wallpapers = IsUsingNewWallpaperPicker();
 #endif
   dict->SetBoolean("showBackdropWallpapers", show_backdrop_wallpapers);
 
@@ -406,11 +405,8 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
-  bool update_wallpaper =
-      account_id_ ==
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   WallpaperControllerClient::Get()->SetOnlineWallpaper(
-      account_id_, image, params->url, layout, update_wallpaper);
+      account_id_, image, params->url, layout, params->preview_mode);
   SetResult(std::make_unique<base::Value>(true));
   SendResponse(true);
 }
@@ -492,11 +488,8 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
-  bool update_wallpaper =
-      account_id_ ==
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   WallpaperControllerClient::Get()->SetOnlineWallpaper(
-      account_id_, *image.get(), params->url, layout, update_wallpaper);
+      account_id_, *image.get(), params->url, layout, params->preview_mode);
   SendResponse(true);
 }
 

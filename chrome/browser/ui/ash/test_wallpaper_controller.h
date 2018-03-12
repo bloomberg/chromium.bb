@@ -47,7 +47,7 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                           const SkBitmap& image,
                           const std::string& url,
                           wallpaper::WallpaperLayout layout,
-                          bool show_wallpaper) override;
+                          bool preview_mode) override;
   void SetDefaultWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;

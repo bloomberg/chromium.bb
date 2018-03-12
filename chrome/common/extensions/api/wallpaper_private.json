@@ -105,6 +105,11 @@
             "$ref": "wallpaper.WallpaperLayout"
           },
           {
+            "type": "boolean",
+            "name": "previewMode",
+            "description": "If preview mode is desired."
+          },
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
@@ -133,6 +138,11 @@
           {
             "type": "string",
             "name": "url"
+          },
+          {
+            "type": "boolean",
+            "name": "previewMode",
+            "description": "If preview mode is desired."
           },
           {
             "type": "function",

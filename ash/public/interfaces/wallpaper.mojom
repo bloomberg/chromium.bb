@@ -83,13 +83,14 @@ interface WallpaperController {
   // |url|: The url corresponding to this wallpaper. Used as a placeholder for
   //        the location in WallpaperInfo.
   // |layout|: The layout of the wallpaper, used for wallpaper resizing.
-  // |show_wallpaper|: If false, don't show the new wallpaper now but only
-  //                   update cache.
+  // |preview_mode|: If true, show the wallpaper immediately but doesn't change
+  //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
+  //                 called.
   SetOnlineWallpaper(WallpaperUserInfo user_info,
                      skia.mojom.Bitmap image,
                      string url,
                      WallpaperLayout layout,
-                     bool show_wallpaper);
+                     bool preview_mode);
 
   // Sets the user's wallpaper to be the default wallpaper. Note: different user
   // types may have different default wallpapers.

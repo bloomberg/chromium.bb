@@ -365,7 +365,7 @@ class ASH_EXPORT WallpaperController
                           const SkBitmap& image,
                           const std::string& url,
                           wallpaper::WallpaperLayout layout,
-                          bool show_wallpaper) override;
+                          bool preview_mode) override;
   void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
@@ -454,6 +454,14 @@ class ASH_EXPORT WallpaperController
   // custom wallpapers and directories.
   void RemoveUserWallpaperImpl(const AccountId& account_id,
                                const std::string& wallpaper_files_id);
+
+  // Implementation of |SetOnlineWallpaper|. Shows the wallpaper on screen if
+  // |show_wallpaper| is true.
+  void SetOnlineWallpaperImpl(const gfx::ImageSkia& image,
+                              const std::string& url,
+                              const wallpaper::WallpaperLayout& layout,
+                              mojom::WallpaperUserInfoPtr user_info,
+                              bool show_wallpaper);
 
   // Decodes |account_id|'s wallpaper. Shows the decoded wallpaper if
   // |show_wallpaper| is true.

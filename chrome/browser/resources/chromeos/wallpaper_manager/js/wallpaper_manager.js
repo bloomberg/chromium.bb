@@ -847,11 +847,21 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
 
   var wallpaperUrl = selectedItem.baseURL + str('highResolutionSuffix');
   var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
+  var previewMode = this.useNewWallpaperPicker_;
 
   chrome.wallpaperPrivate.setWallpaperIfExists(
-      wallpaperUrl, selectedItem.layout, exists => {
+      wallpaperUrl, selectedItem.layout, previewMode, exists => {
+        var successCallback = () => {
+          if (previewMode) {
+            this.onPreviewModeStarted_(this.onWallpaperChanged_.bind(
+                this, selectedItem, wallpaperUrl));
+          } else {
+            this.onWallpaperChanged_(selectedItem, wallpaperUrl);
+          }
+        };
+
         if (exists) {
-          this.onWallpaperChanged_(selectedItem, wallpaperUrl);
+          successCallback();
           return;
         }
 
@@ -863,7 +873,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
             xhr => {
               var image = xhr.response;
               chrome.wallpaperPrivate.setWallpaper(
-                  image, selectedItem.layout, wallpaperUrl, () => {
+                  image, selectedItem.layout, wallpaperUrl, previewMode, () => {
                     this.progressManager_.hideProgressBar(selectedGridItem);
 
                     if (chrome.runtime.lastError != undefined &&
@@ -871,7 +881,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
                             str('canceledWallpaper')) {
                       this.showError_(chrome.runtime.lastError.message);
                     } else {
-                      this.onWallpaperChanged_(selectedItem, wallpaperUrl);
+                      successCallback();
                     }
                   });
               this.wallpaperRequest_ = null;

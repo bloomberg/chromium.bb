@@ -40,7 +40,8 @@ chrome.test.getConfig(function(config) {
         if (requestStatus === 200) {
           wallpaperJpeg = response;
           chrome.wallpaperPrivate.setWallpaper(
-              wallpaperJpeg, 'CENTER_CROPPED', url, pass());
+              wallpaperJpeg, 'CENTER_CROPPED', url, false /*previewMode=*/,
+              pass());
         } else {
           chrome.test.fail('Failed to load test.jpg from local server.');
         }
@@ -98,13 +99,21 @@ chrome.test.getConfig(function(config) {
       var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
-      chrome.wallpaperPrivate.setWallpaperIfExists(url, 'CENTER_CROPPED',
-                                                   pass(function(exists) {
-        chrome.test.assertTrue(exists);
-        chrome.wallpaperPrivate.setWallpaperIfExists(
-            'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
-            fail('Failed to set wallpaper test1.jpg from file system.'));
-      }));
+      chrome.wallpaperPrivate.setWallpaperIfExists(
+          url, 'CENTER_CROPPED', false /*previewMode=*/, pass(function(exists) {
+            chrome.test.assertTrue(exists);
+            // Attempt to set wallpaper from a non-existent file should fail.
+            chrome.wallpaperPrivate.setWallpaperIfExists(
+                'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
+                false /*previewMode=*/,
+                fail('Failed to set wallpaper test1.jpg from file system.'));
+            // Attempt to preview wallpaper from a non-existent file should
+            // also fail.
+            chrome.wallpaperPrivate.setWallpaperIfExists(
+                'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
+                true /*previewMode=*/,
+                fail('Failed to set wallpaper test1.jpg from file system.'));
+          }));
     },
     function getAndSetThumbnail() {
       var url = "http://a.com:PORT/extensions/api_test" +
@@ -134,16 +143,16 @@ chrome.test.getConfig(function(config) {
         chrome.test.assertEq('test.jpg', list[0]);
         // Saves the same wallpaper to wallpaper directory but name it as
         // test1.jpg.
-        chrome.wallpaperPrivate.setWallpaper(wallpaperJpeg,
-                                             'CENTER_CROPPED',
-                                             'http://dummyurl/test1.jpg',
-                                             pass(function() {
-          chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
-            list = list.sort();
-            chrome.test.assertEq('test.jpg', list[0]);
-            chrome.test.assertEq('test1.jpg', list[1]);
-          }));
-        }));
+        chrome.wallpaperPrivate.setWallpaper(
+            wallpaperJpeg, 'CENTER_CROPPED', 'http://dummyurl/test1.jpg',
+            false /*previewMode=*/, pass(function() {
+              chrome.wallpaperPrivate.getOfflineWallpaperList(
+                  pass(function(list) {
+                    list = list.sort();
+                    chrome.test.assertEq('test.jpg', list[0]);
+                    chrome.test.assertEq('test1.jpg', list[1]);
+                  }));
+            }));
       }));
     }
   ]);

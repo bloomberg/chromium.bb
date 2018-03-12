@@ -365,29 +365,30 @@ WallpaperUtil.fetchURL = function(url, type, onSuccess, onFailure, opt_xhr) {
 };
 
 /**
- * Sets wallpaper to online wallpaper specified by url and layout
+ * A convenience wrapper for setting online wallpapers with preview disabled.
  * @param {string} url The url address where we should fetch resources.
  * @param {string} layout The layout of online wallpaper.
  * @param {function} onSuccess The success callback.
  * @param {function} onFailure The failure callback.
  */
-WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
-  var self = this;
-  chrome.wallpaperPrivate.setWallpaperIfExists(url, layout, function(exists) {
-    if (exists) {
-      onSuccess();
-      return;
-    }
+WallpaperUtil.setOnlineWallpaperWithoutPreview = function(
+    url, layout, onSuccess, onFailure) {
+  chrome.wallpaperPrivate.setWallpaperIfExists(
+      url, layout, false /*previewMode=*/, exists => {
+        if (exists) {
+          onSuccess();
+          return;
+        }
 
-    self.fetchURL(url, 'arraybuffer', function(xhr) {
-      if (xhr.response != null) {
-        chrome.wallpaperPrivate.setWallpaper(
-            xhr.response, layout, url, onSuccess);
-      } else {
-        onFailure();
-      }
-    }, onFailure);
-  });
+        this.fetchURL(url, 'arraybuffer', xhr => {
+          if (xhr.response != null) {
+            chrome.wallpaperPrivate.setWallpaper(
+                xhr.response, layout, url, false /*previewMode=*/, onSuccess);
+          } else {
+            onFailure();
+          }
+        }, onFailure);
+      });
 };
 
 /**
