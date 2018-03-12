@@ -7,7 +7,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
 
 @protocol ActivityServicePositioner;
@@ -17,7 +16,6 @@
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
 // split between primary and secondary.
 @protocol PrimaryToolbarCoordinator<FakeboxFocuser,
-                                    SideSwipeToolbarInteracting,
                                     SideSwipeToolbarSnapshotProviding>
 
 @property(nonatomic, strong, readonly) UIViewController* viewController;

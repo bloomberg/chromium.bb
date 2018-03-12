@@ -15,6 +15,8 @@
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 
+- (UIViewController*)viewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_TOOLBAR_COORDINATEE_H_

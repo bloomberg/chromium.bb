@@ -10,10 +10,8 @@
 // Protocol used by SideSwipe to interact with the toolbar.
 @protocol SideSwipeToolbarInteracting
 
-// Returns the toolbar view.
-- (UIView*)toolbarView;
-// Returns whether a swipe on the toolbar can start.
-- (BOOL)canBeginToolbarSwipe;
+// Returns whether the |point| is inside a toolbar's frame.
+- (BOOL)isInsideToolbar:(CGPoint)point;
 
 @end
 
