@@ -46,7 +46,13 @@ class VariationsCrashKeysTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(VariationsCrashKeysTest, BasicFunctionality) {
+// TODO(crbug.com/821162): Test fails on device. Re-enable after fixing.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BasicFunctionality BasicFunctionality
+#else
+#define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
+#endif
+TEST_F(VariationsCrashKeysTest, MAYBE_BasicFunctionality) {
   SyntheticTrialRegistry registry;
   registry.AddSyntheticTrialObserver(
       SyntheticTrialsActiveGroupIdProvider::GetInstance());
