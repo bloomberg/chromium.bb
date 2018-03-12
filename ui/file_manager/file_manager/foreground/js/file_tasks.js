@@ -374,8 +374,7 @@ FileTasks.recordViewingRootTypeUMA_ = function(rootType) {
 FileTasks.recordZipHandlerUMA_ = function(taskId) {
   if (FileTasks.UMA_ZIP_HANDLER_TASK_IDS_.indexOf(taskId) != -1) {
     metrics.recordEnum(
-        'FileManagerZipHandlerType', taskId,
-        FileTasks.UMA_ZIP_HANDLER_TASK_IDS_);
+        'ZipFileTask', taskId, FileTasks.UMA_ZIP_HANDLER_TASK_IDS_);
   }
 };
 
