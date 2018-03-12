@@ -33,6 +33,10 @@ public class ServiceWorkerClientAdapter extends AwServiceWorkerClient {
     public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
         WebResourceResponse response =
                 mServiceWorkerClient.shouldInterceptRequest(new WebResourceRequestAdapter(request));
+        return fromWebResourceResponse(response);
+    }
+
+    public static AwWebResourceResponse fromWebResourceResponse(WebResourceResponse response) {
         if (response == null) return null;
 
         // AwWebResourceResponse should support null headers. b/16332774.

@@ -14,7 +14,6 @@ import android.os.Process;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
-import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
 import android.webkit.WebStorage;
 import android.webkit.WebViewDatabase;
@@ -30,6 +29,7 @@ import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
+import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
@@ -66,7 +66,7 @@ public class WebViewChromiumAwInit {
     private WebIconDatabaseAdapter mWebIconDatabase;
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
-    private Object mServiceWorkerController;
+    private AwServiceWorkerController mServiceWorkerController;
     private AwTracingController mAwTracingController;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
@@ -173,10 +173,7 @@ public class WebViewChromiumAwInit {
                 mFactory, awBrowserContext.getGeolocationPermissions());
         mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
         mAwTracingController = awBrowserContext.getTracingController();
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            mServiceWorkerController = new ServiceWorkerControllerAdapter(
-                    awBrowserContext.getServiceWorkerController());
-        }
+        mServiceWorkerController = awBrowserContext.getServiceWorkerController();
 
         mFactory.getRunQueue().drainQueue();
 
@@ -324,13 +321,13 @@ public class WebViewChromiumAwInit {
         return mCookieManager;
     }
 
-    public ServiceWorkerController getServiceWorkerController() {
+    public AwServiceWorkerController getServiceWorkerController() {
         synchronized (mLock) {
             if (mServiceWorkerController == null) {
                 ensureChromiumStartedLocked(true);
             }
         }
-        return (ServiceWorkerController) mServiceWorkerController;
+        return mServiceWorkerController;
     }
 
     public TokenBindingService getTokenBindingService() {
