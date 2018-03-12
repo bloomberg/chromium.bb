@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -29,11 +30,11 @@ namespace internal {
 class ScopedU2fDiscoveryFactory;
 }
 
-class U2fDiscovery {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
  public:
-  class Observer {
+  class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
    public:
-    virtual ~Observer() = default;
+    virtual ~Observer();
     virtual void DiscoveryStarted(U2fDiscovery* discovery, bool success) = 0;
     virtual void DiscoveryStopped(U2fDiscovery* discovery, bool success) = 0;
     virtual void DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) = 0;
@@ -96,7 +97,7 @@ namespace internal {
 // While there is a subclass instance in scope, calls to the factory method will
 // be hijacked such that the derived class's CreateU2fDiscovery method will be
 // invoked instead.
-class ScopedU2fDiscoveryFactory {
+class COMPONENT_EXPORT(DEVICE_FIDO) ScopedU2fDiscoveryFactory {
  public:
   ScopedU2fDiscoveryFactory();
   ~ScopedU2fDiscoveryFactory();

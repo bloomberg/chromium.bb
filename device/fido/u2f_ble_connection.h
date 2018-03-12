@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -40,7 +41,8 @@ class BluetoothRemoteGattService;
 //
 // TODO(crbug.com/763303): Add support for pairing from within this class and
 // provide users with an option to manually specify a PIN code.
-class U2fBleConnection : public BluetoothAdapter::Observer {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleConnection
+    : public BluetoothAdapter::Observer {
  public:
   enum class ServiceRevision {
     VERSION_1_0,

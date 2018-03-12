@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
 #include "url/gurl.h"
@@ -19,7 +20,7 @@ namespace device {
 // display image url, and an optional user display name as specified by the CTAP
 // spec. Used as required parameter type for AuthenticatorMakeCredential
 // request.
-class PublicKeyCredentialUserEntity {
+class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
  public:
   static base::Optional<PublicKeyCredentialUserEntity> CreateFromCBORValue(
       const cbor::CBORValue& cbor);

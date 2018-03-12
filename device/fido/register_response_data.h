@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -20,7 +21,7 @@ namespace device {
 class AttestationObject;
 
 // See figure 2: https://goo.gl/rsgvXk
-class RegisterResponseData : public ResponseData {
+class COMPONENT_EXPORT(DEVICE_FIDO) RegisterResponseData : public ResponseData {
  public:
   static base::Optional<RegisterResponseData> CreateFromU2fRegisterResponse(
       const std::vector<uint8_t>& relying_party_id_hash,

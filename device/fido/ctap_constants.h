@@ -10,6 +10,8 @@
 #include <array>
 #include <vector>
 
+#include "base/component_export.h"
+
 namespace device {
 
 // CTAP protocol device response code, as specified in
@@ -164,21 +166,22 @@ enum class kCoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
 
 // String key values for CTAP request optional parameters and
 // AuthenticatorGetInfo response.
-extern const char kResidentKeyMapKey[];
-extern const char kUserVerificationMapKey[];
-extern const char kUserPresenceMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kResidentKeyMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserVerificationMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserPresenceMapKey[];
 
 // HID transport specific constants.
-extern const size_t kHidPacketSize;
-extern const uint32_t kHidBroadcastChannel;
-extern const size_t kHidInitPacketHeaderSize;
-extern const size_t kHidContinuationPacketHeader;
-extern const size_t kHidMaxPacketSize;
-extern const size_t kHidInitPacketDataSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidPacketSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint32_t kHidBroadcastChannel;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketHeaderSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidContinuationPacketHeader;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxPacketSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketDataSize;
+COMPONENT_EXPORT(DEVICE_FIDO)
 extern const size_t kHidContinuationPacketDataSize;
-extern const uint8_t kHidMaxLockSeconds;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kHidMaxLockSeconds;
 // Messages are limited to an initiation packet and 128 continuation packets.
-extern const size_t kHidMaxMessageSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxMessageSize;
 
 }  // namespace device
 

@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "device/fido/ctap_constants.h"
 
@@ -18,7 +19,7 @@ namespace device {
 // data, and attestation statement returned by the authenticator as a response
 // to MakeCredential request.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorMakeCredential
-class AuthenticatorMakeCredentialResponse {
+class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse {
  public:
   AuthenticatorMakeCredentialResponse(CtapDeviceResponseCode response_code,
                                       std::vector<uint8_t> attestation_object);
