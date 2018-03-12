@@ -14,8 +14,13 @@ function RegisterServiceWorker() {
 // Starts a Background Fetch request for a single to-be-downloaded file.
 function StartSingleFileDownload() {
   navigator.serviceWorker.ready.then(swRegistration => {
+    const options = {
+      // TODO(nator): Provide an icon here.
+      title: 'Single-file Background Fetch'
+    };
+
     return swRegistration.backgroundFetch.fetch(
-        kBackgroundFetchId, [ '/notifications/icon.png' ]);
+        kBackgroundFetchId, [ '/notifications/icon.png' ], options);
   }).then(bgFetchRegistration => {
     sendResultToTest('ok');
   }).catch(sendErrorToTest);

@@ -343,8 +343,7 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
         RequestCoordinatorFactory::GetForBrowserContext(browser_context);
     DCHECK(request_coordinator);
     offline_items_collection::OfflineContentAggregator* aggregator =
-        offline_items_collection::OfflineContentAggregatorFactory::
-            GetForBrowserContext(browser_context);
+        OfflineContentAggregatorFactory::GetForBrowserContext(browser_context);
     DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,

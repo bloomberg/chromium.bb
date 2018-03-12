@@ -8,7 +8,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -16,10 +18,20 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/logger.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "components/offline_items_collection/core/offline_content_provider.h"
+#include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/origin.h"
+
+using offline_items_collection::ContentId;
+using offline_items_collection::OfflineContentProvider;
+using offline_items_collection::OfflineItem;
+using offline_items_collection::OfflineItemFilter;
+using offline_items_collection::OfflineItemProgressUnit;
 
 namespace {
 
@@ -31,6 +43,9 @@ const char kBackgroundFetchClient[] = "BackgroundFetch";
 
 // Stringified values of request services made to the download service.
 const char kResultAccepted[] = "ACCEPTED";
+
+// Title of a Background Fetch started by StartSingleFileDownload().
+const char kSingleFileDownloadTitle[] = "Single-file Background Fetch";
 
 // Implementation of a download system logger that provides the ability to wait
 // for certain events to happen, notably added and progressing downloads.
@@ -61,7 +76,7 @@ class WaitableDownloadLoggerObserver : public download::Logger::Observer {
     if (client != kBackgroundFetchClient)
       return;  // this event is not targeted to us
 
-    if (result == kResultAccepted)
+    if (result == kResultAccepted && download_accepted_callback_)
       std::move(download_accepted_callback_).Run(guid);
   }
 
@@ -71,9 +86,41 @@ class WaitableDownloadLoggerObserver : public download::Logger::Observer {
   DISALLOW_COPY_AND_ASSIGN(WaitableDownloadLoggerObserver);
 };
 
+// Observes the offline item collection's content provider and then invokes the
+// associated test callbacks when one has been provided.
+class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
+ public:
+  using ItemsAddedCallback =
+      base::OnceCallback<void(const std::vector<OfflineItem>&)>;
+
+  OfflineContentProviderObserver() = default;
+  ~OfflineContentProviderObserver() final = default;
+
+  void set_items_added_callback(ItemsAddedCallback callback) {
+    items_added_callback_ = std::move(callback);
+  }
+
+  // OfflineContentProvider::Observer implementation:
+  void OnItemsAdded(
+      const OfflineContentProvider::OfflineItemList& items) override {
+    if (items_added_callback_)
+      std::move(items_added_callback_).Run(items);
+  }
+
+  void OnItemRemoved(const ContentId& id) override {}
+  void OnItemUpdated(const OfflineItem& item) override {}
+
+ private:
+  ItemsAddedCallback items_added_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(OfflineContentProviderObserver);
+};
+
 class BackgroundFetchBrowserTest : public InProcessBrowserTest {
  public:
-  BackgroundFetchBrowserTest() = default;
+  BackgroundFetchBrowserTest()
+      : offline_content_provider_observer_(
+            std::make_unique<OfflineContentProviderObserver>()) {}
   ~BackgroundFetchBrowserTest() override = default;
 
   // InProcessBrowserTest overrides:
@@ -89,11 +136,17 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
 
-    observer_ = std::make_unique<WaitableDownloadLoggerObserver>();
+    Profile* profile = browser()->profile();
 
-    download_service_ =
-        DownloadServiceFactory::GetForBrowserContext(browser()->profile());
-    download_service_->GetLogger()->AddObserver(observer_.get());
+    download_observer_ = std::make_unique<WaitableDownloadLoggerObserver>();
+
+    download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
+    download_service_->GetLogger()->AddObserver(download_observer_.get());
+
+    // Register our observer for the offline items collection.
+    OfflineContentAggregatorFactory::GetInstance()
+        ->GetForBrowserContext(profile)
+        ->AddObserver(offline_content_provider_observer_.get());
 
     // Load the helper page that helps drive these tests.
     ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(kHelperPage));
@@ -108,8 +161,44 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    download_service_->GetLogger()->RemoveObserver(observer_.get());
+    OfflineContentAggregatorFactory::GetInstance()
+        ->GetForBrowserContext(browser()->profile())
+        ->RemoveObserver(offline_content_provider_observer_.get());
+
+    download_service_->GetLogger()->RemoveObserver(download_observer_.get());
     download_service_ = nullptr;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Test execution functions.
+
+  // Runs the |script| and waits for one or more items to have been added to the
+  // offline items collection. Wrap in ASSERT_NO_FATAL_FAILURE().
+  void RunScriptAndWaitForOfflineItems(const std::string& script,
+                                       std::vector<OfflineItem>* items) {
+    DCHECK(items);
+
+    base::RunLoop run_loop;
+    offline_content_provider_observer_->set_items_added_callback(
+        base::BindOnce(&BackgroundFetchBrowserTest::DidAddItems,
+                       base::Unretained(this), run_loop.QuitClosure(), items));
+
+    std::string result;
+    ASSERT_NO_FATAL_FAILURE(RunScript(script, &result));
+    ASSERT_EQ("ok", result);
+
+    run_loop.Run();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helper functions.
+
+  // Helper function for getting the expected title given the |developer_title|.
+  std::string GetExpectedTitle(const char* developer_title) {
+    url::Origin origin = url::Origin::Create(https_server_->base_url());
+
+    return base::StringPrintf("%s (%s)", developer_title,
+                              origin.Serialize().c_str());
   }
 
   // Runs the |script| in the current tab and writes the output to |*result|.
@@ -139,22 +228,34 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
  protected:
   download::DownloadService* download_service_{nullptr};
-  std::unique_ptr<WaitableDownloadLoggerObserver> observer_;
+
+  std::unique_ptr<WaitableDownloadLoggerObserver> download_observer_;
+  std::unique_ptr<OfflineContentProviderObserver>
+      offline_content_provider_observer_;
 
  private:
+  // Callback for RunScriptAndWaitForOfflineItems(), called when the |items|
+  // have been added to the offline items collection.
+  void DidAddItems(base::OnceClosure quit_closure,
+                   std::vector<OfflineItem>* out_items,
+                   const std::vector<OfflineItem>& items) {
+    *out_items = items;
+    std::move(quit_closure).Run();
+  }
+
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadSingleFile) {
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // that request to be scheduled with the Download Service.
 
   std::string guid;
   {
     base::RunLoop run_loop;
-    observer_->set_download_accepted_callback(
+    download_observer_->set_download_accepted_callback(
         base::BindOnce(&BackgroundFetchBrowserTest::DidAcceptDownloadCallback,
                        base::Unretained(this), run_loop.QuitClosure(), &guid));
 
@@ -163,6 +264,36 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadSingleFile) {
   }
 
   EXPECT_FALSE(guid.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       OfflineItemCollection_SingleFileMetadata) {
+  // Starts a Background Fetch for a single to-be-downloaded file and waits for
+  // the fetch to be registered with the offline items collection. We then
+  // verify that all the appropriate values have been set.
+
+  std::vector<OfflineItem> items;
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptAndWaitForOfflineItems("StartSingleFileDownload()", &items));
+  ASSERT_EQ(items.size(), 1u);
+
+  const OfflineItem& offline_item = items[0];
+
+  // Verify that the appropriate data is being set.
+  EXPECT_EQ(offline_item.title, GetExpectedTitle(kSingleFileDownloadTitle));
+  EXPECT_EQ(offline_item.filter, OfflineItemFilter::FILTER_OTHER);
+  EXPECT_TRUE(offline_item.is_transient);
+  EXPECT_FALSE(offline_item.is_suggested);
+  EXPECT_FALSE(offline_item.is_off_the_record);
+
+  EXPECT_EQ(offline_item.progress.value, 0);
+  EXPECT_EQ(offline_item.progress.max, 1);
+  EXPECT_EQ(offline_item.progress.unit, OfflineItemProgressUnit::PERCENTAGE);
+
+  // Change-detector tests for values we might want to provide or change.
+  EXPECT_TRUE(offline_item.description.empty());
+  EXPECT_TRUE(offline_item.page_url.is_empty());
+  EXPECT_FALSE(offline_item.is_resumable);
 }
 
 }  // namespace

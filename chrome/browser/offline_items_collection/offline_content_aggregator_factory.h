@@ -19,6 +19,7 @@ class BrowserContext;
 
 namespace offline_items_collection {
 class OfflineContentAggregator;
+}  // namespace offline_items_collection
 
 // This class is the main access point for an OfflineContentAggregator.  It is
 // responsible for building the OfflineContentAggregator and associating it with
@@ -48,7 +49,5 @@ class OfflineContentAggregatorFactory
 
   DISALLOW_COPY_AND_ASSIGN(OfflineContentAggregatorFactory);
 };
-
-}  // namespace offline_items_collection
 
 #endif  // CHROME_BROWSER_OFFLINE_ITEMS_COLLECTION_OFFLINE_CONTENT_AGGREGATOR_FACTORY_H_
