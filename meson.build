@@ -186,12 +186,11 @@ else
   dep_rt = []
 endif
 dep_m = cc.find_library('m', required : false)
-if cc.compiles('#include <sys/sysctl.h>', name : 'sys/sysctl.h works')
-  config.set10('HAVE_SYS_SYSCTL_H', true)
-endif
-if cc.compiles('#include <sys/select.h>', name : 'sys/select.h works')
-  config.set10('HAVE_SYS_SELECT_H', true)
-endif
+foreach header : ['sys/sysctl.h', 'sys/select.h']
+  if cc.compiles('#include <@0@>'.format(header), name : '@0@ works'.format(header))
+    config.set10('HAVE_' + header.underscorify().to_upper(), true)
+  endif
+endforeach
 if cc.has_header_symbol('sys/sysmacros.h', 'major')
   config.set10('MAJOR_IN_SYSMACROS', true)
 elif cc.has_header_symbol('sys/mkdev.h', 'major')
