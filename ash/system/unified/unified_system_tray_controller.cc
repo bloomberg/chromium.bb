@@ -10,6 +10,8 @@
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
+#include "ash/system/network/network_feature_pod_controller.h"
+#include "ash/system/network/tray_network.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray.h"
@@ -63,6 +65,16 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   // TODO(tetsui): Implement.
 }
 
+void UnifiedSystemTrayController::ShowNetworkDetailedView() {
+  // TODO(tetsui): Implement UnifiedSystemTray's Network detailed view.
+
+  // Initially create default view to set |default_bubble_height_|.
+  system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
+                                true /* show_by_click */);
+  system_tray_->ShowDetailedView(system_tray_->GetTrayNetwork(), 0,
+                                 BubbleCreationType::BUBBLE_USE_EXISTING);
+}
+
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
   // TODO(tetsui): Implement UnifiedSystemTray's Bluetooth detailed view.
 
@@ -74,15 +86,14 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
 }
 
 void UnifiedSystemTrayController::InitFeaturePods() {
+  AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
 
   // If you want to add a new feature pod item, add here.
-
-  // TODO(tetsui): Add more feature pod items in spec:
-  // * NetworkFeaturePodController
+  // TODO(tetsui): Add more feature pod items in spec.
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(
