@@ -108,6 +108,7 @@ fuzzer_test("signed_exchange_header_parser_fuzzer") {
   ]
   deps = [
     ":fuzzer_support",
+    "//base:i18n",
     "//content/browser:for_content_tests",
   ]
   seed_corpus =
