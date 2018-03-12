@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 392x19
-          text run at (0,0) width 392: "Movie with no audio track. The volume button should not render."
+        LayoutText {#text} at (0,0) size 413x19
+          text run at (0,0) width 413: "Movie with no audio track. The volume button should not render."
       LayoutBlockFlow (anonymous) at (0,36) size 784x288
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,44) size 352x288
@@ -26,9 +26,17 @@ layer at (8,300) size 352x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (4,0) size 30x32
         LayoutText {#text} at (0,8) size 30x15
           text run at (0,8) width 30: "/ 0:09"
-    LayoutSlider {INPUT} at (108,15) size 194x2
-      LayoutFlexibleBox {DIV} at (0,0) size 194x2
-        LayoutBlockFlow {DIV} at (-18,-23) size 230x48
-          LayoutBlockFlow {DIV} at (0,0) size 36x48
+    LayoutSlider {INPUT} at (108,2) size 194x28
+      LayoutFlexibleBox {DIV} at (0,14) size 194x0
 layer at (328,300) size 32x32
   LayoutButton {INPUT} at (320,0) size 32x32
+layer at (98,316) size 230x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-18,0) size 230x0
+layer at (116,315) size 194x2
+  LayoutBlockFlow (positioned) {DIV} at (18,-1) size 194x2 [bgcolor=#DADADA]
+layer at (116,315) size 194x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 194x2 [bgcolor=#5A5A5A]
+layer at (116,315) size 0x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#4285F4]
+layer at (98,292) size 36x48 backgroundClip at (8,300) size 352x32 clip at (8,300) size 352x32
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (0,-24) size 36x48
