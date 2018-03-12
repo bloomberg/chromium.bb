@@ -14,6 +14,7 @@
 #include <string>
 #include <tuple>
 
+#include "base/strings/string_piece.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 
@@ -95,10 +96,7 @@ class NET_EXPORT ProxyServer {
   //   "quic://foopy:17"  {scheme=QUIC, host="foopy", port=17}
   //   "direct://"        {scheme=DIRECT}
   //   "foopy:X"          INVALID -- bad port.
-  static ProxyServer FromURI(const std::string& uri, Scheme default_scheme);
-  static ProxyServer FromURI(std::string::const_iterator uri_begin,
-                             std::string::const_iterator uri_end,
-                             Scheme default_scheme);
+  static ProxyServer FromURI(base::StringPiece uri, Scheme default_scheme);
 
   // Formats as a URI string. This does the reverse of FromURI.
   std::string ToURI() const;
@@ -117,9 +115,7 @@ class NET_EXPORT ProxyServer {
   //   "HTTPS foopy:123"  {scheme=HTTPS, host="foopy", port=123}
   //   "QUIC foopy:123"   {scheme=QUIC, host="foopy", port=123}
   //   "BLAH xxx:xx"      INVALID
-  static ProxyServer FromPacString(const std::string& pac_string);
-  static ProxyServer FromPacString(std::string::const_iterator pac_string_begin,
-                                   std::string::const_iterator pac_string_end);
+  static ProxyServer FromPacString(base::StringPiece pac_string);
 
   // Returns a ProxyServer representing DIRECT connections.
   static ProxyServer Direct() {
@@ -170,10 +166,8 @@ class NET_EXPORT ProxyServer {
  private:
   // Creates a ProxyServer given a scheme, and host/port string. If parsing the
   // host/port string fails, the returned instance will be invalid.
-  static ProxyServer FromSchemeHostAndPort(
-      Scheme scheme,
-      std::string::const_iterator host_and_port_begin,
-      std::string::const_iterator host_and_port_end);
+  static ProxyServer FromSchemeHostAndPort(Scheme scheme,
+                                           base::StringPiece host_and_port);
 
   Scheme scheme_ = SCHEME_INVALID;
   HostPortPair host_port_pair_;

@@ -98,12 +98,7 @@ NET_EXPORT bool GetValueForKeyInQuery(const GURL& url,
 //   [::1]:90 and [::1]
 //
 // The resultant |*host| in both cases will be "::1" (not bracketed).
-NET_EXPORT bool ParseHostAndPort(
-    std::string::const_iterator host_and_port_begin,
-    std::string::const_iterator host_and_port_end,
-    std::string* host,
-    int* port);
-NET_EXPORT bool ParseHostAndPort(const std::string& host_and_port,
+NET_EXPORT bool ParseHostAndPort(base::StringPiece input,
                                  std::string* host,
                                  int* port);
 

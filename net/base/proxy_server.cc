@@ -96,33 +96,23 @@ const HostPortPair& ProxyServer::host_port_pair() const {
 }
 
 // static
-ProxyServer ProxyServer::FromURI(const std::string& uri,
-                                 Scheme default_scheme) {
-  return FromURI(uri.begin(), uri.end(), default_scheme);
-}
-
-// static
-ProxyServer ProxyServer::FromURI(std::string::const_iterator begin,
-                                 std::string::const_iterator end,
-                                 Scheme default_scheme) {
+ProxyServer ProxyServer::FromURI(base::StringPiece uri, Scheme default_scheme) {
   // We will default to |default_scheme| if no scheme specifier was given.
   Scheme scheme = default_scheme;
 
   // Trim the leading/trailing whitespace.
-  HttpUtil::TrimLWS(&begin, &end);
+  uri = HttpUtil::TrimLWS(uri);
 
   // Check for [<scheme> "://"]
-  std::string::const_iterator colon = std::find(begin, end, ':');
-  if (colon != end &&
-      (end - colon) >= 3 &&
-      *(colon + 1) == '/' &&
-      *(colon + 2) == '/') {
-    scheme = GetSchemeFromURIInternal(base::StringPiece(begin, colon));
-    begin = colon + 3;  // Skip past the "://"
+  size_t colon = uri.find(':');
+  if (colon != base::StringPiece::npos && uri.size() - colon >= 3 &&
+      uri[colon + 1] == '/' && uri[colon + 2] == '/') {
+    scheme = GetSchemeFromURIInternal(uri.substr(0, colon));
+    uri = uri.substr(colon + 3);  // Skip past the "://"
   }
 
   // Now parse the <host>[":"<port>].
-  return FromSchemeHostAndPort(scheme, begin, end);
+  return FromSchemeHostAndPort(scheme, uri);
 }
 
 std::string ProxyServer::ToURI() const {
@@ -148,33 +138,27 @@ std::string ProxyServer::ToURI() const {
 }
 
 // static
-ProxyServer ProxyServer::FromPacString(const std::string& pac_string) {
-  return FromPacString(pac_string.begin(), pac_string.end());
-}
-
-// static
-ProxyServer ProxyServer::FromPacString(std::string::const_iterator begin,
-                                       std::string::const_iterator end) {
+ProxyServer ProxyServer::FromPacString(base::StringPiece pac_string) {
   // Trim the leading/trailing whitespace.
-  HttpUtil::TrimLWS(&begin, &end);
+  pac_string = HttpUtil::TrimLWS(pac_string);
 
   // Input should match:
   // "DIRECT" | ( <type> 1*(LWS) <host-and-port> )
 
   // Start by finding the first space (if any).
-  std::string::const_iterator space;
-  for (space = begin; space != end; ++space) {
-    if (HttpUtil::IsLWS(*space)) {
+  size_t space = 0;
+  for (; space < pac_string.size(); space++) {
+    if (HttpUtil::IsLWS(pac_string[space])) {
       break;
     }
   }
 
   // Everything to the left of the space is the scheme.
-  Scheme scheme = GetSchemeFromPacTypeInternal(base::StringPiece(begin, space));
+  Scheme scheme = GetSchemeFromPacTypeInternal(pac_string.substr(0, space));
 
   // And everything to the right of the space is the
   // <host>[":" <port>].
-  return FromSchemeHostAndPort(scheme, space, end);
+  return FromSchemeHostAndPort(scheme, pac_string.substr(space));
 }
 
 std::string ProxyServer::ToPacString() const {
@@ -229,13 +213,11 @@ size_t ProxyServer::EstimateMemoryUsage() const {
 // static
 ProxyServer ProxyServer::FromSchemeHostAndPort(
     Scheme scheme,
-    std::string::const_iterator begin,
-    std::string::const_iterator end) {
-
+    base::StringPiece host_and_port) {
   // Trim leading/trailing space.
-  HttpUtil::TrimLWS(&begin, &end);
+  host_and_port = HttpUtil::TrimLWS(host_and_port);
 
-  if (scheme == SCHEME_DIRECT && begin != end)
+  if (scheme == SCHEME_DIRECT && !host_and_port.empty())
     return ProxyServer();  // Invalid -- DIRECT cannot have a host/port.
 
   HostPortPair host_port_pair;
@@ -244,7 +226,7 @@ ProxyServer ProxyServer::FromSchemeHostAndPort(
     std::string host;
     int port = -1;
     // If the scheme has a host/port, parse it.
-    bool ok = ParseHostAndPort(begin, end, &host, &port);
+    bool ok = ParseHostAndPort(host_and_port, &host, &port);
     if (!ok)
       return ProxyServer();  // Invalid -- failed parsing <host>[":"<port>]
 
