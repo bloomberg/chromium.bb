@@ -507,7 +507,7 @@ void PaintOpReader::Read(SkMatrix* matrix) {
 }
 
 void PaintOpReader::Read(SkColorType* color_type) {
-  uint32_t raw_color_type;
+  uint32_t raw_color_type = kUnknown_SkColorType;
   ReadSimple(&raw_color_type);
 
   if (raw_color_type > kLastEnum_SkColorType) {
