@@ -1639,6 +1639,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
 
   return os.path.basename(debug_tarball)
 
+
 def GenerateUploadJSON(filepath, archive_path, uploaded):
   """Generate upload.json file given a set of filenames.
 
@@ -1649,6 +1650,9 @@ def GenerateUploadJSON(filepath, archive_path, uploaded):
     archive_path: location of files.
     uploaded: file with list of uploaded filepaths, relative to archive_path.
   """
+  utcnow = datetime.datetime.utcnow
+  start = utcnow()
+
   result = {}
   files = osutils.ReadFile(uploaded).splitlines()
   for f in files:
@@ -1660,6 +1664,8 @@ def GenerateUploadJSON(filepath, archive_path, uploaded):
     sha1, sha256 = filelib.ShaSums(path)
     result[f] = {'size': size, 'sha1': sha1, 'sha256': sha256}
   osutils.WriteFile(filepath, json.dumps(result, indent=2, sort_keys=True))
+  logging.info('GenerateUploadJSON completed in %s.', utcnow() - start)
+
 
 def GenerateHtmlIndex(index, files, title='Index', url_base=None):
   """Generate a simple index.html file given a set of filenames
