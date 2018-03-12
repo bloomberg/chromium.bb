@@ -13,8 +13,16 @@
 
 namespace ash {
 namespace tray {
+
 class BrightnessView;
-}
+
+// We don't let the screen brightness go lower than this when it's being
+// adjusted via the slider.  Otherwise, if the user doesn't know about the
+// brightness keys, they may turn the backlight off and not know how to turn it
+// back on.
+constexpr double kMinBrightnessPercent = 5.0;
+
+}  // namespace tray
 
 class ASH_EXPORT TrayBrightness
     : public SystemTrayItem,
@@ -48,6 +56,9 @@ class ASH_EXPORT TrayBrightness
       const power_manager::BacklightBrightnessChange& change) override;
 
   void HandleBrightnessChanged(double percent, bool user_initiated);
+
+  // Returns true if the bubble of UnifiedSystemTray is shown.
+  bool IsUnifiedBubbleShown() const;
 
   tray::BrightnessView* brightness_view_;
 

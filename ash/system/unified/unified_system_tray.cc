@@ -20,6 +20,10 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf) : TrayBackgroundView(shelf) {
 
 UnifiedSystemTray::~UnifiedSystemTray() = default;
 
+bool UnifiedSystemTray::IsBubbleShown() const {
+  return !!bubble_;
+}
+
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
   if (bubble_)
     CloseBubble();
