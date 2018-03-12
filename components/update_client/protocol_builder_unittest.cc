@@ -81,31 +81,31 @@ TEST(BuildProtocolRequest, BuildUpdateCheckExtraRequestHeaders) {
   auto config = base::MakeRefCounted<TestConfigurator>();
 
   auto headers = BuildUpdateCheckExtraRequestHeaders(config, {}, true);
-  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
-  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
-  EXPECT_EQ("", headers["X-GoogleUpdate-AppId"]);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-Goog-Update-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-Goog-Update-Interactivity"].c_str());
+  EXPECT_EQ("", headers["X-Goog-Update-AppId"]);
 
   headers = BuildUpdateCheckExtraRequestHeaders(config, {}, false);
-  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
-  EXPECT_STREQ("bg", headers["X-GoogleUpdate-Interactivity"].c_str());
-  EXPECT_EQ("", headers["X-GoogleUpdate-AppId"]);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-Goog-Update-Updater"].c_str());
+  EXPECT_STREQ("bg", headers["X-Goog-Update-Interactivity"].c_str());
+  EXPECT_EQ("", headers["X-Goog-Update-AppId"]);
 
   headers = BuildUpdateCheckExtraRequestHeaders(
       config, {"jebgalgnebhfojomionfpkfelancnnkf"}, true);
-  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
-  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-Goog-Update-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-Goog-Update-Interactivity"].c_str());
   EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf",
-               headers["X-GoogleUpdate-AppId"].c_str());
+               headers["X-Goog-Update-AppId"].c_str());
 
   headers = BuildUpdateCheckExtraRequestHeaders(
       config,
       {"jebgalgnebhfojomionfpkfelancnnkf", "ihfokbkgjpifbbojhneepfflplebdkc"},
       true);
-  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
-  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-Goog-Update-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-Goog-Update-Interactivity"].c_str());
   EXPECT_STREQ(
       "jebgalgnebhfojomionfpkfelancnnkf,ihfokbkgjpifbbojhneepfflplebdkc",
-      headers["X-GoogleUpdate-AppId"].c_str());
+      headers["X-Goog-Update-AppId"].c_str());
 
   headers = BuildUpdateCheckExtraRequestHeaders(
       config, std::vector<std::string>(40, "jebgalgnebhfojomionfpkfelancnnkf"),
@@ -114,7 +114,7 @@ TEST(BuildProtocolRequest, BuildUpdateCheckExtraRequestHeaders) {
       base::JoinString(
           std::vector<std::string>(30, "jebgalgnebhfojomionfpkfelancnnkf"), ",")
           .c_str(),
-      headers["X-GoogleUpdate-AppId"].c_str());
+      headers["X-Goog-Update-AppId"].c_str());
 }
 
 }  // namespace update_client

@@ -312,11 +312,11 @@ std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
           : std::vector<std::string>(ids.cbegin(),
                                      ids.cbegin() + maxExtensionCount);
   return std::map<std::string, std::string>{
-      {"X-GoogleUpdate-Updater",
+      {"X-Goog-Update-Updater",
        base::StringPrintf("%s-%s", config->GetProdId().c_str(),
                           config->GetBrowserVersion().GetString().c_str())},
-      {"X-GoogleUpdate-Interactivity", is_foreground ? "fg" : "bg"},
-      {"X-GoogleUpdate-AppId", base::JoinString(app_ids, ",")},
+      {"X-Goog-Update-Interactivity", is_foreground ? "fg" : "bg"},
+      {"X-Goog-Update-AppId", base::JoinString(app_ids, ",")},
   };
 }
 

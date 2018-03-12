@@ -144,7 +144,7 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
   const bool is_foreground = GetParam();
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      urls, {{"X-GoogleUpdate-Interactivity", is_foreground ? "fg" : "bg"}},
+      urls, {{"X-Goog-Update-Interactivity", is_foreground ? "fg" : "bg"}},
       "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
@@ -173,9 +173,9 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
   // Check the interactivity header value.
   const auto extra_request_headers =
       post_interceptor_1_->GetRequests()[0].second;
-  EXPECT_TRUE(extra_request_headers.HasHeader("X-GoogleUpdate-Interactivity"));
+  EXPECT_TRUE(extra_request_headers.HasHeader("X-Goog-Update-Interactivity"));
   std::string header;
-  extra_request_headers.GetHeader("X-GoogleUpdate-Interactivity", &header);
+  extra_request_headers.GetHeader("X-Goog-Update-Interactivity", &header);
   EXPECT_STREQ(is_foreground ? "fg" : "bg", header.c_str());
 
   interceptor_factory_ = nullptr;
