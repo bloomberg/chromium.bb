@@ -36,7 +36,11 @@ typedef struct position {
 #define MV_BORDER (16 << 3)  // Allow 16 pels in 1/8th pel units
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-static INLINE int get_relative_dist_b(int bits, int a, int b) {
+static INLINE int get_relative_dist(const AV1_COMMON *cm, int a, int b) {
+  if (!cm->seq_params.enable_order_hint) return 0;
+
+  const int bits = cm->seq_params.order_hint_bits_minus1 + 1;
+
   assert(bits >= 1);
   assert(a >= 0 && a < (1 << bits));
   assert(b >= 0 && b < (1 << bits));
@@ -45,13 +49,6 @@ static INLINE int get_relative_dist_b(int bits, int a, int b) {
   int m = 1 << (bits - 1);
   diff = (diff & (m - 1)) - (diff & m);
   return diff;
-}
-
-static INLINE int get_relative_dist(const AV1_COMMON *cm, int a, int b) {
-  return cm->seq_params.enable_order_hint
-             ? get_relative_dist_b(cm->seq_params.order_hint_bits_minus1 + 1, a,
-                                   b)
-             : 0;
 }
 #endif
 

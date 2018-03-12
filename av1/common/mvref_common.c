@@ -1704,10 +1704,11 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
 typedef struct {
   int map_idx;  // frame map index
   int buf_idx;  // frame buffer index
-  int offset;   // frame offset
 #if CONFIG_EXPLICIT_ORDER_HINT
-  int bits;  // number of bits used to store the offset
-#endif
+  int sort_idx;  // index based on the offset to be used for sorting
+#else
+  int offset;  // frame offset
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
 } REF_FRAME_INFO;
 
 static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
@@ -1715,25 +1716,8 @@ static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
   const REF_FRAME_INFO *info_b = (REF_FRAME_INFO *)arg_b;
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-  assert(info_a->bits == info_b->bits);
-  const int bits = info_a->bits;
-
-  assert(info_a->offset < INT_MAX);
-  assert(info_b->offset < INT_MAX);
-
-  // -1 is 'less than' all other values
-  if (info_a->offset == -1 && info_b->offset != -1) return -1;
-  if (info_a->offset != -1 && info_b->offset == -1) return 1;
-  if (info_a->offset == -1 && info_b->offset == -1)
-    return (info_a->map_idx < info_b->map_idx)
-               ? -1
-               : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
-
-  if (get_relative_dist_b(bits, info_a->offset, info_b->offset) < 0)
-    return -1;
-  else if (get_relative_dist_b(bits, info_a->offset, info_b->offset) > 0)
-    return 1;
-
+  if (info_a->sort_idx < info_b->sort_idx) return -1;
+  if (info_a->sort_idx > info_b->sort_idx) return 1;
   return (info_a->map_idx < info_b->map_idx)
              ? -1
              : ((info_a->map_idx > info_b->map_idx) ? 1 : 0);
@@ -1765,10 +1749,18 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
+#if CONFIG_EXPLICIT_ORDER_HINT
+  int lst_frame_sort_idx = -1;
+  int gld_frame_sort_idx = -1;
+#else
   int lst_frame_offset = -1;
   int gld_frame_offset = -1;
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
 
   const int cur_frame_offset = (int)cm->frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+  const int cur_frame_sort_idx = 1 << cm->seq_params.order_hint_bits_minus1;
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
 
   REF_FRAME_INFO ref_frame_info[REF_FRAMES];
   int ref_flag_list[INTER_REFS_PER_FRAME] = { 0, 0, 0, 0, 0, 0, 0 };
@@ -1777,9 +1769,10 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     const int map_idx = i;
 
     ref_frame_info[i].map_idx = map_idx;
-    ref_frame_info[i].offset = -1;
 #if CONFIG_EXPLICIT_ORDER_HINT
-    ref_frame_info[i].bits = cm->seq_params.order_hint_bits_minus1 + 1;
+    ref_frame_info[i].sort_idx = -1;
+#else
+    ref_frame_info[i].offset = -1;
 #endif
 
     const int buf_idx = cm->ref_frame_map[map_idx];
@@ -1790,17 +1783,27 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     if (frame_bufs[buf_idx].ref_count <= 0) continue;
 
     const int offset = (int)frame_bufs[buf_idx].cur_frame_offset;
+#if CONFIG_EXPLICIT_ORDER_HINT
+    ref_frame_info[i].sort_idx =
+        (offset == -1) ? -1
+                       : cur_frame_sort_idx +
+                             get_relative_dist(cm, offset, cur_frame_offset);
+    assert(ref_frame_info[i].sort_idx >= -1);
+
+    if (map_idx == lst_map_idx) lst_frame_sort_idx = ref_frame_info[i].sort_idx;
+    if (map_idx == gld_map_idx) gld_frame_sort_idx = ref_frame_info[i].sort_idx;
+#else   // CONFIG_EXPLICIT_ORDER_HINT
     ref_frame_info[i].offset = offset;
 
     if (map_idx == lst_map_idx) lst_frame_offset = offset;
     if (map_idx == gld_map_idx) gld_frame_offset = offset;
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
   }
 
     // Confirm both LAST_FRAME and GOLDEN_FRAME are valid forward reference
     // frames.
 #if CONFIG_EXPLICIT_ORDER_HINT
-  if (lst_frame_offset < 0 ||
-      get_relative_dist(cm, lst_frame_offset, cur_frame_offset) >= 0) {
+  if (lst_frame_sort_idx < 0 || lst_frame_sort_idx >= cur_frame_sort_idx) {
 #else
   if (lst_frame_offset < 0 || lst_frame_offset >= cur_frame_offset) {
 #endif
@@ -1808,8 +1811,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
                        "Inter frame requests a look-ahead frame as LAST");
   }
 #if CONFIG_EXPLICIT_ORDER_HINT
-  if (gld_frame_offset < 0 ||
-      get_relative_dist(cm, gld_frame_offset, cur_frame_offset) >= 0) {
+  if (gld_frame_sort_idx < 0 || gld_frame_sort_idx >= cur_frame_sort_idx) {
 #else
   if (gld_frame_offset < 0 || gld_frame_offset >= cur_frame_offset) {
 #endif
@@ -1827,16 +1829,17 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
   int fwd_start_idx = 0, fwd_end_idx = REF_FRAMES - 1;
 
   for (int i = 0; i < REF_FRAMES; i++) {
+#if CONFIG_EXPLICIT_ORDER_HINT
+    if (ref_frame_info[i].sort_idx == -1) {
+#else
     if (ref_frame_info[i].offset == -1) {
+#endif
       fwd_start_idx++;
       continue;
     }
 
 #if CONFIG_EXPLICIT_ORDER_HINT
-    // IMDAD: we're assuming here that cur_frame_offset >= 0 always. Is this the
-    // case?
-    if (get_relative_dist(cm, ref_frame_info[i].offset, cur_frame_offset) >=
-        0) {
+    if (ref_frame_info[i].sort_idx >= cur_frame_sort_idx) {
 #else
     if (ref_frame_info[i].offset >= cur_frame_offset) {
 #endif
