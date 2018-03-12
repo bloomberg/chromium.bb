@@ -28,10 +28,11 @@
 
 #include <stdint.h>
 #include <memory>
+#include <utility>
+
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -132,7 +133,7 @@ class PODArena final : public RefCounted<PODArena> {
       if (rounded_size > current_chunk_size_)
         current_chunk_size_ = rounded_size;
       chunks_.push_back(
-          WTF::WrapUnique(new Chunk(allocator_.get(), current_chunk_size_)));
+          std::make_unique<Chunk>(allocator_.get(), current_chunk_size_));
       current_ = chunks_.back().get();
       ptr = current_->Allocate(rounded_size);
     }

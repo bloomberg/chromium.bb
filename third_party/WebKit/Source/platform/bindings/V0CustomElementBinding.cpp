@@ -31,14 +31,15 @@
 #include "platform/bindings/V0CustomElementBinding.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+
+#include "base/memory/ptr_util.h"
 
 namespace blink {
 
 std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::Create(
     v8::Isolate* isolate,
     v8::Local<v8::Object> prototype) {
-  return WTF::WrapUnique(new V0CustomElementBinding(isolate, prototype));
+  return base::WrapUnique(new V0CustomElementBinding(isolate, prototype));
 }
 
 V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,

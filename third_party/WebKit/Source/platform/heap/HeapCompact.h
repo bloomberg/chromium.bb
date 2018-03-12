@@ -5,10 +5,12 @@
 #ifndef HeapCompact_h
 #define HeapCompact_h
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/wtf/DataLog.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
 #include <bitset>
@@ -42,7 +44,7 @@ class ThreadHeap;
 class PLATFORM_EXPORT HeapCompact final {
  public:
   static std::unique_ptr<HeapCompact> Create() {
-    return WTF::WrapUnique(new HeapCompact);
+    return base::WrapUnique(new HeapCompact);
   }
 
   ~HeapCompact();

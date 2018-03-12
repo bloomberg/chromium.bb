@@ -24,6 +24,8 @@
 // For more details, see
 // https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/README.md
 
+#include <memory>
+
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 
@@ -31,9 +33,9 @@ namespace blink {
 
 std::unique_ptr<ImageDecoder> CreateDecoder(
     ImageDecoder::AlphaOption alpha_option) {
-  return WTF::WrapUnique(
-      new PNGImageDecoder(alpha_option, ColorBehavior::TransformToSRGB(),
-                          ImageDecoder::kNoDecodedImageByteLimit));
+  return std::make_unique<PNGImageDecoder>(
+      alpha_option, ColorBehavior::TransformToSRGB(),
+      ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

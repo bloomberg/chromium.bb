@@ -30,7 +30,11 @@
 
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
+#include <vector>
+
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
@@ -46,9 +50,9 @@ static const size_t kLargeEnoughSize = 1000 * 1000;
 namespace {
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
-  return WTF::WrapUnique(new JPEGImageDecoder(
+  return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      max_decoded_bytes));
+      max_decoded_bytes);
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {

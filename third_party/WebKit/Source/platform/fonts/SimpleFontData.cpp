@@ -31,12 +31,15 @@
 
 #include <unicode/utf16.h>
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "platform/font_family_names.h"
 #include "platform/fonts/FontDescription.h"
@@ -44,7 +47,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/wtf/ByteOrder.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/Unicode.h"
@@ -225,7 +227,7 @@ scoped_refptr<SimpleFontData> SimpleFontData::EmphasisMarkFontData(
 
 std::unique_ptr<SimpleFontData::DerivedFontData>
 SimpleFontData::DerivedFontData::Create() {
-  return WTF::WrapUnique(new DerivedFontData());
+  return base::WrapUnique(new DerivedFontData);
 }
 
 scoped_refptr<SimpleFontData> SimpleFontData::CreateScaledFontData(

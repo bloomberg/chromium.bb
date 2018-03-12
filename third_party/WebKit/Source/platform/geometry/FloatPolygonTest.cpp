@@ -29,8 +29,10 @@
 
 #include "platform/geometry/FloatPolygon.h"
 
+#include <algorithm>
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -42,11 +44,10 @@ class FloatPolygonTestValue {
                         WindRule fill_rule) {
     DCHECK(!(coordinates_length % 2));
     std::unique_ptr<Vector<FloatPoint>> vertices =
-        WTF::WrapUnique(new Vector<FloatPoint>(coordinates_length / 2));
+        std::make_unique<Vector<FloatPoint>>(coordinates_length / 2);
     for (unsigned i = 0; i < coordinates_length; i += 2)
       (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-    polygon_ =
-        WTF::WrapUnique(new FloatPolygon(std::move(vertices), fill_rule));
+    polygon_ = std::make_unique<FloatPolygon>(std::move(vertices), fill_rule);
   }
 
   const FloatPolygon& Polygon() const { return *polygon_; }

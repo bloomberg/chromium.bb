@@ -33,7 +33,6 @@
 #include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
@@ -55,9 +54,9 @@ struct AnimParam {
 
 std::unique_ptr<ImageDecoder> CreateWEBPDecoder(
     ImageDecoder::AlphaOption alpha_option) {
-  return WTF::WrapUnique(
-      new WEBPImageDecoder(alpha_option, ColorBehavior::TransformToSRGB(),
-                           ImageDecoder::kNoDecodedImageByteLimit));
+  return std::make_unique<WEBPImageDecoder>(
+      alpha_option, ColorBehavior::TransformToSRGB(),
+      ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 std::unique_ptr<ImageDecoder> CreateWEBPDecoder() {

@@ -27,6 +27,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
@@ -47,7 +50,6 @@
 #include "platform/text/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -173,7 +175,7 @@ std::unique_ptr<DragImage> DragImage::Create(
   if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(&bm))
     return nullptr;
 
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new DragImage(bm, device_scale_factor, interpolation_quality));
 }
 
@@ -244,10 +246,11 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
     if (url_string_size.Width() > max_drag_label_string_width_dip) {
       image_size.SetWidth(max_drag_label_string_width_dip);
       clip_url_string = true;
-    } else
+    } else {
       image_size.SetWidth(
           std::max(label_size.Width(), url_string_size.Width()) +
           kDragLabelBorderX * 2);
+    }
   }
 
   // We now know how big the image needs to be, so we create and

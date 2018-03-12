@@ -6,11 +6,12 @@
 #define CompositorAnimationTimeline_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_timeline.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
 
  public:
   static std::unique_ptr<CompositorAnimationTimeline> Create() {
-    return WTF::WrapUnique(new CompositorAnimationTimeline());
+    return base::WrapUnique(new CompositorAnimationTimeline());
   }
 
   ~CompositorAnimationTimeline();

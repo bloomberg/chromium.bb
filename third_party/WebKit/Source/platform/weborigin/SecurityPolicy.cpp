@@ -37,7 +37,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringHash.h"
@@ -234,7 +233,7 @@ void SecurityPolicy::AddOriginAccessWhitelistEntry(
   OriginAccessMap::AddResult result =
       GetOriginAccessMap().insert(source_string, nullptr);
   if (result.is_new_entry)
-    result.stored_value->value = WTF::WrapUnique(new OriginAccessWhiteList);
+    result.stored_value->value = std::make_unique<OriginAccessWhiteList>();
 
   OriginAccessWhiteList* list = result.stored_value->value.get();
   list->push_back(OriginAccessEntry(

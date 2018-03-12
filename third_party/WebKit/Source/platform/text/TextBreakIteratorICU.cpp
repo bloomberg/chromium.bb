@@ -23,14 +23,17 @@
 
 #include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
+#include <algorithm>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "platform/text/ICUError.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
@@ -48,7 +51,7 @@ class LineBreakIteratorPool final {
   }
 
   static std::unique_ptr<LineBreakIteratorPool> Create() {
-    return WTF::WrapUnique(new LineBreakIteratorPool);
+    return base::WrapUnique(new LineBreakIteratorPool);
   }
 
   icu::BreakIterator* Take(const AtomicString& locale) {

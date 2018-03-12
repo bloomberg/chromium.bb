@@ -28,9 +28,9 @@
 #include "platform/weborigin/KURL.h"
 
 #include <algorithm>
+
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringHash.h"
@@ -259,7 +259,7 @@ KURL::KURL(const KURL& other)
       parsed_(other.parsed_),
       string_(other.string_) {
   if (other.inner_url_.get())
-    inner_url_ = WTF::WrapUnique(new KURL(other.inner_url_->Copy()));
+    inner_url_ = std::make_unique<KURL>(other.inner_url_->Copy());
 }
 
 KURL::~KURL() = default;
@@ -271,7 +271,7 @@ KURL& KURL::operator=(const KURL& other) {
   parsed_ = other.parsed_;
   string_ = other.string_;
   if (other.inner_url_)
-    inner_url_ = WTF::WrapUnique(new KURL(other.inner_url_->Copy()));
+    inner_url_ = std::make_unique<KURL>(other.inner_url_->Copy());
   else
     inner_url_.reset();
   return *this;
@@ -285,7 +285,7 @@ KURL KURL::Copy() const {
   result.parsed_ = parsed_;
   result.string_ = string_.IsolatedCopy();
   if (inner_url_)
-    result.inner_url_ = WTF::WrapUnique(new KURL(inner_url_->Copy()));
+    result.inner_url_ = std::make_unique<KURL>(inner_url_->Copy());
   return result;
 }
 
@@ -792,9 +792,9 @@ void KURL::InitInnerURL() {
     return;
   }
   if (url::Parsed* inner_parsed = parsed_.inner_parsed()) {
-    inner_url_ = WTF::WrapUnique(new KURL(string_.Substring(
-        inner_parsed->scheme.begin,
-        inner_parsed->Length() - inner_parsed->scheme.begin)));
+    inner_url_ = std::make_unique<KURL>(
+        string_.Substring(inner_parsed->scheme.begin,
+                          inner_parsed->Length() - inner_parsed->scheme.begin));
   } else {
     inner_url_.reset();
   }

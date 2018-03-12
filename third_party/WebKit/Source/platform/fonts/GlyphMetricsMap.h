@@ -30,12 +30,13 @@
 #define GlyphMetricsMap_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
@@ -122,10 +123,10 @@ GlyphMetricsMap<T>::LocatePageSlowCase(unsigned page_number) {
         return page;
     } else {
       pages_ =
-          WTF::WrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
+          std::make_unique<HashMap<int, std::unique_ptr<GlyphMetricsPage>>>();
     }
     page = new GlyphMetricsPage;
-    pages_->Set(page_number, WTF::WrapUnique(page));
+    pages_->Set(page_number, base::WrapUnique(page));
   }
 
   // Fill in the whole page with the unknown glyph information.

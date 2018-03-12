@@ -7,7 +7,6 @@
 #include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -15,9 +14,9 @@ namespace blink {
 namespace {
 
 std::unique_ptr<ImageDecoder> CreateBMPDecoder() {
-  return WTF::WrapUnique(new BMPImageDecoder(
+  return std::make_unique<BMPImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+      ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 }  // anonymous namespace

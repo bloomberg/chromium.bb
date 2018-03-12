@@ -33,7 +33,6 @@
 #include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
@@ -46,9 +45,9 @@ namespace {
 const char kLayoutTestResourcesDir[] = "LayoutTests/images/resources";
 
 std::unique_ptr<ImageDecoder> CreateDecoder() {
-  return WTF::WrapUnique(new GIFImageDecoder(
+  return std::make_unique<GIFImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+      ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 void TestRepetitionCount(const char* dir,
@@ -400,13 +399,13 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
       SharedBuffer::Create(full_data.data(), kTruncateSize);
 
   std::unique_ptr<ImageDecoder> premul_decoder =
-      WTF::WrapUnique(new GIFImageDecoder(
-          ImageDecoder::kAlphaPremultiplied, ColorBehavior::TransformToSRGB(),
-          ImageDecoder::kNoDecodedImageByteLimit));
-  std::unique_ptr<ImageDecoder> unpremul_decoder = WTF::WrapUnique(
-      new GIFImageDecoder(ImageDecoder::kAlphaNotPremultiplied,
-                          ColorBehavior::TransformToSRGB(),
-                          ImageDecoder::kNoDecodedImageByteLimit));
+      std::make_unique<GIFImageDecoder>(ImageDecoder::kAlphaPremultiplied,
+                                        ColorBehavior::TransformToSRGB(),
+                                        ImageDecoder::kNoDecodedImageByteLimit);
+  std::unique_ptr<ImageDecoder> unpremul_decoder =
+      std::make_unique<GIFImageDecoder>(ImageDecoder::kAlphaNotPremultiplied,
+                                        ColorBehavior::TransformToSRGB(),
+                                        ImageDecoder::kNoDecodedImageByteLimit);
 
   // Partially decoded frame => the frame alpha type is unknown and should
   // reflect the requested format.

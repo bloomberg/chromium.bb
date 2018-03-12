@@ -5,6 +5,9 @@
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 
 #include <stdint.h>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -13,7 +16,6 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/weburl_loader_mock.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
@@ -24,7 +26,7 @@
 namespace blink {
 
 std::unique_ptr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::Create() {
-  return WTF::WrapUnique(new WebURLLoaderMockFactoryImpl(nullptr));
+  return base::WrapUnique(new WebURLLoaderMockFactoryImpl(nullptr));
 }
 
 WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl(

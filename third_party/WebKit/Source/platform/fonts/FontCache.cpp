@@ -29,9 +29,11 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include <limits>
 #include <memory>
 
 #include "base/debug/alias.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "platform/Histogram.h"
@@ -169,7 +171,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
       auto adding =
           &font_platform_data_cache_.insert(key, SizedFontPlatformDataSet())
                .stored_value->value;
-      adding->Set(rounded_size, WTF::WrapUnique(new FontPlatformData(*result)));
+      adding->Set(rounded_size, std::make_unique<FontPlatformData>(*result));
     }
   }
 
@@ -193,7 +195,7 @@ ShapeCache* FontCache::GetShapeCache(const FallbackListCompositeKey& key) {
   ShapeCache* result = nullptr;
   if (it == fallback_list_shaper_cache_.end()) {
     result = new ShapeCache();
-    fallback_list_shaper_cache_.Set(key, WTF::WrapUnique(result));
+    fallback_list_shaper_cache_.Set(key, base::WrapUnique(result));
   } else {
     result = it->value.get();
   }

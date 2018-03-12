@@ -31,6 +31,9 @@
 #include "platform/blob/BlobData.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -43,7 +46,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/text/LineEnding.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -110,13 +112,13 @@ constexpr long long BlobData::kToEndOfFile;
 RawData::RawData() = default;
 
 std::unique_ptr<BlobData> BlobData::Create() {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new BlobData(FileCompositionStatus::NO_UNKNOWN_SIZE_FILES));
 }
 
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path) {
-  std::unique_ptr<BlobData> data = WTF::WrapUnique(
+  std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
       WebStringToFilePath(path), 0, BlobData::kToEndOfFile, WTF::Time())));
@@ -126,7 +128,7 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path,
     double expected_modification_time) {
-  std::unique_ptr<BlobData> data = WTF::WrapUnique(
+  std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->elements_.push_back(DataElement::NewFile(DataElementFile::New(
       WebStringToFilePath(path), 0, BlobData::kToEndOfFile,
@@ -137,7 +139,7 @@ std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
 std::unique_ptr<BlobData> BlobData::CreateForFileSystemURLWithUnknownSize(
     const KURL& file_system_url,
     double expected_modification_time) {
-  std::unique_ptr<BlobData> data = WTF::WrapUnique(
+  std::unique_ptr<BlobData> data = base::WrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
   data->elements_.push_back(
       DataElement::NewFileFilesystem(DataElementFilesystemURL::New(

@@ -7,10 +7,11 @@
 
 #include <bitset>
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/wtf/Alignment.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -41,7 +42,7 @@ namespace blink {
 class PLATFORM_EXPORT SparseHeapBitmap {
  public:
   static std::unique_ptr<SparseHeapBitmap> Create(Address base) {
-    return WTF::WrapUnique(new SparseHeapBitmap(base));
+    return base::WrapUnique(new SparseHeapBitmap(base));
   }
 
   ~SparseHeapBitmap() = default;

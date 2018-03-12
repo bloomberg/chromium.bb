@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "platform/CrossThreadCopier.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -29,7 +28,7 @@ scoped_refptr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
 std::unique_ptr<CrossThreadResourceTimingInfoData>
 ResourceTimingInfo::CopyData() const {
   std::unique_ptr<CrossThreadResourceTimingInfoData> data =
-      WTF::WrapUnique(new CrossThreadResourceTimingInfoData);
+      std::make_unique<CrossThreadResourceTimingInfoData>();
   data->type_ = type_.GetString().IsolatedCopy();
   data->original_timing_allow_origin_ =
       original_timing_allow_origin_.GetString().IsolatedCopy();

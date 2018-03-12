@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/bindings/ScriptState.h"
@@ -175,7 +176,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
    public:
     static std::unique_ptr<DOMObjectHolder<T>>
     Create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper) {
-      return WTF::WrapUnique(new DOMObjectHolder(isolate, object, wrapper));
+      return base::WrapUnique(new DOMObjectHolder(isolate, object, wrapper));
     }
 
    private:

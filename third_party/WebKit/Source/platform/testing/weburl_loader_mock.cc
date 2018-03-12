@@ -4,6 +4,8 @@
 
 #include "platform/testing/weburl_loader_mock.h"
 
+#include <utility>
+
 #include "platform/SharedBuffer.h"
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "public/platform/URLConversion.h"
@@ -48,7 +50,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   // will just proxy to the client.
   std::unique_ptr<WebURLLoaderTestDelegate> default_delegate;
   if (!delegate) {
-    default_delegate = WTF::WrapUnique(new WebURLLoaderTestDelegate());
+    default_delegate = std::make_unique<WebURLLoaderTestDelegate>();
     delegate = default_delegate.get();
   }
 

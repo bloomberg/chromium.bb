@@ -5,10 +5,12 @@
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -24,7 +26,7 @@ CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve() = default;
 std::unique_ptr<CompositorFloatAnimationCurve>
 CompositorFloatAnimationCurve::CreateForTesting(
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve) {
-  return WTF::WrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
+  return base::WrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
 }
 
 CompositorFloatAnimationCurve::Keyframes
@@ -32,7 +34,7 @@ CompositorFloatAnimationCurve::KeyframesForTesting() const {
   Keyframes keyframes;
   for (const auto& cc_keyframe : curve_->keyframes_for_testing()) {
     keyframes.push_back(
-        WTF::WrapUnique(new CompositorFloatKeyframe(cc_keyframe->Clone())));
+        base::WrapUnique(new CompositorFloatKeyframe(cc_keyframe->Clone())));
   }
   return keyframes;
 }

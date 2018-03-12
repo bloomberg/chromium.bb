@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "platform/heap/CallbackStack.h"
-#include "platform/wtf/PtrUtil.h"
+
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/allocator/Partitions.h"
 
@@ -107,7 +110,7 @@ bool CallbackStack::Block::HasCallbackForObject(const void* object) {
 #endif
 
 std::unique_ptr<CallbackStack> CallbackStack::Create() {
-  return WTF::WrapUnique(new CallbackStack());
+  return base::WrapUnique(new CallbackStack());
 }
 
 CallbackStack::CallbackStack() : first_(nullptr), last_(nullptr) {}

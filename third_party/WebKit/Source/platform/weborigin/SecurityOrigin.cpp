@@ -40,7 +40,6 @@
 #include "platform/weborigin/URLSecurityOriginMap.h"
 #include "platform/wtf/HexNumber.h"
 #include "platform/wtf/NotFound.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
@@ -491,7 +490,7 @@ const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {
 std::unique_ptr<SecurityOrigin::PrivilegeData>
 SecurityOrigin::CreatePrivilegeData() const {
   std::unique_ptr<PrivilegeData> privilege_data =
-      WTF::WrapUnique(new PrivilegeData);
+      std::make_unique<PrivilegeData>();
   privilege_data->universal_access_ = universal_access_;
   privilege_data->can_load_local_resources_ = can_load_local_resources_;
   privilege_data->block_local_access_from_local_origin_ =

@@ -32,6 +32,7 @@
 #include <unicode/locid.h>
 
 #include <memory>
+#include <utility>
 
 #include "SkFontMgr.h"
 #include "SkStream.h"
@@ -48,7 +49,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
@@ -284,7 +284,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
 
   const auto& tf = paint_tf.ToSkTypeface();
   std::unique_ptr<FontPlatformData> font_platform_data =
-      WTF::WrapUnique(new FontPlatformData(
+      std::make_unique<FontPlatformData>(
           paint_tf, name, font_size,
           (font_description.Weight() >
                FontSelectionValue(200) +
@@ -293,7 +293,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
           ((font_description.Style() == ItalicSlopeValue()) &&
            !tf->isItalic()) ||
               font_description.IsSyntheticItalic(),
-          font_description.Orientation()));
+          font_description.Orientation());
 
   font_platform_data->SetAvoidEmbeddedBitmaps(
       BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(tf.get()));

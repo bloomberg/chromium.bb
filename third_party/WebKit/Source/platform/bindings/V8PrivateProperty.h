@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/bindings/ScriptPromiseProperties.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -155,7 +155,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   };
 
   static std::unique_ptr<V8PrivateProperty> Create() {
-    return WTF::WrapUnique(new V8PrivateProperty());
+    return base::WrapUnique(new V8PrivateProperty());
   }
 
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \

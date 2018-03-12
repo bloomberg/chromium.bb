@@ -9,18 +9,17 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 WaitableEvent::WaitableEvent(ResetPolicy policy, InitialState state) {
-  impl_ = WTF::WrapUnique(new base::WaitableEvent(
+  impl_ = std::make_unique<base::WaitableEvent>(
       policy == ResetPolicy::kManual
           ? base::WaitableEvent::ResetPolicy::MANUAL
           : base::WaitableEvent::ResetPolicy::AUTOMATIC,
       state == InitialState::kSignaled
           ? base::WaitableEvent::InitialState::SIGNALED
-          : base::WaitableEvent::InitialState::NOT_SIGNALED));
+          : base::WaitableEvent::InitialState::NOT_SIGNALED);
 }
 
 WaitableEvent::~WaitableEvent() = default;

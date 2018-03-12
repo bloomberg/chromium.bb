@@ -5,6 +5,7 @@
 #include "platform/fonts/shaping/RunSegmenter.h"
 
 #include <memory>
+
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/SymbolsIterator.h"
@@ -23,9 +24,9 @@ RunSegmenter::RunSegmenter(const UChar* buffer,
           std::make_unique<ScriptRunIterator>(buffer, buffer_size)),
       orientation_iterator_(
           run_orientation == FontOrientation::kVerticalMixed
-              ? WTF::WrapUnique(new OrientationIterator(buffer,
-                                                        buffer_size,
-                                                        run_orientation))
+              ? std::make_unique<OrientationIterator>(buffer,
+                                                      buffer_size,
+                                                      run_orientation)
               : nullptr),
       symbols_iterator_(std::make_unique<SymbolsIterator>(buffer, buffer_size)),
       last_split_(0),

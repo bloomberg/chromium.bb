@@ -27,6 +27,10 @@
 
 #include "platform/loader/fetch/ResourceFetcher.h"
 
+#include <algorithm>
+#include <limits>
+#include <utility>
+
 #include "base/time/time.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
@@ -1302,7 +1306,7 @@ int ResourceFetcher::ActiveRequestCount() const {
 void ResourceFetcher::EnableIsPreloadedForTest() {
   if (preloaded_urls_for_test_)
     return;
-  preloaded_urls_for_test_ = WTF::WrapUnique(new HashSet<String>);
+  preloaded_urls_for_test_ = std::make_unique<HashSet<String>>();
 
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;

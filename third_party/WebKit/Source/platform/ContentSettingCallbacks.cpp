@@ -31,14 +31,16 @@
 #include "platform/ContentSettingCallbacks.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 
 namespace blink {
 
 std::unique_ptr<ContentSettingCallbacks> ContentSettingCallbacks::Create(
     base::OnceClosure allowed,
     base::OnceClosure denied) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
 }
 
