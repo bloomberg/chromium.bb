@@ -105,7 +105,6 @@ class Video(IntegrationTest):
       # Wait for the video to finish playing, plus some headroom.
       time.sleep(5)
       responses = t.GetHTTPResponses()
-      self.assertEquals(2, len(responses))
       saw_range_response = False
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
