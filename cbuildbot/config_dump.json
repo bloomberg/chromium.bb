@@ -413,7 +413,8 @@
                 "-cros-debug",
                 "chrome_internal",
                 "chromeless_tty",
-                "depthcharge"
+                "depthcharge",
+                "thinlto"
             ],
             "vm_tests": []
         },
@@ -475,7 +476,8 @@
             "upload_hw_test_artifacts": false,
             "useflags": [
                 "-cros-debug",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -511,7 +513,8 @@
             "useflags": [
                 "-cros-debug",
                 "chrome_internal",
-                "chromeless_tty"
+                "chromeless_tty",
+                "thinlto"
             ],
             "vm_tests": []
         },
@@ -622,7 +625,8 @@
                 "-tests_security_OpenFDs",
                 "-tests_security_SMMLocked",
                 "chrome_internal",
-                "llvm-next"
+                "llvm-next",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -669,7 +673,8 @@
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "-tests_security_SMMLocked",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -913,7 +918,8 @@
             "upload_symbols": true,
             "useflags": [
                 "-cros-debug",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
@@ -968,7 +974,8 @@
             "upload_symbols": true,
             "useflags": [
                 "-cros-debug",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
@@ -1031,7 +1038,8 @@
             "upload_symbols": true,
             "useflags": [
                 "-cros-debug",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
@@ -1119,7 +1127,8 @@
                 "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "-tests_security_SMMLocked",
-                "chrome_internal"
+                "chrome_internal",
+                "thinlto"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -4686,7 +4695,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -4832,7 +4842,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -10970,7 +10981,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -11116,7 +11128,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -13755,7 +13768,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -13900,7 +13914,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -14226,7 +14241,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -14372,7 +14388,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -15957,7 +15974,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -16103,7 +16121,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -17647,7 +17666,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -17794,7 +17814,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -18750,7 +18771,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -18896,7 +18918,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -29011,7 +29034,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -29157,7 +29181,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -29451,7 +29476,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -29597,7 +29623,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -41001,7 +41028,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -41147,7 +41175,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -43893,7 +43922,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -44039,7 +44069,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -54174,7 +54205,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -54320,7 +54352,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -61838,7 +61871,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -61983,7 +62017,8 @@
             "-cros-debug",
             "afdo_chrome_exp1",
             "afdo_use",
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
