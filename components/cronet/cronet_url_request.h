@@ -75,7 +75,8 @@ class CronetURLRequest {
                                    const net::HttpResponseHeaders* headers,
                                    bool was_cached,
                                    const std::string& negotiated_protocol,
-                                   const std::string& proxy_server) = 0;
+                                   const std::string& proxy_server,
+                                   int64_t received_byte_count) = 0;
 
     // Invoked whenever part of the response body has been read. Only part of
     // the buffer may be populated, even if the entire response body has not yet
@@ -252,6 +253,8 @@ class CronetURLRequest {
     const GURL initial_url_;
     const net::RequestPriority initial_priority_;
     const int initial_load_flags_;
+    // Count of bytes received during redirect is added to received byte count.
+    int64_t received_byte_count_from_redirects_;
 
     // Whether detailed metrics should be collected and reported.
     const bool enable_metrics_;

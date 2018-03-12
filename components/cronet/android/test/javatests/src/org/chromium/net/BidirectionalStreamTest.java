@@ -109,9 +109,8 @@ public class BidirectionalStreamTest {
             headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
                     headers[i], headers[i + 1]));
         }
-        UrlResponseInfoImpl urlResponseInfo = new UrlResponseInfoImpl(
-                Arrays.asList(urls), statusCode, message, headersList, false, "h2", null);
-        urlResponseInfo.setReceivedByteCount(receivedBytes);
+        UrlResponseInfoImpl urlResponseInfo = new UrlResponseInfoImpl(Arrays.asList(urls),
+                statusCode, message, headersList, false, "h2", null, receivedBytes);
         return urlResponseInfo;
     }
 
