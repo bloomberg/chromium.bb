@@ -283,13 +283,18 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     if (__gCrWeb.fill.isTextInput(element) ||
         __gCrWeb.fill.isTextAreaElement(element) ||
         __gCrWeb.fill.isSelectElement(element)) {
-      (function (_element, _value, _delay) {
+      (function(_element, _value, _delay) {
         window.setTimeout(function() {
-          __gCrWeb.fill.setInputElementValue(_value, _element, true);
-          _element.setAttribute('chrome-autofilled', '');
-          _element.isAutofilled = true;
-          _element.addEventListener('input', controlElementInputListener);
-        }, _delay);})(element, value, delay);
+          __gCrWeb.fill.setInputElementValue(
+              _value, _element, function(changed) {
+                if (!changed)
+                  return;
+                _element.setAttribute('chrome-autofilled', '');
+                _element.isAutofilled = true;
+                _element.addEventListener('input', controlElementInputListener);
+              });
+        }, _delay);
+      })(element, value, delay);
       delay = delay + __gCrWeb.autofill.delayBetweenFieldFillingMs;
     } else if (__gCrWeb.fill.isCheckableElement(element)) {
       // TODO(bondd): Handle __gCrWeb.fill.isCheckableElement(element) ==
@@ -353,12 +358,17 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
       // by iOS Autofill yet.
     }
     if (value !== null) {
-      (function (_element, _value, _delay) {
+      (function(_element, _value, _delay) {
         window.setTimeout(function() {
-          __gCrWeb.fill.setInputElementValue(_value, _element, true);
-          _element.removeAttribute('chrome-autofilled');
-          _element.isAutofilled = false;
-        }, _delay);})(element, value, delay);
+          __gCrWeb.fill.setInputElementValue(
+              _value, _element, function(changed) {
+                _element.removeAttribute('chrome-autofilled');
+                _element.isAutofilled = false;
+                _element.removeEventListener(
+                    'input', controlElementInputListener);
+              });
+        }, _delay);
+      })(element, value, delay);
       delay = delay + __gCrWeb.autofill.delayBetweenFieldFillingMs;
     }
   }
@@ -569,12 +579,12 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
       sanitizedValue = data['value'].substr(0, maxLength);
     }
 
-    __gCrWeb.fill.setInputElementValue(sanitizedValue, field, true);
+    __gCrWeb.fill.setInputElementValue(sanitizedValue, field);
     field.isAutofilled = true;
   } else if (__gCrWeb.fill.isSelectElement(field)) {
-    __gCrWeb.fill.setInputElementValue(data['value'], field, true);
+    __gCrWeb.fill.setInputElementValue(data['value'], field);
   } else if (__gCrWeb.fill.isCheckableElement(field)) {
-    __gCrWeb.fill.setInputElementValue(data['is_checked'], field, true);
+    __gCrWeb.fill.setInputElementValue(data['is_checked'], field);
   }
 };
 

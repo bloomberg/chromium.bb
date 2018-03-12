@@ -207,11 +207,11 @@ function setInputElementAngularValue_(value, input) {
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
- * @param {boolean} shouldSendChangeEvent Whether a change event should be
- *     dispatched.
+ * @param {function(boolean)=} callback Callback function with a boolean
+ *     argument that indicates if the input element's value was changed.
  */
 __gCrWeb.fill.setInputElementValue = function(
-    value, input, shouldSendChangeEvent) {
+    value, input, callback = undefined) {
   if (!input) {
     return;
   }
@@ -237,8 +237,11 @@ __gCrWeb.fill.setInputElementValue = function(
     // sending events.
     setInputElementAngularValue_(value, input);
   }
-  if (changed && shouldSendChangeEvent) {
+  if (changed) {
     __gCrWeb.fill.notifyElementValueChanged(input);
+  }
+  if (callback) {
+    callback(changed);
   }
 };
 
