@@ -53,6 +53,7 @@
 
 - (void)setImage:(UIImage*)image {
   self.innerImageView.image = image;
+  [self setNeedsLayout];
 }
 
 - (UIImage*)image {
