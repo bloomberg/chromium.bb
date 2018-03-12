@@ -859,14 +859,20 @@ void ChromeClientImpl::SetEventListenerProperties(
     return;
 
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   // The widget may be nullptr if the frame is provisional.
   // TODO(dcheng): This needs to be cleaned up at some point.
   // https://crbug.com/578349
-  if (!widget) {
+  if (web_frame->IsProvisional()) {
     // If we hit a provisional frame, we expect it to be during initialization
     // in which case the |properties| should be 'nothing'.
     DCHECK(properties == WebEventListenerProperties::kNothing);
+    return;
+  }
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  // TODO(https://crbug.com/820787): When creating a local root, the widget
+  // won't be set yet. While notifications in this case are technically
+  // redundant, it adds an awkward special case.
+  if (!widget) {
     return;
   }
 

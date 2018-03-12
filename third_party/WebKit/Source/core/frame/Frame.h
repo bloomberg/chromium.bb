@@ -87,6 +87,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual void Navigate(const FrameLoadRequest&) = 0;
   virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
+  // The base Detach() method must be the last line of overrides of Detach().
   virtual void Detach(FrameDetachType);
   void DisconnectOwnerElement();
   virtual bool ShouldClose() = 0;

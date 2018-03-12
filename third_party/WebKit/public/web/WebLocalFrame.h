@@ -159,8 +159,23 @@ class WebLocalFrame : public WebFrame {
 
   // Hierarchy ----------------------------------------------------------
 
+  // Returns true if the current frame is a local root.
+  virtual bool IsLocalRoot() const = 0;
+
+  // Returns true if the current frame is a provisional frame.
+  // TODO(https://crbug.com/578349): provisional frames are a hack that should
+  // be removed.
+  virtual bool IsProvisional() const = 0;
+
   // Get the highest-level LocalFrame in this frame's in-process subtree.
   virtual WebLocalFrame* LocalRoot() = 0;
+
+  // Returns the WebFrameWidget associated with this frame if there is one or
+  // nullptr otherwise.
+  // TODO(dcheng): The behavior of this will be changing to always return a
+  // WebFrameWidget. Use IsLocalRoot() if it's important to tell if a frame is a
+  // local root.
+  virtual WebFrameWidget* FrameWidget() const = 0;
 
   // Returns the frame identified by the given name.  This method supports
   // pseudo-names like _self, _top, and _blank and otherwise performs the same
@@ -707,10 +722,6 @@ class WebLocalFrame : public WebFrame {
 
   // Returns the node that the context menu opened over.
   virtual WebNode ContextMenuNode() const = 0;
-
-  // Returns the WebFrameWidget associated with this frame if there is one or
-  // nullptr otherwise.
-  virtual WebFrameWidget* FrameWidget() const = 0;
 
   // Copy to the clipboard the image located at a particular point in visual
   // viewport coordinates.

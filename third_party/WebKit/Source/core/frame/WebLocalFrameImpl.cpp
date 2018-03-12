@@ -1702,7 +1702,6 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     // which triggers a cross-process navigation.
     new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
   }
-  new_frame->SetIsProvisional(true);
 
   return web_frame;
 }
@@ -1967,6 +1966,14 @@ void WebLocalFrameImpl::SetAutofillClient(WebAutofillClient* autofill_client) {
 
 WebAutofillClient* WebLocalFrameImpl::AutofillClient() {
   return autofill_client_;
+}
+
+bool WebLocalFrameImpl::IsLocalRoot() const {
+  return frame_->IsLocalRoot();
+}
+
+bool WebLocalFrameImpl::IsProvisional() const {
+  return frame_->IsProvisional();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {

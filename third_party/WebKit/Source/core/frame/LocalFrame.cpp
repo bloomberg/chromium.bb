@@ -349,12 +349,11 @@ void LocalFrame::Detach(FrameDetachType type) {
     GetPage()->GetFocusController().SetFocusedFrame(nullptr);
 
   probe::frameDetachedFromParent(this);
-  Frame::Detach(type);
 
   supplements_.clear();
   frame_scheduler_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
-  lifecycle_.AdvanceTo(FrameLifecycle::kDetached);
+  Frame::Detach(type);
 }
 
 bool LocalFrame::PrepareForCommit() {
@@ -1254,6 +1253,19 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   // message overlays (the other callers of this method).
   if (GetPage() && GetDocument()->IsSVGDocument())
     GetPage()->GetUseCounter().DidCommitLoad(this);
+}
+
+bool LocalFrame::IsProvisional() const {
+  // Calling this after the frame is marked as completely detached is a bug, as
+  // this state can no longer be accurately calculated.
+  CHECK_NE(FrameLifecycle::kDetached, lifecycle_.GetState());
+
+  if (IsMainFrame()) {
+    return GetPage()->MainFrame() != this;
+  }
+
+  DCHECK(Owner());
+  return Owner()->ContentFrame() != this;
 }
 
 bool LocalFrame::IsUsingDataSavingPreview() const {
