@@ -27,22 +27,22 @@ enum WhitespaceRemovalPolicy {
 };
 
 const SchemeWithType kStandardURLSchemes[] = {
-    {kHttpScheme, SCHEME_WITH_PORT},
     {kHttpsScheme, SCHEME_WITH_PORT},
+    {kHttpScheme, SCHEME_WITH_PORT},
     // Yes, file URLs can have a hostname, so file URLs should be handled as
     // "standard". File URLs never have a port as specified by the SchemeType
     // field.
     {kFileScheme, SCHEME_WITHOUT_PORT},
     {kFtpScheme, SCHEME_WITH_PORT},
     {kGopherScheme, SCHEME_WITH_PORT},
-    {kWsScheme, SCHEME_WITH_PORT},   // WebSocket.
     {kWssScheme, SCHEME_WITH_PORT},  // WebSocket secure.
+    {kWsScheme, SCHEME_WITH_PORT},   // WebSocket.
     {kFileSystemScheme, SCHEME_WITHOUT_AUTHORITY},
 };
 
 const SchemeWithType kReferrerURLSchemes[] = {
-    {kHttpScheme, SCHEME_WITH_PORT},
     {kHttpsScheme, SCHEME_WITH_PORT},
+    {kHttpScheme, SCHEME_WITH_PORT},
 };
 
 const char* kSecureSchemes[] = {
@@ -63,18 +63,18 @@ const char* kNoAccessSchemes[] = {
 };
 
 const char* kCORSEnabledSchemes[] = {
-  kHttpScheme,
   kHttpsScheme,
+  kHttpScheme,
   kDataScheme,
 };
 
 const char* kWebStorageSchemes[] = {
-  kHttpScheme,
   kHttpsScheme,
+  kHttpScheme,
   kFileScheme,
   kFtpScheme,
-  kWsScheme,
   kWssScheme,
+  kWsScheme,
 };
 
 const char* kEmptyDocumentSchemes[] = {
