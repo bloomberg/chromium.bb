@@ -31,6 +31,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -196,6 +197,8 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback;
   HttpResponseInfo response;
   HttpRequestHeaders headers;
@@ -252,6 +255,8 @@ TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
       std::make_unique<HttpRequestInfo>();
   request->method = "GET";
   request->url = url_;
+  request->traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback;
   HttpResponseInfo response;
   HttpRequestHeaders headers;
@@ -313,6 +318,8 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   HttpRequestInfo request1;
   request1.method = "GET";
   request1.url = url_;
+  request1.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback1;
   HttpResponseInfo response1;
   HttpRequestHeaders headers1;
@@ -323,6 +330,8 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = url_;
+  request2.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback2;
   HttpResponseInfo response2;
   HttpRequestHeaders headers2;
@@ -413,6 +422,8 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -467,6 +478,8 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -520,6 +533,8 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -590,6 +605,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -685,6 +702,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -769,6 +788,8 @@ TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -833,6 +854,8 @@ TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL(full_url);
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback;
   HttpResponseInfo response;
   HttpRequestHeaders headers;
@@ -883,6 +906,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_stream;
 
   ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback(),
@@ -989,6 +1014,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_data_stream;
 
   TestCompletionCallback callback;
@@ -1042,6 +1069,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   request.upload_data_stream = &upload_data_stream;
 
   TestCompletionCallback callback;
@@ -1079,6 +1108,8 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   HttpRequestInfo request;
   request.method = "POST";
   request.url = url_;
+  request.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   ChunkedUploadDataStream upload_stream(0);
   request.upload_data_stream = &upload_stream;
 
