@@ -223,8 +223,14 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 
 // An experimental way of showing app banners, which has modal banners and gives
 // developers more control over when to show them.
-const base::Feature kExperimentalAppBanners{"ExperimentalAppBanners",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kExperimentalAppBanners {
+  "ExperimentalAppBanners",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kExperimentalCrostiniUI{
