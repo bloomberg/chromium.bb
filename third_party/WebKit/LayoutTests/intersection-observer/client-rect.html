@@ -15,7 +15,7 @@ iframe {
 }
 </style>
 
-<iframe id="iframe" srcdoc="<div id='target' style='width:1000px;height:1000px;'></div>"></iframe>
+<iframe id="iframe" srcdoc="<div id='target' style='margin:0.5px;width:1000px;height:1000px;'></div>"></iframe>
 
 <script>
 var target;
@@ -37,7 +37,7 @@ iframe.onload = function() {
     entries = entries.concat(observer.takeRecords());
     assert_equals(entries.length, 0, "No initial notifications.");
     runTestCycle(test0, "First rAF should generate notification.");
-  }, "IntersectionObserverEntry.boundingClientRect should match target.boundingClientRect()");
+  }, "IntersectionObserverEntry.boundingClientRect should match target.getBoundingClientRect()");
 };
 
 function test0() {
