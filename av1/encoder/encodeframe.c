@@ -3147,16 +3147,12 @@ BEGIN_PARTITION_SEARCH:
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
 
-// partition4_allowed is 1 if we can use a PARTITION_HORZ_4 or PARTITION_VERT_4
-// for this block. This is almost the same as ext_partition_allowed, except
-// that we don't allow 128x32 or 32x128 blocks if ALLOW_128X32_BLOCKS is false,
-// so we require that bsize is not BLOCK_128X128.
-#if !ALLOW_128X32_BLOCKS
+  // partition4_allowed is 1 if we can use a PARTITION_HORZ_4 or
+  // PARTITION_VERT_4 for this block. This is almost the same as
+  // ext_partition_allowed, except that we don't allow 128x32 or 32x128 blocks,
+  // so we require that bsize is not BLOCK_128X128.
   const int partition4_allowed =
       ext_partition_allowed && bsize != BLOCK_128X128;
-#else
-  const int partition4_allowed = ext_partition_allowed;
-#endif
 
   // The standard AB partitions are allowed whenever ext-partition-types are
   // allowed
