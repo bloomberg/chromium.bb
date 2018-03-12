@@ -24,6 +24,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -353,8 +354,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
   }
 
   auto* client = PrintCompositeClient::FromWebContents(web_contents());
-  if (IsOopifEnabled() && !client->for_preview() &&
-      document->settings().is_modifiable()) {
+  if (IsOopifEnabled() && !PrintingPdfContent(render_frame_host)) {
     client->DoCompositeDocumentToPdf(
         params.document_cookie, render_frame_host, content.metafile_data_handle,
         content.data_size, content.subframe_content_info,

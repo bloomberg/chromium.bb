@@ -31,7 +31,7 @@ uint64_t GenerateFrameGuid(int process_id, int frame_id) {
 namespace printing {
 
 PrintCompositeClient::PrintCompositeClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), for_preview_(false) {}
+    : content::WebContentsObserver(web_contents) {}
 
 PrintCompositeClient::~PrintCompositeClient() {}
 

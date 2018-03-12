@@ -75,9 +75,6 @@ class PrintCompositeClient
       const ContentToProxyIdMap& subframe_content_info,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback);
 
-  void set_for_preview(bool for_preview) { for_preview_ = for_preview; }
-  bool for_preview() const { return for_preview_; }
-
   // Converts a ContentToProxyIdMap to ContentToFrameMap.
   // ContentToProxyIdMap maps content id to its corresponding render frame proxy
   // routing id. This is generated when the content holder was created;
@@ -115,9 +112,6 @@ class PrintCompositeClient
   void RemoveCompositeRequest(int cookie);
 
   mojom::PdfCompositorPtr CreateCompositeRequest();
-
-  // Whether this client is created for print preview dialog.
-  bool for_preview_;
 
   std::unique_ptr<service_manager::Connector> connector_;
 

@@ -20,8 +20,7 @@ bool IsOopifEnabled();
 
 // Check on the current feature settings to decide whether we need to
 // create a PDF compositor client for this |web_contents|.
-void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
-                                   bool for_preview);
+void CreateCompositeClientIfNeeded(content::WebContents* web_contents);
 
 // Converts given settings to Print_Params and stores them in the output
 // parameter |params|.
