@@ -5,7 +5,7 @@
 #ifndef CSSValueIDMappings_h
 #define CSSValueIDMappings_h
 
-#include "core/CSSValueIDMappingsGenerated.h"
+#include "core/css_value_id_mappings_generated.h"
 
 namespace blink {
 
