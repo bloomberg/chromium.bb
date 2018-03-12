@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -148,6 +149,11 @@ public class AppBannerManager {
         return R.string.menu_add_to_homescreen;
     }
 
+    @VisibleForTesting
+    public AddToHomescreenDialog getAddToHomescreenDialogForTesting() {
+        return nativeGetAddToHomescreenDialogForTesting(mNativePointer);
+    }
+
     /** Overrides whether the system supports add to home screen. Used in testing. */
     @VisibleForTesting
     public static void setIsSupported(boolean state) {
@@ -202,6 +208,8 @@ public class AppBannerManager {
             AppData data, String title, String packageName, String imageUrl);
 
     // Testing methods.
+    private native AddToHomescreenDialog nativeGetAddToHomescreenDialogForTesting(
+            long nativeAppBannerManagerAndroid);
     private native boolean nativeIsRunningForTesting(long nativeAppBannerManagerAndroid);
     private static native void nativeSetDaysAfterDismissAndIgnoreToTrigger(
             int dismissDays, int ignoreDays);

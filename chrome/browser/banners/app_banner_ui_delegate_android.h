@@ -76,6 +76,11 @@ class AppBannerUiDelegateAndroid {
   void AddToHomescreen(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
+  // Returns a reference to the Java-side AddToHomescreenDialog owned by this
+  // object, or null if it does not exist.
+  const base::android::ScopedJavaLocalRef<jobject>
+  GetAddToHomescreenDialogForTesting() const;
+
   // Installs the app referenced by the data in this object. Returns |true| if
   // the installation UI should be dismissed.
   bool InstallApp(content::WebContents* web_contents);

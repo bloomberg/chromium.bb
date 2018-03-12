@@ -116,6 +116,12 @@ void AppBannerUiDelegateAndroid::AddToHomescreen(
   InstallApp(weak_manager_->web_contents());
 }
 
+const base::android::ScopedJavaLocalRef<jobject>
+AppBannerUiDelegateAndroid::GetAddToHomescreenDialogForTesting() const {
+  return Java_AppBannerUiDelegateAndroid_getDialogForTesting(
+      base::android::AttachCurrentThread(), java_delegate_);
+}
+
 bool AppBannerUiDelegateAndroid::InstallApp(
     content::WebContents* web_contents) {
   has_user_interaction_ = true;
