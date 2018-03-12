@@ -5,7 +5,7 @@
 #ifndef Longhand_h
 #define Longhand_h
 
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 #include "platform/graphics/Color.h"
 

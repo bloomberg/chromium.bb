@@ -59,7 +59,7 @@
 #include "core/css/PropertyRegistration.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StyleRule.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FilterOperationResolver.h"

@@ -13,7 +13,7 @@
 #include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 
 namespace blink {

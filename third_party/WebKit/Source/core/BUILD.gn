@@ -529,16 +529,16 @@ css_properties("make_core_generated_css_value_id_mappings") {
 css_properties("make_core_generated_css_property_baseclass") {
   script = "../build/scripts/core/css/properties/make_css_property_base.py"
   other_inputs = [
-    "../build/scripts/core/css/properties/templates/CSSProperty.cpp.tmpl",
-    "../build/scripts/core/css/properties/templates/CSSProperty.h.tmpl",
-    "../build/scripts/core/css/properties/templates/CSSUnresolvedProperty.cpp.tmpl",
-    "../build/scripts/core/css/properties/templates/CSSUnresolvedProperty.h.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property.cc.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property.h.tmpl",
+    "../build/scripts/core/css/properties/templates/css_unresolved_property.cc.tmpl",
+    "../build/scripts/core/css/properties/templates/css_unresolved_property.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/css/properties/CSSProperty.cpp",
-    "$blink_core_output_dir/css/properties/CSSProperty.h",
-    "$blink_core_output_dir/css/properties/CSSUnresolvedProperty.cpp",
-    "$blink_core_output_dir/css/properties/CSSUnresolvedProperty.h",
+    "$blink_core_output_dir/css/properties/css_property.cc",
+    "$blink_core_output_dir/css/properties/css_property.h",
+    "$blink_core_output_dir/css/properties/css_unresolved_property.cc",
+    "$blink_core_output_dir/css/properties/css_unresolved_property.h",
   ]
 }
 

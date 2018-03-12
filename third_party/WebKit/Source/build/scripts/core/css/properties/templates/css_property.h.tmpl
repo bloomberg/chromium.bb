@@ -6,12 +6,12 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 // clang-format off
 
-#ifndef CSSProperty_h
-#define CSSProperty_h
+#ifndef BLINK_CORE_CSS_PROPERTY_H_
+#define BLINK_CORE_CSS_PROPERTY_H_
 
 #include "core/css_property_names.h"
 #include "core/css/CSSValue.h"
-#include "core/css/properties/CSSUnresolvedProperty.h"
+#include "core/css/properties/css_unresolved_property.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
@@ -146,4 +146,4 @@ CORE_EXPORT const CSSProperty& Get{{property_class_data.property_id}}();
 
 }  // namespace blink
 
-#endif  // CSSProperty_h
+#endif  // BLINK_CORE_CSS_PROPERTY_H_

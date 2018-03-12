@@ -40,7 +40,7 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/SelectRuleFeatureSet.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/properties/CSSUnresolvedProperty.h"
+#include "core/css/properties/css_unresolved_property.h"
 #include "core/css_property_names.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/DOMStringList.h"

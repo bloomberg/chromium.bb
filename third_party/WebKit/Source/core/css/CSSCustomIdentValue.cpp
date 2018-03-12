@@ -5,7 +5,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 
 #include "core/css/CSSMarkup.h"
-#include "core/css/properties/CSSUnresolvedProperty.h"
+#include "core/css/properties/css_unresolved_property.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 

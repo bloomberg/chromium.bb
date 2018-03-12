@@ -30,7 +30,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/frame/UseCounter.h"
 #include "platform/wtf/text/StringBuilder.h"
 

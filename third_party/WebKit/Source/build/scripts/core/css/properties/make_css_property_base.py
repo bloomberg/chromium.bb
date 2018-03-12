@@ -25,11 +25,11 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         super(CSSPropertyBaseWriter, self).__init__([])
         self._input_files = json5_file_paths
         self._outputs = {
-            'CSSUnresolvedProperty.h': self.generate_unresolved_property_header,
-            'CSSUnresolvedProperty.cpp':
+            'css_unresolved_property.h': self.generate_unresolved_property_header,
+            'css_unresolved_property.cc':
                 self.generate_unresolved_property_implementation,
-            'CSSProperty.h': self.generate_resolved_property_header,
-            'CSSProperty.cpp': self.generate_resolved_property_implementation,
+            'css_property.h': self.generate_resolved_property_header,
+            'css_property.cc': self.generate_resolved_property_implementation,
         }
 
         self._css_properties = css_properties.CSSProperties(json5_file_paths)
@@ -82,7 +82,7 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         return self._css_properties
 
     @template_expander.use_jinja(
-        'core/css/properties/templates/CSSUnresolvedProperty.h.tmpl')
+        'core/css/properties/templates/css_unresolved_property.h.tmpl')
     def generate_unresolved_property_header(self):
         return {
             'input_files': self._input_files,
@@ -91,7 +91,7 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'core/css/properties/templates/CSSUnresolvedProperty.cpp.tmpl')
+        'core/css/properties/templates/css_unresolved_property.cc.tmpl')
     def generate_unresolved_property_implementation(self):
         return {
             'input_files': self._input_files,
@@ -105,7 +105,7 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'core/css/properties/templates/CSSProperty.cpp.tmpl')
+        'core/css/properties/templates/css_property.cc.tmpl')
     def generate_resolved_property_implementation(self):
         return {
             'input_files': self._input_files,
@@ -114,7 +114,7 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'core/css/properties/templates/CSSProperty.h.tmpl')
+        'core/css/properties/templates/css_property.h.tmpl')
     def generate_resolved_property_header(self):
         return {
             'input_files': self._input_files,

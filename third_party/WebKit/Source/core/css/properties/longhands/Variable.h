@@ -9,7 +9,7 @@
 #ifndef Variable_h
 #define Variable_h
 
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 namespace blink {
 

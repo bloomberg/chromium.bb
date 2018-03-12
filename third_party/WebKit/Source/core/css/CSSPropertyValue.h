@@ -22,7 +22,7 @@
 #define CSSPropertyValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 #include "platform/wtf/Allocator.h"
 

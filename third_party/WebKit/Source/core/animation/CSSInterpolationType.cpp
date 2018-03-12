@@ -14,7 +14,7 @@
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/PropertyRegistration.h"
 #include "core/css/parser/CSSTokenizer.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"

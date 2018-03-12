@@ -140,7 +140,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def h_includes(self, property_):
         if property_['alias_for']:
-            yield "core/css/properties/CSSUnresolvedProperty.h"
+            yield "core/css/properties/css_unresolved_property.h"
         else:
             yield "core/css/properties/" + property_['namespace_group'] + ".h"
             if property_['direction_aware_options']:

@@ -20,7 +20,7 @@ classes inherit directly from CSSUnresolvedProperty.
 CSSProperty is another base class, which inherits from CSSUnresolvedProperty.
 It contains all the methods that can be called on a resolved property class, and
 a default implementation for each. The implementation for CSSProperty is
-partially generated (CSSProperty.h and CSSProperty.cpp) and partially hand
+partially generated (css_property.h and css_property.cc) and partially hand
 written (CSSPropertyBaseCustom.cpp).
 
 Longhand and Shorthand are base classes which inherit from CSSProperty, from

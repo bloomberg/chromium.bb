@@ -24,8 +24,8 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/Longhand.h"
+#include "core/css/properties/css_property.h"
 #include "core/frame/UseCounter.h"
 #include "platform/runtime_enabled_features.h"
 

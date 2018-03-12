@@ -12,7 +12,7 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 namespace blink {
 

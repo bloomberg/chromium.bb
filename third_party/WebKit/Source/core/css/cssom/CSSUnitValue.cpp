@@ -14,7 +14,7 @@
 #include "core/css/cssom/CSSMathProduct.h"
 #include "core/css/cssom/CSSMathSum.h"
 #include "core/css/cssom/CSSNumericSumValue.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {

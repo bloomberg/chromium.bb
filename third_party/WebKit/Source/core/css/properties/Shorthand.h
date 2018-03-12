@@ -5,7 +5,7 @@
 #ifndef Shorthand_h
 #define Shorthand_h
 
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 namespace blink {
 

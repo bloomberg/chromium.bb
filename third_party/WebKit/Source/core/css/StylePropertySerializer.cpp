@@ -30,7 +30,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"

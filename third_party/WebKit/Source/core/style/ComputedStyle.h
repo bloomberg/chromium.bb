@@ -31,7 +31,7 @@
 #include "core/computed_style_base.h"
 #include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"

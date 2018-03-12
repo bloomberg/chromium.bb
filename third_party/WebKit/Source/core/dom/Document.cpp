@@ -57,7 +57,7 @@
 #include "core/css/cssom/ComputedStylePropertyMap.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
