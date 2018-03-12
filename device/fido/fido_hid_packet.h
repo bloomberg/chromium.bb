@@ -11,9 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "device/fido/ctap_constants.h"
 
 namespace device {
@@ -24,7 +22,7 @@ namespace device {
 // packets. HID Packets have header information and a payload. If a
 // FidoHidInitPacket cannot store the entire payload, further payload
 // information is stored in HidContinuationPackets.
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidPacket {
+class FidoHidPacket {
  public:
   FidoHidPacket(std::vector<uint8_t> data, uint32_t channel_id);
   virtual ~FidoHidPacket();
@@ -41,8 +39,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidPacket {
 
  private:
   friend class HidMessage;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidPacket);
 };
 
 // FidoHidInitPacket, based on the CTAP specification consists of a header with
@@ -51,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidPacket {
 // determine the type of message the packet corresponds to. Payload length
 // is the length of the entire message payload, and the data is only the portion
 // of the payload that will fit into the HidInitPacket.
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket : public FidoHidPacket {
+class FidoHidInitPacket : public FidoHidPacket {
  public:
   // Creates a packet from the serialized data of an initialization packet. As
   // this is the first packet, the payload length of the entire message will be
@@ -74,8 +70,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket : public FidoHidPacket {
  private:
   CtapHidDeviceCommand command_;
   uint16_t payload_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidInitPacket);
 };
 
 // FidoHidContinuationPacket, based on the CTAP Specification consists of a
@@ -83,8 +77,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket : public FidoHidPacket {
 // will be identical to the identifier in all other packets of the message. The
 // packet sequence will be the sequence number of this particular packet, from
 // 0x00 to 0x7f.
-class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidContinuationPacket
-    : public FidoHidPacket {
+class FidoHidContinuationPacket : public FidoHidPacket {
  public:
   // Creates a packet from the serialized data of a continuation packet. As an
   // HidInitPacket would have arrived earlier with the total payload size,
@@ -104,8 +97,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidContinuationPacket
 
  private:
   uint8_t sequence_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidContinuationPacket);
 };
 
 }  // namespace device

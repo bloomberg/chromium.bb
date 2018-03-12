@@ -10,9 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/u2f_request.h"
 #include "device/fido/u2f_transport_protocol.h"
@@ -25,7 +23,7 @@ namespace device {
 
 class RegisterResponseData;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegister : public U2fRequest {
+class U2fRegister : public U2fRequest {
  public:
   using RegisterResponseCallback = base::OnceCallback<void(
       U2fReturnCode status_code,
@@ -80,8 +78,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegister : public U2fRequest {
   // exclude list.
   std::set<std::string> checked_device_id_list_;
   base::WeakPtrFactory<U2fRegister> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(U2fRegister);
 };
 
 }  // namespace device

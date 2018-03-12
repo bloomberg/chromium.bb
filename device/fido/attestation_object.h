@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "device/fido/authenticator_data.h"
 
@@ -20,7 +19,7 @@ class AttestationStatement;
 // Object containing the authenticator-provided attestation every time
 // a credential is created, per
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#cred-attestation.
-class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
+class AttestationObject {
  public:
   AttestationObject(AuthenticatorData data,
                     std::unique_ptr<AttestationStatement> statement);
