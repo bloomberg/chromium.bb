@@ -97,12 +97,6 @@ void ExtensionViewViews::RenderViewCreated(
 void ExtensionViewViews::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (browser_) {
-    // Handle lower priority browser shortcuts such as Ctrl-f.
-    browser_->HandleKeyboardEvent(source, event);
-    return;
-  }
-
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
 }
