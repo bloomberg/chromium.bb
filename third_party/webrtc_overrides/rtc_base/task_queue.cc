@@ -198,6 +198,7 @@ TaskQueue::TaskQueue(const char* queue_name,
 
 TaskQueue::~TaskQueue() {
   DCHECK(!IsCurrent());
+  impl_->Stop();
 }
 
 // static
