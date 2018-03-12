@@ -31,6 +31,7 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
     const ConvolveParams *conv_params, int bd) {
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w & 7));
+  assert(bd + FILTER_BITS - conv_params->round_0 + 2 <= 16);
   (void)x_step_q4;
   (void)y_step_q4;
 
@@ -53,7 +54,8 @@ void av1_highbd_wiener_convolve_add_src_hip_avx2(
 
   /* Horizontal filter */
   {
-    const __m256i clamp_high_ep = _mm256_set1_epi16(WIENER_CLAMP_LIMIT(bd) - 1);
+    const __m256i clamp_high_ep =
+        _mm256_set1_epi16(WIENER_CLAMP_LIMIT(conv_params->round_0, bd) - 1);
 
     // coeffs [ f7 f6 f5 f4 f3 f2 f1 f0 ]
     const __m128i coeffs_x = _mm_add_epi16(xx_loadu_128(filter_x), offset);

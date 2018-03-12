@@ -48,7 +48,8 @@ void av1_wiener_convolve_add_src_hip_avx2(
   const __m128i offset = _mm_insert_epi16(zero_128, 1 << FILTER_BITS, 3);
 
   const __m256i clamp_low = zero_256;
-  const __m256i clamp_high = _mm256_set1_epi16(WIENER_CLAMP_LIMIT(bd) - 1);
+  const __m256i clamp_high =
+      _mm256_set1_epi16(WIENER_CLAMP_LIMIT(conv_params->round_0, bd) - 1);
 
   /* Horizontal filter */
   {
