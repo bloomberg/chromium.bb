@@ -382,6 +382,7 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         paths = [
             "-",
             "foo.c",
+            "foo.cc",
             "foo.cpp",
             "foo.h",
         ]
@@ -451,7 +452,6 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
     def test_text_paths(self):
         """Test paths that should be checked as text."""
         paths = [
-            "foo.cc",
             "foo.cgi",
             "foo.css",
             "foo.gyp",
