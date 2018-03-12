@@ -45,8 +45,6 @@ std::unique_ptr<U2fDiscovery> CreateU2fDiscoveryImpl(
 
 }  // namespace
 
-U2fDiscovery::Observer::~Observer() = default;
-
 // static
 U2fDiscovery::FactoryFuncPtr U2fDiscovery::g_factory_func_ =
     &CreateU2fDiscoveryImpl;

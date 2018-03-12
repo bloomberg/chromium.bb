@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/ctap_constants.h"
@@ -21,7 +20,7 @@ namespace device {
 // Represents response from authenticators for AuthenticatorGetAssertion and
 // AuthenticatorGetNextAssertion requests.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetAssertion
-class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse {
+class AuthenticatorGetAssertionResponse {
  public:
   AuthenticatorGetAssertionResponse(CtapDeviceResponseCode response_code,
                                     std::vector<uint8_t> auth_data,

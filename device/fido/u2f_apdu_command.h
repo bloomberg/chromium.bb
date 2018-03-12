@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 
 namespace device {
@@ -22,7 +21,7 @@ namespace device {
 // byte, denoting the instruction code, P1 and P2, each one byte denoting
 // instruction parameters, a length field (Lc), a data field of length Lc, and
 // a maximum expected response length (Le).
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduCommand {
+class U2fApduCommand {
  public:
   U2fApduCommand();
   U2fApduCommand(uint8_t cla,

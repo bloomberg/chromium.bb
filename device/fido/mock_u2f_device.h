@@ -11,8 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
-#include "base/macros.h"
 #include "device/fido/u2f_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -53,8 +51,6 @@ class MockU2fDevice : public U2fDevice {
 
  private:
   base::WeakPtrFactory<U2fDevice> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockU2fDevice);
 };
 
 }  // namespace device

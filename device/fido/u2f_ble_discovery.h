@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -20,9 +18,7 @@ class BluetoothDevice;
 class BluetoothDiscoverySession;
 class BluetoothUUID;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDiscovery
-    : public U2fDiscovery,
-      BluetoothAdapter::Observer {
+class U2fBleDiscovery : public U2fDiscovery, BluetoothAdapter::Observer {
  public:
   U2fBleDiscovery();
   ~U2fBleDiscovery() override;

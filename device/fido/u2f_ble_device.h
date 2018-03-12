@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,7 +24,7 @@ namespace device {
 
 class U2fBleFrame;
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fBleDevice : public U2fDevice {
+class U2fBleDevice : public U2fDevice {
  public:
   using FrameCallback = U2fBleTransaction::FrameCallback;
   explicit U2fBleDevice(std::string address);
