@@ -22,11 +22,9 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_source.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class Insets;
 class Point;
 class Rect;
 class Size;
@@ -97,17 +95,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Transform GetRootTransformForLocalEventCoordinates() const;
   virtual gfx::Transform GetInverseRootTransformForLocalEventCoordinates()
       const;
-
-  // Sets padding applied to the output surface. The output surface is sized to
-  // to the size of the host plus output surface padding. |window()| is offset
-  // by |padding_in_pixels|, that is, |window|'s origin is set to
-  // padding_in_pixels.left(), padding_in_pixels.top().
-  // This does not impact the bounds as returned from GetBounds(), only the
-  // output surface size and location of window(). Additionally window() is
-  // sized to the size set by bounds (more specifically the size passed to
-  // OnHostResizedInPixels()), but the location of window() is set to that of
-  // |padding_in_pixels|.
-  void SetOutputSurfacePaddingInPixels(const gfx::Insets& padding_in_pixels);
 
   // Updates the root window's size using |host_size_in_pixels|, current
   // transform and outsets.
@@ -318,8 +305,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Whether the InputMethod instance is owned by this WindowTreeHost.
   bool owned_input_method_;
-
-  gfx::Insets output_surface_padding_in_pixels_;
 
   // Set to the time the synchronization event began.
   base::TimeTicks synchronization_start_time_;
