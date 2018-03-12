@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
@@ -381,6 +382,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         "existing_refresh_token", kMainGaiaID, kMainEmail, "password",
         SigninManager::OAuthTokenFetchedCallback());
     ASSERT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+    ASSERT_FALSE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
     ASSERT_EQ(GetMainAccountID(), signin_manager->GetAuthenticatedAccountId());
 
     // Add a token for a secondary account.
@@ -390,6 +392,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     GetTokenService()->UpdateCredentials(secondary_account_id, "other_token");
     ASSERT_TRUE(
         GetTokenService()->RefreshTokenIsAvailable(secondary_account_id));
+    ASSERT_FALSE(GetTokenService()->RefreshTokenHasError(secondary_account_id));
   }
 
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
@@ -708,14 +711,25 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutMainAccount) {
   // Signout from main account.
   SignOutWithDice(kMainAccount);
 
-  // Check that the user is signed out and all tokens are deleted.
-  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
-  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  EXPECT_FALSE(
+  // Check that the user is in error state.
+  EXPECT_EQ(GetMainAccountID(),
+            GetSigninManager()->GetAuthenticatedAccountId());
+  MutableProfileOAuth2TokenServiceDelegate* delegate =
+      static_cast<MutableProfileOAuth2TokenServiceDelegate*>(
+          GetTokenService()->GetDelegate());
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
+  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+            delegate->GetRefreshTokenForTest(GetMainAccountID()));
+  EXPECT_TRUE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
-  EXPECT_EQ(2, token_revoked_notification_count_);
-  WaitForTokenRevokedCount(2);
+  EXPECT_EQ("other_token",
+            delegate->GetRefreshTokenForTest(GetSecondaryAccountID()));
+
+  // Token for main account is revoked on server but not notified in the client.
+  EXPECT_EQ(0, token_revoked_notification_count_);
+  WaitForTokenRevokedCount(1);
+
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }
@@ -750,14 +764,23 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   // Signout from all accounts.
   SignOutWithDice(kAllAccounts);
 
-  // Check that the user is signed out and all tokens are deleted.
-  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
-  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  // Check that the user is in error state.
+  EXPECT_EQ(GetMainAccountID(),
+            GetSigninManager()->GetAuthenticatedAccountId());
+  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
+  MutableProfileOAuth2TokenServiceDelegate* delegate =
+      static_cast<MutableProfileOAuth2TokenServiceDelegate*>(
+          GetTokenService()->GetDelegate());
+  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+            delegate->GetRefreshTokenForTest(GetMainAccountID()));
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
-  EXPECT_EQ(2, token_revoked_notification_count_);
+
+  // Token for main account is revoked on server but not notified in the client.
+  EXPECT_EQ(1, token_revoked_notification_count_);
   WaitForTokenRevokedCount(2);
+
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }

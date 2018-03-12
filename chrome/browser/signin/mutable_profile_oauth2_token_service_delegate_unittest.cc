@@ -672,6 +672,49 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RevokeOnUpdate) {
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
 }
 
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
+  // Add the invalid token.
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+  ASSERT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  oauth2_service_delegate_->UpdateCredentials(
+      "account_id",
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  ExpectOneTokenAvailableNotification();
+
+  // The account is in authentication error.
+  EXPECT_EQ(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS),
+      signin_error_controller_.auth_error());
+
+  // Update the token: authentication error is fixed, no actual server
+  // revocation.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  ExpectOneTokenAvailableNotification();
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  std::map<std::string, std::string> tokens;
+  tokens["AccountId-account_id"] =
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken;
+
+  oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
+
+  EXPECT_EQ(1u, oauth2_service_delegate_->GetAccounts().size());
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id"));
+  EXPECT_STREQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+               oauth2_service_delegate_->GetRefreshToken("account_id").c_str());
+
+  // The account is in authentication error.
+  EXPECT_EQ(
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS),
+      signin_error_controller_.auth_error());
+}
+
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceNotifications) {
   CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");

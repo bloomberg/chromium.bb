@@ -17,6 +17,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -206,6 +207,12 @@ class DiceResponseHandlerTest : public testing::Test,
         break;
     }
     return dice_params;
+  }
+
+  std::string GetRefreshToken(const std::string& account_id) {
+    return static_cast<FakeOAuth2TokenServiceDelegate*>(
+               token_service_.GetDelegate())
+        ->GetRefreshToken(account_id);
   }
 
   // AccountReconcilor::Observer:
@@ -486,10 +493,14 @@ TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
   dice_response_handler_->ProcessDiceHeader(
       dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
 
-  // User is signed out and all tokens are cleared.
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(account_id));
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
-  EXPECT_FALSE(signin_manager_.IsAuthenticated());
+  // User is not signed out, token for the main account is now invalid,
+  // secondary account is untouched.
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
+  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+            GetRefreshToken(account_id));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
+  EXPECT_EQ("token2", GetRefreshToken(kSecondaryGaiaID));
+  EXPECT_TRUE(signin_manager_.IsAuthenticated());
   // Check that the reconcilor was not blocked.
   EXPECT_EQ(0, reconcilor_blocked_count_);
   EXPECT_EQ(0, reconcilor_unblocked_count_);
@@ -584,47 +595,42 @@ TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
   EXPECT_FALSE(signin_manager_.IsAuthenticated());
 }
 
-// Checks that signin in progress is canceled by a signout for the main account.
-TEST_F(DiceResponseHandlerTest, SigninSignoutMainAccount) {
+// Checks that signin in progress is canceled by a signout.
+TEST_F(DiceResponseHandlerTest, SigninSignoutSameAccount) {
   signin::ScopedAccountConsistencyDice scoped_dice;
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
-  // User is signed in to Chrome with a main account.
+  // User is signed in to Chrome.
   signin_manager_.SignIn(account_info.gaia_id, account_info.email, "password");
   token_service_.UpdateCredentials(account_id, "token");
   ASSERT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
-  // Start Dice signin with a secondary account.
+  ASSERT_FALSE(token_service_.RefreshTokenHasError(account_id));
+  // Start Dice signin (reauth).
   DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
-  dice_params_2.signin_info->account_info.email = "other_email";
-  dice_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
-  const auto& account_info_2 = dice_params_2.signin_info->account_info;
-  std::string account_id_2 = account_tracker_service_.PickAccountIdForAccount(
-      account_info_2.gaia_id, account_info_2.email);
   dice_response_handler_->ProcessDiceHeader(
       dice_params_2, std::make_unique<TestProcessDiceHeaderDelegate>(this));
   // Check that a GaiaAuthFetcher has been created and is pending.
   ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
   EXPECT_EQ(
       1u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(account_id_2));
-  // Signout from main account while signin for the other account is in flight.
+  // Signout while signin is in flight.
   dice_response_handler_->ProcessDiceHeader(
       dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
-  // Check that the token fetcher has been canceled and all tokens erased.
+  // Check that the token fetcher has been canceled and the token is invalid.
   EXPECT_EQ(
       0u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(account_id));
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(account_id_2));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
+  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+            GetRefreshToken(account_id));
 }
 
-// Checks that signin in progress is canceled by a signout for a secondary
+// Checks that signin in progress is not canceled by a signout for a different
 // account.
-TEST_F(DiceResponseHandlerTest, SigninSignoutSecondaryAccount) {
+TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
   signin::ScopedAccountConsistencyDice scoped_dice;
-  // User starts signin in the web with two accounts, and is not signed into
-  // Chrome.
+  // User starts signin in the web with two accounts.
   DiceResponseParams signout_params_1 = MakeDiceParams(DiceAction::SIGNOUT);
   DiceResponseParams signin_params_1 = MakeDiceParams(DiceAction::SIGNIN);
   DiceResponseParams signin_params_2 = MakeDiceParams(DiceAction::SIGNIN);
@@ -647,6 +653,8 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutSecondaryAccount) {
       2u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
   ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(account_id_1));
   ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(account_id_2));
+  ASSERT_FALSE(token_service_.RefreshTokenHasError(account_id_1));
+  ASSERT_FALSE(token_service_.RefreshTokenHasError(account_id_2));
   // Signout from one of the accounts while signin is in flight.
   dice_response_handler_->ProcessDiceHeader(
       signout_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));
@@ -662,6 +670,7 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutSecondaryAccount) {
   // Check that the right token is available.
   EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(account_id_1));
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id_2));
+  EXPECT_EQ("refresh_token", GetRefreshToken(account_id_2));
 }
 
 // Checks that no auth error fix happens if the user is signed out.
