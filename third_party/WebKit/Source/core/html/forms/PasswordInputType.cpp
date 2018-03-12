@@ -77,20 +77,6 @@ bool PasswordInputType::ShouldRespectListAttribute() {
   return false;
 }
 
-void PasswordInputType::EnableSecureTextInput() {
-  LocalFrame* frame = GetElement().GetDocument().GetFrame();
-  if (!frame)
-    return;
-  frame->Selection().SetUseSecureKeyboardEntryWhenActive(true);
-}
-
-void PasswordInputType::DisableSecureTextInput() {
-  LocalFrame* frame = GetElement().GetDocument().GetFrame();
-  if (!frame)
-    return;
-  frame->Selection().SetUseSecureKeyboardEntryWhenActive(false);
-}
-
 void PasswordInputType::OnAttachWithLayoutObject() {
   GetElement().GetDocument().IncrementPasswordCount();
 }

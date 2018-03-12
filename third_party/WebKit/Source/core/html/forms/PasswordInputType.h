@@ -48,8 +48,6 @@ class PasswordInputType final : public BaseTextInputType {
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;
   bool ShouldRespectListAttribute() override;
-  void EnableSecureTextInput() override;
-  void DisableSecureTextInput() override;
   void OnAttachWithLayoutObject() override;
   void OnDetachWithLayoutObject() override;
 };

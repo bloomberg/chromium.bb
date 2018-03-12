@@ -42,6 +42,10 @@ class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
 }
 
+namespace ui {
+class ScopedPasswordInputEnabler;
+}
+
 @class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
 
@@ -618,6 +622,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   int tab_show_sequence_ = 0;
 
   std::unique_ptr<CursorManager> cursor_manager_;
+
+  // Used to track active password input sessions.
+  std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

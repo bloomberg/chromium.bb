@@ -46,6 +46,7 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#include "ui/base/cocoa/secure_password_input.h"
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/events/base_event_utils.h"
@@ -1929,6 +1930,38 @@ TEST_F(InputMethodMacTest, FinishComposingText) {
   base::RunLoop().RunUntilIdle();
   events = widget_->GetAndResetDispatchedMessages();
   EXPECT_EQ("SetComposition FinishComposingText", GetMessageNames(events));
+}
+
+TEST_F(InputMethodMacTest, SecurePasswordInput) {
+  ASSERT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+  ASSERT_EQ(text_input_manager(), view_->GetTextInputManager());
+
+  base::scoped_nsobject<CocoaTestHelperWindow> window(
+      [[CocoaTestHelperWindow alloc] init]);
+  [[window contentView] addSubview:view_->cocoa_view()];
+
+  // RenderWidgetHostViewMacTest.BlurAndFocusOnSetActive checks the
+  // Focus()/Blur() rules, just silence the warnings here.
+  EXPECT_CALL(*widget_, Focus()).Times(::testing::AnyNumber());
+  EXPECT_CALL(*widget_, Blur()).Times(::testing::AnyNumber());
+
+  [window makeFirstResponder:view_->cocoa_view()];
+
+  // Shouldn't enable secure input if it's not a password textfield.
+  view_->SetActive(true);
+  EXPECT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+
+  SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_PASSWORD);
+  ASSERT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
+  ASSERT_EQ(text_input_manager(), view_->GetTextInputManager());
+  ASSERT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, view_->GetTextInputType());
+
+  // Single matched calls immediately update IsPasswordInputEnabled().
+  view_->SetActive(true);
+  EXPECT_TRUE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
+
+  view_->SetActive(false);
+  EXPECT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
 }
 
 // This test creates a test view to mimic a child frame's view and verifies that
