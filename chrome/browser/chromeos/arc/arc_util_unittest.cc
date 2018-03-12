@@ -24,8 +24,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -194,22 +192,20 @@ class ChromeArcUtilTest : public testing::Test {
     // Used by FakeChromeUserManager.
     chromeos::DeviceSettingsService::Initialize();
     chromeos::CrosSettings::Initialize();
-    wallpaper_controller_client_ =
-        std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(
-        test_wallpaper_controller_.CreateInterfacePtr());
 
     profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
   }
 
   void TearDown() override {
+    // Avoid retries, let the next test start safely.
+    ResetArcAllowedCheckForTesting(profile_);
     profile_manager_->DeleteTestingProfile(kTestProfileName);
     profile_ = nullptr;
-    command_line_.reset();
-    wallpaper_controller_client_.reset();
     chromeos::CrosSettings::Shutdown();
     chromeos::DeviceSettingsService::Shutdown();
     user_manager_enabler_.reset();
+    profile_manager_.reset();
+    command_line_.reset();
   }
 
   TestingProfile* profile() { return profile_; }
@@ -227,8 +223,6 @@ class ChromeArcUtilTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
-  TestWallpaperController test_wallpaper_controller_;
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir data_dir_;
