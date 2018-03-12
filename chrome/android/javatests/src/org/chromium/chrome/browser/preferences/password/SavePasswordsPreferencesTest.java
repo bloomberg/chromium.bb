@@ -615,6 +615,62 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that if export is canceled by the user after a successful reauthentication, then
+     * re-triggering the export and failing the second reauthentication aborts the export as well.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportReauthAfterCancel() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport(preferences);
+
+        // Hit the Cancel button on the warning dialog to cancel the flow.
+        Espresso.onView(withText(R.string.cancel)).perform(click());
+
+        // Now repeat the steps almost like in |reauthenticateAndRequestExport| but simulate failing
+        // the reauthentication challenge.
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+
+        // Avoid launching the Android-provided reauthentication challenge, which cannot be
+        // completed in the test.
+        ReauthenticationManager.setSkipSystemReauth(true);
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Now Chrome thinks it triggered the challenge and is waiting to be resumed. Once resumed
+        // it will check the reauthentication result. First, update the reauth timestamp to indicate
+        // a cancelled reauth:
+        ReauthenticationManager.resetLastReauth();
+
+        // Now call onResume to nudge Chrome into continuing the export flow.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
+
+        // Check that the warning dialog is not displayed.
+        Espresso.onView(withText(R.string.settings_passwords_export_description))
+                .check(doesNotExist());
+
+        // Check that the export menu item is enabled, because the current export was cancelled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+    }
+
+    /**
      * Check whether the user is asked to set up a screen lock if attempting to export passwords.
      */
     @Test

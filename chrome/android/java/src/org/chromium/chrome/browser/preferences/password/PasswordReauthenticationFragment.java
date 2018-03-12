@@ -66,6 +66,8 @@ public class PasswordReauthenticationFragment extends Fragment {
             if (resultCode == getActivity().RESULT_OK) {
                 ReauthenticationManager.recordLastReauth(
                         System.currentTimeMillis(), getArguments().getInt(SCOPE_ID));
+            } else {
+                ReauthenticationManager.resetLastReauth();
             }
             mFragmentManager.popBackStack();
         }
