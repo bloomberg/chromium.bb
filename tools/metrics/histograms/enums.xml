@@ -44438,6 +44438,10 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Was used in draw"/>
 </enum>
 
+<enum name="UsedOmnibox">
+  <int value="0" label="Used Omnibox"/>
+</enum>
+
 <enum name="UserCertContentDisposition">
   <int value="0" label="No Content-Disposition"/>
   <int value="1" label="Content-Disposition"/>
