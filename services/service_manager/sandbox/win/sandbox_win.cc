@@ -789,7 +789,8 @@ bool SandboxWin::InitBrokerServices(sandbox::BrokerServices* broker_services) {
     if (result && (result != MAX_PATH)) {
       ResolveNTFunctionPtr("NtQueryObject", &g_QueryObject);
       result = g_iat_patch_duplicate_handle.Patch(
-          module_name, "kernel32.dll", "DuplicateHandle", DuplicateHandlePatch);
+          module_name, "kernel32.dll", "DuplicateHandle",
+          reinterpret_cast<void*>(DuplicateHandlePatch));
       CHECK(result == 0);
       g_iat_orig_duplicate_handle =
           reinterpret_cast<DuplicateHandleFunctionPtr>(

@@ -311,11 +311,11 @@ bool Initialize(bool force) {
 
 // Replace the default NtMapViewOfSection with our patched version.
 #if defined(_WIN64)
-  NTSTATUS ret =
-      thunk->Setup(::GetModuleHandle(sandbox::kNtdllName),
-                   reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection",
-                   NULL, &blacklist::BlNtMapViewOfSection64, thunk_storage,
-                   sizeof(sandbox::ThunkData), NULL);
+  NTSTATUS ret = thunk->Setup(
+      ::GetModuleHandle(sandbox::kNtdllName),
+      reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection", NULL,
+      reinterpret_cast<void*>(&blacklist::BlNtMapViewOfSection64),
+      thunk_storage, sizeof(sandbox::ThunkData), NULL);
 
   // Keep a pointer to the original code, we don't have enough space to
   // add it directly to the call.
@@ -327,11 +327,11 @@ bool Initialize(bool force) {
                                    sizeof(g_nt_map_view_of_section_func),
                                    PAGE_EXECUTE_READ, &old_protect);
 #else
-  NTSTATUS ret =
-      thunk->Setup(::GetModuleHandle(sandbox::kNtdllName),
-                   reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection",
-                   NULL, &blacklist::BlNtMapViewOfSection, thunk_storage,
-                   sizeof(sandbox::ThunkData), NULL);
+  NTSTATUS ret = thunk->Setup(
+      ::GetModuleHandle(sandbox::kNtdllName),
+      reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection", NULL,
+      reinterpret_cast<void*>(&blacklist::BlNtMapViewOfSection), thunk_storage,
+      sizeof(sandbox::ThunkData), NULL);
 #endif
   delete thunk;
 

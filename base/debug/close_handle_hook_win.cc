@@ -207,13 +207,15 @@ void HandleHooks::AddIATPatch(HMODULE module) {
     return;
 
   base::win::IATPatchFunction* patch = NULL;
-  patch = IATPatch(module, "CloseHandle", &CloseHandleHook,
-                   reinterpret_cast<void**>(&g_close_function));
+  patch =
+      IATPatch(module, "CloseHandle", reinterpret_cast<void*>(&CloseHandleHook),
+               reinterpret_cast<void**>(&g_close_function));
   if (!patch)
     return;
   hooks_.push_back(patch);
 
-  patch = IATPatch(module, "DuplicateHandle", &DuplicateHandleHook,
+  patch = IATPatch(module, "DuplicateHandle",
+                   reinterpret_cast<void*>(&DuplicateHandleHook),
                    reinterpret_cast<void**>(&g_duplicate_function));
   if (!patch)
     return;
@@ -223,9 +225,10 @@ void HandleHooks::AddIATPatch(HMODULE module) {
 void HandleHooks::AddEATPatch() {
   // An attempt to restore the entry on the table at destruction is not safe.
   EATPatch(GetModuleHandleA("kernel32.dll"), "CloseHandle",
-           &CloseHandleHook, reinterpret_cast<void**>(&g_close_function));
+           reinterpret_cast<void*>(&CloseHandleHook),
+           reinterpret_cast<void**>(&g_close_function));
   EATPatch(GetModuleHandleA("kernel32.dll"), "DuplicateHandle",
-           &DuplicateHandleHook,
+           reinterpret_cast<void*>(&DuplicateHandleHook),
            reinterpret_cast<void**>(&g_duplicate_function));
 }
 

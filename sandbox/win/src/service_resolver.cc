@@ -29,7 +29,8 @@ NTSTATUS ServiceResolverThunk::ResolveTarget(const void* module,
     return STATUS_UNSUCCESSFUL;
 
   base::win::PEImage module_image(module);
-  *address = module_image.GetProcAddress(function_name);
+  *address =
+      reinterpret_cast<void*>(module_image.GetProcAddress(function_name));
 
   if (!*address) {
     NOTREACHED_NT();

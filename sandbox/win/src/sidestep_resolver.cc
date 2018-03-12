@@ -108,14 +108,15 @@ NTSTATUS SmartSidestepResolverThunk::Setup(const void* target_module,
   // to our internal smart interceptor.
   size_t standard_bytes = storage_bytes - offsetof(SmartThunk, sidestep);
   ret = SidestepResolverThunk::Setup(target_module, interceptor_module,
-                                     target_name, nullptr, &SmartStub,
+                                     target_name, nullptr,
+                                     reinterpret_cast<void*>(&SmartStub),
                                      &thunk->sidestep, standard_bytes, nullptr);
   if (!NT_SUCCESS(ret))
     return ret;
 
   // Fix the internal thunk to pass the whole buffer to the interceptor.
   SetInternalThunk(&thunk->sidestep.internal_thunk, GetInternalThunkSize(),
-                   thunk_storage, &SmartStub);
+                   thunk_storage, reinterpret_cast<void*>(&SmartStub));
 
   if (storage_used)
     *storage_used = GetThunkSize();
