@@ -203,7 +203,7 @@ public class HistoryActivityTest {
         Assert.assertEquals(1, mHistoryProvider.removeItemsCallback.getCallCount());
         Assert.assertEquals(3, mAdapter.getItemCount());
         Assert.assertEquals(View.VISIBLE, mRecyclerView.getVisibility());
-        Assert.assertEquals(View.GONE, mHistoryManager.getEmptyView().getVisibility());
+        Assert.assertEquals(View.GONE, mHistoryManager.getEmptyViewForTests().getVisibility());
     }
 
     @Test
@@ -231,7 +231,7 @@ public class HistoryActivityTest {
         Assert.assertEquals(1, mHistoryProvider.removeItemsCallback.getCallCount());
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
         Assert.assertEquals(View.GONE, mRecyclerView.getVisibility());
-        Assert.assertEquals(View.VISIBLE, mHistoryManager.getEmptyView().getVisibility());
+        Assert.assertEquals(View.VISIBLE, mHistoryManager.getEmptyViewForTests().getVisibility());
     }
 
     @Test

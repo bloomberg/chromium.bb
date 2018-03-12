@@ -399,7 +399,7 @@ public class BookmarkTest {
         mRenderTestRule.render(manager.getView(), "bookmark_manager_one_folder");
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            BookmarkRow itemView = (BookmarkRow) manager.getRecyclerView()
+            BookmarkRow itemView = (BookmarkRow) manager.getRecyclerViewForTests()
                                            .findViewHolderForAdapterPosition(0)
                                            .itemView;
             itemView.performLongClick();

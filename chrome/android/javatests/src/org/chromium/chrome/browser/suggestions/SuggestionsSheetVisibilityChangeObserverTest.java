@@ -10,7 +10,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.Hidden;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.InitialReveal;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.StateChange;
-import static org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.TYPE_SUGGESTIONS;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
@@ -199,7 +198,7 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
         protected boolean isObservedContentCurrent() {
             BottomSheet.BottomSheetContent currentSheet =
                     mActivity.getBottomSheet().getCurrentSheetContent();
-            return currentSheet != null && currentSheet.getType() == TYPE_SUGGESTIONS;
+            return currentSheet != null;
         }
     }
 

@@ -1430,24 +1430,28 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.ShowBookmarks">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User showed the bookmarks bottom sheet content.</description>
 </action>
 
 <action name="Android.ChromeHome.ShowDownloads">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User showed the downloads bottom sheet content.</description>
 </action>
 
 <action name="Android.ChromeHome.ShowHistory">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User showed the history bottom sheet content.</description>
 </action>
 
 <action name="Android.ChromeHome.ShowIncognitoHome">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1456,6 +1460,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.ShowSuggestions">
+  <obsolete>Unused as of 03/2018</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User showed the suggestions bottom sheet content.</description>

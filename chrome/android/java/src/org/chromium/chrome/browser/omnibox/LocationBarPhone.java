@@ -25,10 +25,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.UiUtils;
 
@@ -55,7 +52,6 @@ public class LocationBarPhone extends LocationBarLayout {
 
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
-    private boolean mCloseSheetOnBackButton;
     private LinearLayout mUrlActionContainer;
 
     /**
@@ -352,25 +348,12 @@ public class LocationBarPhone extends LocationBarLayout {
 
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
-                if (reason == StateChangeReason.OMNIBOX_FOCUS) mCloseSheetOnBackButton = true;
-
                 updateGoogleG();
             }
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
                 updateGoogleG();
-            }
-
-            @Override
-            public void onSheetContentChanged(BottomSheetContent newContent) {
-                if (newContent == null) return;
-
-                @ContentType
-                int type = newContent.getType();
-                if (type != BottomSheetContentController.TYPE_AUXILIARY_CONTENT) {
-                    mCloseSheetOnBackButton = false;
-                }
             }
         });
 
@@ -380,16 +363,6 @@ public class LocationBarPhone extends LocationBarLayout {
 
         // TODO(twellington): remove and null out mGoogleG and mGoogleGContainer if we remove
         //                    support for the Google 'G' to save memory.
-    }
-
-    @Override
-    public void backKeyPressed() {
-        if (mCloseSheetOnBackButton) {
-            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-        }
-        mCloseSheetOnBackButton = false;
-
-        super.backKeyPressed();
     }
 
     @Override
