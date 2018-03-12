@@ -965,6 +965,7 @@ void DesktopWindowTreeHostWin::HandleWindowSizeUnchanged() {
   // changed (can occur on Windows 10 when snapping a window to the side of
   // the screen). In that case do a resize to the current size to reenable
   // swaps.
+  // TODO(ccameron): This will violate surface invariants.
   if (compositor()) {
     compositor()->SetScaleAndSize(
         compositor()->device_scale_factor(),
@@ -975,6 +976,12 @@ void DesktopWindowTreeHostWin::HandleWindowSizeUnchanged() {
 
 void DesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(
     float window_scale_factor) {
+  // TODO(ccameron): This will violate surface invariants, and is insane.
+  // Shouldn't the scale factor and window pixel size changes be sent
+  // atomically? And how does this interact with updates to display::Display?
+  // Should we expect the display::Display to be updated before this? If so,
+  // why can't we use the DisplayObserver that the base WindowTreeHost is
+  // using?
   if (compositor()) {
     compositor()->SetScaleAndSize(
         window_scale_factor, message_handler_->GetClientAreaBounds().size(),

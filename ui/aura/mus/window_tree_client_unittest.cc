@@ -2894,7 +2894,7 @@ TEST_F(WindowTreeClientDestructionTest, WindowsFromOtherConnectionsDeleted) {
   EXPECT_TRUE(window_tracker.windows().empty());
 }
 
-TEST_F(WindowTreeClientWmTest, ObservedPointerEvents) {
+TEST_F(WindowTreeClientWmTestHighDPI, ObservedPointerEvents) {
   const gfx::Rect bounds(1, 2, 101, 102);
   std::unique_ptr<DisplayInitParams> display_params =
       std::make_unique<DisplayInitParams>();
