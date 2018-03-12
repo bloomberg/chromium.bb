@@ -337,7 +337,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   if (did_navigate) {
     TRACE_EVENT0("cc,benchmark", "LayerTreeHost::DidNavigate");
     proxy_->ClearHistoryOnNavigation();
-    host_impl->ClearImageCacheOnNavigation();
+    host_impl->DidNavigate();
   }
 
   {

@@ -139,8 +139,21 @@ void ImageAnimationController::DidActivate() {
     DCHECK(it != animation_state_map_.end());
     it->second.PushPendingToActive();
   }
-
   images_animated_on_sync_tree_.clear();
+
+  // We would retain state for images with no drivers (no recordings) to allow
+  // resuming of animations. However, since the animation will be re-started
+  // from the beginning after navigation, we can avoid maintaining the state.
+  if (did_navigate_) {
+    for (auto it = animation_state_map_.begin();
+         it != animation_state_map_.end();) {
+      if (it->second.has_drivers())
+        it++;
+      else
+        it = animation_state_map_.erase(it);
+    }
+    did_navigate_ = false;
+  }
 }
 
 size_t ImageAnimationController::GetFrameIndexForImage(

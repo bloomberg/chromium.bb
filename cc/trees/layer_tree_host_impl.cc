@@ -2703,13 +2703,14 @@ LayerTreeHostImpl::TakeCompletedImageDecodeRequests() {
   return result;
 }
 
-void LayerTreeHostImpl::ClearImageCacheOnNavigation() {
+void LayerTreeHostImpl::DidNavigate() {
   // It is safe to clear the decode policy tracking on navigations since it
   // comes with an invalidation and the image ids are never re-used.
   bool can_clear_decode_policy_tracking = true;
   tile_manager_.ClearCheckerImageTracking(can_clear_decode_policy_tracking);
   if (image_decode_cache_)
     image_decode_cache_->ClearCache();
+  image_animation_controller_.set_did_navigate();
 }
 
 void LayerTreeHostImpl::DidChangeScrollbarVisibility() {

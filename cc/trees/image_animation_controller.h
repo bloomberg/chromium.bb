@@ -99,10 +99,16 @@ class CC_EXPORT ImageAnimationController {
   size_t GetFrameIndexForImage(PaintImage::Id paint_image_id,
                                WhichTree tree) const;
 
+  void set_did_navigate() { did_navigate_ = true; };
+
   const base::flat_set<AnimationDriver*>& GetDriversForTesting(
       PaintImage::Id paint_image_id) const;
   size_t GetLastNumOfFramesSkippedForTesting(
       PaintImage::Id paint_image_id) const;
+
+  size_t animation_state_map_size_for_testing() {
+    return animation_state_map_.size();
+  }
 
  private:
   class AnimationState {
@@ -236,6 +242,8 @@ class CC_EXPORT ImageAnimationController {
   DelayedNotifier notifier_;
 
   const bool enable_image_animation_resync_;
+
+  bool did_navigate_ = false;
 };
 
 }  // namespace cc
