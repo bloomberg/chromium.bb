@@ -72,6 +72,9 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // Aborts any pending copies.
+  void Abort();
+
   // Shuts down the frame pool and releases all frames in |frames_|.
   // Once this is called frames will no longer be inserted back into
   // |frames_|.
@@ -625,6 +628,16 @@ bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
   return true;
 }
 
+void GpuMemoryBufferVideoFramePool::PoolImpl::Abort() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  // Abort any pending copy requests. If one is already in flight, we can't do
+  // anything about it.
+  if (frame_copy_requests_.size() <= 1u)
+    return;
+  frame_copy_requests_.erase(frame_copy_requests_.begin() + 1,
+                             frame_copy_requests_.end());
+}
+
 void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     const scoped_refptr<VideoFrame>& video_frame,
     FrameResources* frame_resources) {
@@ -903,6 +916,9 @@ GpuMemoryBufferVideoFramePool::PoolImpl::~PoolImpl() {
 }
 
 void GpuMemoryBufferVideoFramePool::PoolImpl::Shutdown() {
+  // Clients don't care about copies once shutdown has started, so abort them.
+  Abort();
+
   // Delete all the resources on the media thread.
   in_shutdown_ = true;
   for (auto* frame_resources : resources_pool_) {
@@ -1063,6 +1079,10 @@ void GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     FrameReadyCB frame_ready_cb) {
   DCHECK(video_frame);
   pool_impl_->CreateHardwareFrame(video_frame, std::move(frame_ready_cb));
+}
+
+void GpuMemoryBufferVideoFramePool::Abort() {
+  pool_impl_->Abort();
 }
 
 void GpuMemoryBufferVideoFramePool::SetTickClockForTesting(

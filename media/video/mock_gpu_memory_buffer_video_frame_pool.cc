@@ -8,6 +8,12 @@
 
 namespace media {
 
+MockGpuMemoryBufferVideoFramePool::MockGpuMemoryBufferVideoFramePool(
+    std::vector<base::OnceClosure>* frame_ready_cbs)
+    : frame_ready_cbs_(frame_ready_cbs) {}
+
+MockGpuMemoryBufferVideoFramePool::~MockGpuMemoryBufferVideoFramePool() {}
+
 void MockGpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     FrameReadyCB frame_ready_cb) {

@@ -25,11 +25,12 @@ class GpuVideoAcceleratorFactories;
 // The pool recycles resources to a void unnecessarily allocating and
 // destroying textures, images and GpuMemoryBuffer that could result
 // in a round trip to the browser/GPU process.
-// NOTE: Destroying the pool will not immediately invalidate outstanding video
-// frames. GPU memory buffers will be kept alive by video frames indirectly
-// referencing them. Video frames themselves are ref-counted and will be
-// released when they are no longer needed, potentially after the pool is
-// destroyed.
+//
+// NOTE: While destroying the pool will abort any uncompleted copies, it will
+// not immediately invalidate outstanding video frames. GPU memory buffers will
+// be kept alive by video frames indirectly referencing them. Video frames
+// themselves are ref-counted and will be released when they are no longer
+// needed, potentially after the pool is destroyed.
 class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
  public:
   GpuMemoryBufferVideoFramePool();
@@ -54,6 +55,10 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
   virtual void MaybeCreateHardwareFrame(
       const scoped_refptr<VideoFrame>& video_frame,
       FrameReadyCB frame_ready_cb);
+
+  // Aborts any pending copies. Previously provided |frame_ready_cb| callbacks
+  // may still be called if the copy has already started.
+  virtual void Abort();
 
   // Allows injection of a base::SimpleTestClock for testing.
   void SetTickClockForTesting(base::TickClock* tick_clock);
