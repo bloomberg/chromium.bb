@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
+#include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
@@ -35,6 +36,11 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
   unified_view_ = new UnifiedSystemTrayView(this);
   InitFeaturePods();
+
+  brightness_slider_controller_ =
+      std::make_unique<UnifiedBrightnessSliderController>();
+  unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
+
   return unified_view_;
 }
 

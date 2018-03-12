@@ -14,23 +14,27 @@ namespace ash {
 
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller)
-    : controller_(controller) {
+    : controller_(controller),
+      feature_pods_container_(new FeaturePodsContainerView()),
+      system_info_view_(new UnifiedSystemInfoView()) {
   DCHECK(controller_);
 
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   AddChildView(new TopShortcutsView(controller_));
-
-  feature_pods_container_ = new FeaturePodsContainerView();
   AddChildView(feature_pods_container_);
-  AddChildView(new UnifiedSystemInfoView());
+  AddChildView(system_info_view_);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
   feature_pods_container_->AddChildView(button);
+}
+
+void UnifiedSystemTrayView::AddSliderView(views::View* slider_view) {
+  AddChildViewAt(slider_view, GetIndexOf(system_info_view_));
 }
 
 }  // namespace ash

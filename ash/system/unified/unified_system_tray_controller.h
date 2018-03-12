@@ -14,6 +14,7 @@ namespace ash {
 
 class FeaturePodControllerBase;
 class SystemTray;
+class UnifiedBrightnessSliderController;
 class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
@@ -62,6 +63,9 @@ class UnifiedSystemTrayController {
   // Controllers of feature pod buttons. Owned by this.
   std::vector<std::unique_ptr<FeaturePodControllerBase>>
       feature_pod_controllers_;
+
+  std::unique_ptr<UnifiedBrightnessSliderController>
+      brightness_slider_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayController);
 };

@@ -32,6 +32,9 @@ class UnifiedSystemTray : public TrayBackgroundView {
   explicit UnifiedSystemTray(Shelf* shelf);
   ~UnifiedSystemTray() override;
 
+  // True if the bubble is shown.
+  bool IsBubbleShown() const;
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
