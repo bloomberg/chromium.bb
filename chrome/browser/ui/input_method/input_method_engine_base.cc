@@ -351,13 +351,13 @@ bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
 }
 
 void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
-                                            KeyEventDoneCallback& callback) {
+                                            KeyEventDoneCallback callback) {
   // Make true that we don't handle IME API calling of setComposition and
   // commitText while the extension is handling key event.
   handling_key_event_ = true;
 
   if (key_event.IsCommandDown()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -373,7 +373,7 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
 
   // Should not pass key event in password field.
   if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
-    observer_->OnKeyEvent(active_component_id_, ext_event, callback);
+    observer_->OnKeyEvent(active_component_id_, ext_event, std::move(callback));
 }
 
 void InputMethodEngineBase::SetSurroundingText(const std::string& text,
@@ -416,17 +416,17 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
     return;
   }
 
-  request->second.second.Run(handled);
+  std::move(request->second.second).Run(handled);
   request_map_.erase(request);
 }
 
 std::string InputMethodEngineBase::AddRequest(
     const std::string& component_id,
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
   std::string request_id = base::IntToString(next_request_id_);
   ++next_request_id_;
 
-  request_map_[request_id] = std::make_pair(component_id, key_data);
+  request_map_[request_id] = std::make_pair(component_id, std::move(key_data));
 
   return request_id;
 }

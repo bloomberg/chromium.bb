@@ -28,7 +28,7 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   void Reset() override;
   bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                       KeyEventDoneCallback& callback) override;
+                       KeyEventDoneCallback callback) override;
   void CandidateClicked(uint32_t index) override;
   void SetSurroundingText(const std::string& text,
                           uint32_t cursor_pos,
@@ -70,8 +70,8 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
     return last_processed_key_event_.get();
   }
 
-  const KeyEventDoneCallback& last_passed_callback() const {
-    return last_passed_callback_;
+  KeyEventDoneCallback last_passed_callback() {
+    return std::move(last_passed_callback_);
   }
 
   bool ClearComposition(int context_id, std::string* error) override;

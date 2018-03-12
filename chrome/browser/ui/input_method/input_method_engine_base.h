@@ -85,7 +85,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     virtual void OnKeyEvent(
         const std::string& engine_id,
         const InputMethodEngineBase::KeyboardEvent& event,
-        ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) = 0;
+        ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) = 0;
 
     // Called when Chrome terminates on-going text input session.
     virtual void OnReset(const std::string& engine_id) = 0;
@@ -141,7 +141,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   void Disable() override;
   void Reset() override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
-                       KeyEventDoneCallback& callback) override;
+                       KeyEventDoneCallback callback) override;
   void SetSurroundingText(const std::string& text,
                           uint32_t cursor_pos,
                           uint32_t anchor_pos,
@@ -178,7 +178,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Adds unprocessed key event to |request_map_|.
   std::string AddRequest(
       const std::string& component_id,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data);
 
  protected:
   // Notifies InputContextHandler that the composition is changed.

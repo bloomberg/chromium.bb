@@ -83,7 +83,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
   void OnKeyEvent(
       const std::string& engine_id,
       const InputMethodEngineBase::KeyboardEvent& event,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override {
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
     calls_bitmap_ |= ONKEYEVENT;
     engine_id_ = engine_id;
     key_event_ = event;
@@ -218,8 +218,8 @@ TEST_F(InputMethodEngineTest, TestKeyEvent) {
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   KeyEventDoneCallback callback(false);
   ui::IMEEngineHandlerInterface::KeyEventDoneCallback keyevent_callback =
-      base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
-  engine_->ProcessKeyEvent(key_event, keyevent_callback);
+      base::BindOnce(&KeyEventDoneCallback::Run, base::Unretained(&callback));
+  engine_->ProcessKeyEvent(key_event, std::move(keyevent_callback));
   EXPECT_EQ(ONKEYEVENT, observer_->GetCallsBitmapAndReset());
   EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   EXPECT_EQ("keydown", observer_->GetKeyEvent().type);

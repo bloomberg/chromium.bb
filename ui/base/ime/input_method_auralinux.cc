@@ -99,13 +99,14 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   if (text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
       GetEngine() && GetEngine()->IsInterestedInKeyEvent() &&
       (!filtered || NeedInsertChar())) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::Bind(
-        &InputMethodAuraLinux::ProcessKeyEventByEngineDone,
-        weak_ptr_factory_.GetWeakPtr(), base::Owned(new ui::KeyEvent(*event)),
-        filtered, composition_changed_,
-        base::Owned(new ui::CompositionText(composition_)),
-        base::Owned(new base::string16(result_text_)));
-    GetEngine()->ProcessKeyEvent(*event, callback);
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
+        base::BindOnce(&InputMethodAuraLinux::ProcessKeyEventByEngineDone,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(new ui::KeyEvent(*event)), filtered,
+                       composition_changed_,
+                       base::Owned(new ui::CompositionText(composition_)),
+                       base::Owned(new base::string16(result_text_)));
+    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
     return ui::EventDispatchDetails();
   }
 
