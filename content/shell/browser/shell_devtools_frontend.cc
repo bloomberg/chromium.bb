@@ -19,8 +19,8 @@ namespace content {
 namespace {
 static GURL GetFrontendURL() {
   int port = ShellDevToolsManagerDelegate::GetHttpHandlerPort();
-  return GURL(
-      base::StringPrintf("http://127.0.0.1:%d/devtools/inspector.html", port));
+  return GURL(base::StringPrintf(
+      "http://127.0.0.1:%d/devtools/devtools_app.html", port));
 }
 }  // namespace
 
