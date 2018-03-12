@@ -45,7 +45,7 @@ std::unique_ptr<ActionInfo> PageActionManifestTest::LoadAction(
   return nullptr;
 }
 
-TEST_F(PageActionManifestTest, ManifestVersion2) {
+TEST_F(PageActionManifestTest, ManifestVersion2DoesntAllowLegacyKeys) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("page_action_manifest_version_2.json"));
   ASSERT_TRUE(extension.get());
@@ -53,7 +53,6 @@ TEST_F(PageActionManifestTest, ManifestVersion2) {
       ActionInfo::GetPageActionInfo(extension.get());
   ASSERT_TRUE(page_action_info);
 
-  EXPECT_EQ("", page_action_info->id);
   EXPECT_TRUE(page_action_info->default_icon.empty());
   EXPECT_EQ("", page_action_info->default_title);
   EXPECT_TRUE(page_action_info->default_popup_url.is_empty());
@@ -68,105 +67,43 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   // First try with an empty dictionary.
   action = LoadAction("page_action_empty.json");
   ASSERT_TRUE(action);
+  EXPECT_TRUE(action->default_icon.empty());
+  EXPECT_EQ("", action->default_title);
 
   // Now setup some values to use in the action.
-  const std::string id("MyExtensionActionId");
-  const std::string name("MyExtensionActionName");
-  std::string img1("image1.png");
+  const std::string kTitle("MyExtensionActionTitle");
+  const std::string kIcon("image1.png");
 
   action = LoadAction("page_action.json");
   ASSERT_TRUE(action);
-  ASSERT_EQ(id, action->id);
 
-  // No title, so fall back to name.
-  ASSERT_EQ(name, action->default_title);
-  ASSERT_EQ(img1,
-            action->default_icon.Get(19, ExtensionIconSet::MATCH_EXACTLY));
-
-  // Same test with explicitly set type.
-  action = LoadAction("page_action_type.json");
-  ASSERT_TRUE(action);
-
-  // Try an action without id key.
-  action = LoadAction("page_action_no_id.json");
-  ASSERT_TRUE(action);
-
-  // Then try without the name key. It's optional, so no error.
-  action = LoadAction("page_action_no_name.json");
-  ASSERT_TRUE(action);
-  ASSERT_TRUE(action->default_title.empty());
-
-  // Then try without the icon paths key.
-  action = LoadAction("page_action_no_icon.json");
-  ASSERT_TRUE(action);
+  EXPECT_EQ(kTitle, action->default_title);
+  EXPECT_EQ(kIcon,
+            action->default_icon.Get(extension_misc::EXTENSION_ICON_GIGANTOR,
+                                     ExtensionIconSet::MATCH_SMALLER));
 
   // Now test that we can parse the new format for page actions.
-  const std::string kTitle("MyExtensionActionTitle");
-  const std::string kIcon("image1.png");
   const std::string kPopupHtmlFile("a_popup.html");
 
-  action = LoadAction("page_action_new_format.json");
-  ASSERT_TRUE(action);
-  ASSERT_EQ(kTitle, action->default_title);
-  ASSERT_FALSE(action->default_icon.empty());
-
-  // Invalid title should give an error even with a valid name.
+  // Invalid title should give an error.
   LoadAndExpectError("page_action_invalid_title.json",
                      errors::kInvalidPageActionDefaultTitle);
 
-  // Invalid name should give an error only with no title.
-  action = LoadAction("page_action_invalid_name.json");
-  ASSERT_TRUE(action);
-  ASSERT_EQ(kTitle, action->default_title);
+  // Test the "default_popup" key.
+  // These tests require an extension_url, so we also load the extension.
 
-  LoadAndExpectError("page_action_invalid_name_no_title.json",
-                     errors::kInvalidPageActionName);
-
-  // Test that keys "popup" and "default_popup" both work, but can not
-  // be used at the same time.
-  // These tests require an extension_url, so we also load the manifest.
-
-  // Only use "popup", expect success.
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("page_action_popup.json");
+  scoped_refptr<const Extension> extension =
+      LoadAndExpectSuccess("page_action_default_popup.json");
   const ActionInfo* extension_action =
       ActionInfo::GetPageActionInfo(extension.get());
   ASSERT_TRUE(extension_action);
-  ASSERT_STREQ(
-      extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      extension_action->default_popup_url.spec().c_str());
-
-  // Use both "popup" and "default_popup", expect failure.
-  LoadAndExpectError("page_action_popup_and_default_popup.json",
-                     ErrorUtils::FormatErrorMessage(
-                         errors::kInvalidPageActionOldAndNewKeys,
-                         keys::kPageActionDefaultPopup,
-                         keys::kPageActionPopup));
-
-  // Use only "default_popup", expect success.
-  extension = LoadAndExpectSuccess("page_action_popup.json");
-  extension_action = ActionInfo::GetPageActionInfo(extension.get());
-  ASSERT_TRUE(extension_action);
-  ASSERT_STREQ(
-      extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      extension_action->default_popup_url.spec().c_str());
+  EXPECT_EQ(extension->url().Resolve(kPopupHtmlFile),
+            extension_action->default_popup_url);
 
   // Setting default_popup to "" is the same as having no popup.
   action = LoadAction("page_action_empty_default_popup.json");
   ASSERT_TRUE(action);
   EXPECT_TRUE(action->default_popup_url.is_empty());
-  ASSERT_STREQ(
-      "",
-      action->default_popup_url.spec().c_str());
-
-  // Setting popup to "" is the same as having no popup.
-  action = LoadAction("page_action_empty_popup.json");
-
-  ASSERT_TRUE(action);
-  EXPECT_TRUE(action->default_popup_url.is_empty());
-  ASSERT_STREQ(
-      "",
-      action->default_popup_url.spec().c_str());
 }
 
 }  // namespace extensions

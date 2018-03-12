@@ -290,7 +290,6 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
       extension.name();
   SetTitle(kDefaultTabId, title);
   SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
-  set_id(manifest_data.id);
 
   // Initialize the specified icon set.
   if (!manifest_data.default_icon.empty()) {
