@@ -1,38 +1,30 @@
 # Clang
 
-[Clang](http://clang.llvm.org/) is a compiler with many desirable features
-(outlined on their website).
+[Clang](http://clang.llvm.org/) is the main supported compiler when
+building Chromium on all platforms.
 
-Chrome can be built with Clang. It is now the default compiler on Android, Mac
-and Linux for building Chrome, and it is currently useful for its warning and
-error messages on Windows.
-
-See
-[the open bugs](http://code.google.com/p/chromium/issues/list?q=label:clang).
+Known [clang bugs and feature
+requests](http://code.google.com/p/chromium/issues/list?q=label:clang).
 
 [TOC]
 
-## Build instructions
+## Building with clang
 
-Get clang (happens automatically during `gclient runhooks` on Mac and Linux):
+This happens by default, with clang binaries being fetched by gclient
+during the `gclient runhooks` phase. To fetch them manually, or build
+a local custom clang, use
 
     tools/clang/scripts/update.py
 
-Only needs to be run once per checkout, and clang will be automatically updated
-by `gclient runhooks`.
-
-Regenerate the ninja build files with Clang enabled. Again, on Linux and Mac,
-Clang is the default compiler.
-
-Run `gn args` and add `is_clang = true` to your args.gn file.
+Run `gn args` and make sure there is no `is_clang = false` in your args.gn file.
 
 Build: `ninja -C out/gn chrome`
 
-## Reverting to gcc on linux
+## Reverting to gcc on Linux or MSVC on Windows
 
-We don't have bots that test this, but building with gcc4.8+ should still work
-on Linux. If your system gcc is new enough, run `gn args` and add `is_clang =
-false`.
+There are no bots that test this but `is_clang = false` will revert to
+gcc on Linux and to Visual Studio on Windows. There is no guarantee it
+will work.
 
 ## Mailing List
 
@@ -63,29 +55,16 @@ See [clang_static_analyzer.md](clang_static_analyzer.md).
 
 ## Windows
 
-clang can be used as compiler on Windows. Clang uses Visual Studio's linker and
-SDK, so you still need to have Visual Studio installed.
+Since October 2017, clang is the default compiler on Windows. It uses
+MSVC's linker and SDK, so you still need to have Visual Studio with
+C++ support installed.
 
-Things should compile, and all tests should pass. You can check these bots for
-how things are currently looking:
-https://build.chromium.org/p/chromium.fyi/console?category=win%20clang
-
-```shell
-python tools\clang\scripts\update.py
-# run `gn args` and add `is_clang = true` to your args.gn, then...
-ninja -C out\gn chrome
-```
-
-The `update.py` script only needs to be run once per checkout. Clang will be
-kept up to date by `gclient runhooks`.
+To use MSVC's compiler (if it still works), use `is_clang = false`.
 
 Current brokenness:
 
 *   To get colored diagnostics, you need to be running
     [ansicon](https://github.com/adoxa/ansicon/releases).
-*   Debug info does now work, but support for it is new.  If you see something
-    not working right, please file a bug and mark it as blocking the
-    [clang/win debug info tracking bug](https://crbug.com/636111).
 
 ## Using a custom clang binary
 
@@ -102,7 +81,6 @@ clang_use_chrome_plugins = false
 is_debug = false
 symbol_level = 1
 is_component_build = true
-is_clang = true  # Implicitly set on Mac, Linux, iOS; needed on Win and Android.
 ```
 
 You can then run `head out/gn/toolchain.ninja` and check that the first to
