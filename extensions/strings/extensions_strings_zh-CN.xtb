@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">程序包无效：“<ph name="ERROR_CODE" />”。</translation>
 <translation id="1140871961407805696">后置</translation>
 <translation id="1196338895211115272">无法导出私有密钥。</translation>
-<translation id="1256619696651732561">扩展程序清单解析器</translation>
 <translation id="1420684932347524586">糟糕！无法生成随机的 RSA 私有密钥。</translation>
 <translation id="1445572445564823378">此扩展程序拖慢了 <ph name="PRODUCT_NAME" />的运行速度。您应将其停用，以恢复 <ph name="PRODUCT_NAME" />的性能。</translation>
 <translation id="1468038450257740950">WebGL 不受支持。</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">无法为内容脚本加载“<ph name="RELATIVE_PATH" />”文件。该文件采用的不是 UTF-8 编码。</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" />（扩展程序 ID为“<ph name="EXTENSION_ID" />”）已被管理员阻止。<ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">无法安装程序包：“<ph name="ERROR_CODE" />”</translation>
-<translation id="3097628171361913691">Zip 文件安装程序</translation>
 <translation id="3115238746683532089">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3144135466825225871">未能替换 CRX 文件。请检查该文件是否正在使用。</translation>
 <translation id="3163201441334626963">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">清单文件缺失或不可读取</translation>
 <translation id="8636666366616799973">程序包无效。详细信息：“<ph name="ERROR_MESSAGE" />”。</translation>
 <translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因为其他扩展程序（<ph name="EXTENSION_NAME" />）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
-<translation id="8712265948125780616">扩展程序解压缩程序</translation>
 <translation id="8761756413268424715">“<ph name="APP_NAME" />”请求访问您的其中一台设备：</translation>
 <translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 <translation id="8885905466771744233">指定扩展程序的私有密钥已存在。请重复使用该密钥，或者先删除它。</translation>

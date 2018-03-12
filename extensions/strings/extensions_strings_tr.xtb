@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Paket geçersiz: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Arka kamera</translation>
 <translation id="1196338895211115272">Özel anahtar dışa alınamadı.</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1420684932347524586">Hata! Rastgele RSA özel anahtarı oluşturulamadı.</translation>
 <translation id="1445572445564823378">Bu uzantı <ph name="PRODUCT_NAME" /> uygulamasını yavaşlatıyor. <ph name="PRODUCT_NAME" /> uygulamasının performansını eski haline getirmek için bu uzantıyı devre dışı bırakmalısınız.</translation>
 <translation id="1468038450257740950">WebGL desteklenmez.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">İçerik komut dosyası için '<ph name="RELATIVE_PATH" />' dosyası yüklenemedi. Dosya UTF-8 olarak kodlanmamış.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (uzantı kimliği "<ph name="EXTENSION_ID" />") yönetici tarafından engelleniyor. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paket yüklenemedi: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Zip Dosyası Yükleyici</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID" /> ürün kimliğine sahip bilinmeyen ürün (seri numarası: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx dosyası değiştirilemedi. Dosyanın kullanımda olup olmadığını kontrol edin.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID" /> ürün kimliğine sahip bilinmeyen ürün</translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifest dosyası eksik veya okunamıyor</translation>
 <translation id="8636666366616799973">Paket geçersiz. Ayrıntılar: '<ph name="ERROR_MESSAGE" />'</translation>
 <translation id="8670869118777164560">Bu uzantı bir ağ isteğini <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> hedefine yönlendiremedi, çünkü başka bir uzantı (<ph name="EXTENSION_NAME" />) o isteği <ph name="ACTUAL_REDIRECT_DESTINATION" /> hedefine yönlendirmişti.</translation>
-<translation id="8712265948125780616">Uzantı Açıcı</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" uygulaması cihazlarınızdan birine erişim izni istiyor:</translation>
 <translation id="8825366169884721447">Bu uzantı bir ağ isteğinin "<ph name="HEADER_NAME" />" adlı istek başlığını değiştiremedi, çünkü söz konusu değişiklik başka bir uzantı (<ph name="EXTENSION_NAME" />) ile çakışıyordu.</translation>
 <translation id="8885905466771744233">Belirtilen uzantıya ilişkin özel anahtar zaten var. Var olan anahtarı yeniden kullanın veya öncelikle bu anahtarı silin.</translation>

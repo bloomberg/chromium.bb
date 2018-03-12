@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Skala på skärmen</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
 <translation id="2338501278241028356">Aktivera Bluetooth så att det går att upptäcka enheter i närheten</translation>
+<translation id="2351266942280602854">Språk och inmatning</translation>
 <translation id="2352467521400612932">Inställningar för e-penna</translation>
 <translation id="2354174487190027830">Aktiverar <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Om du aktiverar mobildata aktiveras Bluetooth.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2675319268637823299">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL" />.
     Alla användare måste logga ut för att fortsätta.</translation>
+<translation id="2718395828230677721">Nattljus</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
 <translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="315116470104423982">Mobildata</translation>
+<translation id="3151786313568798007">Orientering</translation>
 <translation id="3153444934357957346">Du kan högst använda <ph name="MULTI_PROFILE_USER_LIMIT" /> konton för multiinloggning.</translation>
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3294437725009624529">Gäst</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Ingång</translation>
 <translation id="3626281679859535460">Ljusstyrka</translation>
 <translation id="3631369015426612114">Tillåt aviseringar från följande</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Ta bild av skärmområde</translation>
 <translation id="371370241367527062">Mikrofonen på framsidan</translation>
 <translation id="3771549900096082774">Högkontrastläge</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
 <translation id="5457599981699367932">Använd som gäst</translation>
+<translation id="54609108002486618">Hanterade</translation>
 <translation id="553675580533261935">Sessionen avslutas</translation>
 <translation id="5548285847212963613">Tillägget <ph name="EXTENSION_NAME" /> kan hjälpa till med att ansluta till nätverket.</translation>
 <translation id="5571066253365925590">Bluetooth aktiverad</translation>
@@ -309,6 +314,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
+<translation id="8649101189709089199">Textuppläsning</translation>
 <translation id="8652175077544655965">Stäng inställningarna</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>
@@ -325,6 +331,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen används.</translation>

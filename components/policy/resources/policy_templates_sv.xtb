@@ -63,6 +63,9 @@
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
       tillåtna frekvensen är 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverade företagsskrivare</translation>
+<translation id="1219695476179627719">Anger om enheten ska återställas till versionen som är inställd i <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> om den redan kör en senare version.
+
+      RollbackDisabled är standard.</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
 <translation id="1257550411839719984">Ange standardkatalog för nedladdning</translation>
@@ -526,6 +529,11 @@
       Om policyn inte anges kommer proxyfunktionen för datakomprimering kommer användaren att kunna välja om han eller hon vill använda den.</translation>
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
+<translation id="2596260130957832043">Styr om NTLMv2 är aktiverat.
+
+          Alla nyare versioner av Samba- och Windows-servrar har stöd för NTLMv2. Detta bör bara inaktiveras om det krävs för bakåtkompatibilitet eftersom det gör autentiseringen mindre säker.
+
+          Om inget värde anges för principen används standardvärdet sant och NTLMv2 aktiveras.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
@@ -546,6 +554,7 @@
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="2682225790874070339">Inaktiverar Drive i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivera proxyfunktionen för datakomprimering</translation>
+<translation id="2693108589792503178">Konfigurera webbadressen för ändring av lösenord.</translation>
 <translation id="2731627323327011390">Inaktivera användning av <ph name="PRODUCT_OS_NAME" />-certifikat för ARC-appar</translation>
 <translation id="2742843273354638707">Dölj appen Chrome Web Store och länken i sidfoten från den nya fliksidan och startprogrammet för <ph name="PRODUCT_OS_NAME" />.
 
@@ -603,6 +612,7 @@
       Om du inaktiverar den här inställningen eller inte anger något värde används den senast använda skrivaren som standardval för Förhandsgranskning.
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
+<translation id="2867699958489427143">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför en komplett powerwash under processen.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
@@ -638,6 +648,7 @@
 <translation id="2987155890997901449">Aktivera ARC</translation>
 <translation id="2987227569419001736">Kontrollera användningen av Web Bluetooth API</translation>
 <translation id="3016255526521614822">Ange anteckningsappar som är tillåtna på låsskärmen i <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="3021562480854470924">Antalet återställningspunkter som tillåts</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
 
@@ -1064,6 +1075,7 @@
       Om principen inte anges kan användaren välja att visa eller dölja genvägen Appar via bokmärkesfältets snabbmeny.
 
       Om principen har konfigurerats kan användaren inte ändra den, utan genvägen Appar kommer antingen alltid att visas eller aldrig att visas.</translation>
+<translation id="443454694385851356">Äldre (osäker)</translation>
 <translation id="443665821428652897">Ta bort webbplatsdata när webbläsaren avslutas</translation>
 <translation id="4439336120285389675">Ange en lista över utfasade webbplattformsfunktioner som ska kunna återaktiveras tillfälligt.
 
@@ -1075,6 +1087,12 @@
       </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
 <translation id="4449545651113180484">Rotera skärmen 270 grader medurs</translation>
+<translation id="4459359100627756769">Konfigurera listan över företagets inloggningsadresser (endast HTTP- och HTTPS-scheman). Signaturer för lösenord registreras på webbadresserna och används för att upptäcka återanvändning av lösenord.
+      Inställningen bör endast användas av G Suit-användare med SSO/SMAL-system.
+
+      Om inställningen är aktiverad registrerar tjänsten för lösenordsskydd signaturer för lösenord på webbadresserna i syfte att upptäcka återanvändning av lösenord.
+      Om inställningen är inaktiverad eller inte angiven registrerar tjänsten för lösenordsskydd endast signaturer för lösenord på https://accounts.google.com.
+      Principen är inte tillgänglig för Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
 <translation id="4474167089968829729">Aktivera lösenordshanteraren för sparade lösenord</translation>
 <translation id="4476769083125004742">Om den här principen är inställd på <ph name="BLOCK_GEOLOCATION_SETTING" /> får Android-appar inte tillgång till platsinformation. Om principen är inställd på något annat eller lämnas utan inställning blir användaren tillfrågad om han eller hon vill ge Android-appen tillgång till platsinformationen när det blir aktuellt.</translation>
@@ -1271,6 +1289,15 @@
 <translation id="5068140065960598044">Molnprincipen åsidosätter datorprincipen för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="5090209345759901501">Utöka inställningen för Flash-innehåll till allt innehåll</translation>
+<translation id="5093540029655764852">Anger frekvensen (i dagar) med vilken en klient byter lösenordet till kontot på sin lokala dator. Lösenordet genereras slumpmässigt av klienten och är inte synligt för användaren.
+
+      Datorns lösenord bör ändras regelbundet, precis som användarnas lösenord. Om principen inaktiveras eller ett stort antal dagar mellan ändringarna anges kan det ha en negativ inverkan på säkerheten eftersom obehöriga får längre tid på sig att kapa och utnyttja datorns lösenord.
+
+      Om inget värde anges ändras datorns lösenord var 30:e dag.
+
+      Om värdet anges som 0 inaktiveras ändring av datorns lösenord.
+
+      Observera att om klienten har varit offline en längre tid kan lösenorden vara äldre än det angivna antalet dagar.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
 <translation id="5108031557082757679">Inaktiverade skrivare för företagsenheter</translation>
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
@@ -1297,6 +1324,7 @@
           Om värdet * finns i svartlistan innebär det att alla tillägg är svartlistade. Användarna kan bara installera tillägg som uttryckligen finns i vitlistan.
 
           Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
+<translation id="519247340330463721">Konfigurera principer som är relaterade till Säker webbsökning.</translation>
 <translation id="5192837635164433517">Policyn gör att det går att använda alternativa felsidor som finns inbyggda i <ph name="PRODUCT_NAME" /> (till exempel Sidan hittades inte) och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar inställningen används alternativa felsidor.
@@ -1317,6 +1345,15 @@
 <translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5247006254130721952">Blockera farliga nedladdningar</translation>
+<translation id="5248863213023520115">Anger krypteringstyper som tillåts vid Kerberos-begäranden från en <ph name="MS_AD_NAME" />-server.
+
+      Om All anges för principen tillåts både AES-krypteringstyperna aes256-cts-hmac-sha1-96 och aes128-cts-hmac-sha1-96 och RC4-krypteringstypen rc4-hmac. AES-kryptering har företräde om servern har stöd för båda typerna. Observera att RC4 betraktas som osäkert och servern bör omkonfigureras om möjligt så att AES-kryptering stöds.
+
+      Om Strong anges för principen eller om inget värde anges tillåts bara AES-krypteringstyper.
+
+      Om Legacy anges för principen tillåts bara RC4-krypteringstypen. Detta alternativ är osäkert och bör endast användas under särskilda omständigheter.
+
+      Läs mer på https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Kan rekommenderas</translation>
 <translation id="527237119693897329">Låter dig ange vilka värdar för Native Messaging (kommunikation med inbyggda appar) som inte ska läsas in.
 
@@ -1407,6 +1444,7 @@
       Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
 
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
+<translation id="5526701598901867718">Alla (osäker)</translation>
 <translation id="5529037166721644841">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten tillfrågas om användarpolicyinformation.
 
        När denna policy principen har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns.
@@ -1473,6 +1511,19 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="5784370777704871674">Aktiverar funktionen Säker webbsökning i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra inställningen.
+
+      Om du aktiverar inställningen är Säker webbsökning alltid aktiverad.
+
+      Om du inaktiverar inställningen är Säker webbsökning aldrig aktiverad.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen Aktivera skydd mot lösenordsfiske och skadlig programvara i <ph name="PRODUCT_NAME" />.
+
+      Om ett värde inte anges för principen är den aktiverad, men användarna kan ändra den.
+
+      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.
+
+      Principen är inte tillgänglig för Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="5795001131770861387">Aktiverar stöd för HTTP/0.9 på portar som inte har angetts som standard</translation>
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
@@ -1715,6 +1766,7 @@
           Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används. 
 
           Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
+<translation id="6473623140202114570">Konfigurera listan över domäner där Säker webbsökning inte utlöser varningar.</translation>
 <translation id="6491139795995924304">Tillåt Bluetooth på enheten</translation>
 <translation id="6520802717075138474">Importera sökmotorer från standardwebbläsaren första gången den körs</translation>
 <translation id="6525955212636890608">Om du aktiverar den här inställningen körs allt inbäddat Flash-innehåll på webbplatser där Flash är tillåtet enligt innehållsinställningarna (som kan ha angetts av användaren eller med en företagsprincip). Det gäller även innehåll som kommer från andra domäner eller småskaligt innehåll.
@@ -1806,6 +1858,9 @@
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>
+<translation id="6856743875250214792">Principen har fasats ut och togs bort i M66 eftersom den endast användes för interna tester och utgör en säkerhetsrisk.
+
+      Anger vilka flaggor som ska användas i <ph name="PRODUCT_NAME" /> när produkten startas. De angivna flaggorna tillämpas endast på inloggningsskärmen. Flaggor som angetts via principen tillämpas inte på användarsessioner.</translation>
 <translation id="685769593149966548">Gör strikt begränsat läge på YouTube obligatoriskt</translation>
 <translation id="687046793986382807">Denna princip används inte från och med <ph name="PRODUCT_NAME" /> version 35. 
 
@@ -1908,6 +1963,7 @@
       Om policyn inte har angetts kan användaren få välja om importen ska göras, eller så utförs importen automatiskt.</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
+<translation id="7072208053150563108">Ändringsfrekvens för datorns lösenord</translation>
 <translation id="7072406291414141328">Aktiverar begränsning av bandbredden i nätverket</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
 <translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
@@ -1926,6 +1982,7 @@
       Om policyn är inställd på falskt inaktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
 
       Om policyn inte ställs in är bakgrundsläget inaktiverat från början och kan ändras av användaren i webbläsarinställningarna.</translation>
+<translation id="7127892035367404455">Återställ till målversion</translation>
 <translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME" />.
 
       Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
@@ -2027,6 +2084,7 @@
       Om principen har inaktiverats är stavningskontroll inte tillgänglig för användaren. Dessutom ignoreras principen SpellcheckLanguage när den här principen har inaktiverats.
       </translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
+<translation id="7458437477941640506">Återställ inte till målversionen om versionen av operativsystemet är nyare. Uppdateringar har även inaktiverats.</translation>
 <translation id="7469554574977894907">Aktivera sökförslag</translation>
 <translation id="7474249562477552702">Om SHA-1-signerade certifikat som utfärdats av lokala tillitsankare tillåts eller inte</translation>
 <translation id="7485481791539008776">Skrivarens standardurvalsregler</translation>
@@ -2059,6 +2117,7 @@
       Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
 
       Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --disk-cache-size.</translation>
+<translation id="759957074386651883">Inställningar för Säker webbsökning</translation>
 <translation id="7604169113182304895">Android-appar kan ta hänsyn till den här listan men måste inte göra det. Det går inte att göra inställningen obligatorisk för dem.</translation>
 <translation id="7612157962821894603">Flaggor som gäller hela systemet och som ska tillämpas vid start av <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
@@ -2328,6 +2387,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="841977920223099909">Lösenordsskyddets utlösare för varningar</translation>
 <translation id="8424255554404582727">Ange standardrotation efter omstart för skärmen</translation>
 <translation id="8426231401662877819">Rotera skärmen 90 grader medurs</translation>
+<translation id="8433423491036718210">Konfigurera listan med webbadresser för företagsinloggning där signaturer för lösenord registreras i tjänsten för lösenordsskydd.</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
 <translation id="8459216513698220096">Anger om och hur användarpolicyn från datorns GPO behandlas.
 
@@ -2346,6 +2406,16 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
 <translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
+<translation id="8507835864888987300">Anger en målversion för automatiska uppdateringar.
+
+      Anger prefixet för en målversion som <ph name="PRODUCT_OS_NAME" /> uppdateras till. Om enheten kör en tidigare version än prefixet som har angetts uppdateras operativsystemet till den senaste versionen med prefixet i fråga Om enheten redan har en senare version beror resultatet på värdet för <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Prefixformatet fungerar per komponent som i följande exempel:
+
+      "" (eller inte konfigurerad): uppdatera till den senaste tillgängliga versionen.
+      "1412.": uppdatera till alla delversioner av 1412 (t.ex. 1412.24.34 eller 1412.60.2)
+      "1412.2.": uppdatera till alla delversioner av 1412.2 (t.ex. 1412.2.34 eller 1412.2.2)
+      "1412.24.34": uppdatera bara till denna specifika version.
+
+      Obs! Versionsbegränsningar rekommenderas inte eftersom de kan leda till att uppdateringar av programvaran eller viktiga säkerhetskorrigeringar inte görs. Om uppdateringarna begränsas till ett visst versionsprefix kan användarnas säkerhet äventyras.</translation>
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="8527932539502116028">Anger skrivare som inte får användas.
 

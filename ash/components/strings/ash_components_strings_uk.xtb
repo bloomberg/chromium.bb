@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">Відкрити нове вікно в режимі анонімного перегляду</translation>
 <translation id="1299858300159559687">Друкувати поточну сторінку</translation>
 <translation id="1383876407941801731">Пошук</translation>
-<translation id="1439252533104567537">Перейти на нумеровану вкладку</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> або <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">Панель запуску</translation>
 <translation id="152892567002884378">Збільшити гучність</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">Виділити наступний елемент на полиці</translation>
 <translation id="309173601632226815">Виділити кнопку панелі запуску на полиці</translation>
 <translation id="3105917916468784889">Зробити знімок екрана</translation>
-<translation id="3118681365140644126">Скасувати виділення кнопки на полиці</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Активувати адресний рядок</translation>
 <translation id="3288816184963444640">Закрити поточне вікно</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">Показати довідник із комбінацій клавіш</translation>
 <translation id="4628718545549558538">Відкрити панель стану (де розташоване зображення облікового запису)</translation>
 <translation id="4642092649622328492">Зробити частковий знімок екрана</translation>
-<translation id="4725377341024374454">Натиснути виділену кнопку на полиці</translation>
 <translation id="4801989101741319327">Перейти в кінець наступного слова</translation>
 <translation id="4916163929714267752">Відкрити посилання в новому вікні</translation>
 <translation id="5034421018520995080">Перейти вгору сторінки</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">Видалити попереднє слово</translation>
 <translation id="5928303187149237472">Змінити роздільну здатність екрана</translation>
 <translation id="5975083100439434680">Зменшити масштаб</translation>
-<translation id="6011500873794669296">Перейти між панеллю стану (де розташоване зображення облікового запису), панеллю запуску, адресним рядком, панеллю закладок (якщо її видно), відкритою сторінкою та панеллю завантажень (якщо її видно)</translation>
 <translation id="6022924867608035986">Очистити вікно пошуку</translation>
 <translation id="6045998054441862242">Увімкнути режим високого контрасту</translation>
 <translation id="6052614013050385269">Відкрити контекстне меню посилання</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">Відкрити посилання в новій вкладці</translation>
 <translation id="8609384513243082612">Відкрити нову вкладку</translation>
 <translation id="8644639153978066712">Показати сховані файли в додатку Файли</translation>
-<translation id="8709893667941082515">Активувати адресний рядок для пошуку</translation>
 <translation id="8717459106217102612">Виділити попереднє слово або літеру</translation>
 <translation id="8727232706774971183">Переглянути сповіщення</translation>
 <translation id="88986195241502842">Сторінка вниз</translation>

@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Pakotne nav derīga: <ph name="ERROR_CODE" />.</translation>
 <translation id="1140871961407805696">Vērsta uz aizmuguri</translation>
 <translation id="1196338895211115272">Neizdevās eksportēt privāto atslēgu.</translation>
-<translation id="1256619696651732561">Paplašinājumu manifestu parsētājs</translation>
 <translation id="1420684932347524586">Vai! Neizdevās ģenerēt nejauši izvēlētu RSA privāto atslēgu.</translation>
 <translation id="1445572445564823378">Šis paplašinājums palēnina <ph name="PRODUCT_NAME" /> darbību. Atspējojiet to, lai atjaunotu <ph name="PRODUCT_NAME" /> veiktspēju.</translation>
 <translation id="1468038450257740950">Tehnoloģija WebGL netiek atbalstīta.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Nevar ielādēt failu "<ph name="RELATIVE_PATH" />" satura skriptam. Tas nav UTF-8 kodēts.</translation>
 <translation id="2903070246402204397">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME" /> (paplašinājuma ID “<ph name="EXTENSION_ID" />”). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nevarēja instalēt pakotni: <ph name="ERROR_CODE" />.</translation>
-<translation id="3097628171361913691">ZIP failu instalētājs</translation>
 <translation id="3115238746683532089">Nezināms produkts (ID: <ph name="PRODUCT_ID" />), ko piedāvā <ph name="VENDOR_ID" /> (sērijas numurs: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Neizdevās aizstāt crx failu. Pārbaudiet, vai fails tiek izmantots.</translation>
 <translation id="3163201441334626963">Nezināms produkts (ID: <ph name="PRODUCT_ID" />), ko piedāvā <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifesta fails nav atrodams vai nolasāms.</translation>
 <translation id="8636666366616799973">Pakotne nav derīga. Detaļas: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Šis paplašinājums nevarēja novirzīt tīkla pieprasījumu uz galamērķi <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) to novirzīja uz šādu galamērķi: <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Paplašinājumu pakotņu atvērējs</translation>
 <translation id="8761756413268424715">Lietotne <ph name="APP_NAME" /> pieprasa piekļuvi kādai jūsu ierīcei:</translation>
 <translation id="8825366169884721447">Šis paplašinājums nevarēja mainīt tīkla pieprasījuma galveni “<ph name="HEADER_NAME" />”, jo izmaiņas radīja konfliktu ar citu paplašinājumu (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Norādītajam paplašinājumam jau eksistē privāta atslēga. Atkārtoti izmantojiet šo atslēgu vai vispirms to izdzēsiet.</translation>

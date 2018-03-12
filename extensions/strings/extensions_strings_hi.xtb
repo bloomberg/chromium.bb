@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">पैकेज अमान्य है: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">पीछे वाला कैमरा</translation>
 <translation id="1196338895211115272">निजी कुंजी निर्यात करने में विफल.</translation>
-<translation id="1256619696651732561">एक्‍सटेंशन मेनिफ़ेस्‍ट पार्सर</translation>
 <translation id="1420684932347524586">ओह! यादृच्छिक RSA निजी कुंजी जेनरेट करने में विफल.</translation>
 <translation id="1445572445564823378">यह एक्‍सटेंशन धीमा हो रहा है <ph name="PRODUCT_NAME" />. आपको <ph name="PRODUCT_NAME" /> का निष्पादन पुनर्स्‍थापित करने के लिए इसे अक्षम करना चाहिए.</translation>
 <translation id="1468038450257740950">WebGL समर्थित नहीं है.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">सामग्री स्क्रिप्ट के लिए '<ph name="RELATIVE_PATH" />' फ़ाइल लोड नहीं कर सका. यह UTF-8 एनकोड नहीं है.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक ने अवरोधित किया है. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">ज़िप फ़ाइल इंस्‍टॉलर</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_ID" /> अज्ञात उत्पाद</translation>
 <translation id="3144135466825225871">crx फ़ाइल बदलने में विफल. यह देखने के लिए जाँच करें कि क्या फ़ाइल उपयोग में है.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">मेनिफ़ेस्ट फ़ाइल गुम है या पढ़ने योग्य नहीं है</translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. विवरण: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">यह एक्सटेंशन <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> तक नेटवर्क अनुरोध को रीडायरेक्ट करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने इसे <ph name="ACTUAL_REDIRECT_DESTINATION" /> को रीडायरेक्ट कर दिया था.</translation>
-<translation id="8712265948125780616">एक्‍सटेंशन अनपैकर</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" आपके किसी एक डिवाइस के एक्‍सेस का अनुरोध कर रहा है:</translation>
 <translation id="8825366169884721447">यह एक्सटेंशन किसी नेटवर्क अनुरोध के अनुरोध शीर्षलेख "<ph name="HEADER_NAME" />" को बदलने में विफल रहा क्योंकि बदलाव का एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) के साथ विरोध हुआ था.</translation>
 <translation id="8885905466771744233">निर्दिष्ट किए गए एक्सटेंशन के लिए कोई निजी कुंजी पहले से मौजूद है. उस कुंजी का फिर से उपयोग करें या पहले इसे हटाएं.</translation>

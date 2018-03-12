@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">पेज ऊपर</translation>
 <translation id="2190355936436201913">(खाली)</translation>
 <translation id="219905428774326614">लॉन्चर, सभी ऐप्लिकेशन</translation>
+<translation id="2267918077332197517">इस साइट से सभी सूचनाएं रोकें</translation>
 <translation id="2289052229480071835">अपनी स्क्रीन पर स्पर्श लक्ष्य पर टैप करें.</translation>
 <translation id="2295140143284145483">सर्वे</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">अल्पविराम</translation>
 <translation id="6397363302884558537">बोलना रोकें</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
+<translation id="6430678249303439055">इस ऐप्लिकेशन से सभी सूचनाएं रोकें</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
 <translation id="654149438358937226">सभी सूचनाएं ब्लॉक करें</translation>
 <translation id="6567071839949112727">पहले वाले पर क्लिक करें</translation>

@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">פתיחת חלון חדש במצב גלישה בסתר</translation>
 <translation id="1299858300159559687">הדפסת הדף הנוכחי</translation>
 <translation id="1383876407941801731">חפש</translation>
-<translation id="1439252533104567537">מעבר אל כרטיסייה ממוספרת</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> או <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">מפעיל</translation>
 <translation id="152892567002884378">הגברת עוצמת הקול</translation>
@@ -21,6 +20,7 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ואז <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> או <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">מעבר לכרטיסייה הבאה</translation>
 <translation id="2010818616644390445">מעבר לכרטיסייה האחרונה בחלון</translation>
+<translation id="2088054208777350526">חיפוש מקשי קיצור</translation>
 <translation id="2145908266289632567">עריכת טקסט</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 עד =</translation>
 <translation id="2181097965834437145">הצגה או הסתרה של סרגל הסימניות</translation>
@@ -44,7 +44,6 @@
 <translation id="3084301071537457911">הדגשת הפריט הבא במדף</translation>
 <translation id="309173601632226815">הדגשת הלחצן של מרכז האפליקציות במדף</translation>
 <translation id="3105917916468784889">ביצוע של צילום מסך</translation>
-<translation id="3118681365140644126">הסרת ההדגשה מלחצן במדף</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">התמקד בסרגל הכתובות</translation>
 <translation id="3288816184963444640">סגירת החלון הנוכחי</translation>
@@ -63,6 +62,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 עד 8</translation>
 <translation id="3837047332182291558">הבהרת המקלדת (למקלדות עם תאורה אחורית בלבד)</translation>
 <translation id="3976863468609830880">לחיצה על הסמל האחרון במדף</translation>
+<translation id="4026843240379844265">העברת החלון הפעיל בין צגים</translation>
 <translation id="4035482366624727273">בחירת כל תוכן הדף</translation>
 <translation id="4060703249685950734">פתיחה מחדש של הכרטיסייה או החלון האחרונים שסגרת</translation>
 <translation id="4090342722461256974">הקשה ארוכה על <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, הקשה על <ph name="TAB" /> עד ההגעה לחלון שרוצים לפתוח, ושחרור.</translation>
@@ -73,7 +73,6 @@
 <translation id="4556221320735744018">הצגת עזרה למקשי קיצור</translation>
 <translation id="4628718545549558538">פתיחת אזור הסטטוס (האזור שבו מופיעה תמונת החשבון)</translation>
 <translation id="4642092649622328492">יצירת צילום מסך חלקי</translation>
-<translation id="4725377341024374454">פתיחת הלחצן המודגש במדף</translation>
 <translation id="4801989101741319327">מעבר אל סוף המילה הבאה</translation>
 <translation id="4916163929714267752">פתיחת הקישור בחלון חדש</translation>
 <translation id="5034421018520995080">מעבר אל ראש הדף</translation>
@@ -94,7 +93,6 @@
 <translation id="587531134027443617">מחיקת המילה הקודמת</translation>
 <translation id="5928303187149237472">שינוי רזולוציית המסך</translation>
 <translation id="5975083100439434680">התרחק</translation>
-<translation id="6011500873794669296">העברת הדגש בין: אזור הסטטוס (האזור שבו מופיע תמונת החשבון שלך) מרכז האפליקציות סרגל הכתובות סרגל הסימניות (אם מוצג) דף האינטרנט הפתוח סרגל ההורדות (אם מוצג)</translation>
 <translation id="6022924867608035986">נקה את הטקסט בתיבת החיפוש</translation>
 <translation id="6045998054441862242">הפעלת מצב של ניגודיות גבוהה</translation>
 <translation id="6052614013050385269">לחיצה ימנית על קישור</translation>
@@ -111,7 +109,7 @@
 <translation id="6435207348963613811">הדגשת הפריט הקודם במדף</translation>
 <translation id="6445033640292336367">החזרת הכרטיסייה למיקום המקורי שלה</translation>
 <translation id="649811797655257835">בחירת הקובץ ולאחר מכן הקשה על <ph name="SPACE" /></translation>
-<translation id="6572206071785323178">מעבר בין שפות המקלדת שהגדרת. אפשר לקרוא איך לבחור את שפת המקלדת.</translation>
+<translation id="6572206071785323178">מעבר בין שפות המקלדת שהגדרת. אפשר לקרוא איך בוחרים את שפת המקלדת.</translation>
 <translation id="6634456834225946400">הדגשת סרגל הסימניות (אם מוצג)</translation>
 <translation id="666343722268997814">פתיחת תפריט הלחיצה הימנית של הפריט המודגש</translation>
 <translation id="6671538777808758331">מעבר לתוצאת החיפוש הבאה</translation>
@@ -124,6 +122,7 @@
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="7020813747703216897">לא נמצאו תוצאות תואמות</translation>
 <translation id="7025325401470358758">החלונית הבאה</translation>
+<translation id="7237562915163138771">יש להקליד כתובת אתר בסרגל הכתובות ולהקיש על <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7379254767514753910"><ph name="ALT" /> או <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7439718573248533901">מחיקת האות הבאה (מחיקה קדימה)</translation>
 <translation id="766326951329901120">הדבקת התוכן מלוח העריכה כטקסט פשוט</translation>
@@ -139,10 +138,10 @@
 <translation id="8388247778047144397">גרירת הקישור לאזור ריק בשורת הכרטיסיות</translation>
 <translation id="8389638407792712197">פתיחת חלון חדש</translation>
 <translation id="8429696719963529183">‏שימוש במקשי F ‏(F1 עד F12)</translation>
+<translation id="8537650670971624753">יציאה ממצב חיפוש</translation>
 <translation id="85690795166292698">פתיחת הקישור בכרטיסייה חדשה</translation>
 <translation id="8609384513243082612">פתיחת כרטיסייה חדשה</translation>
 <translation id="8644639153978066712">הצגת קבצים מוסתרים באפליקציה 'קבצים'</translation>
-<translation id="8709893667941082515">התמקדות בחיפוש בסרגל הכתובות</translation>
 <translation id="8717459106217102612">בחירת המילה או האות הקודמת</translation>
 <translation id="8727232706774971183">הצגת ההודעות שלך</translation>
 <translation id="88986195241502842">Page down</translation>

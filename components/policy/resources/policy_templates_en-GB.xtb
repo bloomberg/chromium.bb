@@ -63,6 +63,9 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1204263402976895730">Enabled enterprise printers</translation>
+<translation id="1219695476179627719">Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> if it's already running a later version.
+
+      Default is RollbackDisabled.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
 <translation id="1257550411839719984">Set default download directory</translation>
@@ -149,6 +152,11 @@
 <translation id="1503487916067509762">Enables third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
+<translation id="1519337829779572350">This setting is deprecated, use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
+
+      Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
@@ -294,6 +302,14 @@
       This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
 
       The user's session is restored following the relaunch.</translation>
+<translation id="2075434678547407637">Allows you to control if videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME" />.
+
+      If the policy is set to True, <ph name="PRODUCT_NAME" /> is allowed to auto-play media.
+      If the policy is set to False, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media.
+      By default, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media.
+
+      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behaviour.
+      </translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
@@ -525,6 +541,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
 <translation id="2587719089023392205">Set <ph name="PRODUCT_NAME" /> as Default Browser</translation>
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
+<translation id="2596260130957832043">Controls whether NTLMv2 is enabled.
+
+          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatibility and reduces the security of authentication.
+
+          If this policy is not set, the default is true and NTLMv2 is enabled.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
@@ -545,6 +566,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="2682225790874070339">Disables Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
+<translation id="2693108589792503178">Configure the change password URL.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
 <translation id="2742843273354638707">Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME" /> app launcher.
 
@@ -602,6 +624,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
+<translation id="2867699958489427143">Roll back and stay on target version if OS version is newer than target. Do a full Powerwash during the process.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
@@ -637,6 +660,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
+<translation id="3021562480854470924">Number of milestones roll-back is allowed</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
@@ -1063,6 +1087,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set then the user can choose to show or hide the apps shortcut from the bookmark bar context menu.
 
       If this policy is configured then the user can't change it, and the apps shortcut is always shown or never shown.</translation>
+<translation id="4432762137771104529">Enable Safe Browsing Extended Reporting</translation>
+<translation id="443454694385851356">Legacy (insecure)</translation>
 <translation id="443665821428652897">Clear site data on browser shutdown (deprecated)</translation>
 <translation id="4439336120285389675">Specify a list of deprecated web platform features to re-enable temporarily.
 
@@ -1074,6 +1100,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
+<translation id="4459359100627756769">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
+      This setting should only be used by G Suite users using a SSO/SMAL system.
+
+      If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
+      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4476769083125004742">If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.</translation>
@@ -1270,7 +1302,29 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="5090209345759901501">Extend Flash content setting to all content</translation>
+<translation id="5093540029655764852">Specifies the rate (in days) at which a client changes their machine account password. The password is randomly generated by the client and not visible to the user.
+
+      Just like user passwords, machine passwords should be changed regularly. Disabling this policy or setting a high number of days can have a negative impact on security since it gives potential attackers more time to find the machine account password and use it.
+
+      If the policy is unset, the machine account password is changed every 30 days.
+
+      If the policy is set to 0, machine account password change is disabled.
+
+      Note that passwords might get older than the specified number of days if the client has been offline for a longer period of time.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
+<translation id="5106504910236139235">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing Extended Reporting and prevents users from changing this setting.
+
+      Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
+
+      If the setting is set to true, then reports will be created and sent whenever necessary (such as when a security interstitial is shown).
+
+      If the setting is set to false, reports will never be sent.
+
+      If this policy is set to true or false, the user will not be able to modify the setting.
+
+      If this policy is left unset, the user will be able to change the setting and decide whether to send reports or not.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
@@ -1296,6 +1350,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
+<translation id="519247340330463721">Configure Safe Browsing related policies.</translation>
 <translation id="5192837635164433517">Enables the use of alternative error pages that are built into <ph name="PRODUCT_NAME" /> (such as 'page not found') and prevents users from changing this setting.
 
       If you enable this setting, alternative error pages are used.
@@ -1316,6 +1371,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
 <translation id="5247006254130721952">Block dangerous downloads</translation>
+<translation id="5248863213023520115">Sets encryption types that are allowed when requesting Kerberos tickets from an <ph name="MS_AD_NAME" /> server.
+
+      If the policy is set to 'All', both the AES encryption types 'aes256-cts-hmac-sha1-96' and 'aes128-cts-hmac-sha1-96' as well as the RC4 encryption type 'rc4-hmac' are allowed. AES encryption takes preference if the server supports both types. Note that RC4 is insecure and the server should be reconfigured if possible to support AES encryption.
+
+      If the policy is set to 'Strong' or if it is unset, only the AES encryption types are allowed.
+
+      If the policy is set to 'Legacy', only the RC4 encryption type is allowed. This option is insecure and should only be needed in very specific circumstances.
+
+      See also https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
 <translation id="527237119693897329">Allows you to specify which native messaging hosts should not be loaded.
 
@@ -1407,6 +1471,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
 
       If this policy is unset, there will be no auto-login.</translation>
+<translation id="5526701598901867718">All (insecure)</translation>
 <translation id="5529037166721644841">Specifies the period in milliseconds at which the device management service is queried for device policy information.
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1,800,000 (30 minutes) to 86,400,000 (1 day). Any values not in this range will be clamped to the respective boundary.
@@ -1473,6 +1538,19 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="5784370777704871674">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
+
+      If you enable this setting, Safe Browsing is always active.
+
+      If you disable this setting, Safe Browsing is never active.
+
+      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left unset, this will be enabled but the user will be able to change it.
+
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5795001131770861387">Enables HTTP/0.9 support on non-default ports</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
@@ -1710,6 +1788,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you choose to auto detect the proxy server, the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
 
           If you choose to use a .pac proxy script, the script URL is provided to Android apps.</translation>
+<translation id="6473623140202114570">Configure the list of domains on which Safe Browsing will not trigger warnings.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
 <translation id="6525955212636890608">If you enable this setting, all Flash content embedded on websites that have been set to allow Flash in content settings – either by the user or by enterprise policy – will be run, including content from other origins or small content.
@@ -1801,7 +1880,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
+<translation id="6856743875250214792">This policy is deprecated and removed in M66, because it was used only for internal testing and it is a security liability.
+
+      Specifies the flags that should be applied to <ph name="PRODUCT_NAME" /> when it starts. The specified flags are applied on the login screen only. Flags set via this policy do not propagate into user sessions.</translation>
 <translation id="685769593149966548">Enforce Strict Restricted Mode for YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 or later</translation>
 <translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 35.
 
       Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
@@ -1903,6 +1986,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
+<translation id="7072208053150563108">Machine password change rate</translation>
 <translation id="7072406291414141328">Enables throttling network bandwidth</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
 <translation id="7106631983877564505">Enable lock when <ph name="PRODUCT_OS_NAME" /> devices become idle or suspended.
@@ -1921,6 +2005,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
 
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.</translation>
+<translation id="7127892035367404455">Roll back to target version</translation>
 <translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME" /> shows as pinned apps in the launcher bar.
 
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
@@ -2008,6 +2093,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
+<translation id="733838170182967492">Allows media auto-play</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
@@ -2023,6 +2109,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage policy will also be ignored when this policy is disabled.
       </translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
+<translation id="7458437477941640506">Do not roll back to target version if OS version is newer than target. Updates are also disabled.</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
 <translation id="7474249562477552702">Whether SHA-1 signed certificates issued by local trust anchors are allowed</translation>
 <translation id="7485481791539008776">Default printer selection rules</translation>
@@ -2055,6 +2142,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
 
       If this policy is not set, the default size will be used and the user will be able to override it with the --disk-cache-size flag.</translation>
+<translation id="759957074386651883">Safe Browsing settings</translation>
 <translation id="7604169113182304895">Android apps may voluntarily choose to honour this list. You cannot force them to honour it.</translation>
 <translation id="7612157962821894603">System wide flags to be applied on <ph name="PRODUCT_NAME" /> startup</translation>
 <translation id="7614663184588396421">List of disabled protocol schemes</translation>
@@ -2324,6 +2412,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="841977920223099909">Password protection warning trigger</translation>
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
+<translation id="8433423491036718210">Configure the list of enterprise login URLs where password protection service should capture fingerprint of password.</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
 <translation id="8459216513698220096">Specifies whether and how user policy from computer GPO is processed.
 
@@ -2342,6 +2431,16 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
+<translation id="8507835864888987300">Sets a target version for Auto Updates.
+
+      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME" /> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, effects depend on the value of <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. The prefix format works component-wise as is demonstrated in the following example:
+
+      "" (or not configured): update to latest version available.
+      "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
+      "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
+      "1412.24.34": update to this specific version only
+
+      Warning: It is not recommended to configure version restrictions as they may prevent users from receiving software updates and critical security fixes. Restricting updates to a specific version prefix might leave users at risk.</translation>
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8527932539502116028">Specifies the printers which a user cannot use.
 
@@ -2564,6 +2663,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
 <translation id="934390688529359269">Enables force sign in for <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Allows you to control whether virtual machines are allowed to run on Chrome OS.
+
+      If the policy is set to True, the device is allowed to run virtual machines.
+      If the policy is set to False, the device will not be allowed to run virtual machines.
+      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
+      When this policy is not set on a managed device, the device is allowed to run virtual machines.
+      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="944817693306670849">Set disk cache size</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>
 </translationbundle>

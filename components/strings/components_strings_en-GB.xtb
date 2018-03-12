@@ -21,7 +21,6 @@
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
 <translation id="1126551341858583091">The size on the local storage is <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
-<translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1151972924205500581">Password required</translation>
 <translation id="1152921474424827756">Access a <ph name="BEGIN_LINK" />cached copy<ph name="END_LINK" /> of <ph name="URL" /></translation>
@@ -57,7 +56,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1340482604681802745">Pickup address</translation>
-<translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
 <translation id="1348198688976932919">The site ahead contains dangerous apps</translation>
 <translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">About Version</translation>
@@ -283,7 +281,6 @@
 <translation id="301521992641321250">Automatically blocked</translation>
 <translation id="3024663005179499861">Wrong policy type</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
-<translation id="3039538478787849737">Save card to Google?</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3063697135517575841">Chrome was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
@@ -666,6 +663,7 @@
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="5990559369517809815">Requests to the server have been blocked by an extension.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6015796118275082299">Year</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
 <translation id="6017850046339264347">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> could install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synced)</translation>
@@ -1009,6 +1007,7 @@
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8978053250194585037">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected phishing<ph name="END_LINK" /> on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you.</translation>
+<translation id="8987927404178983737">Month</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">The site ahead contains harmful programs</translation>
 <translation id="8997023839087525404">The server presented a certificate that was not publicly disclosed using the Certificate Transparency policy. This is a requirement for some certificates, to ensure that they are trustworthy and protect against attackers.</translation>

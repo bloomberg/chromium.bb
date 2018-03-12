@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">El paquet no és vàlid: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Càmera posterior</translation>
 <translation id="1196338895211115272">No s'ha pogut exportar la clau privada.</translation>
-<translation id="1256619696651732561">Analitzador per a fitxers de manifest d'extensions</translation>
 <translation id="1420684932347524586">Error. No s'ha pogut generar la clau privada RSA aleatòria.</translation>
 <translation id="1445572445564823378">Aquesta extensió està alentint <ph name="PRODUCT_NAME" />. L'heu de desactivar per restaurar el rendiment de: <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL no és compatible.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">No s'ha pogut carregar el fitxer "<ph name="RELATIVE_PATH" />" per a l'script de contingut. No està codificat com a UTF-8.</translation>
 <translation id="2903070246402204397">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME" /> (amb l'identificador <ph name="EXTENSION_ID" />). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">No s'ha pogut instal·lar el paquet: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Instal·lador de fitxers zip</translation>
 <translation id="3115238746683532089">Producte desconegut <ph name="PRODUCT_ID" /> del proveïdor <ph name="VENDOR_ID" /> (número de sèrie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">No s'ha pogut substituir el fitxer crx. Comproveu si el fitxer s'està utilitzant.</translation>
 <translation id="3163201441334626963">Producte desconegut <ph name="PRODUCT_ID" /> del proveïdor <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Falta el fitxer de manifest o no es pot llegir</translation>
 <translation id="8636666366616799973">El paquet no és vàlid. Detalls: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Aquesta extensió no ha pogut redirigir una sol·licitud de xarxa a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perquè una altra extensió (<ph name="EXTENSION_NAME" />) l'ha redirigida a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Eina per desempaquetar extensions</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> sol·licita accés a un dels teus dispositius:</translation>
 <translation id="8825366169884721447">Aquesta extensió no ha pogut modificar la capçalera de la sol·licitud "<ph name="HEADER_NAME" />" d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ja existeix una clau privada per a l'extensió especificada. Torneu a utilitzar-la o suprimiu-la primer.</translation>

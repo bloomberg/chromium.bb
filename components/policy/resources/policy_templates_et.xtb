@@ -63,6 +63,9 @@
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
       lubatud sagedus on 60 sekundit.</translation>
 <translation id="1204263402976895730">Ettevõtte lubatud printerid</translation>
+<translation id="1219695476179627719">Määrab, kas seade peaks tagasi minema reegliga <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> määratud versioonile, kui see käitab juba hilisemat versiooni.
+
+      Vaikereegel on RollbackDisabled.</translation>
 <translation id="1221359380862872747">Laadi määratud URL-id demosse sisselogimisel</translation>
 <translation id="123081309365616809">Sisu ülekandmise lubamine seadmesse</translation>
 <translation id="1257550411839719984">Allalaadimise vaikekataloogi määramine</translation>
@@ -524,6 +527,11 @@
       Kui reegel pole määratud, on andmete tihendamise puhverserver kasutajatele saadaval ja nad saavad valida, kas kasutavad seda või mitte.</translation>
 <translation id="2587719089023392205">Brauseri <ph name="PRODUCT_NAME" /> määramine vaikebrauseriks</translation>
 <translation id="2592091433672667839">Inaktiivsuse periood, mille möödudes kuvatakse jaemüügirežiimis sisselogimiskuval ekraanisäästja</translation>
+<translation id="2596260130957832043">Määrab, kas NTLMv2 on lubatud või mitte.
+
+          Kõik hiljutised Samba ja Windowsi serverid toetavad NTLMv2. See tuleks keelata ainult tagasiulatuva ühilduvuse puhul ja see vähendab autentimise turvalisust.
+
+          Kui see reegel on määramata, siis on vaikeväärtus Tõene ja NTLMv2 on lubatud.</translation>
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
@@ -544,6 +552,7 @@
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2682225790874070339">Keelab Drive'i operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
+<translation id="2693108589792503178">Parooli URL-i muutmise seadistamine.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
@@ -601,6 +610,7 @@
       Kui keelate seade või jätate väärtuse määramata, kasutab printimise eelvaade vaikesihtkohana viimati kasutatud printerit.
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
+<translation id="2867699958489427143">Mine tagasi ja jää sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Protsessi käigus tehakse täielik Powerwash.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
@@ -636,6 +646,7 @@
 <translation id="2987155890997901449">ARC lubamine</translation>
 <translation id="2987227569419001736">Web Bluetooth API kasutuse kontrollimine</translation>
 <translation id="3016255526521614822">Lisage lubatud rakenduste loendisse märkmete tegemise rakendused, mida <ph name="PRODUCT_OS_NAME" /> võib lukustuskuval näidata</translation>
+<translation id="3021562480854470924">Verstapostide arv, mille puhul tagasiminek on lubatud</translation>
 <translation id="3030000825273123558">Luba mõõdikute aruandlus</translation>
 <translation id="3034580675120919256">Võimaldab määrata, kas veebisaitidel on lubatud käitada JavaScripti. JavaScripti käitamise saab kõikidel veebisaitidel lubada või keelata.
 
@@ -1052,6 +1063,7 @@
       Kui te seda reeglit ei määra, saab kasutaja rakenduste otsetee järjehoidjariba kontekstimenüüs kuvada või peita.
 
       Kui selle reegli konfigureerite, ei saa kasutaja seda muuta ja rakenduste otsetee on alati kuvatud või seda ei kuvata kunagi.</translation>
+<translation id="443454694385851356">Pärandversioon (ebaturvaline)</translation>
 <translation id="443665821428652897">Kustuta saidi andmed brauseri sulgemisel (toetamine lõpetatud)</translation>
 <translation id="4439336120285389675">Määrab loendi katkestatud toega veebiplatvormi funktsioonide kohta, mis tuleb ajutiselt uuesti lubada.
 
@@ -1063,6 +1075,12 @@
       </translation>
 <translation id="4442582539341804154">Luba lukustamine, kui seade on ootel või peatatud</translation>
 <translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
+<translation id="4459359100627756769">Seadistage ettevõtte sisselogimis-URL-ide loend (ainult HTTP- ja HTTPS-skeemid). parooli sõrmejälg jäädvustatakse nendel URL-idel ja seda kasutatakse parooli uuesti kasutamise tuvastamiseks.
+      Seda seadet peaksid kasutama ainult GSuite'i kasutajad, kes kasutavad SSO-/SMAL-süsteemi.
+
+      Kui see seade on lubatud, siis jäädvustab paroolikaitse teenus parooli sõrmejälje nendele URL-idele, et tuvastada parooli uuesti kasutamine.
+      Kui seade on keelatud või määramata, siis jäädvustab paroolikaitse teenus parooli sõrmejälje ainult saidil https://accounts.google.com.
+      See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
 <translation id="4476769083125004742">Kui reegel on määratud seadele <ph name="BLOCK_GEOLOCATION_SETTING" />, ei pääse Androidi rakendused asukohateabele juurde. Kui määrate sellele reeglile mõne teise väärtuse või jätate selle määramata, küsitakse kasutaja nõusolekut, kui Androidi rakendus soovib asukohateabele juurde pääseda.</translation>
@@ -1259,6 +1277,15 @@
 <translation id="5068140065960598044">Teenuse <ph name="PRODUCT_NAME" /> pilve-eeskirjad alistavad seadme-eeskirjad.</translation>
 <translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
 <translation id="5090209345759901501">Flash-sisu seade laiendamine kogu sisule</translation>
+<translation id="5093540029655764852">Määrab sageduse (päevades), kui tihti klient seadme konto parooli muudab. Klient loob parooli juhuslikult ja see pole kasutajale nähtav.
+
+      Sarnaselt kasutaja paroolidele tuleb seadme paroole regulaarselt muuta. Kui see reegel keelatakse või määratakse suur päevade arv, võib see turvalisusele negatiivselt mõjuda, kuna see annab võimalikele ründajatele rohkem aega seadme konto parool välja uurida ja seda kasutada.
+
+      Kui reegel on määramata, muudetakse seadme konto parooli iga 30 päeva järel.
+
+      Kui reegli väärtuseks on määratud 0, on seadme konto parooli muutmine keelatud.
+
+      Pange tähele, et paroolid võivad saada vanemaks kui määratud päevade arv, kui klient on pikemat aega võrgust väljas olnud.</translation>
 <translation id="5105313908130842249">Ekraani lukustamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5108031557082757679">Ettevõtte seadmete jaoks keelatud printerid</translation>
 <translation id="5130288486815037971">Kas RC4 šifreerimiskomplektid TLS-is on lubatud?</translation>
@@ -1281,6 +1308,7 @@
       väljapoole jäävad väärtused surutakse sellesse vahemikku.</translation>
 <translation id="5182055907976889880">Google Drive'i seadistamine teenuses <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Võimaldab määrata, millised laiendused ei kuulu musta nimekirja. Musta nimekirja väärtus * tähendab, et kõik laiendused on mustas nimekirjas ja kasutajad saavad installida vaid lubatud nimekirjas olevaid laiendusi. Vaikimisi on kõik laiendused lubatud nimekirjas, kuid kui kõik laiendused on reegliga musta nimekirja kantud, saab lubatud nimekirjaga seda reeglit alistada.</translation>
+<translation id="519247340330463721">Ohutu sirvimisega seotud eeskirjade seadistamine.</translation>
 <translation id="5192837635164433517">Lubab alternatiivsed vealehed, mis on rakendusse <ph name="PRODUCT_NAME" /> sisse ehitatud (näiteks teade „lehte ei leitud”), ja takistab kasutajatel seade muutmist.
 
       Seade lubamisel kasutatakse alternatiivseid vealehti.
@@ -1301,6 +1329,15 @@
 <translation id="5219844027738217407">Androidi rakenduste puhul mõjutab see reegel ainult mikrofoni. Kui reegli väärtuseks on määratud Tõene, on mikrofon ilma eranditeta kõigi Androidi rakenduste puhul vaigistatud.</translation>
 <translation id="523505283826916779">Juurdepääsuseaded</translation>
 <translation id="5247006254130721952">Blokeeri ohtlikud allalaadimised</translation>
+<translation id="5248863213023520115">Määrab krüpteerimistüübid, mis lubatakse, kui teenuse <ph name="MS_AD_NAME" /> serverist taotletakse Kerberose pileteid.
+
+      Kui reegli väärtuseks on määratud „All”, on lubatud nii AES-is krüpteerimistüübid „aes256-cts-hmac-sha1-96” ja „aes128-cts-hmac-sha1-96” kui ka RC4 krüpteerimistüüp „rc4-hmac”. Kui server toetab mõlemat tüüpi, eelistatakse AES-i krüpteerimist. Pange tähele, et RC4 peetakse nõrgaks ja server tuleks võimaluse korral ümber seadistada, et see toetaks AES-i krüpteerimist.
+
+      Kui reegli väärtuseks määratakse „Strong” või see jäetakse määramata, on lubatud ainult AES-i krüpteerimistüübid.
+
+      Kui reegli väärtuseks määratakse „Legacy”, on lubatud ainult RC4 krüpteerimistüüp. See valik on ebaturvaline ja seda tuleks kasutada ainult erandjuhtudel.
+
+      Lisateave: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Võib soovitada</translation>
 <translation id="527237119693897329">Lubab määrata, milliseid omasõnumside hoste ei tule laadida.
 
@@ -1392,6 +1429,7 @@
       Kui selle reegli määrate, logitakse määratud seanssi automaatselt sisse pärast teatud perioodi möödumist sisselogimisekraanil ilma kasutaja interaktsioonita. Avalik seanss peab olema juba seadistatud (vt |DeviceLocalAccounts|).
 
       Kui te seda reeglit ei määra, siis automaatset sisselogimist ei toimu.</translation>
+<translation id="5526701598901867718">Kõik (ebaturvaline)</translation>
 <translation id="5529037166721644841">Määrab perioodi millisekundites, mille jooksul seadme haldusteenusele esitatakse päring kasutajareegli teabe hankimiseks.
 
       Selle reegli määramisel alistatakse vaikeväärtus 3 tundi. Selle reegli kehtivad väärtused jäävad vahemikku 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Sellest vahemikust välja jäävad väärtused surutakse vastavatesse piiridesse.
@@ -1458,6 +1496,19 @@
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites.</translation>
+<translation id="5784370777704871674">Lubab rakenduse <ph name="PRODUCT_NAME" /> Google'i ohutu sirvimise funktsiooni ja takistab kasutajaid seda muutmast.
+
+      Seade lubamisel on Google'i ohutu sirvimine alati aktiivne.
+
+      Seade keelamisel on Google'i ohutu sirvimine alati inaktiivne.
+
+      Seade lubamisel või keelamisel ei saa kasutajad seadet „Andmepüügi- ja pahavaravastase kaitse lubamine” rakenduses <ph name="PRODUCT_NAME" /> muuta ega alistada.
+
+      Kui reeglit ei määrata, siis see lubatakse, kuid kasutaja saab seda muuta.
+
+      Vaadake Google'i ohutu sirvimise kohta lisateavet: https://developers.google.com/safe-browsing.
+
+      See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="5795001131770861387">Lubab HTTP/0.9 toe mittevaikeportide puhul</translation>
 <translation id="5809728392451418079">Määra seadmepõhiste kontode kuvatav nimi</translation>
 <translation id="5814301096961727113">Sisselogimisekraanil suulise tagasiside vaikeoleku määramine</translation>
@@ -1699,6 +1750,7 @@
           Kui otsustate puhverserveri automaatselt tuvastada, esitatakse Androidi rakendustele URL „http://wpad/wpad.dat”. Ühtegi teist puhverserveri automaatse tuvastamise protokolli osa ei kasutata.
 
           Kui otsustate kasutada puhverserveri skripti .pac, esitatakse Androidi rakendustele skripti URL.</translation>
+<translation id="6473623140202114570">Seadistage loend domeenidest, kus Google'i ohutu sirvimise funktsioon hoiatusi ei käivita.</translation>
 <translation id="6491139795995924304">Luba Bluetooth seadmes</translation>
 <translation id="6520802717075138474">Impordi otsingumootorid vaikebrauserist esimesel käitamisel</translation>
 <translation id="6525955212636890608">Selle seade lubamisel käitatakse kogu Flash-sisu, mis on manustatud veebisaitidele, kus Flash on sisu seadetes lubatud – seda nii kasutaja kui ka ettevõtte reegliga (sh muu päritoluga või väikesemahuline sisu).
@@ -1790,6 +1842,9 @@
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>
 <translation id="6835883744948188639">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on soovitatav</translation>
+<translation id="6856743875250214792">Selle reegli tugi on katkestatud ja see on versioonist M66 eemaldatud, kuna seda kasutati ainult sisetestides ja see sisaldab turvaauku.
+
+      Määrab märgistused, mis tuleb rakendada teenuses <ph name="PRODUCT_NAME" /> selle käivitamisel. Määratud märgistused rakendatakse ainult sisselogimisekraanil. Selle reegliga määratud märgistused ei rakendu kasutaja seanssides.</translation>
 <translation id="685769593149966548">Jõusta YouTube'is rangelt piiratud režiim</translation>
 <translation id="687046793986382807">Selle reegli pakkumine lõpetati toote <ph name="PRODUCT_NAME" /> versiooniga 35.
 
@@ -1893,6 +1948,7 @@
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="7063895219334505671">Luba hüpikaknad nendel saitidel</translation>
 <translation id="706669471845501145">Luba saitidel töölauateatiste näitamine</translation>
+<translation id="7072208053150563108">Seadme parooli muutmise sagedus</translation>
 <translation id="7072406291414141328">Lubab võrgu ribalaiuse piiramise</translation>
 <translation id="7079519252486108041">Blokeeri hüpikaknad nendel saitidel</translation>
 <translation id="7106631983877564505">Lubage operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete lukustamine, kui need on peatatud või tegevusetud.
@@ -1911,6 +1967,7 @@
       Kui reegel on seatud väärtusele Väär, on taustarežiim keelatud ja kasutaja ei saa seda brauseri seadetes muuta.
 
       Kui jätate reegli määramata, on taustarežiim vaikimisi keelatud ja kasutaja saab seda brauseri seadetes muuta.</translation>
+<translation id="7127892035367404455">Tagasiminek sihtversioonile</translation>
 <translation id="7128918109610518786">Loetleb rakenduste identifikaatorid, mida <ph name="PRODUCT_OS_NAME" /> näitab käivitusribal kinnitatud rakendustena.
 
       Kui eeskiri on seadistatud, on rakenduste kogum fikseeritud ja kasutaja ei saa seda muuta.
@@ -2013,6 +2070,7 @@
       Kui reegel on keelatud, ei ole kasutajal lubatud õigekirjakontrolli kasutada. Kui reegel on keelatud, eiratakse reeglit SpellcheckLanguage.
       </translation>
 <translation id="7443616896860707393">Erineva päritoluga HTTP Basic Authi viibad</translation>
+<translation id="7458437477941640506">Ära minge tagasi sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Värskendused on samuti keelatud.</translation>
 <translation id="7469554574977894907">Luba otsingusoovitused</translation>
 <translation id="7474249562477552702">Kas kohalike usaldusvõtmete väljastatud SHA-1 allkirjastatud sertifikaadid on lubatud?</translation>
 <translation id="7485481791539008776">Vaikeprinteri valimise reeglid</translation>
@@ -2045,6 +2103,7 @@
       Kui reegli väärtus on 0, siis kasutatakse vahemälu vaikemahtu, kuid kasutaja ei saa seda muuta.
 
       Kui reeglit pole määratud, siis kasutatakse vaikemahtu ja kasutaja saab selle alistada märgendiga --ketta-vahemälu-maht.</translation>
+<translation id="759957074386651883">Ohutu sirvimise seaded</translation>
 <translation id="7604169113182304895">Androidi rakendused võivad vabatahtlikult loendit järgida, ent te ei saa neid selleks sundida.</translation>
 <translation id="7612157962821894603">Süsteemiülesed märgistused, mis rakendatakse toote <ph name="PRODUCT_NAME" /> käivitamisel</translation>
 <translation id="7614663184588396421">Keelatud protokolliskeemide loend</translation>
@@ -2315,6 +2374,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="841977920223099909">Paroolikaitse hoiatuse käivitaja</translation>
 <translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
 <translation id="8426231401662877819">Ekraani pööramine 90 kraadi päripäeva</translation>
+<translation id="8433423491036718210">Seadistage ettevõtte sisselogimis-URL-ide loend, kus paroolikaitse teenus peaks parooli sõrmejälje jäädvustama.</translation>
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="8459216513698220096">Määrab, kas ja kuidas töödeldakse arvuti GPO-st pärinevaid kasutajareegleid.
 
@@ -2333,6 +2393,16 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Keela brauseri ajaloo salvestamine</translation>
 <translation id="8499172469244085141">Vaikeseaded (kasutajad saavad alistada)</translation>
+<translation id="8507835864888987300">Määrab automaatsete värskenduste sihtversiooni.
+
+      Määrab eesliite sihtversioonile, millele operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> peaks värskendama. Kui seadmes käitatakse versiooni, mis on määratud eesliitest varasem, värskendatakse see uusimale antud eesliitega versioonile. Kui seadmes käitatakse juba uusimat versiooni, olenevad mõjud üksuse <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> väärtusest. Eesliite vorming toimib komponendipõhiselt, nagu järgmises näites näha võib.
+
+      "" (seadistamata): saadaval on värskendus uusimale versioonile.
+      "1412.": värskendus mis tahes 1412 uuemale versioonile (nt 1412.24.34 või 1412.60.2)
+      "1412.2.": värskendus mis tahes 1412.2 uuemale versioonile (nt 1412.2.34 või 1412.2.2)
+      "1412.24.34": värskendus ainult sellele konkreetsele versioonile
+
+      Hoiatus. Me ei soovita versioonide piiranguid seadistada, kuna need võivad takistada kasutajatel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Kui lubate kasutajatel kasutada vaid teatud versiooni eesliidet, võib see kasutajad ohtu seada.</translation>
 <translation id="8519264904050090490">Kasutaja käsitsi sisestatavate URL-ide erandite haldamine</translation>
 <translation id="8527932539502116028">Määrab printerid, mida kasutaja ei saa kasutada.
 

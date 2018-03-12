@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Displaymaßstab</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
+<translation id="2351266942280602854">Sprache und Eingabe</translation>
 <translation id="2352467521400612932">Eingabestift-Einstellungen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2365393535144473978">Bei Aktivierung der mobilen Daten wird auch Bluetooth aktiviert.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2675319268637823299">Ein Administrator hat die Mehrfachanmeldung für <ph name="USER_EMAIL" /> deaktiviert.
     Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
+<translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
+<translation id="3151786313568798007">Ausrichtung</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3294437725009624529">Gast</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3631369015426612114">Alle Benachrichtigungen zulassen von:</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="371370241367527062">Mikrofon auf der Vorderseite</translation>
 <translation id="3771549900096082774">Modus mit hohem Kontrast</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle verfügbaren Nutzer wurden bereits zur Sitzung hinzugefügt.</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
+<translation id="54609108002486618">Verwaltet</translation>
 <translation id="553675580533261935">Sitzung wird beendet</translation>
 <translation id="5548285847212963613">Die Erweiterung "<ph name="EXTENSION_NAME" />" kann die Verbindung mit diesem Netzwerk unterstützen.</translation>
 <translation id="5571066253365925590">Bluetooth aktiviert</translation>
@@ -309,6 +314,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> verbleibend</translation>
+<translation id="8649101189709089199">Vorlesen</translation>
 <translation id="8652175077544655965">Einstellungen schließen</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
@@ -325,6 +331,7 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>
 <translation id="8938800817013097409">USB-C-Gerät (rechter Port hinten)</translation>
 <translation id="8940956008527784070">Niedriger Akkustand (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8995603266996330174">Verwaltet von <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">WLAN: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon wird verwendet.</translation>

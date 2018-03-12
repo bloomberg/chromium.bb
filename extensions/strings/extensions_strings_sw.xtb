@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Furushi ni batili: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Kamera ya nyuma</translation>
 <translation id="1196338895211115272">Uhamishaji wa ufunguo binafsi haukufaulu.</translation>
-<translation id="1256619696651732561">Kichanganuzi cha Faili za Maelezo ya Kiendelezi</translation>
 <translation id="1420684932347524586">Lo! Imeshindwa kuzindua ufunguo binafsi wa RSA usio na utaratibu.</translation>
 <translation id="1445572445564823378">Kiendelezi hiki kinapunguza kasi ya <ph name="PRODUCT_NAME" />. Unafa kukilemaza ili kurejesha upya utendaji wa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL haihimiliwi.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Isingweza kupakia faili '<ph name="RELATIVE_PATH" />' ya hati ya maudhui. Haijasimbwa kwa UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (kitambulisho cha kiendelezi cha "<ph name="EXTENSION_ID" />") kimezuiwa na msimamizi. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Isingeweza kusakinisha furushi: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Kisakinishaji cha Faili za Zip</translation>
 <translation id="3115238746683532089">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa mchuuzi <ph name="VENDOR_ID" /> (nambari tambulishi <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Imeshindwa kubadilisha faili ya crx. Angalia kuona ikiwa faili inatumika.</translation>
 <translation id="3163201441334626963">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa mchuuzi <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Faili ya maelezo haipatikani au haisomeki</translation>
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Kipakuaji cha Viendelezi</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" inaomba idhini ya kufikia mojawapo ya vifaa vyako:</translation>
 <translation id="8825366169884721447">Kiendelezi hiki kimeshindwa kuboresha kichwa cha ombi "<ph name="HEADER_NAME" />" cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ufunguo binafsi wa kiendelezi kilichobainishwa tayari upo. Tumia ufunguo huo tena au uufute kwanza.</translation>

@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Пакетът е невалиден: „<ph name="ERROR_CODE" />“.</translation>
 <translation id="1140871961407805696">Задна</translation>
 <translation id="1196338895211115272">Експортирането на личен ключ не бе успешно.</translation>
-<translation id="1256619696651732561">Синтактичен анализ на манифести на разширения</translation>
 <translation id="1420684932347524586">Олеле! Генерирането на произволен RSA личен ключ не бе успешно.</translation>
 <translation id="1445572445564823378">Това разширение забавя работата на <ph name="PRODUCT_NAME" />. Трябва да деактивирате <ph name="PRODUCT_NAME" />, за да възстановите ефективността на браузъра.</translation>
 <translation id="1468038450257740950">WebGL не се поддържа.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Файлът „<ph name="RELATIVE_PATH" />“ за скрипта за съдържание не можа да бъде зареден. Не е кодиран в UTF-8.</translation>
 <translation id="2903070246402204397">Разширението <ph name="EXTENSION_NAME" /> (идентификационен номер <ph name="EXTENSION_ID" />) е блокирано от администратора. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Пакетът не можа да се инсталира: „<ph name="ERROR_CODE" />“</translation>
-<translation id="3097628171361913691">Инсталиране на компресирани файлове</translation>
 <translation id="3115238746683532089">Неизвестен продукт <ph name="PRODUCT_ID" /> от доставчик <ph name="VENDOR_ID" /> (сериен номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Замяната на crx файла не бе успешна. Проверете дали не се използва.</translation>
 <translation id="3163201441334626963">Неизвестен продукт <ph name="PRODUCT_ID" /> от доставчик <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Файлът на манифеста липсва или не може да бъде прочетен</translation>
 <translation id="8636666366616799973">Пакетът е невалиден. Подробности: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, защото друго разширение (<ph name="EXTENSION_NAME" />) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Разпакетиране на разширения</translation>
 <translation id="8761756413268424715"><ph name="APP_NAME" /> иска достъп до едно от устройствата ви:</translation>
 <translation id="8825366169884721447">Това разширение не успя да промени заглавката „<ph name="HEADER_NAME" />“ на заявка от мрежата, защото промяната влезе в конфликт с друго разширение (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Вече съществува личен ключ за посоченото разширение. Използвайте го отново или първо го изтрийте.</translation>

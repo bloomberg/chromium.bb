@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">החבילה לא חוקית: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">מצלמה אחורית</translation>
 <translation id="1196338895211115272">נכשל ייצוא מפתח פרטי.</translation>
-<translation id="1256619696651732561">מנתח מניפסט התוספים</translation>
 <translation id="1420684932347524586">‏אוי לא! אירע כשל ביצירת מפתח RSA פרטי אקראי.</translation>
 <translation id="1445572445564823378">תוסף זה מאט את <ph name="PRODUCT_NAME" />. עליך להשבית אותו כדי לשחזר את הביצועים של <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">‏WebGL אינו נתמך.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">‏אין אפשרות לטעון את הקובץ '<ph name="RELATIVE_PATH" />' עבור סקריפט תוכן. הוא לא בקידוד UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (מזהה תוסף "<ph name="EXTENSION_ID" />") חסום על-ידי מנהל המערכת. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">לא ניתן להתקין את החבילה: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">‏מתקין קובצי Zip</translation>
 <translation id="3115238746683532089">מוצר לא ידוע <ph name="PRODUCT_ID" /> מהספק <ph name="VENDOR_ID" /> (מספר סידורי <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">‏הנסיון להחליף קובץ crx נכשל. בדוק אם הקובץ נמצא בשימוש.</translation>
 <translation id="3163201441334626963">מוצר לא ידוע <ph name="PRODUCT_ID" /> מהספק <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">אין קובץ מניפסט, או שהוא אינו קריא</translation>
 <translation id="8636666366616799973">החבילה לא חוקית. פרטים: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">תוסף זה נכשל בניתוב בקשת רשת אל <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> מכיוון שתוסף אחר (<ph name="EXTENSION_NAME" />) ניתב אותו אל <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">פורק התוספים</translation>
 <translation id="8761756413268424715">האפליקציה "<ph name="APP_NAME" />" מבקשת גישה לאחד מהמכשירים שלך:</translation>
 <translation id="8825366169884721447">תוסף זה נכשל בשינוי כותרת הבקשה '<ph name="HEADER_NAME" />' של בקשת רשת מכיוון שהשינוי התנגש עם תוסף אחר (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">מפתח פרטי לתוסף שצוין כבר קיים. השתמש שוב במפתח זה או מחק אותו תחילה.</translation>

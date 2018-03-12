@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Пакет недействителен: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Основная</translation>
 <translation id="1196338895211115272">Не удалось экспортировать закрытый ключ.</translation>
-<translation id="1256619696651732561">Синтаксический анализатор манифестов расширений</translation>
 <translation id="1420684932347524586">Не удалось создать случайный закрытый ключ RSA.</translation>
 <translation id="1445572445564823378">Это расширение замедляет работу <ph name="PRODUCT_NAME" />. Чтобы восстановить нормальную работу <ph name="PRODUCT_NAME" />, отключите его.</translation>
 <translation id="1468038450257740950">WebGL не поддерживается.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Не удается загрузить файл <ph name="RELATIVE_PATH" /> для скрипта содержания. Кодировка отличается от UTF-8.</translation>
 <translation id="2903070246402204397">Расширение <ph name="EXTENSION_NAME" /> (идентификатор: <ph name="EXTENSION_ID" />) заблокировано администратором. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Не удается установить пакет: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Распаковщик ZIP-файлов</translation>
 <translation id="3115238746683532089">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /> (серийный номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Не удалось переместить CRX-файл. Убедитесь, что он не используется.</translation>
 <translation id="3163201441334626963">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Файл манифеста отсутствует или недоступен для чтения</translation>
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, поскольку другое расширение (<ph name="EXTENSION_NAME" />) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Распаковщик расширений</translation>
 <translation id="8761756413268424715">Приложение "<ph name="APP_NAME" />" запрашивает доступ к устройству.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Закрытый ключ для указанного расширения уже существует. Удалите этот ключ или используйте его повторно.</translation>

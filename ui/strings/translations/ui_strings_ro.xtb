@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">O pagină mai sus</translation>
 <translation id="2190355936436201913">(gol)</translation>
 <translation id="219905428774326614">Lansator, toate aplicațiile</translation>
+<translation id="2267918077332197517">Blochează toate notificările de la acest site</translation>
 <translation id="2289052229480071835">Atinge țintele de atingere de pe ecran.</translation>
 <translation id="2295140143284145483">Sondaj</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Virgulă</translation>
 <translation id="6397363302884558537">Opriți-vă din vorbit</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Acum o sec.}few{Acum # sec}other{Acum # sec}}</translation>
+<translation id="6430678249303439055">Blochează toate notificările de la această aplicație</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Acum 1 secundă}few{Acum # secunde}other{Acum # de secunde}}</translation>
 <translation id="654149438358937226">Blochează toate notificările</translation>
 <translation id="6567071839949112727">dă clic pe predecesor</translation>

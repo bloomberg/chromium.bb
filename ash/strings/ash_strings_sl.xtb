@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">OPUSTI</translation>
 <translation id="15373452373711364">Velik miškin kazalec</translation>
 <translation id="1550523713251050646">Kliknite za več možnosti</translation>
+<translation id="1567387640189251553">Od zadnjega vnosa gesla je bila priklopljena druga tipkovnica, ki morda poskuša beležiti vse, kar natipkate.</translation>
 <translation id="1608626060424371292">Odstrani tega uporabnika</translation>
 <translation id="1621499497873603021">Preostali čas do izpraznitve akumulatorja, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Vašega gesla še ni bilo mogoče preveriti. Opomba: če ste nedavno spremenili geslo, bo novo geslo začelo veljati, ko se odjavite. Tu uporabite starega.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Bližnjica za odpiranje upravitelja opravil je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
+<translation id="1928739107511554905">Če želite prejeti posodobitev, uporabite zaslon na dotik, da znova zaženete Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="1942830294380034169">Gumb za meni z dodatnimi elementi</translation>
 <translation id="1951012854035635156">Pomočnik</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Ustavi predvajanje zavihka <ph name="TAB_NAME" /> v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="2144487987174258011">Če želite posodobiti Adobe Flash Player, znova zaženite</translation>
+<translation id="2191905770366256395">Snemljiva tipkovnica potrebuje nujno posodobitev</translation>
 <translation id="2208323208084708176">Način enotnega namizja</translation>
 <translation id="2220572644011485463">Koda PIN ali geslo</translation>
 <translation id="225680501294068881">Iskanje naprav ...</translation>
@@ -60,6 +63,7 @@
 <translation id="2292698582925480719">Zaslonsko razmerje</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
 <translation id="2338501278241028356">Vklopite Bluetooth, če želite odkriti naprave v bližini</translation>
+<translation id="2351266942280602854">Jezik in vnos</translation>
 <translation id="2352467521400612932">Nastavitve pisala</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
@@ -75,6 +79,7 @@
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2675319268637823299">Skrbnik je prepovedal prijavo z več računi za <ph name="USER_EMAIL" />.
     Če želite nadaljevati, morajo biti odjavljeni vsi uporabniki.</translation>
+<translation id="2718395828230677721">Nočna svetloba</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
@@ -101,6 +106,7 @@
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
 <translation id="3147142846278915599">Zaganjalnik (sinhronizacija aplikacij ...)</translation>
 <translation id="315116470104423982">Prenos podatkov v mobilnih omrežjih</translation>
+<translation id="3151786313568798007">Usmerjenost</translation>
 <translation id="3153444934357957346">S prijavo z več računi lahko uporabljate največ toliko računov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
 <translation id="3294437725009624529">Gost</translation>
@@ -122,6 +128,7 @@
 <translation id="3621202678540785336">Vhod</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="3631369015426612114">Omogočanje obvestil teh virov</translation>
+<translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Zajem območja</translation>
 <translation id="371370241367527062">Sprednji mikrofon</translation>
 <translation id="3771549900096082774">Visokokontrastni način</translation>
@@ -133,6 +140,7 @@
 <translation id="3891340733213178823">Dvakrat pritisnite Ctrl + Shift + Q, če se želite odjaviti.</translation>
 <translation id="3893630138897523026">ChromeVox (izgovorjava povratnih informacij)</translation>
 <translation id="3899995891769452915">Glasovni vnos</translation>
+<translation id="3900355044994618856">Seja se bo končala čez <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="394485226368336402">Nastavitve zvoka</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
@@ -165,6 +173,7 @@
 <translation id="4905614135390995787">Bližnjica za preklop na visokokontrastni način se je spremenila. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
+<translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
 <translation id="5222676887888702881">Odjava</translation>
@@ -176,6 +185,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Vsi razpoložljivi uporabniki so že bili dodani tej seji.</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
+<translation id="54609108002486618">Upravljan</translation>
 <translation id="553675580533261935">Odjava iz seje</translation>
 <translation id="5548285847212963613">Razširitev »<ph name="EXTENSION_NAME" />« lahko pomaga vzpostavi povezavo s tem omrežjem.</translation>
 <translation id="5571066253365925590">Bluetooth omogočen</translation>
@@ -200,6 +210,7 @@
 <translation id="5977415296283489383">Slušalke</translation>
 <translation id="5978382165065462689">Deljenje nadzora nad zaslonom prek pomoči na daljavo.</translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
+<translation id="598882571027504733">Če želite prejeti posodobitev, znova zaženite Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="5992218262414051481">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + H.</translation>
 <translation id="6018164090099858612">Izhod iz zrcalnega načina</translation>
 <translation id="6043212731627905357">Ta monitor se ne ujema z napravo <ph name="DEVICE_TYPE" /> (monitor ni podprt).</translation>
@@ -253,6 +264,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
+<translation id="7131634465328662194">Samodejno boste odjavljeni.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
@@ -309,9 +321,11 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>
 <translation id="8517041960877371778">Akumulator naprave <ph name="DEVICE_TYPE" /> se morda ne bo polnil, medtem ko je naprava vklopljena.</translation>
 <translation id="8639760480004882931">Še <ph name="PERCENTAGE" /> %</translation>
+<translation id="8649101189709089199">Izberite in poslušajte</translation>
 <translation id="8652175077544655965">Zapiranje nastavitev</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>
+<translation id="8734991477317290293">Morda poskuša beležiti vse, kar natipkate</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Če okna premaknete na drugo namizje, lahko pride do nepričakovanega delovanja.
 
@@ -325,6 +339,7 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8995603266996330174">Upravljavec: <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>

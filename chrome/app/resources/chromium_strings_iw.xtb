@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="2898082584336937987">‏התקן את Chromium בטלפון שלך, ונשלח הודעת SMS למספר: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
+<translation id="2943431542152338750">{0,plural, =1{‏הפעלה מחדש של Chromium בתוך יום}two{‏הפעלה מחדש של Chromium בתוך # ימים}many{‏הפעלה מחדש של Chromium בתוך # ימים}other{‏הפעלה מחדש של Chromium בתוך # ימים}}</translation>
 <translation id="2977470724722393594">‏Chromium‏ מעודכן</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
 <translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
@@ -88,11 +89,13 @@
 <translation id="4222580632002216401">‏אתה מחובר כעת ל-Chromium! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
 <translation id="4224199872375172890">‏Chromium‏ מעודכן.</translation>
 <translation id="4230135487732243613">‏האם לקשר את הנתונים שלך ב-Chromium לחשבון זה?</translation>
+<translation id="4260985389288095068">‏יש תוכנה מזיקה במחשב. כדי להחזיר את הדפדפן לפעילות רגילה, Chromium יכול להסיר את התוכנה ולשחזר את ההגדרות שלך.</translation>
 <translation id="4271805377592243930">‏קבל עזרה בנושא Chromium</translation>
 <translation id="4285930937574705105">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="4330585738697551178">‏מודול זה מתנגש עם Chromium.</translation>
 <translation id="4421155425831608516">‏מנהל המערכת של המכשיר הזה השבית את הכניסה אל Chromium.</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{‏Chromium יופעל מחדש בעוד שעה}two{‏Chromium יופעל מחדש בעוד # שעות}many{‏Chromium יופעל מחדש בעוד # שעות}other{‏Chromium יופעל מחדש בעוד # שעות}}</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4469812139324097969">‏Chromium אינו מעודכן מכיוון שהוא לא הופעל בזמן האחרון. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="4488554488975128561">‏תוכל לעזור בשיפור האבטחה וקלות השימוש של Chromium על-ידי שליחה אוטומטית של חלק מפרטי המערכת ותוכן הדף אל Google כדי לעזור בזיהוי של יישומים ואתרים מסוכנים.</translation>

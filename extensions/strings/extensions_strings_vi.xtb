@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Gói không hợp lệ: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">Máy ảnh mặt sau</translation>
 <translation id="1196338895211115272">Không thể xuất khóa cá nhân.</translation>
-<translation id="1256619696651732561">Trình phân tích cú pháp tệp kê khai tiện ích</translation>
 <translation id="1420684932347524586">Rất tiếc! Không thể tạo khóa cá nhân RSA ngẫu nhiên.</translation>
 <translation id="1445572445564823378">Tiện ích này đang làm chậm <ph name="PRODUCT_NAME" />. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL không được hỗ trợ.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Không thể tải tệp '<ph name="RELATIVE_PATH" />' cho tập lệnh nội dung. Tệp không được mã hóa UTF-8.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") bị quản trị viên chặn. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Không thể cài đặt gói: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Trình cài đặt tệp nén</translation>
 <translation id="3115238746683532089">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ nhà cung cấp <ph name="VENDOR_ID" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Không thể thay thế tệp crx. Kiểm tra để xem tệp có đang được sử dụng hay không.</translation>
 <translation id="3163201441334626963">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ nhà cung cấp <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Tệp kê khai bị thiếu hoặc không thể đọc được</translation>
 <translation id="8636666366616799973">Gói không hợp lệ. Chi tiết: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Tiện ích này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> do tiện ích khác (<ph name="EXTENSION_NAME" />) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Trình giải nén tiện ích</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn:</translation>
 <translation id="8825366169884721447">Tiện ích này không thể sửa đổi tiêu đề yêu cầu "<ph name="HEADER_NAME" />" của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Khoá cá nhân cho tiện ích chỉ định đã tồn tại. Hãy sử dụng lại hoặc xóa khóa đó trước tiên.</translation>

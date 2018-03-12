@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">ወደላይ አንቀሳቅስ</translation>
 <translation id="2190355936436201913">(ባዶ)</translation>
 <translation id="219905428774326614">ማስጀመሪያ፣ ሁሉም መተግበሪያዎች</translation>
+<translation id="2267918077332197517">ከዚህ ጣቢያ የሚመጡ ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="2289052229480071835">በማያ ገጽዎ ላይ ያሉት የንክኪ ዒላማዎችን መታ ያድርጉ።</translation>
 <translation id="2295140143284145483">የዳሰሳ ጥናት</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ቴባ/ሰ</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">ኮማ</translation>
 <translation id="6397363302884558537">መናገር አቁም</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ሰከንድ በፊት}one{# ሰከንዶች በፊት}other{# ሰከንዶች በፊት}}</translation>
+<translation id="6430678249303439055">ከዚህ መተግበሪያ የሚመጡ ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ከ1 ሰከንድ በፊት}one{ከ# ሰከንዶች በፊት}other{ከ# ሰከንዶች በፊት}}</translation>
 <translation id="654149438358937226">ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="6567071839949112727">ዘር ማንዘርን ጠቅ አድርግ</translation>

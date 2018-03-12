@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Sivu ylös</translation>
 <translation id="2190355936436201913">(tyhjä)</translation>
 <translation id="219905428774326614">Käynnistysohjelma, kaikki sovellukset</translation>
+<translation id="2267918077332197517">Estä kaikki tämän sivuston ilmoitukset</translation>
 <translation id="2289052229480071835">Napauta näytölläsi olevia kosketettavia kohteita.</translation>
 <translation id="2295140143284145483">Kysely</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> Tt/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Pilkku</translation>
 <translation id="6397363302884558537">Lopeta puhuminen</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s sitten}other{# s sitten}}</translation>
+<translation id="6430678249303439055">Estä kaikki tämän sovelluksen ilmoitukset</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekunti sitten}other{# sekuntia sitten}}</translation>
 <translation id="654149438358937226">Estä kaikki ilmoitukset</translation>
 <translation id="6567071839949112727">klikkaa edeltäjää</translation>

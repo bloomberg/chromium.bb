@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
 <translation id="1299858300159559687">Imprimeix la pàgina actual</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="1439252533104567537">Ves a la pestanya numerada</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
 <translation id="152892567002884378">Apuja el volum</translation>
@@ -44,7 +43,6 @@
 <translation id="3084301071537457911">Destaca l'element següent del prestatge</translation>
 <translation id="309173601632226815">Destaca el botó del menú d'aplicacions al prestatge</translation>
 <translation id="3105917916468784889">Fes una captura de pantalla</translation>
-<translation id="3118681365140644126">Deixa de destacar un botó del prestatge</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Mou el focus a la barra d'adreces</translation>
 <translation id="3288816184963444640">Tanca la finestra actual</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">Consulta l'ajuda de les tecles de drecera</translation>
 <translation id="4628718545549558538">Obre l'àrea d'estat (on es mostra la imatge del compte)</translation>
 <translation id="4642092649622328492">Fes una captura de pantalla parcial</translation>
-<translation id="4725377341024374454">Obre el botó destacat del prestatge</translation>
 <translation id="4801989101741319327">Mou el cursor al final de la paraula següent</translation>
 <translation id="4916163929714267752">Obre l'enllaç en una finestra nova</translation>
 <translation id="5034421018520995080">Ves a la part superior de la pàgina</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">Suprimeix la paraula anterior</translation>
 <translation id="5928303187149237472">Canvia la resolució de pantalla</translation>
 <translation id="5975083100439434680">Redueix</translation>
-<translation id="6011500873794669296">Alterna el focus entre les seccions següents: àrea d'estat (on es mostra la imatge del compte), menú d'aplicacions, barra d'adreces, barra d'adreces d'interès (si és visible), la pàgina web que està oberta, la barra de baixades (si és visible)</translation>
 <translation id="6022924867608035986">Esborra el text del quadre de cerca</translation>
 <translation id="6045998054441862242">Activa el mode d'alt contrast</translation>
 <translation id="6052614013050385269">Fes clic amb el botó secundari del ratolí en un enllaç</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">Obre l'enllaç en una pestanya nova</translation>
 <translation id="8609384513243082612">Obre una pestanya nova</translation>
 <translation id="8644639153978066712">Mostra els fitxers amagats a l'aplicació Fitxers</translation>
-<translation id="8709893667941082515">Mou el focus a la barra d'adreces durant una cerca</translation>
 <translation id="8717459106217102612">Selecciona la paraula o la lletra anterior</translation>
 <translation id="8727232706774971183">Mostra les notificacions</translation>
 <translation id="88986195241502842">Av Pàg</translation>

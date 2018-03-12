@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
 <translation id="2898082584336937987">Instalirajte Chromium na telefon. Poslat ćemo vam SMS na telefon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">O pregledniku &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Ponovo pokrenite Chromium u roku od jednog dana}one{Ponovo pokrenite Chromium u roku od # dana}few{Ponovo pokrenite Chromium u roku od # dana}other{Ponovo pokrenite Chromium u roku od # dana}}</translation>
 <translation id="2977470724722393594">Chromium je ažuran</translation>
 <translation id="3032787606318309379">Dodavanje u preglednik Chromium...</translation>
 <translation id="3046695367536568084">Morate se prijaviti na Chromium da biste upotrebljavali aplikacije. To omogućuje Chromiumu sinkronizaciju vaših aplikacija, oznaka, povijesti, zaporki i ostalih postavki na različitim uređajima.</translation>
@@ -90,11 +91,13 @@
 <translation id="4222580632002216401">Sada ste prijavljeni na Chromium! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
 <translation id="4230135487732243613">Želite li povezati svoje podatke sustava Chromium s tim računom?</translation>
+<translation id="4260985389288095068">Na vašem računalu ima štetnog softvera. Chromium ga može ukloniti i vratiti vaše postavke kako bi vaš preglednik ponovno funkcionirao normalno.</translation>
 <translation id="4271805377592243930">Potraži pomoć za upotrebu Chromiuma</translation>
 <translation id="4285930937574705105">Instalacija nije uspjela zbog nepoznate pogreške. Ako je Chromium trenutačno otvoren, zatvorite ga i pokušajte ponovo.</translation>
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="4421155425831608516">Administrator ovog uređaja onemogućio je prijavu na Chromium.</translation>
 <translation id="4423735387467980091">Prilagodite Chromium i upravljajte njime</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium će se ponovo pokrenuti za sat vremena}one{Chromium će se ponovo pokrenuti za # sat}few{Chromium će se ponovo pokrenuti za # sata}other{Chromium će se ponovo pokrenuti za # sati}}</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4469812139324097969">Chromium je zastario jer dulje vrijeme nije ponovo pokrenut. Ažuriranje je dostupno i primijenit će se čim ponovo pokrenete proizvod.</translation>
 <translation id="4488554488975128561">Možete pomoći da Chromium bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski šalju neki podaci o sustavu i sadržaju stranice u svrhu otkrivanja opasnih aplikacija i web-lokacija.</translation>

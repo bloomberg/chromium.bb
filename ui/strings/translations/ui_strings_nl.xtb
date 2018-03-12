@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Pagina omhoog</translation>
 <translation id="2190355936436201913">(leeg)</translation>
 <translation id="219905428774326614">Launcher, alle apps</translation>
+<translation id="2267918077332197517">Alle meldingen van deze site blokkeren</translation>
 <translation id="2289052229480071835">Tik op de tikdoelen op je scherm.</translation>
 <translation id="2295140143284145483">Enquête</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6397363302884558537">Inspreken stoppen</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec. geleden}other{# sec. geleden}}</translation>
+<translation id="6430678249303439055">Alle meldingen van deze app blokkeren</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 seconde geleden}other{# seconden geleden}}</translation>
 <translation id="654149438358937226">Alle meldingen blokkeren</translation>
 <translation id="6567071839949112727">klik via bovenliggende entiteit</translation>

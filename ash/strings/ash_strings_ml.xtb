@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">ഡിസ്പ്ലേ സ്കെയിൽ</translation>
 <translation id="2303600792989757991">വിൻഡോ ചുരുക്കവിവരണം ടോഗിൾ ചെയ്യുക</translation>
 <translation id="2338501278241028356">സമീപത്തുള്ള ഉപകരണങ്ങൾ കണ്ടെത്താൻ Bluetooth ഓണാക്കുക</translation>
+<translation id="2351266942280602854">ഭാഷയും ടൈപ്പുചെയ്യലും</translation>
 <translation id="2352467521400612932">സ്റ്റൈലസ് ക്രമീകരണം</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
 <translation id="2365393535144473978">മൊബൈൽ ഡാറ്റ പ്രവർത്തനക്ഷമമാക്കുമ്പോൾ Bluetooth-ഉം പ്രവർത്തനക്ഷമമാകും.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="2675319268637823299"><ph name="USER_EMAIL" /> എന്ന ഇമെയിലിലേക്ക് ഒന്നിലധികം പേർ സൈൻ ഇൻ ചെയ്യുന്നത് ഒരു അഡ്‌മിനിസ്‌ട്രേറ്റർ വിലക്കിയിരിക്കുന്നു.
     തുടരാൻ, എല്ലാ ഉപയോക്താക്കളും സൈൻ ഔട്ട് ചെയ്യണം.</translation>
+<translation id="2718395828230677721">നൈറ്റ് ലൈറ്റ്</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> നെറ്റ്‌വർക്കിലേക്ക് വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">അപ്‌ഡേറ്റുചെയ്യുന്നതിന് പുനരാരംഭിക്കുക</translation>
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="315116470104423982">മൊബൈല്‍ ഡാറ്റ</translation>
+<translation id="3151786313568798007">ഓറിയന്റേഷൻ</translation>
 <translation id="3153444934357957346">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് <ph name="MULTI_PROFILE_USER_LIMIT" /> അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
 <translation id="3631369015426612114">ഇനിപ്പറയുന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ അനുവദിക്കുക</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ആവശ്യമുള്ള ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="371370241367527062">മുൻവശത്തുള്ള മൈക്രോഫോൺ</translation>
 <translation id="3771549900096082774">ഉയർന്ന ദൃശ്യതീവ്രതാ മോഡ്</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="5457599981699367932">അതിഥിയായി ബ്രൌസുചെയ്യുക</translation>
+<translation id="54609108002486618">നിയന്ത്രിതം</translation>
 <translation id="553675580533261935">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
 <translation id="5548285847212963613">ഈ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്യാൻ "<ph name="EXTENSION_NAME" />" വിപുലീകരണത്തിന് സഹായിക്കാനാകും.</translation>
 <translation id="5571066253365925590">Bluetooth പ്രാപ്‌തമാക്കി</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>
+<translation id="8649101189709089199">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8652175077544655965">ക്രമീകരണം അടയ്ക്കുക</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
 <translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174"><ph name="DOMAIN" /> എന്നത് കൈകാര്യം ചെയ്യുന്നു</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">മൈക്രോഫോൺ ഉപയോഗത്തിലാണ്.</translation>

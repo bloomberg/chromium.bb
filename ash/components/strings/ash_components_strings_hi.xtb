@@ -7,7 +7,6 @@
 <translation id="1204450209689312104">गुप्त मोड में नई विंडो खोलें</translation>
 <translation id="1299858300159559687">अपना अभी वाला पेज प्रिंट करें</translation>
 <translation id="1383876407941801731">खोज</translation>
-<translation id="1439252533104567537">नंबर वाले टैब पर जाएं</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> या <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
 <translation id="152892567002884378">वॉल्यूम बढ़ाएं</translation>
@@ -40,11 +39,10 @@
 <translation id="2830827904629746450">विंडो दाईं ओर डॉक करें</translation>
 <translation id="2872353916818027657">प्राथमिक मॉनीटर को स्वैप करें</translation>
 <translation id="2914313326123580426">डेवलपर टूल पैनल दिखाएं या छिपाएं</translation>
-<translation id="292495055542441795">पूर्ण स्‍क्रीन टॉगल करें</translation>
+<translation id="292495055542441795">फ़ुलस्‍क्रीन टॉगल करें</translation>
 <translation id="3084301071537457911">अपनी अलमारी पर अगला आइटम हाइलाइट करें</translation>
 <translation id="309173601632226815">अपनी अलमारी पर लॉन्चर बटन हाइलाइट करें</translation>
 <translation id="3105917916468784889">स्क्रीनशॉट लें</translation>
-<translation id="3118681365140644126">अपनी अलमारी पर किसी बटन से हाइलाइट हटाएं</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
 <translation id="3288816184963444640">अभी वाली विंडो बंद करें</translation>
@@ -57,7 +55,7 @@
 <translation id="355103131818127604">लिंक को बैकग्राउंड में नए टैब में खोलें</translation>
 <translation id="3649256019230929621">विंडो को छोटा करें</translation>
 <translation id="3668361878347172356">अपनी पिछली कार्रवाई फिर से करें</translation>
-<translation id="3720939646656082033">लिंक को नए टैब में खोलें और नए टैब में स्‍विच करें</translation>
+<translation id="3720939646656082033">लिंक को नए टैब में खोलें और नए टैब पर स्‍विच करें</translation>
 <translation id="3725795051337497754">अभी वाला टैब बंद करें</translation>
 <translation id="3751033133896282964">अपनी पिछली कार्रवाई को पहले जैसा करें</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
@@ -73,7 +71,6 @@
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट सहायक देखें</translation>
 <translation id="4628718545549558538">हाल बताने वाली जगह खोलें (जहां आपके खाते की तस्वीर दिखाई देती है)</translation>
 <translation id="4642092649622328492">आंशिक स्क्रीनशॉट लें</translation>
-<translation id="4725377341024374454">अपनी अलमारी पर हाइलाइट किया गया बटन खोलें</translation>
 <translation id="4801989101741319327">अगले शब्द के आखिर में ले जाएं</translation>
 <translation id="4916163929714267752">लिंक को नई विंडो में खोलें</translation>
 <translation id="5034421018520995080">पेज के सबसे ऊपर जाएं</translation>
@@ -94,7 +91,6 @@
 <translation id="587531134027443617">पिछला शब्द मिटाएं</translation>
 <translation id="5928303187149237472">स्‍क्रीन का रिज़ॉल्यूशन बदलना</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
-<translation id="6011500873794669296">फ़ोकस इनके बीच स्विच करें: हाल बताने वाली जगह (जहां आपके खाते की तस्वीर दिखाई देती है) लॉन्चर पता बार बुकमार्क बार (अगर दिख रहा हो) वह वेबपेज जो खुला है डाउनलोड बार (अगर दिख रहा हो)</translation>
 <translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6045998054441862242">उच्च कंट्रास्ट मोड चालू करें</translation>
 <translation id="6052614013050385269">लिंक पर राइट-क्‍लिक करें</translation>
@@ -142,7 +138,6 @@
 <translation id="85690795166292698">लिंक को नए टैब में खोलें</translation>
 <translation id="8609384513243082612">नया टैब खोलें</translation>
 <translation id="8644639153978066712">फ़ाइल ऐप्लिकेशन में छिपी हुई फ़ाइलें दिखाएं</translation>
-<translation id="8709893667941082515">खोज पर पता बार पर फ़ोकस करें</translation>
 <translation id="8717459106217102612">पिछला शब्द या अक्षर चुनें</translation>
 <translation id="8727232706774971183">अपनी सूचनाएं देखें</translation>
 <translation id="88986195241502842">Page down</translation>

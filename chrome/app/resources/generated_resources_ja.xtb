@@ -448,7 +448,6 @@
 <translation id="166278006618318542">サブジェクトの公開鍵アルゴリズム</translation>
 <translation id="166439687370499867">共有のネットワーク設定を変更することはできません</translation>
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
-<translation id="1666058115165804494">作成日時</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
 <translation id="167832068858235403">音量を下げる</translation>
@@ -675,7 +674,6 @@
 <translation id="205560151218727633">Google アシスタントのロゴ</translation>
 <translation id="2059913712424898428">タイムゾーン</translation>
 <translation id="2065405795449409761">Chrome は自動テスト ソフトウェアによって制御されています。</translation>
-<translation id="2068054174185416762">フレームレート</translation>
 <translation id="2070909990982335904">ドットで始まる名前はシステム専用です。別の名前を指定してください。</translation>
 <translation id="2071393345806050157">ローカルのログ ファイルがありません。</translation>
 <translation id="2074527029802029717">タブの固定を解除</translation>
@@ -775,7 +773,6 @@
 <translation id="2208158072373999562">Zip アーカイブ</translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME" />」の PIN コードを入力してください:</translation>
 <translation id="2209593327042758816">シェルフ アイテム 2</translation>
-<translation id="2215277870964745766">ようこそ。言語とネットワークを設定してください</translation>
 <translation id="2217501013957346740">名前を作成 -</translation>
 <translation id="2218019600945559112">マウスとタッチパッド</translation>
 <translation id="2218320521449013367">Chrome での有害なソフトウェアの削除中にエラーが発生しました</translation>
@@ -842,7 +839,6 @@
 <translation id="23030561267973084">「<ph name="EXTENSION_NAME" />」が追加の許可をリクエストしています。</translation>
 <translation id="2307462900900812319">ネットワークを設定</translation>
 <translation id="230927227160767054">このページはサービス ハンドラのインストールを求めています。</translation>
-<translation id="2311496337038385958">録音した年</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% 完了</translation>
 <translation id="2318143611928805047">用紙サイズ</translation>
@@ -1002,9 +998,6 @@
 <translation id="2575247648642144396">このアイコンは、表示中のページで拡張機能が使用できる場合に表示されます。この拡張機能を使用するには、アイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
 <translation id="2575268751393592580">スマートフォンが見つかりません。<ph name="DEVICE_TYPE" /> が Wi-Fi またはモバイル ネットワークに接続されていることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
 <translation id="257779572837908839">Chromebox for meetings として設定</translation>
-<translation id="257811358971247368"><ph name="BEGIN_BOLD" />ボリュームをマウント解除できません<ph name="END_BOLD" />
-   <ph name="LINE_BREAKS" />
-   ボリュームがビジーです。開いているファイルをすべて閉じ、しばらくしてからもう一度お試しください。</translation>
 <translation id="2579575372772932244">プロフィールを再作成しています。しばらくお待ちください...</translation>
 <translation id="2580889980133367162">複数のファイルをダウンロードすることを <ph name="HOST" /> に常に許可する</translation>
 <translation id="2580924999637585241">印刷総数: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1279,7 +1272,6 @@
 <translation id="29488703364906173">最新のウェブ環境に対応した高速、シンプル、安全なウェブブラウザです。</translation>
 <translation id="2949037475046662832">以下を含むすべてのサイトの Cookie とサイトデータを削除します</translation>
 <translation id="2951247061394563839">ウィンドウを中央に配置</translation>
-<translation id="2951721188322348056">動画情報</translation>
 <translation id="2956763290572484660">Cookie: <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">拡張機能のパッケージ化に関する警告</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
@@ -1475,7 +1467,6 @@
 <translation id="3264582393905923483">コンテキスト</translation>
 <translation id="3265459715026181080">ウインドウを閉じる</translation>
 <translation id="3267726687589094446">複数ファイルの自動ダウンロードを今後も許可する</translation>
-<translation id="3267998849713137817">更新日時</translation>
 <translation id="3268451620468152448">開いているタブ</translation>
 <translation id="3269069891205016797">ログアウトすると端末から利用時の情報が削除されます。</translation>
 <translation id="3269093882174072735">画像を読み込む</translation>
@@ -1795,7 +1786,6 @@
 <translation id="3741243925913727067">メディア デバイスの写真や動画を Google ドライブにバックアップします。</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
-<translation id="3745016858329272300">一般情報</translation>
 <translation id="3748026146096797577">接続されていません</translation>
 <translation id="3749289110408117711">ファイル名</translation>
 <translation id="3751427701788899101">接続が切断されました</translation>
@@ -1840,7 +1830,6 @@
 <translation id="3798449238516105146">バージョン</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{すべてを開く(&amp;O)}=1{ブックマークを開く(&amp;O)}other{すべて（# 件）を開く(&amp;O)}}</translation>
 <translation id="3800806661949714323">すべてを表示（推奨）</translation>
-<translation id="3802282970260083766">デバイス設定</translation>
 <translation id="380408572480438692">パフォーマンス データの収集を有効にすると、Google によるシステムの改善に役立てることができます。フィードバック レポートを作成（Alt-Shift-I）してパフォーマンス データを追加するまでは、データは送信されません。いつでもこの画面に戻って、データの収集を無効にできます。</translation>
 <translation id="3806965327722135869">有害なソフトウェアを探して削除します</translation>
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）はログイン画面ではインストールできません。</translation>
@@ -2301,6 +2290,7 @@
 <translation id="4615586811063744755">Cookie が選択されていません</translation>
 <translation id="4617270414136722281">拡張機能のオプション</translation>
 <translation id="4619615317237390068">他のデバイスからのタブ</translation>
+<translation id="4620809267248568679">この設定は拡張機能によって行われました。</translation>
 <translation id="4624768044135598934">完了しました</translation>
 <translation id="4625078469366263107">アプリを有効にする</translation>
 <translation id="4627427111733173920">Cookie がブロックされました</translation>
@@ -3018,7 +3008,6 @@
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />、<ph name="LANGUAGE_2" />、他 <ph name="NUM_ADDITIONAL_LANGUAGES" /> 言語</translation>
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />: 選択して編集</translation>
 <translation id="5746169159649715125">PDF に保存</translation>
-<translation id="5747059785823487638">音声情報</translation>
 <translation id="5747552184818312860">有効期限</translation>
 <translation id="5747785204778348146">Dev - 不安定</translation>
 <translation id="5750324801516359607">遠い</translation>
@@ -3304,7 +3293,6 @@
 <translation id="6198102561359457428">ログアウトしてから再度ログイン...</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6199801702437275229">空き容量情報を待機中...</translation>
-<translation id="6205361668976501227">端末の機種</translation>
 <translation id="6205710420833115353">一部の操作に予想より時間がかかっています。中止しますか？</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
@@ -3452,7 +3440,6 @@
 <translation id="6431217872648827691">すべてのデータは次の日付に Google パスワードで暗号化されました
         <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> は、このコンピュータのすべてのユーザーに対して自動更新を設定します。</translation>
-<translation id="6433870913154270462">画像情報</translation>
 <translation id="6434309073475700221">破棄</translation>
 <translation id="6435285122322546452">キオスク アプリケーションを管理...</translation>
 <translation id="6436164536244065364">ウェブストアで見る</translation>
@@ -3886,7 +3873,6 @@
 <translation id="7124929488592184705">「<ph name="DOCUMENT_NAME" />」の印刷エラー</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」 - &lt;em&gt;&lt;/em&gt;ドライブを検索</translation>
 <translation id="7127980134843952133">ダウンロード履歴</translation>
-<translation id="7129050975168763580">ページ数</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> でのユーザーデータの読み取り</translation>
 <translation id="713122686776214250">ページを追加(&amp;G)...</translation>
 <translation id="7134098520442464001">テキストを縮小する</translation>
@@ -4235,7 +4221,6 @@
 <translation id="7714307061282548371"><ph name="DOMAIN" /> からの Cookie が許可されました</translation>
 <translation id="7714464543167945231">証明書</translation>
 <translation id="7716781361494605745">Netscape 認証局ポリシー URL</translation>
-<translation id="7716970641886237992">更新者</translation>
 <translation id="7717014941119698257">ダウンロード: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">アップデートを確認</translation>
 <translation id="7719367874908701697">ページのズーム</translation>
@@ -4556,6 +4541,7 @@
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> に接続中</translation>
 <translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
 <translation id="8191453843330043793">V8 プロキシ リゾルバ</translation>
+<translation id="8193175696669055101">デバイスモデル</translation>
 <translation id="8195027750202970175">ディスク上のサイズ</translation>
 <translation id="8199300056570174101">ネットワーク（サービス）とデバイスのプロパティ</translation>
 <translation id="8200772114523450471">再開</translation>
@@ -4948,7 +4934,6 @@
 <translation id="8860454412039442620">Excel スプレッドシート</translation>
 <translation id="8862003515646449717">高速なブラウザをぜひご利用ください</translation>
 <translation id="8863753581171631212">新しい <ph name="APP" /> でリンクを開く</translation>
-<translation id="8868245144144497543">作成者</translation>
 <translation id="8868626022555786497">使用中</translation>
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>

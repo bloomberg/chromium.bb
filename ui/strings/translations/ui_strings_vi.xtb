@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(trống)</translation>
 <translation id="219905428774326614">Trình khởi chạy, tất cả ứng dụng</translation>
+<translation id="2267918077332197517">Chặn tất cả thông báo từ trang web này</translation>
 <translation id="2289052229480071835">Nhấn vào các mục tiêu cảm ứng trên màn hình của bạn.</translation>
 <translation id="2295140143284145483">Khảo sát</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/giây</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Dấu phẩy</translation>
 <translation id="6397363302884558537">Dừng nói</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
+<translation id="6430678249303439055">Chặn tất cả thông báo từ ứng dụng này</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 giây trước}other{# giây trước}}</translation>
 <translation id="654149438358937226">Chặn tất cả thông báo</translation>
 <translation id="6567071839949112727">nhấp vào đối tượng cấp trên</translation>

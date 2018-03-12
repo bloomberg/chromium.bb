@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">A következő csomag érvénytelen: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Hátlapi</translation>
 <translation id="1196338895211115272">A privát kulcs exportálása sikertelen.</translation>
-<translation id="1256619696651732561">Bővítményjegyzék elemzője</translation>
 <translation id="1420684932347524586">Ajjaj! Nem sikerült a véletlenszerű RSA privát kulcs generálása.</translation>
 <translation id="1445572445564823378">Ez a bővítmény lassítja a <ph name="PRODUCT_NAME" /> működését. Kapcsolja ki a <ph name="PRODUCT_NAME" /> teljesítményének visszaállításához.</translation>
 <translation id="1468038450257740950">A WebGL nem támogatott.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">A(z) '<ph name="RELATIVE_PATH" />' fájlt nem lehet betölteni tartalomszkriptre, mert nem UTF-8 kódolású.</translation>
 <translation id="2903070246402204397">A(z) <ph name="EXTENSION_NAME" /> bővítményt (bővítményazonosító: <ph name="EXTENSION_ID" />) tiltja a rendszergazda. <ph name="ADMIN_INFO" />.</translation>
 <translation id="2988488679308982380">Nem sikerült a következő csomag telepítése: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">ZIP-fájl telepítő</translation>
 <translation id="3115238746683532089">Ismeretlen termék (<ph name="PRODUCT_ID" />) <ph name="VENDOR_ID" /> szolgáltatótól (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Nem sikerült lecserélni a crx-fájlt. Ellenőrizze, hogy nincs-e használatban a fájl.</translation>
 <translation id="3163201441334626963">Ismeretlen termék (<ph name="PRODUCT_ID" />) a következő forgalmazótól: <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">A jegyzékfájl hiányzik vagy nem olvasható</translation>
 <translation id="8636666366616799973">A csomag érvénytelen. Részletek: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">A bővítmény nem tudta átirányítani a hálózati kérést <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> felé, mivel egy másik bővítmény (<ph name="EXTENSION_NAME" />) átirányította azt a következőre: <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Bővítmény-kicsomagoló</translation>
 <translation id="8761756413268424715">A(z) „<ph name="APP_NAME" />” alkalmazás hozzáférést kér egyik eszközéhez:</translation>
 <translation id="8825366169884721447">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME" />” kérésfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">A megadott bővítményhez már létezik privát kulcs. Használja újra vagy előbb törölje azt.</translation>

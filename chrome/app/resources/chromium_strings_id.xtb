@@ -51,6 +51,7 @@
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2898082584336937987">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
+<translation id="2943431542152338750">{0,plural, =1{Luncurkan ulang Chromium dalam satu hari}other{Luncurkan ulang Chromium dalam # hari}}</translation>
 <translation id="2977470724722393594">Chromium sudah diperbarui</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
 <translation id="3046695367536568084">Anda harus masuk ke Chromium untuk menggunakan aplikasi. Ini memungkinkan Chromium menyinkronkan aplikasi, bookmark, histori, sandi, dan setelan lainnya antar perangkat.</translation>
@@ -90,11 +91,13 @@
 <translation id="4222580632002216401">Sekarang Anda telah masuk ke Chromium! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="4224199872375172890">Chromium sudah diperbarui.</translation>
 <translation id="4230135487732243613">Tautkan data Chromium Anda ke akun ini?</translation>
+<translation id="4260985389288095068">Ada software berbahaya di komputer. Chrome dapat menghapusnya dan akan memulihkan setelan agar browser berfungsi normal lagi.</translation>
 <translation id="4271805377592243930">Dapatkan bantuan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
 <translation id="4421155425831608516">Login ke Chromium dinonaktifkan oleh administrator perangkat ini.</translation>
 <translation id="4423735387467980091">Menyesuaikan dan mengontrol Chromium</translation>
+<translation id="4449801103833300785">{0,plural, =1{Chromium akan diluncurkan ulang dalam satu jam}other{Chromium akan diluncurkan ulang dalam # jam}}</translation>
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
 <translation id="4469812139324097969">Chromium telah kedaluwarsa karena tidak diluncurkan selama beberapa waktu. Pembaruan telah tersedia dan akan diterapkan setelah Anda meluncurkan ulang.</translation>
 <translation id="4488554488975128561">Anda dapat membantu menjadikan Chromium lebih aman dan lebih mudah digunakan, dengan mengirim sebagian informasi sistem dan konten halaman secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya.</translation>

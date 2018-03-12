@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Vale pakett: „<ph name="ERROR_CODE" />”.</translation>
 <translation id="1140871961407805696">Keskkonna poole suunatud</translation>
 <translation id="1196338895211115272">Privaatvõtme eksportimine nurjus.</translation>
-<translation id="1256619696651732561">Laienduse manifesti parser</translation>
 <translation id="1420684932347524586">Oih! RSA juhusliku privaatvõtme genereerimine ebaõnnestus.</translation>
 <translation id="1445572445564823378">Laiendus aeglustab rakendust <ph name="PRODUCT_NAME" />. Peaksite selle keelama, et taastada rakenduse <ph name="PRODUCT_NAME" /> toimivus.</translation>
 <translation id="1468038450257740950">WebGL-i ei toetata.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Sisuskripti jaoks ei õnnestunud laadida faili <ph name="RELATIVE_PATH" />, kuna sellel ei ole UTF-8 kodeeringut.</translation>
 <translation id="2903070246402204397">Laienduse <ph name="EXTENSION_NAME" /> (laienduse ID „<ph name="EXTENSION_ID" />”) blokeeris administraator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Paketti ei saanud installida: „<ph name="ERROR_CODE" />”</translation>
-<translation id="3097628171361913691">ZIP-faili installija</translation>
 <translation id="3115238746683532089">Tundmatu toode <ph name="PRODUCT_ID" /> teenusepakkujalt <ph name="VENDOR_ID" /> (seerianumber <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx-faili asendamine ebaõnnestus. Kontrollige, kas fail on kasutusel.</translation>
 <translation id="3163201441334626963">Tundmatu toode <ph name="PRODUCT_ID" /> teenusepakkujalt <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifestifail puudub või ei ole seda võimalik lugeda</translation>
 <translation id="8636666366616799973">Vale pakett. Üksikasjad: „<ph name="ERROR_MESSAGE" />”.</translation>
 <translation id="8670869118777164560">Laiendusel ei õnnestunud võrgutaotlust ümber suunata asukohta <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, kuna teine laiendus (<ph name="EXTENSION_NAME" />) suunas selle asukohta <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Laienduse lahtipakkija</translation>
 <translation id="8761756413268424715">Rakendus „<ph name="APP_NAME" />” taotleb juurdepääsu ühele teie seadmele:</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME" />”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Määratud laiendusel on juba privaatvõti. Kasutage uuesti seda võtit või kustutage see kõigepealt.</translation>

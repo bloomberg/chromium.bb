@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">Scară afișaj</translation>
 <translation id="2303600792989757991">Activați/Dezactivați prezentarea ferestrei</translation>
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
+<translation id="2351266942280602854">Limbă și metodă de introducere a textului</translation>
 <translation id="2352467521400612932">Setările creionului</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Activând datele mobile, se va activa Bluetooth.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2675319268637823299">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL" />.
     Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
+<translation id="2718395828230677721">Lumină de noapte</translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
 <translation id="2761704814324807722">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Se reconectează la <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="315116470104423982">Date mobile</translation>
+<translation id="3151786313568798007">Orientare</translation>
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3294437725009624529">Invitat</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">Intrări</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="3631369015426612114">Permite notificările de la</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capturează zona</translation>
 <translation id="371370241367527062">Microfonul din față</translation>
 <translation id="3771549900096082774">Mod de contrast ridicat</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
 <translation id="5457599981699367932">Navighează ca invitat</translation>
+<translation id="54609108002486618">Gestionat</translation>
 <translation id="553675580533261935">Se iese din sesiune</translation>
 <translation id="5548285847212963613">Extensia „<ph name="EXTENSION_NAME" />” te poate ajuta să te conectezi la această rețea.</translation>
 <translation id="5571066253365925590">Bluetooth activat</translation>
@@ -308,6 +313,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">Selectează și ascultă</translation>
 <translation id="8652175077544655965">Închide setările</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
@@ -324,6 +330,7 @@ Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împăr�
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
 <translation id="8940956008527784070">Baterie slabă (<ph name="PERCENTAGE" /> %)</translation>
+<translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfonul este în uz.</translation>

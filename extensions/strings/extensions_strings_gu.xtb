@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">પૅકેજ અમાન્ય છે : '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">પાછળનો કૅમેરો</translation>
 <translation id="1196338895211115272">ખાનગી કી નિકાસ કરવામાં નિષ્ફળ.</translation>
-<translation id="1256619696651732561">વિસ્તાર મેનીફેસ્ટ વિશ્લેશક</translation>
 <translation id="1420684932347524586">અરેરે! રેંડમ RSA ખાનગી કી જનરેટ કરવામાં નિષ્ફળ.</translation>
 <translation id="1445572445564823378">આ એક્સ્ટેંશન <ph name="PRODUCT_NAME" /> ને ધીમુ કરી રહ્યું છે. <ph name="PRODUCT_NAME" /> ના પ્રદર્શનને પુનર્સ્થાપિત કરવા માટે તમારે તેને અક્ષમ કરવું જોઈએ. </translation>
 <translation id="1468038450257740950">WebGL સમર્થિત નથી.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">સામગ્રી સ્ક્રિપ્ટ માટે '<ph name="RELATIVE_PATH" />' ફાઇલ લોડ કરી શકાઈ નથી. તે UTF-8 એન્કોડેડ નથી.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (એક્સ્ટેન્શન ID "<ph name="EXTENSION_ID" />")ને વ્યવસ્થાપક દ્વારા અવરોધિત કરવામાં આવેલ છે. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">પૅકેજ ઇન્સ્ટોલ કરી શકાયું નહીં: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">ઝિપ ફાઇલ ઇન્સ્ટોલર</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ફાઇલ બદલવામાં નિષ્ફળ થયું. ફાઇલ ઉપયોગમાં છે કે નહીં તે જોવા માટે તપાસો.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">મેનિફેસ્ટ ફાઇલ ખૂટે છે અથવા સરળતાથી વાંચી શકાય તેવી નથી</translation>
 <translation id="8636666366616799973">પૅકેજ અમાન્ય છે. વિગતો: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ તેને <ph name="ACTUAL_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કર્યું છે.</translation>
-<translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />", તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહ્યું છે:</translation>
 <translation id="8825366169884721447">આ એક્સટેન્શન એક નેટવર્ક વિનંતીની વિનંતી હેડર "<ph name="HEADER_NAME" />" ને સંશોધિત કરવામાં નિષ્ફળ થયુ કારણ કે સંશોધિકરણ અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) સાથે વિરોધાભાસી છે.</translation>
 <translation id="8885905466771744233">ઉલ્લેખિત એક્સટેન્શન માટે ખાનગી કી પહેલાંથી અસતિત્વમાં છે. તે કી ફરીથી વાપરો અથવા પહેલા તેને કાઢી નાખો.</translation>

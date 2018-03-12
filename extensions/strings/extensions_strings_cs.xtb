@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Balíček je neplatný: <ph name="ERROR_CODE" />.</translation>
 <translation id="1140871961407805696">Zadní</translation>
 <translation id="1196338895211115272">Export soukromého klíče se nezdařil.</translation>
-<translation id="1256619696651732561">Analyzátor manifestů rozšíření</translation>
 <translation id="1420684932347524586">Nezdařilo se vytvořit náhodný soukromý klíč RSA.</translation>
 <translation id="1445572445564823378">Toto rozšíření zpomaluje prohlížeč <ph name="PRODUCT_NAME" />. Chcete-li výkon prohlížeče <ph name="PRODUCT_NAME" /> obnovit, měli byste rozšíření zakázat.</translation>
 <translation id="1468038450257740950">Rozhraní WebGL není podporováno.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Nelze načíst soubor <ph name="RELATIVE_PATH" /> s obsahovým skriptem. Soubor není kódován ve formátu UTF-8.</translation>
 <translation id="2903070246402204397">Rozšíření <ph name="EXTENSION_NAME" /> (ID rozšíření <ph name="EXTENSION_ID" />) je blokováno administrátorem. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Nepodařilo se nainstalovat balíček: <ph name="ERROR_CODE" /></translation>
-<translation id="3097628171361913691">Instalátor souborů ZIP</translation>
 <translation id="3115238746683532089">Neznámý produkt <ph name="PRODUCT_ID" /> od dodavatele <ph name="VENDOR_ID" /> (sériové číslo <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Nepodařilo se nahradit soubor CRX. Zkontrolujte, zda je tento soubor používán.</translation>
 <translation id="3163201441334626963">Neznámý produkt <ph name="PRODUCT_ID" /> od dodavatele <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Soubor manifestu chybí nebo je nečitelný</translation>
 <translation id="8636666366616799973">Balíček je neplatný. Podrobnosti: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="8670869118777164560">Tomuto rozšíření se nepodařilo přesměrovat požadavek sítě do umístění <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, protože jej jiné rozšíření (<ph name="EXTENSION_NAME" />) přesměrovalo do umístění <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Rozbalovač rozšíření</translation>
 <translation id="8761756413268424715">Aplikace <ph name="APP_NAME" /> žádá o přístup k jednomu z vašich zařízení:</translation>
 <translation id="8825366169884721447">Tomuto rozšíření se nepodařilo změnit záhlaví <ph name="HEADER_NAME" /> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Pro zadané rozšíření již existuje soukromý klíč. Použijte tento klíč znovu, nebo jej nejprve smažte.</translation>

@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">顯示比例</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
 <translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
+<translation id="2351266942280602854">語言和輸入</translation>
 <translation id="2352467521400612932">觸控筆設定</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2365393535144473978">如果啟用行動數據，藍牙功能也會一併開啟。</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。
     所有使用者都必須登出，才能繼續操作。</translation>
+<translation id="2718395828230677721">夜燈</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">重新啟動即可更新</translation>
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
+<translation id="3151786313568798007">方向</translation>
 <translation id="3153444934357957346">使用多帳戶登入功能時，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 個帳戶。</translation>
 <translation id="3236488194889173876">沒有可用的行動網路</translation>
 <translation id="3294437725009624529">訪客</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">輸入</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3631369015426612114">允許接收下列來源發出的通知</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">擷取部分畫面</translation>
 <translation id="371370241367527062">前置麥克風</translation>
 <translation id="3771549900096082774">高對比模式</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
+<translation id="54609108002486618">管理</translation>
 <translation id="553675580533261935">結束工作階段</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新連線...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
 <translation id="8639760480004882931">剩餘電量：<ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">隨選朗讀</translation>
 <translation id="8652175077544655965">關閉設定</translation>
 <translation id="8673028979667498656">270 度</translation>
 <translation id="8676770494376880701">已連接低功率充電器</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google 個人助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麥克風正在使用中。</translation>

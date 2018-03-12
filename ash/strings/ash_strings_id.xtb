@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">TUTUP</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
+<translation id="1567387640189251553">Keyboard yang berbeda telah terhubung sejak Anda terakhir memasukkan sandi. Mungkin mencoba mencuri ketukan tombol Anda.</translation>
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Maaf, sandi Anda masih belum dapat diverifikasi. Catatan: jika Anda baru saja mengubah sandi, sandi yang baru akan diterapkan saat Anda logout, gunakan sandi lama di sini.</translation>
@@ -40,6 +41,7 @@
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
+<translation id="1928739107511554905">Untuk mendapatkan update, gunakan layar sentuh untuk menyalakan ulang Chromebook dengan keyboard yang disertakan.</translation>
 <translation id="1942830294380034169">Tombol luapan</translation>
 <translation id="1951012854035635156">Asisten</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -52,6 +54,7 @@
 <translation id="2122028596993374965">Hentikan casting <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="2144487987174258011">Nyalakan ulang untuk mengupdate Adobe Flash Player</translation>
+<translation id="2191905770366256395">Keyboard yang dapat dilepas memerlukan update penting</translation>
 <translation id="2208323208084708176">Mode desktop terpadu</translation>
 <translation id="2220572644011485463">PIN atau sandi</translation>
 <translation id="225680501294068881">Memindai perangkat...</translation>
@@ -60,6 +63,7 @@
 <translation id="2292698582925480719">Skala layar</translation>
 <translation id="2303600792989757991">Beralih ikhtisar jendela</translation>
 <translation id="2338501278241028356">Aktifkan Bluetooth untuk menemukan perangkat di sekitar</translation>
+<translation id="2351266942280602854">Bahasa dan masukan</translation>
 <translation id="2352467521400612932">Setelan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2365393535144473978">Mengaktifkan data seluler akan mengaktifkan Bluetooth.</translation>
@@ -75,6 +79,7 @@
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2675319268637823299">Administrator tidak mengizinkan penggunaan login multipel untuk <ph name="USER_EMAIL" />.
     Semua pengguna harus logout untuk melanjutkan.</translation>
+<translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2761704814324807722">Baki status, waktu <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambungkan lagi ke <ph name="NAME" /></translation>
@@ -101,6 +106,7 @@
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="315116470104423982">Data seluler</translation>
+<translation id="3151786313568798007">Orientasi</translation>
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
 <translation id="3294437725009624529">Tamu</translation>
@@ -122,6 +128,7 @@
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3631369015426612114">Izinkan notifikasi dari sumber berikut</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tangkap wilayah</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3771549900096082774">Mode Kontras Tinggi</translation>
@@ -133,6 +140,7 @@
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3893630138897523026">ChromeVox (masukan lisan)</translation>
 <translation id="3899995891769452915">Masukan suara</translation>
+<translation id="3900355044994618856">Sesi akan berakhir dalam <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Setelan audio</translation>
 <translation id="397105322502079400">Menghitung...</translation>
@@ -165,6 +173,7 @@
 <translation id="4905614135390995787">Pintasan untuk beralih Mode Kontras Tinggi telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
+<translation id="5136175204352732067">Keyboard yang berbeda terhubung</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
 <translation id="5207949376430453814">Sorot tempat penyisipan teks</translation>
 <translation id="5222676887888702881">Logout</translation>
@@ -176,6 +185,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="5457599981699367932">Jelajahi sebagai Tamu</translation>
+<translation id="54609108002486618">Terkelola</translation>
 <translation id="553675580533261935">Keluar dari sesi</translation>
 <translation id="5548285847212963613">Ekstensi "<ph name="EXTENSION_NAME" />" dapat membantu menyambungkan ke jaringan ini.</translation>
 <translation id="5571066253365925590">Bluetooth diaktifkan</translation>
@@ -200,6 +210,7 @@
 <translation id="5977415296283489383">Headphone</translation>
 <translation id="5978382165065462689">Berbagi kontrol layar via Remote Assistance.</translation>
 <translation id="5980301590375426705">Keluar dari sesi tamu</translation>
+<translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard yang disertakan.</translation>
 <translation id="5992218262414051481">Mode Kontras Tinggi diaktifkan. Tekan Ctrl+Search+H lagi untuk menonaktifkannya.</translation>
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
 <translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
@@ -253,6 +264,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7067196344162293536">Putar otomatis</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
+<translation id="7131634465328662194">Anda akan logout otomatis.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
@@ -309,9 +321,11 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambungkan lagi...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8639760480004882931">Sisa <ph name="PERCENTAGE" /></translation>
+<translation id="8649101189709089199">Klik untuk Diucapkan</translation>
 <translation id="8652175077544655965">Tutup setelan</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
+<translation id="8734991477317290293">Mungkin mencoba mencuri ketukan tombol Anda</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga.
 
@@ -325,6 +339,7 @@ Notifikasi, jendela, dan dialog berikutnya dapat terpisah antar-desktop.</transl
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174">Dikelola menurut <ph name="DOMAIN" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>

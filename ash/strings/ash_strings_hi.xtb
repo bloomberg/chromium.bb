@@ -60,6 +60,7 @@
 <translation id="2292698582925480719">प्रदर्शन पैमाना</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
 <translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
+<translation id="2351266942280602854">भाषा और इनपुट</translation>
 <translation id="2352467521400612932">स्टाइलस की सेटिंग</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2365393535144473978">मोबाइल डेटा सक्षम करने से ब्लूटूथ सक्षम हो जाएगा.</translation>
@@ -75,6 +76,7 @@
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2675319268637823299">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा साइन-इन की अनुमति नहीं दी है.
     जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना होगा.</translation>
+<translation id="2718395828230677721">नाइट लाइट</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
@@ -101,6 +103,7 @@
 <translation id="3126069444801937830">अपडेट करने के लिए पुनरारंभ करें</translation>
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
+<translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा में आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3294437725009624529">अतिथि</translation>
@@ -122,6 +125,7 @@
 <translation id="3621202678540785336">इनपुट</translation>
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3631369015426612114">इनसे आने वाली सूचनाओं की अनुमति दें</translation>
+<translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="371370241367527062">सामने वाला माइक्रोफ़ोन</translation>
 <translation id="3771549900096082774">उच्च कंट्रास्ट मोड</translation>
@@ -176,6 +180,7 @@
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>
 <translation id="5457599981699367932">अतिथि के रूप में ब्राउज़ करें</translation>
+<translation id="54609108002486618">प्रबंधित</translation>
 <translation id="553675580533261935">सत्र से बाहर निकलें</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" एक्‍सटेंशन इस नेटवर्क से कनेक्‍ट करने में सहायता कर सकता है.</translation>
 <translation id="5571066253365925590">ब्लूटूथ सक्षम किया गया</translation>
@@ -309,6 +314,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>
+<translation id="8649101189709089199">चुनें और सुनें</translation>
 <translation id="8652175077544655965">सेटिंग बंद करें</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
@@ -325,6 +331,7 @@
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
 <translation id="8940956008527784070">बैटरी कम (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारा प्रबंधित</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9079731690316798640">वाई-फ़ाई: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">माइक्रोफ़ोन का उपयोग हो रहा है.</translation>

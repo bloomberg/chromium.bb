@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">Pakken er ugyldig: "<ph name="ERROR_CODE" />".</translation>
 <translation id="1140871961407805696">Kamera på bagsiden</translation>
 <translation id="1196338895211115272">Den personlige nøgle kunne ikke eksporteres.</translation>
-<translation id="1256619696651732561">Værktøj til parsing af udvidelsesmanifester</translation>
 <translation id="1420684932347524586">Gisp! Den tilfældige personlige RSA-nøgle kunne ikke genereres.</translation>
 <translation id="1445572445564823378">Denne udvidelse gør <ph name="PRODUCT_NAME" /> langsommere. Du bør deaktivere den for at gøre <ph name="PRODUCT_NAME" /> hurtig igen.</translation>
 <translation id="1468038450257740950">WebGL understøttes ikke.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">Filen '<ph name="RELATIVE_PATH" />' til indholdsscript kunne ikke indlæses. Det er ikke UTF-8-kodet.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (udvidelses-id "<ph name="EXTENSION_ID" />") er blokeret af administrator. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">Pakken kunne ikke installeres: "<ph name="ERROR_CODE" />"</translation>
-<translation id="3097628171361913691">Installationsprogram til zip-filer</translation>
 <translation id="3115238746683532089">Ukendt produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">Crx-filen kunne ikke erstattes. Tjek, om filen er i brug.</translation>
 <translation id="3163201441334626963">Ukendt produkt, <ph name="PRODUCT_ID" />, fra leverandøren <ph name="VENDOR_ID" /></translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">Manifestfilen mangler eller kan ikke læses</translation>
 <translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Denne udvidelse kunne ikke omdirigere en netværksanmodning til <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) omdirigerede den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
-<translation id="8712265948125780616">Værktøj til udpakning af udvidelser</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder:</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Der findes allerede en personlig nøgle til den angivne udvidelse. Genbrug denne nøgle, eller slet den først.</translation>

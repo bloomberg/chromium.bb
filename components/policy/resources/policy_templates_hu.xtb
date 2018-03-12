@@ -63,6 +63,9 @@
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
       A legkisebb megengedett gyakoriság hatvan másodperc.</translation>
 <translation id="1204263402976895730">Engedélyezett vállalati nyomtatók</translation>
+<translation id="1219695476179627719">Megadja, hogy az eszköz visszaálljon-e a(z) <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> házirend által beállított verzióra, ha az eszközön már újabb verzió fut.
+
+      Az alapértelmezett érték: RollbackDisabled.</translation>
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
 <translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
 <translation id="1257550411839719984">Alapértelmezett letöltési könyvtár beállítása</translation>
@@ -504,6 +507,11 @@
       Ha a szabály nincs beállítva, a felhasználó eldöntheti, hogy használja-e a rendelkezésre álló adattömörítő proxyfunkciót.</translation>
 <translation id="2587719089023392205">A <ph name="PRODUCT_NAME" /> legyen az alapértelmezett böngészőm</translation>
 <translation id="2592091433672667839">Inaktivitás időtartama, mielőtt megjelenne a képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
+<translation id="2596260130957832043">Azt szabályozza, hogy engedélyezett-e az NTLMv2.
+
+          A Samba- és Windows-szerverek összes újabb verziója támogatja az NTLMv2 hitelesítést. Ennek kikapcsolása csökkenti a hitelesítés biztonságát, és csak az előző verziókkal való kompatibilitáshoz ajánlott.
+
+          Amennyiben a házirend nincs beállítva, az alapértelmezett értéke „igaz”, és az NTLMv2 engedélyezett.</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
@@ -518,6 +526,7 @@
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
+<translation id="2693108589792503178">A jelszómódosítási URL beállítása.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
@@ -575,6 +584,7 @@
       Ha letiltja ezt a beállítást, illetve nem adja meg az értékét, a nyomtatási előnézet a legutóbb használt nyomtatót választja ki alapértelmezettként.
 
       Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
+<translation id="2867699958489427143">Visszaállítás és a célverzió megtartása, ha az operációs rendszer verziója újabb a célverziónál. A folyamat során teljes powerwash műveletet végez.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2874209944580848064">Megjegyzés az Android-alkalmazásokat támogató <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz:</translation>
 <translation id="2877225735001246144">CNAME keresés tiltása a Kerberos hitelesítési tárgyalások során</translation>
@@ -610,6 +620,7 @@
 <translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
 <translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
+<translation id="3021562480854470924">A visszaállításnál engedélyezett mérföldkövek száma</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3038323923255997294">A háttéralkalmazások továbbfuttatása a(z) <ph name="PRODUCT_NAME" /> alkalmazás bezárása esetén</translation>
@@ -1015,6 +1026,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha az irányelv nincs megadva, a felhasználó eldöntheti, hogy megjeleníti vagy elrejti az alkalmazások parancsikonját a könyvjelzősáv helyi menüjében.
 
       Ha az irányelvet megadták, a felhasználó nem változtathatja meg azt, és az alkalmazások parancsikonja vagy mindig látszik, vagy sohasem.</translation>
+<translation id="443454694385851356">Régi (nem biztonságos)</translation>
 <translation id="443665821428652897">Webhelyadatok törlése a böngésző bezárásakor (elavult)</translation>
 <translation id="4439336120285389675">Elavult Web Platform-funkciók listájának megadása ideiglenes engedélyezéshez.
 
@@ -1026,6 +1038,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       </translation>
 <translation id="4442582539341804154">Lezárás engedélyezése, ha az eszköz tétlen vagy felfüggesztett</translation>
 <translation id="4449545651113180484">Képernyő elforgatása 270 fokkal</translation>
+<translation id="4459359100627756769">A vállalati bejelentkezési URL-ek listáját konfigurálja (csak a HTTP- és HTTPS-sémák engedélyezettek). A rendszer ezeken az URL-eken rögzíti a  jelszó ujjlenyomatát, és használja a jelszó ismételt használatának észlelésére.
+      Ezt a beállítást csak SSO/SMAL rendszerrel rendelkező G Suite-felhasználók használhatják.
+
+      Ha bekapcsolta a beállítást, akkor a jelszóvédelmi szolgáltatás rögzíti a jelszó ujjlenyomatát ezeken az URL-eken a jelszó ismételt használatának észlelése céljából.
+      Ha a beállítás le van tiltva, vagy nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás csak a https://accounts.google.com oldalon rögzíti a jelszó ujjlenyomatát.
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoznak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
 <translation id="4476769083125004742">Ha a házirend beállítása <ph name="BLOCK_GEOLOCATION_SETTING" />, az Android-alkalmazások nem férhetnek hozzá a helyadatokhoz. Ha a házirendet más értékre állítja, vagy ha nem ad meg beállítást, a rendszer a felhasználó beleegyezését kéri, ha valamelyik Android-alkalmazás hozzá kíván férni a helyadatokhoz.</translation>
@@ -1208,6 +1226,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5068140065960598044">A(z) <ph name="PRODUCT_NAME" /> felhővel kapcsolatos házirendje felülírja a számítógép házirendjét.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
 <translation id="5090209345759901501">A Flash-tartalmak beállításainak kiterjesztése az összes tartalomra</translation>
+<translation id="5093540029655764852">Megadja az ütemezést (napokban), amely szerint a kliens módosítja gépi fiókjelszavát. A jelszót véletlenszerűen generálja a kliens, és nem látható a felhasználó számára.
+
+      A felhasználói jelszavakhoz hasonlóan a gépi jelszavakat is rendszeresen módosítani kell. A házirend letiltása, illetve sok napra állítása negatív hatással lehet a biztonságra, mivel több időt biztosít az esetleges támadóknak a gépi fiókjelszó megtalálására és használatára.
+
+      Ha a házirend nincs beállítva, a gépi fiókjelszót 30 naponta módosítja a rendszer.
+
+      Ha a házirend értéke 0, le van tiltva a gépi fiókjelszó módosítása.
+
+      Fontos megjegyezni, hogy a jelszavak régebbiek lehetnek a megadott napok számánál, ha a kliens annál hosszabb időn át offline állapotban volt.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
 <translation id="5130288486815037971">Engedélyezve vannak-e az RC4 rejtjelezési csomagok a TLS protokollban</translation>
@@ -1230,6 +1257,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       tartományon kívüli értékek ebbe a tartományba lesznek beszorítva.</translation>
 <translation id="5182055907976889880">A Google Drive konfigurálása a következőben: <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Lehetővé teszi, hogy meghatározza, mely kiterjesztések nem kerülhetnek a feketelistára. A feketelista * értéke azt jelenti, hogy az összes kiterjesztés feketelistás, és a felhasználók csak az engedélyezett listán felsorolt kiterjesztéseket telepíthetik. Alapértelmezés szerint az összes kiterjesztés engedélyezett, de ha a szabályok miatt minden kiterjesztés feketelistára kerül, az engedélyezett listával felül lehet bírálni a szabályokat.</translation>
+<translation id="519247340330463721">A Biztonságos Böngészéshez tartozó házirendek beállítása.</translation>
 <translation id="5192837635164433517">A(z) <ph name="PRODUCT_NAME" /> beépített, alternatív hibaoldalainak (például "az oldal nem található" hibaoldalnak) a használatát teszi lehetővé, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást. Ha engedélyezi ezt a beállítást, az alternatív hibaoldalak használatba kerülnek. Ha letiltja a beállítást, a rendszer soha nem használ alternatív hibaoldalt. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül ezt a beállítást a következőben: <ph name="PRODUCT_NAME" />. Ha a házirend konfigurálatlanul marad, akkor a rendszer engedélyezi, de ezt a felhasználó módosíthatja.</translation>
 <translation id="5196805177499964601">Fejlesztői mód letiltása.
 
@@ -1240,6 +1268,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
 <translation id="5247006254130721952">Veszélyes letöltések letiltása</translation>
+<translation id="5248863213023520115">Meghatározza az engedélyezett titkosítási típusokat, amikor <ph name="MS_AD_NAME" />-szerverről kér le Kerberos-jegyeket.
+
+      Ha a házirendet „Összes” módra állítja, akkor az „aes256-cts-hmac-sha1-96” és az „aes128-cts-hmac-sha1-96” AES titkosítási típusok, valamint az „rc4-hmac” RC4 titkosítási típus is engedélyezettek. Ha a szerver minkét típust támogatja, az AES titkosítás előnyt élvez. Felhívjuk figyelmét, hogy az RC4 nem biztonságosnak minősül, és a szervert érdemes mihamarabb átkonfigurálni, hogy támogassa az AES titkosítást.
+
+      Ha a házirendet „Erős” módra állítja, vagy nem állítja be, csak az AES titkosítási típusok engedélyezettek.
+
+      Ha a házirendet „Régi” módra állítja, csak az RC4 titkosítási típus engedélyezett. Ez a lehetőség nem biztonságos, és csak nagyon speciális esetben lehet rá szükség.
+
+      Lásd még: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Ajánlható</translation>
 <translation id="527237119693897329">Lehetővé teszi annak meghatározását, hogy mely natív üzenetkezelő gazdagépeket ne töltse be a rendszer.
 
@@ -1322,6 +1359,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend be van állítva, a meghatározott munkamenetet a rendszer automatikusan bejelentkezteti, ha felhasználói interakció nélkül telik el a megadott időtartam a bejelentkezési képernyőn. A nyilvános munkamenetet előre be kell állítani (tekintse meg a következőt: |DeviceLocalAccounts|).
 
       Ha nincs beállítva a házirend, nem lesz automatikus bejelentkezés.</translation>
+<translation id="5526701598901867718">Mind (nem biztonságos)</translation>
 <translation id="5529037166721644841">Azt az időtartamot adja meg ezredmásodpercben, amilyen rendszerességgel az eszközkezelő szolgáltatás lekérdezi az eszközszabályzattal kapcsolatos információkat.
 
       A házirend beállításával felülírja a 3 órás alapértelmezett értéket. Az érték 1800000 (30 perc) és 86400000 (1 nap) között lehet. A tartományon kívül eső értékeket a rendszer a közelebbi tartományhatárra állítja.
@@ -1388,6 +1426,19 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="5784370777704871674">Bekapcsolja a(z) <ph name="PRODUCT_NAME" /> Biztonságos Böngészés funkcióját, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha engedélyezi ezt a beállítást, a Biztonságos Böngészés mindig aktív.
+
+      Ha letiltja a beállítást, a Biztonságos Böngészés soha nem aktív.
+
+      Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> „Adathalászat és rosszindulatú programok elleni védelem bekapcsolása” beállítását.
+
+      Ha a házirend konfigurálatlanul marad, akkor a rendszer engedélyezi, de ezt a felhasználó módosíthatja.
+
+      A Biztonságos Böngészésről további információt találhat a következő oldalon: https://developers.google.com/safe-browsing.
+
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoznak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="5795001131770861387">Engedélyezi a HTTP/0.9 támogatást a nem alapértelmezett portokon</translation>
 <translation id="5809728392451418079">Az eszközön található helyi fiókok megjelenített nevének beállítása</translation>
 <translation id="5814301096961727113">A hangos visszajelzés alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
@@ -1612,6 +1663,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a proxyszerver automatikus észlelését választja, az Android-alkalmazások a „http://wpad/wpad.dat” szkript-URL-t kapják. A proxy automatikus észlelésével kapcsolatos protokoll más része nem kerül felhasználásra.
 
           Ha a .pac proxyszkriptet választja, az Android-alkalmazások a szkript-URL-t kapják meg.</translation>
+<translation id="6473623140202114570">Azon domainek listájának beállítása, amelyeken nem aktivál figyelmeztetéseket a Biztonságos Böngészés.</translation>
 <translation id="6491139795995924304">Bluetooth engedélyezése az eszközön</translation>
 <translation id="6520802717075138474">Keresőmotorok importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="6525955212636890608">Ha engedélyezi ezt a beállítást, minden beágyazott Flash-tartalom futtatásra kerül (beleértve az egyéb eredetű vagy kisebb tartalmakat is) azokon a webhelyeken, ahol a tartalombeállításokban akár a felhasználó, akár a vállalati házirend engedélyezte a Flash-tartalmakat.
@@ -1703,6 +1755,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
+<translation id="6856743875250214792">Ez a házirend elavult, és eltávolítottuk az M66 verzióban, mert csak belső tesztelésre használtuk, és biztonsági kockázatot jelent.
+
+      Meghatározza a(z) <ph name="PRODUCT_NAME" /> böngészőre indításkor alkalmazandó jelölőket. A megadott jelölők alkalmazása csak a bejelentkezési képernyőre vonatkozik. A jelen irányelven keresztül megadott jelölők nem terjednek ki a felhasználói munkamenetekre.</translation>
 <translation id="685769593149966548">Szigorú Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME" /> 35-ös verziójától kezdve megszűnt.
 
@@ -1791,6 +1846,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7053678646221257043">Ez a házirend engedélyezése esetén kikényszeríti a könyvjelzők importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a könyvjelzők importálása nem történik meg. Ha nincs konfigurálva, akkor az alapértelmezett viselkedés marad használatban. Ha nincs beállítva, akkor a rendszer a felhasználótól kérdezheti meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="7063895219334505671">Előugró ablakok engedélyezése ezeken a webhelyeken</translation>
 <translation id="706669471845501145">Megengedi a webhelyeknek, hogy értesítéseket jelenítsenek meg az asztalon</translation>
+<translation id="7072208053150563108">Gépi jelszó módosításának üteme</translation>
 <translation id="7072406291414141328">Hálózati sávszélesség szabályozásának engedélyezése</translation>
 <translation id="7079519252486108041">Előugró ablakok tiltása ezeken a webhelyeken</translation>
 <translation id="7106631983877564505">Lezárás engedélyezése, ha a <ph name="PRODUCT_OS_NAME" />-t futtató eszközök tétlenek, illetve felfüggesztett állapotban vannak.
@@ -1809,6 +1865,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke False (hamis), a háttérmód le van tiltva, a felhasználó pedig ezt nem tudja módosítani a böngésző beállításaiban.
 
       Ha a házirend nincs beállítva, a háttérmód először le van tiltva, és ezt a felhasználó módosítani tudja a böngésző beállításaiban.</translation>
+<translation id="7127892035367404455">Visszaállítás célverzióra</translation>
 <translation id="7128918109610518786">Listázza a(z) <ph name="PRODUCT_OS_NAME" /> által az indítósávon rögzített alkalmazásként megjelenített alkalmazásazonosítókat.
 
       Ennek a házirendnek a beállítása esetén az alkalmazáskészlet rögzített, és a felhasználó nem módosíthatja.
@@ -1909,6 +1966,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend le van tiltva, a felhasználó nem használhatja a helyesírás-ellenőrzés funkciót. Letiltott házirend esetén a SpellcheckLanguage házirendet is figyelmen kívül hagyja a rendszer.
       </translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth-kérdés</translation>
+<translation id="7458437477941640506">Ne állítsa vissza a célverziót, ha az operációs rendszer verziója újabb a célverziónál. A frissítések is le vannak tiltva.</translation>
 <translation id="7469554574977894907">Keresési javaslatok engedélyezése</translation>
 <translation id="7474249562477552702">A helyi bizalmi horgonyok által nyújtott SHA-1-aláírással rendelkező tanúsítványok engedélyezése</translation>
 <translation id="7485481791539008776">Alapértelmezett nyomtató kiválasztására vonatkozó szabályok</translation>
@@ -1939,6 +1997,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke 0, a rendszer az alapértelmezett méretet használja a gyorsítótárhoz, és ezt a felhasználó nem tudja megváltoztatni.
 
       Ha a házirend nincs beállítva, a rendszer az alapértelmezett méretet használja, és azt a felhasználó felülbírálhatja a „--disk-cache-size” jelölővel.</translation>
+<translation id="759957074386651883">A Biztonságos Böngészés beállításai</translation>
 <translation id="7604169113182304895">Az Android-alkalmazások saját belátásuk szerint tarthatják be ezt a listát, és nem kényszeríthetők a lista betartására.</translation>
 <translation id="7612157962821894603">A <ph name="PRODUCT_NAME" /> indításakor alkalmazandó rendszerszintű jelölők</translation>
 <translation id="7614663184588396421">Kikapcsolt protokollsémák listája</translation>
@@ -2197,6 +2256,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="841977920223099909">Jelszóvédelemmel kapcsolatos figyelmeztetés aktiválása</translation>
 <translation id="8424255554404582727">Képernyő alapértelmezett elforgatásának beállítása, minden újraindításkor ismételten alkalmazva</translation>
 <translation id="8426231401662877819">Képernyő elforgatása 90 fokkal</translation>
+<translation id="8433423491036718210">Azon vállalati bejelentkezési URL-ek listáját adja meg, amelyeken a jelszóvédelmi szolgáltatásnak rögzítenie kell a jelszó ujjlenyomatát.</translation>
 <translation id="8451988835943702790"> való használata</translation>
 <translation id="8459216513698220096">Meghatározza a számítógépes GPO-ból származó felhasználói házirendek feldolgozásának módját, illetve azt, hogy feldolgozásra kerülnek-e.
 
@@ -2215,6 +2275,16 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
           Példamintákat a következő helyen talál: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Böngészési előzmények mentésének tiltása</translation>
 <translation id="8499172469244085141">Alapértelmezett beállítások (a felhasználók felülbírálhatják)</translation>
+<translation id="8507835864888987300">Célverziót állít be az automatikus frissítésekhez.
+
+      Megadja annak a célverziónak az előtagját, amelyre a <ph name="PRODUCT_OS_NAME" /> rendszert frissíteni kell. Ha az eszközön futó verzió a megadott előtagnál korábbi, akkor a megadott előtaggal rendelkező utolsó verzióra frissül. Ha az eszköz már újabb verzión található, a hatás a <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" /> házirend értékétől függ. Az előtag formátuma komponensfüggő, ahogy az a következő példából látható:
+
+      „” (vagy nincs konfigurálva): frissítés a legújabb rendelkezésre álló verzióra.
+      „1412.”: frissítés az 1412 egyik alverziójára (pl. 1412.24.34 vagy 1412.60.2).
+      „1412.2.”: frissítés az 1412.2 egyik alverziójára (pl. 1412.2.34 vagy 1412.2.2).
+      „1412.24.34”: frissítés kizárólag erre a konkrét verzióra.
+
+      Figyelem: Nem ajánlott verziókorlátozásokat beállítani, ez ugyanis megakadályozhatja, hogy a felhasználók megkapják a szoftverfrissítéseket és a kritikus biztonsági javításokat. A frissítések konkrét verzióelőtagra való korlátozása kockázatot jelenthet a felhasználók számára.</translation>
 <translation id="8519264904050090490">Felügyelt felhasználó manuális kivételi URL-jei</translation>
 <translation id="8527932539502116028">Meghatározza, hogy mely nyomtatókat nem használhatja a felhasználó.
 

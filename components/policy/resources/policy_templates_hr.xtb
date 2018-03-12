@@ -63,6 +63,9 @@
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1204263402976895730">Omogućeni pisači tvrtke</translation>
+<translation id="1219695476179627719">Određuje treba li se uređaj vratiti na verziju koja je postavljena pravilom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> ako već ima noviju verziju.
+
+      Zadana postavka glasi RollbackDisabled.</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
 <translation id="1257550411839719984">Postavi zadani direktorij za preuzimanje</translation>
@@ -147,6 +150,11 @@
 <translation id="1503487916067509762">Omogućuje blokiranje ubacivanja softvera treće strane</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1519337829779572350">Ta je postavka obustavljena, upotrijebite SafeBrowsingExtendedReportingEnabled. Omogućivanje ili onemogućivanje postavke SafeBrowsingExtendedReportingEnabled ekvivalentno je postavljanju SafeBrowsingExtendedReportingOptInAllowed na netočno.
+
+      Ako se to pravilo postavi na netočno, korisnici ne mogu odabrati slanje nekih podataka o sustavu i sadržaja stranice Googleovim poslužiteljima. Ako se pravilo postavi na točno ili se ne konfigurira, korisnici će moći slati neke podatke o sustavu i sadržaj stranice Sigurnom pregledavanju radi otkrivanja opasnih aplikacija i web-lokacija.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
@@ -286,6 +294,14 @@
       Ova postavka pravila omogućuje obavijesti koje informiraju korisnika o preporučenom ili obaveznom ponovnom pokretanju preglednika. Ako nije postavljeno, <ph name="PRODUCT_NAME" /> korisniku naznačuje potrebu za ponovnim pokretanjem putem sitnih promjena na izborniku. Ako se postavi na "Preporučeno", korisniku će se prikazivati ponavljajuće upozorenje da je preporučeno ponovno pokretanje. Korisnik može odbaciti upozorenje i tako odgoditi ponovno pokretanje. Ako se postavi na "Obavezno", korisniku će se prikazati ponavljajuće upozorenje da će se preglednik prisilno ponovo pokrenuti nakon isteka naznačenog vremena u obavijesti. To razdoblje prema zadanim postavkama iznosi sedam dana, a može se konfigurirati putem postavke pravila <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Korisnička će se sesija vratiti nakon ponovnog pokretanja.</translation>
+<translation id="2075434678547407637">Omogućuje vam da odredite mogu li se videozapisi reproducirati automatski (bez korisnikova pristanka) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo postavi na točno, <ph name="PRODUCT_NAME" /> može automatski reproducirati medije.
+      Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije.
+      Prema zadanim postavkama <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije.
+
+      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.
+      </translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2077273864382355561">Odgoda isključivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2082205219176343977">Konfiguriraj najmanju dopuštenu verziju Chromea za uređaj.</translation>
@@ -505,6 +521,11 @@
       Ako se to pravilo ne postavi, korisnici će moći odlučivati hoće li upotrebljavati značajku proxyja za kompresiju podataka.</translation>
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
+<translation id="2596260130957832043">Kontrolira je li omogućen NTLMv2.
+
+          Sve novije verzije poslužitelja Samba i Windows podržavaju NTLMv2. To treba biti onemogućeno samo za kompatibilnost sa starijim verzijama i smanjuje sigurnost autentifikacije.
+
+          Ako to pravilo nije postavljeno, zadana je vrijednost True i NTLMv2 je omogućen.</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
@@ -519,6 +540,7 @@
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
+<translation id="2693108589792503178">Konfiguriranje URL-a za promjenu zaporke.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -576,6 +598,7 @@
       Ako onemogućite tu postavku ili ne postavite nikakvu vrijednost, zadani će odredišni pisač u Pregledu ispisa biti pisač koji je upotrijebljen zadnji put.
 
       Ako omogućite tu postavku, u Pregledu ispisa upotrebljavat će se zadani pisač OS-a kao zadani odredišni pisač.</translation>
+<translation id="2867699958489427143">Vrati se na ciljnu verziju i ostani na njoj ako je verzija OS-a novija od ciljne. Tijekom postupka izvrši potpuni powerwash.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2874209944580848064">Napomena za uređaje <ph name="PRODUCT_OS_NAME" /> koji podržavaju Androidove aplikacije:</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>
@@ -611,6 +634,7 @@
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
 <translation id="3016255526521614822">Aplikacije za izradu bilježaka dopuštene na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" /> stavi na popis dopuštenih</translation>
+<translation id="3021562480854470924">Broj dopuštenih prijelaznih točaka za vraćanje sustava</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
 <translation id="3038323923255997294">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju usluge <ph name="PRODUCT_NAME" /></translation>
@@ -1018,6 +1042,8 @@
       Ako se to pravilo ne postavi, korisnik može odabrati hoće li prikazati prečace aplikacija u kontekstnom izborniku trake oznaka ili ih iz njega sakriti.
 
       Ako je to pravilo konfigurirano, korisnik ga ne može promijeniti, a prečac aplikacije prikazivat će se uvijek, odnosno nikad.</translation>
+<translation id="4432762137771104529">Omogući prošireno izvješćivanje Sigurnog pregledavanja</translation>
+<translation id="443454694385851356">Naslijeđeno (nije sigurno)</translation>
 <translation id="443665821428652897">Izbriši podatke o web-lokacijama prilikom isključivanja preglednika (obustavljeno)</translation>
 <translation id="4439336120285389675">Navedite popis zastarjelih značajki web-platformi kako biste ih privremeno ponovo omogućili.
 
@@ -1029,6 +1055,12 @@
       </translation>
 <translation id="4442582539341804154">Omogući zaključavanje kada uređaj prijeđe u stanje mirovanja ili se isključi</translation>
 <translation id="4449545651113180484">Zakreni zaslon u smjeru kazaljke na satu 270 stupnjeva</translation>
+<translation id="4459359100627756769">Konfigurira popis URL-ova za prijavu u organizacijama (samo sheme HTTP i HTTPS). Na tim će se URL-ovima snimati otisak prsta za zaporku koji će se upotrebljavati za otkrivanje ponovne upotrebe zaporke.
+      Ta je postavka namijenjena jedino korisnicima GSuitea koji upotrebljavaju sustav SSO/SMAL.
+
+      Ako je ta postavka omogućena, usluga zaštite zaporkom na tim će URL-ovima snimati otisak prsta za zaporku u svrhu otkrivanja ponovne upotrebe zaporke.
+      Ako se postavka onemogući ili ne postavi, zaštita zaporkom snimat će otisak prsta zaporke samo na https://accounts.google.com.
+      To pravilo nije dostupno na instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blokiraj kolačiće trećih strana</translation>
 <translation id="4474167089968829729">Omogući spremanje zaporki u upravitelj zaporki</translation>
 <translation id="4476769083125004742">Ako se to pravilo postavi na <ph name="BLOCK_GEOLOCATION_SETTING" />, Android aplikacije ne mogu pristupiti podacima o lokaciji. Ako to pravilo postavite na bilo koju drugu vrijednost ili ga ne postavite, korisniku se prikazuje upit o pristanku kada Android aplikacija želi pristupiti podacima o lokaciji.</translation>
@@ -1212,7 +1244,29 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5068140065960598044">Pravila oblaka za <ph name="PRODUCT_NAME" /> nadjačavaju pravila računala.</translation>
 <translation id="5085647276663819155">Onemogući pregled ispisa</translation>
 <translation id="5090209345759901501">Proširi postavku Flash sadržaja na sav sadržaj</translation>
+<translation id="5093540029655764852">Određuje stopu (u danima) po kojoj klijent mijenja zaporku računa na računalu. Klijent tu zaporku generira nasumično i korisnik je ne može vidjeti.
+
+      Zaporke računa na računalu trebale bi se jednako redovito mijenjati kao i korisničke. Ako se to pravilo onemogući ili postavi na veliki broj dana, to može negativno utjecati na sigurnost jer potencijalnim napadačima daje više vremena za pronalaženje zaporke računa uređaja i njezinu upotrebu.
+
+      Ako se pravilo ne postavi, zaporka računa na računalu mijenja se svakih 30 dana.
+
+      Ako se pravilo postavi na 0, promjena zaporke računa na računalu onemogućena je.
+
+      Zaporke mogu biti i starije od navedenog broja dana ako je klijent bio offline dulje vrijeme.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
+<translation id="5106504910236139235">Omogućuje prošireno izvješćivanje Sigurnog pregledavanja za <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
+
+      Prošireno izvješćivanje šalje neke podatke o sustavu i sadržaj stranice Googleovim poslužiteljima radi otkrivanja opasnih aplikacija i web-lokacija.
+
+      Ako se postavi na točno, izvješća će se izrađivati i slati kada god to bude potrebno (na primjer kada se prikaže međuprostorno sigurnosno upozorenje).
+
+      Ako se pravilo postavi na netočno, izvješća se neće slati.
+
+      Ako se pravilo postavi na točno ili netočno, korisnik neće moći izmijeniti postavku.
+
+      Ako se pravilo ne postavi, korisnik će moći promijeniti postavku i odlučiti hoće li slati izvješća.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
@@ -1238,6 +1292,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Vrijednost * na crnoj listi znači da su sva proširenja na crnoj listi i da korisnici mogu instalirati samo proširenja koja su na bijeloj listi.
 
           Prema zadanim postavkama sva su proširenja na bijeloj listi, no ako su sva proširenja prema pravilu na crnoj listi, bijela lista može se upotrebljavati za poništavanje tog pravila.</translation>
+<translation id="519247340330463721">Konfiguriranje pravila povezanih sa Sigurnim pregledavanjem.</translation>
 <translation id="5192837635164433517">Omogućuje upotrebu zamjenskih stranica pogrešaka koje su ugrađene u proizvod <ph name="PRODUCT_NAME" /> (poput "Stranica nije pronađena") te sprječava korisnike da promijene tu postavku. Ako omogućite ovu postavku, upotrebljavat će se zamjenske stranice pogrešaka. Ako onemogućite ovu postavku, zamjenske stranice pogrešaka neće se nikada upotrebljavati. Ako omogućite ili onemogućite ovu postavku, korisnici neće moći promijeniti niti poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako pravilo nije postavljeno, to će biti omogućeno, ali korisnik će to moći promijeniti.</translation>
 <translation id="5196805177499964601">Blokiranje načina rada razvojnog programera.
 
@@ -1248,6 +1303,15 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5219844027738217407">Za Android aplikacije to pravilo utječe samo na mikrofon. Kada se to pravilo postavi na True, mikrofon je isključen za sve Android aplikacije, bez iznimke.</translation>
 <translation id="523505283826916779">Postavke pristupačnosti</translation>
 <translation id="5247006254130721952">Blokiraj opasna preuzimanja</translation>
+<translation id="5248863213023520115">Postavlja vrste enkripcije koje su dopuštene kada se od <ph name="MS_AD_NAME" /> poslužitelja zahtijeva Kerberos ulaznica.
+
+      Ako se to pravilo postavi na "Sve", dopuštene su vrste enkripcije AES "aes256-cts-hmac-sha1-96" i "aes128-cts-hmac-sha1-96", kao i vrsta RC4 enkripcije "rc4-hmac". AES enkripcija ima prednost ako poslužitelj podržava obje vrste. RC4 ne smatra se sigurnom enkripcijom i poslužitelj bi se po mogućnosti trebao ponovo konfigurirati tako da podržava AES.
+
+      Ako se pravilo postavi na "Jako" ili se ne postavi, dopuštene su samo vrste AES enkripcije.
+
+      Ako se pravilo postavi na "Naslijeđeno", dopuštena je samo RC4 enkripcija. Ta opcija nije sigurna i potrebna je samo u vrlo specifičnim okolnostima.
+
+      Pročitajte i https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5255162913209987122">Može se preporučiti</translation>
 <translation id="527237119693897329">Omogućuje vam da odredite koji se hostovi za lokalno slanje poruka ne bi smjeli učitavati.
 
@@ -1330,6 +1394,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je ovo pravilo postavljeno, automatski će se prijavljivati u navedenu sesiju nakon isteka vremenskog razdoblja bez interakcije korisnika na zaslonu za prijavu. Javna sesija mora biti već konfigurirana (pogledajte |DeviceLocalAccounts|).
 
       Ako ovo pravilo nije postavljeno, neće biti automatske prijave.</translation>
+<translation id="5526701598901867718">Sve (nije sigurno)</translation>
 <translation id="5529037166721644841">Određuje vrijeme u milisekundama tijekom kojeg se od usluge upravljanja uređajima traže podaci o korisničkim pravilima.
 
       Postavljanje ovog pravila nadjačava zadanu vrijednost od 3 sata. Valjane vrijednosti za ovo pravilo u rasponu su od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u ovom rasponu prebacit će se u odgovarajuće granice.
@@ -1396,6 +1461,19 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="5784370777704871674">Omogućuje značajku Sigurno pregledavanje preglednika <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
+
+      Ako omogućite tu postavku, Sigurno pregledavanje uvijek je aktivno.
+
+      Ako je onemogućite, Sigurno pregledavanje nikada nije aktivno.
+
+      Ako omogućite ili onemogućite tu postavku, korisnici ne mogu promijeniti niti nadjačati postavku "Omogući zaštitu od krađe identiteta i zlonamjernog softvera" u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, ta će postavka biti omogućena, ali će je korisnici moći promijeniti.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.
+
+      To pravilo nije dostupno na instancama Windowsa koje nisu priudružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="5795001131770861387">Omogućuje podršku za HTTP/0.9 na priključcima koji nisu zadani</translation>
 <translation id="5809728392451418079">Postavlja naziv za prikaz za lokalne račune uređaja</translation>
 <translation id="5814301096961727113">Postavljanje zadanog stanja izgovaranja povratnih informacija na zaslonu za prijavu</translation>
@@ -1619,6 +1697,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako odaberete automatsko otkrivanje proxy poslužitelja, URL skripte "http://wpad/wpad.dat" pruža se Android aplikacijama. Ne upotrebljava se nijedan drugi dio protokola za automatsko otkrivanje proxyja.
 
           Ako odaberete .pac skriptu proxyja, URL skripte pruža se Android aplikacijama.</translation>
+<translation id="6473623140202114570">Konfiguriranje popisa domena na kojima Sigurno pregledavanje neće prikazivati upozorenja.</translation>
 <translation id="6491139795995924304">Omogući Bluetooth na uređaju</translation>
 <translation id="6520802717075138474">Uvoz tražilica iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="6525955212636890608">Ako omogućite ovu postavku, pokrenut će se sav Flash sadržaj ugrađen na web-lokacijama s postavkom za dopuštanje Flasha u postavkama sadržaja – bilo da ju je postavio korisnik ili je postavljena pravilom tvrtke – uključujući sadržaj iz drugih izvora ili manji sadržaj.
@@ -1710,7 +1789,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
 <translation id="681446116407619279">Podržane sheme autentifikacije</translation>
 <translation id="6835883744948188639">Prikaži korisniku ponavljajuću obavijest o preporučenom ponovnom pokretanju</translation>
+<translation id="6856743875250214792">To je pravilo zastarjelo i uklonjeno u M66 budući da se upotrebljavalo samo za interno testiranje i predstavlja sigurnosni rizik.
+
+      Određuje oznake koje se trebaju primijeniti na <ph name="PRODUCT_NAME" /> prilikom pokretanja. Navedene oznake primjenjuju se samo na zaslonu za prijavu. Oznake postavljene ovim pravilom ne primjenjuju se na korisničke sesije.</translation>
 <translation id="685769593149966548">Primijeni strogi Ograničeni način rada za YouTube</translation>
+<translation id="686079137349561371">Microsoft Windows 7 ili novije verzije</translation>
 <translation id="687046793986382807">To se pravilo više ne primjenjuje od verzije 35 proizvoda <ph name="PRODUCT_NAME" />.
 
       Neovisno o vrijednosti opcije, informacije o memoriji prijavljuju se za stranicu, ali se prijavljene veličine kvantiziraju, a stopa ažuriranja ograničena je iz sigurnosnih razloga. Za dobivanje preciznih podataka u stvarnom vremenu upotrijebite alate kao što je Telemetrija.</translation>
@@ -1789,6 +1872,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7053678646221257043">Ako je omogućeno, ovo pravilo prisilno uvozi knjižne oznake iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, nijedna knjižna oznaka neće biti uvezena. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti oznake ili do uvoza može doći automatski.</translation>
 <translation id="7063895219334505671">Dopusti skočne prozore na ovim web-lokacijama</translation>
 <translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
+<translation id="7072208053150563108">Stopa promjene zaporke računala</translation>
 <translation id="7072406291414141328">Omogućuje usporavanje propusnosti mreže</translation>
 <translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
 <translation id="7106631983877564505">Omogući zaključavanje kada uređaji <ph name="PRODUCT_OS_NAME" /> prijeđu u stanje mirovanja ili se isključe.
@@ -1807,6 +1891,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se pravilo postavi na "netočno", pozadinski je način onemogućen i korisnik ne može upravljati njime u postavkama preglednika.
 
       Ako se pravilo ne postavi, pozadinski je način početno onemogućen i korisnik može upravljati njime u postavkama preglednika.</translation>
+<translation id="7127892035367404455">Vraćanje na ciljnu verziju</translation>
 <translation id="7128918109610518786">Navodi identifikatore aplikacija koje sustav <ph name="PRODUCT_OS_NAME" /> prikazuje kao prikvačene aplikacije u traci pokretača.
 
       Ako se to pravilo konfigurira, utvrđuje se skupina aplikacija i korisnik ih ne može mijenjati.
@@ -1892,6 +1977,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
+<translation id="733838170182967492">Omogućuje automatsku reprodukciju medija</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
 <translation id="7343497214039883642">Datoteka za konfiguraciju pisača tvrtke za uređaje</translation>
 <translation id="7384999953864505698">Omogući QUIC protokol</translation>
@@ -1907,6 +1993,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je pravilo onemogućeno, korisnik neće moći upotrebljavati provjeru pravopisa. Pravilo SpellcheckLanguage zanemarit će se i kad je ovo pravilo onemogućeno.
       </translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
+<translation id="7458437477941640506">Nemoj se vratiti na ciljnu verziju ako je verzija OS-a novija od ciljne. Ažuriranja su također onemogućena.</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
 <translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
 <translation id="7485481791539008776">Zadana pravila za odabir pisača</translation>
@@ -1937,6 +2024,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je vrijednost ovog pravila 0, upotrijebit će se zadana veličina predmemorije, ali je korisnik neće moći promijeniti.
 
       Ako ovo pravilo nije postavljeno, upotrijebit će se zadana veličina i korisnik će je moći nadjačati oznakom --disk-cache-size.</translation>
+<translation id="759957074386651883">Postavke Sigurnog pregledavanja</translation>
 <translation id="7604169113182304895">Android aplikacije mogu poštovati taj popis dobrovoljno. Na to ih ne možete natjerati.</translation>
 <translation id="7612157962821894603">Oznake na razini sustava primijenit će se prilikom pokretanja preglednika <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Popis onemogućenih shema protokola</translation>
@@ -2195,6 +2283,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="841977920223099909">Okidač upozorenja o zaštiti zaporkom</translation>
 <translation id="8424255554404582727">Postavi zadano zakretanje zaslona koje će se primjenjivati nakon svakog ponovnog pokretanja</translation>
 <translation id="8426231401662877819">Zakreni zaslon u smjeru kazaljke na satu 90 stupnjeva</translation>
+<translation id="8433423491036718210">Konfiguriranje popisa URL-ova za prijavu u organizacijama na kojima usluga zaštite zaporkom treba spremiti otisak prsta kao zaporku.</translation>
 <translation id="8451988835943702790">Upotrijebi web-stranicu nove kartice kao početnu stranicu</translation>
 <translation id="8459216513698220096">Određuje obrađuju li se korisnička pravila s GPO-a računala i na koji način.
 
@@ -2213,6 +2302,16 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Primjere uzoraka pogledajte na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Onemogući pohranjivanje povijesti preglednika</translation>
 <translation id="8499172469244085141">Zadane postavke (korisnici ih mogu prebrisati)</translation>
+<translation id="8507835864888987300">Postavlja ciljnu verziju za Automatska ažuriranja.
+
+      Određuje prefiks ciljne verzije na koju bi se <ph name="PRODUCT_OS_NAME" /> trebao ažurirati. Ako je verzija na uređaju starija od navedenog prefiksa, ažurirat će se na najnoviju verziju s navedenim prefiksom. Ako uređaj već ima noviju verziju, učinak će ovisiti o vrijednosti postavljenoj u pravilu <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Format prefiksa funkcionira prema komponentama kao što je prikazano u sljedećem primjeru:
+
+      "" (ili nije konfigurirano): ažuriranje na najnoviju dostupnu verziju.
+      "1412.": ažuriranje na bilo koju verziju podređenu verziji 1412 (npr. 1412.24.34 ili 1412.60.2)
+      "1412.2.": ažuriranje na bilo koju verziju podređenu verziji 1412.2 (npr. 1412.2.34 ili 1412.2.2)
+      "1412.24.34": ažuriranje samo na tu konkretnu verziju.
+
+      Upozorenje: ne preporučuje se konfigurirati ograničenja verzije jer korisnici tako možda neće primati ažuriranja softvera i važne sigurnosne ispravke. Ograničavanje ažuriranja na određeni prefiks verzije korisnike može izložiti opasnosti.</translation>
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="8527932539502116028">Određuje pisače koje korisnik ne može upotrebljavati.
 
@@ -2422,6 +2521,13 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="930930237275114205">Postavi direktorij korisničkih podataka za pravilo <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Omogućuje nametanje prijave za <ph name="PRODUCT_NAME" /></translation>
+<translation id="938916311528680351">Omogućuje vam da odredite je li virtualnim računalima dopušteno pokretanje na OS-u Chrome.
+
+      Ako se to pravilo postavi na točno, uređaju je dopušteno pokretanje virtualnih računala.
+      Ako se pravilo postavi na netočno, uređaju nije dopušteno pokretanje virtualnih računala.
+      Kada se pravilo promijeni na netočno, primjenjuje se na pokretanje novih virtualnih računala, ali ne isključuje virtualna računala koja su već pokrenuta.
+      Kada se pravilo ne postavi na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
+      Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="944817693306670849">Postavi veličinu predmemorije diska</translation>
 <translation id="982497069985795632">Omogući provjeru pravopisa</translation>
 </translationbundle>

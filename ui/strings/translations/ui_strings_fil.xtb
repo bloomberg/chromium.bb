@@ -32,6 +32,7 @@
 <translation id="2168039046890040389">Pataas</translation>
 <translation id="2190355936436201913">(walang laman)</translation>
 <translation id="219905428774326614">Launcher, lahat ng app</translation>
+<translation id="2267918077332197517">I-block ang lahat ng notification mula sa site na ito</translation>
 <translation id="2289052229480071835">I-tap ang mga target sa pagpindot sa iyong screen.</translation>
 <translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> (na) TB/s</translation>
@@ -108,6 +109,7 @@
 <translation id="6394627529324717982">Kuwit</translation>
 <translation id="6397363302884558537">Ihinto ang Pagsasalita</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
+<translation id="6430678249303439055">I-block ang lahat ng notification mula sa app na ito</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="654149438358937226">I-block ang lahat ng notification</translation>
 <translation id="6567071839949112727">i-click ang ancestor</translation>

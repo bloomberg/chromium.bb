@@ -61,6 +61,9 @@
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1204263402976895730">Włączone drukarki firmowe</translation>
+<translation id="1219695476179627719">Określa, czy oprogramowanie urządzenia ma zostać cofnięte do wersji ustawionej w zasadzie <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, jeśli jest już zainstalowana nowsza wersja.
+
+      Wartość domyślna to RollbackDisabled.</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="123081309365616809">Włącz przesyłanie treści na urządzenie</translation>
 <translation id="1257550411839719984">Ustaw domyślny katalog pobierania</translation>
@@ -504,6 +507,11 @@
       Jeśli nie skonfigurujesz tej zasady, użytkownicy będą mogli sami wybrać, czy chcą używać serwera proxy kompresowania danych czy nie.</translation>
 <translation id="2587719089023392205">Ustaw <ph name="PRODUCT_NAME" /> jako przeglądarkę domyślną</translation>
 <translation id="2592091433672667839">Czas bezczynności, po upływie którego w trybie sklepu na ekranie logowania jest wyświetlany wygaszacz ekranu</translation>
+<translation id="2596260130957832043">Określa, czy jest włączone uwierzytelnianie NTLMv2.
+
+          Wszystkie nowsze wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności. Wyłączenie zmniejsza bezpieczeństwo uwierzytelniania.
+
+          Jeśli ta zasada jest nieskonfigurowana, wartością domyślną jest prawda i NTLMv2 jest włączone.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2633084400146331575">Włącz potwierdzenia głosowe</translation>
@@ -518,6 +526,7 @@
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Wyłącz Dysk w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
+<translation id="2693108589792503178">Skonfiguruj adres URL do zmiany hasła.</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
 <translation id="2742843273354638707">Ukrywa aplikację Chrome Web Store i link w stopce na stronie Nowa karta oraz w menu z aplikacjami <ph name="PRODUCT_OS_NAME" />.
 
@@ -575,6 +584,7 @@
       Jeśli wyłączysz to ustawienie lub pozostawisz je puste, w podglądzie wydruku zostanie wybrana ostatnio użyta drukarka.
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
+<translation id="2867699958489427143">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana pełna procedura Powerwash.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
@@ -610,6 +620,7 @@
 <translation id="2987155890997901449">Włączenie ARC</translation>
 <translation id="2987227569419001736">Kontrolowanie użycia interfejsu API Web Bluetooth</translation>
 <translation id="3016255526521614822">Aplikacje do robienia notatek dodane do białej listy, które są dozwolone na ekranie blokady w: <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="3021562480854470924">Liczba kamieni milowych, dla której dozwolone jest cofnięcie wersji oprogramowania</translation>
 <translation id="3030000825273123558">Włącz raportowanie danych</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME" /></translation>
@@ -1014,6 +1025,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie jest określona, użytkownik może wybrać pokazywanie lub ukrywanie skrótów aplikacji z menu kontekstowego paska zakładek.
 
       Jeśli ta zasada jest skonfigurowana, użytkownik nie może jej zmienić, a skróty aplikacji zawsze są lub nie są pokazywane.</translation>
+<translation id="443454694385851356">Starszy typ (niebezpieczne)</translation>
 <translation id="443665821428652897">Wyczyść dane witryn w momencie zamknięcia przeglądarki (wycofana)</translation>
 <translation id="4439336120285389675">Określ listę wycofanych funkcji, które chcesz tymczasowo włączyć na platformach internetowych.
 
@@ -1025,6 +1037,12 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
+<translation id="4459359100627756769">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła, który będzie używany do wykrywania używania tych samych haseł w różnych miejscach.
+      Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SMAL.
+
+      Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł w celu wykrycia używania tych samych haseł w różnych miejscach.
+      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł będzie rejestrować odciski cyfrowe haseł tylko na stronie https://accounts.google.com
+      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4476769083125004742">Ustawienie tej zasady na <ph name="BLOCK_GEOLOCATION_SETTING" /> odbiera aplikacjom na Androida dostęp do informacji o lokalizacji. Jeśli zasada ma inną wartość lub jest nieskonfigurowana, użytkownik będzie pytany o zgodę, gdy aplikacja na Androida będzie chciała uzyskać dostęp do informacji o lokalizacji.</translation>
@@ -1203,6 +1221,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
 <translation id="5090209345759901501">Rozszerz ustawienie treści Flash na całą zawartość</translation>
+<translation id="5093540029655764852">Określa częstotliwość (w dniach), z którą klient zmienia hasło do swojego konta komputera. Hasło jest generowane losowo przez klienta i niewidoczne dla użytkownika.
+
+      Hasła do kont komputerów należy zmieniać regularnie tak samo jak hasła do kont użytkowników. Wyłączenie tej zasady lub ustawienie dużej liczby dni może obniżyć bezpieczeństwo, ponieważ daje potencjalnym napastnikom więcej czasu na odkrycie i wykorzystanie hasła do konta komputera.
+
+      Jeśli zasada jest nieskonfigurowana, hasło do konta komputera jest zmieniane co 30 dni.
+
+      Jeśli zasada ma wartość 0, zmienianie hasła do konta komputera jest wyłączone.
+
+      Pamiętaj, że hasła mogą być starsze niż ustawiona liczba dni, gdy klient przez długi czas pozostawał w trybie offline.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
@@ -1225,6 +1252,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Wartości spoza tego zakresu zostaną zmienione na wartości graniczne.</translation>
 <translation id="5182055907976889880">Skonfiguruj Dysk Google w <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Umożliwia określenie rozszerzeń, których nie obejmuje czarna lista. Wartość * na czarnej liście oznacza dodanie do niej wszystkich rozszerzeń i zezwolenie użytkownikom na instalowanie wyłącznie rozszerzeń wymienionych na białej liście. Domyślnie wszystkie rozszerzenia znajdują się na białej liście, jeśli jednak za pomocą zasady wszystkie rozszerzenia dodano do czarnej listy, białej listy można użyć do zmodyfikowania tej zasady.</translation>
+<translation id="519247340330463721">Skonfiguruj zasady związane z funkcją Bezpieczne przeglądanie.</translation>
 <translation id="5192837635164433517">Włącza alternatywne strony błędów wbudowane w przeglądarkę <ph name="PRODUCT_NAME" /> (np. dotyczące nieznalezienia strony) i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, alternatywne strony błędów będą używane. W przypadku wyłączenia ustawienia alternatywne strony błędów nigdy nie są używane. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w przeglądarce <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania zasady ustawienie zostanie włączone, ale użytkownik będzie mógł je zmienić.</translation>
 <translation id="5196805177499964601">Zablokuj tryb programisty.
 
@@ -1235,6 +1263,15 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5219844027738217407">W przypadku aplikacji na Androida ta zasada wpływa tylko na mikrofon. Gdy jest ona włączona, mikrofon jest wyłączony dla wszystkich aplikacji na Androida bez żadnych wyjątków.</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
 <translation id="5247006254130721952">Blokuj pobieranie niebezpiecznych plików</translation>
+<translation id="5248863213023520115">Ustawia typy szyfrowania dozwolone podczas żądania biletów Kerberos z serwera <ph name="MS_AD_NAME" />.
+
+      Jeśli zasada ma ustawioną opcję „Wszystkie”, dozwolone są zarówno typy szyfrowania AES „aes256-cts-hmac-sha1-96” i „aes128-cts-hmac-sha1-96”, jak też typ szyfrowania RC4 „rc4-hmac”. Jeśli serwer obsługuje AES i RC4, preferowane jest szyfrowanie AES. Pamiętaj, że szyfrowanie RC4 nie zapewnia bezpieczeństwa i, jeśli to możliwe, na serwerze należy skonfigurować szyfrowanie AES.
+
+      Jeśli zasada ma ustawioną opcję „Silne” lub jest nieskonfigurowana, dozwolone są tylko typy szyfrowania AES.
+
+      Jeśli zasada ma ustawioną opcję „Starszy typ”, dozwolony jest tylko typ szyfrowania RC4. Ta opcja nie zapewnia bezpieczeństwa i może być potrzebna jedynie w bardzo szczególnych sytuacjach.
+
+      Zobacz też https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types</translation>
 <translation id="5255162913209987122">Może być zalecana</translation>
 <translation id="527237119693897329">Pozwala określić, które hosty wiadomości natywnych nie powinny być wczytywane.
 
@@ -1316,6 +1353,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest ustawiona, użytkownik zostanie automatycznie zalogowany do określonej sesji po upływie określonego czasu nieaktywności na ekranie logowania. Sesja publiczna musi zostać wcześniej skonfigurowana (zobacz zasadę |DeviceLocalAccounts|).
 
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
+<translation id="5526701598901867718">Wszystkie (niebezpieczne)</translation>
 <translation id="5529037166721644841">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące urządzeń.
 
       Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej.
@@ -1382,6 +1420,19 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="5784370777704871674">Włącza funkcję Bezpieczne przeglądanie w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Jeśli włączysz to ustawienie, funkcja Bezpieczne przeglądanie będzie zawsze aktywna.
+
+      Jeśli wyłączysz to ustawienie, funkcja Bezpieczne przeglądanie nigdy nie będzie aktywna.
+
+      Jeśli to ustawienie jest włączone lub wyłączone, użytkownicy nie mogą zmienić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
+
+      Jeśli zasada nie jest skonfigurowana, ustawienie jest włączone, ale użytkownik może je zmienić.
+
+      Więcej informacji o funkcji Bezpieczne przeglądanie znajdziesz na stronie https://developers.google.com/safe-browsing
+
+      Ta zasada nie jest dostępna w systemach Windows nie połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="5795001131770861387">Włącza obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
@@ -1605,6 +1656,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli wybierzesz automatyczne wykrywanie serwera proxy, aplikacje na Androida otrzymają URL skryptu „http://wpad/wpad.dat”. Nie jest używana żadna inna część protokołu automatycznego wykrywania serwera proxy.
 
           Jeśli wybierzesz używanie skryptu .pac serwera proxy, aplikacje na Androida otrzymają URL skryptu.</translation>
+<translation id="6473623140202114570">Skonfiguruj listę domen, w których Bezpieczne przeglądanie nie wywołuje ostrzeżeń.</translation>
 <translation id="6491139795995924304">Włącz Bluetooth na urządzeniu</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="6525955212636890608">Jeśli włączysz to ustawienie, będzie ono miało wpływ na te strony, dla których w ustawieniach treści dozwolone są treści Flash (przez użytkownika albo przez zasady przedsiębiorstwa). Uruchamiane będą wszystkie umieszczone na tych stronach treści Flash, w tym zarówno pochodzące z innych źródeł, jak i drobne.
@@ -1696,6 +1748,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
+<translation id="6856743875250214792">Ta zasada została wycofana i usunięta w M66, ponieważ była używana tylko do testów wewnętrznych i obniżała bezpieczeństwo.
+
+      Określa flagi stosowane przy uruchamianiu <ph name="PRODUCT_NAME" />. Wybrane flagi są używane tylko na ekranie logowania. Flagi ustawiane przez tę zasadę nie przechodzą na sesje użytkownika.</translation>
 <translation id="685769593149966548">Wymuszaj ścisły tryb ograniczonego dostępu w YouTube</translation>
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 
@@ -1774,6 +1829,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7063895219334505671">Zezwalaj na wyskakujące okienka w tych witrynach</translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
+<translation id="7072208053150563108">Częstotliwość zmieniania hasła komputera</translation>
 <translation id="7072406291414141328">Włącza ograniczanie przepustowości sieci</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
 <translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
@@ -1792,6 +1848,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli wyłączysz tę zasadę, tryb działania w tle nie będzie dostępny i użytkownik nie będzie mógł zmienić tej opcji w ustawieniach przeglądarki.
 
       Jeśli nie skonfigurujesz tej zasady, tryb działania w tle będzie początkowo niedostępny, ale użytkownik będzie mógł zmienić tę opcję w ustawieniach przeglądarki.</translation>
+<translation id="7127892035367404455">Cofnij do wersji docelowej</translation>
 <translation id="7128918109610518786">Lista identyfikatorów aplikacji pokazywanych przez <ph name="PRODUCT_OS_NAME" /> jako aplikacje przypięte na pasku programu uruchamiającego.
 
       Jeśli ta zasada jest skonfigurowana, zestaw aplikacji jest ustalony i nie może być zmieniany przez użytkownika.
@@ -1892,6 +1949,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest wyłączona, użytkownik nie może korzystać ze sprawdzania pisowni. Po jej wyłączeniu jest też ignorowana zasada SpellcheckLanguage.
       </translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
+<translation id="7458437477941640506">Nie cofaj do docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Aktualizacje też są wyłączone.</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
 <translation id="7474249562477552702">Określa, czy są dozwolone certyfikaty z podpisem SHA-1 wydane przez lokalne kotwice zaufania</translation>
 <translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>
@@ -1922,6 +1980,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli wartość w tej zasadzie jest ustawiona na 0, zostanie użyty domyślny rozmiar pamięci podręcznej i użytkownik nie będzie mógł go zmienić.
 
       Jeśli zasada nie jest ustawiona, zostanie użyty domyślny rozmiar pamięci, a użytkownik będzie mógł go zastąpić flagą --disk-cache-size.</translation>
+<translation id="759957074386651883">Ustawienia Bezpiecznego przeglądania</translation>
 <translation id="7604169113182304895">Aplikacje na Androida mogą dobrowolnie uwzględniać tę listę. Nie można tego wymusić.</translation>
 <translation id="7612157962821894603">Flagi systemowe stosowane przy uruchamianiu <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista wyłączonych schematów protokołów</translation>
@@ -2184,6 +2243,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="841977920223099909">Wyzwalacz ostrzeżenia dotyczącego ochrony hasłem</translation>
 <translation id="8424255554404582727">Ustaw domyślny obrót ekranu stosowany po każdym ponownym uruchomieniu</translation>
 <translation id="8426231401662877819">Obróć ekran w prawo o 90 stopni</translation>
+<translation id="8433423491036718210">Skonfiguruj listę adresów URL stron logowania aplikacji firmowych, na których usługa ochrony haseł ma rejestrować odciski cyfrowe haseł.</translation>
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
 <translation id="8459216513698220096">Określa, czy i w jaki sposób przetwarzać zasady dotyczące użytkowników z obiektów zasad grupy komputera.
 
@@ -2202,6 +2262,16 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
+<translation id="8507835864888987300">Ustawia wersję docelową dla automatycznych aktualizacji.
+
+      Określa przedrostek docelowej wersji, do której powinien zaktualizować się system <ph name="PRODUCT_OS_NAME" />. Jeśli na urządzeniu jest wersja starsza niż określona przez podany przedrostek, zostanie wykonana aktualizacja do najnowszej wersji z tym przedrostkiem. Jeśli na urządzeniu jest już nowsza wersja, efekt zależy od wartości <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Format przedrostka umożliwia rozróżnianie składników, np.:
+
+      "" (lub brak konfiguracji): aktualizacja do najnowszej dostępnej wersji;
+      "1412.": aktualizacja do dowolnej wersji podrzędnej 1412 (np. 1412.24.34 lub 1412.60.2);
+      "1412.2.": aktualizacja do dowolnej wersji podrzędnej 1412.2 (np. 1412.2.34 lub 1412.2.2);
+      "1412.24.34": aktualizacja tylko do tej konkretnej wersji.
+
+      Ostrzeżenie: nie zaleca się konfigurowania ograniczeń wersji, ponieważ w rezultacie użytkownicy mogą nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Ograniczenie aktualizacji do konkretnej wersji może narazić użytkowników na niebezpieczeństwo.</translation>
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8527932539502116028">Określa drukarki, z których użytkownik nie może korzystać.
 

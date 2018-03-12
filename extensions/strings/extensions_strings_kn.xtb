@@ -4,7 +4,6 @@
 <translation id="1135328998467923690">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ: '<ph name="ERROR_CODE" />'.</translation>
 <translation id="1140871961407805696">ಪರಿಸರಕ್ಕೆ ಮುಖಮಾಡಿದೆ</translation>
 <translation id="1196338895211115272">ಖಾಸಗಿ ಕೀಲಿಯನ್ನು ರಫ್ತು ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="1256619696651732561">ವಿಸ್ತರಣೆ ಮ್ಯಾನಿಫೆಸ್ಟ್ ವಿಶ್ಲೇಷಕ</translation>
 <translation id="1420684932347524586">ಅಯ್ಯೋ! ಯಾದೃಚ್ಛಿಕ RSA ಖಾಸಗಿ ಕೀಲಿಯನ್ನು ರಚಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="1445572445564823378">ಈ ವಿಸ್ತರಣೆಯು <ph name="PRODUCT_NAME" /> ಅನ್ನು ನಿಧಾನವಾಗಿಸುತ್ತಿದೆ. ನೀವು <ph name="PRODUCT_NAME" /> ರ ಕಾರ್ಯಾಚರಣೆಯನ್ನು ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸಲು ಇದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುವುದು ಅವಶ್ಯಕ.</translation>
 <translation id="1468038450257740950">WebGL ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
@@ -18,7 +17,6 @@
 <translation id="2785530881066938471">'<ph name="RELATIVE_PATH" />' ಫೈಲ್ ಅನ್ನು ವಿಷಯ ಸ್ಕ್ರಿಪ್ಟ್‌ಗಾಗಿ ಲೋಡ್ ಮಾಡಲು ಆಗುವುದಿಲ್ಲ. ಇದು UTF-8 ಎನ್‌ಕೋಡ್ ಆಗಿಲ್ಲ.</translation>
 <translation id="2903070246402204397">ನಿರ್ವಾಹಕರಿಂದ <ph name="EXTENSION_NAME" /> (ವಿಸ್ತರಣೆ ಐಡಿ "<ph name="EXTENSION_ID" />") ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ: '<ph name="ERROR_CODE" />'</translation>
-<translation id="3097628171361913691">Zip ಫೈಲ್ ಸ್ಥಾಪಕ</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ಫೈಲ್ ಅನ್ನು ಸ್ಥಾನಾಂತರಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ. ಫೈಲ್ ಬಳಕೆಯಲ್ಲಿದೆಯೆ ಎಂದು ಪರಿಶೀಲಿಸಿ.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ</translation>
@@ -67,7 +65,6 @@
 <translation id="8517576857589387417">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಕಾಣದಾಗಿದೆ ಅಥವಾ ಅದನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8636666366616799973">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ. ವಿವರಗಳು: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ಇದನ್ನು <ph name="ACTUAL_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="8712265948125780616">ವಿಸ್ತರಣೆ ಅನ್‌ಪ್ಯಾಕರ್‌‌</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ:</translation>
 <translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ "<ph name="HEADER_NAME" />" ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8885905466771744233">ನಿರ್ದಿಷ್ಟಪಡಿಸಿದ ವಿಸ್ತರಣೆಗೆ ಖಾಸಗಿ ಕೀಲಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ಆ ಕೀಲಿಯನ್ನು ಮರುಬಳಕೆ ಮಾಡಿ ಅಥವಾ ಮೊದಲು ಅದನ್ನು ಅಳಿಸಿ.</translation>
