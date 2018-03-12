@@ -21,7 +21,6 @@
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/public/cpp/notification_delegate.h"
 
 using message_center::Notification;
 
@@ -31,56 +30,6 @@ namespace {
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 
 bool g_use_timer = true;
-
-class ResolutionChangeNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  ResolutionChangeNotificationDelegate(
-      ResolutionNotificationController* controller,
-      bool has_timeout);
-
- protected:
-  ~ResolutionChangeNotificationDelegate() override;
-
- private:
-  // message_center::NotificationDelegate overrides:
-  void Close(bool by_user) override;
-  void Click() override;
-  void ButtonClick(int button_index) override;
-
-  ResolutionNotificationController* controller_;
-  bool has_timeout_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResolutionChangeNotificationDelegate);
-};
-
-ResolutionChangeNotificationDelegate::ResolutionChangeNotificationDelegate(
-    ResolutionNotificationController* controller,
-    bool has_timeout)
-    : controller_(controller), has_timeout_(has_timeout) {
-  DCHECK(controller_);
-}
-
-ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() =
-    default;
-
-void ResolutionChangeNotificationDelegate::Close(bool by_user) {
-  if (by_user)
-    controller_->AcceptResolutionChange(false);
-}
-
-void ResolutionChangeNotificationDelegate::Click() {
-  controller_->AcceptResolutionChange(true);
-}
-
-void ResolutionChangeNotificationDelegate::ButtonClick(int button_index) {
-  // If there's the timeout, the first button is "Accept". Otherwise the
-  // button click should be "Revert".
-  if (has_timeout_ && button_index == 0)
-    controller_->AcceptResolutionChange(true);
-  else
-    controller_->RevertResolutionChange(false /* display_was_removed */);
-}
 
 }  // namespace
 
@@ -151,7 +100,8 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
 ResolutionNotificationController::ResolutionChangeInfo::
     ~ResolutionChangeInfo() = default;
 
-ResolutionNotificationController::ResolutionNotificationController() {
+ResolutionNotificationController::ResolutionNotificationController()
+    : weak_factory_(this) {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
@@ -212,6 +162,24 @@ bool ResolutionNotificationController::DoesNotificationTimeout() {
   return change_info_ && change_info_->timeout_count > 0;
 }
 
+void ResolutionNotificationController::Close(bool by_user) {
+  if (by_user)
+    AcceptResolutionChange(false);
+}
+
+void ResolutionNotificationController::Click() {
+  AcceptResolutionChange(true);
+}
+
+void ResolutionNotificationController::ButtonClick(int button_index) {
+  // If there's the timeout, the first button is "Accept". Otherwise the
+  // button click should be "Revert".
+  if (DoesNotificationTimeout() && button_index == 0)
+    AcceptResolutionChange(true);
+  else
+    RevertResolutionChange(false /* display_was_removed */);
+}
+
 void ResolutionNotificationController::CreateOrUpdateNotification(
     bool enable_spoken_feedback) {
   message_center::MessageCenter* message_center =
@@ -256,29 +224,18 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
                     change_info_->current_resolution.size().ToString()));
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  std::unique_ptr<Notification> notification(new Notification(
+  auto notification = std::make_unique<Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       timeout_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16() /* display_source */, GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierDisplayResolutionChange),
       data,
-      new ResolutionChangeNotificationDelegate(
-          this, change_info_->timeout_count > 0)));
+      base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+          weak_factory_.GetWeakPtr()));
   notification->set_clickable(true);
   notification->SetSystemPriority();
   message_center->AddNotification(std::move(notification));
-}
-
-void ResolutionNotificationController::OnTimerTick() {
-  if (!change_info_)
-    return;
-
-  --change_info_->timeout_count;
-  if (change_info_->timeout_count == 0)
-    RevertResolutionChange(false /* display_was_removed */);
-  else
-    CreateOrUpdateNotification(false);
 }
 
 void ResolutionNotificationController::AcceptResolutionChange(
@@ -315,6 +272,16 @@ void ResolutionNotificationController::RevertResolutionChange(
   } else {
     Shell::Get()->display_manager()->SetDisplayMode(display_id, old_resolution);
   }
+}
+
+void ResolutionNotificationController::OnTimerTick() {
+  if (!change_info_)
+    return;
+
+  if (--change_info_->timeout_count == 0)
+    RevertResolutionChange(false /* display_was_removed */);
+  else
+    CreateOrUpdateNotification(false);
 }
 
 void ResolutionNotificationController::OnDisplayAdded(
