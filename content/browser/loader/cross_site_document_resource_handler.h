@@ -172,7 +172,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // A canonicalization of the specified MIME type, to determine if blocking the
   // response is needed, as well as which type of sniffing to perform.
   network::CrossOriginReadBlocking::MimeType canonical_mime_type_ =
-      network::CrossOriginReadBlocking::MimeType::kOthers;
+      network::CrossOriginReadBlocking::MimeType::kInvalid;
 
   // Indicates whether this request was made by a plugin and was not using CORS.
   // Such requests are exempt from blocking, while other plugin requests must be

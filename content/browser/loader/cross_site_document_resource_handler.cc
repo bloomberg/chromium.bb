@@ -242,6 +242,10 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
     MimeType canonical_mime_type,
     int http_response_code,
     int64_t content_length) {
+  DCHECK(resource_request_info);
+  DCHECK_NE(network::CrossOriginReadBlocking::MimeType::kInvalid,
+            canonical_mime_type);
+
   LogCrossSiteDocumentAction(
       needed_sniffing
           ? CrossSiteDocumentResourceHandler::Action::kBlockedAfterSniffing
@@ -751,22 +755,6 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
       return false;
   }
 
-  // CORB should look directly at the Content-Type header if one has been
-  // received from the network.  Ignoring |response->head.mime_type| helps avoid
-  // breaking legitimate websites (which might happen more often when blocking
-  // would be based on the mime type sniffed by MimeSniffingResourceHandler).
-  //
-  // TODO(nick): What if the mime type is omitted? Should that be treated the
-  // same as text/plain? https://crbug.com/795971
-  std::string mime_type;
-  if (response->head.headers)
-    response->head.headers->GetMimeType(&mime_type);
-  // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
-  // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
-  // the checks during the SniffForFetchOnlyResource() phase.
-  canonical_mime_type_ =
-      network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
-
   // Treat a missing initiator as an empty origin to be safe, though we don't
   // expect this to happen.  Unfortunately, this requires a copy.
   url::Origin initiator;
@@ -857,6 +845,22 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   std::string range_header;
   response->head.headers->GetNormalizedHeader("content-range", &range_header);
   bool has_range_header = !range_header.empty();
+
+  // CORB should look directly at the Content-Type header if one has been
+  // received from the network.  Ignoring |response->head.mime_type| helps avoid
+  // breaking legitimate websites (which might happen more often when blocking
+  // would be based on the mime type sniffed by MimeSniffingResourceHandler).
+  //
+  // TODO(nick): What if the mime type is omitted? Should that be treated the
+  // same as text/plain? https://crbug.com/795971
+  std::string mime_type;
+  if (response->head.headers)
+    response->head.headers->GetMimeType(&mime_type);
+  // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
+  // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
+  // the checks during the SniffForFetchOnlyResource() phase.
+  canonical_mime_type_ =
+      network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
 
   // If this is a partial response, sniffing is not possible, so allow the
   // response if it's not a protected mime type.

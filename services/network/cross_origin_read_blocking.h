@@ -30,7 +30,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kJson = 2,
     kPlain = 3,
     kOthers = 4,
+
     kMax,
+    kInvalid = kMax,
   };
 
   // Three conclusions are possible from sniffing a byte sequence:
