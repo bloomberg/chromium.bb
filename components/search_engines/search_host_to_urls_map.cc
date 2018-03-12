@@ -41,22 +41,19 @@ void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
   DCHECK(template_url);
   DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, template_url->type());
 
-  for (HostToURLsMap::iterator i = host_to_urls_map_.begin();
-       i != host_to_urls_map_.end(); ++i) {
-    TemplateURLSet::iterator url_set_iterator = i->second.find(template_url);
-    if (url_set_iterator != i->second.end()) {
-      i->second.erase(url_set_iterator);
-      if (i->second.empty())
-        host_to_urls_map_.erase(i);
-      // A given TemplateURL only occurs once in the map. As soon as we find the
-      // entry, stop.
-      return;
-    }
-  }
+  // A given TemplateURL only occurs once in the map.
+  auto set_with_url =
+      std::find_if(host_to_urls_map_.begin(), host_to_urls_map_.end(),
+                   [&](std::pair<const std::string, TemplateURLSet>& entry) {
+                     return entry.second.erase(template_url);
+                   });
+
+  if (set_with_url != host_to_urls_map_.end() && set_with_url->second.empty())
+    host_to_urls_map_.erase(set_with_url);
 }
 
 TemplateURL* SearchHostToURLsMap::GetTemplateURLForHost(
-    const std::string& host) {
+    base::StringPiece host) {
   DCHECK(initialized_);
 
   HostToURLsMap::const_iterator iter = host_to_urls_map_.find(host);
@@ -66,7 +63,7 @@ TemplateURL* SearchHostToURLsMap::GetTemplateURLForHost(
 }
 
 SearchHostToURLsMap::TemplateURLSet* SearchHostToURLsMap::GetURLsForHost(
-    const std::string& host) {
+    base::StringPiece host) {
   DCHECK(initialized_);
 
   HostToURLsMap::iterator urls_for_host = host_to_urls_map_.find(host);

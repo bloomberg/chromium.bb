@@ -510,12 +510,11 @@ base::string16 TemplateURLRef::SearchTermToString16(
 bool TemplateURLRef::HasGoogleBaseURLs(
     const SearchTermsData& search_terms_data) const {
   ParseIfNecessary(search_terms_data);
-  for (size_t i = 0; i < replacements_.size(); ++i) {
-    if ((replacements_[i].type == GOOGLE_BASE_URL) ||
-        (replacements_[i].type == GOOGLE_BASE_SUGGEST_URL))
-      return true;
-  }
-  return false;
+  return std::any_of(replacements_.begin(), replacements_.end(),
+                     [](const Replacement& replacement) {
+                       return replacement.type == GOOGLE_BASE_URL ||
+                              replacement.type == GOOGLE_BASE_SUGGEST_URL;
+                     });
 }
 
 bool TemplateURLRef::ExtractSearchTermsFromURL(
@@ -912,14 +911,17 @@ std::string TemplateURLRef::HandleReplacements(
   // Determine if the search terms are in the query or before. We're escaping
   // space as '+' in the former case and as '%20' in the latter case.
   bool is_in_query = true;
-  for (Replacements::iterator i = replacements_.begin();
-       i != replacements_.end(); ++i) {
-    if (i->type == SEARCH_TERMS) {
-      base::string16::size_type query_start = parsed_url_.find('?');
-      is_in_query = query_start != base::string16::npos &&
-          (static_cast<base::string16::size_type>(i->index) > query_start);
-      break;
-    }
+
+  auto search_terms = std::find_if(replacements_.begin(), replacements_.end(),
+                                   [](const Replacement& replacement) {
+                                     return replacement.type == SEARCH_TERMS;
+                                   });
+
+  if (search_terms != replacements_.end()) {
+    base::string16::size_type query_start = parsed_url_.find('?');
+    is_in_query = query_start != base::string16::npos &&
+                  (static_cast<base::string16::size_type>(search_terms->index) >
+                   query_start);
   }
 
   std::string input_encoding;
@@ -1310,10 +1312,12 @@ bool TemplateURL::SupportsReplacement(
 
 bool TemplateURL::HasGoogleBaseURLs(
     const SearchTermsData& search_terms_data) const {
-  for (const TemplateURLRef& ref : url_refs_) {
-    if (ref.HasGoogleBaseURLs(search_terms_data))
-      return true;
-  }
+  if (std::any_of(url_refs_.begin(), url_refs_.end(),
+                  [&](const TemplateURLRef& ref) {
+                    return ref.HasGoogleBaseURLs(search_terms_data);
+                  }))
+    return true;
+
   return suggestions_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
       image_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
       new_tab_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
