@@ -875,7 +875,7 @@ public class SavePasswordsPreferences
      * @return Returns the bright white version of the passed drawable.
      */
     private static Drawable convertToPlainWhite(Drawable icon) {
-        icon.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        icon.mutate().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         return icon;
     }
 
