@@ -252,6 +252,27 @@ base::Optional<ModelError> ModelTypeStoreBackend::WriteModifications(
              : base::Optional<ModelError>({FROM_HERE, status.ToString()});
 }
 
+base::Optional<ModelError>
+ModelTypeStoreBackend::DeleteDataAndMetadataForPrefix(
+    const std::string& prefix) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(db_);
+  leveldb::WriteBatch write_batch;
+  std::unique_ptr<leveldb::Iterator> iter(
+      db_->NewIterator(leveldb::ReadOptions()));
+  const leveldb::Slice prefix_slice(prefix);
+  for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
+    leveldb::Slice key = iter->key();
+    if (!key.starts_with(prefix_slice))
+      break;
+    write_batch.Delete(key);
+  }
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &write_batch);
+  return status.ok()
+             ? base::nullopt
+             : base::Optional<ModelError>({FROM_HERE, status.ToString()});
+}
+
 int64_t ModelTypeStoreBackend::GetStoreVersion() {
   DCHECK(db_);
   leveldb::ReadOptions read_options;

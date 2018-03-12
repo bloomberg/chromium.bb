@@ -10,6 +10,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -144,11 +145,10 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
-void UserEventSyncBridge::DisableSync() {
-  ModelTypeSyncBridge::DisableSync();
+void UserEventSyncBridge::ApplyDisableSyncChanges(
+    std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // No data should be retained through sign out.
-  store_->ReadAllData(base::BindOnce(
-      &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this)));
+  store_->DeleteAllDataAndMetadata(base::DoNothing());
 }
 
 void UserEventSyncBridge::RecordUserEvent(
@@ -253,23 +253,6 @@ void UserEventSyncBridge::OnReadAllData(
     }
   }
   std::move(callback).Run(std::move(batch));
-}
-
-void UserEventSyncBridge::OnReadAllDataToDelete(
-    const base::Optional<ModelError>& error,
-    std::unique_ptr<RecordList> data_records) {
-  if (error) {
-    change_processor()->ReportError(*error);
-    return;
-  }
-
-  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  for (const Record& r : *data_records) {
-    batch->DeleteData(r.id);
-  }
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
 }
 
 void UserEventSyncBridge::HandleGlobalIdChange(int64_t old_global_id,

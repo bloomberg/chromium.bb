@@ -38,6 +38,7 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   std::unique_ptr<WriteBatch> CreateWriteBatch() override;
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         CallbackWithResult callback) override;
+  void DeleteAllDataAndMetadata(CallbackWithResult callback) override;
 
  private:
   static void BackendInitDone(

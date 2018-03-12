@@ -88,6 +88,9 @@ class ModelTypeStoreBackend
   base::Optional<ModelError> WriteModifications(
       std::unique_ptr<leveldb::WriteBatch> write_batch);
 
+  base::Optional<ModelError> DeleteDataAndMetadataForPrefix(
+      const std::string& prefix);
+
  private:
   friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
   friend class ModelTypeStoreBackendTest;

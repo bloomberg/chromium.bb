@@ -458,6 +458,19 @@ void ModelTypeStoreImpl::CommitWriteBatch(
                                    std::move(task), std::move(reply));
 }
 
+void ModelTypeStoreImpl::DeleteAllDataAndMetadata(CallbackWithResult callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!callback.is_null());
+  auto task = base::BindOnce(
+      &ModelTypeStoreBackend::DeleteDataAndMetadataForPrefix,
+      base::Unretained(backend_.get()), GetModelTypeRootTag(type_));
+  auto reply =
+      base::BindOnce(&ModelTypeStoreImpl::WriteModificationsDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+  base::PostTaskAndReplyWithResult(backend_task_runner_.get(), FROM_HERE,
+                                   std::move(task), std::move(reply));
+}
+
 void ModelTypeStoreImpl::WriteModificationsDone(
     CallbackWithResult callback,
     const base::Optional<ModelError>& error) {

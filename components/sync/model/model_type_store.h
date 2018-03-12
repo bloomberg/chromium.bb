@@ -137,6 +137,9 @@ class ModelTypeStore {
   // reflected in the store.
   virtual void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                                 CallbackWithResult callback) = 0;
+
+  // Deletion of everything, usually exercised during DisableSync().
+  virtual void DeleteAllDataAndMetadata(CallbackWithResult callback) = 0;
 };
 
 // Typedef for a store factory that has all params bound except InitCallback.

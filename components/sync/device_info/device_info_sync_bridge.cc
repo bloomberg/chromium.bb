@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "components/sync/base/time.h"
@@ -235,26 +236,15 @@ std::string DeviceInfoSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.device_info().cache_guid();
 }
 
-void DeviceInfoSyncBridge::DisableSync() {
+void DeviceInfoSyncBridge::ApplyDisableSyncChanges(
+    std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
   // or subscription_.reset() here?
 
-  // Allow deletion of metadata to happen before the deletion of data below. If
-  // we crash after removing metadata but not regular data, then merge can
-  // handle pairing everything back up.
-  ModelTypeSyncBridge::DisableSync();
-
   // Remove all local data, if sync is being disabled, the user has expressed
   // their desire to not have knowledge about other devices.
+  store_->DeleteAllDataAndMetadata(base::DoNothing());
   if (!all_data_.empty()) {
-    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-    for (const auto& kv : all_data_) {
-      batch->DeleteData(kv.first);
-    }
-    store_->CommitWriteBatch(
-        std::move(batch),
-        base::BindOnce(&DeviceInfoSyncBridge::OnCommit, base::AsWeakPtr(this)));
-
     all_data_.clear();
     NotifyObservers();
   }
@@ -293,6 +283,21 @@ void DeviceInfoSyncBridge::RemoveObserver(Observer* observer) {
 
 int DeviceInfoSyncBridge::CountActiveDevices() const {
   return CountActiveDevices(Time::Now());
+}
+
+// static
+std::unique_ptr<ModelTypeStore>
+DeviceInfoSyncBridge::DestroyAndStealStoreForTest(
+    std::unique_ptr<DeviceInfoSyncBridge> bridge) {
+  return std::move(bridge->store_);
+}
+
+bool DeviceInfoSyncBridge::IsPulseTimerRunningForTest() const {
+  return pulse_timer_.IsRunning();
+}
+
+void DeviceInfoSyncBridge::ForcePulseForTest() {
+  SendLocalData();
 }
 
 void DeviceInfoSyncBridge::NotifyObservers() {
