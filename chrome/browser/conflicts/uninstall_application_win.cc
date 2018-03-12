@@ -194,6 +194,11 @@ void UninstallAppController::AutomationControllerDelegate::OnAutomationEvent(
 void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
     IUIAutomation* automation,
     IUIAutomationElement* sender) const {
+  // This callback can be null if the application name was already written in
+  // the search box and this instance is awaiting destruction.
+  if (!on_automation_finished_)
+    return;
+
   base::string16 combo_box_id(
       GetCachedBstrValue(sender, UIA_AutomationIdPropertyId));
   if (combo_box_id != L"SystemSettings_AppsFeatures_AppControl_ComboBox")
