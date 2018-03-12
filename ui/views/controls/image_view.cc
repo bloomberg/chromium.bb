@@ -29,8 +29,7 @@ void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
 const char ImageView::kViewClassName[] = "ImageView";
 
 ImageView::ImageView()
-    : image_size_set_(false),
-      horiz_alignment_(CENTER),
+    : horiz_alignment_(CENTER),
       vert_alignment_(CENTER),
       last_paint_scale_(0.f),
       last_painted_bitmap_pixels_(NULL) {}
@@ -63,7 +62,6 @@ const gfx::ImageSkia& ImageView::GetImage() const {
 }
 
 void ImageView::SetImageSize(const gfx::Size& image_size) {
-  image_size_set_ = true;
   image_size_ = image_size;
   PreferredSizeChanged();
 }
@@ -74,7 +72,7 @@ gfx::Rect ImageView::GetImageBounds() const {
 }
 
 void ImageView::ResetImageSize() {
-  image_size_set_ = false;
+  image_size_.reset();
 }
 
 bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
@@ -89,7 +87,7 @@ bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
 }
 
 gfx::Size ImageView::GetImageSize() const {
-  return image_size_set_ ? image_size_ : image_.size();
+  return image_size_.value_or(image_.size());
 }
 
 gfx::Point ImageView::ComputeImageOrigin(const gfx::Size& image_size) const {
