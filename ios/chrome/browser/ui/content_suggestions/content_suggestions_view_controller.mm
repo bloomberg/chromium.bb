@@ -425,7 +425,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       }
       contentHeight +=
           2 * [ContentSuggestionsMostVisitedCell defaultSize].height;
-      contentHeight += content_suggestions::spacingBetweenTiles();
+      contentHeight += content_suggestions::verticalSpacingBetweenTiles();
 
       // The Content Suggestions should idealy be displayed such as only part of
       // the first suggestion is displayed. The distance should be capped to not
@@ -450,7 +450,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                                             collectionViewLayout
     minimumLineSpacingForSectionAtIndex:(NSInteger)section {
   if ([self.collectionUpdater isMostVisitedSection:section]) {
-    return content_suggestions::spacingBetweenTiles();
+    return content_suggestions::verticalSpacingBetweenTiles();
   }
   return [super collectionView:collectionView
                                    layout:collectionViewLayout

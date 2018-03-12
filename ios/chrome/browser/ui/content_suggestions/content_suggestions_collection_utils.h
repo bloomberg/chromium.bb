@@ -17,7 +17,8 @@ extern const int kSearchFieldBackgroundColor;
 // 4.
 NSUInteger numberOfTilesForWidth(CGFloat availableWidth);
 // Returns the spacing between tiles, based on the device.
-CGFloat spacingBetweenTiles();
+CGFloat horizontalSpacingBetweenTiles();
+CGFloat verticalSpacingBetweenTiles();
 
 // Returns x-offset in order to have the tiles centered in a view with a
 // |width|.
