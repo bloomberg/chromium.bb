@@ -73,10 +73,12 @@ class ChromeAppListItem {
   void SetFolderId(const std::string& folder_id);
   void SetPosition(const syncer::StringOrdinal& position);
 
-  // Setting the folder id of this item.
-  // Note: this method won't make changes to Ash and it should be called by
-  //       this item itself or the model updater.
+  // The following methods won't make changes to Ash and it should be called
+  // by this item itself or the model updater.
   void SetChromeFolderId(const std::string& folder_id);
+  void SetChromeIsFolder(bool is_folder);
+  void SetChromeName(const std::string& name);
+  void SetChromePosition(const syncer::StringOrdinal& position);
 
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
@@ -112,8 +114,6 @@ class ChromeAppListItem {
   void set_model_updater(AppListModelUpdater* model_updater) {
     model_updater_ = model_updater;
   }
-
-  void SetIsFolder(bool is_folder) { metadata_->is_folder = is_folder; }
 
   // Updates item position and name from |sync_item|. |sync_item| must be valid.
   void UpdateFromSync(
