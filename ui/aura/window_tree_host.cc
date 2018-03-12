@@ -61,6 +61,10 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 }
 
 void WindowTreeHost::InitHost() {
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  device_scale_factor_ = display.device_scale_factor();
+
   InitCompositor();
   UpdateRootWindowSizeInPixels(GetBoundsInPixels().size());
   Env::GetInstance()->NotifyHostInitialized(this);
@@ -79,9 +83,8 @@ ui::EventSink* WindowTreeHost::event_sink() {
 }
 
 gfx::Transform WindowTreeHost::GetRootTransform() const {
-  float scale = ui::GetDeviceScaleFactor(window()->layer());
   gfx::Transform transform;
-  transform.Scale(scale, scale);
+  transform.Scale(device_scale_factor_, device_scale_factor_);
   transform *= window()->layer()->transform();
   return transform;
 }
@@ -116,9 +119,8 @@ gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
 void WindowTreeHost::UpdateRootWindowSizeInPixels(
     const gfx::Size& host_size_in_pixels) {
   gfx::Rect bounds(host_size_in_pixels.width(), host_size_in_pixels.height());
-  float scale_factor = ui::GetDeviceScaleFactor(window()->layer());
   gfx::RectF new_bounds =
-      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / scale_factor);
+      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
   window()->layer()->transform().TransformRect(&new_bounds);
   window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
 }
@@ -308,12 +310,12 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  compositor_->SetScaleAndSize(display.device_scale_factor(),
-                               GetBoundsInPixels().size(),
+  compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
                                window()->GetLocalSurfaceId());
   compositor_->SetRootLayer(window()->layer());
+
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   compositor_->SetDisplayColorSpace(display.color_space());
 }
 
@@ -334,16 +336,20 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels) {
-  // The compositor should have the same size as the native root window host.
-  // Get the latest scale from display because it might have been changed.
-  compositor_->SetScaleAndSize(ui::GetScaleFactorForNativeView(window()),
-                               new_size_in_pixels,
-                               window()->GetLocalSurfaceId());
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  device_scale_factor_ = display.device_scale_factor();
 
   gfx::Size layer_size = GetBoundsInPixels().size();
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
   UpdateRootWindowSizeInPixels(layer_size);
+
+  // The compositor should have the same size as the native root window host.
+  // Get the latest scale from display because it might have been changed.
+  compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
+                               window()->GetLocalSurfaceId());
+
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);
 }

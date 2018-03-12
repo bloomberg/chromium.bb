@@ -179,6 +179,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void Hide();
 
   // Gets/Sets the size of the WindowTreeHost (in pixels).
+  // TODO(ccameron): The existence of OnHostMoved/ResizedInPixels and this
+  // function create confusion as to the source of the true bounds. Should it
+  // be expected that this will always return the values most recently
+  // specified by OnHostMoved/ResizedInPixels? If so, why do we ask the
+  // sub-classes to return the value when this class already knows the value?
   virtual gfx::Rect GetBoundsInPixels() const = 0;
   virtual void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) = 0;
 
@@ -219,6 +224,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Point GetLocationOnScreenInPixels() const = 0;
 
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
+  // TODO(ccameron): This needs to specify a device scale factor. It should
+  // arguably be merged with OnHostMovedInPixels (since all callers are pulling
+  // the size or position from a rect which also feeds OnHostMovedInPixels).
   void OnHostResizedInPixels(const gfx::Size& new_size_in_pixels);
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
@@ -291,6 +299,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   std::unique_ptr<WindowEventDispatcher> dispatcher_;
 
   std::unique_ptr<ui::Compositor> compositor_;
+
+  // The device scale factor is snapshotted in OnHostResizedInPixels.
+  // TODO(ccameron): The size and location from OnHostResizedInPixels and
+  // OnHostMovedInPixels should be snapshotted here as well.
+  float device_scale_factor_ = 1.f;
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
