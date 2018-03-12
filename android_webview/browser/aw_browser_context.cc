@@ -358,7 +358,6 @@ AwBrowserContext::GetWebRestrictionProvider() {
 }
 
 AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return safe_browsing_ui_manager_.get();
 }
 

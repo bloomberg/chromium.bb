@@ -92,6 +92,9 @@ public class SafeBrowsingTest {
     // Used to check which thread a callback is invoked on.
     private volatile boolean mOnUiThread;
 
+    // Used to verify the getSafeBrowsingPrivacyPolicyUrl() API.
+    private volatile Uri mPrivacyPolicyUrl;
+
     // These colors correspond to the body.background attribute in GREEN_HTML_PATH, SAFE_HTML_PATH,
     // MALWARE_HTML_PATH, IFRAME_HTML_PATH, etc. They should only be changed if those values are
     // changed as well
@@ -1118,7 +1121,9 @@ public class SafeBrowsingTest {
                         .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
                         .fragment("safe-browsing-policies")
                         .build();
-        Assert.assertEquals(privacyPolicyUrl, AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
-        Assert.assertNotNull(AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mPrivacyPolicyUrl = AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl(); });
+        Assert.assertEquals(privacyPolicyUrl, this.mPrivacyPolicyUrl);
+        Assert.assertNotNull(this.mPrivacyPolicyUrl);
     }
 }
