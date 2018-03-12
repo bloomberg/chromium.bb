@@ -55,21 +55,22 @@ class CrashDumpWaiter : public breakpad::CrashDumpManager::Observer {
 
   // Waits for the crash dump notification and returns whether the crash was
   // considered a foreground oom.
-  bool Wait() {
+  const breakpad::CrashDumpManager::CrashDumpDetails& Wait() {
     waiter_.Run();
-    return last_crash_was_oom_.value();
+    return last_crash_details_.value();
   }
 
  private:
   // CrashDumpManager::Observer:
   void OnCrashDumpProcessed(
       const breakpad::CrashDumpManager::CrashDumpDetails& details) override {
-    last_crash_was_oom_ = breakpad::CrashDumpManager::IsForegroundOom(details);
+    last_crash_details_ = details;
     waiter_.Quit();
   }
 
   base::RunLoop waiter_;
-  base::Optional<bool> last_crash_was_oom_;
+  base::Optional<breakpad::CrashDumpManager::CrashDumpDetails>
+      last_crash_details_;
   DISALLOW_COPY_AND_ASSIGN(CrashDumpWaiter);
 };
 #endif  // defined(OS_ANDROID)
@@ -139,8 +140,13 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
 #if defined(OS_ANDROID)
     CrashDumpWaiter crash_waiter;
     std::move(crash_closure).Run();
-    bool was_oom = crash_waiter.Wait();
-    EXPECT_EQ(expect_oom, was_oom);
+    const breakpad::CrashDumpManager::CrashDumpDetails& details =
+        crash_waiter.Wait();
+    EXPECT_EQ(expect_oom, breakpad::CrashDumpManager::IsForegroundOom(details))
+        << "process_type: " << details.process_type
+        << " termination_status: " << details.termination_status
+        << " file_size: " << details.file_size
+        << " app_state: " << details.app_state;
 
     // Since the observer list is not ordered, it isn't guaranteed that the
     // OutOfMemoryReporter will be notified at this point. Flush the current
