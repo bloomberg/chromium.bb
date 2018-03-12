@@ -128,6 +128,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVrBrowsingInCustomTab,
     &kVrBrowsingNativeAndroidUi,
     &kVrIconInDaydreamHome,
+    &kVrLaunchIntents,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
@@ -386,6 +387,9 @@ const base::Feature kVrBrowsingNativeAndroidUi{
 
 const base::Feature kVrIconInDaydreamHome{"VrIconInDaydreamHome",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kVrLaunchIntents{"VrLaunchIntents",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsSingleAppUiSkip{
     "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};

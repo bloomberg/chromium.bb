@@ -148,6 +148,7 @@ public class VrShellTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
     @MediumTest
+    @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testVrIntentStartsVrShell() {
         // Send a VR intent, which will open the link in a CTA.
         String url = VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
