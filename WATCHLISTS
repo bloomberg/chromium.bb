@@ -179,6 +179,9 @@
     'base_memory': {
       'filepath': '^base/memory',
     },
+    'base_scheduler': {
+      'filepath': '^base/task/',
+    },
     'base_task_scheduler': {
       'filepath': '^base/task_scheduler',
     },
@@ -615,6 +618,9 @@
     'cc-resources': {
       'filepath': 'cc/resources'\
                   '|components/viz/common/resources'
+    },
+    'cc-scheduler': {
+      'filepath': 'cc/scheduler'
     },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
@@ -1338,10 +1344,6 @@
     'safe_browsing_db': {
       'filepath': 'components/safe_browsing_db/',
     },
-    'scheduler': {
-      'filepath': 'cc/scheduler'\
-                  '|content/renderer/scheduler'
-    },
     'screen_orientation': {
       'filepath': 'screen_orientation',
     },
@@ -1698,6 +1700,7 @@
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
+    'base_scheduler': ['scheduler-bugs+base@chromium.org'],
     'base_task_scheduler': ['fdoray+watch@chromium.org',
                             'gab+watch@chromium.org',
                             'robliao+watch@chromium.org'],
@@ -1830,7 +1833,7 @@
     'blink_quota': ['kinuko+fileapi@chromium.org',
                     'nhiroki@chromium.org',
                     'tzik@chromium.org'],
-    'blink_scheduler': ['scheduler-bugs@chromium.org'],
+    'blink_scheduler': ['scheduler-bugs+blink@chromium.org'],
     'blink_screen_orientation': ['mlamouri+watch-blink@chromium.org'],
     'blink_script': ['kouhei+script@chromium.org',
                      'hiroshige+script@chromium.org',
@@ -1913,6 +1916,7 @@
     'cc-paint': ['danakj+watch@chromium.org'],
     'cc-quads': ['danakj+watch@chromium.org'],
     'cc-resources': ['danakj+watch@chromium.org'],
+    'cc-scheduler': ['scheduler-bugs+cc@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'eranm@chromium.org',
                                  'martijn+crwatch@martijnc.be',
@@ -2223,7 +2227,6 @@
                       'vakh+watch@chromium.org'],
     'safe_browsing_db': ['timvolodine@chromium.org',
                          'vakh+watch@chromium.org'],
-    'scheduler': ['scheduler-bugs@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'service_worker': ['horo+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org',
