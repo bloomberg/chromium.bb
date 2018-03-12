@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.view.View;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.selection.SelectionInsertionHandleObserver;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
@@ -45,15 +43,6 @@ public class ContentClassFactory {
      */
     public SelectionInsertionHandleObserver createHandleObserver(
             SelectionPopupControllerImpl.ReadbackViewCallback callback) {
-        // Implemented by a subclass.
-        return null;
-    }
-
-    /**
-     * Creates HandleObserver object.
-     */
-    // TODO(ctzsm): Remove this overload after we removed all usage of it.
-    public SelectionInsertionHandleObserver createHandleObserver(View view) {
         // Implemented by a subclass.
         return null;
     }
