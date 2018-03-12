@@ -73,12 +73,12 @@ void IntersectionObservation::ComputeIntersectionObservations(
   CHECK(new_threshold_index < kMaxThresholdIndex);
 
   if (last_threshold_index_ != new_threshold_index) {
-    IntRect snapped_root_bounds = geometry.RootIntRect();
-    IntRect* root_bounds_pointer =
+    FloatRect snapped_root_bounds(geometry.RootRect());
+    FloatRect* root_bounds_pointer =
         should_report_root_bounds_ ? &snapped_root_bounds : nullptr;
     IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
-        timestamp, new_visible_ratio, geometry.TargetIntRect(),
-        root_bounds_pointer, geometry.IntersectionIntRect(),
+        timestamp, new_visible_ratio, FloatRect(geometry.TargetRect()),
+        root_bounds_pointer, FloatRect(geometry.IntersectionRect()),
         geometry.DoesIntersect(), Target());
     Observer()->EnqueueIntersectionObserverEntry(*new_entry);
     SetLastThresholdIndex(new_threshold_index);

@@ -21,9 +21,9 @@ class IntersectionObserverEntry final : public ScriptWrappable {
  public:
   IntersectionObserverEntry(DOMHighResTimeStamp timestamp,
                             double intersection_ratio,
-                            const IntRect& bounding_client_rect,
-                            const IntRect* root_bounds,
-                            const IntRect& intersection_rect,
+                            const FloatRect& bounding_client_rect,
+                            const FloatRect* root_bounds,
+                            const FloatRect& intersection_rect,
                             bool is_intersecting,
                             Element*);
 
