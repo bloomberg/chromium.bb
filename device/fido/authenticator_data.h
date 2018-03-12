@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/attested_credential_data.h"
@@ -16,7 +17,7 @@
 namespace device {
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-authenticator-data.
-class AuthenticatorData {
+class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
  public:
   enum class Flag : uint8_t {
     kTestOfUserPresence = 1u << 0,
