@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/media_engagement_score.h"
@@ -825,4 +826,21 @@ TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
 
   ExpectScores(new_service.get(), url, 0.1, 1, 2, TimeNotSet());
   new_service->Shutdown();
+}
+
+class MediaEngagementServiceEnabledTest
+    : public ChromeRenderViewHostTestHarness {};
+
+TEST_F(MediaEngagementServiceEnabledTest, IsEnabled) {
+#if defined(OS_ANDROID)
+  // Make sure these flags are disabled on Android
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      media::kMediaEngagementBypassAutoplayPolicies));
+  EXPECT_FALSE(
+      base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData));
+#else
+  EXPECT_TRUE(base::FeatureList::IsEnabled(
+      media::kMediaEngagementBypassAutoplayPolicies));
+  EXPECT_TRUE(base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData));
+#endif
 }

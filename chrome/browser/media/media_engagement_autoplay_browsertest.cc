@@ -52,11 +52,17 @@ const base::string16 kDeniedTitle = base::ASCIIToUTF16("Denied");
 
 const base::FilePath kEmptyDataPath = kTestDataPath.AppendASCII("empty.pb");
 
+const std::vector<base::Feature> kFeatures = {
+    media::kMediaEngagementBypassAutoplayPolicies,
+    media::kPreloadMediaEngagementData};
+
 }  // namespace
 
 // Class used to test that origins with a high Media Engagement score
 // can bypass autoplay policies.
-class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
+class MediaEngagementAutoplayBrowserTest
+    : public testing::WithParamInterface<bool>,
+      public InProcessBrowserTest {
  public:
   MediaEngagementAutoplayBrowserTest() {
     http_server_.ServeFilesFromSourceDirectory(kMediaEngagementTestDataPath);
@@ -76,11 +82,12 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(http_server_.Start());
     ASSERT_TRUE(http_server_origin2_.Start());
 
-    scoped_feature_list_.InitWithFeatures(
-        {media::kRecordMediaEngagementScores,
-         media::kMediaEngagementBypassAutoplayPolicies,
-         media::kPreloadMediaEngagementData},
-        {});
+    // Enable or disable MEI based on the test parameter.
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(kFeatures, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, kFeatures);
+    }
 
     InProcessBrowserTest::SetUp();
 
@@ -122,6 +129,14 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
   GURL PrimaryOrigin() { return http_server_.GetURL("/"); }
 
   GURL SecondaryOrigin() { return http_server_origin2_.GetURL("/"); }
+
+  void ExpectAutoplayAllowedIfEnabled() {
+    if (GetParam()) {
+      ExpectAutoplayAllowed();
+    } else {
+      ExpectAutoplayDenied();
+    }
+  }
 
   void ExpectAutoplayAllowed() { EXPECT_EQ(kAllowedTitle, WaitAndGetTitle()); }
 
@@ -193,27 +208,27 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        BypassAutoplayHighEngagement) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayLowEngagement) {
   SetScores(PrimaryOrigin(), 1, 1);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayNoEngagement) {
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayFrameHighEngagement_NoDelegation) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_test.html");
@@ -221,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayFrameLowEngagement_NoDelegation) {
   SetScores(SecondaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_test.html");
@@ -229,15 +244,15 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        BypassAutoplayFrameHighEngagement_Delegation) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_delegation.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayFrameLowEngagement_Delegation) {
   SetScores(SecondaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_delegation.html");
@@ -245,40 +260,40 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayFrameNoEngagement) {
   LoadTestPage("engagement_autoplay_iframe_test.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
   ExpectAutoplayDenied();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        ClearEngagementOnNavigation) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 
   LoadTestPageSecondaryOrigin("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
   SetScores(SecondaryOrigin(), 20, 20);
 
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 
   LoadTestPageSecondaryOrigin("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
 // Test have high score threshold.
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        HasHighScoreThreshold) {
   SetScores(PrimaryOrigin(), 20, 16);
   SetScores(PrimaryOrigin(), 20, 10);
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        UsePreloadedData_Allowed) {
   // Autoplay should be blocked by default if we have a bad score.
   SetScores(PrimaryOrigin(), 0, 0);
@@ -288,20 +303,20 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   // Load the preloaded data and we should now be able to autoplay.
   ApplyPreloadedOrigin(PrimaryOrigin());
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 
   // If we now have a high MEI score we should still be allowed to autoplay.
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 
   // If we clear the preloaded data we should still be allowed to autoplay.
   ApplyEmptyPreloadedList();
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        UsePreloadedData_Denied) {
   // Autoplay should be blocked by default if we have a bad score.
   SetScores(PrimaryOrigin(), 0, 0);
@@ -317,15 +332,15 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   // If we now have a high MEI score we should now be allowed to autoplay.
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 
   // If we clear the preloaded data we should still be allowed to autoplay.
   ApplyEmptyPreloadedList();
   LoadTestPage("engagement_autoplay_test.html");
-  ExpectAutoplayAllowed();
+  ExpectAutoplayAllowedIfEnabled();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
                        PreloadedDataAndHighVisits) {
   // Autoplay should be denied due to a low score.
   SetScores(PrimaryOrigin(), 20, 0);
@@ -338,3 +353,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
 }
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        MediaEngagementAutoplayBrowserTest,
+                        testing::Bool());
