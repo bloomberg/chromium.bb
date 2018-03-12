@@ -200,13 +200,13 @@ void WallpaperControllerClient::SetOnlineWallpaper(
     const gfx::ImageSkia& image,
     const std::string& url,
     wallpaper::WallpaperLayout layout,
-    bool show_wallpaper) {
+    bool preview_mode) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
   wallpaper_controller_->SetOnlineWallpaper(
-      std::move(user_info), *image.bitmap(), url, layout, show_wallpaper);
+      std::move(user_info), *image.bitmap(), url, layout, preview_mode);
 }
 
 void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,

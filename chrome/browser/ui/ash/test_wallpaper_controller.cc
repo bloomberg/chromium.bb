@@ -43,7 +43,7 @@ void TestWallpaperController::SetOnlineWallpaper(
     const SkBitmap& image,
     const std::string& url,
     wallpaper::WallpaperLayout layout,
-    bool show_wallpaper) {
+    bool preview_mode) {
   NOTIMPLEMENTED();
 }
 

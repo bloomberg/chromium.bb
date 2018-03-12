@@ -190,7 +190,7 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
           var index = Math.floor(Math.random() * filtered.length);
           var wallpaper = filtered[index];
           var wallpaperUrl = wallpaper.base_url + suffix;
-          WallpaperUtil.setOnlineWallpaper(
+          WallpaperUtil.setOnlineWallpaperWithoutPreview(
               wallpaperUrl, wallpaper.default_layout,
               onSuccess.bind(null, wallpaperUrl, wallpaper.default_layout),
               this.retryLater_.bind(this));
@@ -241,7 +241,7 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
       // The backend service doesn't specify the desired layout. Use the default
       // layout here.
       var layout = Constants.WallpaperThumbnailDefaultLayout;
-      WallpaperUtil.setOnlineWallpaper(
+      WallpaperUtil.setOnlineWallpaperWithoutPreview(
           wallpaperUrl, layout, onSuccess.bind(null, wallpaperUrl, layout),
           this.retryLater_.bind(this));
     });
@@ -521,7 +521,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                                 // online wallpaper later when failed. Note that
                                 // we need to cancel the retry if user set
                                 // another wallpaper before retry alarm invoked.
-                                WallpaperUtil.setOnlineWallpaper(
+                                WallpaperUtil.setOnlineWallpaperWithoutPreview(
                                     syncInfo.url, syncInfo.layout,
                                     function() {}, function() {});
                               } else if (

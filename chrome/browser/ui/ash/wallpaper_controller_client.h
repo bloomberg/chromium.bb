@@ -46,7 +46,7 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           const gfx::ImageSkia& image,
                           const std::string& url,
                           wallpaper::WallpaperLayout layout,
-                          bool show_wallpaper);
+                          bool preview_mode);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,

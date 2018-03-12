@@ -300,6 +300,15 @@ bool IsInKioskMode() {
   return false;
 }
 
+// Checks if |account_id| is the current active user.
+bool IsActiveUser(const AccountId& account_id) {
+  // The current active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  return active_user_session &&
+         active_user_session->user_info->account_id == account_id;
+}
+
 }  // namespace
 
 const SkColor WallpaperController::kInvalidColor = SK_ColorTRANSPARENT;
@@ -1106,19 +1115,14 @@ void WallpaperController::SetCustomWallpaper(
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
-  // The currently active user has index 0.
-  const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
-  const bool is_active_user =
-      active_user_session->user_info->account_id == user_info->account_id;
-
   const gfx::ImageSkia custom_wallpaper =
       gfx::ImageSkia::CreateFrom1xBitmap(image);
+  const bool is_active_user = IsActiveUser(user_info->account_id);
   if (preview_mode) {
     DCHECK(is_active_user);
     confirm_preview_wallpaper_callback_ =
         base::BindOnce(&WallpaperController::SaveAndSetWallpaper,
-                       weak_factory_.GetWeakPtr(), base::Passed(&user_info),
+                       weak_factory_.GetWeakPtr(), std::move(user_info),
                        wallpaper_files_id, file_name, wallpaper::CUSTOMIZED,
                        layout, false /*show_wallpaper=*/, custom_wallpaper);
     ShowWallpaperImage(
@@ -1138,33 +1142,29 @@ void WallpaperController::SetOnlineWallpaper(
     const SkBitmap& image,
     const std::string& url,
     wallpaper::WallpaperLayout layout,
-    bool show_wallpaper) {
+    bool preview_mode) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
-  gfx::ImageSkia online_wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(image);
-  if (online_wallpaper.isNull()) {
-    LOG(ERROR) << "The client provided an empty wallpaper image.";
-    return;
+  const gfx::ImageSkia online_wallpaper =
+      gfx::ImageSkia::CreateFrom1xBitmap(image);
+  const bool is_active_user = IsActiveUser(user_info->account_id);
+  if (preview_mode) {
+    DCHECK(is_active_user);
+    confirm_preview_wallpaper_callback_ =
+        base::BindOnce(&WallpaperController::SetOnlineWallpaperImpl,
+                       weak_factory_.GetWeakPtr(), online_wallpaper, url,
+                       layout, std::move(user_info), false /*show_wallpaper=*/);
+    ShowWallpaperImage(
+        online_wallpaper,
+        wallpaper::WallpaperInfo{std::string(), layout, wallpaper::ONLINE,
+                                 base::Time::Now().LocalMidnight()},
+        true /*preview_mode=*/);
+  } else {
+    SetOnlineWallpaperImpl(online_wallpaper, url, layout, std::move(user_info),
+                           is_active_user /*show_wallpaper=*/);
   }
-
-  WallpaperInfo info = {url, layout, wallpaper::ONLINE,
-                        base::Time::Now().LocalMidnight()};
-  if (!SetUserWallpaperInfo(user_info->account_id, info,
-                            user_info->is_ephemeral)) {
-    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
-                  "except in tests.";
-  }
-  if (show_wallpaper)
-    ShowWallpaperImage(online_wallpaper, info, false /*preview_mode=*/);
-
-  // Leave the file path empty, because in most cases the file path is not used
-  // when fetching cache, but in case it needs to be checked, we should avoid
-  // confusing the URL with a real file path.
-  wallpaper_cache_map_[user_info->account_id] =
-      CustomWallpaperElement(base::FilePath(), online_wallpaper);
 }
 
 void WallpaperController::SetDefaultWallpaper(
@@ -1585,6 +1585,33 @@ void WallpaperController::RemoveUserWallpaperImpl(
                            {base::MayBlock(), base::TaskPriority::BACKGROUND,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                            base::Bind(&DeleteWallpaperInList, file_to_remove));
+}
+
+void WallpaperController::SetOnlineWallpaperImpl(
+    const gfx::ImageSkia& image,
+    const std::string& url,
+    const wallpaper::WallpaperLayout& layout,
+    mojom::WallpaperUserInfoPtr user_info,
+    bool show_wallpaper) {
+  if (image.isNull()) {
+    LOG(ERROR) << "The client provided an empty wallpaper image.";
+    return;
+  }
+
+  WallpaperInfo wallpaper_info = {url, layout, wallpaper::ONLINE,
+                                  base::Time::Now().LocalMidnight()};
+  if (!SetUserWallpaperInfo(user_info->account_id, wallpaper_info,
+                            user_info->is_ephemeral)) {
+    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
+                  "except in tests.";
+  }
+  if (show_wallpaper)
+    ShowWallpaperImage(image, wallpaper_info, false /*preview_mode=*/);
+
+  // TODO(wzang): Create a |GetOnlineWallpaperPath| method similar to
+  // |GetCustomWallpaperPath|.
+  wallpaper_cache_map_[user_info->account_id] =
+      CustomWallpaperElement(base::FilePath(), image);
 }
 
 void WallpaperController::SetWallpaperFromInfo(
