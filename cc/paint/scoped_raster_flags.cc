@@ -17,6 +17,9 @@ ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
   if (flags->HasDiscardableImages() && image_provider) {
     DCHECK(flags->HasShader());
 
+    // TODO(khushalsagar): The decoding of images in PaintFlags here is a bit of
+    // a mess. We decode image shaders at the correct scale but ignore that
+    // during serialization and just use the original image.
     decode_stashing_image_provider_.emplace(image_provider);
     if (flags->getShader()->shader_type() == PaintShader::Type::kImage) {
       DecodeImageShader(ctm);
@@ -97,6 +100,11 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
 
 void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm,
                                            bool create_skia_shader) {
+  // TODO(khushalsagar): For OOP, we have to decode everything during
+  // serialization. This will force us to use original sized decodes.
+  if (!flags()->getShader()->has_animated_images())
+    return;
+
   auto decoded_shader = flags()->getShader()->CreateDecodedPaintRecord(
       ctm, &*decode_stashing_image_provider_);
   if (!decoded_shader) {

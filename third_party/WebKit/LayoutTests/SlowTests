@@ -135,6 +135,9 @@ crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-border-radius.html [ Slow ]
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-canvas-svg.html [ Slow ]
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-svg-resource-url.html [ Slow ]
+crbug.com/763197 [ Mac ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Slow ]
+crbug.com/763197 [ Mac ] virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Slow ]
+crbug.com/763197 [ Mac ] virtual/gpu-rasterization/images/color-profile-svg.html [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 

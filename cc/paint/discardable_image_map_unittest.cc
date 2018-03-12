@@ -733,8 +733,15 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   // Create the record to use in the shader.
   auto shader_record = sk_make_sp<PaintOpBuffer>();
   shader_record->push<ScaleOp>(2.0f, 2.0f);
-  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-  shader_record->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+
+  PaintImage static_image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  shader_record->push<DrawImageOp>(static_image, 0.f, 0.f, nullptr);
+
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1))};
+  PaintImage animated_image = CreateAnimatedImage(gfx::Size(100, 100), frames);
+  shader_record->push<DrawImageOp>(animated_image, 0.f, 0.f, nullptr);
 
   gfx::Rect visible_rect(500, 500);
   scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
@@ -749,21 +756,58 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   display_list->EndPaintOfUnpaired(visible_rect);
   display_list->Finalize();
 
+  EXPECT_FALSE(flags.getShader()->has_animated_images());
   display_list->GenerateDiscardableImagesMetadata();
+  EXPECT_TRUE(flags.getShader()->has_animated_images());
   const auto& image_map = display_list->discardable_image_map();
 
-  // The image rect is set to the rect for the DrawRectOp.
+  // The image rect is set to the rect for the DrawRectOp, and only animated
+  // images in a shader are tracked.
   std::vector<PositionScaleDrawImage> draw_images =
       GetDiscardableImagesInRect(image_map, visible_rect);
   std::vector<gfx::Rect> inset_rects = InsetImageRects(draw_images);
   ASSERT_EQ(draw_images.size(), 1u);
-  EXPECT_EQ(draw_images[0].image, paint_image);
+  EXPECT_EQ(draw_images[0].image, animated_image);
   // The position of the image is the position of the DrawRectOp that uses the
   // shader.
   EXPECT_EQ(gfx::Rect(400, 400), inset_rects[0]);
   // The scale of the image includes the scale at which the shader record is
   // rasterized.
   EXPECT_EQ(SkSize::Make(4.f, 4.f), draw_images[0].scale);
+}
+
+TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
+  // Create the record with animated image to use in the shader.
+  SkRect tile = SkRect::MakeWH(100, 100);
+  auto shader_record = sk_make_sp<PaintOpBuffer>();
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1))};
+  PaintImage animated_image = CreateAnimatedImage(gfx::Size(100, 100), frames);
+  shader_record->push<DrawImageOp>(animated_image, 0.f, 0.f, nullptr);
+  auto shader_with_image = PaintShader::MakePaintRecord(
+      shader_record, tile, SkShader::TileMode::kClamp_TileMode,
+      SkShader::TileMode::kClamp_TileMode, nullptr);
+
+  // Create a second shader which uses the shader above.
+  auto second_shader_record = sk_make_sp<PaintOpBuffer>();
+  PaintFlags flags;
+  flags.setShader(shader_with_image);
+  second_shader_record->push<DrawRectOp>(SkRect::MakeWH(200, 200), flags);
+  auto shader_with_shader_with_image = PaintShader::MakePaintRecord(
+      second_shader_record, tile, SkShader::TileMode::kClamp_TileMode,
+      SkShader::TileMode::kClamp_TileMode, nullptr);
+
+  gfx::Rect visible_rect(500, 500);
+  scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
+  display_list->StartPaint();
+  flags.setShader(shader_with_shader_with_image);
+  display_list->push<DrawRectOp>(SkRect::MakeWH(200, 200), flags);
+  display_list->EndPaintOfUnpaired(visible_rect);
+  display_list->Finalize();
+  display_list->GenerateDiscardableImagesMetadata();
+  EXPECT_TRUE(shader_with_image->has_animated_images());
+  EXPECT_TRUE(shader_with_shader_with_image->has_animated_images());
 }
 
 TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {

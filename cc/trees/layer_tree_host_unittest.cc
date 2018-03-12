@@ -8484,6 +8484,8 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  virtual void AddImageOp(const PaintImage& image) = 0;
+
   void SetupTree() override {
     gfx::Size layer_size(1000, 500);
     content_layer_client_.set_bounds(layer_size);
@@ -8502,7 +8504,7 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
             .set_animation_type(PaintImage::AnimationType::ANIMATED)
             .set_repetition_count(kAnimationLoopOnce)
             .TakePaintImage();
-    content_layer_client_.add_draw_image(image, gfx::Point(0, 0), PaintFlags());
+    AddImageOp(image);
 
     layer_tree_host()->SetRootLayer(
         FakePictureLayer::Create(&content_layer_client_));
@@ -8549,16 +8551,51 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
     EXPECT_EQ(generator_->frames_decoded().size(), 3u);
   }
 
- private:
+ protected:
   FakeContentLayerClient content_layer_client_;
   sk_sp<FakePaintImageGenerator> generator_;
   int draw_count_ = 0;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimation);
+class LayerTreeHostTestImageAnimationDrawImage
+    : public LayerTreeHostTestImageAnimation {
+  void AddImageOp(const PaintImage& image) override {
+    content_layer_client_.add_draw_image(image, gfx::Point(0, 0), PaintFlags());
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationDrawImage);
+
+class LayerTreeHostTestImageAnimationDrawImageShader
+    : public LayerTreeHostTestImageAnimation {
+  void AddImageOp(const PaintImage& image) override {
+    PaintFlags flags;
+    flags.setShader(
+        PaintShader::MakeImage(image, SkShader::TileMode::kRepeat_TileMode,
+                               SkShader::TileMode::kRepeat_TileMode, nullptr));
+    content_layer_client_.add_draw_rect(gfx::Rect(500, 500), flags);
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationDrawImageShader);
+
+class LayerTreeHostTestImageAnimationDrawRecordShader
+    : public LayerTreeHostTestImageAnimation {
+  void AddImageOp(const PaintImage& image) override {
+    auto record = sk_make_sp<PaintOpBuffer>();
+    record->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
+    PaintFlags flags;
+    flags.setShader(PaintShader::MakePaintRecord(
+        record, SkRect::MakeWH(500, 500), SkShader::TileMode::kClamp_TileMode,
+        SkShader::TileMode::kClamp_TileMode, nullptr));
+    content_layer_client_.add_draw_rect(gfx::Rect(500, 500), flags);
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationDrawRecordShader);
 
 class LayerTreeHostTestImageAnimationSynchronousScheduling
-    : public LayerTreeHostTestImageAnimation {
+    : public LayerTreeHostTestImageAnimationDrawImage {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestImageAnimation::InitializeSettings(settings);
