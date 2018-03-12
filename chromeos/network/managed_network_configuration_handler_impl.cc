@@ -95,8 +95,9 @@ std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
 
 bool MatchesUnconfiguredNetworkState(const base::DictionaryValue& properties,
                                      const NetworkState* network_state) {
-  if (network_state->IsInProfile()) {
-    NET_LOG(ERROR) << "Network already configured: " << network_state->guid();
+  if (!network_state->profile_path().empty()) {
+    NET_LOG(ERROR) << "Network already configured: " << network_state->guid()
+                   << " Profile: " << network_state->profile_path();
     return false;
   }
   std::string type =
@@ -400,6 +401,10 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     const base::DictionaryValue& properties,
     const network_handler::ServiceResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
+  std::string guid =
+      GetStringFromDictionary(properties, ::onc::network_config::kGUID);
+  NET_LOG(USER) << "CreateConfiguration: " << guid;
+
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names. User settings are only partial ONC, thus we ignore missing fields.
   onc::Validator validator(false,   // Ignore unknown fields.
@@ -464,8 +469,6 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   // If a GUID was provided, verify that the new configuraiton matches an
   // existing NetworkState for an unconfigured (i.e. visible) network.
   // Requires HexSSID to be set first for comparing SSIDs.
-  std::string guid = GetStringFromDictionary(*validated_properties,
-                                             ::onc::network_config::kGUID);
   if (!guid.empty()) {
     const NetworkState* network_state =
         network_state_handler_->GetNetworkStateFromGuid(guid);
