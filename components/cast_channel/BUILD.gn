@@ -62,6 +62,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "cast_auth_util_unittest.cc",
+    "cast_channel_util_unittest.cc",
     "cast_framer_unittest.cc",
     "cast_message_handler_unittest.cc",
     "cast_socket_service_unittest.cc",

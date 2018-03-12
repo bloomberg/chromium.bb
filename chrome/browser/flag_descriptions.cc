@@ -874,6 +874,12 @@ const char kLoadMediaRouterComponentExtensionName[] =
 const char kLoadMediaRouterComponentExtensionDescription[] =
     "Loads the Media Router component extension at startup.";
 
+const char kMediaRouterCastAllowAllIPsName[] =
+    "Connect to Cast devices on all IP addresses";
+const char kMediaRouterCastAllowAllIPsDescription[] =
+    "Have the Media Router connect to Cast devices on all IP addresses, not "
+    "just RFC1918/RFC4913 private addresses.";
+
 const char kManualPasswordGenerationName[] = "Manual password generation.";
 const char kManualPasswordGenerationDescription[] =
     "Show a 'Generate Password' option on the context menu for all password "
