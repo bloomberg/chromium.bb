@@ -4,8 +4,8 @@
 
 #include "core/css/properties/shorthands/webkit_border_before.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSShorthand {

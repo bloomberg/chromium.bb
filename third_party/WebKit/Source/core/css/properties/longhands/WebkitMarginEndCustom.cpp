@@ -4,10 +4,10 @@
 
 #include "core/css/properties/longhands/webkit_margin_end.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSLonghand {

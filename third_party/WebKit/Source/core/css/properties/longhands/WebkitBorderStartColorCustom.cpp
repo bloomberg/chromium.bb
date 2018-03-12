@@ -4,9 +4,9 @@
 
 #include "core/css/properties/longhands/webkit_border_start_color.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

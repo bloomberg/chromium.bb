@@ -20,8 +20,8 @@
 
 #include "core/css/CSSPropertyValue.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

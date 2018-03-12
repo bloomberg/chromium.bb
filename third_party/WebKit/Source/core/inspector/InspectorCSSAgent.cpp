@@ -27,7 +27,6 @@
 
 #include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -83,6 +82,7 @@
 #include "core/page/Page.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleImage.h"
+#include "core/style_property_shorthand.h"
 #include "core/svg/SVGElement.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"

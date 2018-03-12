@@ -5,7 +5,6 @@
 #include "core/css/resolver/CSSVariableResolver.h"
 
 #include "core/StyleBuilderFunctions.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSUnsetValue.h"
@@ -25,6 +24,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
+#include "core/style_property_shorthand.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

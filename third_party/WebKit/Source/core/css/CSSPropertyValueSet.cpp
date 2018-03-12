@@ -23,7 +23,6 @@
 
 #include "core/css/CSSPropertyValueSet.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/StylePropertySerializer.h"
@@ -32,6 +31,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/css_property.h"
 #include "core/frame/UseCounter.h"
+#include "core/style_property_shorthand.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG

@@ -4,7 +4,6 @@
 
 #include "core/css/properties/CSSParsingUtils.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSContentDistributionValue.h"
@@ -38,6 +37,7 @@
 #include "core/css_value_keywords.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/WebFeature.h"
+#include "core/style_property_shorthand.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/Length.h"

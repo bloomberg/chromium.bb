@@ -1141,12 +1141,12 @@ code_generator("make_core_generated_media_features") {
 css_properties("make_core_generated_style_property_shorthand") {
   script = "../build/scripts/core/css/make_style_shorthands.py"
   other_inputs = [
-    "../build/scripts/core/css/templates/StylePropertyShorthand.cpp.tmpl",
-    "../build/scripts/core/css/templates/StylePropertyShorthand.h.tmpl",
+    "../build/scripts/core/css/templates/style_property_shorthand.cc.tmpl",
+    "../build/scripts/core/css/templates/style_property_shorthand.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/StylePropertyShorthand.cpp",
-    "$blink_core_output_dir/StylePropertyShorthand.h",
+    "$blink_core_output_dir/style_property_shorthand.cc",
+    "$blink_core_output_dir/style_property_shorthand.h",
   ]
 }
 

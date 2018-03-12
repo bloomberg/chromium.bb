@@ -7,10 +7,10 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/css_property.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

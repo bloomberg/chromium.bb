@@ -4,7 +4,6 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCrossfadeValue.h"
@@ -27,6 +26,7 @@
 #include "core/css/properties/Longhand.h"
 #include "core/css/properties/css_property.h"
 #include "core/frame/UseCounter.h"
+#include "core/style_property_shorthand.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {

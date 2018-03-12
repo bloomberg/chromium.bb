@@ -30,7 +30,6 @@
 
 #include "core/css/resolver/StyleResolver.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/CSSInterpolationTypesMap.h"
 #include "core/animation/ElementAnimations.h"
@@ -90,6 +89,7 @@
 #include "core/media_type_names.h"
 #include "core/probe/CoreProbes.h"
 #include "core/style/StyleInheritedVariables.h"
+#include "core/style_property_shorthand.h"
 #include "core/svg/SVGElement.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/StdLibExtras.h"
