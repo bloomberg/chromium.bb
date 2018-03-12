@@ -104,11 +104,10 @@ class WebRtcAudioDebugRecordingsBrowserTest
   ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
 
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
-#elif defined(OS_ANDROID)
-// Renderer crashes on Android M. https://crbug.com/535728.
+// Renderer crashes under Android: https://crbug.com/820934.
+// Failures on Android M. https://crbug.com/535728.
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
 #define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
@@ -203,8 +202,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // TODO(grunell): Add test for multiple dumps when re-use of
 // MediaStreamAudioProcessor in AudioCapturer has been removed.
 
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
+// Renderer crashes under Android: https://crbug.com/820934.
 #define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled \
   DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #else
@@ -252,12 +252,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_TwoCallsWithAudioDebugRecordings \
-  DISABLED_TwoCallsWithAudioDebugRecordings
-#elif defined(OS_ANDROID)
-// Renderer crashes on Android M. https://crbug.com/535728.
+// Renderer crashes under Android: https://crbug.com/820934.
+// Failures on Android M. https://crbug.com/535728.
 #define MAYBE_TwoCallsWithAudioDebugRecordings \
   DISABLED_TwoCallsWithAudioDebugRecordings
 #else
