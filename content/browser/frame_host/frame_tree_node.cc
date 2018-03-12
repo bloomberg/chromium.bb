@@ -313,7 +313,7 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
 }
 
 void FrameTreeNode::SetCurrentURL(const GURL& url) {
-  if (!has_committed_real_load_ && url != url::kAboutBlankURL)
+  if (!has_committed_real_load_ && !url.IsAboutBlank())
     has_committed_real_load_ = true;
   current_frame_host()->SetLastCommittedUrl(url);
   blame_context_.TakeSnapshot();
