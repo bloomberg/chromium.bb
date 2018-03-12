@@ -9,6 +9,8 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/i18n/number_formatting.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -455,6 +457,41 @@ base::string16 PowerStatus::GetAccessibleNameString(
              ? battery_percentage_accessible
              : battery_percentage_accessible + base::ASCIIToUTF16(" ") +
                    battery_time_accessible;
+}
+
+std::pair<base::string16, base::string16> PowerStatus::GetStatusStrings()
+    const {
+  base::string16 percentage;
+  base::string16 status;
+  if (IsBatteryFull()) {
+    status = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
+  } else {
+    percentage = base::FormatPercent(GetRoundedBatteryPercent());
+    if (IsUsbChargerConnected()) {
+      status = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
+    } else if (IsBatteryTimeBeingCalculated()) {
+      status =
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
+    } else {
+      base::TimeDelta time = IsBatteryCharging() ? GetBatteryTimeToFull()
+                                                 : GetBatteryTimeToEmpty();
+      if (ShouldDisplayBatteryTime(time) &&
+          !IsBatteryDischargingOnLinePower()) {
+        base::string16 duration;
+        if (!base::TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC,
+                                      &duration))
+          LOG(ERROR) << "Failed to format duration " << time;
+        status = l10n_util::GetStringFUTF16(
+            IsBatteryCharging()
+                ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
+                : IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
+            duration);
+      }
+    }
+  }
+
+  return std::make_pair(percentage, status);
 }
 
 PowerStatus::PowerStatus() {

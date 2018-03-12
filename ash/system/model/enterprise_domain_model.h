@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -15,7 +16,7 @@ namespace ash {
 class EnterpriseDomainObserver;
 
 // Model to store enterprise enrollment state.
-class EnterpriseDomainModel {
+class ASH_EXPORT EnterpriseDomainModel {
  public:
   EnterpriseDomainModel();
   ~EnterpriseDomainModel();
