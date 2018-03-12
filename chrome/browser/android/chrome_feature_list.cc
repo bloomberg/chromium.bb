@@ -394,7 +394,7 @@ const base::Feature kVrBrowsingNativeAndroidUi{
     "VrBrowsingNativeAndroidUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVrIconInDaydreamHome{"VrIconInDaydreamHome",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kVrLaunchIntents{"VrLaunchIntents",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
