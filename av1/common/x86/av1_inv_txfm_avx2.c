@@ -863,181 +863,67 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
   }
 }
 
-static INLINE void iidentity16_row_16xn_avx2(__m256i *out, const int32_t *input,
-                                             int stride, int shift, int height,
-                                             int rect) {
+static INLINE void iidentity_row_16xn_avx2(__m256i *out, const int32_t *input,
+                                           int stride, int shift, int height,
+                                           int txw_idx, int rect_type) {
   const int32_t *input_row = input;
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  const int16_t scale_fractional = 2 * NewSqrt2 - (2 << NewSqrt2Bits);
-  const __m256i scale =
-      _mm256_set1_epi16(scale_fractional << (15 - NewSqrt2Bits));
-  if (!rect) {
-    for (int h = 0; h < height; ++h) {
+  const __m256i scale = _mm256_set1_epi16(NewSqrt2list[txw_idx]);
+  const __m256i rounding = _mm256_set1_epi16((1 << (NewSqrt2Bits - 1)) +
+                                             (1 << (NewSqrt2Bits - shift - 1)));
+  const __m256i one = _mm256_set1_epi16(1);
+  const __m256i scale_rounding = _mm256_unpacklo_epi16(scale, rounding);
+  if (rect_type != 1 && rect_type != -1) {
+    for (int i = 0; i < height; ++i) {
       __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
       input_row += stride;
-      __m256i x = _mm256_mulhrs_epi16(src, scale);
-      __m256i srcx2 = _mm256_adds_epi16(src, src);
-      x = _mm256_adds_epi16(x, srcx2);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
+      __m256i lo = _mm256_unpacklo_epi16(src, one);
+      __m256i hi = _mm256_unpackhi_epi16(src, one);
+      lo = _mm256_madd_epi16(lo, scale_rounding);
+      hi = _mm256_madd_epi16(hi, scale_rounding);
+      lo = _mm256_srai_epi32(lo, NewSqrt2Bits - shift);
+      hi = _mm256_srai_epi32(hi, NewSqrt2Bits - shift);
+      out[i] = _mm256_packs_epi32(lo, hi);
     }
   } else {
     const __m256i rect_scale =
         _mm256_set1_epi16(NewInvSqrt2 << (15 - NewSqrt2Bits));
-    for (int h = 0; h < height; ++h) {
+    for (int i = 0; i < height; ++i) {
       __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
-      input_row += stride;
       src = _mm256_mulhrs_epi16(src, rect_scale);
-      __m256i x = _mm256_mulhrs_epi16(src, scale);
-      __m256i srcx2 = _mm256_adds_epi16(src, src);
-      x = _mm256_adds_epi16(x, srcx2);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
+      input_row += stride;
+      __m256i lo = _mm256_unpacklo_epi16(src, one);
+      __m256i hi = _mm256_unpackhi_epi16(src, one);
+      lo = _mm256_madd_epi16(lo, scale_rounding);
+      hi = _mm256_madd_epi16(hi, scale_rounding);
+      lo = _mm256_srai_epi32(lo, NewSqrt2Bits - shift);
+      hi = _mm256_srai_epi32(hi, NewSqrt2Bits - shift);
+      out[i] = _mm256_packs_epi32(lo, hi);
     }
   }
 }
 
-static INLINE void iidentity16_col_16xn_avx2(uint8_t *output, int stride,
-                                             __m256i *buf, int shift,
-                                             int height) {
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  const int16_t scale_fractional = 2 * NewSqrt2 - (2 << NewSqrt2Bits);
-  const __m256i scale =
-      _mm256_set1_epi16(scale_fractional << (15 - NewSqrt2Bits));
+static INLINE void iidentity_col_16xn_avx2(uint8_t *output, int stride,
+                                           __m256i *buf, int shift, int height,
+                                           int txh_idx) {
+  const __m256i scale = _mm256_set1_epi16(NewSqrt2list[txh_idx]);
+  const __m256i scale_rounding = _mm256_set1_epi16(1 << (NewSqrt2Bits - 1));
+  const __m256i shift_rounding = _mm256_set1_epi32(1 << (-shift - 1));
+  const __m256i one = _mm256_set1_epi16(1);
+  const __m256i scale_coeff = _mm256_unpacklo_epi16(scale, scale_rounding);
   for (int h = 0; h < height; ++h) {
-    __m256i x = _mm256_mulhrs_epi16(buf[h], scale);
-    __m256i srcx2 = _mm256_adds_epi16(buf[h], buf[h]);
-    x = _mm256_adds_epi16(x, srcx2);
-    x = _mm256_mulhrs_epi16(x, mshift);
+    __m256i lo = _mm256_unpacklo_epi16(buf[h], one);
+    __m256i hi = _mm256_unpackhi_epi16(buf[h], one);
+    lo = _mm256_madd_epi16(lo, scale_coeff);
+    hi = _mm256_madd_epi16(hi, scale_coeff);
+    lo = _mm256_srai_epi32(lo, NewSqrt2Bits);
+    hi = _mm256_srai_epi32(hi, NewSqrt2Bits);
+    lo = _mm256_add_epi32(lo, shift_rounding);
+    hi = _mm256_add_epi32(hi, shift_rounding);
+    lo = _mm256_srai_epi32(lo, -shift);
+    hi = _mm256_srai_epi32(hi, -shift);
+    __m256i x = _mm256_packs_epi32(lo, hi);
     write_recon_w16_avx2(x, output);
     output += stride;
-  }
-}
-
-static INLINE void iidentity32_row_16xn_avx2(__m256i *out, const int32_t *input,
-                                             int stride, int shift, int height,
-                                             int rect) {
-  const int32_t *input_row = input;
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  if (!rect) {
-    for (int h = 0; h < height; ++h) {
-      __m256i x = load_32bit_to_16bit_w16_avx2(input_row);
-      input_row += stride;
-      x = _mm256_adds_epi16(x, x);
-      x = _mm256_adds_epi16(x, x);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
-    }
-  } else {
-    const __m256i rect_scale = _mm256_set1_epi16(NewInvSqrt2 * 8);
-    for (int h = 0; h < height; ++h) {
-      __m256i x = load_32bit_to_16bit_w16_avx2(input_row);
-      input_row += stride;
-      x = _mm256_mulhrs_epi16(x, rect_scale);
-      x = _mm256_adds_epi16(x, x);
-      x = _mm256_adds_epi16(x, x);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
-    }
-  }
-}
-
-static INLINE void iidentity32_col_16xn_avx2(uint8_t *output, int stride,
-                                             __m256i *buf, int shift,
-                                             int height) {
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  for (int h = 0; h < height; ++h) {
-    __m256i x = _mm256_adds_epi16(buf[h], buf[h]);
-    x = _mm256_adds_epi16(x, x);
-    x = _mm256_mulhrs_epi16(x, mshift);
-    write_recon_w16_avx2(x, output);
-    output += stride;
-  }
-}
-
-static INLINE void iidentity64_row_16xn_avx2(__m256i *out, const int32_t *input,
-                                             int stride, int shift, int height,
-                                             int rect) {
-  const int32_t *input_row = input;
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  const int16_t scale_fractional = 4 * NewSqrt2 - (5 << NewSqrt2Bits);
-  const __m256i scale =
-      _mm256_set1_epi16(scale_fractional << (15 - NewSqrt2Bits));
-  if (!rect) {
-    for (int h = 0; h < height; ++h) {
-      __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
-      input_row += stride;
-      __m256i x = _mm256_mulhrs_epi16(src, scale);
-      __m256i srcx5 = _mm256_adds_epi16(src, src);
-      srcx5 = _mm256_adds_epi16(srcx5, srcx5);
-      srcx5 = _mm256_adds_epi16(srcx5, src);
-      x = _mm256_adds_epi16(x, srcx5);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
-    }
-  } else {
-    const __m256i rect_scale =
-        _mm256_set1_epi16(NewInvSqrt2 << (15 - NewSqrt2Bits));
-    for (int h = 0; h < height; ++h) {
-      __m256i src = load_32bit_to_16bit_w16_avx2(input_row);
-      input_row += stride;
-      src = _mm256_mulhrs_epi16(src, rect_scale);
-      __m256i x = _mm256_mulhrs_epi16(src, scale);
-      __m256i srcx5 = _mm256_adds_epi16(src, src);
-      srcx5 = _mm256_adds_epi16(srcx5, srcx5);
-      srcx5 = _mm256_adds_epi16(srcx5, src);
-      x = _mm256_adds_epi16(x, srcx5);
-      out[h] = _mm256_mulhrs_epi16(x, mshift);
-    }
-  }
-}
-
-static INLINE void iidentity64_col_16xn_avx2(uint8_t *output, int stride,
-                                             __m256i *buf, int shift,
-                                             int height) {
-  const __m256i mshift = _mm256_set1_epi16(1 << (15 + shift));
-  const int16_t scale_fractional = 4 * NewSqrt2 - (5 << NewSqrt2Bits);
-  const __m256i scale =
-      _mm256_set1_epi16(scale_fractional << (15 - NewSqrt2Bits));
-  for (int h = 0; h < height; ++h) {
-    __m256i x = _mm256_mulhrs_epi16(buf[h], scale);
-    __m256i srcx5 = _mm256_adds_epi16(buf[h], buf[h]);
-    srcx5 = _mm256_adds_epi16(srcx5, srcx5);
-    srcx5 = _mm256_adds_epi16(srcx5, buf[h]);
-    x = _mm256_adds_epi16(x, srcx5);
-    x = _mm256_mulhrs_epi16(x, mshift);
-    write_recon_w16_avx2(x, output);
-    output += stride;
-  }
-}
-
-static INLINE void identity_row_16xn_avx2(__m256i *out, const int32_t *input,
-                                          int stride, int shift, int height,
-                                          int txw_idx, int rect_type) {
-  int rect = (rect_type != 1 && rect_type != -1) ? 0 : 1;
-  switch (txw_idx) {
-    case 2:
-      iidentity16_row_16xn_avx2(out, input, stride, shift, height, rect);
-      break;
-    case 3:
-      iidentity32_row_16xn_avx2(out, input, stride, shift, height, rect);
-      break;
-    case 4:
-      iidentity64_row_16xn_avx2(out, input, stride, shift, height, rect);
-      break;
-    default: break;
-  }
-}
-
-static INLINE void identity_col_16xn_avx2(uint8_t *output, int stride,
-                                          __m256i *buf, int shift, int height,
-                                          int txh_idx) {
-  switch (txh_idx) {
-    case 2:
-      iidentity16_col_16xn_avx2(output, stride, buf, shift, height);
-      break;
-    case 3:
-      iidentity32_col_16xn_avx2(output, stride, buf, shift, height);
-      break;
-    case 4:
-      iidentity64_col_16xn_avx2(output, stride, buf, shift, height);
-      break;
-    default: break;
   }
 }
 
@@ -1054,9 +940,10 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_avx2(const int32_t *input,
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   __m256i buf[32];
   for (int i = 0; i < input_stride; i += 16) {
-    identity_row_16xn_avx2(buf, input + i, input_stride, shift[0], row_max,
-                           txw_idx, rect_type);
-    identity_col_16xn_avx2(output + i, stride, buf, shift[1], row_max, txh_idx);
+    iidentity_row_16xn_avx2(buf, input + i, input_stride, shift[0], row_max,
+                            txw_idx, rect_type);
+    iidentity_col_16xn_avx2(output + i, stride, buf, shift[1], row_max,
+                            txh_idx);
   }
 }
 
@@ -1085,8 +972,8 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(const int32_t *input,
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
   for (int i = 0; i < txfm_size_col_notzero; i += 16) {
     __m256i buf0[64];
-    identity_row_16xn_avx2(buf0, input + i, input_stride, shift[0],
-                           txfm_size_row_notzero, txw_idx, rect_type);
+    iidentity_row_16xn_avx2(buf0, input + i, input_stride, shift[0],
+                            txfm_size_row_notzero, txw_idx, rect_type);
     col_txfm(buf0, buf0, cos_bit_col);
     __m256i mshift = _mm256_set1_epi16(1 << (15 + shift[1]));
     int k = ud_flip ? (txfm_size_row - 1) : 0;
@@ -1149,8 +1036,8 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_avx2(const int32_t *input,
       }
     }
     for (int j = 0; j < buf_size_w_div16; ++j) {
-      identity_col_16xn_avx2(output + i * 16 * stride + j * 16, stride,
-                             buf1 + j * 16, shift[1], 16, txh_idx);
+      iidentity_col_16xn_avx2(output + i * 16 * stride + j * 16, stride,
+                              buf1 + j * 16, shift[1], 16, txh_idx);
     }
   }
 }

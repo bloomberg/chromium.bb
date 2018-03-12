@@ -53,6 +53,10 @@
     out1 = _mm_subs_epi16(_in0, _in1);                  \
   } while (0)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static INLINE void round_shift_16bit_ssse3(__m128i *in, int size, int bit) {
   if (bit < 0) {
     const __m128i scale = _mm_set1_epi16(1 << (15 + bit));
@@ -65,10 +69,6 @@ static INLINE void round_shift_16bit_ssse3(__m128i *in, int size, int bit) {
     }
   }
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // 1D itx types
 typedef enum ATTRIBUTE_PACKED {
@@ -92,6 +92,10 @@ static const ITX_TYPE_1D hitx_1d_tab[TX_TYPES] = {
   IADST_1D,     IIDENTITY_1D, IIDENTITY_1D, IDCT_1D,
   IIDENTITY_1D, IADST_1D,     IIDENTITY_1D, IFLIPADST_1D,
 };
+
+// Sqrt2, Sqrt2^2, Sqrt2^3, Sqrt2^4, Sqrt2^5
+static int32_t NewSqrt2list[TX_SIZES] = { 5793, 2 * 4096, 2 * 5793, 4 * 4096,
+                                          4 * 5793 };
 
 typedef void (*transform_1d_ssse3)(const __m128i *input, __m128i *output,
                                    int8_t cos_bit);
