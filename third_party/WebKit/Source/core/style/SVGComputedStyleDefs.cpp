@@ -37,7 +37,7 @@ StyleFillData::StyleFillData()
       paint_type(SVGComputedStyle::InitialFillPaintType()),
       paint_color(SVGComputedStyle::InitialFillPaintColor()),
       paint_uri(SVGComputedStyle::InitialFillPaintUri()),
-      visited_link_paint_type(SVGComputedStyle::InitialStrokePaintType()),
+      visited_link_paint_type(SVGComputedStyle::InitialFillPaintType()),
       visited_link_paint_color(SVGComputedStyle::InitialFillPaintColor()),
       visited_link_paint_uri(SVGComputedStyle::InitialFillPaintUri()) {}
 
