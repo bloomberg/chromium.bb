@@ -2897,7 +2897,7 @@ def _CheckForIncludeGuards(input_api, output_api):
               errors.append(output_api.PresubmitPromptWarning(
                 'Header using the wrong include guard name %s' % guard_name,
                 ['%s:%d' % (f.LocalPath(), line_number + 1)],
-                'Expected: %r\nGot: %r' % (guard_name, expected_text)))
+                'Expected: %r\nFound: %r' % (expected_text, guard_name)))
       else:
         # The line after #ifndef should have a #define of the same name.
         if line_number == guard_line_number + 1:
