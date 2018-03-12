@@ -29,36 +29,33 @@
         filter="[[computeFilter_(prefix, propertyDict, editFieldTypes)]]">
       <div class="property-box single-column two-line stretch">
         <!-- Property label -->
-        <div>[[getPropertyLabel_(item, prefix)]]</div>
+        <div class="layout horizontal center">
+          <div>[[getPropertyLabel_(item, prefix)]]</div>
+          <template is="dom-if" restamp
+              if="[[isEditTypeAny_(item, editFieldTypes)]]">
+            <cr-policy-network-indicator
+                property="[[getProperty_(item, propertyDict)]]">
+            </cr-policy-network-indicator>
+          </template>
+        </div>
         <!-- Uneditable property value -->
-        <div class="layout horizontal"
-            hidden="[[isEditable_(item, '', propertyDict, editFieldTypes)]]">
+        <template is="dom-if" restamp
+            if="[[!isEditable_(item, propertyDict, editFieldTypes)]]">
           <div class="secondary">
             [[getPropertyValue_(item, prefix, propertyDict)]]
           </div>
-          <cr-policy-network-indicator
-              property="[[getProperty_(item, propertyDict)]]">
-          </cr-policy-network-indicator>
-        </div>
+        </template>
         <!-- Editable String property value -->
-        <template is="dom-if" if="[[isEditable_(
-            item, 'String', propertyDict, editFieldTypes)]]">
+        <template is="dom-if" restamp
+            if="[[isEditTypeInput_(item, propertyDict, editFieldTypes)]]">
           <paper-input-container no-label-float>
             <input id="[[item]]" is="iron-input" slot="input"
+                type="[[getEditInputType_(item, editFieldTypes)]]"
                 value="[[getPropertyValue_(item, prefix, propertyDict)]]"
                 on-change="onValueChange_">
           </paper-input-container>
         </template>
-        <!-- Editable Password property value -->
-        <template is="dom-if" if="[[isEditable_(
-            item, 'Password', propertyDict, editFieldTypes)]]">
-          <paper-input-container no-label-float>
-            <input id="[[item]]" is="iron-input" type="password" slot="input"
-                value="[[getPropertyValue_(item, prefix, propertyDict)]]"
-                on-change="onValueChange_">
-          </paper-input-container>
-        </template>
-        <!-- TODO(stevenjb): Support other types. -->
+        <!-- TODO(stevenjb): Support other types (number, boolean)? -->
       </div>
     </template>
   </template>
