@@ -4,6 +4,7 @@
 
 #include "ash/system/network/network_icon.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -212,7 +213,12 @@ static constexpr int kSignalStrengthImageInset = 2;
 static constexpr int kSignalStrengthImageBgAlpha = 0x4D;
 
 SkColor GetDefaultColorForIconType(IconType icon_type) {
-  return icon_type == ICON_TYPE_TRAY ? kTrayIconColor : kMenuIconColor;
+  if (icon_type == ICON_TYPE_TRAY)
+    return kTrayIconColor;
+  if (features::IsSystemTrayUnifiedEnabled())
+    return kUnifiedMenuIconColor;
+  else
+    return kMenuIconColor;
 }
 
 bool IconTypeIsDark(IconType icon_type) {

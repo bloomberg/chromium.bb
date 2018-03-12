@@ -71,6 +71,9 @@ class FeaturePodButton : public views::View, public views::ButtonListener {
 
   bool IsToggled() const { return icon_button_->toggled(); }
 
+ protected:
+  FeaturePodIconButton* icon_button() const { return icon_button_; }
+
  private:
   // Unowned.
   FeaturePodControllerBase* const controller_;

@@ -38,6 +38,8 @@ class UnifiedSystemTrayController {
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
 
+  // Show the detailed view of network. Called from the view.
+  void ShowNetworkDetailedView();
   // Show the detailed view of bluetooth. Called from the view.
   void ShowBluetoothDetailedView();
 
