@@ -739,10 +739,9 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
 
     private UrlResponseInfoImpl prepareResponseInfoOnNetworkThread(int httpStatusCode,
             String negotiatedProtocol, String[] headers, long receivedByteCount) {
-        UrlResponseInfoImpl responseInfo =
-                new UrlResponseInfoImpl(Arrays.asList(mInitialUrl), httpStatusCode, "",
-                        headersListFromStrings(headers), false, negotiatedProtocol, null);
-        responseInfo.setReceivedByteCount(receivedByteCount);
+        UrlResponseInfoImpl responseInfo = new UrlResponseInfoImpl(Arrays.asList(mInitialUrl),
+                httpStatusCode, "", headersListFromStrings(headers), false, negotiatedProtocol,
+                null, receivedByteCount);
         return responseInfo;
     }
 

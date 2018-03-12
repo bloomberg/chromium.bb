@@ -176,9 +176,8 @@ public class CronetUrlRequestTest {
             headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
                     headers[i], headers[i + 1]));
         }
-        UrlResponseInfoImpl unknown = new UrlResponseInfoImpl(
-                Arrays.asList(urls), statusCode, message, headersList, false, "unknown", ":0");
-        unknown.setReceivedByteCount(receivedBytes);
+        UrlResponseInfoImpl unknown = new UrlResponseInfoImpl(Arrays.asList(urls), statusCode,
+                message, headersList, false, "unknown", ":0", receivedBytes);
         return unknown;
     }
 

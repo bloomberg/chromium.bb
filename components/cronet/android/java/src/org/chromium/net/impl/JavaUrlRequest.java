@@ -628,7 +628,7 @@ final class JavaUrlRequest extends UrlRequestBase {
                 // that would throw ConcurrentModificationException.
                 mUrlResponseInfo = new UrlResponseInfoImpl(new ArrayList<>(mUrlChain), responseCode,
                         mCurrentUrlConnection.getResponseMessage(),
-                        Collections.unmodifiableList(headerList), false, selectedTransport, "");
+                        Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
                 // TODO(clm) actual redirect handling? post -> get and whatnot?
                 if (responseCode >= 300 && responseCode < 400) {
                     fireRedirectReceived(mUrlResponseInfo.getAllHeaders());
