@@ -62,18 +62,6 @@ gfx::Insets GetContentInsets(views::View* location_bar) {
          gfx::Insets(location_bar->height() + kSeparatorViewHeightDIP, 0, 0, 0);
 }
 
-#if defined(USE_AURA)
-// A ui::EventTargeter that allows mouse and touch events in the top portion of
-// the Widget to pass through to the omnibox beneath it.
-class ResultsTargeter : public aura::WindowTargeter {
- public:
-  explicit ResultsTargeter(int top_inset) {
-    const gfx::Insets event_insets(top_inset, 0, 0, 0);
-    SetInsets(event_insets, event_insets);
-  }
-};
-#endif  // USE_AURA
-
 }  // namespace
 
 constexpr gfx::Insets RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets;
@@ -167,7 +155,10 @@ void RoundedOmniboxResultsFrame::Layout() {
 
 void RoundedOmniboxResultsFrame::AddedToWidget() {
 #if defined(USE_AURA)
-  GetWidget()->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<ResultsTargeter>(content_insets_.top()));
+  // Use a ui::EventTargeter that allows mouse and touch events in the top
+  // portion of the Widget to pass through to the omnibox beneath it.
+  auto results_targeter = std::make_unique<aura::WindowTargeter>();
+  results_targeter->SetInsets(gfx::Insets(content_insets_.top(), 0, 0, 0));
+  GetWidget()->GetNativeWindow()->SetEventTargeter(std::move(results_targeter));
 #endif
 }
