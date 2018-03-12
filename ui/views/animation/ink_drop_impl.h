@@ -61,6 +61,11 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // InkDrop inherited functions.
   void SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode);
 
+  // Sets the AutoHighlightMode as per the platform. Platforms that show ripples
+  // will be set to HIDE_ON_RIPPLE, and platforms that don't show ripples are
+  // set to SHOW_ON_RIPPLE highlight behavior.
+  void SetAutoHighlightModeForPlatform();
+
   // InkDrop:
   void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;

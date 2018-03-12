@@ -11,6 +11,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -610,6 +611,12 @@ void InkDropImpl::SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode) {
   highlight_state_factory_ =
       std::make_unique<HighlightStateFactory>(auto_highlight_mode, this);
   SetHighlightState(highlight_state_factory_->CreateStartState());
+}
+
+void InkDropImpl::SetAutoHighlightModeForPlatform() {
+  SetAutoHighlightMode(PlatformStyle::kUseRipples
+                           ? AutoHighlightMode::HIDE_ON_RIPPLE
+                           : AutoHighlightMode::SHOW_ON_RIPPLE);
 }
 
 void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {

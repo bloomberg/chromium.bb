@@ -13,6 +13,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -76,11 +77,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       DISTANCE_CONTROL_LIST_VERTICAL);
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  // Turn on highlighting when the button is focused only - hovering the button
-  // will request focus.
   SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  GetInkDrop()->SetShowHighlightOnFocus(true);
-  GetInkDrop()->SetShowHighlightOnHover(false);
   // Don't show the ripple on non-MD.
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
     set_ink_drop_visible_opacity(0);
@@ -274,6 +271,14 @@ bool HoverButton::ShouldUseFloodFillInkDrop() const {
 SkColor HoverButton::GetInkDropBaseColor() const {
   return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
                                 STYLE_SECONDARY);
+}
+
+std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDrop> ink_drop = LabelButton::CreateInkDrop();
+  // Turn on highlighting when the button is focused only - hovering the button
+  // will request focus.
+  ink_drop->SetShowHighlightOnHover(false);
+  return ink_drop;
 }
 
 std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()

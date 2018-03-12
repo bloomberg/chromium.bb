@@ -444,6 +444,7 @@ void Button::OnBlur() {
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetAutoHighlightModeForPlatform();
   return std::move(ink_drop);
 }
 
