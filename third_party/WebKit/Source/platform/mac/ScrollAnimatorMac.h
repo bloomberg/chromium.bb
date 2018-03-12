@@ -113,8 +113,6 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void SendContentAreaScrolledSoon(const ScrollOffset& scroll_delta);
 
-  void SetVisibleScrollerThumbRect(const IntRect&);
-
   virtual void Trace(blink::Visitor* visitor) {
     ScrollAnimatorBase::Trace(visitor);
   }
@@ -173,7 +171,6 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   bool have_scrolled_since_page_load_;
   bool needs_scroller_style_update_;
-  IntRect visible_scroller_thumb_rect_;
 };
 
 }  // namespace blink

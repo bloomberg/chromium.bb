@@ -63,10 +63,10 @@ class PLATFORM_EXPORT IntRect {
   IntRect(int x, int y, int width, int height)
       : location_(IntPoint(x, y)), size_(IntSize(width, height)) {}
 
-  explicit IntRect(
-      const FloatRect&);  // don't do this implicitly since it's lossy
-  explicit IntRect(
-      const LayoutRect&);  // don't do this implicitly since it's lossy
+  // Use EnclosingIntRect(), EnclosedIntRect(), RoundedIntRect(),
+  // PixelSnappedIntRect(), etc. instead.
+  explicit IntRect(const FloatRect&) = delete;
+  explicit IntRect(const LayoutRect&) = delete;
 
   IntPoint Location() const { return location_; }
   IntSize Size() const { return size_; }

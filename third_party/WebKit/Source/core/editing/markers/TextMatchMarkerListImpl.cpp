@@ -90,7 +90,7 @@ Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {
       UpdateMarkerLayoutRect(node, *text_match_marker);
     if (!text_match_marker->IsRendered())
       continue;
-    result.push_back(text_match_marker->GetLayoutRect());
+    result.push_back(PixelSnappedIntRect(text_match_marker->GetLayoutRect()));
   }
 
   return result;

@@ -537,15 +537,6 @@ class BlinkScrollbarPartAnimationTimer {
     scrollbarPartAnimation = nullptr;
   }
 
-  if (part == blink::kThumbPart &&
-      _scrollbar->Orientation() == blink::kVerticalScrollbar) {
-    if (newAlpha == 1) {
-      blink::IntRect thumbRect([scrollerPainter rectForPart:NSScrollerKnob]);
-      [self scrollAnimator].SetVisibleScrollerThumbRect(thumbRect);
-    } else
-      [self scrollAnimator].SetVisibleScrollerThumbRect(blink::IntRect());
-  }
-
   scrollbarPartAnimation.AdoptNS([[BlinkScrollbarPartAnimation alloc]
       initWithScrollbar:_scrollbar
        featureToAnimate:part == blink::kThumbPart ? ThumbAlpha : TrackAlpha
@@ -1105,20 +1096,6 @@ void ScrollAnimatorMac::SendContentAreaScrolledTask() {
     content_area_scrolled_timer_scroll_delta_ = ScrollOffset();
   } else
     [scrollbar_painter_controller_.Get() contentAreaScrolled];
-}
-
-void ScrollAnimatorMac::SetVisibleScrollerThumbRect(
-    const IntRect& scroller_thumb) {
-  IntRect rect_in_view_coordinates = scroller_thumb;
-  if (Scrollbar* vertical_scrollbar = scrollable_area_->VerticalScrollbar())
-    rect_in_view_coordinates =
-        vertical_scrollbar->ConvertToContainingEmbeddedContentView(
-            scroller_thumb);
-
-  if (rect_in_view_coordinates == visible_scroller_thumb_rect_)
-    return;
-
-  visible_scroller_thumb_rect_ = rect_in_view_coordinates;
 }
 
 }  // namespace blink
