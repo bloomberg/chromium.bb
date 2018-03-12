@@ -46,8 +46,35 @@ with the following key differences:
 <p>
 To store user data for your {{platform}},
 you can use either
-<code>storage.sync</code> or
-<code>storage.local</code>.
+<code>storage.sync</code>:
+</p>
+
+<pre>
+  chrome.storage.sync.set({key: value}, function() {
+    console.log('Value is set to ' + value);
+  });
+
+  chrome.storage.sync.get(['key'], function(result) {
+    console.log('Value currently is ' + result.key);
+  });
+</pre>
+
+<p>
+or
+<code>storage.local</code>:
+</p>
+
+<pre>
+  chrome.storage.local.set({key: value}, function() {
+    console.log('Value is set to ' + value);
+  });
+
+  chrome.storage.local.get(['key'], function(result) {
+    console.log('Value currently is ' + result.key);
+  });
+</pre>
+
+<p>
 When using <code>storage.sync</code>,
 the stored data will automatically be synced
 to any Chrome browser that the user is logged into,
