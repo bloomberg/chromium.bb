@@ -136,11 +136,6 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
-    public boolean isInVrSession() {
-        return DaydreamApi.isInVrSession(mContext);
-    }
-
-    @Override
     public void launchGvrSettings() {
         Activity activity = WindowAndroid.activityFromContext(mContext);
         if (activity == null) {
