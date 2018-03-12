@@ -144,7 +144,7 @@ async function makeCertAndKey(original) {
         b.addASN1(Tag.SET, (b) => {
           b.addASN1(Tag.SEQUENCE, (b) => {
             b.addASN1ObjectIdentifier(commonName);
-            b.addASN1PrintableString('U2F');
+            b.addASN1PrintableString('U2F Issuer');
           });
         });
       });
@@ -160,7 +160,7 @@ async function makeCertAndKey(original) {
         b.addASN1(Tag.SET, (b) => {
           b.addASN1(Tag.SEQUENCE, (b) => {
             b.addASN1ObjectIdentifier(commonName);
-            b.addASN1PrintableString('U2F');
+            b.addASN1PrintableString('U2F Device');
           });
         });
       });
@@ -192,7 +192,21 @@ async function makeCertAndKey(original) {
       b.addASN1ObjectIdentifier(ecdsaWithSHA256);
     });
     b.addASN1(Tag.BITSTRING, (b) => {  // Signature
-      b.addBytesFromString('\x00');    // (not valid, obviously.)
+      // This signature is obviously not correct since it's constant and the
+      // rest of the certificate is not. However, since the issuer certificate
+      // doesn't exist, there's no way for anyone to check the signature on this
+      // certificate and thus this sufficies. However, at least fastmail.com
+      // expects to be able to parse out a valid ECDSA signature and so one is
+      // provided.
+      b.addBytes(new Uint8Array([
+        0x00, 0x30, 0x45, 0x02, 0x21, 0x00, 0xc1, 0xa3, 0xa6, 0x8e, 0x2f,
+        0x16, 0xa7, 0x21, 0x46, 0x27, 0x05, 0x7f, 0x62, 0xbb, 0x72, 0x8c,
+        0x9e, 0x03, 0xe7, 0xa1, 0xba, 0x62, 0xd0, 0x46, 0x52, 0x4e, 0x45,
+        0x6d, 0x2c, 0x2f, 0x3f, 0x73, 0x02, 0x20, 0x0b, 0x5f, 0x78, 0xe5,
+        0x11, 0xaa, 0x18, 0x12, 0x9f, 0x6f, 0x23, 0x6d, 0x92, 0x13, 0x22,
+        0x7d, 0x92, 0xb4, 0xe6, 0x7e, 0xdf, 0x53, 0xe8, 0x16, 0xdf, 0xb0,
+        0x5d, 0x9d, 0xc8, 0xb9, 0x0f, 0xde
+      ]));
     });
   });
   return {privateKey: keypair.privateKey, certDER: certBuilder.data};
