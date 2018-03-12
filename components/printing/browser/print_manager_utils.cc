@@ -25,8 +25,7 @@ bool IsOopifEnabled() {
   return g_oopif_enabled;
 }
 
-void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
-                                   bool for_preview) {
+void CreateCompositeClientIfNeeded(content::WebContents* web_contents) {
   // TODO(weili): We only create pdf compositor client and use pdf compositor
   // service when site-per-process or isolate-origins flag/feature is enabled,
   // or top-document-isolation feature is enabled. This may not cover all cases
@@ -43,10 +42,6 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
            switches::kDisableSiteIsolationTrials)) ||
       base::FeatureList::IsEnabled(features::kTopDocumentIsolation)) {
     PrintCompositeClient::CreateForWebContents(web_contents);
-    if (for_preview) {
-      PrintCompositeClient::FromWebContents(web_contents)
-          ->set_for_preview(true);
-    }
     SetOopifEnabled();
   }
 }
