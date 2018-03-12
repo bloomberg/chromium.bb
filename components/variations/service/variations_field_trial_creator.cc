@@ -431,8 +431,13 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     bool result = AssociateParamsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
     if (!result) {
-      ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
-                                         switches::kForceFieldTrialParams));
+      // Some field trial params implement things like csv or json with a
+      // particular param. If some control characters are not %-encoded, it can
+      // lead to confusing error messages, so add a hint here.
+      ExitWithMessage(base::StringPrintf(
+          "Invalid --%s list specified. Make sure you %%-"
+          "encode the following characters in param values: %%:/.,",
+          switches::kForceFieldTrialParams));
     }
   }
 
