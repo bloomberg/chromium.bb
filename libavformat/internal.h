@@ -299,6 +299,32 @@ void ff_put_v(AVIOContext *bc, uint64_t val);
  */
 int ff_get_line(AVIOContext *s, char *buf, int maxlen);
 
+/**
+ * Read a whole line of text from AVIOContext to an AVBPrint buffer. Stop
+ * reading after reaching a \\r, a \\n, a \\r\\n, a \\0 or EOF.  The line
+ * ending characters are NOT included in the buffer, but they are skipped on
+ * the input.
+ *
+ * @param s the read-only AVIOContext
+ * @param bp the AVBPrint buffer
+ * @return the length of the read line, not including the line endings,
+ *         negative on error.
+ */
+int64_t ff_read_line_to_bprint(AVIOContext *s, AVBPrint *bp);
+
+/**
+ * Read a whole line of text from AVIOContext to an AVBPrint buffer overwriting
+ * its contents. Stop reading after reaching a \\r, a \\n, a \\r\\n, a \\0 or
+ * EOF. The line ending characters are NOT included in the buffer, but they
+ * are skipped on the input.
+ *
+ * @param s the read-only AVIOContext
+ * @param bp the AVBPrint buffer
+ * @return the length of the read line not including the line endings,
+ *         negative on error, or if the buffer becomes truncated.
+ */
+int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp);
+
 #define SPACE_CHARS " \t\r\n"
 
 /**
@@ -554,6 +580,8 @@ static inline int ff_rename(const char *oldpath, const char *newpath, void *logc
  * Allocate extradata with additional AV_INPUT_BUFFER_PADDING_SIZE at end
  * which is always set to 0.
  *
+ * Previously allocated extradata in par will be freed.
+ *
  * @param size size of extradata
  * @return 0 if OK, AVERROR_xxx on error
  */
@@ -695,5 +723,19 @@ int ff_interleaved_peek(AVFormatContext *s, int stream,
 
 int ff_lock_avformat(void);
 int ff_unlock_avformat(void);
+
+/**
+ * Set AVFormatContext url field to the provided pointer. The pointer must
+ * point to a valid string. The existing url field is freed if necessary. Also
+ * set the legacy filename field to the same string which was provided in url.
+ */
+void ff_format_set_url(AVFormatContext *s, char *url);
+
+#if FF_API_NEXT
+/**
+  * Register devices in deprecated format linked list.
+  */
+void avpriv_register_devices(const AVOutputFormat * const o[], const AVInputFormat * const i[]);
+#endif
 
 #endif /* AVFORMAT_INTERNAL_H */

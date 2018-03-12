@@ -224,6 +224,7 @@ External library support:
   --enable-libcaca         enable textual display using libcaca [no]
   --enable-libcelt         enable CELT decoding via libcelt [no]
   --enable-libcdio         enable audio CD grabbing with libcdio [no]
+  --enable-libcodec2       enable codec2 en/decoding using libcodec2 [no]
   --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
                            and libraw1394 [no]
   --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
@@ -306,11 +307,11 @@ External library support:
   The following libraries provide various hardware acceleration features:
   --disable-amf            disable AMF video encoding code [autodetect]
   --disable-audiotoolbox   disable Apple AudioToolbox code [autodetect]
-  --disable-cuda           disable dynamically linked Nvidia CUDA code [autodetect]
   --enable-cuda-sdk        enable CUDA features that require the CUDA SDK [no]
   --disable-cuvid          disable Nvidia CUVID support [autodetect]
   --disable-d3d11va        disable Microsoft Direct3D 11 video acceleration code [autodetect]
   --disable-dxva2          disable Microsoft DirectX 9 video acceleration code [autodetect]
+  --disable-ffnvcodec      disable dynamically linked Nvidia code [autodetect]
   --enable-libdrm          enable DRM code (Linux) [no]
   --enable-libmfx          enable Intel MediaSDK (AKA Quick Sync Video) code via libmfx [no]
   --enable-libnpp          enable Nvidia Performance Primitives-based code [no]
@@ -566,6 +567,12 @@ add_suffix(){
     suffix=$1
     shift
     for v; do echo ${v}${suffix}; done
+}
+
+remove_suffix(){
+    suffix=$1
+    shift
+    for v; do echo ${v%$suffix}; done
 }
 
 set_all(){
@@ -1526,6 +1533,7 @@ EXAMPLE_LIST="
     transcode_aac_example
     transcoding_example
     vaapi_encode_example
+    vaapi_transcode_example
 "
 
 EXTERNAL_AUTODETECT_LIBRARY_LIST="
@@ -1596,6 +1604,7 @@ EXTERNAL_LIBRARY_LIST="
     libbs2b
     libcaca
     libcelt
+    libcodec2
     libdc1394
     libdrm
     libflite
@@ -1651,6 +1660,7 @@ HWACCEL_AUTODETECT_LIBRARY_LIST="
     cuvid
     d3d11va
     dxva2
+    ffnvcodec
     nvdec
     nvenc
     vaapi
@@ -2454,6 +2464,8 @@ apng_encoder_deps="zlib"
 apng_encoder_select="llvidencdsp"
 aptx_decoder_select="audio_frame_queue"
 aptx_encoder_select="audio_frame_queue"
+aptx_hd_decoder_select="audio_frame_queue"
+aptx_hd_encoder_select="audio_frame_queue"
 asv1_decoder_select="blockdsp bswapdsp idctdsp"
 asv1_encoder_select="bswapdsp fdctdsp pixblockdsp"
 asv2_decoder_select="blockdsp bswapdsp idctdsp"
@@ -2631,7 +2643,7 @@ vble_decoder_select="llviddsp"
 vc1_decoder_select="blockdsp h263_decoder h264qpel intrax8 mpegvideo vc1dsp"
 vc1image_decoder_select="vc1_decoder"
 vorbis_decoder_select="mdct"
-vorbis_encoder_select="mdct"
+vorbis_encoder_select="audio_frame_queue mdct"
 vp3_decoder_select="hpeldsp vp3dsp videodsp"
 vp5_decoder_select="h264chroma hpeldsp videodsp vp3dsp vp56dsp"
 vp6_decoder_select="h264chroma hpeldsp huffman videodsp vp3dsp vp56dsp"
@@ -2664,11 +2676,12 @@ zmbv_encoder_deps="zlib"
 
 # hardware accelerators
 crystalhd_deps="libcrystalhd_libcrystalhd_if_h"
-cuda_deps_any="libdl LoadLibrary"
-cuvid_deps="cuda"
+cuda_deps="ffnvcodec"
+cuvid_deps="ffnvcodec"
 d3d11va_deps="dxva_h ID3D11VideoDecoder ID3D11VideoContext"
 dxva2_deps="dxva2api_h DXVA2_ConfigPictureDecode ole32 user32"
-nvdec_deps="cuda"
+ffnvcodec_deps_any="libdl LoadLibrary"
+nvdec_deps="ffnvcodec"
 videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
 xvmc_deps="X11_extensions_XvMClib_h"
@@ -2705,6 +2718,10 @@ hevc_vdpau_hwaccel_deps="vdpau VdpPictureInfoHEVC"
 hevc_vdpau_hwaccel_select="hevc_decoder"
 hevc_videotoolbox_hwaccel_deps="videotoolbox"
 hevc_videotoolbox_hwaccel_select="hevc_decoder"
+mjpeg_nvdec_hwaccel_deps="nvdec"
+mjpeg_nvdec_hwaccel_select="mjpeg_decoder"
+mjpeg_vaapi_hwaccel_deps="vaapi"
+mjpeg_vaapi_hwaccel_select="mjpeg_decoder"
 mpeg_xvmc_hwaccel_deps="xvmc"
 mpeg_xvmc_hwaccel_select="mpeg2video_decoder"
 mpeg1_nvdec_hwaccel_deps="nvdec"
@@ -2782,13 +2799,13 @@ qsvvpp_select="qsv"
 vaapi_encode_deps="vaapi"
 v4l2_m2m_deps_any="linux_videodev2_h"
 
-hwupload_cuda_filter_deps="cuda"
-scale_npp_filter_deps="cuda libnpp"
+hwupload_cuda_filter_deps="ffnvcodec"
+scale_npp_filter_deps="ffnvcodec libnpp"
 scale_cuda_filter_deps="cuda_sdk"
 thumbnail_cuda_filter_deps="cuda_sdk"
 
 amf_deps_any="libdl LoadLibrary"
-nvenc_deps="cuda"
+nvenc_deps="ffnvcodec"
 nvenc_deps_any="libdl LoadLibrary"
 nvenc_encoder_deps="nvenc"
 
@@ -2931,6 +2948,8 @@ h264_videotoolbox_encoder_select="videotoolbox_encoder"
 hevc_videotoolbox_encoder_deps="pthreads"
 hevc_videotoolbox_encoder_select="videotoolbox_encoder"
 libcelt_decoder_deps="libcelt"
+libcodec2_decoder_deps="libcodec2"
+libcodec2_encoder_deps="libcodec2"
 libfdk_aac_decoder_deps="libfdk_aac"
 libfdk_aac_encoder_deps="libfdk_aac"
 libfdk_aac_encoder_select="audio_frame_queue"
@@ -3072,6 +3091,8 @@ xmv_demuxer_select="riffdec"
 xwma_demuxer_select="riffdec"
 
 # indevs / outdevs
+android_camera_indev_deps="android camera2ndk mediandk pthreads"
+android_camera_indev_extralibs="-landroid -lcamera2ndk -lmediandk"
 alsa_indev_deps="alsa"
 alsa_outdev_deps="alsa"
 avfoundation_indev_deps="avfoundation corevideo coremedia pthreads"
@@ -3319,7 +3340,8 @@ resampling_audio_example_deps="avutil swresample"
 scaling_video_example_deps="avutil swscale"
 transcode_aac_example_deps="avcodec avformat swresample"
 transcoding_example_deps="avfilter avcodec avformat avutil"
-vaapi_encode_example_deps="avcodec avutil"
+vaapi_encode_example_deps="avcodec avutil h264_vaapi_encoder"
+vaapi_transcode_example_deps="avcodec avformat avutil h264_vaapi_encoder"
 
 # EXTRALIBS_LIST
 cpu_init_extralibs="pthreads_extralibs"
@@ -3337,7 +3359,7 @@ avformat_deps="avcodec avutil"
 avformat_suggest="libm network zlib"
 avresample_deps="avutil"
 avresample_suggest="libm"
-avutil_suggest="clock_gettime cuda libm libdrm libmfx opencl user32 vaapi videotoolbox corefoundation corevideo coremedia wincrypt"
+avutil_suggest="clock_gettime ffnvcodec libm libdrm libmfx opencl user32 vaapi videotoolbox corefoundation corevideo coremedia wincrypt"
 postproc_deps="avutil gpl"
 postproc_suggest="libm"
 swresample_deps="avutil"
@@ -3523,22 +3545,27 @@ find_things(){
     sed -n "s/^[^#]*$pattern.*([^,]*, *\([^,]*\)\(,.*\)*).*/\1_$thing/p" "$file"
 }
 
-ENCODER_LIST=$(find_things  encoder  ENC      libavcodec/allcodecs.c)
-DECODER_LIST=$(find_things  decoder  DEC      libavcodec/allcodecs.c)
-PARSER_LIST=$(find_things   parser   PARSER   libavcodec/allcodecs.c)
-MUXER_LIST=$(find_things    muxer    _MUX     libavformat/allformats.c)
-DEMUXER_LIST=$(find_things  demuxer  DEMUX    libavformat/allformats.c)
-OUTDEV_LIST=$(find_things   outdev   OUTDEV   libavdevice/alldevices.c)
-INDEV_LIST=$(find_things    indev    _IN      libavdevice/alldevices.c)
 FILTER_LIST=$(find_things   filter   FILTER   libavfilter/allfilters.c)
 
 find_things_extern(){
     thing=$1
     pattern=$2
     file=$source_path/$3
-    sed -n "s/^[^#]*extern.*$pattern *ff_\([^ ]*\)_$thing;/\1_$thing/p" "$file"
+    out=${4:-$thing}
+    sed -n "s/^[^#]*extern.*$pattern *ff_\([^ ]*\)_$thing;/\1_$out/p" "$file"
 }
 
+OUTDEV_LIST=$(find_things_extern muxer AVOutputFormat libavdevice/alldevices.c outdev)
+INDEV_LIST=$(find_things_extern demuxer AVInputFormat libavdevice/alldevices.c indev)
+MUXER_LIST=$(find_things_extern muxer AVOutputFormat libavformat/allformats.c)
+DEMUXER_LIST=$(find_things_extern demuxer AVInputFormat libavformat/allformats.c)
+ENCODER_LIST=$(find_things_extern encoder AVCodec libavcodec/allcodecs.c)
+DECODER_LIST=$(find_things_extern decoder AVCodec libavcodec/allcodecs.c)
+CODEC_LIST="
+    $ENCODER_LIST
+    $DECODER_LIST
+"
+PARSER_LIST=$(find_things_extern parser AVCodecParser libavcodec/parser.c)
 BSF_LIST=$(find_things_extern bsf AVBitStreamFilter libavcodec/bitstream_filters.c)
 HWACCEL_LIST=$(find_things_extern hwaccel AVHWAccel libavcodec/hwaccels.h)
 PROTOCOL_LIST=$(find_things_extern protocol URLProtocol libavformat/protocols.c)
@@ -3779,6 +3806,18 @@ enabled gpl && map "die_license_disabled_gpl nonfree" $EXTERNAL_LIBRARY_NONFREE_
 map "die_license_disabled nonfree" $HWACCEL_LIBRARY_NONFREE_LIST
 
 enabled version3 && { enabled gpl && enable gplv3 || enable lgplv3; }
+
+if enabled nonfree; then
+    license="nonfree and unredistributable"
+elif enabled gplv3; then
+    license="GPL version 3 or later"
+elif enabled lgplv3; then
+    license="LGPL version 3 or later"
+elif enabled gpl; then
+    license="GPL version 2 or later"
+else
+    license="LGPL version 2.1 or later"
+fi
 
 enabled_all gnutls openssl &&
     die "GnuTLS and OpenSSL must not be enabled at the same time."
@@ -4289,7 +4328,7 @@ probe_cc(){
         _ld_path='-libpath:'
     elif $_cc -nologo- 2>&1 | grep -q Microsoft; then
         _type=msvc
-        _ident=$($_cc 2>&1 | head -n1)
+        _ident=$($_cc 2>&1 | head -n1 | tr -d '\r')
         _DEPCMD='$(DEP$(1)) $(DEP$(1)FLAGS) $($(1)DEP_FLAGS) $< 2>&1 | awk '\''/including/ { sub(/^.*file: */, ""); gsub(/\\/, "/"); if (!match($$0, / /)) print "$@:", $$0 }'\'' > $(@:.o=.d)'
         _DEPFLAGS='$(CPPFLAGS) $(CFLAGS) -showIncludes -Zs'
         _cflags_speed="-O2"
@@ -4837,7 +4876,7 @@ check_host_cflags $host_cflags_speed
 check_64bit(){
     arch32=$1
     arch64=$2
-    expr=$3
+    expr=${3:-'sizeof(void *) > 4'}
     check_code cc "" "int test[2*($expr) - 1]" &&
         subarch=$arch64 || subarch=$arch32
     enable $subarch
@@ -4852,23 +4891,23 @@ case "$arch" in
         enabled shared && enable_weak pic
     ;;
     parisc)
-        check_64bit parisc parisc64 'sizeof(void *) > 4'
+        check_64bit parisc parisc64
         enabled shared && enable_weak pic
     ;;
     ppc)
-        check_64bit ppc ppc64 'sizeof(void *) > 4'
+        check_64bit ppc ppc64
         enabled shared && enable_weak pic
     ;;
     s390)
-        check_64bit s390 s390x 'sizeof(void *) > 4'
+        check_64bit s390 s390x
         enabled shared && enable_weak pic
     ;;
     sparc)
-        check_64bit sparc sparc64 'sizeof(void *) > 4'
+        check_64bit sparc sparc64
         enabled shared && enable_weak pic
     ;;
     x86)
-        check_64bit x86_32 x86_64 'sizeof(void *) > 4'
+        check_64bit x86_32 x86_64
         # Treat x32 as x64 for now. Note it also needs pic if shared
         test "$subarch" = "x86_32" && check_cpp_condition stddef.h 'defined(__x86_64__)' &&
             subarch=x86_64 && enable x86_64 && disable x86_32
@@ -4967,6 +5006,14 @@ case $target_os in
         ;;
     mingw32*|mingw64*)
         target_os=mingw32
+        LIBTARGET=i386
+        if enabled x86_64; then
+            LIBTARGET="i386:x86-64"
+        elif enabled arm; then
+            LIBTARGET="arm"
+        elif enabled aarch64; then
+            LIBTARGET="arm64"
+        fi
         if enabled shared; then
             # Cannot build both shared and static libs when using dllimport.
             disable static
@@ -4978,7 +5025,14 @@ case $target_os in
         SLIBSUF=".dll"
         SLIBNAME_WITH_VERSION='$(SLIBPREF)$(FULLNAME)-$(LIBVERSION)$(SLIBSUF)'
         SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
-        SLIB_EXTRA_CMD='cp $(SUBDIR)lib$(SLIBNAME:$(SLIBSUF)=.dll.a) $(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
+        if check_cmd lib.exe -list; then
+            SLIB_EXTRA_CMD=-'lib.exe -nologo -machine:$(LIBTARGET) -def:$$(@:$(SLIBSUF)=.def) -out:$(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
+            if enabled x86_64; then
+                LIBTARGET=x64
+            fi
+        else
+            SLIB_EXTRA_CMD=-'$(DLLTOOL) -m $(LIBTARGET) -d $$(@:$(SLIBSUF)=.def) -l $(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib) -D $(SLIBNAME_WITH_MAJOR)'
+        fi
         SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
         SLIB_INSTALL_LINKS=
         SLIB_INSTALL_EXTRA_SHLIB='$(SLIBNAME:$(SLIBSUF)=.lib)'
@@ -4986,6 +5040,7 @@ case $target_os in
         SLIB_CREATE_DEF_CMD='EXTERN_PREFIX="$(EXTERN_PREFIX)" AR="$(AR_CMD)" NM="$(NM_CMD)" $(SRC_PATH)/compat/windows/makedef $(SUBDIR)lib$(NAME).ver $(OBJS) > $$(@:$(SLIBSUF)=.def)'
         SHFLAGS='-shared -Wl,--out-implib,$(SUBDIR)lib$(SLIBNAME:$(SLIBSUF)=.dll.a) -Wl,--disable-auto-image-base $$(@:$(SLIBSUF)=.def)'
         enabled x86_64 && objformat="win64" || objformat="win32"
+        dlltool="${cross_prefix}dlltool"
         ranlib=:
         enable dos_paths
         check_ldflags -Wl,--nxcompat,--dynamicbase
@@ -5285,9 +5340,8 @@ extern_prefix=${sym%%ff_extern*}
 
 ! disabled inline_asm && check_inline_asm inline_asm '"" ::'
 
-_restrict=
-for restrict_keyword in restrict __restrict__ __restrict; do
-    check_cc <<EOF && _restrict=$restrict_keyword && break
+for restrict_keyword in restrict __restrict__ __restrict ""; do
+    check_cc <<EOF && break
 void foo(char * $restrict_keyword p);
 EOF
 done
@@ -5719,6 +5773,10 @@ check_lib shell32  "windows.h shellapi.h" CommandLineToArgvW   -lshell32
 check_lib wincrypt "windows.h wincrypt.h" CryptGenRandom       -ladvapi32
 check_lib psapi    "windows.h psapi.h"    GetProcessMemoryInfo -lpsapi
 
+check_lib android android/native_window.h ANativeWindow_acquire -landroid
+check_lib mediandk "stdint.h media/NdkImage.h" AImage_delete -lmediandk
+check_lib camera2ndk "stdbool.h stdint.h camera/NdkCameraManager.h" ACameraManager_create -lcamera2ndk
+
 enabled appkit       && check_apple_framework AppKit
 enabled audiotoolbox && check_apple_framework AudioToolbox
 enabled avfoundation && check_apple_framework AVFoundation
@@ -5759,6 +5817,11 @@ check_type "va/va.h va/va_enc_vp8.h"  "VAEncPictureParameterBufferVP8"
 check_type "va/va.h va/va_enc_vp9.h"  "VAEncPictureParameterBufferVP9"
 
 check_type "vdpau/vdpau.h" "VdpPictureInfoHEVC"
+
+if ! disabled ffnvcodec; then
+    check_pkg_config ffnvcodec "ffnvcodec >= 8.0.14.1" \
+        "ffnvcodec/nvEncodeAPI.h ffnvcodec/dynlink_cuda.h ffnvcodec/dynlink_cuviddec.h ffnvcodec/dynlink_nvcuvid.h" ""
+fi
 
 check_cpp_condition windows.h "!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)" && enable winrt || disable winrt
 
@@ -5844,6 +5907,7 @@ enabled libcelt           && require libcelt celt/celt.h celt_decode -lcelt0 &&
                              { check_lib libcelt celt/celt.h celt_decoder_create_custom -lcelt0 ||
                                die "ERROR: libcelt must be installed and version must be >= 0.11.0."; }
 enabled libcaca           && require_pkg_config libcaca caca caca.h caca_create_canvas
+enabled libcodec2         && require libcodec2 codec2/codec2.h codec2_create -lcodec2
 enabled libdc1394         && require_pkg_config libdc1394 libdc1394-2 dc1394/dc1394.h dc1394_new
 enabled libdrm            && require_pkg_config libdrm libdrm xf86drm.h drmGetVersion
 enabled libfdk_aac        && { check_pkg_config libfdk_aac fdk-aac "fdk-aac/aacenc_lib.h" aacEncOpen ||
@@ -6203,16 +6267,18 @@ if enabled x86; then
         mingw32*|mingw64*|win32|win64|linux|cygwin*)
             ;;
         *)
-            disable cuda cuvid nvdec nvenc
+            disable ffnvcodec cuvid nvdec nvenc
             ;;
     esac
 else
-    disable cuda cuvid nvdec nvenc
+    disable ffnvcodec cuvid nvdec nvenc
 fi
+
+enabled ffnvcodec && enable cuda
 
 enabled nvenc &&
     check_cc -I$source_path <<EOF || disable nvenc
-#include "compat/nvenc/nvEncodeAPI.h"
+#include <ffnvcodec/nvEncodeAPI.h>
 NV_ENCODE_API_FUNCTION_LIST flist;
 void f(void) { struct { const GUID guid; } s[] = { { NV_ENC_PRESET_HQ_GUID } }; }
 int main(void) { return 0; }
@@ -6474,9 +6540,9 @@ elif enabled_any msvc icl; then
     # MSVC 2013 and newer can handle it fine.
     # If this declspec fails, force including stdlib.h before the restrict redefinition
     # happens in config.h.
-    if [ $_restrict != restrict ]; then
+    if [ $restrict_keyword != restrict ]; then
         check_cc <<EOF || add_cflags -FIstdlib.h
-__declspec($_restrict) void* foo(int);
+__declspec($restrict_keyword) void *foo(int);
 EOF
     fi
     # the new SSA optimzer in VS2015 U3 is mis-optimizing some parts of the code
@@ -6656,17 +6722,6 @@ expand_deps(){
 postproc_deps="$(filter_out 'gpl' $postproc_deps)"
 
 map 'expand_deps $v' $LIBRARY_LIST
-
-license="LGPL version 2.1 or later"
-if enabled nonfree; then
-    license="nonfree and unredistributable"
-elif enabled gplv3; then
-    license="GPL version 3 or later"
-elif enabled lgplv3; then
-    license="LGPL version 3 or later"
-elif enabled gpl; then
-    license="GPL version 2 or later"
-fi
 
 if test "$quiet" != "yes"; then
 
@@ -6877,6 +6932,7 @@ LD_O=$LD_O
 X86ASM_O=$X86ASM_O
 LD_LIB=$LD_LIB
 LD_PATH=$LD_PATH
+DLLTOOL=$dlltool
 WINDRES=$windres
 DEPWINDRES=$dep_cc
 DOXYGEN=$doxygen
@@ -6930,6 +6986,7 @@ LIB_INSTALL_EXTRA_CMD=$LIB_INSTALL_EXTRA_CMD
 EXTRALIBS=$extralibs
 COMPAT_OBJS=$compat_objs
 INSTALL=$install
+LIBTARGET=${LIBTARGET}
 SLIBNAME=${SLIBNAME}
 SLIBNAME_WITH_VERSION=${SLIBNAME_WITH_VERSION}
 SLIBNAME_WITH_MAJOR=${SLIBNAME_WITH_MAJOR}
@@ -6962,7 +7019,7 @@ cat > $TMPH <<EOF
 #define FFMPEG_DATADIR "$(eval c_escape $datadir)"
 #define AVCONV_DATADIR "$(eval c_escape $datadir)"
 #define CC_IDENT "$(c_escape ${cc_ident:-Unknown compiler})"
-#define av_restrict $_restrict
+#define av_restrict $restrict_keyword
 #define EXTERN_PREFIX "${extern_prefix}"
 #define EXTERN_ASM ${extern_prefix}
 #define BUILDSUF "$build_suffix"
@@ -7027,13 +7084,29 @@ print_enabled_components(){
     shift 3
     echo "static const $struct_name * const $name[] = {" > $TMPH
     for c in $*; do
-        enabled $c && printf "    &ff_%s,\n" $c >> $TMPH
+        if enabled $c; then
+            case $name in
+                indev_list)
+                    c=$(add_suffix _demuxer $(remove_suffix _indev $c))
+                ;;
+                outdev_list)
+                    c=$(add_suffix _muxer $(remove_suffix _outdev $c))
+                ;;
+            esac
+            printf "    &ff_%s,\n" $c >> $TMPH
+        fi
     done
     echo "    NULL };" >> $TMPH
     cp_if_changed $TMPH $file
 }
 
+print_enabled_components libavcodec/codec_list.c AVCodec codec_list $CODEC_LIST
+print_enabled_components libavcodec/parser_list.c AVCodecParser parser_list $PARSER_LIST
 print_enabled_components libavcodec/bsf_list.c AVBitStreamFilter bitstream_filters $BSF_LIST
+print_enabled_components libavdevice/indev_list.c AVInputFormat indev_list $INDEV_LIST
+print_enabled_components libavdevice/outdev_list.c AVOutputFormat outdev_list $OUTDEV_LIST
+print_enabled_components libavformat/demuxer_list.c AVInputFormat demuxer_list $DEMUXER_LIST
+print_enabled_components libavformat/muxer_list.c AVOutputFormat muxer_list $MUXER_LIST
 print_enabled_components libavformat/protocol_list.c URLProtocol url_protocols $PROTOCOL_LIST
 
 # Settings for pkg-config files
