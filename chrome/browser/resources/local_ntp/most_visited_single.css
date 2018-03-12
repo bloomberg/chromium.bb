@@ -74,58 +74,23 @@ a:visited {
   width: var(--tile-width);
 }
 
-/* Min height for showing 1 row: 4px + 128px + 8px
-   Min height for showing 2 rows: 4px + 128px + 16px + 128px + 8px
-   In both cases, give it half a px of tolerance, because otherwise rounding
-   errors at some zoom levels break this and a row sometimes doesn't show up.
-*/
-
-/* Minimal layout: 1 row, 2 columns; only first 2 tiles are visible. */
-@media (min-height: 139.5px) {
-  .mv-tile:nth-child(-n+2),
-  .mv-empty-tile:nth-child(-n+2) {
-    display: inline-block;
-  }
+/* Minimal layout: 2 columns; only first 4 tiles are visible. */
+.mv-tile:nth-child(-n+4),
+.mv-empty-tile:nth-child(-n+4) {
+  display: inline-block;
 }
 
 /* width >= (3 cols * (16px + 154px))
- * 1 row, 3 columns; first 3 tiles are visible. */
-@media (min-height: 139.5px) and (min-width: 510px) {
-  .mv-tile:nth-child(-n+3),
-  .mv-empty-tile:nth-child(-n+3) {
-    display: inline-block;
-  }
-}
-
-/* width >= (4 cols * (16px + 154px))
- * 1 row, 4 columns; first 4 tiles are visible. */
-@media (min-height: 139.5px) and (min-width: 680px) {
-  .mv-tile:nth-child(-n+4),
-  .mv-empty-tile:nth-child(-n+4) {
-    display: inline-block;
-  }
-}
-
-/* 2 rows, 2 columns; only first 4 tiles are visible. */
-@media (min-height: 283.5px) {
-  .mv-tile:nth-child(-n+4),
-  .mv-empty-tile:nth-child(-n+4) {
-    display: inline-block;
-  }
-}
-
-/* width >= (3 cols * (16px + 154px))
- * 2 rows, 3 columns; first 6 tiles are visible. */
-@media (min-height: 283.5px) and (min-width: 510px) {
+ * 3 columns; first 6 tiles are visible. */
+@media (min-width: 510px) {
   .mv-tile:nth-child(-n+6),
   .mv-empty-tile:nth-child(-n+6) {
     display: inline-block;
   }
 }
-
 /* width >= (4 cols * (16px + 154px))
- * 2 rows, 4 columns; first 8 tiles are visible. */
-@media (min-height: 283.5px) and (min-width: 680px) {
+ * 4 columns; first 8 tiles are visible. */
+@media (min-width: 680px) {
   .mv-tile:nth-child(-n+8),
   .mv-empty-tile:nth-child(-n+8) {
     display: inline-block;
