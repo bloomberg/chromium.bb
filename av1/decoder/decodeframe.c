@@ -2832,6 +2832,22 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->allow_intrabc = aom_rb_read_bit(rb);
     cm->use_prev_frame_mvs = 0;
   } else {
+#if CONFIG_EXPLICIT_ORDER_HINT
+    // Read all ref frame order hints if error_resilient_mode == 1
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
+      for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
+        // Get buffer index
+        const int buf_idx = cm->ref_frame_map[ref_idx];
+        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
+
+        // Read order hint from bit stream
+        unsigned int frame_offset =
+            aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
+        if (frame_offset != frame_bufs[buf_idx].cur_frame_offset) assert(0);
+      }
+    }
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
+
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 // The only way to reset all frame contexts to their default values is with a

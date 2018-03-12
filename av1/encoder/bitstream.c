@@ -3099,146 +3099,165 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     // all eight fbs are refreshed, pick one that will live long enough
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
 #endif
-  } else if (cm->frame_type == INTRA_ONLY_FRAME) {
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (!cm->error_resilient_mode) {
-      if (cm->intra_only) {
-        aom_wb_write_bit(wb,
-                         cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
+  } else {
+#if CONFIG_EXPLICIT_ORDER_HINT
+    // Write all ref frame order hints if error_resilient_mode == 1
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
+      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+      for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
+        // Get buffer index
+        const int buf_idx = cm->ref_frame_map[ref_idx];
+        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
+
+        // Write order hint to bit stream
+        aom_wb_write_literal(wb, frame_bufs[buf_idx].cur_frame_offset,
+                             cm->seq_params.order_hint_bits_minus1 + 1);
       }
     }
-#endif
-    cpi->refresh_frame_mask = get_refresh_mask(cpi);
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    int updated_fb = -1;
-    for (int i = 0; i < REF_FRAMES; i++) {
-      // If more than one frame is refreshed, it doesn't matter which one
-      // we pick, so pick the first.
-      if (cpi->refresh_frame_mask & (1 << i)) {
-        updated_fb = i;
-        break;
-      }
-    }
-    assert(updated_fb >= 0);
-    cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
-#endif
-    if (cm->intra_only) {
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-      write_frame_size(cm, frame_size_override_flag, wb);
-      assert(av1_superres_unscaled(cm) ||
-             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-      if (cm->allow_screen_content_tools &&
-          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-        aom_wb_write_bit(wb, cm->allow_intrabc);
-    }
-  } else if (cm->frame_type == INTER_FRAME || cm->frame_type == S_FRAME) {
-    MV_REFERENCE_FRAME ref_frame;
+#endif  // CONFIG_EXPLICIT_ORDER_HINT
 
+    if (cm->frame_type == INTRA_ONLY_FRAME) {
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (!cm->error_resilient_mode) {
-      aom_wb_write_bit(wb, cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
-      if (cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE)
-        aom_wb_write_bit(wb,
-                         cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
-    }
+      if (!cm->error_resilient_mode) {
+        if (cm->intra_only) {
+          aom_wb_write_bit(wb,
+                           cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
+        }
+      }
 #endif
-
-    if (cm->frame_type == INTER_FRAME) {
       cpi->refresh_frame_mask = get_refresh_mask(cpi);
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-    }
-
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    int updated_fb = -1;
-    for (int i = 0; i < REF_FRAMES; i++) {
-      // If more than one frame is refreshed, it doesn't matter which one
-      // we pick, so pick the first.
-      if (cpi->refresh_frame_mask & (1 << i)) {
-        updated_fb = i;
-        break;
+      int updated_fb = -1;
+      for (int i = 0; i < REF_FRAMES; i++) {
+        // If more than one frame is refreshed, it doesn't matter which one
+        // we pick, so pick the first.
+        if (cpi->refresh_frame_mask & (1 << i)) {
+          updated_fb = i;
+          break;
+        }
       }
-    }
-    // large scale tile sometimes won't refresh any fbs
-    if (updated_fb >= 0) {
+      assert(updated_fb >= 0);
       cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
-    }
+#endif
+      if (cm->intra_only) {
+        aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+        write_frame_size(cm, frame_size_override_flag, wb);
+        assert(av1_superres_unscaled(cm) ||
+               !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+        if (cm->allow_screen_content_tools &&
+            (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+          aom_wb_write_bit(wb, cm->allow_intrabc);
+      }
+    } else if (cm->frame_type == INTER_FRAME || cm->frame_type == S_FRAME) {
+      MV_REFERENCE_FRAME ref_frame;
+
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      if (!cm->error_resilient_mode) {
+        aom_wb_write_bit(wb,
+                         cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
+        if (cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE)
+          aom_wb_write_bit(wb,
+                           cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
+      }
 #endif
 
-    if (!cpi->refresh_frame_mask) {
-      // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
-      //       will not be used as a reference
-      cm->is_reference_frame = 0;
-    }
+      if (cm->frame_type == INTER_FRAME) {
+        cpi->refresh_frame_mask = get_refresh_mask(cpi);
+        aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+      }
+
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      int updated_fb = -1;
+      for (int i = 0; i < REF_FRAMES; i++) {
+        // If more than one frame is refreshed, it doesn't matter which one
+        // we pick, so pick the first.
+        if (cpi->refresh_frame_mask & (1 << i)) {
+          updated_fb = i;
+          break;
+        }
+      }
+      // large scale tile sometimes won't refresh any fbs
+      if (updated_fb >= 0) {
+        cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+      }
+#endif
+
+      if (!cpi->refresh_frame_mask) {
+        // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
+        //       will not be used as a reference
+        cm->is_reference_frame = 0;
+      }
 
 #if CONFIG_FRAME_REFS_SIGNALING
-    // TODO(zoeliu@google.com): To complete the encoder-side implementation
-    // for the scenario cm->frame_refs_short_signaling == 1.
-    assert(cm->frame_refs_short_signaling == 0);
-    // NOTE: Error resilient mode turns off frame_refs_short_signaling
-    //       automatically.
-    if (!cm->error_resilient_mode && cm->seq_params.enable_order_hint)
-      aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
-    else
+      // TODO(zoeliu@google.com): To complete the encoder-side implementation
+      // for the scenario cm->frame_refs_short_signaling == 1.
       assert(cm->frame_refs_short_signaling == 0);
+      // NOTE: Error resilient mode turns off frame_refs_short_signaling
+      //       automatically.
+      if (!cm->error_resilient_mode && cm->seq_params.enable_order_hint)
+        aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
+      else
+        assert(cm->frame_refs_short_signaling == 0);
 
-    if (cm->frame_refs_short_signaling) {
-      assert(get_ref_frame_map_idx(cpi, LAST_FRAME) != INVALID_IDX);
-      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, LAST_FRAME),
-                           REF_FRAMES_LOG2);
-      assert(get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX);
-      aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
-                           REF_FRAMES_LOG2);
-    }
-#endif  // CONFIG_FRAME_REFS_SIGNALING
-
-    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-      assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-#if CONFIG_FRAME_REFS_SIGNALING
-      if (!cm->frame_refs_short_signaling)
-#endif  // CONFIG_FRAME_REFS_SIGNALING
-        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
+      if (cm->frame_refs_short_signaling) {
+        assert(get_ref_frame_map_idx(cpi, LAST_FRAME) != INVALID_IDX);
+        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, LAST_FRAME),
                              REF_FRAMES_LOG2);
-      if (cm->frame_type == S_FRAME) {
-        assert(cm->ref_frame_sign_bias[ref_frame] == 0);
+        assert(get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX);
+        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
+                             REF_FRAMES_LOG2);
+      }
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+
+      for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+        assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
+#if CONFIG_FRAME_REFS_SIGNALING
+        if (!cm->frame_refs_short_signaling)
+#endif  // CONFIG_FRAME_REFS_SIGNALING
+          aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
+                               REF_FRAMES_LOG2);
+        if (cm->frame_type == S_FRAME) {
+          assert(cm->ref_frame_sign_bias[ref_frame] == 0);
+        }
+
+        if (cm->seq_params.frame_id_numbers_present_flag) {
+          int i = get_ref_frame_map_idx(cpi, ref_frame);
+          int frame_id_len = cm->seq_params.frame_id_length;
+          int diff_len = cm->seq_params.delta_frame_id_length;
+          int delta_frame_id_minus1 =
+              ((cm->current_frame_id - cm->ref_frame_id[i] +
+                (1 << frame_id_len)) %
+               (1 << frame_id_len)) -
+              1;
+          if (delta_frame_id_minus1 < 0 ||
+              delta_frame_id_minus1 >= (1 << diff_len))
+            cm->invalid_delta_frame_id_minus1 = 1;
+          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+        }
       }
 
-      if (cm->seq_params.frame_id_numbers_present_flag) {
-        int i = get_ref_frame_map_idx(cpi, ref_frame);
-        int frame_id_len = cm->seq_params.frame_id_length;
-        int diff_len = cm->seq_params.delta_frame_id_length;
-        int delta_frame_id_minus1 =
-            ((cm->current_frame_id - cm->ref_frame_id[i] +
-              (1 << frame_id_len)) %
-             (1 << frame_id_len)) -
-            1;
-        if (delta_frame_id_minus1 < 0 ||
-            delta_frame_id_minus1 >= (1 << diff_len))
-          cm->invalid_delta_frame_id_minus1 = 1;
-        aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
+        write_frame_size_with_refs(cpi, wb);
+      } else {
+        write_frame_size(cm, frame_size_override_flag, wb);
       }
-    }
-
-    if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
-      write_frame_size_with_refs(cpi, wb);
-    } else {
-      write_frame_size(cm, frame_size_override_flag, wb);
-    }
 
 #if CONFIG_AMVR
-    if (cm->cur_frame_force_integer_mv) {
-      cm->allow_high_precision_mv = 0;
-    } else {
-      aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-    }
+      if (cm->cur_frame_force_integer_mv) {
+        cm->allow_high_precision_mv = 0;
+      } else {
+        aom_wb_write_bit(wb, cm->allow_high_precision_mv);
+      }
 #else
-    aom_wb_write_bit(wb, cm->allow_high_precision_mv);
+      aom_wb_write_bit(wb, cm->allow_high_precision_mv);
 #endif
-    fix_interp_filter(cm, cpi->td.counts);
-    write_frame_interp_filter(cm->interp_filter, wb);
-    aom_wb_write_bit(wb, cm->switchable_motion_mode);
-    if (frame_might_use_prev_frame_mvs(cm) &&
-        cm->seq_params.enable_order_hint) {
-      aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
+      fix_interp_filter(cm, cpi->td.counts);
+      write_frame_interp_filter(cm->interp_filter, wb);
+      aom_wb_write_bit(wb, cm->switchable_motion_mode);
+      if (frame_might_use_prev_frame_mvs(cm) &&
+          cm->seq_params.enable_order_hint) {
+        aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
+      }
     }
   }
 
