@@ -161,16 +161,6 @@
   return self.viewController.view.superview;
 }
 
-#pragma mark - SideSwipeToolbarInteracting
-
-- (UIView*)toolbarView {
-  return self.viewController.view;
-}
-
-- (BOOL)canBeginToolbarSwipe {
-  return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
-}
-
 #pragma mark - Protected override
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {

@@ -389,13 +389,15 @@ initWithToolsMenuConfigurationProvider:
 
 #pragma mark - SideSwipeToolbarInteracting
 
-- (UIView*)toolbarView {
-  return self.viewController.view;
+- (BOOL)isInsideToolbar:(CGPoint)point {
+  // The toolbar frame is inset by -1 because CGRectContainsPoint does include
+  // points on the max X and Y edges, which will happen frequently with edge
+  // swipes from the right side.
+  CGRect toolbarFrame = CGRectInset(self.viewController.view.frame, -1, -1);
+  return CGRectContainsPoint(toolbarFrame, point);
 }
 
-- (BOOL)canBeginToolbarSwipe {
-  return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
-}
+#pragma mark - SideSwipeToolbarSnapshotProviding
 
 - (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
   [self updateToolbarForSideSwipeSnapshot:webState];

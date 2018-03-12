@@ -1155,7 +1155,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         [[SideSwipeController alloc] initWithTabModel:_model
                                          browserState:_browserState];
     [_sideSwipeController setSnapshotDelegate:self];
-    _sideSwipeController.primaryToolbarInteractionHandler =
+    _sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
+    _sideSwipeController.primaryToolbarSnapshotProvider =
         self.primaryToolbarCoordinator;
     _sideSwipeController.secondaryToolbarSnapshotProvider =
         self.secondaryToolbarCoordinator;
@@ -2036,7 +2037,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                     dispatcher:self.dispatcher];
     self.toolbarInterface = adaptor;
     [adaptor addToolbarCoordinator:topToolbarCoordinator];
-    // TODO(crbug.com/800330): Add secondary toolbar.
+    [adaptor addToolbarCoordinator:bottomToolbarCoordinator];
   } else {
     _toolbarCoordinator = [[ToolbarCoordinator alloc]
         initWithToolsMenuConfigurationProvider:self
@@ -2051,7 +2052,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_toolbarCoordinator start];
   }
 
-  self.sideSwipeController.primaryToolbarInteractionHandler =
+  self.sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
+  self.sideSwipeController.primaryToolbarSnapshotProvider =
       self.primaryToolbarCoordinator;
   self.sideSwipeController.secondaryToolbarSnapshotProvider =
       self.secondaryToolbarCoordinator;
@@ -5282,6 +5284,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
       return NO;
   }
   return YES;
+}
+
+- (BOOL)canBeginToolbarSwipe {
+  return ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
+         ![self.primaryToolbarCoordinator showingOmniboxPopup];
+}
+
+- (UIView*)topToolbarView {
+  return self.primaryToolbarCoordinator.viewController.view;
 }
 
 #pragma mark - PreloadControllerDelegate methods

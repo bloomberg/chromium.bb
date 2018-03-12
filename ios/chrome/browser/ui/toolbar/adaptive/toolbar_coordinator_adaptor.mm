@@ -79,6 +79,21 @@
   return [self.toolsMenuCoordinator isShowingToolsMenu];
 }
 
+#pragma mark - SideSwipeToolbarInteracting
+
+- (BOOL)isInsideToolbar:(CGPoint)point {
+  for (id<ToolbarCoordinatee> coordinator in self.coordinators) {
+    // The toolbar frame is inset by -1 because CGRectContainsPoint does include
+    // points on the max X and Y edges, which will happen frequently with edge
+    // swipes from the right side.
+    CGRect toolbarFrame =
+        CGRectInset([coordinator viewController].view.frame, -1, -1);
+    if (CGRectContainsPoint(toolbarFrame, point))
+      return YES;
+  }
+  return NO;
+}
+
 #pragma mark - ToolbarCoordinating
 
 - (void)updateToolsMenu {
