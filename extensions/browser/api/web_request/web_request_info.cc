@@ -137,6 +137,9 @@ bool CreateUploadDataSourcesFromURLRequest(
 
   const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
       upload_data->GetElementReaders();
+  if (!readers)
+    return true;
+
   for (const auto& reader : *readers) {
     if (const auto* bytes_reader = reader->AsBytesReader()) {
       data_sources->push_back(std::make_unique<BytesUploadDataSource>(
