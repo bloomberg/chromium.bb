@@ -7,6 +7,8 @@ import("//testing/test.gni")
 
 jumbo_source_set("latency") {
   sources = [
+    "fixed_point.cc",
+    "fixed_point.h",
     "latency_histogram_macros.h",
     "latency_info.cc",
     "latency_info.h",
@@ -37,6 +39,7 @@ jumbo_source_set("test_support") {
 
 test("latency_unittests") {
   sources = [
+    "fixed_point_unittest.cc",
     "latency_info_unittest.cc",
   ]
 
