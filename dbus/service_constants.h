@@ -640,7 +640,7 @@ const char kBluezObjectManagerServicePath[] = "/";
 
 namespace bluetooth_object_manager {
 // Bluetooth daemon Object Manager service identifiers.
-const char kBluetoothObjectManagerServiceName[] = "org.bluez";
+const char kBluetoothObjectManagerServiceName[] = "org.chromium.Bluetooth";
 const char kBluetoothObjectManagerServicePath[] = "/";
 }  // namespace bluetooth_object_manager
 
