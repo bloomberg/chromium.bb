@@ -177,6 +177,10 @@ specialize qw/aom_smooth_predictor_16x16 ssse3/;
 specialize qw/aom_smooth_predictor_16x32 ssse3/;
 specialize qw/aom_smooth_predictor_32x16 ssse3/;
 specialize qw/aom_smooth_predictor_32x32 ssse3/;
+specialize qw/aom_smooth_predictor_32x64 ssse3/;
+specialize qw/aom_smooth_predictor_64x64 ssse3/;
+specialize qw/aom_smooth_predictor_64x32 ssse3/;
+specialize qw/aom_smooth_predictor_64x16 ssse3/;
 
 # TODO(yunqingwang): optimize rectangular DC_PRED to replace division
 # by multiply and shift.

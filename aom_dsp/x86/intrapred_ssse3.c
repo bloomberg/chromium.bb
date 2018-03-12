@@ -1039,3 +1039,88 @@ void aom_smooth_predictor_32x32_ssse3(uint8_t *dst, ptrdiff_t stride,
   dst += stride << 3;
   smooth_pred_32x8(pixels, &wh[6], ww, dst, stride, 3);
 }
+
+static INLINE void smooth_predictor_wxh(uint8_t *dst, ptrdiff_t stride,
+                                        const uint8_t *above,
+                                        const uint8_t *left, uint32_t bw,
+                                        uint32_t bh) {
+  const uint8_t *const sm_weights_w = sm_weight_arrays + bw;
+  const uint8_t *const sm_weights_h = sm_weight_arrays + bh;
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i scale_value =
+      _mm_set1_epi16((uint16_t)(1 << sm_weight_log2_scale));
+  const __m128i bottom_left = _mm_cvtsi32_si128((uint32_t)left[bh - 1]);
+  const __m128i dup16 =
+      _mm_set_epi32(0x01000100, 0x01000100, 0x01000100, 0x01000100);
+  const __m128i top_right =
+      _mm_shuffle_epi8(_mm_cvtsi32_si128((uint32_t)above[bw - 1]), dup16);
+  const __m128i gat = _mm_set_epi32(0, 0, 0xe0c0a08, 0x6040200);
+  const __m128i round = _mm_set1_epi32((uint16_t)(1 << sm_weight_log2_scale));
+
+  for (uint32_t y = 0; y < bh; ++y) {
+    const __m128i weights_y = _mm_cvtsi32_si128((uint32_t)sm_weights_h[y]);
+    const __m128i left_y = _mm_cvtsi32_si128((uint32_t)left[y]);
+    const __m128i scale_m_weights_y = _mm_sub_epi16(scale_value, weights_y);
+    __m128i pred_scaled_bl = _mm_mullo_epi16(scale_m_weights_y, bottom_left);
+    const __m128i wl_y =
+        _mm_shuffle_epi32(_mm_unpacklo_epi16(weights_y, left_y), 0);
+    pred_scaled_bl = _mm_add_epi32(pred_scaled_bl, round);
+    pred_scaled_bl = _mm_shuffle_epi32(pred_scaled_bl, 0);
+
+    for (uint32_t x = 0; x < bw; x += 8) {
+      const __m128i top_x = _mm_loadl_epi64((const __m128i *)(above + x));
+      const __m128i weights_x =
+          _mm_loadl_epi64((const __m128i *)(sm_weights_w + x));
+      const __m128i tw_x = _mm_unpacklo_epi8(top_x, weights_x);
+      const __m128i tw_x_lo = _mm_unpacklo_epi8(tw_x, zero);
+      const __m128i tw_x_hi = _mm_unpackhi_epi8(tw_x, zero);
+
+      __m128i pred_lo = _mm_madd_epi16(tw_x_lo, wl_y);
+      __m128i pred_hi = _mm_madd_epi16(tw_x_hi, wl_y);
+
+      const __m128i scale_m_weights_x =
+          _mm_sub_epi16(scale_value, _mm_unpacklo_epi8(weights_x, zero));
+      const __m128i swxtr = _mm_mullo_epi16(scale_m_weights_x, top_right);
+      const __m128i swxtr_lo = _mm_unpacklo_epi16(swxtr, zero);
+      const __m128i swxtr_hi = _mm_unpackhi_epi16(swxtr, zero);
+
+      pred_lo = _mm_add_epi32(pred_lo, pred_scaled_bl);
+      pred_hi = _mm_add_epi32(pred_hi, pred_scaled_bl);
+
+      pred_lo = _mm_add_epi32(pred_lo, swxtr_lo);
+      pred_hi = _mm_add_epi32(pred_hi, swxtr_hi);
+
+      pred_lo = _mm_srai_epi32(pred_lo, (1 + sm_weight_log2_scale));
+      pred_hi = _mm_srai_epi32(pred_hi, (1 + sm_weight_log2_scale));
+
+      __m128i pred = _mm_packus_epi16(pred_lo, pred_hi);
+      pred = _mm_shuffle_epi8(pred, gat);
+      _mm_storel_epi64((__m128i *)(dst + x), pred);
+    }
+    dst += stride;
+  }
+}
+
+void aom_smooth_predictor_32x64_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  smooth_predictor_wxh(dst, stride, above, left, 32, 64);
+}
+
+void aom_smooth_predictor_64x64_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  smooth_predictor_wxh(dst, stride, above, left, 64, 64);
+}
+
+void aom_smooth_predictor_64x32_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  smooth_predictor_wxh(dst, stride, above, left, 64, 32);
+}
+
+void aom_smooth_predictor_64x16_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  smooth_predictor_wxh(dst, stride, above, left, 64, 16);
+}
