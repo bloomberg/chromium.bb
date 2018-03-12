@@ -346,9 +346,17 @@ void MediaCodecAudioDecoder::OnCodecLoopError() {
   ClearInputQueue(DecodeStatus::DECODE_ERROR);
 }
 
-void MediaCodecAudioDecoder::OnDecodedEos(
+bool MediaCodecAudioDecoder::OnDecodedEos(
     const MediaCodecLoop::OutputBuffer& out) {
   DVLOG(2) << __func__ << " pts:" << out.pts;
+
+  // Rarely, we seem to get multiple EOSes or, possibly, unsolicited ones from
+  // MediaCodec.  Just transition to the error state.
+  // https://crbug.com/818866
+  if (!input_queue_.size() || !input_queue_.front().first->end_of_stream()) {
+    LOG(WARNING) << "MCAD received unexpected eos";
+    return false;
+  }
 
   // If we've transitioned into the error state, then we don't really know what
   // to do.  If we transitioned because of OnCodecError, then all of our
@@ -356,10 +364,11 @@ void MediaCodecAudioDecoder::OnDecodedEos(
   // MCL does not call us back after OnCodecError(), since it stops decoding.
   // So, we shouldn't be in that state.  So, just DCHECK here.
   DCHECK_NE(state_, STATE_ERROR);
-  DCHECK(input_queue_.size());
-  DCHECK(input_queue_.front().first->end_of_stream());
+
   input_queue_.front().second.Run(DecodeStatus::OK);
   input_queue_.pop_front();
+
+  return true;
 }
 
 bool MediaCodecAudioDecoder::OnDecodedFrame(

@@ -279,7 +279,8 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
 
         media_codec_->ReleaseOutputBuffer(out.index, false);
 
-        client_->OnDecodedEos(out);
+        if (!client_->OnDecodedEos(out))
+          SetState(STATE_ERROR);
       } else {
         if (!client_->OnDecodedFrame(out))
           SetState(STATE_ERROR);
