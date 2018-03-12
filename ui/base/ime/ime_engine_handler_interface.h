@@ -28,7 +28,7 @@ class KeyEvent;
 // A interface to handle the engine handler method call.
 class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
  public:
-  typedef base::Callback<void(bool consumed)> KeyEventDoneCallback;
+  typedef base::OnceCallback<void(bool consumed)> KeyEventDoneCallback;
 
   // A information about a focused text input field.
   // A type of each member is based on the html spec, but InputContext can be
@@ -74,7 +74,7 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Called when the key event is received.
   // Actual implementation must call |callback| after key event handling.
   virtual void ProcessKeyEvent(const KeyEvent& key_event,
-                               KeyEventDoneCallback& callback) = 0;
+                               KeyEventDoneCallback callback) = 0;
 
   // Called when a new surrounding text is set. The |text| is surrounding text
   // and |cursor_pos| is 0 based index of cursor position in |text|. If there is

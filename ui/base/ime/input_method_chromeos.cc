@@ -134,12 +134,13 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
 
   handling_key_event_ = true;
   if (GetEngine()->IsInterestedInKeyEvent()) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::Bind(
-        &InputMethodChromeOS::KeyEventDoneCallback,
-        weak_ptr_factory_.GetWeakPtr(),
-        // Pass the ownership of the new copied event.
-        base::Owned(new ui::KeyEvent(*event)), Passed(&ack_callback));
-    GetEngine()->ProcessKeyEvent(*event, callback);
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
+        base::BindOnce(&InputMethodChromeOS::KeyEventDoneCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       // Pass the ownership of the new copied event.
+                       base::Owned(new ui::KeyEvent(*event)),
+                       std::move(ack_callback));
+    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
     return ui::EventDispatchDetails();
   }
   return ProcessKeyEventDone(event, std::move(ack_callback), false);

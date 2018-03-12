@@ -62,8 +62,10 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   }
 
   struct ProcessKeyEventPostIMEArgs {
-    ProcessKeyEventPostIMEArgs() : event(NULL), handled(false) {}
-    const ui::KeyEvent* event;
+    ProcessKeyEventPostIMEArgs()
+        : event(ET_UNKNOWN, VKEY_UNKNOWN, DomCode::NONE, EF_NONE),
+          handled(false) {}
+    ui::KeyEvent event;
     bool handled;
   };
 
@@ -77,7 +79,7 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
         InputMethodChromeOS::ProcessKeyEventPostIME(
             key_event, std::move(ack_callback), skip_process_filtered, handled);
     if (!skip_process_filtered) {
-      process_key_event_post_ime_args_.event = key_event;
+      process_key_event_post_ime_args_.event = *key_event;
       process_key_event_post_ime_args_.handled = handled;
       ++process_key_event_post_ime_call_count_;
     }
@@ -851,14 +853,14 @@ TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
   EXPECT_EQ(0, inserted_char_);
 
   // Do callback.
-  mock_ime_engine_handler_->last_passed_callback().Run(true);
+  std::move(mock_ime_engine_handler_->last_passed_callback()).Run(true);
 
   // Check the results
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  const ui::KeyEvent* stored_event =
+  const ui::KeyEvent stored_event =
       ime_->process_key_event_post_ime_args().event;
-  EXPECT_EQ(ui::VKEY_A, stored_event->key_code());
-  EXPECT_EQ(kFlags, stored_event->flags());
+  EXPECT_EQ(ui::VKEY_A, stored_event.key_code());
+  EXPECT_EQ(kFlags, stored_event.flags());
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 
   EXPECT_EQ(L'A', inserted_char_);
@@ -904,16 +906,15 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   EXPECT_EQ(0, composition_text_.text[0]);
 
   // Do callback for first key event.
-  first_callback.Run(true);
+  std::move(first_callback).Run(true);
 
   EXPECT_EQ(comp.text, composition_text_.text);
 
   // Check the results for first key event.
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  const ui::KeyEvent* stored_event =
-      ime_->process_key_event_post_ime_args().event;
-  EXPECT_EQ(ui::VKEY_B, stored_event->key_code());
-  EXPECT_EQ(kFlags, stored_event->flags());
+  ui::KeyEvent stored_event = ime_->process_key_event_post_ime_args().event;
+  EXPECT_EQ(ui::VKEY_B, stored_event.key_code());
+  EXPECT_EQ(kFlags, stored_event.flags());
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
   EXPECT_EQ(0, inserted_char_);
 
@@ -923,8 +924,8 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   // Check the results for second key event.
   EXPECT_EQ(2, ime_->process_key_event_post_ime_call_count());
   stored_event = ime_->process_key_event_post_ime_args().event;
-  EXPECT_EQ(ui::VKEY_C, stored_event->key_code());
-  EXPECT_EQ(kFlags, stored_event->flags());
+  EXPECT_EQ(ui::VKEY_C, stored_event.key_code());
+  EXPECT_EQ(kFlags, stored_event.flags());
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 
   EXPECT_EQ(L'C', inserted_char_);

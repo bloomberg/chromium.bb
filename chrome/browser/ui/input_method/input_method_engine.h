@@ -50,6 +50,8 @@ class InputMethodEngine : public InputMethodEngineBase,
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
   bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
+  void ProcessKeyEvent(const ui::KeyEvent& key_event,
+                       KeyEventDoneCallback callback) override;
 
  private:
   // ui::ImeWindowObserver:

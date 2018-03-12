@@ -80,7 +80,7 @@ void ImeObserver::OnBlur(int context_id) {
 void ImeObserver::OnKeyEvent(
     const std::string& component_id,
     const InputMethodEngineBase::KeyboardEvent& event,
-    IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) {
+    IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
   if (extension_id_.empty())
     return;
 
@@ -89,7 +89,7 @@ void ImeObserver::OnKeyEvent(
   if (!ShouldForwardKeyEvent()) {
     // Continue processing the key event so that the physical keyboard can
     // still work.
-    key_data.Run(false);
+    std::move(key_data).Run(false);
     return;
   }
 
@@ -97,8 +97,9 @@ void ImeObserver::OnKeyEvent(
       extensions::GetInputImeEventRouter(profile_);
   if (!event_router || !event_router->GetActiveEngine(extension_id_))
     return;
-  const std::string request_id = event_router->GetActiveEngine(extension_id_)
-                                     ->AddRequest(component_id, key_data);
+  const std::string request_id =
+      event_router->GetActiveEngine(extension_id_)
+          ->AddRequest(component_id, std::move(key_data));
 
   input_ime::KeyboardEvent key_data_value;
   key_data_value.type = input_ime::ParseKeyboardEventType(event.type);

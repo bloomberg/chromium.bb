@@ -52,7 +52,7 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
   void OnKeyEvent(
       const std::string& component_id,
       const input_method::InputMethodEngineBase::KeyboardEvent& event,
-      IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override;
+      IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override;
   void OnReset(const std::string& component_id) override;
   void OnDeactivated(const std::string& component_id) override;
   void OnCompositionBoundsChanged(
