@@ -58,10 +58,13 @@ ScopedJavaLocalRef<jstring>
 JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
+  // TODO(ntfschr): limit this to only the UI thread.
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
-  privacy_policy_url = google_util::AppendGoogleLocaleParam(
-      privacy_policy_url, AwContents::GetLocale());
+  std::string locale =
+      AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager()->app_locale();
+  privacy_policy_url =
+      google_util::AppendGoogleLocaleParam(privacy_policy_url, locale);
   return base::android::ConvertUTF8ToJavaString(env, privacy_policy_url.spec());
 }
 
