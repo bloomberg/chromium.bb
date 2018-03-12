@@ -124,7 +124,7 @@ class StructuredHeaderParser {
       failed_ = true;
       return s;
     }
-    while (input_.front() != '"') {
+    while (!ConsumeChar('"')) {
       size_t len = input_.find_first_of("\"\\");
       if (len == base::StringPiece::npos) {
         DVLOG(1) << "ReadString: missing closing '\"'";
@@ -143,7 +143,6 @@ class StructuredHeaderParser {
         input_.remove_prefix(1);
       }
     }
-    input_.remove_prefix(1);  // Consume '"'
     return s;
   }
 
