@@ -26,6 +26,7 @@
 #include "platform/bindings/V8PerIsolateData.h"
 
 #include <memory>
+#include <utility>
 
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
@@ -34,7 +35,6 @@
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/bindings/V8ValueCache.h"
 #include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 #include "v8/include/v8.h"
@@ -65,7 +65,7 @@ V8PerIsolateData::V8PerIsolateData(
                       IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
                                      : gin::IsolateHolder::kAllowAtomicsWait),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
-      string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
+      string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(V8PrivateProperty::Create()),
       constructor_mode_(ConstructorMode::kCreateNewObject),
       use_counter_disabled_(false),
@@ -89,7 +89,7 @@ V8PerIsolateData::V8PerIsolateData()
                       gin::IsolateHolder::kAllowAtomicsWait,
                       gin::IsolateHolder::IsolateCreationMode::kCreateSnapshot),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
-      string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
+      string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(V8PrivateProperty::Create()),
       constructor_mode_(ConstructorMode::kCreateNewObject),
       use_counter_disabled_(false),

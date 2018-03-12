@@ -32,13 +32,14 @@
 
 #include <limits>
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/text/DateTimeFormat.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -112,7 +113,7 @@ inline LocaleWin::LocaleWin(LCID lcid, bool defaults_for_locale)
 
 std::unique_ptr<LocaleWin> LocaleWin::Create(LCID lcid,
                                              bool defaults_for_locale) {
-  return WTF::WrapUnique(new LocaleWin(lcid, defaults_for_locale));
+  return base::WrapUnique(new LocaleWin(lcid, defaults_for_locale));
 }
 
 LocaleWin::~LocaleWin() {}

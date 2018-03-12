@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -197,8 +196,8 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
 
   if (image_type == BMP) {
     if (!bmp_readers_[index]) {
-      bmp_readers_[index] = WTF::WrapUnique(
-          new BMPImageReader(this, dir_entry.image_offset_, 0, true));
+      bmp_readers_[index] = std::make_unique<BMPImageReader>(
+          this, dir_entry.image_offset_, 0, true);
       bmp_readers_[index]->SetData(data_.get());
     }
     // Update the pointer to the buffer as it could change after
@@ -213,9 +212,9 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
   if (!png_decoders_[index]) {
     AlphaOption alpha_option =
         premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
-    png_decoders_[index] = WTF::WrapUnique(
-        new PNGImageDecoder(alpha_option, color_behavior_, max_decoded_bytes_,
-                            dir_entry.image_offset_));
+    png_decoders_[index] = std::make_unique<PNGImageDecoder>(
+        alpha_option, color_behavior_, max_decoded_bytes_,
+        dir_entry.image_offset_);
     SetDataForPNGDecoderAtIndex(index);
   }
   auto* png_decoder = png_decoders_[index].get();

@@ -32,9 +32,11 @@
 #define MediaStreamWebAudioSource_h
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
@@ -47,7 +49,7 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
  public:
   static std::unique_ptr<MediaStreamWebAudioSource> Create(
       std::unique_ptr<WebAudioSourceProvider> provider) {
-    return WTF::WrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
+    return base::WrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
   }
 
   ~MediaStreamWebAudioSource() override;

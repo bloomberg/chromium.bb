@@ -31,6 +31,8 @@
 #include "platform/testing/TestingPlatformSupport.h"
 
 #include <memory>
+#include <string>
+
 #include "base/command_line.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/run_loop.h"
@@ -224,25 +226,25 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   base::test::InitializeICUForTesting();
 
   discardable_memory_allocator_ =
-      WTF::WrapUnique(new base::TestDiscardableMemoryAllocator);
+      std::make_unique<base::TestDiscardableMemoryAllocator>();
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
 
-  dummy_platform_ = WTF::WrapUnique(new DummyPlatform);
+  dummy_platform_ = std::make_unique<DummyPlatform>();
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize(nullptr);
   WTF::Initialize(nullptr);
 
-  compositor_support_ = WTF::WrapUnique(new cc_blink::WebCompositorSupportImpl);
+  compositor_support_ = std::make_unique<cc_blink::WebCompositorSupportImpl>();
   testing_platform_config_.compositor_support = compositor_support_.get();
   testing_platform_support_ =
-      WTF::WrapUnique(new TestingPlatformSupport(testing_platform_config_));
+      std::make_unique<TestingPlatformSupport>(testing_platform_config_);
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
 
   if (BlinkResourceCoordinatorBase::IsEnabled()) {
     dummy_renderer_resource_coordinator_ =
-        WTF::WrapUnique(new DummyRendererResourceCoordinator);
+        std::make_unique<DummyRendererResourceCoordinator>();
     RendererResourceCoordinator::
         SetCurrentRendererResourceCoordinatorForTesting(
             dummy_renderer_resource_coordinator_.get());

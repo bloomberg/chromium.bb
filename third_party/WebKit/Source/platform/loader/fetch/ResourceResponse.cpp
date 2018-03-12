@@ -26,15 +26,17 @@
 
 #include "platform/loader/fetch/ResourceResponse.h"
 
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <string>
+
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/http_names.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebURLResponse.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -153,7 +155,7 @@ ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
 std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
     const {
   std::unique_ptr<CrossThreadResourceResponseData> data =
-      WTF::WrapUnique(new CrossThreadResourceResponseData);
+      std::make_unique<CrossThreadResourceResponseData>();
   data->url_ = Url().Copy();
   data->mime_type_ = MimeType().GetString().IsolatedCopy();
   data->expected_content_length_ = ExpectedContentLength();

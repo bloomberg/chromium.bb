@@ -4,13 +4,14 @@
 
 #include "platform/testing/HistogramTester.h"
 
+#include <string>
+
 #include "base/test/histogram_tester.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 HistogramTester::HistogramTester()
-    : histogram_tester_(WTF::WrapUnique(new base::HistogramTester)) {}
+    : histogram_tester_(std::make_unique<base::HistogramTester>()) {}
 
 HistogramTester::~HistogramTester() = default;
 

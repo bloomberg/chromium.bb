@@ -11,7 +11,6 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
@@ -170,7 +169,7 @@ class CrossThreadPersistentRegion final {
 
  public:
   CrossThreadPersistentRegion()
-      : persistent_region_(WTF::WrapUnique(new PersistentRegion)) {}
+      : persistent_region_(std::make_unique<PersistentRegion>()) {}
 
   void AllocatePersistentNode(PersistentNode*& persistent_node,
                               void* self,

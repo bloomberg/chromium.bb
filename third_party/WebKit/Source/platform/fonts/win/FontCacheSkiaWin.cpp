@@ -32,6 +32,7 @@
 #include "platform/fonts/FontCache.h"
 
 #include <memory>
+#include <utility>
 
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
@@ -43,7 +44,6 @@
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/win/FontFallbackWin.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -409,15 +409,13 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   }
 
   const auto& tf = paint_tf.ToSkTypeface();
-  std::unique_ptr<FontPlatformData> result =
-      WTF::WrapUnique(new FontPlatformData(
-          paint_tf, name.data(), font_size,
-          (font_description.Weight() >= BoldThreshold() && !tf->isBold()) ||
-              font_description.IsSyntheticBold(),
-          ((font_description.Style() == ItalicSlopeValue()) &&
-           !tf->isItalic()) ||
-              font_description.IsSyntheticItalic(),
-          font_description.Orientation()));
+  std::unique_ptr<FontPlatformData> result = std::make_unique<FontPlatformData>(
+      paint_tf, name.data(), font_size,
+      (font_description.Weight() >= BoldThreshold() && !tf->isBold()) ||
+          font_description.IsSyntheticBold(),
+      ((font_description.Style() == ItalicSlopeValue()) && !tf->isItalic()) ||
+          font_description.IsSyntheticItalic(),
+      font_description.Orientation());
 
   result->SetAvoidEmbeddedBitmaps(
       BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(tf.get()));

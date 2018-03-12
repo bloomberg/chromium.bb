@@ -35,6 +35,8 @@
 #include <unicode/uloc.h>
 #include <limits>
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -64,7 +66,7 @@ LocaleICU::~LocaleICU() {
 }
 
 std::unique_ptr<LocaleICU> LocaleICU::Create(const char* locale_string) {
-  return WTF::WrapUnique(new LocaleICU(locale_string));
+  return base::WrapUnique(new LocaleICU(locale_string));
 }
 
 String LocaleICU::DecimalSymbol(UNumberFormatSymbol symbol) {

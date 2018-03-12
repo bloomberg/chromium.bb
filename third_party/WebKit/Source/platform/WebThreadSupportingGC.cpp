@@ -5,22 +5,23 @@
 #include "platform/WebThreadSupportingGC.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {
 
 std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::Create(
     const WebThreadCreationParams& params) {
-  return WTF::WrapUnique(new WebThreadSupportingGC(&params, nullptr));
+  return base::WrapUnique(new WebThreadSupportingGC(&params, nullptr));
 }
 
 std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::CreateForThread(
     WebThread* thread) {
-  return WTF::WrapUnique(new WebThreadSupportingGC(nullptr, thread));
+  return base::WrapUnique(new WebThreadSupportingGC(nullptr, thread));
 }
 
 WebThreadSupportingGC::WebThreadSupportingGC(

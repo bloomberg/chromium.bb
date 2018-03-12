@@ -6,12 +6,13 @@
 #define CompositorFilterAnimationCurve_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorFilterKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class KeyframedFilterAnimationCurve;
@@ -30,7 +31,7 @@ class PLATFORM_EXPORT CompositorFilterAnimationCurve
 
  public:
   static std::unique_ptr<CompositorFilterAnimationCurve> Create() {
-    return WTF::WrapUnique(new CompositorFilterAnimationCurve());
+    return base::WrapUnique(new CompositorFilterAnimationCurve());
   }
   ~CompositorFilterAnimationCurve() override;
 

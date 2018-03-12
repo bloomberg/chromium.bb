@@ -32,7 +32,6 @@
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/bmp/BMPImageReader.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -82,8 +81,8 @@ bool BMPImageDecoder::DecodeHelper(bool only_size) {
     return false;
 
   if (!reader_) {
-    reader_ = WTF::WrapUnique(
-        new BMPImageReader(this, decoded_offset_, img_data_offset, false));
+    reader_ = std::make_unique<BMPImageReader>(this, decoded_offset_,
+                                               img_data_offset, false);
     reader_->SetData(data_.get());
   }
 

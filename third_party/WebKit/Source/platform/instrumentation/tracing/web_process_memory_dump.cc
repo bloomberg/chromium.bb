@@ -4,6 +4,9 @@
 
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 
+#include <stddef.h>
+#include <string>
+
 #include "base/memory/discardable_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -15,7 +18,6 @@
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
 
-#include <stddef.h>
 
 namespace blink {
 
@@ -70,7 +72,7 @@ WebProcessMemoryDump::CreateWebMemoryAllocatorDump(
   // memory_allocator_dumps_ will take ownership of
   // |web_memory_allocator_dump|.
   memory_allocator_dumps_.Set(memory_allocator_dump,
-                              WTF::WrapUnique(web_memory_allocator_dump));
+                              base::WrapUnique(web_memory_allocator_dump));
   return web_memory_allocator_dump;
 }
 
@@ -158,9 +160,8 @@ SkTraceMemoryDump* WebProcessMemoryDump::CreateDumpAdapterForSkia(
     const String& dump_name_prefix) {
   StringUTF8Adaptor adapter(dump_name_prefix);
   std::string prefix(adapter.Data(), adapter.length());
-  sk_trace_dump_list_.push_back(
-      base::WrapUnique(new skia::SkiaTraceMemoryDumpImpl(
-          prefix, level_of_detail_, process_memory_dump_)));
+  sk_trace_dump_list_.push_back(std::make_unique<skia::SkiaTraceMemoryDumpImpl>(
+      prefix, level_of_detail_, process_memory_dump_));
   return sk_trace_dump_list_.back().get();
 }
 

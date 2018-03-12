@@ -31,11 +31,11 @@
 #include "platform/bindings/DOMWrapperWorld.h"
 
 #include <memory>
+#include <utility>
 
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/HashTraits.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
@@ -77,8 +77,7 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
                                  int world_id)
     : world_type_(world_type),
       world_id_(world_id),
-      dom_data_store_(
-          WTF::WrapUnique(new DOMDataStore(isolate, IsMainWorld()))) {
+      dom_data_store_(std::make_unique<DOMDataStore>(isolate, IsMainWorld())) {
   switch (world_type_) {
     case WorldType::kMain:
       // The main world is managed separately from worldMap(). See worldMap().

@@ -30,7 +30,10 @@
 
 #include "platform/heap/Heap.h"
 
+#include <algorithm>
+#include <limits>
 #include <memory>
+
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
@@ -48,7 +51,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/DataLog.h"
 #include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
@@ -132,9 +134,8 @@ double ThreadHeapStats::LiveObjectRateSinceLastGC() const {
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       region_tree_(std::make_unique<RegionTree>()),
-      heap_does_not_contain_cache_(
-          WTF::WrapUnique(new HeapDoesNotContainCache)),
-      free_page_pool_(WTF::WrapUnique(new PagePool)),
+      heap_does_not_contain_cache_(std::make_unique<HeapDoesNotContainCache>()),
+      free_page_pool_(std::make_unique<PagePool>()),
       marking_stack_(CallbackStack::Create()),
       post_marking_callback_stack_(CallbackStack::Create()),
       weak_callback_stack_(CallbackStack::Create()),

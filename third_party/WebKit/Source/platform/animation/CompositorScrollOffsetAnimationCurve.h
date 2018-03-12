@@ -6,11 +6,12 @@
 #define CompositorScrollOffsetAnimationCurve_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class ScrollOffsetAnimationCurve;
@@ -33,12 +34,12 @@ class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
       FloatPoint target_value,
       CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior
           duration_behavior) {
-    return WTF::WrapUnique(new CompositorScrollOffsetAnimationCurve(
+    return base::WrapUnique(new CompositorScrollOffsetAnimationCurve(
         target_value, duration_behavior));
   }
   static std::unique_ptr<CompositorScrollOffsetAnimationCurve> Create(
       cc::ScrollOffsetAnimationCurve* curve) {
-    return WTF::WrapUnique(new CompositorScrollOffsetAnimationCurve(curve));
+    return base::WrapUnique(new CompositorScrollOffsetAnimationCurve(curve));
   }
 
   ~CompositorScrollOffsetAnimationCurve() override;

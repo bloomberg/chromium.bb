@@ -4,13 +4,16 @@
 
 #include "platform/instrumentation/tracing/TracedValue.h"
 
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
+#include <string>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 
 std::unique_ptr<TracedValue> TracedValue::Create() {
-  return WTF::WrapUnique(new TracedValue());
+  return base::WrapUnique(new TracedValue());
 }
 
 TracedValue::TracedValue() = default;

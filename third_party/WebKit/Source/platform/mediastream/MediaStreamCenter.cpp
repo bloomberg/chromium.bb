@@ -33,10 +33,10 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
@@ -101,7 +101,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track) {
   DCHECK(track);
   if (private_) {
-    return MediaStreamWebAudioSource::Create(WTF::WrapUnique(
+    return MediaStreamWebAudioSource::Create(base::WrapUnique(
         private_->CreateWebAudioSourceFromMediaStreamTrack(track)));
   }
 

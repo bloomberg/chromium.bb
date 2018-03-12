@@ -36,6 +36,8 @@
 #include <unicode/uscript.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackIterator.h"
@@ -48,7 +50,6 @@
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/Unicode.h"
 
@@ -337,7 +338,7 @@ void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
       current_font, direction, canvas_rotation,
       ICUScriptToHBScript(current_run_script), slice.start_character_index,
       slice.num_glyphs, slice.num_characters);
-  shape_result->InsertRun(WTF::WrapUnique(run), slice.start_glyph_index,
+  shape_result->InsertRun(base::WrapUnique(run), slice.start_glyph_index,
                           slice.num_glyphs, range_data->buffer);
   if (is_last_resort)
     range_data->font->ReportNotDefGlyph();

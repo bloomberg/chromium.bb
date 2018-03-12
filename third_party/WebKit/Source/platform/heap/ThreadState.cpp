@@ -32,7 +32,9 @@
 
 #include <v8.h>
 
+#include <algorithm>
 #include <iomanip>
+#include <limits>
 #include <memory>
 
 #include "base/location.h"
@@ -55,7 +57,6 @@
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StackUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Time.h"
@@ -162,7 +163,7 @@ ThreadState::ThreadState()
   DCHECK(!**thread_specific_);
   **thread_specific_ = this;
 
-  heap_ = WTF::WrapUnique(new ThreadHeap(this));
+  heap_ = std::make_unique<ThreadHeap>(this);
 }
 
 ThreadState::~ThreadState() {

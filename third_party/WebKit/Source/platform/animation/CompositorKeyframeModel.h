@@ -6,11 +6,12 @@
 #define CompositorKeyframeModel_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "cc/animation/keyframe_model.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class KeyframeModel;
@@ -34,7 +35,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
       CompositorTargetProperty::Type target,
       int group_id,
       int keyframe_model_id) {
-    return WTF::WrapUnique(new CompositorKeyframeModel(
+    return base::WrapUnique(new CompositorKeyframeModel(
         curve, target, keyframe_model_id, group_id));
   }
 

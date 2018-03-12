@@ -34,7 +34,6 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -106,9 +105,9 @@ class PLATFORM_EXPORT TransformationMatrix {
                                                       double m42,
                                                       double m43,
                                                       double m44) {
-    return WTF::WrapUnique(
-        new TransformationMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31,
-                                 m32, m33, m34, m41, m42, m43, m44));
+    return std::make_unique<TransformationMatrix>(m11, m12, m13, m14, m21, m22,
+                                                  m23, m24, m31, m32, m33, m34,
+                                                  m41, m42, m43, m44);
   }
 
   TransformationMatrix() {

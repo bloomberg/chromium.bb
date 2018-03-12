@@ -4,6 +4,9 @@
 
 #include "platform/heap/HeapCompact.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/Histogram.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/SparseHeapBitmap.h"
@@ -26,7 +29,7 @@ bool HeapCompact::force_compaction_gc_ = false;
 class HeapCompact::MovableObjectFixups final {
  public:
   static std::unique_ptr<MovableObjectFixups> Create() {
-    return WTF::WrapUnique(new MovableObjectFixups);
+    return base::WrapUnique(new MovableObjectFixups);
   }
 
   ~MovableObjectFixups() = default;

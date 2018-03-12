@@ -27,6 +27,7 @@
 #include <SkPaint.h>
 
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
 #include "platform/PlatformExport.h"
@@ -39,7 +40,6 @@
 #include "platform/fonts/FontVerticalPositionType.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringHash.h"
 
 #if defined(OS_MACOSX)
@@ -222,7 +222,7 @@ ALWAYS_INLINE FloatRect SimpleFontData::BoundsForGlyph(Glyph glyph) const {
 
   bounds_result = PlatformBoundsForGlyph(glyph);
   if (!glyph_to_bounds_map_)
-    glyph_to_bounds_map_ = WTF::WrapUnique(new GlyphMetricsMap<FloatRect>);
+    glyph_to_bounds_map_ = std::make_unique<GlyphMetricsMap<FloatRect>>();
   glyph_to_bounds_map_->SetMetricsForGlyph(glyph, bounds_result);
 
   return bounds_result;

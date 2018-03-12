@@ -6,12 +6,13 @@
 #define CompositorTransformAnimationCurve_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class KeyframedTransformAnimationCurve;
@@ -30,7 +31,7 @@ class PLATFORM_EXPORT CompositorTransformAnimationCurve
 
  public:
   static std::unique_ptr<CompositorTransformAnimationCurve> Create() {
-    return WTF::WrapUnique(new CompositorTransformAnimationCurve());
+    return base::WrapUnique(new CompositorTransformAnimationCurve());
   }
 
   ~CompositorTransformAnimationCurve() override;

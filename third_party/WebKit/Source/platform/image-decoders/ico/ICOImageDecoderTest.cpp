@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -14,9 +13,9 @@ namespace blink {
 namespace {
 
 std::unique_ptr<ImageDecoder> CreateICODecoder() {
-  return WTF::WrapUnique(new ICOImageDecoder(
+  return std::make_unique<ICOImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+      ImageDecoder::kNoDecodedImageByteLimit);
 }
 }
 

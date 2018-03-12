@@ -32,12 +32,14 @@
 
 #include <stdlib.h>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/InstanceCounters.h"
 #include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
 
 namespace blink {
@@ -66,7 +68,7 @@ V8PerContextData::~V8PerContextData() {
 
 std::unique_ptr<V8PerContextData> V8PerContextData::Create(
     v8::Local<v8::Context> context) {
-  return WTF::WrapUnique(new V8PerContextData(context));
+  return base::WrapUnique(new V8PerContextData(context));
 }
 
 V8PerContextData* V8PerContextData::From(v8::Local<v8::Context> context) {

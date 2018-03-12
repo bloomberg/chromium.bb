@@ -4,8 +4,13 @@
 
 #include "platform/text/hyphenation/HyphenationMinikin.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "platform/LayoutLocale.h"
@@ -76,7 +81,7 @@ bool HyphenationMinikin::OpenDictionary(base::File file) {
     return false;
   }
 
-  hyphenator_ = WTF::WrapUnique(Hyphenator::loadBinary(file_.data()));
+  hyphenator_ = base::WrapUnique(Hyphenator::loadBinary(file_.data()));
 
   return true;
 }

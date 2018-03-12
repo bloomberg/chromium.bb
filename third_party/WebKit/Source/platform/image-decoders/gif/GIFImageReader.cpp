@@ -75,8 +75,10 @@ mailing address.
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
 #include <string.h>
+#include <algorithm>
+
+#include "base/memory/ptr_util.h"
 #include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -842,7 +844,7 @@ void GIFImageReader::SetRemainingBytes(size_t remaining_bytes) {
 
 void GIFImageReader::AddFrameIfNecessary() {
   if (frames_.IsEmpty() || frames_.back()->IsComplete())
-    frames_.push_back(WTF::WrapUnique(new GIFFrameContext(frames_.size())));
+    frames_.push_back(base::WrapUnique(new GIFFrameContext(frames_.size())));
 }
 
 // FIXME: Move this method to close to doLZW().

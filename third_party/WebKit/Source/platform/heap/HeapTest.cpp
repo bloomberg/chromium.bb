@@ -30,8 +30,10 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
@@ -49,7 +51,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/HashTraits.h"
 #include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -544,8 +545,8 @@ class ThreadedHeapTester : public ThreadedTesterBase {
 
   std::unique_ptr<GlobalIntWrapperPersistent> CreateGlobalPersistent(
       int value) {
-    return WTF::WrapUnique(
-        new GlobalIntWrapperPersistent(IntWrapper::Create(value)));
+    return std::make_unique<GlobalIntWrapperPersistent>(
+        IntWrapper::Create(value));
   }
 
   void AddGlobalPersistent() {
@@ -4696,7 +4697,7 @@ TEST(HeapTest, DestructorsCalled) {
   HeapHashMap<Member<IntWrapper>, std::unique_ptr<SimpleClassWithDestructor>>
       map;
   SimpleClassWithDestructor* has_destructor = new SimpleClassWithDestructor();
-  map.insert(IntWrapper::Create(1), WTF::WrapUnique(has_destructor));
+  map.insert(IntWrapper::Create(1), base::WrapUnique(has_destructor));
   SimpleClassWithDestructor::was_destructed_ = false;
   map.clear();
   EXPECT_TRUE(SimpleClassWithDestructor::was_destructed_);

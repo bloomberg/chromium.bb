@@ -35,7 +35,6 @@
 #include "base/location.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/heap/ThreadState.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -75,8 +74,7 @@ class GCTaskRunner final {
 
  public:
   explicit GCTaskRunner(WebThread* thread)
-      : gc_task_observer_(WTF::WrapUnique(new GCTaskObserver)),
-        thread_(thread) {
+      : gc_task_observer_(std::make_unique<GCTaskObserver>()), thread_(thread) {
     thread_->AddTaskObserver(gc_task_observer_.get());
   }
 
