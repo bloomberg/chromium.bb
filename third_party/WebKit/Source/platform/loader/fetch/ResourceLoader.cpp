@@ -169,13 +169,15 @@ void ResourceLoader::SetDefersLoading(bool defers) {
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
                                        int intra_priority_value) {
-  if (loader_) {
+  if (scheduler_client_id_ != ResourceLoadScheduler::kInvalidClientId) {
+    DCHECK(loader_);
     loader_->DidChangePriority(
         static_cast<WebURLRequest::Priority>(load_priority),
         intra_priority_value);
+  } else {
+    scheduler_->SetPriority(scheduler_client_id_, load_priority,
+                            intra_priority_value);
   }
-  scheduler_->SetPriority(scheduler_client_id_, load_priority,
-                          intra_priority_value);
 }
 
 void ResourceLoader::ScheduleCancel() {
