@@ -7,6 +7,7 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
+#include "ash/system/unified/unified_system_info_view.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -23,6 +24,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   feature_pods_container_ = new FeaturePodsContainerView();
   AddChildView(feature_pods_container_);
+  AddChildView(new UnifiedSystemInfoView());
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;

@@ -9,8 +9,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "base/i18n/number_formatting.h"
-#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,39 +52,12 @@ void PowerStatusView::OnPowerStatusChanged() {
 }
 
 void PowerStatusView::UpdateText() {
-  const PowerStatus& status = *PowerStatus::Get();
   base::string16 battery_percentage;
   base::string16 battery_time_status;
 
-  if (status.IsBatteryFull()) {
-    battery_time_status =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
-  } else {
-    battery_percentage = base::FormatPercent(status.GetRoundedBatteryPercent());
-    if (status.IsUsbChargerConnected()) {
-      battery_time_status = l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
-    } else if (status.IsBatteryTimeBeingCalculated()) {
-      battery_time_status =
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
-    } else {
-      base::TimeDelta time = status.IsBatteryCharging()
-                                 ? status.GetBatteryTimeToFull()
-                                 : status.GetBatteryTimeToEmpty();
-      if (PowerStatus::ShouldDisplayBatteryTime(time) &&
-          !status.IsBatteryDischargingOnLinePower()) {
-        base::string16 duration;
-        if (!base::TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC,
-                                      &duration))
-          LOG(ERROR) << "Failed to format duration " << time;
-        battery_time_status = l10n_util::GetStringFUTF16(
-            status.IsBatteryCharging()
-                ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
-                : IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
-            duration);
-      }
-    }
-  }
+  std::tie(battery_percentage, battery_time_status) =
+      PowerStatus::Get()->GetStatusStrings();
+
   percentage_label_->SetVisible(!battery_percentage.empty());
   percentage_label_->SetText(battery_percentage);
   separator_label_->SetVisible(!battery_percentage.empty() &&
