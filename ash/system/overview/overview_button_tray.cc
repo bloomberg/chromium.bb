@@ -25,6 +25,8 @@
 
 namespace ash {
 
+constexpr base::TimeDelta OverviewButtonTray::kDoubleTapThresholdMs;
+
 OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       icon_(new views::ImageView()),
@@ -67,27 +69,36 @@ void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool OverviewButtonTray::PerformAction(const ui::Event& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    if (event.AsGestureEvent()->details().tap_count() == 2) {
-      // If the second tap is not on the window selection page, that means we
-      // started on the window selection page. Ignore these double taps. (ie.
-      // treat them as single taps by ignoring the second tap)
-      if (!Shell::Get()->window_selector_controller()->IsSelecting())
-        return true;
+  DCHECK(event.type() == ui::ET_MOUSE_RELEASED ||
+         event.type() == ui::ET_GESTURE_TAP);
 
-      base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
-      MruWindowTracker::WindowList mru_window_list =
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  if (last_press_event_time_ &&
+      event.time_stamp() - last_press_event_time_.value() <
+          kDoubleTapThresholdMs) {
+    // Second taps should not be processed outside of overview mode. (First
+    // taps should be outside of overview).
+    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
 
-      // Switch to the second most recently used window (most recent is the
-      // current window), if it exists.
-      if (mru_window_list.size() > 1) {
-        AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-        wm::GetWindowState(mru_window_list[1])->Activate();
-        return true;
-      }
+    base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
+    MruWindowTracker::WindowList mru_window_list =
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+
+    // Switch to the second most recently used window (most recent is the
+    // current window), if it exists.
+    if (mru_window_list.size() > 1u) {
+      AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+      wm::GetWindowState(mru_window_list[1])->Activate();
+      last_press_event_time_ = base::nullopt;
+      return true;
     }
   }
+
+  // If not in overview mode record the time of this tap. A subsequent tap will
+  // be checked against this to see if we should quick switch.
+  last_press_event_time_ =
+      Shell::Get()->window_selector_controller()->IsSelecting()
+          ? base::nullopt
+          : base::make_optional(event.time_stamp());
 
   WindowSelectorController* controller =
       Shell::Get()->window_selector_controller();

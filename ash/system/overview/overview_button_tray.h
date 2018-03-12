@@ -29,6 +29,15 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
                                       public ShellObserver,
                                       public TabletModeObserver {
  public:
+  // Second taps within this time will be counted as double taps. Use this
+  // instead of ui::Event's click_count and tap_count as those have a minimum
+  // time bewtween events before the second tap counts as a double tap.
+  // TODO(crbug.com/817883): We should the gesture detector double tap time or
+  // overview enter animation time, once ux decides which one to match (both are
+  // 300ms currently).
+  static constexpr base::TimeDelta kDoubleTapThresholdMs =
+      base::TimeDelta::FromMilliseconds(300);
+
   explicit OverviewButtonTray(Shelf* shelf);
   ~OverviewButtonTray() override;
 
@@ -69,6 +78,10 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   views::ImageView* icon_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  // Stores the timestamp of the last tap event time that happened while not
+  // in overview mode. Used to check for double taps, which invoke quick switch.
+  base::Optional<base::TimeTicks> last_press_event_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewButtonTray);
 };
