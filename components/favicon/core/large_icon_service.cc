@@ -448,7 +448,8 @@ LargeIconService::LargeIconService(
     FaviconService* favicon_service,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
-      image_fetcher_(std::move(image_fetcher)) {
+      image_fetcher_(std::move(image_fetcher)),
+      weak_ptr_factory_(this) {
   large_icon_types_.push_back({favicon_base::IconType::kWebManifestIcon});
   large_icon_types_.push_back({favicon_base::IconType::kFavicon});
   large_icon_types_.push_back({favicon_base::IconType::kTouchIcon});
@@ -532,13 +533,11 @@ void LargeIconService::
     return;
   }
 
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
-  image_fetcher_->StartOrQueueNetworkRequest(
-      server_request_url.spec(), server_request_url,
-      base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
-                 page_url, callback),
-      traffic_annotation);
+  favicon_service_->CanSetOnDemandFavicons(
+      page_url, favicon_base::IconType::kTouchIcon,
+      base::BindOnce(&LargeIconService::OnCanSetOnDemandFaviconComplete,
+                     weak_ptr_factory_.GetWeakPtr(), server_request_url,
+                     page_url, traffic_annotation, callback));
 }
 
 void LargeIconService::TouchIconFromGoogleServer(const GURL& icon_url) {
@@ -589,6 +588,26 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
       page_url, large_icon_types_, max_size_in_pixel,
       base::Bind(&LargeIconWorker::OnIconLookupComplete, worker, page_url),
       tracker);
+}
+
+void LargeIconService::OnCanSetOnDemandFaviconComplete(
+    const GURL& server_request_url,
+    const GURL& page_url,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    const favicon_base::GoogleFaviconServerCallback& callback,
+    bool can_set_on_demand_favicon) {
+  if (!can_set_on_demand_favicon) {
+    callback.Run(GoogleFaviconServerRequestStatus::FAILURE_ICON_EXISTS_IN_DB);
+    return;
+  }
+
+  image_fetcher_->SetDataUseServiceName(
+      data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
+  image_fetcher_->StartOrQueueNetworkRequest(
+      server_request_url.spec(), server_request_url,
+      base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
+                 page_url, callback),
+      traffic_annotation);
 }
 
 }  // namespace favicon

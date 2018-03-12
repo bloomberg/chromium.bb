@@ -164,6 +164,9 @@ enum class GoogleFaviconServerRequestStatus {
   FAILURE_TARGET_URL_INVALID = 7,
   // Request not sent out (the server URL was not valid).
   FAILURE_SERVER_URL_INVALID = 8,
+  // Request not sent out (as there already is an icon in the local favicon
+  // database that prevents a new one to be stored).
+  FAILURE_ICON_EXISTS_IN_DB = 9,
   // Insert new values here.
   COUNT
 };

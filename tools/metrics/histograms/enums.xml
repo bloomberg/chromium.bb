@@ -20724,6 +20724,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Failure (skipped target page URL)"/>
   <int value="7" label="Failure (invalid target page URL)"/>
   <int value="8" label="Failure (invalid server URL)"/>
+  <int value="9" label="Failure (an icon already exists in the database)"/>
 </enum>
 
 <enum name="GoogleNowCardTypeId">
