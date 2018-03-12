@@ -30,10 +30,13 @@ import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
@@ -42,12 +45,17 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.Intents;
+import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +74,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.history.HistoryActivity;
+import org.chromium.chrome.browser.history.HistoryManager;
+import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -80,6 +91,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests for the "Save Passwords" settings screen.
@@ -92,6 +105,10 @@ public class SavePasswordsPreferencesTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @Rule
+    public IntentsTestRule<HistoryActivity> mHistoryActivityTestRule =
+            new IntentsTestRule<>(HistoryActivity.class, false, false);
 
     private static final class FakePasswordManagerHandler implements PasswordManagerHandler {
         // This class has exactly one observer, set on construction and expected to last at least as
@@ -1540,6 +1557,58 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
         Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the changed color of the loaded Drawable does not persist for other uses of the
+     * drawable. This is not implicitly true as a loaded Drawable is by default only a reference to
+     * the globally defined resource.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
+    public void testSearchIconColorAffectsOnlyLocalSearchDrawable() throws Exception {
+        // Open the password preferences and remember the applied color filter.
+        final SavePasswordsPreferences f =
+                (SavePasswordsPreferences) PreferencesTest
+                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                                SavePasswordsPreferences.class.getName())
+                        .getFragmentForTest();
+        Espresso.onView(withId(R.id.search_button)).check(matches(isDisplayed()));
+        final AtomicReference<ColorFilter> passwordSearchFilter = new AtomicReference<>();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Drawable drawable = f.getMenuForTesting().findItem(R.id.menu_id_search).getIcon();
+            passwordSearchFilter.set(DrawableCompat.getColorFilter(drawable));
+        });
+
+        // Now launch a non-empty History activity.
+        StubbedHistoryProvider mHistoryProvider = new StubbedHistoryProvider();
+        mHistoryProvider.addItem(StubbedHistoryProvider.createHistoryItem(0, new Date().getTime()));
+        mHistoryProvider.addItem(StubbedHistoryProvider.createHistoryItem(1, new Date().getTime()));
+        HistoryManager.setProviderForTests(mHistoryProvider);
+        mHistoryActivityTestRule.launchActivity(null);
+
+        // Find the search view to ensure that the set color filter is different from the saved one.
+        final AtomicReference<ColorFilter> historySearchFilter = new AtomicReference<>();
+        Espresso.onView(withId(R.id.search_menu_id)).check(matches(isDisplayed()));
+        Espresso.onView(withId(R.id.search_menu_id)).check((searchMenuItem, e) -> {
+            Drawable drawable = ((ActionMenuItemView) searchMenuItem).getItemData().getIcon();
+            historySearchFilter.set(DrawableCompat.getColorFilter(drawable));
+            Assert.assertThat(historySearchFilter.get(),
+                    anyOf(is(nullValue()), is(not(sameInstance(passwordSearchFilter.get())))));
+        });
+
+        // Close the activity and check that the icon in the password preferences has not changed.
+        mHistoryActivityTestRule.getActivity().finish();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ColorFilter colorFilter = DrawableCompat.getColorFilter(
+                    f.getMenuForTesting().findItem(R.id.menu_id_search).getIcon());
+            Assert.assertThat(colorFilter,
+                    anyOf(is(nullValue()), is(sameInstance(passwordSearchFilter.get()))));
+            Assert.assertThat(colorFilter,
+                    anyOf(is(nullValue()), is(not(sameInstance(historySearchFilter.get())))));
+        });
     }
 
     /**
