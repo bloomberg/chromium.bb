@@ -360,6 +360,23 @@ public class ChromeMediaRouter implements MediaRouteManager {
         provider.sendStringMessage(routeId, message, callbackId);
     }
 
+    /**
+     * Gets a media controller to be used by native.
+     * @param routeId The route ID tied to the CastSession for which we want a media controller.
+     * @return A MediaControllerBridge if it can be obtained from |routeId|, null otherwise.
+     */
+    @Nullable
+    @CalledByNative
+    public MediaControllerBridge getMediaControllerBridge(String routeId) {
+        MediaRouteProvider provider = mRouteIdsToProviders.get(routeId);
+        if (provider == null) return null;
+
+        MediaController controller = provider.getMediaController(routeId);
+        if (controller == null) return null;
+
+        return new MediaControllerBridge(controller);
+    }
+
     @VisibleForTesting
     protected ChromeMediaRouter(long nativeMediaRouterAndroidBridge) {
         mNativeMediaRouterAndroidBridge = nativeMediaRouterAndroidBridge;

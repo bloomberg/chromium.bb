@@ -10,6 +10,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
+#include "content/public/browser/media_controller.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -43,6 +44,8 @@ class MediaRouterAndroidBridge {
   virtual void DetachRoute(const MediaRoute::Id& route_id);
   virtual bool StartObservingMediaSinks(const MediaSource::Id& source_id);
   virtual void StopObservingMediaSinks(const MediaSource::Id& source_id);
+  virtual std::unique_ptr<content::MediaController> GetMediaController(
+      const MediaRoute::Id& route_id);
 
   // Methods called by the Java counterpart.
   void OnSinksReceived(JNIEnv* env,
