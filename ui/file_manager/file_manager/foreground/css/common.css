@@ -126,7 +126,7 @@ cr-menu.chrome-menu > [checked]::before {
   min-width: 5.14em;
   outline: none;
   overflow: hidden;
-  padding: 0.7em 0.57em;
+  padding: 0.6em 0.57em;
   position: relative;
   text-align: center;
   text-transform: uppercase;
