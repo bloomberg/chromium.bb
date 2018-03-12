@@ -234,10 +234,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+        // Now safe to use WebView data directory.
 
         mShouldDisableThreadChecking =
                 shouldDisableThreadChecking(ContextUtils.getApplicationContext());
-        // Now safe to use WebView data directory.
 
         setSingleton(this);
     }
