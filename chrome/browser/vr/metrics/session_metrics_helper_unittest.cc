@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/vr_usage_monitor.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,13 +12,13 @@ class FakeUkmEvent {
   void Record(ukm::UkmRecorder* recorder) {}
 };
 
-class VRUseageMonitorTest : public testing::Test {
+class SessionMetricsHelperTest : public testing::Test {
  public:
-  VRUseageMonitorTest() {}
-  DISALLOW_COPY_AND_ASSIGN(VRUseageMonitorTest);
+  SessionMetricsHelperTest() {}
+  DISALLOW_COPY_AND_ASSIGN(SessionMetricsHelperTest);
 };
 
-TEST_F(VRUseageMonitorTest, SessionTrackerGetRoundedDurationInSeconds) {
+TEST_F(SessionMetricsHelperTest, SessionTrackerGetRoundedDurationInSeconds) {
   SessionTracker<FakeUkmEvent> tracker(std::make_unique<FakeUkmEvent>());
   base::Time now = base::Time::Now();
 

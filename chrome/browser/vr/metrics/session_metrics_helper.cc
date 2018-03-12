@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/vr_usage_monitor.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,6 +15,8 @@
 namespace vr {
 
 namespace {
+
+const void* const kSessionMetricsHelperDataKey = &kSessionMetricsHelperDataKey;
 
 // minimum duration: 7 seconds for video, no minimum for headset/vr modes
 // maximum gap: 7 seconds between videos.  no gap for headset/vr-modes
@@ -131,6 +133,23 @@ void SendRapporEnteredVideoMode(const GURL& origin, Mode mode) {
   }
 }
 
+// Handles the lifetime of the helper which is attached to a WebContents.
+class SessionMetricsHelperData : public base::SupportsUserData::Data {
+ public:
+  explicit SessionMetricsHelperData(
+      SessionMetricsHelper* session_metrics_helper)
+      : session_metrics_helper_(session_metrics_helper) {}
+
+  ~SessionMetricsHelperData() override { delete session_metrics_helper_; }
+
+  SessionMetricsHelper* get() const { return session_metrics_helper_; }
+
+ private:
+  SessionMetricsHelper* session_metrics_helper_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SessionMetricsHelperData);
+};
+
 }  // namespace
 
 template <SessionEventName SessionType>
@@ -191,7 +210,62 @@ void SessionTimer::StopSession(bool continuable, base::Time stop_time) {
   }
 }
 
-void VrMetricsHelper::UpdateMode() {
+// static
+SessionMetricsHelper* SessionMetricsHelper::FromWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return NULL;
+  SessionMetricsHelperData* data = static_cast<SessionMetricsHelperData*>(
+      web_contents->GetUserData(kSessionMetricsHelperDataKey));
+  return data ? data->get() : NULL;
+}
+SessionMetricsHelper* SessionMetricsHelper::CreateForWebContents(
+    content::WebContents* contents,
+    Mode initial_mode,
+    bool started_with_autopresentation) {
+  // This is not leaked as the SessionMetricsHelperData will clean it up.
+  return new SessionMetricsHelper(contents, initial_mode,
+                                  started_with_autopresentation);
+}
+
+SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
+                                           Mode initial_mode,
+                                           bool started_with_autopresentation) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(contents);
+
+  num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
+  is_fullscreen_ = contents->IsFullscreen();
+  origin_ = contents->GetLastCommittedURL();
+
+  session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
+      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+
+  is_webvr_ = initial_mode == Mode::kWebXrVrPresentation;
+  is_vr_enabled_ = initial_mode != Mode::kNoVr;
+  started_with_autopresentation_ = started_with_autopresentation;
+
+  if (started_with_autopresentation) {
+    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR_DLA>>(
+        kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
+  } else {
+    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  }
+  session_video_timer_ =
+      std::make_unique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
+          kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
+
+  Observe(contents);
+  contents->SetUserData(kSessionMetricsHelperDataKey,
+                        std::make_unique<SessionMetricsHelperData>(this));
+
+  UpdateMode();
+}
+
+SessionMetricsHelper::~SessionMetricsHelper() = default;
+
+void SessionMetricsHelper::UpdateMode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Mode mode;
@@ -208,35 +282,47 @@ void VrMetricsHelper::UpdateMode() {
     SetVrMode(mode);
 }
 
-void VrMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
+void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   is_webvr_ = is_webvr_presenting;
   UpdateMode();
 }
 
-void VrMetricsHelper::SetVRActive(bool is_vr_enabled) {
+void SessionMetricsHelper::SetVRActive(bool is_vr_enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   is_vr_enabled_ = is_vr_enabled;
   UpdateMode();
 }
 
-void VrMetricsHelper::RecordVoiceSearchStarted() {
+void SessionMetricsHelper::RecordVoiceSearchStarted() {
   num_voice_search_started_++;
 }
 
-void VrMetricsHelper::RecordUrlRequestedByVoice(GURL url) {
+void SessionMetricsHelper::RecordUrlRequestedByVoice(GURL url) {
   url_requested_by_voice_ = url;
 }
 
-void VrMetricsHelper::SetVrMode(Mode new_mode) {
+void SessionMetricsHelper::SetVrMode(Mode new_mode) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(new_mode, mode_);
+  DCHECK(new_mode == Mode::kVrBrowsingRegular ||
+         new_mode == Mode::kVrBrowsingFullscreen ||
+         new_mode == Mode::kWebXrVrPresentation || new_mode == Mode::kNoVr);
 
   base::Time switch_time = base::Time::Now();
 
-  // stop the previous modes
+  if (mode_ == Mode::kWebXrVrPresentation) {
+    OnExitPresentation();
+  }
+
+  // If we are switching out of VR, stop all the session timers and record.
+  if (new_mode == Mode::kNoVr) {
+    OnExitAllVr();
+  }
+
+  // Stop the previous mode timers, if any.
   if (mode_ != Mode::kNoVr) {
     if (num_videos_playing_ > 0)
       mode_video_timer_->StopSession(false, switch_time);
@@ -244,49 +330,27 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
     mode_timer_->StopSession(false, switch_time);
   }
 
-  // start the new modes
-  if (new_mode != Mode::kNoVr) {
-    switch (new_mode) {
-      case Mode::kWebXrVrPresentation:
-        if (started_with_autopresentation_) {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_DLA>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        } else {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        }
-        mode_video_timer_ =
-            std::make_unique<SessionTimerImpl<MODE_WEBVR_WITH_VIDEO>>(
-                kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        break;
-      case Mode::kVrBrowsingRegular:
-        if (started_with_autopresentation_) {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER_DLA>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        } else {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        }
-        mode_video_timer_ =
-            std::make_unique<SessionTimerImpl<MODE_BROWSER_WITH_VIDEO>>(
-                kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        break;
-      case Mode::kVrBrowsingFullscreen:
-        if (started_with_autopresentation_) {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_DLA>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        } else {
-          mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN>>(
-              kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        }
-        mode_video_timer_ =
-            std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_WITH_VIDEO>>(
-                kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
-        break;
-      default:
-        NOTREACHED();
-    }
+  // Set the new trackers and timers.
+  if (new_mode == Mode::kVrBrowsingRegular) {
+    OnEnterRegularBrowsing();
+  }
 
+  if (new_mode == Mode::kVrBrowsingFullscreen) {
+    OnEnterFullscreenBrowsing();
+  }
+
+  if (new_mode == Mode::kWebXrVrPresentation) {
+    OnEnterPresentation();
+  }
+
+  // If we are switching from no VR to any kind of VR, start the new VR session
+  // timers.
+  if (mode_ == Mode::kNoVr) {
+    OnEnterAnyVr();
+  }
+
+  // Start the new mode timers.
+  if (new_mode != Mode::kNoVr) {
     mode_timer_->StartSession(switch_time);
     if (num_videos_playing_ > 0) {
       mode_video_timer_->StartSession(switch_time);
@@ -296,109 +360,118 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
     SendRapporEnteredMode(origin_, new_mode);
   }
 
-  // If we are switching out of VR, stop all the session timers and record.
-  if (new_mode == Mode::kNoVr) {
-    if (num_videos_playing_ > 0)
-      session_video_timer_->StopSession(false, switch_time);
+  mode_ = new_mode;
+}
 
-    session_timer_->StopSession(false, switch_time);
+void SessionMetricsHelper::OnEnterAnyVr() {
+  base::Time switch_time = base::Time::Now();
+  session_timer_->StartSession(switch_time);
+  num_session_video_playback_ = 0;
+  num_session_navigation_ = 0;
+  num_voice_search_started_ = 0;
 
-    UMA_HISTOGRAM_COUNTS_100("VRSessionVideoCount",
-                             num_session_video_playback_);
-    UMA_HISTOGRAM_COUNTS_100("VRSessionNavigationCount",
-                             num_session_navigation_);
-    UMA_HISTOGRAM_COUNTS_100("VR.Session.VoiceSearch.StartedCount",
-                             num_voice_search_started_);
-
-    // Do not assume page_session_tracker_ is set because it's possible that it
-    // is null if DidStartNavigation has already submitted and cleared
-    // page_session_tracker and DidFinishNavigation has not yet created the new
-    // one.
-    if (page_session_tracker_) {
-      page_session_tracker_->SetSessionEnd(base::Time::Now());
-      page_session_tracker_->ukm_entry()->SetDuration(
-          page_session_tracker_->GetRoundedDurationInSeconds());
-      page_session_tracker_->RecordEntry();
-      page_session_tracker_ = nullptr;
-    }
+  if (num_videos_playing_ > 0) {
+    session_video_timer_->StartSession(switch_time);
+    num_session_video_playback_ = num_videos_playing_;
   }
 
+  page_session_tracker_ =
+      std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
+          std::make_unique<ukm::builders::XR_PageSession>(
+              ukm::GetSourceIdForWebContentsDocument(web_contents())));
+}
+
+void SessionMetricsHelper::OnExitAllVr() {
+  base::Time switch_time = base::Time::Now();
+  if (num_videos_playing_ > 0)
+    session_video_timer_->StopSession(false, switch_time);
+
+  session_timer_->StopSession(false, switch_time);
+
+  UMA_HISTOGRAM_COUNTS_100("VRSessionVideoCount", num_session_video_playback_);
+  UMA_HISTOGRAM_COUNTS_100("VRSessionNavigationCount", num_session_navigation_);
+  UMA_HISTOGRAM_COUNTS_100("VR.Session.VoiceSearch.StartedCount",
+                           num_voice_search_started_);
+
+  // Do not assume page_session_tracker_ is set because it's possible that it
+  // is null if DidStartNavigation has already submitted and cleared
+  // page_session_tracker and DidFinishNavigation has not yet created the new
+  // one.
+  if (page_session_tracker_) {
+    page_session_tracker_->SetSessionEnd(switch_time);
+    page_session_tracker_->ukm_entry()->SetDuration(
+        page_session_tracker_->GetRoundedDurationInSeconds());
+    page_session_tracker_->RecordEntry();
+    page_session_tracker_ = nullptr;
+  }
+}
+
+void SessionMetricsHelper::OnEnterRegularBrowsing() {
+  if (started_with_autopresentation_) {
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER_DLA>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  } else {
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_BROWSER>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  }
+  mode_video_timer_ =
+      std::make_unique<SessionTimerImpl<MODE_BROWSER_WITH_VIDEO>>(
+          kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+}
+
+void SessionMetricsHelper::OnEnterPresentation() {
+  if (started_with_autopresentation_) {
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_DLA>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  } else {
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+  }
+
+  mode_video_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_WITH_VIDEO>>(
+      kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+
+  // If we are switching to WebVR presentation, start the new presentation
+  // session.
+  presentation_session_tracker_ = std::make_unique<
+      SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
+      std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
+          ukm::GetSourceIdForWebContentsDocument(web_contents())));
+}
+
+void SessionMetricsHelper::OnExitPresentation() {
   // If we are switching off WebVR presentation, then the presentation session
-  // is done. As above, do not assume presentation_session_track_ is valid.
-  if (mode_ == Mode::kWebXrVrPresentation && presentation_session_tracker_) {
+  // is done. As with the page session, do not assume
+  // presentation_session_tracker_ is valid.
+  if (presentation_session_tracker_) {
     presentation_session_tracker_->SetSessionEnd(base::Time::Now());
     presentation_session_tracker_->ukm_entry()->SetDuration(
         presentation_session_tracker_->GetRoundedDurationInSeconds());
     presentation_session_tracker_->RecordEntry();
     presentation_session_tracker_ = nullptr;
   }
-
-  // If we are switching from no VR to any kind of VR, start the new VR session
-  // timers.
-  if (mode_ == Mode::kNoVr) {
-    session_timer_->StartSession(switch_time);
-    num_session_video_playback_ = 0;
-    num_session_navigation_ = 0;
-    num_voice_search_started_ = 0;
-
-    if (num_videos_playing_ > 0) {
-      session_video_timer_->StartSession(switch_time);
-      num_session_video_playback_ = num_videos_playing_;
-    }
-
-    page_session_tracker_ =
-        std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
-            std::make_unique<ukm::builders::XR_PageSession>(
-                ukm::GetSourceIdForWebContentsDocument(web_contents())));
-  }
-
-  if (new_mode == Mode::kVrBrowsingFullscreen && page_session_tracker_) {
-    page_session_tracker_->ukm_entry()->SetEnteredFullscreen(1);
-  }
-
-  // If we are switching to WebVR presentation, start the new presentation
-  // session.
-  if (new_mode == Mode::kWebXrVrPresentation) {
-    presentation_session_tracker_ = std::make_unique<
-        SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
-        std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
-            ukm::GetSourceIdForWebContentsDocument(web_contents())));
-  }
-
-  mode_ = new_mode;
 }
 
-VrMetricsHelper::VrMetricsHelper(content::WebContents* contents,
-                                 Mode initial_mode,
-                                 bool started_with_autopresentation)
-    : is_webvr_(initial_mode == Mode::kWebXrVrPresentation),
-      is_vr_enabled_(initial_mode != Mode::kNoVr),
-      started_with_autopresentation_(started_with_autopresentation) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
-  is_fullscreen_ = contents->IsFullscreen();
-  origin_ = contents->GetLastCommittedURL();
-
-  Observe(contents);
-  if (started_with_autopresentation) {
-    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR_DLA>>(
-        kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
+void SessionMetricsHelper::OnEnterFullscreenBrowsing() {
+  if (started_with_autopresentation_) {
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_DLA>>(
+        kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
   } else {
-    session_timer_ = std::make_unique<SessionTimerImpl<SESSION_VR>>(
+    mode_timer_ = std::make_unique<SessionTimerImpl<MODE_FULLSCREEN>>(
         kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
   }
-  session_video_timer_ =
-      std::make_unique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
-          kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
 
-  UpdateMode();
+  mode_video_timer_ =
+      std::make_unique<SessionTimerImpl<MODE_FULLSCREEN_WITH_VIDEO>>(
+          kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
+
+  if (page_session_tracker_)
+    page_session_tracker_->ukm_entry()->SetEnteredFullscreen(1);
 }
 
-VrMetricsHelper::~VrMetricsHelper() = default;
-
-void VrMetricsHelper::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                          const MediaPlayerId&) {
+void SessionMetricsHelper::MediaStartedPlaying(
+    const MediaPlayerInfo& media_info,
+    const MediaPlayerId&) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!media_info.has_video)
@@ -419,7 +492,7 @@ void VrMetricsHelper::MediaStartedPlaying(const MediaPlayerInfo& media_info,
   num_session_video_playback_++;
 }
 
-void VrMetricsHelper::MediaStoppedPlaying(
+void SessionMetricsHelper::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
     const MediaPlayerId&,
     WebContentsObserver::MediaStoppedReason reason) {
@@ -441,7 +514,8 @@ void VrMetricsHelper::MediaStoppedPlaying(
   }
 }
 
-void VrMetricsHelper::DidStartNavigation(content::NavigationHandle* handle) {
+void SessionMetricsHelper::DidStartNavigation(
+    content::NavigationHandle* handle) {
   if (handle && handle->IsInMainFrame() && !handle->IsSameDocument()) {
     if (page_session_tracker_) {
       page_session_tracker_->SetSessionEnd(base::Time::Now());
@@ -461,7 +535,8 @@ void VrMetricsHelper::DidStartNavigation(content::NavigationHandle* handle) {
   }
 }
 
-void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
+void SessionMetricsHelper::DidFinishNavigation(
+    content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Counting the number of pages viewed is difficult - some websites load
@@ -502,8 +577,9 @@ void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
   }
 }
 
-void VrMetricsHelper::DidToggleFullscreenModeForTab(bool entered_fullscreen,
-                                                    bool will_cause_resize) {
+void SessionMetricsHelper::DidToggleFullscreenModeForTab(
+    bool entered_fullscreen,
+    bool will_cause_resize) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   is_fullscreen_ = entered_fullscreen;

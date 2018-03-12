@@ -45,8 +45,6 @@ static_library("vr_android") {
     "vr_shell_delegate.h",
     "vr_shell_gl.cc",
     "vr_shell_gl.h",
-    "vr_usage_monitor.cc",
-    "vr_usage_monitor.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
   ]
