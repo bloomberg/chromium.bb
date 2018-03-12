@@ -455,6 +455,12 @@ bool SerializedScriptValue::ExtractTransferables(
     } else if (transferable_object->IsArrayBuffer()) {
       DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
+      if (array_buffer->IsNeutered()) {
+        exception_state.ThrowDOMException(
+            kDataCloneError, "ArrayBuffer at index " + String::Number(i) +
+                                 " is already neutered.");
+        return false;
+      }
       if (transferables.array_buffers.Contains(array_buffer)) {
         exception_state.ThrowDOMException(
             kDataCloneError, "ArrayBuffer at index " + String::Number(i) +
@@ -532,17 +538,6 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   if (!array_buffers.size())
     return ArrayBufferContentsArray();
-
-  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
-    DOMArrayBufferBase* array_buffer = *it;
-    if (array_buffer->IsNeutered()) {
-      size_t index = std::distance(array_buffers.begin(), it);
-      exception_state.ThrowDOMException(
-          kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
-                               " is already neutered.");
-      return ArrayBufferContentsArray();
-    }
-  }
 
   contents.Grow(array_buffers.size());
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
