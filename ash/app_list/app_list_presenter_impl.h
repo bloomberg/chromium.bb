@@ -68,6 +68,10 @@ class ASH_EXPORT AppListPresenterImpl
   // Hide the open app list window. This may leave the view open but hidden.
   void Dismiss();
 
+  // Performs the 'back' action for the active page. Returns whether the action
+  // was handled.
+  bool Back();
+
   // Show the app list if it is visible, hide it if it is hidden.
   void ToggleAppList(int64_t display_id);
 
