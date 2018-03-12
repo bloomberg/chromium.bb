@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "base/callback.h"
 
 class AccountId;
 class PrefChangeRegistrar;
@@ -52,8 +53,6 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   void SetTouchscreenEnabled(bool enabled, TouchscreenEnabledSource source);
 
  private:
-  class ScopedUmaRecorder;
-
   // Overridden from SessionObserver:
   void OnUserSessionAdded(const AccountId& account_id) override;
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -83,8 +82,10 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   // Observes user profile prefs for touch devices.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  // Used to record pref started UMA.
-  std::unique_ptr<ScopedUmaRecorder> scoped_uma_recorder_;
+  // Used to record pref started UMA, bound on user session added and run on
+  // active user pref service changed. The goal is to record the initial state
+  // of the feature.
+  base::OnceCallback<void(PrefService* prefs)> uma_record_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchDevicesController);
 };
