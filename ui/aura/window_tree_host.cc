@@ -113,20 +113,9 @@ gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
   return invert;
 }
 
-void WindowTreeHost::SetOutputSurfacePaddingInPixels(
-    const gfx::Insets& padding_in_pixels) {
-  if (output_surface_padding_in_pixels_ == padding_in_pixels)
-    return;
-
-  output_surface_padding_in_pixels_ = padding_in_pixels;
-  OnHostResizedInPixels(GetBoundsInPixels().size());
-}
-
 void WindowTreeHost::UpdateRootWindowSizeInPixels(
     const gfx::Size& host_size_in_pixels) {
-  gfx::Rect bounds(output_surface_padding_in_pixels_.left(),
-                   output_surface_padding_in_pixels_.top(),
-                   host_size_in_pixels.width(), host_size_in_pixels.height());
+  gfx::Rect bounds(host_size_in_pixels.width(), host_size_in_pixels.height());
   float scale_factor = ui::GetDeviceScaleFactor(window()->layer());
   gfx::RectF new_bounds =
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / scale_factor);
@@ -345,14 +334,11 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels) {
-  gfx::Size adjusted_size(new_size_in_pixels);
-  adjusted_size.Enlarge(output_surface_padding_in_pixels_.width(),
-                        output_surface_padding_in_pixels_.height());
-
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(ui::GetScaleFactorForNativeView(window()),
-                               adjusted_size, window()->GetLocalSurfaceId());
+                               new_size_in_pixels,
+                               window()->GetLocalSurfaceId());
 
   gfx::Size layer_size = GetBoundsInPixels().size();
   // The layer, and the observers should be notified of the
