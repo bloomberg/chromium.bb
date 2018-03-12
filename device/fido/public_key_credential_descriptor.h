@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
 
@@ -18,7 +19,7 @@ namespace device {
 // id (byte array) as specified in the CTAP spec. Used for exclude_list for
 // AuthenticatorMakeCredential command and allow_list parameter for
 // AuthenticatorGetAssertion command.
-class PublicKeyCredentialDescriptor {
+class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
  public:
   static base::Optional<PublicKeyCredentialDescriptor> CreateFromCBORValue(
       const cbor::CBORValue& cbor);

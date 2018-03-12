@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
-
 namespace device {
 
 PublicKey::~PublicKey() = default;

@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/component_export.h"
 #include "base/containers/flat_set.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
@@ -24,7 +26,7 @@ class Connector;
 
 namespace device {
 
-class U2fRequest : public U2fDiscovery::Observer {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
  public:
   // U2fRequest will create a discovery instance and register itself as an
   // observer for each passed in transport protocol.
@@ -107,6 +109,8 @@ class U2fRequest : public U2fDiscovery::Observer {
   size_t started_count_ = 0;
 
   base::WeakPtrFactory<U2fRequest> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(U2fRequest);
 };
 
 }  // namespace device
