@@ -202,7 +202,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   for (r = 0; r < txfm_size_row; ++r) {
     if (abs(rect_type) == 1) {
       for (c = 0; c < txfm_size_col; ++c) {
-        temp_in[c] = round_shift(input[c] * NewInvSqrt2, NewSqrt2Bits);
+        temp_in[c] = round_shift((int64_t)input[c] * NewInvSqrt2, NewSqrt2Bits);
       }
       clamp_buf(temp_in, txfm_size_col, bd + 8);
       txfm_func_row(temp_in, buf_ptr, cos_bit_row, stage_range_row);

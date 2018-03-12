@@ -116,9 +116,10 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
     if (abs(rect_type) == 1) {
       // Multiply everything by Sqrt2 if the transform is rectangular and the
       // size difference is a factor of 2.
-      for (c = 0; c < txfm_size_col; ++c)
-        output[r * txfm_size_col + c] =
-            round_shift(output[r * txfm_size_col + c] * NewSqrt2, NewSqrt2Bits);
+      for (c = 0; c < txfm_size_col; ++c) {
+        output[r * txfm_size_col + c] = round_shift(
+            (int64_t)output[r * txfm_size_col + c] * NewSqrt2, NewSqrt2Bits);
+      }
     }
   }
 }

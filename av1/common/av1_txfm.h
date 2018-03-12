@@ -62,9 +62,9 @@ static INLINE int32_t range_check_value(int32_t value, int8_t bit) {
   return value;
 }
 
-static INLINE int32_t round_shift(int32_t value, int bit) {
+static INLINE int32_t round_shift(int64_t value, int bit) {
   assert(bit >= 1);
-  return (int32_t)(((int64_t)value + (1ll << (bit - 1))) >> bit);
+  return (int32_t)((value + (1ll << (bit - 1))) >> bit);
 }
 
 static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
@@ -73,7 +73,7 @@ static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
   assert(result_64 >= INT32_MIN && result_64 <= INT32_MAX);
 #endif
-  return round_shift((int32_t)result_64, bit);
+  return round_shift(result_64, bit);
 }
 
 typedef void (*TxfmFunc)(const int32_t *input, int32_t *output, int8_t cos_bit,
