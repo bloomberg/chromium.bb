@@ -62,9 +62,6 @@ class FakePeripheral : public device::BluetoothDevice {
   // Remove a fake service with |identifier| from this peripheral.
   bool RemoveFakeService(const std::string& identifier);
 
-  // Simulates a GATT services changed from the peripheral.
-  void SimulateGATTServicesChanged();
-
   // BluetoothDevice overrides:
   uint32_t GetBluetoothClass() const override;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -84,6 +81,7 @@ class FakePeripheral : public device::BluetoothDevice {
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
+  UUIDSet GetUUIDs() const override;
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
