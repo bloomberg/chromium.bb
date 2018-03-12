@@ -2496,6 +2496,24 @@
             ]
         }
     ],
+    "PasswordProtectionForEnterprise": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "V1Enabled",
+                    "enable_features": [
+                        "EnterprisePasswordProtectionV1"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordSeparatedSigninFlow": [
         {
             "platforms": [
