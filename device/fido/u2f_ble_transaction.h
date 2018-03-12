@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
@@ -55,8 +54,6 @@ class U2fBleTransaction {
   base::OneShotTimer timer_;
 
   base::WeakPtrFactory<U2fBleTransaction> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(U2fBleTransaction);
 };
 
 }  // namespace device

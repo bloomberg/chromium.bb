@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-component("fido") {
+source_set("fido") {
   sources = [
     "attestation_object.cc",
     "attestation_object.h",
@@ -90,21 +90,17 @@ component("fido") {
     "u2f_transport_protocol.h",
   ]
 
-  defines = [ "IS_DEVICE_FIDO_IMPL" ]
-
   deps = [
+    "//base",
     "//components/cbor",
     "//crypto",
     "//device/base",
+    "//device/bluetooth",
+    "//net",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/boringssl",
-  ]
-
-  public_deps = [
-    "//base",
-    "//device/bluetooth",
-    "//services/device/public/mojom",
   ]
 
   # HID is not supported on Android.
@@ -148,6 +144,7 @@ fuzzer_test("u2f_apdu_fuzzer") {
   ]
   deps = [
     ":fido",
+    "//net",
   ]
   libfuzzer_options = [ "max_len=65537" ]
 }
@@ -169,6 +166,7 @@ fuzzer_test("u2f_ble_frames_fuzzer") {
   ]
   deps = [
     ":fido",
+    "//net",
   ]
   libfuzzer_options = [ "max_len=65535" ]
 }
@@ -180,6 +178,7 @@ fuzzer_test("sign_response_data_fuzzer") {
   deps = [
     ":fido",
     "//base",
+    "//net",
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
@@ -191,6 +190,7 @@ fuzzer_test("register_response_data_fuzzer") {
   ]
   deps = [
     ":fido",
+    "//net",
   ]
 
   seed_corpus = "response_data_fuzzer_corpus/"

@@ -9,9 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/sign_response_data.h"
 #include "device/fido/u2f_request.h"
@@ -23,7 +21,7 @@ class Connector;
 
 namespace device {
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
+class U2fSign : public U2fRequest {
  public:
   using SignResponseCallback =
       base::OnceCallback<void(U2fReturnCode status_code,
@@ -73,8 +71,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
   SignResponseCallback completion_callback_;
 
   base::WeakPtrFactory<U2fSign> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(U2fSign);
 };
 
 }  // namespace device

@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
@@ -17,7 +16,7 @@ namespace device {
 // APDU responses are defined as part of ISO 7816-4. Serialized responses
 // consist of a data field of varying length, up to a maximum 65536, and a
 // two byte status field.
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduResponse {
+class U2fApduResponse {
  public:
   // Status bytes are specified in ISO 7816-4
   enum class Status : uint16_t {
@@ -34,8 +33,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduResponse {
   static std::unique_ptr<U2fApduResponse> CreateFromMessage(
       const std::vector<uint8_t>& data);
   std::vector<uint8_t> GetEncodedResponse() const;
-  const std::vector<uint8_t> data() const { return data_; }
-  Status status() const { return response_status_; }
+  const std::vector<uint8_t> data() const { return data_; };
+  Status status() const { return response_status_; };
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeResponse);

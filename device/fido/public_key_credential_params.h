@@ -9,7 +9,6 @@
 #include <tuple>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_values.h"
@@ -20,7 +19,7 @@ namespace device {
 // Data structure containing public key credential type(string) and
 // cryptographic algorithm(integer) as specified by the CTAP spec. Used as a
 // request parameter for AuthenticatorMakeCredential.
-class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialParams {
+class PublicKeyCredentialParams {
  public:
   struct CredentialInfo {
     std::string type;

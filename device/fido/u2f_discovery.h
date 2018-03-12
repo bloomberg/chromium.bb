@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,11 +29,11 @@ namespace internal {
 class ScopedU2fDiscoveryFactory;
 }
 
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fDiscovery {
+class U2fDiscovery {
  public:
-  class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
+  class Observer {
    public:
-    virtual ~Observer();
+    virtual ~Observer() = default;
     virtual void DiscoveryStarted(U2fDiscovery* discovery, bool success) = 0;
     virtual void DiscoveryStopped(U2fDiscovery* discovery, bool success) = 0;
     virtual void DeviceAdded(U2fDiscovery* discovery, U2fDevice* device) = 0;
