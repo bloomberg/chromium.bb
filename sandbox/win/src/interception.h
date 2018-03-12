@@ -268,10 +268,10 @@ class InterceptionManager {
 #define MAKE_SERVICE_NAME(service) &Target##service
 #endif
 
-#define ADD_NT_INTERCEPTION(service, id, num_params)        \
-  AddToPatchedFunctions(kNtdllName, #service,               \
-                        sandbox::INTERCEPTION_SERVICE_CALL, \
-                        MAKE_SERVICE_NAME(service), id)
+#define ADD_NT_INTERCEPTION(service, id, num_params)            \
+  AddToPatchedFunctions(                                        \
+      kNtdllName, #service, sandbox::INTERCEPTION_SERVICE_CALL, \
+      reinterpret_cast<void*>(MAKE_SERVICE_NAME(service)), id)
 
 #define INTERCEPT_NT(manager, service, id, num_params) \
   manager->ADD_NT_INTERCEPTION(service, id, num_params)
@@ -280,9 +280,10 @@ class InterceptionManager {
 // function not call any functions imported from system libraries unless
 // |TargetServices::InitCalled()| returns true, because it is only then that
 // we are guaranteed that our IAT has been initialized.
-#define INTERCEPT_EAT(manager, dll, function, id, num_params)               \
-  manager->AddToPatchedFunctions(dll, #function, sandbox::INTERCEPTION_EAT, \
-                                 MAKE_SERVICE_NAME(function), id)
+#define INTERCEPT_EAT(manager, dll, function, id, num_params) \
+  manager->AddToPatchedFunctions(                             \
+      dll, #function, sandbox::INTERCEPTION_EAT,              \
+      reinterpret_cast<void*>(MAKE_SERVICE_NAME(function)), id)
 #endif  // SANDBOX_EXPORTS
 
 }  // namespace sandbox

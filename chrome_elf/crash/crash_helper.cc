@@ -100,7 +100,8 @@ void DisableSetUnhandledExceptionFilter() {
   if (g_set_unhandled_exception_filter->Hook(
           ::GetModuleHandle(nullptr), "kernel32.dll",
           "SetUnhandledExceptionFilter",
-          SetUnhandledExceptionFilterPatch) != NO_ERROR) {
+          reinterpret_cast<void*>(SetUnhandledExceptionFilterPatch)) !=
+      NO_ERROR) {
 #ifdef _DEBUG
     assert(false);
 #endif  // _DEBUG

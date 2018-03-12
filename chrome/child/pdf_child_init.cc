@@ -68,10 +68,12 @@ void InitializePDF() {
   // Need to patch a few functions for font loading to work correctly. This can
   // be removed once we switch PDF to use Skia.
   HMODULE current_module = CURRENT_MODULE();
-  g_iat_patch_createdca.PatchFromModule(current_module, "gdi32.dll",
-                                        "CreateDCA", CreateDCAPatch);
-  g_iat_patch_get_font_data.PatchFromModule(current_module, "gdi32.dll",
-                                            "GetFontData", GetFontDataPatch);
+  g_iat_patch_createdca.PatchFromModule(
+      current_module, "gdi32.dll", "CreateDCA",
+      reinterpret_cast<void*>(CreateDCAPatch));
+  g_iat_patch_get_font_data.PatchFromModule(
+      current_module, "gdi32.dll", "GetFontData",
+      reinterpret_cast<void*>(GetFontDataPatch));
   g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
       g_iat_patch_get_font_data.original_function());
 #endif  // defined(OS_WIN)

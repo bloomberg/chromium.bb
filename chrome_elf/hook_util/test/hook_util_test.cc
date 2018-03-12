@@ -45,9 +45,9 @@ TEST_F(HookTest, IATHook) {
 
   // Apply IAT hook.
   elf_hook::IATHook iat_hook;
-  if (iat_hook.Hook(::GetModuleHandle(nullptr), kIATTestDllName,
-                    kIATExportedApiFunction,
-                    IATHookedExportedApi) != NO_ERROR) {
+  if (iat_hook.Hook(
+          ::GetModuleHandle(nullptr), kIATTestDllName, kIATExportedApiFunction,
+          reinterpret_cast<void*>(IATHookedExportedApi)) != NO_ERROR) {
     ADD_FAILURE();
     return;
   }
@@ -55,7 +55,8 @@ TEST_F(HookTest, IATHook) {
   // Make sure hooking twice with the same object fails.
   if (iat_hook.Hook(::GetModuleHandle(nullptr), kIATTestDllName,
                     kIATExportedApiFunction,
-                    IATHookedExportedApi) != ERROR_SHARING_VIOLATION)
+                    reinterpret_cast<void*>(IATHookedExportedApi)) !=
+      ERROR_SHARING_VIOLATION)
     ADD_FAILURE();
 
   // Call count should not change with hook.
@@ -78,20 +79,21 @@ TEST_F(HookTest, IATHook) {
 
   // Try hooking a non-existent function.
   if (iat_hook.Hook(::GetModuleHandle(nullptr), kIATTestDllName, "FooBarred",
-                    IATHookedExportedApi) != ERROR_PROC_NOT_FOUND)
+                    reinterpret_cast<void*>(IATHookedExportedApi)) !=
+      ERROR_PROC_NOT_FOUND)
     ADD_FAILURE();
 
   // Test the case where someone else hooks our hook!  Unhook() should leave it.
-  if (iat_hook.Hook(::GetModuleHandle(nullptr), kIATTestDllName,
-                    kIATExportedApiFunction,
-                    IATHookedExportedApi) != NO_ERROR) {
+  if (iat_hook.Hook(
+          ::GetModuleHandle(nullptr), kIATTestDllName, kIATExportedApiFunction,
+          reinterpret_cast<void*>(IATHookedExportedApi)) != NO_ERROR) {
     ADD_FAILURE();
     return;
   }
   elf_hook::IATHook shady_third_party_iat_hook;
-  if (shady_third_party_iat_hook.Hook(::GetModuleHandle(nullptr),
-                                      kIATTestDllName, kIATExportedApiFunction,
-                                      IATHookedExportedApiTwo) != NO_ERROR)
+  if (shady_third_party_iat_hook.Hook(
+          ::GetModuleHandle(nullptr), kIATTestDllName, kIATExportedApiFunction,
+          reinterpret_cast<void*>(IATHookedExportedApiTwo)) != NO_ERROR)
     ADD_FAILURE();
   if (iat_hook.Unhook() != ERROR_INVALID_FUNCTION)
     ADD_FAILURE();

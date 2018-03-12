@@ -107,7 +107,8 @@ NTSTATUS PatchNtdllWithResolver(const char* function,
   HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
   EXPECT_TRUE(ntdll_base);
 
-  void* target = ::GetProcAddress(ntdll_base, function);
+  void* target =
+      reinterpret_cast<void*>(::GetProcAddress(ntdll_base, function));
   EXPECT_TRUE(target);
   if (!target)
     return STATUS_UNSUCCESSFUL;
@@ -245,7 +246,8 @@ TEST(ServiceResolverTest, LocalPatchesAllowed) {
 
   const char kFunctionName[] = "NtClose";
 
-  void* target = ::GetProcAddress(ntdll_base, kFunctionName);
+  void* target =
+      reinterpret_cast<void*>(::GetProcAddress(ntdll_base, kFunctionName));
   ASSERT_TRUE(target);
 
   BYTE service[50];

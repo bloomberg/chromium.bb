@@ -379,8 +379,8 @@ static void InitTerminateProcessHooks() {
     return;
 
   DWORD old_protect = 0;
-  if (!::VirtualProtect(terminate_process_func_address, 5,
-                        PAGE_EXECUTE_READWRITE, &old_protect))
+  if (!::VirtualProtect(reinterpret_cast<void*>(terminate_process_func_address),
+                        5, PAGE_EXECUTE_READWRITE, &old_protect))
     return;
 
   g_real_terminate_process_stub = reinterpret_cast<char*>(VirtualAllocEx(
@@ -393,23 +393,23 @@ static void InitTerminateProcessHooks() {
   g_surrogate_exception_pointers.ExceptionRecord =
       &g_surrogate_exception_record;
 
-  sidestep::SideStepError patch_result =
-      sidestep::PreamblePatcher::Patch(
-          terminate_process_func_address, HookNtTerminateProcess,
-          g_real_terminate_process_stub, sidestep::kMaxPreambleStubSize);
+  sidestep::SideStepError patch_result = sidestep::PreamblePatcher::Patch(
+      reinterpret_cast<void*>(terminate_process_func_address),
+      reinterpret_cast<void*>(HookNtTerminateProcess),
+      g_real_terminate_process_stub, sidestep::kMaxPreambleStubSize);
   if (patch_result != sidestep::SIDESTEP_SUCCESS) {
     CHECK(::VirtualFreeEx(::GetCurrentProcess(), g_real_terminate_process_stub,
                     0, MEM_RELEASE));
-    CHECK(::VirtualProtect(terminate_process_func_address, 5, old_protect,
-                           &old_protect));
+    CHECK(::VirtualProtect(
+        reinterpret_cast<void*>(terminate_process_func_address), 5, old_protect,
+        &old_protect));
     return;
   }
 
   DWORD dummy = 0;
-  CHECK(::VirtualProtect(terminate_process_func_address,
-                         5,
-                         old_protect,
-                         &dummy));
+  CHECK(
+      ::VirtualProtect(reinterpret_cast<void*>(terminate_process_func_address),
+                       5, old_protect, &dummy));
   CHECK(::VirtualProtect(g_real_terminate_process_stub,
                          sidestep::kMaxPreambleStubSize,
                          old_protect,
@@ -649,7 +649,8 @@ RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {
   // mov imm64, rax
   record->thunk[0] = 0x48;
   record->thunk[1] = 0xb8;
-  void* handler = &CrashForExceptionInNonABICompliantCodeRange;
+  void* handler =
+      reinterpret_cast<void*>(&CrashForExceptionInNonABICompliantCodeRange);
   memcpy(&record->thunk[2], &handler, 8);
 
   // jmp rax

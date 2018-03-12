@@ -280,9 +280,9 @@ bool WINAPI GetMonitorInfoWTest(HMONITOR monitor, LPMONITORINFO monitor_info) {
   return true;
 }
 
-#define RETURN_TEST_FUNC(n)    \
-  if (strcmp(name, #n) == 0) { \
-    return n##Test;            \
+#define RETURN_TEST_FUNC(n)                  \
+  if (strcmp(name, #n) == 0) {               \
+    return reinterpret_cast<void*>(n##Test); \
   }
 
 void* FunctionOverrideForTest(const char* name) {
