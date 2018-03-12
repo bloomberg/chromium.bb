@@ -1960,6 +1960,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
     shadow->Attach(children_context);
 
   ContainerNode::AttachLayoutTree(children_context);
+  SetNonAttachedStyle(nullptr);
   AddCallbackSelectors();
 
   CreateAndAttachPseudoElementIfNeeded(kPseudoIdAfter, children_context);
@@ -2278,13 +2279,23 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
 }
 
 void Element::RecalcStyleForReattach() {
-  scoped_refptr<ComputedStyle> non_attached_style = StyleForLayoutObject();
-  SetNonAttachedStyle(non_attached_style);
-  SetNeedsReattachLayoutTree();
-  if (LayoutObjectIsNeeded(*non_attached_style) ||
-      ShouldStoreNonLayoutObjectComputedStyle(*non_attached_style)) {
-    RecalcShadowIncludingDescendantStylesForReattach();
+  bool recalc_descendants = false;
+  if (ParentComputedStyle()) {
+    scoped_refptr<ComputedStyle> non_attached_style = StyleForLayoutObject();
+    SetNeedsReattachLayoutTree();
+    SetNonAttachedStyle(non_attached_style);
+    recalc_descendants =
+        LayoutObjectIsNeeded(*non_attached_style) ||
+        ShouldStoreNonLayoutObjectComputedStyle(*non_attached_style);
+  } else {
+    // Elements which cannot participate in the flat tree are <content> and
+    // <slot> if SlotInFlatTree is not enabled. Even though we should not
+    // compute their styles for re-attachment, we may need to compute their
+    // children's style if fallback is rendered.
+    recalc_descendants = !CanParticipateInFlatTree();
   }
+  if (recalc_descendants)
+    RecalcShadowIncludingDescendantStylesForReattach();
 }
 
 void Element::RecalcShadowIncludingDescendantStylesForReattach() {
