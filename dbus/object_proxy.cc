@@ -463,10 +463,10 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
       GetAbsoluteMemberName(interface_name, signal_name);
 
   // Add a match rule so the signal goes through HandleMessage().
-  const std::string match_rule =
-      base::StringPrintf("type='signal', interface='%s', path='%s'",
-                         interface_name.c_str(),
-                         object_path_.value().c_str());
+  const std::string match_rule = base::StringPrintf(
+      "type='signal', sender='%s', interface='%s', path='%s'",
+      service_name_.c_str(), interface_name.c_str(),
+      object_path_.value().c_str());
   return AddMatchRuleWithCallback(match_rule,
                                   absolute_signal_name,
                                   signal_callback);
