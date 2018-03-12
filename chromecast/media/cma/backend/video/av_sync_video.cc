@@ -27,8 +27,8 @@ const int kHardCorrectionThresholdUs = 200000;
 
 // When doing a soft correction, we will do so by changing the rate of video
 // playback. These constants define the multiplier in either direction.
-const double kRateReduceMultiplier = 0.9;
-const double kRateIncreaseMultiplier = 1.1;
+const double kRateReduceMultiplier = 0.95;
+const double kRateIncreaseMultiplier = 1.05;
 
 // Length of time after which data is forgotten from our linear regression
 // models.
@@ -37,6 +37,13 @@ const int kLinearRegressionDataLifetimeUs = 500000;
 // Time interval between AV sync upkeeps.
 constexpr base::TimeDelta kAvSyncUpkeepInterval =
     base::TimeDelta::FromMilliseconds(10);
+
+// When we're in sync (i.e. the apts and vpts difference is
+// < kSoftCorrectionThresholdUs), if the apts and vpts slopes are different by
+// this threshold, we'll reset the video playback rate to be equal to the apts
+// slope.
+const double kInSyncResetThreshold = 0.05;
+
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -131,25 +138,23 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   int64_t difference;
+  double difference_slope;
   error_->EstimateY(now, &difference, &error);
+  error_->EstimateSlope(&difference_slope, &error);
 
-  VLOG(4) << "Pts_monitor."
-          << " current_apts=" << current_apts / 1000
-          << " current_vpts=" << std::setw(5) << current_vpts / 1000
+  VLOG(3) << "Pts_monitor."
           << " difference=" << std::setw(5) << difference / 1000
-          << " wall_time=" << std::setw(5) << now / 1000
           << " apts_slope=" << std::setw(10) << apts_slope
-          << " vpts_slope=" << std::setw(10) << vpts_slope;
+          << " vpts_slope=" << std::setw(10) << vpts_slope
+          << " difference_slope=" << std::setw(10) << difference_slope;
 
   // Seems the ideal value here depends on the frame rate.
   if (abs(difference) > kSoftCorrectionThresholdUs) {
     VLOG(2) << "Correction."
-            << " current_apts=" << current_apts / 1000
-            << " current_vpts=" << std::setw(5) << current_vpts / 1000
             << " difference=" << std::setw(5) << difference / 1000
-            << " wall_time=" << std::setw(5) << now / 1000
             << " apts_slope=" << std::setw(10) << apts_slope
-            << " vpts_slope=" << std::setw(10) << vpts_slope;
+            << " vpts_slope=" << std::setw(10) << vpts_slope
+            << " difference_slope=" << std::setw(10) << difference_slope;
 
     if (abs(difference) > kHardCorrectionThresholdUs) {
       // Do a hard correction.
@@ -177,8 +182,11 @@ void AvSyncVideo::UpkeepAvSync() {
     // find the video playback rate at which vtps_slope == apts_slope. These
     // are slightly different values since the video playback rate is probably
     // not phase locked at all with monotonic_raw.
-    backend_->video_decoder()->SetPlaybackRate(apts_slope);
-    current_video_playback_rate_ = apts_slope;
+    if (abs(current_video_playback_rate_ - apts_slope) >
+        kInSyncResetThreshold) {
+      backend_->video_decoder()->SetPlaybackRate(apts_slope);
+      current_video_playback_rate_ = apts_slope;
+    }
   }
 }
 
