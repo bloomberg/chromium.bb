@@ -1649,6 +1649,18 @@ class CppStyleTest(CppStyleTestBase):
         self.assertEqual(0, len(error_collector.result_list()),
                          error_collector.result_list())
 
+        # Verify that we suggest the Chromium-style header guard for a snake_case file.
+        error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
+        self.process_file_data('renderer/platform/wtf/auto_reset.h', 'h',
+                               ['#ifndef BAD_auto_reset_h', '#define BAD_auto_reset_h'],
+                               error_collector)
+        self.assertEqual(
+            1,
+            error_collector.result_list().count(
+                '#ifndef header guard has wrong style, please use: '
+                'RENDERER_PLATFORM_WTF_AUTO_RESET_H_  [build/header_guard] [5]'),
+            error_collector.result_list())
+
     def assert_lintLogCodeOnError(self, code, expected_message):
         # Special assert_lint which logs the input code on error.
         result = self.perform_single_line_lint(code, 'foo.cpp')

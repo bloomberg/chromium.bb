@@ -96,17 +96,12 @@ def _CommonChecks(input_api, output_api):
 
 
 def _CheckStyle(input_api, output_api):
-    # Files that follow Chromium's coding style do not include capital letters.
-    re_chromium_style_file = re.compile(r'\b[a-z_]+\.(cc|h)$')
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                                 'Tools', 'Scripts', 'check-webkit-style')
     args = [input_api.python_executable, style_checker_path, '--diff-files']
     files = []
     for f in input_api.AffectedFiles():
         file_path = f.LocalPath()
-        # Filter out files that follow Chromium's coding style.
-        if re_chromium_style_file.search(file_path):
-            continue
         # Filter out changes in LayoutTests.
         if 'LayoutTests' + input_api.os_path.sep in file_path and 'TestExpectations' not in file_path:
             continue

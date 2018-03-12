@@ -142,6 +142,7 @@ _PATH_RULES_SPECIFIER = [
 
 _CPP_FILE_EXTENSIONS = [
     'c',
+    'cc',
     'cpp',
     'h',
 ]
@@ -151,7 +152,6 @@ _JSON_FILE_EXTENSION = 'json'
 _PYTHON_FILE_EXTENSION = 'py'
 
 _TEXT_FILE_EXTENSIONS = [
-    'cc',
     'cgi',
     'css',
     'gyp',

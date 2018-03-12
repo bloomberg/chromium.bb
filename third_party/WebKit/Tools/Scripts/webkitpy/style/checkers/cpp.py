@@ -976,6 +976,7 @@ def check_for_header_guard(filename, clean_lines, error):
 
     legacy_cpp_var = get_legacy_header_guard_cpp_variable(filename)
     cpp_var = get_header_guard_cpp_variable(filename)
+    suggested_var = legacy_cpp_var[0] if re.search(r'[A-Z]', os.path.basename(filename)) else cpp_var
 
     ifndef = None
     ifndef_line_number = 0
@@ -996,13 +997,13 @@ def check_for_header_guard(filename, clean_lines, error):
     if not ifndef or not define or ifndef != define:
         error(0, 'build/header_guard', 5,
               'No #ifndef header guard found, suggested CPP variable is: %s' %
-              legacy_cpp_var[0])
+              suggested_var)
         return
 
     # The guard should be File_h or, for Chromium style, BLINK_PATH_TO_FILE_H_.
     if ifndef not in legacy_cpp_var and ifndef != cpp_var:
         error(ifndef_line_number, 'build/header_guard', 5,
-              '#ifndef header guard has wrong style, please use: %s' % legacy_cpp_var[0])
+              '#ifndef header guard has wrong style, please use: %s' % suggested_var)
 
 
 def check_for_unicode_replacement_characters(lines, error):
