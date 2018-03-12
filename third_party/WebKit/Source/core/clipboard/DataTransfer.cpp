@@ -111,7 +111,7 @@ class DraggedNodeImageBuilder {
     // If the absolute bounding box is large enough to be possibly a memory
     // or IPC payload issue, clip it to the visible content rect.
     if (absolute_bounding_box.Size().Area() > visible_rect.Size().Area()) {
-      absolute_bounding_box.Intersect(IntRect(visible_rect));
+      absolute_bounding_box.Intersect(EnclosingIntRect(visible_rect));
     }
 
     FloatRect bounding_box =
@@ -366,7 +366,7 @@ void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
 FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& absolute_rect,
                                              const LocalFrame& frame) {
   IntRect viewport_in_root_frame =
-      IntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
+      EnclosingIntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
   FloatRect absolute_viewport =
       frame.View()->RootFrameToAbsolute(viewport_in_root_frame);
   return Intersection(absolute_viewport, absolute_rect);

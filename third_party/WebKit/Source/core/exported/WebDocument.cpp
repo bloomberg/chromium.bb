@@ -240,7 +240,7 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
     for (size_t i = 0; i < regions.size(); i++) {
       const AnnotatedRegionValue& value = regions[i];
       draggable_regions[i].draggable = value.draggable;
-      draggable_regions[i].bounds = IntRect(value.bounds);
+      draggable_regions[i].bounds = PixelSnappedIntRect(value.bounds);
     }
   }
   return draggable_regions;

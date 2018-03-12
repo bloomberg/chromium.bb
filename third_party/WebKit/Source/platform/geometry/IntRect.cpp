@@ -37,14 +37,6 @@
 
 namespace blink {
 
-IntRect::IntRect(const FloatRect& r)
-    : location_(clampTo<int>(r.X()), clampTo<int>(r.Y())),
-      size_(clampTo<int>(r.Width()), clampTo<int>(r.Height())) {}
-
-IntRect::IntRect(const LayoutRect& r)
-    : location_(r.X().ToInt(), r.Y().ToInt()),
-      size_(r.Width().ToInt(), r.Height().ToInt()) {}
-
 void IntRect::ShiftXEdgeTo(int edge) {
   int delta = edge - X();
   SetX(edge);

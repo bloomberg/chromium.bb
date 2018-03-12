@@ -656,7 +656,7 @@ IntRect VisualViewport::VisibleContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // TODO(ymalik): We're losing precision here and below. visibleRect should
   // be replaced with visibleContentRect.
-  IntRect rect = IntRect(VisibleRect());
+  IntRect rect = EnclosingIntRect(VisibleRect());
   if (scrollbar_inclusion == kExcludeScrollbars) {
     RootFrameViewport* root_frame_viewport =
         MainFrame()->View()->GetRootFrameViewport();

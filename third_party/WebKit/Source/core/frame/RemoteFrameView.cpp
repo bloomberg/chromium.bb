@@ -84,7 +84,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   if (remote_frame_->OwnerLayoutObject()->MapToVisualRectInAncestorSpace(
           nullptr, rect)) {
     IntRect root_visible_rect = local_root_view->VisibleContentRect();
-    IntRect intersected_rect(rect);
+    IntRect intersected_rect = EnclosingIntRect(rect);
     intersected_rect.Intersect(root_visible_rect);
     intersected_rect.Move(-local_root_view->ScrollOffsetInt());
 

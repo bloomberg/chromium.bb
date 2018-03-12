@@ -226,8 +226,8 @@ IntRect EnclosedIntRect(const FloatRect& rect) {
   FloatPoint max_point(floorf(rect.MaxX()), floorf(rect.MaxY()));
   FloatSize size = max_point - location;
   size.ClampNegativeToZero();
-  FloatRect enclosed_rect(location, size);
-  return IntRect(enclosed_rect);
+  return IntRect(clampTo<int>(location.X()), clampTo<int>(location.Y()),
+                 clampTo<int>(size.Width()), clampTo<int>(size.Height()));
 }
 
 IntRect RoundedIntRect(const FloatRect& rect) {

@@ -474,7 +474,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   }
 
   void ComputePageRects(const FloatSize& print_size) override {
-    IntRect rect(FloatRect(FloatPoint(0, 0), print_size));
+    IntRect rect(IntPoint(0, 0), FlooredIntSize(print_size));
     print_params_.print_content_area = rect;
     page_rects_.Fill(rect, plugin_->PrintBegin(print_params_));
   }
@@ -1595,8 +1595,8 @@ void WebLocalFrameImpl::PrintPagesForTesting(
 
 WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
   return HasSelection()
-             ? WebRect(
-                   IntRect(GetFrame()->Selection().AbsoluteUnclippedBounds()))
+             ? WebRect(PixelSnappedIntRect(
+                   GetFrame()->Selection().AbsoluteUnclippedBounds()))
              : WebRect();
 }
 
