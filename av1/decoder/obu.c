@@ -191,6 +191,7 @@ static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
   uint32_t header_size, tg_payload_size;
 
   header_size = read_tile_group_header(pbi, rb, &startTile, &endTile);
+  if (startTile > endTile) return header_size;
   data += header_size;
   av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, startTile,
                                  endTile, is_first_tg);
