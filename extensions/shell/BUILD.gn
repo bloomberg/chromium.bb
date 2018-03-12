@@ -10,7 +10,10 @@ import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
-if (is_mac) {
+
+if (is_linux) {
+  import("//build/linux/extract_symbols.gni")
+} else if (is_mac) {
   import("//build/config/mac/rules.gni")
   import("//third_party/icu/config.gni")
   import("//v8/gni/v8.gni")
@@ -502,6 +505,19 @@ source_set("unit_tests") {
     deps += [
       "//chromeos:test_support",
       "//components/keyed_service/content",
+    ]
+  }
+}
+
+if (is_desktop_linux && is_official_build) {
+  extract_symbols("app_shell_linux") {
+    # testonly because :app_shell is testonly. See :app_shell_lib comment.
+    testonly = true
+
+    binary = "$root_out_dir/app_shell"
+    symbol_file = "$root_out_dir/app_shell.breakpad.$current_cpu"
+    deps = [
+      ":app_shell",
     ]
   }
 }
