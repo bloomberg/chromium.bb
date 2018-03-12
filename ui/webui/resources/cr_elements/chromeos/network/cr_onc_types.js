@@ -46,7 +46,7 @@ CrOnc.NetworkStateProperties;
 /** @typedef {chrome.networkingPrivate.ManagedProperties} */
 CrOnc.NetworkProperties;
 
-/** @typedef {string|number|boolean|Object|Array<Object>} */
+/** @typedef {string|number|boolean|Array<string>|Object|Array<Object>} */
 CrOnc.NetworkPropertyType;
 
 /**
@@ -227,7 +227,7 @@ CrOnc.getActiveValue = function(property) {
   if (property == undefined)
     return undefined;
 
-  if (typeof property != 'object') {
+  if (typeof property != 'object' || Array.isArray(property)) {
     console.error(
         'getActiveValue called on non object: ' + JSON.stringify(property));
     return undefined;
