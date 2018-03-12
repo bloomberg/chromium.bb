@@ -1179,6 +1179,9 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   // default probs, either by av1_setup_past_independence or after manually
   // initializing them
   cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
+  if (cm->large_scale_tile) {
+    for (int i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+  }
 }
 
 void av1_setup_past_independence(AV1_COMMON *cm) {
