@@ -166,8 +166,17 @@ void AppListControllerImpl::SetModelData(
   model_.DeleteAllItems();
   search_model_.DeleteAllResults();
 
-  // Populate new models.
+  // Populate new models. First populate folders and then other items to avoid
+  // automatically creating items in |AddItemToFolder|.
   for (auto& app : apps) {
+    if (!app->is_folder)
+      continue;
+    DCHECK(app->folder_id.empty());
+    AddItem(std::move(app));
+  }
+  for (auto& app : apps) {
+    if (!app)
+      continue;
     const std::string folder_id = app->folder_id;
     if (folder_id.empty())
       AddItem(std::move(app));
