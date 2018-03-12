@@ -1046,42 +1046,14 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 
 void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
   cm->cur_frame->cur_frame_offset = cm->frame_offset;
-  int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
-  int lst_buf_idx = cm->frame_refs[LAST_FRAME - LAST_FRAME].idx;
-  int gld_buf_idx = cm->frame_refs[GOLDEN_FRAME - LAST_FRAME].idx;
 
-  int lst2_buf_idx = cm->frame_refs[LAST2_FRAME - LAST_FRAME].idx;
-  int lst3_buf_idx = cm->frame_refs[LAST3_FRAME - LAST_FRAME].idx;
-  int bwd_buf_idx = cm->frame_refs[BWDREF_FRAME - LAST_FRAME].idx;
-  int alt2_buf_idx = cm->frame_refs[ALTREF2_FRAME - LAST_FRAME].idx;
-
-  if (alt_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[ALTREF_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[alt_buf_idx].cur_frame_offset;
-
-  if (lst_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[LAST_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[lst_buf_idx].cur_frame_offset;
-
-  if (gld_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[gld_buf_idx].cur_frame_offset;
-
-  if (lst2_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[lst2_buf_idx].cur_frame_offset;
-
-  if (lst3_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[lst3_buf_idx].cur_frame_offset;
-
-  if (bwd_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[bwd_buf_idx].cur_frame_offset;
-
-  if (alt2_buf_idx >= 0)
-    cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME] =
-        cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
+  MV_REFERENCE_FRAME ref_frame;
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
+    if (buf_idx >= 0)
+      cm->cur_frame->ref_frame_offset[ref_frame - LAST_FRAME] =
+          cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+  }
 }
 
 void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
