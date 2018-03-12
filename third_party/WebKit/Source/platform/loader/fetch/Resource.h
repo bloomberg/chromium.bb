@@ -148,10 +148,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void SetRevalidatingRequest(const ResourceRequest&);
 
-  void SetFetcherSecurityOrigin(const SecurityOrigin* origin) {
-    fetcher_security_origin_ = origin;
-  }
-
   // This url can have a fragment, but it can match resources that differ by the
   // fragment only.
   const KURL& Url() const { return GetResourceRequest().Url(); }
@@ -480,33 +476,23 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   ResourceStatus status_;
 
   // A SecurityOrigin representing the origin from which the loading of the
-  // Resource was initiated. This is calculated and set by ResourceFetcher at
-  // the beginning of the loading.
+  // Resource was initiated. This is calculated and set on Resource creation.
   //
   // Unlike |security_origin| on |options_|, which:
   // - holds a SecurityOrigin to override the FetchContext's SecurityOrigin
   //   (in case of e.g. that the script initiated the loading is in an isolated
   //   world)
-  // - may be modified during redirect as required by the CORS protocol
-  // this variable is stable after the loading has started.
   //
-  // Used and should be used only for isolating resources for different origins
-  // in the MemoryCache.
+  // Used for isolating resources for different origins in the MemoryCache.
   //
-  // TODO(crbug.com/811669): Merge with some of the other SecurityOrigin
-  // variables.
+  // Note: A Resource returned from the memory cache has an origin for the first
+  // initiator that fetched the Resource. It may be different from the origin
+  // that you need for any runtime security check in Blink.
   scoped_refptr<const SecurityOrigin> source_origin_;
 
   CORSStatus cors_status_;
 
   Member<CachedMetadataHandler> cache_handler_;
-
-  // Holds the SecurityOrigin obtained from the associated FetchContext.
-  // ResourceFetcher sets this at the beginning of loading. The override by
-  // specifying a SecurityOrigin in ResourceLoaderOptions doesn't affect this.
-  //
-  // TODO(crbug.com/811669): Merge this with |source_origin_|.
-  scoped_refptr<const SecurityOrigin> fetcher_security_origin_;
 
   Optional<ResourceError> error_;
 
