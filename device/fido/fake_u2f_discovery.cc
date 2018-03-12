@@ -14,8 +14,10 @@ namespace test {
 
 // FakeU2fDiscovery ----------------------------------------------------------
 
-FakeU2fDiscovery::FakeU2fDiscovery(U2fTransportProtocol transport)
+FakeU2fDiscovery::FakeU2fDiscovery(U2fTransportProtocol transport,
+                                   StartStopMode mode)
     : transport_(transport),
+      mode_(mode),
       start_called_callback_(wait_for_start_loop_.QuitClosure()),
       stop_called_callback_(wait_for_stop_loop_.QuitClosure()) {}
 FakeU2fDiscovery::~FakeU2fDiscovery() = default;
@@ -62,6 +64,9 @@ void FakeU2fDiscovery::Start() {
 
   ASSERT_TRUE(start_called_callback_) << "Start called twice.";
   std::move(start_called_callback_).Run();
+
+  if (mode_ == StartStopMode::kAutomatic)
+    SimulateStarted(true /* success */);
 }
 
 void FakeU2fDiscovery::Stop() {
@@ -70,69 +75,44 @@ void FakeU2fDiscovery::Stop() {
 
   ASSERT_TRUE(stop_called_callback_) << "Stop called twice.";
   std::move(stop_called_callback_).Run();
+
+  if (mode_ == StartStopMode::kAutomatic)
+    SimulateStopped(true /* success */);
 }
 
 // ScopedFakeU2fDiscoveryFactory ---------------------------------------------
 
-ScopedFakeU2fDiscoveryFactory::ScopedFakeU2fDiscoveryFactory() {
-  DCHECK(!g_current_factory) << "Nested fake factories not yet supported.";
-  g_current_factory = this;
+ScopedFakeU2fDiscoveryFactory::ScopedFakeU2fDiscoveryFactory() = default;
+ScopedFakeU2fDiscoveryFactory::~ScopedFakeU2fDiscoveryFactory() = default;
 
-  original_factory_func_ =
-      std::exchange(U2fDiscovery::g_factory_func_, &CreateFakeU2fDiscovery);
-}
-
-ScopedFakeU2fDiscoveryFactory::~ScopedFakeU2fDiscoveryFactory() {
-  g_current_factory = nullptr;
-  U2fDiscovery::g_factory_func_ = original_factory_func_;
-}
-
-FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextHidDiscovery() {
-  return static_cast<FakeU2fDiscovery*>(
-      SetNextHidDiscovery(std::make_unique<FakeU2fDiscovery>(
-          U2fTransportProtocol::kUsbHumanInterfaceDevice)));
-}
-
-FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextBleDiscovery() {
-  return static_cast<FakeU2fDiscovery*>(
-      SetNextBleDiscovery(std::make_unique<FakeU2fDiscovery>(
-          U2fTransportProtocol::kBluetoothLowEnergy)));
-}
-
-U2fDiscovery* ScopedFakeU2fDiscoveryFactory::SetNextHidDiscovery(
-    std::unique_ptr<U2fDiscovery> replacement) {
-  DCHECK_EQ(replacement->GetTransportProtocol(),
-            U2fTransportProtocol::kUsbHumanInterfaceDevice);
-  next_hid_discovery_ = std::move(replacement);
+FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextHidDiscovery(
+    FakeU2fDiscovery::StartStopMode mode) {
+  next_hid_discovery_ = std::make_unique<FakeU2fDiscovery>(
+      U2fTransportProtocol::kUsbHumanInterfaceDevice, mode);
   return next_hid_discovery_.get();
 }
 
-U2fDiscovery* ScopedFakeU2fDiscoveryFactory::SetNextBleDiscovery(
-    std::unique_ptr<U2fDiscovery> replacement) {
-  DCHECK_EQ(replacement->GetTransportProtocol(),
-            U2fTransportProtocol::kBluetoothLowEnergy);
-  next_ble_discovery_ = std::move(replacement);
+FakeU2fDiscovery* ScopedFakeU2fDiscoveryFactory::ForgeNextBleDiscovery(
+    FakeU2fDiscovery::StartStopMode mode) {
+  next_ble_discovery_ = std::make_unique<FakeU2fDiscovery>(
+      U2fTransportProtocol::kBluetoothLowEnergy, mode);
   return next_ble_discovery_.get();
 }
 
-// static
-std::unique_ptr<U2fDiscovery>
-ScopedFakeU2fDiscoveryFactory::CreateFakeU2fDiscovery(
+std::unique_ptr<U2fDiscovery> ScopedFakeU2fDiscoveryFactory::CreateU2fDiscovery(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {
   switch (transport) {
     case U2fTransportProtocol::kBluetoothLowEnergy:
-      return std::move(g_current_factory->next_ble_discovery_);
+      DCHECK(next_ble_discovery_);
+      return std::move(next_ble_discovery_);
     case U2fTransportProtocol::kUsbHumanInterfaceDevice:
-      return std::move(g_current_factory->next_hid_discovery_);
+      DCHECK(next_hid_discovery_);
+      return std::move(next_hid_discovery_);
   }
   NOTREACHED();
   return nullptr;
 }
-
-// static
-ScopedFakeU2fDiscoveryFactory*
-    ScopedFakeU2fDiscoveryFactory::g_current_factory = nullptr;
 
 }  // namespace test
 }  // namespace device
