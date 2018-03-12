@@ -175,6 +175,12 @@ GURL SchemeHostPort::GetURL() const {
   if (IsInvalid())
     return GURL(std::move(serialized), parsed, false);
 
+  // SchemeHostPort does not have enough information to determine if an empty
+  // host is valid or not for the given scheme. Force re-parsing.
+  DCHECK(!scheme_.empty());
+  if (host_.empty())
+    return GURL(serialized);
+
   // If the serialized string is passed to GURL for parsing, it will append an
   // empty path "/". Add that here. Note: per RFC 6454 we cannot do this for
   // normal Origin serialization.
