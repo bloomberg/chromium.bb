@@ -54,7 +54,8 @@ public class AppBannerUiDelegateAndroid
 
     @Override
     public void onDialogDismissed() {
-        destroy();
+        mDialog = null;
+        mInstallerDelegate = null;
     }
 
     @Override
@@ -76,6 +77,11 @@ public class AppBannerUiDelegateAndroid
     @CalledByNative
     public void createInstallerDelegate(InstallerDelegate.Observer observer) {
         mInstallerDelegate = new InstallerDelegate(Looper.getMainLooper(), observer);
+    }
+
+    @CalledByNative
+    private AddToHomescreenDialog getDialogForTesting() {
+        return mDialog;
     }
 
     @CalledByNative

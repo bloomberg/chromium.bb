@@ -45,6 +45,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kClipboardContentSetting,
     &features::kDownloadsForeground,
     &features::kDownloadsLocationChange,
+    &features::kExperimentalAppBanners,
     &features::kImportantSitesInCbd,
     &features::kMaterialDesignIncognitoNTP,
     &features::kPermissionDelegation,
