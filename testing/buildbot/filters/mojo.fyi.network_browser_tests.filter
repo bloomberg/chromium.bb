@@ -218,8 +218,9 @@
 -ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload
 -DNSErrorPageTest.StaleCacheStatus
 
-# Switch test from using a net::URLRequestInterceptor to using a test
-# URLLoaderFactory via SetNetworkFactoryForTesting.
+# http://crbug.com/809583
+# Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
+# using WebContentsObserver and NavigationHandle.
 -PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
 -PredictorBrowserTest.CrossSiteRedirectNoPredictionWithPath
 -PredictorBrowserTest.CrossSiteRedirectPredictionWithNoPath
