@@ -4,12 +4,11 @@
 #+grade:2
 #+system:bfu
 
-#-display-name: Unified French Grade 2
-#-authors: 
-# - The BRLTTY Team <http://brltty.com/>
-# - André-Abush CLAUSE <dev@andreabc.net>
-# - Nicolas Pitre <nico@fluxnic.net>
-# - Michel Such <michel.such@free.fr>
+#-display-name: Unified French contracted braille
+#-author: The BRLTTY Team <http://brltty.com/>
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Nicolas Pitre <nico@fluxnic.net>
+#-author: Michel Such <michel.such@free.fr>
 #
 #-license: LGPLv2.1
 #-updated: 2018-03-04
