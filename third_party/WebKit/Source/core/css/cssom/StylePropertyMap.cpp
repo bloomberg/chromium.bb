@@ -12,7 +12,7 @@
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 namespace blink {
 

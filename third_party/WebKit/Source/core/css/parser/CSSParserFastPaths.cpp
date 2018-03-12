@@ -16,7 +16,7 @@
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParser.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/StringToNumber.h"

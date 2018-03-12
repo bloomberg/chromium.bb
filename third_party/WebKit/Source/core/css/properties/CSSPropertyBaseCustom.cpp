@@ -4,7 +4,7 @@
 
 // This file contains methods of CSSProperty that are not generated.
 
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/style/ComputedStyle.h"

@@ -34,7 +34,7 @@
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/WebFeature.h"

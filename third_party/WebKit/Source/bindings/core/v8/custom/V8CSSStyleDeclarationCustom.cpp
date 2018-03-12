@@ -39,7 +39,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/html/custom/CEReactionsScope.h"

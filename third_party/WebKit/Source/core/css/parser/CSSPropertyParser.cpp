@@ -17,8 +17,8 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/Shorthand.h"
+#include "core/css/properties/css_property.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {

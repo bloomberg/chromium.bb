@@ -32,7 +32,7 @@
 #define StyleBuilder_h
 
 #include "core/CoreExport.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
 #include "platform/heap/Handle.h"
 

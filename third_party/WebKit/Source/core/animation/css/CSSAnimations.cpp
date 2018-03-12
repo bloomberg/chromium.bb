@@ -52,7 +52,7 @@
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/parser/CSSVariableParser.h"
-#include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/css_property.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
