@@ -316,13 +316,9 @@ void InkDropHostView::UpdateInkDropMaskLayerSize(const gfx::Size& new_size) {
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
-  std::unique_ptr<InkDropImpl> ink_drop =
-      std::make_unique<InkDropImpl>(this, size());
-  views::InkDropImpl::AutoHighlightMode mode =
-      PlatformStyle::kUseRipples
-          ? views::InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE
-          : views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE;
-  ink_drop->SetAutoHighlightMode(mode);
+  auto ink_drop = std::make_unique<InkDropImpl>(this, size());
+  ink_drop->SetAutoHighlightMode(
+      InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
   return ink_drop;
 }
 
