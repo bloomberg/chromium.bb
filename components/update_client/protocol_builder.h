@@ -20,8 +20,8 @@ class Configurator;
 class PersistedData;
 
 // Creates the values for the DDOS extra request headers sent with the update
-// check. These headers include "X-GoogleUpdate-Updater",
-// "X-GoogleUpdate-AppId", and  "X-GoogleUpdate-Interactivity".
+// check. These headers include "X-Goog-Update-Updater",
+// "X-Goog-Update-AppId", and  "X-Goog-Update-Interactivity".
 std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
     scoped_refptr<Configurator> config,
     const std::vector<std::string>& ids_checked,

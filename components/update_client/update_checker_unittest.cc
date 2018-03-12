@@ -300,13 +300,13 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 
   // Check the DDOS protection header values.
   const auto extra_request_headers = post_interceptor_->GetRequests()[0].second;
-  EXPECT_TRUE(extra_request_headers.HasHeader("X-GoogleUpdate-Interactivity"));
+  EXPECT_TRUE(extra_request_headers.HasHeader("X-Goog-Update-Interactivity"));
   std::string header;
-  extra_request_headers.GetHeader("X-GoogleUpdate-Interactivity", &header);
+  extra_request_headers.GetHeader("X-Goog-Update-Interactivity", &header);
   EXPECT_STREQ(GetParam() ? "fg" : "bg", header.c_str());
-  extra_request_headers.GetHeader("X-GoogleUpdate-Updater", &header);
+  extra_request_headers.GetHeader("X-Goog-Update-Updater", &header);
   EXPECT_STREQ("fake_prodid-30.0", header.c_str());
-  extra_request_headers.GetHeader("X-GoogleUpdate-AppId", &header);
+  extra_request_headers.GetHeader("X-Goog-Update-AppId", &header);
   EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", header.c_str());
 }
 

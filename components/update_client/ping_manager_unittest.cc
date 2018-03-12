@@ -135,11 +135,11 @@ TEST_F(PingManagerTest, SendPing) {
 
     // Check the ping request does not carry the specific extra request headers.
     EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
-        "X-GoogleUpdate-Interactivity"));
+        "X-Goog-Update-Interactivity"));
     EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
-        "X-GoogleUpdate-Updater"));
+        "X-Goog-Update-Updater"));
     EXPECT_FALSE(
-        interceptor->GetRequests()[0].second.HasHeader("X-GoogleUpdate-AppId"));
+        interceptor->GetRequests()[0].second.HasHeader("X-Goog-Update-AppId"));
 
     interceptor->Reset();
   }
