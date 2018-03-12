@@ -1629,7 +1629,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = true;
+  bool support_raster_interface = false;
   bool support_oop_rasterization = false;
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
