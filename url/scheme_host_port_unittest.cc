@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
+#include "url/url_util.h"
 
 namespace {
 
@@ -250,6 +251,23 @@ TEST(SchemeHostPortTest, Comparison) {
       EXPECT_EQ(j < i, to_compare < current) << j << " < " << i;
     }
   }
+}
+
+// Some schemes have optional authority. Make sure that GURL conversion from
+// SchemeHostPort is not opinionated in that regard. For more info, See
+// crbug.com/820194, where we considered all SchemeHostPorts with
+// SCHEME_WITHOUT_PORT as valid with empty hosts, even though some are not (e.g.
+// chrome URLs).
+TEST(SchemeHostPortTest, EmptyHostGurlConversion) {
+  url::AddStandardScheme("chrome", url::SCHEME_WITHOUT_PORT);
+
+  GURL chrome_url("chrome:");
+  EXPECT_FALSE(chrome_url.is_valid());
+
+  url::SchemeHostPort chrome_tuple("chrome", "", 0);
+  EXPECT_FALSE(chrome_tuple.GetURL().is_valid());
+  ExpectParsedUrlsEqual(GURL(chrome_tuple.Serialize()), chrome_tuple.GetURL());
+  ExpectParsedUrlsEqual(chrome_url, chrome_tuple.GetURL());
 }
 
 }  // namespace url
