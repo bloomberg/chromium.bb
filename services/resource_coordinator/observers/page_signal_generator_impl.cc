@@ -24,6 +24,19 @@ namespace resource_coordinator {
 constexpr base::TimeDelta PageSignalGeneratorImpl::kLoadedAndIdlingTimeout =
     base::TimeDelta::FromSeconds(1);
 
+// This is taken as the 95th percentile of tab loading times on the Windows
+// platform (see SessionRestore.ForegroundTabFirstLoaded). This ensures that
+// all tabs eventually transition to loaded, even if they keep the main task
+// queue busy, or continue loading content.
+// static
+constexpr base::TimeDelta PageSignalGeneratorImpl::kWaitingForIdleTimeout =
+    base::TimeDelta::FromMinutes(1);
+
+// Ensure the timeouts make sense relative to each other.
+static_assert(PageSignalGeneratorImpl::kWaitingForIdleTimeout >
+                  PageSignalGeneratorImpl::kLoadedAndIdlingTimeout,
+              "timeouts must be well ordered");
+
 PageSignalGeneratorImpl::PageSignalGeneratorImpl() = default;
 
 PageSignalGeneratorImpl::~PageSignalGeneratorImpl() = default;
@@ -36,15 +49,23 @@ void PageSignalGeneratorImpl::AddReceiver(
 bool PageSignalGeneratorImpl::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
   auto cu_type = coordination_unit->id().type;
+  // Always tracked process CUs. This is used for CPU utilization messages.
+  if (cu_type == CoordinationUnitType::kProcess)
+    return true;
+  if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
+    return false;
+  // Frame and page CUs are only used for PAI.
   return cu_type == CoordinationUnitType::kFrame ||
-         cu_type == CoordinationUnitType::kPage ||
-         cu_type == CoordinationUnitType::kProcess;
+         cu_type == CoordinationUnitType::kPage;
 }
 
 void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
     const CoordinationUnitBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != CoordinationUnitType::kPage)
+    return;
+
+  if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
     return;
 
   // Create page data exists for this Page CU.
@@ -58,6 +79,10 @@ void PageSignalGeneratorImpl::OnBeforeCoordinationUnitDestroyed(
   auto cu_type = cu->id().type;
   if (cu_type != CoordinationUnitType::kPage)
     return;
+
+  if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
+    return;
+
   auto* page_cu = static_cast<const PageCoordinationUnitImpl*>(cu);
   size_t count = page_data_.erase(page_cu);
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
@@ -67,6 +92,8 @@ void PageSignalGeneratorImpl::OnFramePropertyChanged(
     const FrameCoordinationUnitImpl* frame_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
   // Only the network idle state of a frame is of interest.
   if (property_type != mojom::PropertyType::kNetworkAlmostIdle)
     return;
@@ -77,6 +104,8 @@ void PageSignalGeneratorImpl::OnPagePropertyChanged(
     const PageCoordinationUnitImpl* page_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
   // Only the loading state of a page is of interest.
   if (property_type != mojom::PropertyType::kIsLoading)
     return;
@@ -99,14 +128,19 @@ void PageSignalGeneratorImpl::OnProcessPropertyChanged(
                            page_cu->id(),
                            base::TimeDelta::FromMilliseconds(duration));
     }
-  } else if (property_type == mojom::PropertyType::kMainThreadTaskLoadIsLow) {
-    UpdateLoadIdleStateProcess(process_cu);
+  } else {
+    if (resource_coordinator::IsPageAlmostIdleSignalEnabled() &&
+        property_type == mojom::PropertyType::kMainThreadTaskLoadIsLow) {
+      UpdateLoadIdleStateProcess(process_cu);
+    }
   }
 }
 
 void PageSignalGeneratorImpl::OnPageEventReceived(
     const PageCoordinationUnitImpl* page_cu,
     const mojom::Event event) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
   // Only the navigation committed event is of interest.
   if (event != mojom::Event::kNavigationCommitted)
     return;
@@ -126,6 +160,8 @@ void PageSignalGeneratorImpl::BindToInterface(
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStateFrame(
     const FrameCoordinationUnitImpl* frame_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
   // Only main frames are relevant in the load idle state.
   if (!frame_cu->IsMainFrame())
     return;
@@ -139,6 +175,8 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStateFrame(
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
     const PageCoordinationUnitImpl* page_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+
   auto* page_data = GetPageData(page_cu);
 
   // Once the cycle is complete state transitions are no longer tracked for this
@@ -150,6 +188,15 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
   page_data->idling_timer.Stop();
   base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
 
+  // Determine if the overall timeout has fired.
+  if ((page_data->load_idle_state == kLoadedNotIdling ||
+       page_data->load_idle_state == kLoadedAndIdling) &&
+      (now - page_data->loading_stopped) >= kWaitingForIdleTimeout) {
+    TransitionToLoadedAndIdle(page_cu);
+    return;
+  }
+
+  // Otherwise do normal state transitions.
   switch (page_data->load_idle_state) {
     case kLoadingNotStarted: {
       if (!IsLoading(page_cu))
@@ -162,39 +209,36 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
       if (IsLoading(page_cu))
         return;
       page_data->load_idle_state = kLoadedNotIdling;
+      page_data->loading_stopped = now;
       // Let the kLoadedNotIdling state transition evaluate, allowing an
       // effective transition directly from kLoading to kLoadedAndIdling.
       FALLTHROUGH;
     }
 
     case kLoadedNotIdling: {
-      if (!IsIdling(page_cu))
-        return;
-      page_data->load_idle_state = kLoadedAndIdling;
-      page_data->idling_started = now;
+      if (IsIdling(page_cu)) {
+        page_data->load_idle_state = kLoadedAndIdling;
+        page_data->idling_started = now;
+      }
       // Break out of the switch statement and set a timer to check for the
       // next state transition.
       break;
     }
 
     case kLoadedAndIdling: {
-      // If the page is not still idling then transition back a state. The timer
-      // has already been canceled above so future calls will only be due to
-      // potential changes in idling state.
+      // If the page is not still idling then transition back a state.
       if (!IsIdling(page_cu)) {
         page_data->load_idle_state = kLoadedNotIdling;
-        return;
+      } else {
+        // Idling has been happening long enough so make the last state
+        // transition.
+        if (now - page_data->idling_started >= kLoadedAndIdlingTimeout) {
+          TransitionToLoadedAndIdle(page_cu);
+          return;
+        }
       }
-
-      // Idling has been occurred long enough then make the last state
-      // transition.
-      if (now - page_data->idling_started >= kLoadedAndIdlingTimeout) {
-        page_data->load_idle_state = kLoadedAndIdle;
-        // Notify observers that the page is loaded and idle.
-        DISPATCH_PAGE_SIGNAL(receivers_, NotifyPageAlmostIdle, page_cu->id());
-        return;
-      }
-
+      // Break out of the switch statement and set a timer to check for the
+      // next state transition.
       break;
     }
 
@@ -203,24 +247,39 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
       NOTREACHED();
   }
 
-  // Getting here means a new timer needs to be set.
-  DCHECK_EQ(kLoadedAndIdling, page_data->load_idle_state);
-  base::TimeDelta idling_timeout =
-      (page_data->idling_started + kLoadedAndIdlingTimeout) - now;
+  // Getting here means a new timer needs to be set. Use the nearer of the two
+  // applicable timeouts.
+  base::TimeDelta timeout =
+      (page_data->loading_stopped + kWaitingForIdleTimeout) - now;
+  if (page_data->load_idle_state == kLoadedAndIdling) {
+    timeout = std::min(
+        timeout, (page_data->idling_started + kLoadedAndIdlingTimeout) - now);
+  }
   page_data->idling_timer.Start(
-      FROM_HERE, idling_timeout,
+      FROM_HERE, timeout,
       base::Bind(&PageSignalGeneratorImpl::UpdateLoadIdleStatePage,
                  base::Unretained(this), page_cu));
 }
 
 void PageSignalGeneratorImpl::UpdateLoadIdleStateProcess(
     const ProcessCoordinationUnitImpl* process_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   for (auto* frame_cu : process_cu->GetFrameCoordinationUnits())
     UpdateLoadIdleStateFrame(frame_cu);
 }
 
+void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
+    const PageCoordinationUnitImpl* page_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+  auto* page_data = GetPageData(page_cu);
+  page_data->load_idle_state = kLoadedAndIdle;
+  // Notify observers that the page is loaded and idle.
+  DISPATCH_PAGE_SIGNAL(receivers_, NotifyPageAlmostIdle, page_cu->id());
+}
+
 PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
     const PageCoordinationUnitImpl* page_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // There are two ways to enter this function:
   // 1. Via On*PropertyChange calls. The backing PageData is guaranteed to
   //    exist in this case as the lifetimes are managed by the CU graph.
@@ -233,6 +292,7 @@ PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
 
 bool PageSignalGeneratorImpl::IsLoading(
     const PageCoordinationUnitImpl* page_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   int64_t is_loading = 0;
   if (!page_cu->GetProperty(mojom::PropertyType::kIsLoading, &is_loading))
     return false;
@@ -241,6 +301,7 @@ bool PageSignalGeneratorImpl::IsLoading(
 
 bool PageSignalGeneratorImpl::IsIdling(
     const PageCoordinationUnitImpl* page_cu) {
+  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // Get the Frame CU for the main frame associated with this page.
   const FrameCoordinationUnitImpl* main_frame_cu =
       page_cu->GetMainFrameCoordinationUnit();

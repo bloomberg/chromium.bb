@@ -4,17 +4,37 @@
 
 #include "services/resource_coordinator/observers/page_signal_generator_impl.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/resource_coordinator_clock.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
+
+// A wrapper for a tick clock. ResourceCoordinatorClock wants TickClock
+// ownership, but the test harness only provides a raw pointer.
+class TickClockWrapper : public base::TickClock {
+ public:
+  explicit TickClockWrapper(base::TickClock* tick_clock)
+      : tick_clock_(tick_clock) {}
+
+  ~TickClockWrapper() override {}
+
+  // base::TickClock implementation:
+  base::TimeTicks NowTicks() override { return tick_clock_->NowTicks(); }
+
+ private:
+  base::TickClock* tick_clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(TickClockWrapper);
+};
 
 class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
@@ -34,12 +54,23 @@ class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
 
 class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
  protected:
+  void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
+
   MockPageSignalGeneratorImpl* page_signal_generator() {
     return &page_signal_generator_;
   }
 
+  void EnablePAI() {
+    feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    feature_list_->InitAndEnableFeature(features::kPageAlmostIdle);
+    ASSERT_TRUE(resource_coordinator::IsPageAlmostIdleSignalEnabled());
+  }
+
+  void TestPageAlmostIdleTransitions(bool timeout);
+
  private:
   MockPageSignalGeneratorImpl page_signal_generator_;
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
 TEST_F(PageSignalGeneratorImplTest,
@@ -61,6 +92,7 @@ TEST_F(PageSignalGeneratorImplTest,
 }
 
 TEST_F(PageSignalGeneratorImplTest, IsLoading) {
+  EnablePAI();
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
   auto* page_cu = cu_graph.page.get();
   auto* psg = page_signal_generator();
@@ -80,6 +112,7 @@ TEST_F(PageSignalGeneratorImplTest, IsLoading) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, IsIdling) {
+  EnablePAI();
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
   auto* frame_cu = cu_graph.frame.get();
   auto* page_cu = cu_graph.page.get();
@@ -114,6 +147,7 @@ TEST_F(PageSignalGeneratorImplTest, IsIdling) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
+  EnablePAI();
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
   auto* page_cu = cu_graph.page.get();
   auto* psg = page_signal_generator();
@@ -127,12 +161,11 @@ TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
   EXPECT_EQ(0u, psg->page_data_.count(page_cu));
 }
 
-TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitions) {
+void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
+  EnablePAI();
   ResourceCoordinatorClock::SetClockForTesting(
-      std::make_unique<base::SimpleTestTickClock>());
-  auto* test_clock = static_cast<base::SimpleTestTickClock*>(
-      ResourceCoordinatorClock::GetClockForTesting());
-  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+      std::make_unique<TickClockWrapper>(task_env().GetMockTickClock()));
+  task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
   auto* frame_cu = cu_graph.frame.get();
@@ -185,24 +218,37 @@ TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitions) {
   EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
-  // Go back to not idling. We should transition back to kLoadedNotIdling.
+  // Go back to not idling. We should transition back to kLoadedNotIdling, and
+  // a timer should still be running.
   frame_cu->SetNetworkAlmostIdle(false);
   EXPECT_EQ(LIS::kLoadedNotIdling, page_data->load_idle_state);
-  EXPECT_FALSE(page_data->idling_timer.IsRunning());
-
-  // Go back to idling.
-  frame_cu->SetNetworkAlmostIdle(true);
-  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
-  // Let the timer evaluate. The final state transition should occur.
-  // TODO(chrisha): Expose the tick clock from the ScopedTaskEnvironment, and
-  // use that clock in the ResourceCoordinatorClock. Beats having two separate
-  // fake clocks that need to be manually kept in sync.
-  test_clock->Advance(PageSignalGeneratorImpl::kLoadedAndIdlingTimeout);
-  task_env().FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
-  EXPECT_FALSE(page_data->idling_timer.IsRunning());
+  base::TimeTicks start = ResourceCoordinatorClock::NowTicks();
+  if (timeout) {
+    // Let the timeout run down. The final state transition should occur.
+    task_env().FastForwardUntilNoTasksRemain();
+    base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
+    base::TimeDelta elapsed = end - start;
+    EXPECT_LE(PageSignalGeneratorImpl::kLoadedAndIdlingTimeout, elapsed);
+    EXPECT_LE(PageSignalGeneratorImpl::kWaitingForIdleTimeout, elapsed);
+    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+    EXPECT_FALSE(page_data->idling_timer.IsRunning());
+  } else {
+    // Go back to idling.
+    frame_cu->SetNetworkAlmostIdle(true);
+    EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
+    EXPECT_TRUE(page_data->idling_timer.IsRunning());
+
+    // Let the idle timer evaluate. The final state transition should occur.
+    task_env().FastForwardUntilNoTasksRemain();
+    base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
+    base::TimeDelta elapsed = end - start;
+    EXPECT_LE(PageSignalGeneratorImpl::kLoadedAndIdlingTimeout, elapsed);
+    EXPECT_GT(PageSignalGeneratorImpl::kWaitingForIdleTimeout, elapsed);
+    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+    EXPECT_FALSE(page_data->idling_timer.IsRunning());
+  }
 
   // Firing other signals should not change the state at all.
   proc_cu->SetMainThreadTaskLoadIsLow(false);
@@ -216,6 +262,14 @@ TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitions) {
   page_cu->OnMainFrameNavigationCommitted();
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state);
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
+}
+
+TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitionsNoTimeout) {
+  TestPageAlmostIdleTransitions(false);
+}
+
+TEST_F(PageSignalGeneratorImplTest, PageAlmostIdleTransitionsWithTimeout) {
+  TestPageAlmostIdleTransitions(true);
 }
 
 }  // namespace resource_coordinator
