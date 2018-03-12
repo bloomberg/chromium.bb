@@ -119,10 +119,7 @@ const char kPageAction[] = "page_action";
 const char kPageActionDefaultIcon[] = "default_icon";
 const char kPageActionDefaultPopup[] = "default_popup";
 const char kPageActionDefaultTitle[] = "default_title";
-const char kPageActionIcons[] = "icons";
 const char kPageActionId[] = "id";
-const char kPageActionPopup[] = "popup";
-const char kPageActionPopupPath[] = "path";
 const char kPermissions[] = "permissions";
 const char kPlatformAppBackground[] = "app.background";
 const char kPlatformAppBackgroundPage[] = "app.background.page";
@@ -579,11 +576,6 @@ const char kInvalidPageActionIconPath[] =
     "Invalid value for 'page_action.default_icon'.";
 const char kInvalidPageActionId[] =
     "Required value 'id' is missing or invalid.";
-const char kInvalidPageActionName[] =
-    "Invalid value for 'page_action.name'.";
-const char kInvalidPageActionOldAndNewKeys[] =
-    "Key \"*\" is deprecated.  Key \"*\" has the same meaning.  You can not "
-    "use both.";
 const char kInvalidPageActionPopup[] =
     "Invalid type for page action popup.";
 const char kInvalidPageActionPopupPath[] =

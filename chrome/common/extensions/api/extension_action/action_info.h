@@ -76,8 +76,6 @@ struct ActionInfo {
   // Specifies if the action applies to all web pages ("enabled") or
   // only specific pages ("disabled"). Only applies to the "action" key.
   DefaultState default_state;
-  // action id -- only used with legacy page actions API.
-  std::string id;
   // Whether or not this action was synthesized to force visibility.
   bool synthesized;
 };

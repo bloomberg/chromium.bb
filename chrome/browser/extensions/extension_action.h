@@ -65,10 +65,6 @@ class ExtensionAction {
     return action_type_;
   }
 
-  // action id -- only used with legacy page actions API
-  std::string id() const { return id_; }
-  void set_id(const std::string& id) { id_ = id; }
-
   // Set the url which the popup will load when the user clicks this action's
   // icon.  Setting an empty URL will disable the popup for a given tab.
   void SetPopupUrl(int tab_id, const GURL& url);
