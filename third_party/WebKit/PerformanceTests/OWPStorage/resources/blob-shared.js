@@ -1,4 +1,3 @@
-let blobs = [];
 let totalBytes = 0;
 let errors = [];
 
@@ -27,14 +26,14 @@ function recordError(message) {
 function createBlob(size) {
   let blob = new Blob([new Uint8Array(size)],
                       {type: 'application/octet-string'});
-  blobs.push(blob);
   totalBytes += size;
+  return blob;
 }
 
 function readBlobAsync(blob) {
   const reader = new FileReader();
   return new Promise(resolve => {
-    reader.onerror = reportError;
+    reader.onerror = recordError;
     reader.onloadend = e => { resolve(reader); };
     reader.readAsArrayBuffer(blob);
   });
@@ -50,56 +49,20 @@ async function createAndRead(size) {
     recordError('Error reading blob: Blob size does not match.');
 }
 
-async function readBlobsSerially() {
-  if (blobs.length == 0)
-    return;
-
-  let totalReadSize = 0;
-  for (let i = 0; i < blobs.length; i++) {
-    const reader = await readBlobAsync(blobs[i]);
+let readBlobAsArrayBuffer = (blob, callback) => {
+  const reader = new FileReader();
+  reader.onerror = recordError;
+  reader.onloadend = () => {
     if (reader.error) {
-      recordError(`Error reading blob ${i}: ${reader.error}`);
-      return;
+      recordError(`Error reading blob: ${reader.error}`);
+    } else {
+      callback(reader.result);
     }
-    totalReadSize += reader.result.byteLength;
-    if (i == blobs.length - 1 && totalReadSize != totalBytes) {
-      recordError('Error reading blob: Total blob sizes do not match, ' +
-                  `${totalReadSize} vs ${totalBytes}`);
-    }
-  }
+  };
+  reader.readAsArrayBuffer(blob);
 }
 
-function readBlobsInParallel(callback) {
-  if (blobs.length == 0)
-    return;
-
-  let totalReadSize = 0;
-  let numRead = 0;
-
-  let getReader = e => {
-    const reader = new FileReader();
-    reader.onerror = reportError;
-    reader.onloadend = () => {
-      if (reader.error) {
-        recordError(`Error reading blob: ${reader.error}`);
-      } else {
-        totalReadSize += reader.result.byteLength;
-        if (++numRead == blobs.length) {
-          if (totalReadSize != totalBytes) {
-            recordError('Error reading blob: Total blob sizes do not match, ' +
-                        `${totalReadSize} vs ${totalBytes}`);
-          }
-          callback();
-        }
-      }
-    };
-    return reader;
-  }
-
-  blobs.map(blob => getReader().readAsArrayBuffer(blob));
-}
-
-async function blobCreateAndImmediatelyRead(numBlobs, size) {
+async function createBlobAndImmediatelyRead(numBlobs, size) {
   let start = performance.now();
   errors = [];
 
@@ -112,34 +75,34 @@ async function blobCreateAndImmediatelyRead(numBlobs, size) {
     logToDocumentBody('Errors on page: ' + errors.join(', '));
 }
 
-async function blobCreateAllThenReadSerially(numBlobs, size) {
+async function createBlobsAndReadInParallel(numBlobs, size) {
   errors = [];
 
-  logToDocumentBody(`Creating ${numBlobs} blobs...`);
-  for (let i = 0; i < numBlobs; i++)
-    createBlob(size);
-  logToDocumentBody('Finished creating.');
+  logToDocumentBody(`Creating and reading ${numBlobs} blobs...`);
+  await new Promise(resolve => {
+    let totalSizeRead = 0;
+    let blobsRead = 0;
+    let blobReadCallback = array => {
+      blobsRead += 1;
+      totalSizeRead += array.byteLength;
+      if (blobsRead == numBlobs) {
+        if (totalSizeRead != numBlobs * size) {
+          recordError(`Error reading blob, total sizes don't match ${totalSizeRead} vs ${numBlobs * size}`);
+        }
+        logToDocumentBody('Done reading all blobs.');
+        resolve();
+      }
+    }
 
-  logToDocumentBody(`Reading ${numBlobs} blobs serially...`);
-  await readBlobsSerially();
-  logToDocumentBody('Finished reading.');
+    for (let i = 0; i < numBlobs; i++) {
+      let blob = createBlob(size);
+      readBlobAsArrayBuffer(blob, blobReadCallback);
+    }
+  });
 
-  if (errors.length)
-    logToDocumentBody('Errors on page: ' + errors.join(', '));
-}
-
-async function blobCreateAllThenReadInParallel(numBlobs, size) {
-  errors = [];
-
-  logToDocumentBody(`Creating ${numBlobs} blobs...`);
-  for (let i = 0; i < numBlobs; i++)
-    createBlob(size);
-  logToDocumentBody('Finished creating.');
-
-  logToDocumentBody(`Reading ${numBlobs} blobs in parallel...`);
-  await new Promise(readBlobsInParallel);
-  logToDocumentBody('Finished reading.');
-
-  if (errors.length)
-    logToDocumentBody('Errors on page: ' + errors.join(', '));
+  if (errors.length) {
+    let errorStr = errors.join(', ');
+    logToDocumentBody('Errors on page: ' + errorStr);
+    reportError(errorStr);
+  }
 }

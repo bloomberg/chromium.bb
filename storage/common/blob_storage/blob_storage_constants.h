@@ -29,8 +29,18 @@ constexpr uint64_t kDefaultMinPageFileSize = 5ull * 1024 * 1024;
 const float kDefaultMaxBlobInMemorySpaceUnderPressureRatio = 0.002f;
 #endif
 
+// Specifies the size at which blob data will be transported by file instead of
+// memory. Overrides internal logic and allows perf tests to use the file path.
+constexpr const char kBlobFileTransportByFileTriggerSwitch[] =
+    "blob-transport-by-file-trigger";
+
 // All sizes are in bytes.
 struct STORAGE_COMMON_EXPORT BlobStorageLimits {
+  BlobStorageLimits();
+  ~BlobStorageLimits();
+  BlobStorageLimits(const BlobStorageLimits&);
+  BlobStorageLimits& operator=(const BlobStorageLimits&);
+
   // Returns if the current configuration is valid.
   bool IsValid() const;
 
@@ -49,7 +59,9 @@ struct STORAGE_COMMON_EXPORT BlobStorageLimits {
 
   // This is the maximum amount of memory we can send in an IPC.
   size_t max_ipc_memory_size = kDefaultIPCMemorySize;
-  // This is the maximum size of a shared memory handle.
+  // This is the maximum size of a shared memory handle. This can be overriden
+  // using the "blob-transport-shared-memory-max-size" switch (see
+  // BlobMemoryController).
   size_t max_shared_memory_size = kDefaultSharedMemorySize;
 
   // This is the maximum size of a bytes BlobDataItem. Only used for mojo
@@ -77,6 +89,11 @@ struct STORAGE_COMMON_EXPORT BlobStorageLimits {
   uint64_t min_page_file_size = kDefaultMinPageFileSize;
   // This is the maximum file size we can create.
   uint64_t max_file_size = kDefaultMaxPageFileSize;
+  // This overrides the minimum size for transporting a blob using the file
+  // strategy. This allows perf tests to force file transportation. This is
+  // usually set using the "blob-transport-by-file-min-size" switch (see
+  // BlobMemoryController).
+  uint64_t override_file_transport_min_size = 0ull;
 };
 
 enum class IPCBlobItemRequestStrategy {

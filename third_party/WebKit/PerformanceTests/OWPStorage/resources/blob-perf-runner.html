@@ -1,5 +1,5 @@
 <!doctype html>
-<title>Blob Build and Read Immediately Runner</title>
+<title>Blob Perf Runner</title>
 <script src="resources/blob-shared.js"></script>
 <script src="resources/shared.js"></script>
 <body></body>
@@ -8,7 +8,12 @@
     logToDocumentBody(`Starting benchmark: ${testParams.numBlobs} blobs of ` +
                       `size ${testParams.size}`);
     let start = Date.now();
-    await blobCreateAndImmediatelyRead(testParams.numBlobs, testParams.size);
+    let numReadImmediately = testParams.numBlobs / 2;
+    let numReadParallel = testParams.numBlobs / 2;
+    logToDocumentBody('Creating blobs and reading immediately, synchronously.');
+    await createBlobAndImmediatelyRead(numReadImmediately, testParams.size);
+    logToDocumentBody('Creating blobs and reading immediately, asynchronously.');
+    await createBlobsAndReadInParallel(numReadParallel, testParams.size);
     logToDocumentBody('Time: ' + (Date.now() - start));
     reportDone();
   }

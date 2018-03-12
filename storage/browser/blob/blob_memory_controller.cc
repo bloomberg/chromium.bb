@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/small_map.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -93,6 +94,8 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.MaxDiskSpace",
                           limits.desired_max_disk_space / kMegabyte);
   limits.effective_max_disk_space = limits.desired_max_disk_space;
+
+  CHECK(limits.IsValid());
 
   return limits;
 }
@@ -367,7 +370,19 @@ class BlobMemoryController::FileQuotaAllocationTask
     // Get the file sizes and total size.
     uint64_t total_size =
         GetTotalSizeAndFileSizes(unreserved_file_items, &file_sizes_);
-    DCHECK_LE(total_size, controller_->GetAvailableFileSpaceForBlobs());
+
+// When we do perf tests that force the file strategy, these often run
+// before |CalculateBlobStorageLimitsImpl| is complete. The disk isn't
+// enabled until after this call returns (|file_paging_enabled_| is false)
+// and |GetAvailableFileSpaceForBlobs()| will thus return 0. So skip this
+// check when we have a custom file transportation trigger.
+#if DCHECK_IS_ON()
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (LIKELY(
+            !command_line->HasSwitch(kBlobFileTransportByFileTriggerSwitch))) {
+      DCHECK_LE(total_size, controller_->GetAvailableFileSpaceForBlobs());
+    }
+#endif
     allocation_size_ = total_size;
 
     // Check & set our item states.
@@ -559,14 +574,22 @@ BlobMemoryController::Strategy BlobMemoryController::DetermineStrategy(
       preemptive_transported_bytes <= GetAvailableMemoryForBlobs()) {
     return Strategy::NONE_NEEDED;
   }
+
+  if (UNLIKELY(limits_.override_file_transport_min_size > 0) &&
+      file_paging_enabled_ &&
+      total_transportation_bytes >= limits_.override_file_transport_min_size) {
+    return Strategy::FILE;
+  }
+
+  if (total_transportation_bytes <= limits_.max_ipc_memory_size)
+    return Strategy::IPC;
+
   if (file_paging_enabled_ &&
       total_transportation_bytes <= GetAvailableFileSpaceForBlobs() &&
       total_transportation_bytes > limits_.memory_limit_before_paging()) {
     return Strategy::FILE;
   }
-  if (total_transportation_bytes > limits_.max_ipc_memory_size)
-    return Strategy::SHARED_MEMORY;
-  return Strategy::IPC;
+  return Strategy::SHARED_MEMORY;
 }
 
 bool BlobMemoryController::CanReserveQuota(uint64_t size) const {
