@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr/metrics/metrics_helper.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"

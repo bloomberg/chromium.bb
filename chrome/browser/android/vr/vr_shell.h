@@ -53,7 +53,6 @@ class AutocompleteController;
 class ToolbarHelper;
 class VrGLThread;
 class VrInputConnection;
-class VrMetricsHelper;
 class VrShellDelegate;
 class VrWebContentsObserver;
 struct AutocompleteRequest;
@@ -268,7 +267,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
   std::unique_ptr<AndroidUiGestureTarget> dialog_gesture_target_;
-  std::unique_ptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;

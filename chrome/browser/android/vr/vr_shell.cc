@@ -26,7 +26,6 @@
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
 #include "chrome/browser/android/vr/vr_shell_gl.h"
-#include "chrome/browser/android/vr/vr_usage_monitor.h"
 #include "chrome/browser/android/vr/vr_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
@@ -34,7 +33,8 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/vr/assets_loader.h"
-#include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr/metrics/metrics_helper.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -233,17 +233,14 @@ void VrShell::SwapContents(JNIEnv* env,
   vr_web_contents_observer_ = std::make_unique<VrWebContentsObserver>(
       web_contents_, this, ui_, toolbar_.get());
 
-  if (!GetNonNativePageWebContents()) {
-    metrics_helper_ = nullptr;
-    return;
+  // TODO(https://crbug.com/684661): Make SessionMetricsHelper tab-aware and
+  // able to track multiple tabs.
+  if (web_contents_) {
+    SessionMetricsHelper::CreateForWebContents(
+        web_contents_,
+        webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular,
+        web_vr_autopresentation_expected_);
   }
-
-  // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
-  // tabs. https://crbug.com/684661
-  metrics_helper_ = std::make_unique<VrMetricsHelper>(
-      GetNonNativePageWebContents(),
-      webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular,
-      web_vr_autopresentation_expected_);
 }
 
 void VrShell::SetAndroidGestureTarget(
@@ -426,8 +423,10 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
                                            gl_thread_->GetVrShellGl()));
 
   // exit vr session
-  if (metrics_helper_)
-    metrics_helper_->SetVRActive(false);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper)
+    metrics_helper->SetVRActive(false);
   SetIsInVR(GetNonNativePageWebContents(), false);
 
   poll_capturing_media_task_.Cancel();
@@ -437,8 +436,10 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::OnResume,
                                            gl_thread_->GetVrShellGl()));
 
-  if (metrics_helper_)
-    metrics_helper_->SetVRActive(true);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper)
+    metrics_helper->SetVRActive(true);
   SetIsInVR(GetNonNativePageWebContents(), true);
 
   PollMediaAccessFlag();
@@ -462,8 +463,10 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            bool enabled,
                            bool show_toast) {
   webvr_mode_ = enabled;
-  if (metrics_helper_)
-    metrics_helper_->SetWebVREnabled(enabled);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper)
+    metrics_helper->SetWebVREnabled(enabled);
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::SetWebVrMode,
                                 gl_thread_->GetVrShellGl(), enabled));
@@ -829,8 +832,10 @@ void VrShell::SetVoiceSearchActive(bool active) {
   }
   if (active) {
     speech_recognizer_->Start();
-    if (metrics_helper_)
-      metrics_helper_->RecordVoiceSearchStarted();
+    SessionMetricsHelper* metrics_helper =
+        SessionMetricsHelper::FromWebContents(web_contents_);
+    if (metrics_helper)
+      metrics_helper->RecordVoiceSearchStarted();
   } else {
     speech_recognizer_->Stop();
   }
@@ -1008,8 +1013,10 @@ void VrShell::OnVoiceResults(const base::string16& result) {
   // Fix this.
 
   // This should happen before the load to avoid concurency issues.
-  if (metrics_helper_ && input_was_url)
-    metrics_helper_->RecordUrlRequestedByVoice(url);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper && input_was_url)
+    metrics_helper->RecordUrlRequestedByVoice(url);
 
   Java_VrShellImpl_loadUrl(
       env, j_vr_shell_,

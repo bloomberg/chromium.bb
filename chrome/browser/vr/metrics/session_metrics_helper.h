@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_VR_USAGE_MONITOR_H_
-#define CHROME_BROWSER_ANDROID_VR_VR_USAGE_MONITOR_H_
+#ifndef CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_
+#define CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_
 
 #include <memory>
 
@@ -38,11 +38,13 @@ class SessionTimer {
   base::Time stop_time_;
   base::TimeDelta accumulated_time_;
 
-  // config members:
-  // time between stop and start to count as same session
+  // Config members.
+  // Maximum time gap allowed between a StopSession and a StartSession before it
+  // will be logged as a seperate session.
   base::TimeDelta maximum_session_gap_time_;
 
-  // minimum time between start and stop to add to duration
+  // Minimum time between a StartSession and StopSession required before it is
+  // added to the duration.
   base::TimeDelta minimum_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionTimer);
@@ -96,12 +98,22 @@ class SessionTracker {
 };
 
 // This class is not thread-safe and must only be used from the main thread.
-class VrMetricsHelper : public content::WebContentsObserver {
+// This class tracks metrics for various kinds of sessions, including VR
+// browsing sessions, WebXR presentation sessions, and others. It mainly tracks
+// metrics that require state monitoring, such as durations, but also tracks
+// data we want attached to that, such as number of videos watched and how the
+// session was started.
+class SessionMetricsHelper : public content::WebContentsObserver {
  public:
-  VrMetricsHelper(content::WebContents* contents,
-                  Mode initial_mode,
-                  bool started_with_autopresentation);
-  ~VrMetricsHelper() override;
+  // Returns the SessionMetricsHelper singleton if it has been created for the
+  // WebContents.
+  static SessionMetricsHelper* FromWebContents(content::WebContents* contents);
+  static SessionMetricsHelper* CreateForWebContents(
+      content::WebContents* contents,
+      Mode initial_mode,
+      bool started_with_autopresentation);
+
+  ~SessionMetricsHelper() override;
 
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
@@ -109,6 +121,10 @@ class VrMetricsHelper : public content::WebContentsObserver {
   void RecordUrlRequestedByVoice(GURL url);
 
  private:
+  SessionMetricsHelper(content::WebContents* contents,
+                       Mode initial_mode,
+                       bool started_with_autopresentation);
+
   // WebContentObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId&) override;
@@ -124,6 +140,13 @@ class VrMetricsHelper : public content::WebContentsObserver {
   void SetVrMode(Mode mode);
   void UpdateMode();
 
+  void OnEnterAnyVr();
+  void OnExitAllVr();
+  void OnEnterRegularBrowsing();
+  void OnEnterPresentation();
+  void OnExitPresentation();
+  void OnEnterFullscreenBrowsing();
+
   std::unique_ptr<SessionTimer> mode_video_timer_;
   std::unique_ptr<SessionTimer> session_video_timer_;
   std::unique_ptr<SessionTimer> mode_timer_;
@@ -136,7 +159,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
 
   Mode mode_ = Mode::kNoVr;
 
-  // state that gets translated into vr_mode:
+  // State that gets translated into the VR mode.
   bool is_fullscreen_ = false;
   bool is_webvr_ = false;
   bool is_vr_enabled_ = false;
@@ -154,4 +177,4 @@ class VrMetricsHelper : public content::WebContentsObserver {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_VR_USAGE_MONITOR_H_
+#endif  // CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_

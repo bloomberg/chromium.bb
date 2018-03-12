@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
-#include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/webvr_service_provider.h"
