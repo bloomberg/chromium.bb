@@ -29,6 +29,10 @@ class MutableProfileOAuth2TokenServiceDelegate
       public WebDataServiceConsumer,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
+  // Refresh token guaranteed to be invalid. Can be passed to
+  // UpdateCredentials() to force an authentication error.
+  static const char kInvalidRefreshToken[];
+
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
       SigninErrorController* signin_error_controller,
@@ -118,6 +122,10 @@ class MutableProfileOAuth2TokenServiceDelegate
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            RevokeOnUpdate);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           UpdateInvalidToken);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           LoadInvalidToken);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            GetAccounts);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            RetryBackoff);
@@ -136,6 +144,10 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Loads credentials into in memory stucture.
   void LoadAllCredentialsIntoMemory(
       const std::map<std::string, std::string>& db_tokens);
+
+  // Updates the in-memory representation of the credentials.
+  void UpdateCredentialsInMemory(const std::string& account_id,
+                                 const std::string& refresh_token);
 
   // Persists credentials for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.

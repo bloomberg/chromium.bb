@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -369,66 +370,51 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
     return;
   }
 
-  // If one of the signed out accounts is the main Chrome account, then force a
-  // complete signout. Otherwise simply revoke the corresponding tokens.
   std::string primary_account = signin_manager_->GetAuthenticatedAccountId();
-  std::vector<std::string> accounts_to_revoke;
+  bool primary_account_signed_out = false;
   for (const auto& account_info : account_infos) {
     std::string signed_out_account =
         account_tracker_service_->PickAccountIdForAccount(account_info.gaia_id,
                                                           account_info.email);
     if (signed_out_account == primary_account) {
+      primary_account_signed_out = true;
       RecordDiceResponseHeader(kSignoutPrimary);
       RecordGaiaSignoutMetrics(
           (account_info.session_index == 0)
               ? kChromePrimaryAccountIsFirstGaiaAccount
               : kChromePrimaryAccountIsSecondaryGaiaAccount);
 
-      // If Dice migration is not complete, the token for the main account must
-      // not be deleted when signing out of the web.
-      if (!signin::IsDiceEnabledForProfile(signin_client_->GetPrefs()))
-        continue;
-
-      VLOG(1) << "[Dice] Signing out all accounts.";
-      // Cancel all Dice token fetches currently in flight.
-      token_fetchers_.clear();
-      if (signin_manager_->IsSignoutProhibited()) {
-        // If signout is not allowed, delete the profile.
-        DCHECK(profiles::IsMultipleProfilesEnabled());
-        webui::DeleteProfileAtPath(
-            profile_path_, ProfileMetrics::DELETE_PROFILE_DICE_WEB_SIGNOUT);
+      if (signin::IsDiceEnabledForProfile(signin_client_->GetPrefs())) {
+        // Put the account in error state.
+        token_service_->UpdateCredentials(
+            primary_account,
+            MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
       } else {
-        signin_manager_->SignOutAndRemoveAllAccounts(
-            signin_metrics::SERVER_FORCED_DISABLE,
-            signin_metrics::SignoutDelete::IGNORE_METRIC);
+        // If Dice migration is not complete, the token for the main account
+        // must not be deleted when signing out of the web.
+        continue;
       }
-      return;
     } else {
-      accounts_to_revoke.push_back(signed_out_account);
+      token_service_->RevokeCredentials(signed_out_account);
     }
-  }
 
-  if (signin::IsDiceEnabledForProfile(signin_client_->GetPrefs()) ||
-      accounts_to_revoke.size() == account_infos.size()) {
-    RecordDiceResponseHeader(kSignoutSecondary);
-    RecordGaiaSignoutMetrics(primary_account.empty()
-                                 ? kNoChromePrimaryAccount
-                                 : kChromePrimaryAccountIsNotInGaiaAccounts);
-  }
-
-  for (const auto& account : accounts_to_revoke) {
-    VLOG(1) << "[Dice]: Revoking token for account: " << account;
-    token_service_->RevokeCredentials(account);
     // If a token fetch is in flight for the same account, cancel it.
     for (auto it = token_fetchers_.begin(); it != token_fetchers_.end(); ++it) {
       std::string token_fetcher_account_id =
           account_tracker_service_->PickAccountIdForAccount(
               it->get()->gaia_id(), it->get()->email());
-      if (token_fetcher_account_id == account) {
+      if (token_fetcher_account_id == signed_out_account) {
         token_fetchers_.erase(it);
         break;
       }
     }
+  }
+
+  if (!primary_account_signed_out) {
+    RecordDiceResponseHeader(kSignoutSecondary);
+    RecordGaiaSignoutMetrics(primary_account.empty()
+                                 ? kNoChromePrimaryAccount
+                                 : kChromePrimaryAccountIsNotInGaiaAccounts);
   }
 }
 

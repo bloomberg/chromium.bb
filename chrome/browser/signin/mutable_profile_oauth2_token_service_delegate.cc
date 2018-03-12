@@ -117,6 +117,10 @@ bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
 
 }  // namespace
 
+// static
+const char MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken[] =
+    "invalid_refresh_token";
+
 // This class sends a request to GAIA to revoke the given refresh token from
 // the server.  This is a best effort attempt only.  This class deletes itself
 // when done successfully or otherwise.
@@ -276,7 +280,8 @@ bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenHasError(
 void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "MutablePO2TS::UpdateAuthError. Error: " << error.state();
+  VLOG(1) << "MutablePO2TS::UpdateAuthError. Error: " << error.state()
+          << " account_id=" << account_id;
   backoff_entry_.InformOfRequest(!error.IsTransientError());
   ValidateAccountId(account_id);
 
@@ -549,8 +554,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             LoadTokenFromDBStatus::NUM_LOAD_TOKEN_FROM_DB_STATUS);
 
         if (load_account) {
-          refresh_tokens_[account_id].reset(new AccountStatus(
-              signin_error_controller_, account_id, refresh_token));
+          UpdateCredentialsInMemory(account_id, refresh_token);
           FireRefreshTokenAvailable(account_id);
         } else {
           RevokeCredentialsOnServer(refresh_token);
@@ -577,35 +581,46 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
-  ValidateAccountId(account_id);
 
+  ValidateAccountId(account_id);
   signin_metrics::LogSigninAddAccount();
 
-  bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
-  if (!refresh_token_present ||
-      refresh_tokens_[account_id]->refresh_token() != refresh_token) {
+  if (GetRefreshToken(account_id) != refresh_token) {
     ScopedBatchChange batch(this);
-
-    // If token present, and different from the new one, cancel its requests,
-    // and clear the entries in cache related to that account.
-    if (refresh_token_present) {
-      VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
-              << "account_id=" << account_id;
-      RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
-      refresh_tokens_[account_id]->set_refresh_token(refresh_token);
-    } else {
-      VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
-              << "account_id=" << account_id;
-      refresh_tokens_[account_id].reset(new AccountStatus(
-          signin_error_controller_, account_id, refresh_token));
-    }
-
-    // Save the token in memory and in persistent store.
+    UpdateCredentialsInMemory(account_id, refresh_token);
     PersistCredentials(account_id, refresh_token);
-
-    UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
     FireRefreshTokenAvailable(account_id);
   }
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!account_id.empty());
+  DCHECK(!refresh_token.empty());
+
+  bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
+  // If token present, and different from the new one, cancel its requests,
+  // and clear the entries in cache related to that account.
+  if (refresh_token_present) {
+    DCHECK_NE(refresh_token, refresh_tokens_[account_id]->refresh_token());
+    VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
+            << "account_id=" << account_id;
+    RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
+    refresh_tokens_[account_id]->set_refresh_token(refresh_token);
+  } else {
+    VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
+            << "account_id=" << account_id;
+    refresh_tokens_[account_id].reset(
+        new AccountStatus(signin_error_controller_, account_id, refresh_token));
+  }
+
+  UpdateAuthError(account_id,
+                  (refresh_token == kInvalidRefreshToken)
+                      ? GoogleServiceAuthError(
+                            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
+                      : GoogleServiceAuthError::AuthErrorNone());
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
@@ -667,6 +682,9 @@ void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
+  if (refresh_token == kInvalidRefreshToken)
+    return;
+
   // Keep track or all server revoke requests.  This way they can be deleted
   // before the token service is shutdown and won't outlive the profile.
   server_revokes_.push_back(
