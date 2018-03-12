@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "content/browser/web_package/signed_exchange_signature_verifier.h"
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/content_export.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -92,13 +92,10 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void RunErrorCallback(net::Error);
 
   void OnCertReceived(
-      std::unique_ptr<SignedExchangeSignatureVerifier::Input> verifier_input,
       scoped_refptr<net::X509Certificate> cert);
   void OnCertVerifyComplete(int result);
 
   // Signed exchange contents.
-  GURL request_url_;
-  std::string request_method_;
   network::ResourceResponseHead response_head_;
 
   ExchangeHeadersCallback headers_callback_;
@@ -111,6 +108,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
   size_t headers_length_ = 0;
 
+  base::Optional<SignedExchangeHeader> header_;
   std::unique_ptr<MerkleIntegritySourceStream> mi_stream_;
 
   // Used to create |cert_fetcher_|.

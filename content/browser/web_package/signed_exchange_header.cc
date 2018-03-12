@@ -127,6 +127,18 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
       !ParseResponseMap(top_level_array[1], &ret))
     return base::nullopt;
 
+  auto signature_iter = ret.response_headers_.find("signature");
+  if (signature_iter == ret.response_headers_.end())
+    return base::nullopt;
+
+  base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
+      signatures =
+          SignedExchangeHeaderParser::ParseSignature(signature_iter->second);
+  if (!signatures || signatures->empty())
+    return base::nullopt;
+
+  ret.signature_ = (*signatures)[0];
+
   return std::move(ret);
 }
 
@@ -135,6 +147,8 @@ SignedExchangeHeader::SignedExchangeHeader(const SignedExchangeHeader&) =
     default;
 SignedExchangeHeader::SignedExchangeHeader(SignedExchangeHeader&&) = default;
 SignedExchangeHeader::~SignedExchangeHeader() = default;
+SignedExchangeHeader& SignedExchangeHeader::operator=(SignedExchangeHeader&&) =
+    default;
 
 void SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
                                              base::StringPiece value) {
