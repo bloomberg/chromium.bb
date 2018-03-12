@@ -43,6 +43,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -65,7 +66,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
-  params->initial_proxy_config = net::ProxyConfig::CreateDirect();
+  params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
   return params;
 }
 
@@ -695,7 +696,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
   // initial config works.
   for (const auto& initial_proxy_config : proxy_configs) {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-    context_params->initial_proxy_config = initial_proxy_config;
+    context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+        initial_proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
     mojom::ProxyConfigClientPtr config_client;
     context_params->proxy_config_client_request =
         mojo::MakeRequest(&config_client);
@@ -708,17 +710,19 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     // its config until it's first used.
     proxy_resolution_service->ForceReloadProxyConfig();
     EXPECT_TRUE(proxy_resolution_service->config());
-    EXPECT_TRUE(
-        proxy_resolution_service->config()->Equals(initial_proxy_config));
+    EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(
+        initial_proxy_config));
 
     // Always go through the other configs in the same order. This has the
     // advantage of testing the case where there's no change, for
     // proxy_config[0].
     for (const auto& proxy_config : proxy_configs) {
-      config_client->OnProxyConfigUpdated(proxy_config);
+      config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+          proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
       scoped_task_environment_.RunUntilIdle();
       EXPECT_TRUE(proxy_resolution_service->config());
-      EXPECT_TRUE(proxy_resolution_service->config()->Equals(proxy_config));
+      EXPECT_TRUE(
+          proxy_resolution_service->config()->value().Equals(proxy_config));
     }
   }
 }
@@ -729,7 +733,8 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   proxy_config.proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");
 
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->initial_proxy_config = proxy_config;
+  context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+      proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -739,7 +744,7 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   // its config until it's first used.
   proxy_resolution_service->ForceReloadProxyConfig();
   EXPECT_TRUE(proxy_resolution_service->config());
-  EXPECT_TRUE(proxy_resolution_service->config()->Equals(proxy_config));
+  EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(proxy_config));
 }
 
 TEST_F(NetworkContextTest, NoInitialProxyConfig) {
@@ -771,7 +776,8 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
 
   net::ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString("http=foopy:80");
-  config_client->OnProxyConfigUpdated(proxy_config);
+  config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+      proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
   ASSERT_EQ(net::OK, test_callback.WaitForResult());
 
   EXPECT_TRUE(proxy_info.is_http());

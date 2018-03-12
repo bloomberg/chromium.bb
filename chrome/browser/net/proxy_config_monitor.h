@@ -15,7 +15,7 @@
 #include "services/network/public/mojom/proxy_config.mojom.h"
 
 namespace net {
-class ProxyConfig;
+class ProxyConfigWithAnnotation;
 }
 
 class Profile;
@@ -54,7 +54,7 @@ class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
  private:
   // net::ProxyConfigService::Observer implementation:
   void OnProxyConfigChanged(
-      const net::ProxyConfig& config,
+      const net::ProxyConfigWithAnnotation& config,
       net::ProxyConfigService::ConfigAvailability availability) override;
 
   // network::mojom::ProxyConfigPollerClient implementation:

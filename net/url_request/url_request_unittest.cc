@@ -735,7 +735,8 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
                                  NetworkDelegate* delegate)
       : TestURLRequestContext(true) {
     context_storage_.set_proxy_resolution_service(
-        ProxyResolutionService::CreateFixed(proxy));
+        ProxyResolutionService::CreateFixed(proxy,
+                                            TRAFFIC_ANNOTATION_FOR_TESTS));
     set_network_delegate(delegate);
     Init();
   }

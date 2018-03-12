@@ -48,7 +48,7 @@ const char* ModeToString(UIProxyConfig::Mode mode) {
 bool GetProxyConfig(const PrefService* profile_prefs,
                     const PrefService* local_state_prefs,
                     const NetworkState& network,
-                    net::ProxyConfig* proxy_config,
+                    net::ProxyConfigWithAnnotation* proxy_config,
                     onc::ONCSource* onc_source) {
   std::unique_ptr<ProxyConfigDictionary> proxy_dict =
       proxy_config::GetProxyConfigForNetwork(profile_prefs, local_state_prefs,
@@ -178,12 +178,12 @@ void UIProxyConfigService::DetermineEffectiveConfig(
       profile_prefs_ ? profile_prefs_ : local_state_prefs_;
 
   // Get prefs proxy config if available.
-  net::ProxyConfig pref_config;
+  net::ProxyConfigWithAnnotation pref_config;
   ProxyPrefs::ConfigState pref_state =
       ProxyConfigServiceImpl::ReadPrefConfig(top_pref_service, &pref_config);
 
   // Get network proxy config if available.
-  net::ProxyConfig network_config;
+  net::ProxyConfigWithAnnotation network_config;
   net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
@@ -196,13 +196,13 @@ void UIProxyConfigService::DetermineEffectiveConfig(
 
   // Determine effective proxy config, either from prefs or network.
   ProxyPrefs::ConfigState effective_config_state;
-  net::ProxyConfig effective_config;
+  net::ProxyConfigWithAnnotation effective_config;
   ProxyConfigServiceImpl::GetEffectiveProxyConfig(
       pref_state, pref_config, network_availability, network_config, false,
       &effective_config_state, &effective_config);
 
   // Store effective proxy into |current_ui_config_|.
-  current_ui_config_.FromNetProxyConfig(effective_config);
+  current_ui_config_.FromNetProxyConfig(effective_config.value());
   current_ui_config_.state = effective_config_state;
   if (ProxyConfigServiceImpl::PrefPrecedes(effective_config_state)) {
     current_ui_config_.user_modifiable = false;

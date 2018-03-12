@@ -515,7 +515,7 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ProxyResolutionService::CreateFixedFromPacResult(
-          proxy_server.ToPacString());
+          proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
   context_getter->set_proxy_resolution_service(
       std::move(proxy_resolution_service));
 

@@ -13,7 +13,8 @@ namespace net {
 class ProxyConfigServiceIOS : public PollingProxyConfigService {
  public:
   // Constructs a ProxyConfigService that watches the iOS system proxy settings.
-  explicit ProxyConfigServiceIOS();
+  explicit ProxyConfigServiceIOS(
+      const NetworkTrafficAnnotationTag& traffic_annotation);
   ~ProxyConfigServiceIOS() override;
 
  private:

@@ -34,6 +34,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -51,7 +52,8 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : base_path_(base_path),
       network_task_runner_(network_task_runner),
-      proxy_config_service_(new net::ProxyConfigServiceIOS),
+      proxy_config_service_(
+          new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
       net_log_(new net::NetLog()) {}
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {}

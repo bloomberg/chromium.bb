@@ -13,8 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "jni/AndroidProxyConfigServiceTestUtil_jni.h"
-#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -27,7 +28,7 @@ class TestObserver : public ProxyConfigService::Observer {
 
   // ProxyConfigService::Observer:
   void OnProxyConfigChanged(
-      const ProxyConfig& config,
+      const ProxyConfigWithAnnotation& config,
       ProxyConfigService::ConfigAvailability availability) override {
     config_ = config;
     availability_ = availability;
@@ -37,12 +38,10 @@ class TestObserver : public ProxyConfigService::Observer {
     return availability_;
   }
 
-  const ProxyConfig& config() const {
-    return config_;
-  }
+  const ProxyConfigWithAnnotation& config() const { return config_; }
 
  private:
-  ProxyConfig config_;
+  ProxyConfigWithAnnotation config_;
   ProxyConfigService::ConfigAvailability availability_;
 };
 
@@ -103,11 +102,11 @@ class ProxyConfigServiceAndroidTestBase : public testing::Test {
 
   void TestMapping(const std::string& url, const std::string& expected) {
     ProxyConfigService::ConfigAvailability availability;
-    ProxyConfig proxy_config;
+    ProxyConfigWithAnnotation proxy_config;
     availability = service_.GetLatestProxyConfig(&proxy_config);
     EXPECT_EQ(ProxyConfigService::CONFIG_VALID, availability);
     ProxyInfo proxy_info;
-    proxy_config.proxy_rules().Apply(GURL(url), &proxy_info);
+    proxy_config.value().proxy_rules().Apply(GURL(url), &proxy_info);
     EXPECT_EQ(expected, proxy_info.ToPacString());
   }
 
@@ -147,13 +146,13 @@ TEST_F(ProxyConfigServiceAndroidTest, TestChangePropertiesNotification) {
   AddProperty("http.proxyHost", "localhost");
   ProxySettingsChanged();
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID, observer_.availability());
-  EXPECT_FALSE(observer_.config().proxy_rules().empty());
+  EXPECT_FALSE(observer_.config().value().proxy_rules().empty());
 
   // Set up an empty configuration
   ClearConfiguration();
   ProxySettingsChanged();
   EXPECT_EQ(ProxyConfigService::CONFIG_VALID, observer_.availability());
-  EXPECT_TRUE(observer_.config().proxy_rules().empty());
+  EXPECT_TRUE(observer_.config().value().proxy_rules().empty());
 }
 
 TEST_F(ProxyConfigServiceAndroidWithInitialConfigTest, TestInitialConfig) {

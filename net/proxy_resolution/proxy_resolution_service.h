@@ -24,6 +24,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "url/gurl.h"
 
@@ -211,12 +212,14 @@ class NET_EXPORT ProxyResolutionService
       std::unique_ptr<ProxyConfigService> new_proxy_config_service);
 
   // Returns the last configuration fetched from ProxyConfigService.
-  const base::Optional<ProxyConfig>& fetched_config() const {
+  const base::Optional<ProxyConfigWithAnnotation>& fetched_config() const {
     return fetched_config_;
   }
 
   // Returns the current configuration being used by ProxyConfigService.
-  const base::Optional<ProxyConfig>& config() const { return config_; }
+  const base::Optional<ProxyConfigWithAnnotation>& config() const {
+    return config_;
+  }
 
   // Returns the map of proxies which have been marked as "bad".
   const ProxyRetryInfoMap& proxy_retry_info() const {
@@ -248,9 +251,10 @@ class NET_EXPORT ProxyResolutionService
   // Convenience methods that creates a proxy service using the
   // specified fixed settings.
   static std::unique_ptr<ProxyResolutionService> CreateFixed(
-      const ProxyConfig& pc);
+      const ProxyConfigWithAnnotation& pc);
   static std::unique_ptr<ProxyResolutionService> CreateFixed(
-      const std::string& proxy);
+      const std::string& proxy,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Creates a proxy service that uses a DIRECT connection for all requests.
   static std::unique_ptr<ProxyResolutionService> CreateDirect();
@@ -264,7 +268,8 @@ class NET_EXPORT ProxyResolutionService
   // |pac_string| is a list of proxy servers, in the format that a PAC script
   // would return it. For example, "PROXY foobar:99; SOCKS fml:2; DIRECT"
   static std::unique_ptr<ProxyResolutionService> CreateFixedFromPacResult(
-      const std::string& pac_string);
+      const std::string& pac_string,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Creates a config service appropriate for this platform that fetches the
   // system proxy settings.
@@ -371,9 +376,10 @@ class NET_EXPORT ProxyResolutionService
   void InitializeUsingLastFetchedConfig();
 
   // Start the initialization skipping past the "decision" phase.
-  void InitializeUsingDecidedConfig(int decider_result,
-                                    PacFileData* script_data,
-                                    const ProxyConfig& effective_config);
+  void InitializeUsingDecidedConfig(
+      int decider_result,
+      PacFileData* script_data,
+      const ProxyConfigWithAnnotation& effective_config);
 
   // NetworkChangeNotifier::IPAddressObserver
   // When this is called, we re-fetch PAC scripts and re-run WPAD.
@@ -385,7 +391,7 @@ class NET_EXPORT ProxyResolutionService
 
   // ProxyConfigService::Observer
   void OnProxyConfigChanged(
-      const ProxyConfig& config,
+      const ProxyConfigWithAnnotation& config,
       ProxyConfigService::ConfigAvailability availability) override;
 
   std::unique_ptr<ProxyConfigService> config_service_;
@@ -399,8 +405,8 @@ class NET_EXPORT ProxyResolutionService
   // and custom PAC url).
   //
   // These are "optional" as their value remains unset while being calculated.
-  base::Optional<ProxyConfig> fetched_config_;
-  base::Optional<ProxyConfig> config_;
+  base::Optional<ProxyConfigWithAnnotation> fetched_config_;
+  base::Optional<ProxyConfigWithAnnotation> config_;
 
   // The time when the proxy configuration was last read from the system.
   base::TimeTicks config_last_update_time_;

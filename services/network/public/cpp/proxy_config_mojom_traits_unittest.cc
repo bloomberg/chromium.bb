@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/proxy_config_mojom_traits.h"
+#include "services/network/public/cpp/proxy_config_with_annotation_mojom_traits.h"
 
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
-#include "net/proxy_resolution/proxy_config.h"
-#include "services/network/public/mojom/proxy_config.mojom.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/mojom/proxy_config_with_annotation.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -14,32 +17,35 @@ namespace network {
 namespace {
 
 // Tests that serializing and then deserializing |original_config| to send it
-// over Mojo results in a ProxyConfig that matches it.
-bool TestProxyConfigRoundTrip(net::ProxyConfig& original_config) {
-  net::ProxyConfig copied_config;
-  EXPECT_TRUE(mojom::ProxyConfig::Deserialize(
-      mojom::ProxyConfig::Serialize(&original_config), &copied_config));
+// over Mojo results in a ProxyConfigWithAnnotation that matches it.
+bool TestProxyConfigRoundTrip(net::ProxyConfigWithAnnotation& original_config) {
+  net::ProxyConfigWithAnnotation copied_config;
+  EXPECT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::ProxyConfigWithAnnotation>(
+          &original_config, &copied_config));
 
-  return original_config.Equals(copied_config) &&
-         original_config.source() == copied_config.source();
+  return original_config.value().Equals(copied_config.value()) &&
+         original_config.traffic_annotation() ==
+             copied_config.traffic_annotation();
 }
 
 TEST(ProxyConfigTraitsTest, AutoDetect) {
-  net::ProxyConfig proxy_config = net::ProxyConfig::CreateAutoDetect();
-  proxy_config.set_source(net::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE);
+  net::ProxyConfigWithAnnotation proxy_config(
+      net::ProxyConfig::CreateAutoDetect(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
 }
 
 TEST(ProxyConfigTraitsTest, Direct) {
-  net::ProxyConfig proxy_config = net::ProxyConfig::CreateDirect();
-  proxy_config.set_source(
-      net::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS);
+  net::ProxyConfigWithAnnotation proxy_config =
+      net::ProxyConfigWithAnnotation::CreateDirect();
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
 }
 
 TEST(ProxyConfigTraitsTest, CustomPacURL) {
-  net::ProxyConfig proxy_config =
-      net::ProxyConfig::CreateFromCustomPacURL(GURL("http://foo/"));
+  net::ProxyConfigWithAnnotation proxy_config(
+      net::ProxyConfig::CreateFromCustomPacURL(GURL("http://foo/")),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
 }
 
@@ -69,7 +75,9 @@ TEST(ProxyConfigTraitsTest, ProxyRules) {
   for (const char* test_case : kTestCases) {
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(test_case);
-    EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
+    net::ProxyConfigWithAnnotation annotated_config(
+        proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
+    EXPECT_TRUE(TestProxyConfigRoundTrip(annotated_config));
   }
 }
 
@@ -89,11 +97,15 @@ TEST(ProxyConfigTraitsTest, BypassRules) {
     // Make sure that the test case is properly formatted.
     EXPECT_GE(proxy_config.proxy_rules().bypass_rules.rules().size(), 1u);
 
-    EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
+    net::ProxyConfigWithAnnotation annotated_config(
+        proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
+    EXPECT_TRUE(TestProxyConfigRoundTrip(annotated_config));
 
     // Run the test again, except reversing the meaning of the bypass rules.
     proxy_config.proxy_rules().reverse_bypass = true;
-    EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
+    annotated_config = net::ProxyConfigWithAnnotation(
+        proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
+    EXPECT_TRUE(TestProxyConfigRoundTrip(annotated_config));
   }
 }
 

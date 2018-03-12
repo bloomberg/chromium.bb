@@ -8,7 +8,7 @@ namespace network {
 
 ProxyConfigServiceMojo::ProxyConfigServiceMojo(
     mojom::ProxyConfigClientRequest proxy_config_client_request,
-    base::Optional<net::ProxyConfig> initial_proxy_config,
+    base::Optional<net::ProxyConfigWithAnnotation> initial_proxy_config,
     mojom::ProxyConfigPollerClientPtrInfo proxy_poller_client)
     : binding_(this) {
   DCHECK(initial_proxy_config || proxy_config_client_request.is_pending());
@@ -27,9 +27,9 @@ ProxyConfigServiceMojo::ProxyConfigServiceMojo(
 ProxyConfigServiceMojo::~ProxyConfigServiceMojo() {}
 
 void ProxyConfigServiceMojo::OnProxyConfigUpdated(
-    const net::ProxyConfig& proxy_config) {
+    const net::ProxyConfigWithAnnotation& proxy_config) {
   // Do nothing if the proxy configuration is unchanged.
-  if (!config_pending_ && config_.Equals(proxy_config))
+  if (!config_pending_ && config_.value().Equals(proxy_config.value()))
     return;
 
   config_pending_ = false;
@@ -48,9 +48,10 @@ void ProxyConfigServiceMojo::RemoveObserver(Observer* observer) {
 }
 
 net::ProxyConfigService::ConfigAvailability
-ProxyConfigServiceMojo::GetLatestProxyConfig(net::ProxyConfig* config) {
+ProxyConfigServiceMojo::GetLatestProxyConfig(
+    net::ProxyConfigWithAnnotation* config) {
   if (config_pending_) {
-    *config = net::ProxyConfig();
+    *config = net::ProxyConfigWithAnnotation();
     return CONFIG_PENDING;
   }
   *config = config_;

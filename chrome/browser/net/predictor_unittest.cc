@@ -29,6 +29,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -511,7 +512,8 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=socks://localhost:12345");
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
-      net::ProxyResolutionService::CreateFixed(config));
+      net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
+          config, TRAFFIC_ANNOTATION_FOR_TESTS)));
   testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
 
   GURL goog("http://www.google.com:80");
@@ -528,7 +530,8 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
   Predictor::set_max_parallel_resolves(0);
 
   Predictor testing_master(true);
-  net::ProxyConfig config = net::ProxyConfig::CreateDirect();
+  net::ProxyConfigWithAnnotation config =
+      net::ProxyConfigWithAnnotation::CreateDirect();
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
       net::ProxyResolutionService::CreateFixed(config));
   testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
@@ -550,7 +553,8 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   net::ProxyConfig config = net::ProxyConfig::CreateFromCustomPacURL(GURL(
       "http://foopy/proxy.pac"));
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
-      net::ProxyResolutionService::CreateFixed(config));
+      net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
+          config, TRAFFIC_ANNOTATION_FOR_TESTS)));
   testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
 
   GURL goog("http://www.google.com:80");

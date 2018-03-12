@@ -28,6 +28,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,8 +207,9 @@ TEST(PacFileDeciderTest, CustomPacSucceeds) {
   TestCompletionCallback callback;
   TestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(
-      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(OK, decider.Start(ProxyConfigWithAnnotation(
+                                  config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                              base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   // Check the NetLog was filled correctly.
@@ -224,8 +226,8 @@ TEST(PacFileDeciderTest, CustomPacSucceeds) {
   EXPECT_TRUE(
       LogContainsEndEvent(entries, 3, NetLogEventType::PAC_FILE_DECIDER));
 
-  EXPECT_TRUE(decider.effective_config().has_pac_url());
-  EXPECT_EQ(config.pac_url(), decider.effective_config().pac_url());
+  EXPECT_TRUE(decider.effective_config().value().has_pac_url());
+  EXPECT_EQ(config.pac_url(), decider.effective_config().value().pac_url());
 }
 
 // Fail downloading the custom PAC script.
@@ -242,8 +244,10 @@ TEST(PacFileDeciderTest, CustomPacFails1) {
   TestCompletionCallback callback;
   TestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
-                                              callback.callback()));
+  EXPECT_EQ(kFailedDownloading,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
   // Check the NetLog was filled correctly.
@@ -260,7 +264,7 @@ TEST(PacFileDeciderTest, CustomPacFails1) {
   EXPECT_TRUE(
       LogContainsEndEvent(entries, 3, NetLogEventType::PAC_FILE_DECIDER));
 
-  EXPECT_FALSE(decider.effective_config().has_pac_url());
+  EXPECT_FALSE(decider.effective_config().value().has_pac_url());
 }
 
 // Fail parsing the custom PAC script.
@@ -276,8 +280,10 @@ TEST(PacFileDeciderTest, CustomPacFails2) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedParsing, decider.Start(config, base::TimeDelta(), true,
-                                          callback.callback()));
+  EXPECT_EQ(kFailedParsing,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -291,8 +297,10 @@ TEST(PacFileDeciderTest, HasNullPacFileFetcher) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(NULL, &dhcp_fetcher, NULL);
-  EXPECT_EQ(ERR_UNEXPECTED, decider.Start(config, base::TimeDelta(), true,
-                                          callback.callback()));
+  EXPECT_EQ(ERR_UNEXPECTED,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -309,12 +317,13 @@ TEST(PacFileDeciderTest, AutodetectSuccess) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(
-      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(OK, decider.Start(ProxyConfigWithAnnotation(
+                                  config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                              base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
-  EXPECT_TRUE(decider.effective_config().has_pac_url());
-  EXPECT_EQ(rule.url, decider.effective_config().pac_url());
+  EXPECT_TRUE(decider.effective_config().value().has_pac_url());
+  EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
 }
 
 class PacFileDeciderQuickCheckTest : public ::testing::Test {
@@ -331,8 +340,9 @@ class PacFileDeciderQuickCheckTest : public ::testing::Test {
   }
 
   int StartDecider() {
-    return decider_->Start(config_, base::TimeDelta(), true,
-                           callback_.callback());
+    return decider_->Start(
+        ProxyConfigWithAnnotation(config_, TRAFFIC_ANNOTATION_FOR_TESTS),
+        base::TimeDelta(), true, callback_.callback());
   }
 
  protected:
@@ -357,8 +367,8 @@ TEST_F(PacFileDeciderQuickCheckTest, SyncSuccess) {
   EXPECT_THAT(StartDecider(), IsOk());
   EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
 
-  EXPECT_TRUE(decider_->effective_config().has_pac_url());
-  EXPECT_EQ(rule_.url, decider_->effective_config().pac_url());
+  EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
+  EXPECT_EQ(rule_.url, decider_->effective_config().value().pac_url());
 }
 
 // Fails if an asynchronous DNS lookup success for wpad causes QuickCheck to
@@ -373,8 +383,8 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncSuccess) {
   callback_.WaitForResult();
   EXPECT_FALSE(resolver_.has_pending_requests());
   EXPECT_EQ(rule_.text(), decider_->script_data()->utf16());
-  EXPECT_TRUE(decider_->effective_config().has_pac_url());
-  EXPECT_EQ(rule_.url, decider_->effective_config().pac_url());
+  EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
+  EXPECT_EQ(rule_.url, decider_->effective_config().value().pac_url());
 }
 
 // Fails if an asynchronous DNS lookup failure (i.e. an NXDOMAIN) still causes
@@ -386,7 +396,7 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncFail) {
   ASSERT_TRUE(resolver_.has_pending_requests());
   resolver_.ResolveAllPending();
   callback_.WaitForResult();
-  EXPECT_FALSE(decider_->effective_config().has_pac_url());
+  EXPECT_FALSE(decider_->effective_config().value().has_pac_url());
 }
 
 // Fails if a DNS lookup timeout either causes PacFileDecider to yield a PAC
@@ -397,7 +407,7 @@ TEST_F(PacFileDeciderQuickCheckTest, AsyncTimeout) {
   ASSERT_TRUE(resolver_.has_pending_requests());
   callback_.WaitForResult();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  EXPECT_FALSE(decider_->effective_config().has_pac_url());
+  EXPECT_FALSE(decider_->effective_config().value().has_pac_url());
 }
 
 // Fails if DHCP check doesn't take place before QuickCheck.
@@ -410,8 +420,8 @@ TEST_F(PacFileDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
   decider_.reset(new PacFileDecider(&fetcher_, &dhcp_fetcher, NULL));
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   dhcp_fetcher.CompleteRequests(OK, pac_contents);
-  EXPECT_TRUE(decider_->effective_config().has_pac_url());
-  EXPECT_EQ(decider_->effective_config().pac_url(), url);
+  EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
+  EXPECT_EQ(decider_->effective_config().value().pac_url(), url);
 }
 
 // Fails if QuickCheck still happens when disabled. To ensure QuickCheck is not
@@ -437,8 +447,8 @@ TEST_F(PacFileDeciderQuickCheckTest, ExplicitPacUrl) {
   resolver_.rules()->AddRule("custom", "1.2.3.4");
   EXPECT_THAT(StartDecider(), IsError(ERR_IO_PENDING));
   callback_.WaitForResult();
-  EXPECT_TRUE(decider_->effective_config().has_pac_url());
-  EXPECT_EQ(rule.url, decider_->effective_config().pac_url());
+  EXPECT_TRUE(decider_->effective_config().value().has_pac_url());
+  EXPECT_EQ(rule.url, decider_->effective_config().value().pac_url());
 }
 
 TEST_F(PacFileDeciderQuickCheckTest, ShutdownDuringResolve) {
@@ -477,12 +487,13 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess1) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(
-      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(OK, decider.Start(ProxyConfigWithAnnotation(
+                                  config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                              base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
-  EXPECT_TRUE(decider.effective_config().has_pac_url());
-  EXPECT_EQ(rule.url, decider.effective_config().pac_url());
+  EXPECT_TRUE(decider.effective_config().value().has_pac_url());
+  EXPECT_EQ(rule.url, decider.effective_config().value().pac_url());
 }
 
 // Fails at WPAD (no DHCP config, DNS PAC fails parsing), but succeeds in
@@ -504,13 +515,14 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess2) {
   TestNetLog log;
 
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(
-      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(OK, decider.Start(ProxyConfigWithAnnotation(
+                                  config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                              base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   // Verify that the effective configuration no longer contains auto detect or
   // any of the manual settings.
-  EXPECT_TRUE(decider.effective_config().Equals(
+  EXPECT_TRUE(decider.effective_config().value().Equals(
       ProxyConfig::CreateFromCustomPacURL(GURL("http://custom/proxy.pac"))));
 
   // Check the NetLog was filled correctly.
@@ -565,8 +577,10 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails1) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
-                                              callback.callback()));
+  EXPECT_EQ(kFailedDownloading,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -585,8 +599,10 @@ TEST(PacFileDeciderTest, AutodetectFailCustomFails2) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedParsing, decider.Start(config, base::TimeDelta(), true,
-                                          callback.callback()));
+  EXPECT_EQ(kFailedParsing,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -606,9 +622,11 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
   TestCompletionCallback callback;
   TestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(ERR_IO_PENDING,
-            decider.Start(config, base::TimeDelta::FromMilliseconds(1), true,
-                          callback.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      decider.Start(
+          ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+          base::TimeDelta::FromMilliseconds(1), true, callback.callback()));
 
   EXPECT_EQ(kFailedDownloading, callback.WaitForResult());
   EXPECT_FALSE(decider.script_data());
@@ -649,8 +667,9 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
   TestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
-            decider.Start(config, base::TimeDelta::FromSeconds(-5), true,
-                          callback.callback()));
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta::FromSeconds(-5), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
   // Check the NetLog was filled correctly.
@@ -714,12 +733,14 @@ TEST(PacFileDeciderTest, AutodetectDhcpSuccess) {
 
   TestCompletionCallback callback;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(
-      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(OK, decider.Start(ProxyConfigWithAnnotation(
+                                  config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                              base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(dhcp_fetcher.expected_text(), decider.script_data()->utf16());
 
-  EXPECT_TRUE(decider.effective_config().has_pac_url());
-  EXPECT_EQ(GURL("http://dhcppac/"), decider.effective_config().pac_url());
+  EXPECT_TRUE(decider.effective_config().value().has_pac_url());
+  EXPECT_EQ(GURL("http://dhcppac/"),
+            decider.effective_config().value().pac_url());
 }
 
 TEST(PacFileDeciderTest, AutodetectDhcpFailParse) {
@@ -738,11 +759,13 @@ TEST(PacFileDeciderTest, AutodetectDhcpFailParse) {
   PacFileDecider decider(&fetcher, &dhcp_fetcher, NULL);
   // Since there is fallback to DNS-based WPAD, the final error will be that
   // it failed downloading, not that it failed parsing.
-  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
-                                              callback.callback()));
+  EXPECT_EQ(kFailedDownloading,
+            decider.Start(
+                ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                base::TimeDelta(), true, callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
-  EXPECT_FALSE(decider.effective_config().has_pac_url());
+  EXPECT_FALSE(decider.effective_config().value().has_pac_url());
 }
 
 class AsyncFailDhcpFetcher
@@ -798,7 +821,9 @@ TEST(PacFileDeciderTest, DhcpCancelledByDestructor) {
   // Scope so PacFileDecider gets destroyed early.
   {
     PacFileDecider decider(&fetcher, dhcp_fetcher.get(), NULL);
-    decider.Start(config, base::TimeDelta(), true, callback.callback());
+    decider.Start(
+        ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
+        base::TimeDelta(), true, callback.callback());
   }
 
   // Run the message loop to let the DHCP fetch complete and post the results

@@ -113,7 +113,10 @@ class SimpleProxyConfigService : public ProxyConfigService {
  public:
   SimpleProxyConfigService() {
     // Any FTP requests that ever go through HTTP paths are proxied requests.
-    config_.proxy_rules().ParseFromString("ftp=localhost");
+    ProxyConfig proxy_config = config_.value();
+    proxy_config.proxy_rules().ParseFromString("ftp=localhost");
+    config_ =
+        ProxyConfigWithAnnotation(proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   void AddObserver(Observer* observer) override { observer_ = observer; }
@@ -124,13 +127,14 @@ class SimpleProxyConfigService : public ProxyConfigService {
     }
   }
 
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override {
     *config = config_;
     return CONFIG_VALID;
   }
 
  private:
-  ProxyConfig config_;
+  ProxyConfigWithAnnotation config_;
   Observer* observer_;
 };
 
@@ -326,8 +330,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
   // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
   request_context()->set_proxy_resolution_service(
       std::make_unique<ProxyResolutionService>(
-          std::make_unique<ProxyConfigServiceFixed>(
-              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")),
+              TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::move(owned_resolver_factory), nullptr));
 
   TestDelegate request_delegate;
@@ -359,8 +364,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestCancelRequest) {
   // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
   request_context()->set_proxy_resolution_service(
       std::make_unique<ProxyResolutionService>(
-          std::make_unique<ProxyConfigServiceFixed>(
-              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")),
+              TRAFFIC_ANNOTATION_FOR_TESTS)),
           std::move(owned_resolver_factory), nullptr));
 
   TestDelegate request_delegate;

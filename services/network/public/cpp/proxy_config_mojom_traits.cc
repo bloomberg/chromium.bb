@@ -105,77 +105,16 @@ bool StructTraits<network::mojom::ProxyRulesDataView,
          data.ReadFallbackProxies(&out_proxy_rules->fallback_proxies);
 }
 
-network::mojom::ProxyConfigSource
-EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource>::ToMojom(
-    net::ProxyConfigSource net_proxy_config_source) {
-  switch (net_proxy_config_source) {
-    case net::PROXY_CONFIG_SOURCE_UNKNOWN:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
-    case net::PROXY_CONFIG_SOURCE_SYSTEM:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM;
-    case net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
-      return network::mojom::ProxyConfigSource::
-          PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
-    case net::PROXY_CONFIG_SOURCE_GSETTINGS:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS;
-    case net::PROXY_CONFIG_SOURCE_KDE:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE;
-    case net::PROXY_CONFIG_SOURCE_ENV:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV;
-    case net::PROXY_CONFIG_SOURCE_CUSTOM:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM;
-    case net::PROXY_CONFIG_SOURCE_TEST:
-      return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST;
-    case net::NUM_PROXY_CONFIG_SOURCES:
-      break;
-  }
-  return network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN;
-}
-
-bool EnumTraits<network::mojom::ProxyConfigSource, net::ProxyConfigSource>::
-    FromMojom(network::mojom::ProxyConfigSource mojo_proxy_config_source,
-              net::ProxyConfigSource* out) {
-  switch (mojo_proxy_config_source) {
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_UNKNOWN:
-      *out = net::PROXY_CONFIG_SOURCE_UNKNOWN;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM:
-      *out = net::PROXY_CONFIG_SOURCE_SYSTEM;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_SYSTEM_FAILED:
-      *out = net::PROXY_CONFIG_SOURCE_SYSTEM_FAILED;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS:
-      *out = net::PROXY_CONFIG_SOURCE_GSETTINGS;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE:
-      *out = net::PROXY_CONFIG_SOURCE_KDE;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_ENV:
-      *out = net::PROXY_CONFIG_SOURCE_ENV;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_CUSTOM:
-      *out = net::PROXY_CONFIG_SOURCE_CUSTOM;
-      return true;
-    case network::mojom::ProxyConfigSource::PROXY_CONFIG_SOURCE_TEST:
-      *out = net::PROXY_CONFIG_SOURCE_TEST;
-      return true;
-  }
-  return false;
-}
 
 bool StructTraits<network::mojom::ProxyConfigDataView, net::ProxyConfig>::Read(
     network::mojom::ProxyConfigDataView data,
     net::ProxyConfig* out_proxy_config) {
   GURL pac_url;
-  net::ProxyConfigSource source;
   if (!data.ReadPacUrl(&pac_url) ||
-      !data.ReadProxyRules(&out_proxy_config->proxy_rules()) ||
-      !data.ReadSource(&source)) {
+      !data.ReadProxyRules(&out_proxy_config->proxy_rules())) {
     return false;
   }
   out_proxy_config->set_pac_url(pac_url);
-  out_proxy_config->set_source(source);
 
   out_proxy_config->set_auto_detect(data.auto_detect());
   out_proxy_config->set_pac_mandatory(data.pac_mandatory());

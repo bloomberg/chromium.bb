@@ -12,10 +12,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
+#include "services/network/public/mojom/proxy_config_with_annotation.mojom.h"
 
 namespace net {
-class ProxyConfig;
+class ProxyConfigWithAnnotation;
 }
 
 namespace network {
@@ -34,23 +36,25 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
   // whenever OnLazyPoll() is invoked.
   explicit ProxyConfigServiceMojo(
       mojom::ProxyConfigClientRequest proxy_config_client_request,
-      base::Optional<net::ProxyConfig> initial_proxy_config,
+      base::Optional<net::ProxyConfigWithAnnotation> initial_proxy_config,
       mojom::ProxyConfigPollerClientPtrInfo proxy_poller_client);
   ~ProxyConfigServiceMojo() override;
 
   // net::ProxyConfigService implementation:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config) override;
+  ConfigAvailability GetLatestProxyConfig(
+      net::ProxyConfigWithAnnotation* config) override;
   void OnLazyPoll() override;
 
  private:
   // mojom::ProxyConfigClient implementation:
-  void OnProxyConfigUpdated(const net::ProxyConfig& proxy_config) override;
+  void OnProxyConfigUpdated(
+      const net::ProxyConfigWithAnnotation& proxy_config) override;
 
   mojom::ProxyConfigPollerClientPtr proxy_poller_client_;
 
-  net::ProxyConfig config_;
+  net::ProxyConfigWithAnnotation config_;
   bool config_pending_ = true;
 
   mojo::Binding<mojom::ProxyConfigClient> binding_;

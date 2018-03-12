@@ -16,6 +16,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -34,8 +35,9 @@ class TestProxyConfigService : public net::ProxyConfigService {
   void RemoveObserver(net::ProxyConfigService::Observer* observer) override {}
 
   net::ProxyConfigService::ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) override {
-    *config = config_;
+      net::ProxyConfigWithAnnotation* config) override {
+    *config =
+        net::ProxyConfigWithAnnotation(config_, TRAFFIC_ANNOTATION_FOR_TESTS);
     return availability_;
   }
 
@@ -81,15 +83,15 @@ TEST_F(ProxyConfigServiceImplTest, IgnoresNestedProxyConfigServiceByDefault) {
   std::unique_ptr<net::ProxyConfigService> proxy_resolution_service =
       proxy_tracker.CreateTrackingProxyConfigService(std::move(nested_service));
 
-  net::ProxyConfig config;
+  net::ProxyConfigWithAnnotation config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_resolution_service->GetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.Equals(net::ProxyConfig::CreateDirect()));
+  EXPECT_TRUE(config.value().Equals(net::ProxyConfig::CreateDirect()));
 
   environment_.RunUntilIdle();
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_resolution_service->GetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.Equals(net::ProxyConfig::CreateDirect()));
+  EXPECT_TRUE(config.value().Equals(net::ProxyConfig::CreateDirect()));
 
   proxy_tracker.DetachFromPrefService();
 }
@@ -115,15 +117,15 @@ TEST_F(ProxyConfigServiceImplTest, UsesNestedProxyConfigService) {
   std::unique_ptr<net::ProxyConfigService> proxy_resolution_service =
       proxy_tracker.CreateTrackingProxyConfigService(std::move(nested_service));
 
-  net::ProxyConfig config;
+  net::ProxyConfigWithAnnotation config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_resolution_service->GetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.Equals(fixed_config));
+  EXPECT_TRUE(config.value().Equals(fixed_config));
 
   environment_.RunUntilIdle();
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_resolution_service->GetLatestProxyConfig(&config));
-  EXPECT_TRUE(config.Equals(fixed_config));
+  EXPECT_TRUE(config.value().Equals(fixed_config));
 
   proxy_tracker.DetachFromPrefService();
 }

@@ -172,9 +172,9 @@ class ProxyConfigServiceDirect : public ProxyConfigService {
   // ProxyConfigService implementation:
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
-    *config = ProxyConfig::CreateDirect();
-    config->set_source(PROXY_CONFIG_SOURCE_UNKNOWN);
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override {
+    *config = ProxyConfigWithAnnotation::CreateDirect();
     return CONFIG_VALID;
   }
 };
@@ -284,15 +284,15 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 
 // Returns NetLog parameters describing a proxy configuration change.
 std::unique_ptr<base::Value> NetLogProxyConfigChangedCallback(
-    const base::Optional<ProxyConfig>* old_config,
-    const ProxyConfig* new_config,
+    const base::Optional<ProxyConfigWithAnnotation>* old_config,
+    const ProxyConfigWithAnnotation* new_config,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->has_value())
-    dict->Set("old_config", (*old_config)->ToValue());
-  dict->Set("new_config", new_config->ToValue());
+    dict->Set("old_config", (*old_config)->value().ToValue());
+  dict->Set("new_config", new_config->value().ToValue());
   return std::move(dict);
 }
 
@@ -327,7 +327,8 @@ class UnsetProxyConfigService : public ProxyConfigService {
 
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override {
     return CONFIG_UNSET;
   }
 };
@@ -389,7 +390,7 @@ class ProxyResolutionService::InitProxyResolver {
             PacFileFetcher* pac_file_fetcher,
             DhcpPacFileFetcher* dhcp_pac_file_fetcher,
             NetLog* net_log,
-            const ProxyConfig& config,
+            const ProxyConfigWithAnnotation& config,
             TimeDelta wait_delay,
             const CompletionCallback& callback) {
     DCHECK_EQ(STATE_NONE, next_state_);
@@ -414,7 +415,7 @@ class ProxyResolutionService::InitProxyResolver {
   // |proxy_resolver| if the final result is OK.
   int StartSkipDecider(std::unique_ptr<ProxyResolver>* proxy_resolver,
                        ProxyResolverFactory* proxy_resolver_factory,
-                       const ProxyConfig& effective_config,
+                       const ProxyConfigWithAnnotation& effective_config,
                        int decider_result,
                        PacFileData* script_data,
                        const CompletionCallback& callback) {
@@ -435,7 +436,7 @@ class ProxyResolutionService::InitProxyResolver {
 
   // Returns the proxy configuration that was selected by PacFileDecider.
   // Should only be called upon completion of the initialization.
-  const ProxyConfig& effective_config() const {
+  const ProxyConfigWithAnnotation& effective_config() const {
     DCHECK_EQ(STATE_NONE, next_state_);
     return effective_config_;
   }
@@ -551,8 +552,8 @@ class ProxyResolutionService::InitProxyResolver {
     callback_.Run(result);
   }
 
-  ProxyConfig config_;
-  ProxyConfig effective_config_;
+  ProxyConfigWithAnnotation config_;
+  ProxyConfigWithAnnotation effective_config_;
   scoped_refptr<PacFileData> script_data_;
   TimeDelta wait_delay_;
   std::unique_ptr<PacFileDecider> decider_;
@@ -574,7 +575,8 @@ class ProxyResolutionService::InitProxyResolver {
 // the ChangeCallback.
 class ProxyResolutionService::PacFileDeciderPoller {
  public:
-  typedef base::Callback<void(int, PacFileData*, const ProxyConfig&)>
+  typedef base::Callback<
+      void(int, PacFileData*, const ProxyConfigWithAnnotation&)>
       ChangeCallback;
 
   // Builds a poller helper, and starts polling for updates. Whenever a change
@@ -598,7 +600,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
   //                      script's contents have changed.
   //   |net_log| the NetLog to log progress into.
   PacFileDeciderPoller(ChangeCallback callback,
-                       const ProxyConfig& config,
+                       const ProxyConfigWithAnnotation& config,
                        bool proxy_resolver_expects_pac_bytes,
                        PacFileFetcher* pac_file_fetcher,
                        DhcpPacFileFetcher* dhcp_pac_file_fetcher,
@@ -732,16 +734,17 @@ class ProxyResolutionService::PacFileDeciderPoller {
     return !script_data->Equals(last_script_data_.get());
   }
 
-  void NotifyProxyServiceOfChange(int result,
-                                  const scoped_refptr<PacFileData>& script_data,
-                                  const ProxyConfig& effective_config) {
+  void NotifyProxyServiceOfChange(
+      int result,
+      const scoped_refptr<PacFileData>& script_data,
+      const ProxyConfigWithAnnotation& effective_config) {
     // Note that |this| may be deleted after calling into the
     // ProxyResolutionService.
     change_callback_.Run(result, script_data.get(), effective_config);
   }
 
   ChangeCallback change_callback_;
-  ProxyConfig config_;
+  ProxyConfigWithAnnotation config_;
   bool proxy_resolver_expects_pac_bytes_;
   PacFileFetcher* pac_file_fetcher_;
   DhcpPacFileFetcher* dhcp_pac_file_fetcher_;
@@ -791,7 +794,6 @@ class ProxyResolutionService::Request
         method_(method),
         proxy_delegate_(proxy_delegate),
         resolve_job_(nullptr),
-        config_source_(PROXY_CONFIG_SOURCE_UNKNOWN),
         net_log_(net_log),
         creation_time_(TimeTicks::Now()) {
     DCHECK(!user_callback.is_null());
@@ -803,7 +805,8 @@ class ProxyResolutionService::Request
     DCHECK(!is_started());
 
     DCHECK(service_->config_);
-    config_source_ = service_->config_->source();
+    traffic_annotation_ = MutableNetworkTrafficAnnotationTag(
+        service_->config_->traffic_annotation());
 
     return resolver()->GetProxyForURL(
         url_, results_,
@@ -866,13 +869,13 @@ class ProxyResolutionService::Request
 
     // Make a note in the results which configuration was in use at the
     // time of the resolve.
-    results_->config_source_ = config_source_;
+    results_->set_traffic_annotation(traffic_annotation_);
     results_->did_use_pac_script_ = true;
     results_->proxy_resolve_start_time_ = creation_time_;
     results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
     // Reset the state associated with in-progress-resolve.
-    config_source_ = PROXY_CONFIG_SOURCE_UNKNOWN;
+    traffic_annotation_.reset();
 
     return rv;
   }
@@ -915,7 +918,7 @@ class ProxyResolutionService::Request
   std::string method_;
   ProxyDelegate* proxy_delegate_;
   std::unique_ptr<ProxyResolver::Request> resolve_job_;
-  ProxyConfigSource config_source_;  // The source of proxy settings.
+  MutableNetworkTrafficAnnotationTag traffic_annotation_;
   NetLogWithSource net_log_;
   // Time when the request was created.  Stored here rather than in |results_|
   // because the time in |results_| will be cleared.
@@ -970,7 +973,7 @@ ProxyResolutionService::CreateWithoutProxyResolver(
 
 // static
 std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
-    const ProxyConfig& pc) {
+    const ProxyConfigWithAnnotation& pc) {
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
@@ -979,10 +982,12 @@ std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
 
 // static
 std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
-    const std::string& proxy) {
+    const std::string& proxy,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(proxy);
-  return ProxyResolutionService::CreateFixed(proxy_config);
+  ProxyConfigWithAnnotation annotated_config(proxy_config, traffic_annotation);
+  return ProxyResolutionService::CreateFixed(annotated_config);
 }
 
 // static
@@ -1001,11 +1006,13 @@ ProxyResolutionService::CreateDirectWithNetLog(NetLog* net_log) {
 // static
 std::unique_ptr<ProxyResolutionService>
 ProxyResolutionService::CreateFixedFromPacResult(
-    const std::string& pac_string) {
+    const std::string& pac_string,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   // We need the settings to contain an "automatic" setting, otherwise the
   // ProxyResolver dependency we give it will never be used.
   std::unique_ptr<ProxyConfigService> proxy_config_service(
-      new ProxyConfigServiceFixed(ProxyConfig::CreateAutoDetect()));
+      new ProxyConfigServiceFixed(ProxyConfigWithAnnotation(
+          ProxyConfig::CreateAutoDetect(), traffic_annotation)));
 
   return std::make_unique<ProxyResolutionService>(
       std::move(proxy_config_service),
@@ -1114,12 +1121,13 @@ int ProxyResolutionService::TryToCompleteSynchronously(
   if (permanent_error_ != OK)
     return permanent_error_;
 
-  if (config_->HasAutomaticSettings())
+  if (config_->value().HasAutomaticSettings())
     return ERR_IO_PENDING;  // Must submit the request to the proxy resolver.
 
   // Use the manual proxy settings.
-  config_->proxy_rules().Apply(url, result);
-  result->config_source_ = config_->source();
+  config_->value().proxy_rules().Apply(url, result);
+  result->set_traffic_annotation(
+      MutableNetworkTrafficAnnotationTag(config_->traffic_annotation()));
 
   return OK;
 }
@@ -1193,7 +1201,7 @@ void ProxyResolutionService::ApplyProxyConfigIfAvailable() {
   // Retrieve the current proxy configuration from the ProxyConfigService.
   // If a configuration is not available yet, we will get called back later
   // by our ProxyConfigService::Observer once it changes.
-  ProxyConfig config;
+  ProxyConfigWithAnnotation config;
   ProxyConfigService::ConfigAvailability availability =
       config_service_->GetLatestProxyConfig(&config);
   if (availability != ProxyConfigService::CONFIG_PENDING)
@@ -1204,7 +1212,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
   DCHECK_EQ(STATE_WAITING_FOR_INIT_PROXY_RESOLVER, current_state_);
   DCHECK(init_proxy_resolver_.get());
   DCHECK(fetched_config_);
-  DCHECK(fetched_config_->HasAutomaticSettings());
+  DCHECK(fetched_config_->value().HasAutomaticSettings());
   config_ = init_proxy_resolver_->effective_config();
 
   // At this point we have decided which proxy settings to use (i.e. which PAC
@@ -1223,7 +1231,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
   init_proxy_resolver_.reset();
 
   if (result != OK) {
-    if (fetched_config_->pac_mandatory()) {
+    if (fetched_config_->value().pac_mandatory()) {
       VLOG(1) << "Failed configuring with mandatory PAC script, blocking all "
                  "traffic.";
       config_ = fetched_config_;
@@ -1231,14 +1239,14 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
     } else {
       VLOG(1) << "Failed configuring with PAC script, falling-back to manual "
                  "proxy servers.";
-      config_ = fetched_config_;
-      config_->ClearAutomaticSettings();
+      ProxyConfig proxy_config = fetched_config_->value();
+      proxy_config.ClearAutomaticSettings();
+      config_ = ProxyConfigWithAnnotation(
+          proxy_config, fetched_config_->traffic_annotation());
       result = OK;
     }
   }
   permanent_error_ = result;
-
-  config_->set_source(fetched_config_->source());
 
   // Resume any requests which we had to defer until the PAC script was
   // downloaded.
@@ -1341,7 +1349,7 @@ int ProxyResolutionService::DidFinishResolvingProxy(
         result_code);
 
     bool reset_config = result_code == ERR_PAC_SCRIPT_TERMINATED;
-    if (!config_->pac_mandatory()) {
+    if (!config_->value().pac_mandatory()) {
       // Fall-back to direct when the proxy resolver fails. This corresponds
       // with a javascript runtime error in the PAC script.
       //
@@ -1411,9 +1419,9 @@ ProxyResolutionService::State ProxyResolutionService::ResetProxyConfig(
   init_proxy_resolver_.reset();
   SuspendAllPendingRequests();
   resolver_.reset();
-  config_ = base::Optional<ProxyConfig>();
+  config_ = base::Optional<ProxyConfigWithAnnotation>();
   if (reset_fetched_config)
-    fetched_config_ = base::Optional<ProxyConfig>();
+    fetched_config_ = base::Optional<ProxyConfigWithAnnotation>();
   current_state_ = STATE_NONE;
 
   return previous_state;
@@ -1446,12 +1454,16 @@ void ProxyResolutionService::ForceReloadProxyConfig() {
 std::unique_ptr<ProxyConfigService>
 ProxyResolutionService::CreateSystemProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+// TODO(https://crbug.com/656607): Add traffic annotation here.
 #if defined(OS_WIN)
-  return std::make_unique<ProxyConfigServiceWin>();
+  return std::make_unique<ProxyConfigServiceWin>(
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
 #elif defined(OS_IOS)
-  return std::make_unique<ProxyConfigServiceIOS>();
+  return std::make_unique<ProxyConfigServiceIOS>(
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
 #elif defined(OS_MACOSX)
-  return std::make_unique<ProxyConfigServiceMac>(io_task_runner);
+  return std::make_unique<ProxyConfigServiceMac>(
+      io_task_runner, NO_TRAFFIC_ANNOTATION_BUG_656607);
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
@@ -1471,8 +1483,9 @@ ProxyResolutionService::CreateSystemProxyConfigService(
   // glib_default_loop). Additionally register for notifications (delivered in
   // either |glib_default_loop| or an internal sequenced task runner) to
   // keep us updated when the proxy config changes.
-  linux_config_service->SetupAndFetchInitialConfig(glib_thread_task_runner,
-                                                   io_task_runner);
+  linux_config_service->SetupAndFetchInitialConfig(
+      glib_thread_task_runner, io_task_runner,
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
 
   return std::move(linux_config_service);
 #elif defined(OS_ANDROID)
@@ -1499,12 +1512,12 @@ ProxyResolutionService::CreateDefaultPacPollPolicy() {
 }
 
 void ProxyResolutionService::OnProxyConfigChanged(
-    const ProxyConfig& config,
+    const ProxyConfigWithAnnotation& config,
     ProxyConfigService::ConfigAvailability availability) {
   // Retrieve the current proxy configuration from the ProxyConfigService.
   // If a configuration is not available yet, we will get called back later
   // by our ProxyConfigService::Observer once it changes.
-  ProxyConfig effective_config;
+  ProxyConfigWithAnnotation effective_config;
   switch (availability) {
     case ProxyConfigService::CONFIG_PENDING:
       // ProxyConfigService implementors should never pass CONFIG_PENDING.
@@ -1514,7 +1527,7 @@ void ProxyResolutionService::OnProxyConfigChanged(
       effective_config = config;
       break;
     case ProxyConfigService::CONFIG_UNSET:
-      effective_config = ProxyConfig::CreateDirect();
+      effective_config = ProxyConfigWithAnnotation::CreateDirect();
       break;
   }
 
@@ -1535,7 +1548,7 @@ void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
   ResetProxyConfig(false);
 
   DCHECK(fetched_config_);
-  if (!fetched_config_->HasAutomaticSettings()) {
+  if (!fetched_config_->value().HasAutomaticSettings()) {
     config_ = fetched_config_;
     SetReady();
     return;
@@ -1564,9 +1577,9 @@ void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
 void ProxyResolutionService::InitializeUsingDecidedConfig(
     int decider_result,
     PacFileData* script_data,
-    const ProxyConfig& effective_config) {
+    const ProxyConfigWithAnnotation& effective_config) {
   DCHECK(fetched_config_);
-  DCHECK(fetched_config_->HasAutomaticSettings());
+  DCHECK(fetched_config_->value().HasAutomaticSettings());
 
   ResetProxyConfig(false);
 

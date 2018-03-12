@@ -98,13 +98,13 @@ PacFileDecider::~PacFileDecider() {
     Cancel();
 }
 
-int PacFileDecider::Start(const ProxyConfig& config,
+int PacFileDecider::Start(const ProxyConfigWithAnnotation& config,
                           const base::TimeDelta wait_delay,
                           bool fetch_pac_bytes,
                           const CompletionCallback& callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(!callback.is_null());
-  DCHECK(config.HasAutomaticSettings());
+  DCHECK(config.value().HasAutomaticSettings());
 
   net_log_.BeginEvent(NetLogEventType::PAC_FILE_DECIDER);
 
@@ -115,12 +115,14 @@ int PacFileDecider::Start(const ProxyConfig& config,
   if (wait_delay_ < base::TimeDelta())
     wait_delay_ = base::TimeDelta();
 
-  pac_mandatory_ = config.pac_mandatory();
-  have_custom_pac_url_ = config.has_pac_url();
+  pac_mandatory_ = config.value().pac_mandatory();
+  have_custom_pac_url_ = config.value().has_pac_url();
 
-  pac_sources_ = BuildPacSourcesFallbackList(config);
+  pac_sources_ = BuildPacSourcesFallbackList(config.value());
   DCHECK(!pac_sources_.empty());
 
+  traffic_annotation_ =
+      net::MutableNetworkTrafficAnnotationTag(config.traffic_annotation());
   next_state_ = STATE_WAIT;
 
   int rv = DoLoop(OK);
@@ -146,7 +148,7 @@ void PacFileDecider::OnShutdown() {
     callback.Run(ERR_CONTEXT_SHUT_DOWN);
 }
 
-const ProxyConfig& PacFileDecider::effective_config() const {
+const ProxyConfigWithAnnotation& PacFileDecider::effective_config() const {
   DCHECK_EQ(STATE_NONE, next_state_);
   return effective_config_;
 }
@@ -378,10 +380,10 @@ int PacFileDecider::DoVerifyPacScriptComplete(int result) {
 
   // Let the caller know which automatic setting we ended up initializing the
   // resolver for (there may have been multiple fallbacks to choose from.)
+  ProxyConfig config;
   if (current_pac_source().type == PacSource::CUSTOM) {
-    effective_config_ =
-        ProxyConfig::CreateFromCustomPacURL(current_pac_source().url);
-    effective_config_.set_pac_mandatory(pac_mandatory_);
+    config = ProxyConfig::CreateFromCustomPacURL(current_pac_source().url);
+    config.set_pac_mandatory(pac_mandatory_);
   } else {
     if (fetch_pac_bytes_) {
       GURL auto_detected_url;
@@ -399,15 +401,17 @@ int PacFileDecider::DoVerifyPacScriptComplete(int result) {
           NOTREACHED();
       }
 
-      effective_config_ =
-          ProxyConfig::CreateFromCustomPacURL(auto_detected_url);
+      config = ProxyConfig::CreateFromCustomPacURL(auto_detected_url);
     } else {
       // The resolver does its own resolution so we cannot know the
       // URL. Just do the best we can and state that the configuration
       // is to auto-detect proxy settings.
-      effective_config_ = ProxyConfig::CreateAutoDetect();
+      config = ProxyConfig::CreateAutoDetect();
     }
   }
+
+  effective_config_ = ProxyConfigWithAnnotation(
+      config, net::NetworkTrafficAnnotationTag(traffic_annotation_));
 
   return OK;
 }

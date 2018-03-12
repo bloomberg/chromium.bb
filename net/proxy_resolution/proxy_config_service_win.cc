@@ -17,7 +17,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "net/base/net_errors.h"
-#include "net/proxy_resolution/proxy_config.h"
 
 namespace net {
 
@@ -36,11 +35,11 @@ void FreeIEConfig(WINHTTP_CURRENT_USER_IE_PROXY_CONFIG* ie_config) {
 
 }  // namespace
 
-ProxyConfigServiceWin::ProxyConfigServiceWin()
-    : PollingProxyConfigService(
-          base::TimeDelta::FromSeconds(kPollIntervalSec),
-          &ProxyConfigServiceWin::GetCurrentProxyConfig) {
-}
+ProxyConfigServiceWin::ProxyConfigServiceWin(
+    const NetworkTrafficAnnotationTag& traffic_annotation)
+    : PollingProxyConfigService(base::TimeDelta::FromSeconds(kPollIntervalSec),
+                                &ProxyConfigServiceWin::GetCurrentProxyConfig,
+                                traffic_annotation) {}
 
 ProxyConfigServiceWin::~ProxyConfigServiceWin() {
   // The registry functions below will end up going to disk.  TODO: Do this on
@@ -128,17 +127,20 @@ void ProxyConfigServiceWin::OnObjectSignaled(base::win::RegKey* key) {
 }
 
 // static
-void ProxyConfigServiceWin::GetCurrentProxyConfig(ProxyConfig* config) {
+void ProxyConfigServiceWin::GetCurrentProxyConfig(
+    const NetworkTrafficAnnotationTag traffic_annotation,
+    ProxyConfigWithAnnotation* config) {
   WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie_config = {0};
   if (!WinHttpGetIEProxyConfigForCurrentUser(&ie_config)) {
     LOG(ERROR) << "WinHttpGetIEProxyConfigForCurrentUser failed: " <<
         GetLastError();
-    *config = ProxyConfig::CreateDirect();
-    config->set_source(PROXY_CONFIG_SOURCE_SYSTEM_FAILED);
+    *config = ProxyConfigWithAnnotation::CreateDirect();
     return;
   }
-  SetFromIEConfig(config, ie_config);
+  ProxyConfig proxy_config;
+  SetFromIEConfig(&proxy_config, ie_config);
   FreeIEConfig(&ie_config);
+  *config = ProxyConfigWithAnnotation(proxy_config, traffic_annotation);
 }
 
 // static
@@ -164,7 +166,6 @@ void ProxyConfigServiceWin::SetFromIEConfig(
   }
   if (ie_config.lpszAutoConfigUrl)
     config->set_pac_url(GURL(ie_config.lpszAutoConfigUrl));
-  config->set_source(PROXY_CONFIG_SOURCE_SYSTEM);
 }
 
 }  // namespace net

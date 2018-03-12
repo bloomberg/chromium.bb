@@ -543,8 +543,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
 
 TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
   for (size_t i = 0; i < arraysize(kTests); ++i) {
-    SpdySessionDependencies session_deps(
-        ProxyResolutionService::CreateFixed("http_proxy"));
+    SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+        "http_proxy", TRAFFIC_ANNOTATION_FOR_TESTS));
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
     HttpNetworkSessionPeer peer(session.get());
@@ -577,8 +577,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
 
 TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
   for (size_t i = 0; i < arraysize(kTests); ++i) {
-    SpdySessionDependencies session_deps(
-        ProxyResolutionService::CreateFixed("socks4://socks_proxy:1080"));
+    SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+        "socks4://socks_proxy:1080", TRAFFIC_ANNOTATION_FOR_TESTS));
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
     HttpNetworkSessionPeer peer(session.get());
@@ -696,7 +696,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectSetsMotivation) {
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
   const char* kProxyString = "PROXY bad:99; PROXY maybe:80; DIRECT";
   SpdySessionDependencies session_deps(
-      ProxyResolutionService::CreateFixedFromPacResult(kProxyString));
+      ProxyResolutionService::CreateFixedFromPacResult(
+          kProxyString, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // First connection attempt fails
   StaticSocketDataProvider socket_data1;
@@ -759,8 +760,8 @@ const int quic_proxy_test_mock_errors[] = {
 TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
   for (size_t i = 0; i < arraysize(quic_proxy_test_mock_errors); ++i) {
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service;
-    proxy_resolution_service =
-        ProxyResolutionService::CreateFixedFromPacResult("QUIC bad:99; DIRECT");
+    proxy_resolution_service = ProxyResolutionService::CreateFixedFromPacResult(
+        "QUIC bad:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
 
     HttpNetworkSession::Params session_params;
     session_params.enable_quic = true;
@@ -941,7 +942,8 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
       MockClientSocketFactory socket_factory;
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
           ProxyResolutionService::CreateFixedFromPacResult(
-              "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT");
+              "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT",
+              TRAFFIC_ANNOTATION_FOR_TESTS);
       TestProxyDelegate test_proxy_delegate;
       HttpServerPropertiesImpl http_server_properties;
       MockCertVerifier cert_verifier;
@@ -1054,7 +1056,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
     MockClientSocketFactory socket_factory;
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
         ProxyResolutionService::CreateFixedFromPacResult(
-            "HTTPS badproxy:99; DIRECT");
+            "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
     TestProxyDelegate test_proxy_delegate;
     HttpServerPropertiesImpl http_server_properties;
     MockCertVerifier cert_verifier;
@@ -1141,8 +1143,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
   for (int num_streams = 1; num_streams < 3; ++num_streams) {
     GURL url = GURL("https://www.google.com");
 
-    SpdySessionDependencies session_deps(
-        ProxyResolutionService::CreateFixed("http_proxy"));
+    SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+        "http_proxy", TRAFFIC_ANNOTATION_FOR_TESTS));
 
     // Setup params to disable preconnect, but QUIC doesn't 0RTT.
     HttpNetworkSession::Params session_params =
@@ -1201,7 +1203,7 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
       GURL url = GURL("http://www.google.com");
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
           ProxyResolutionService::CreateFixedFromPacResult(
-              "HTTPS myproxy.org:443");
+              "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
       // Set up the proxy server as a server that supports request priorities.
       HttpServerPropertiesImpl http_server_properties;
@@ -1294,7 +1296,8 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
   base::HistogramTester histogram_tester;
   GURL url = GURL("http://www.google.com");
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
-      ProxyResolutionService::CreateFixedFromPacResult("HTTPS myproxy.org:443");
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Set up the proxy server as a server that supports request priorities.
   HttpServerPropertiesImpl http_server_properties;
@@ -1695,8 +1698,8 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
 }
 
 TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
-  SpdySessionDependencies session_deps(
-      ProxyResolutionService::CreateFixed("myproxy:8888"));
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+      "myproxy:8888", TRAFFIC_ANNOTATION_FOR_TESTS));
 
   StaticSocketDataProvider socket_data;
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
@@ -1747,8 +1750,8 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
 // Verifies that once a stream has been created to a proxy server (that supports
 // request priorities) the next preconnect job can again open new sockets.
 TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
-  SpdySessionDependencies session_deps(
-      ProxyResolutionService::CreateFixed("https://myproxy.org:443"));
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+      "https://myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Set up the proxy server as a server that supports request priorities.
   auto http_server_properties = std::make_unique<HttpServerPropertiesImpl>();
@@ -1910,8 +1913,8 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
 }
 
 TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
-  SpdySessionDependencies session_deps(
-      ProxyResolutionService::CreateFixed("myproxy:8888"));
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateFixed(
+      "myproxy:8888", TRAFFIC_ANNOTATION_FOR_TESTS));
 
   MockRead read(SYNCHRONOUS, "HTTP/1.0 200 Connection established\r\n\r\n");
   StaticSocketDataProvider socket_data(&read, 1, 0, 0);
@@ -2013,9 +2016,10 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
   url::SchemeHostPort scheme_host_port("http", "myproxy.org", 443);
   auto session_deps = std::make_unique<SpdySessionDependencies>(
       ProxyResolutionService::CreateFixedFromPacResult(
-          "HTTPS myproxy.org:443"));
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
-      ProxyResolutionService::CreateFixedFromPacResult("HTTPS myproxy.org:443");
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
   SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);

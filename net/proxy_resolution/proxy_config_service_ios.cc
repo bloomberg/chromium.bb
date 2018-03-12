@@ -11,7 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace net {
 
@@ -36,11 +36,12 @@ bool GetBoolFromDictionary(CFDictionaryRef dict,
     return default_value;
 }
 
-void GetCurrentProxyConfig(ProxyConfig* config) {
+void GetCurrentProxyConfig(const NetworkTrafficAnnotationTag traffic_annotation,
+                           ProxyConfigWithAnnotation* config) {
   base::ScopedCFTypeRef<CFDictionaryRef> config_dict(
       CFNetworkCopySystemProxySettings());
   DCHECK(config_dict);
-
+  ProxyConfig proxy_config;
   // Auto-detect is not supported.
   // The kCFNetworkProxiesProxyAutoDiscoveryEnable key is not available on iOS.
 
@@ -52,7 +53,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     CFStringRef pac_url_ref = base::mac::GetValueFromDictionary<CFStringRef>(
         config_dict.get(), kCFNetworkProxiesProxyAutoConfigURLString);
     if (pac_url_ref)
-      config->set_pac_url(GURL(base::SysCFStringRefToUTF8(pac_url_ref)));
+      proxy_config.set_pac_url(GURL(base::SysCFStringRefToUTF8(pac_url_ref)));
   }
 
   // Proxies (for now http).
@@ -76,12 +77,13 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kCFNetworkProxiesHTTPProxy,
                                     kCFNetworkProxiesHTTPPort);
     if (proxy_server.is_valid()) {
-      config->proxy_rules().type =
+      proxy_config.proxy_rules().type =
           ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-      config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
+      proxy_config.proxy_rules().proxies_for_http.SetSingleProxyServer(
+          proxy_server);
       // Desktop Safari applies the HTTP proxy to http:// URLs only, but
       // Mobile Safari applies the HTTP proxy to https:// URLs as well.
-      config->proxy_rules().proxies_for_https.SetSingleProxyServer(
+      proxy_config.proxy_rules().proxies_for_https.SetSingleProxyServer(
           proxy_server);
     }
   }
@@ -93,15 +95,16 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
   // The kCFNetworkProxiesExcludeSimpleHostnames key is not available on iOS.
 
   // Source
-  config->set_source(PROXY_CONFIG_SOURCE_SYSTEM);
+  *config = ProxyConfigWithAnnotation(proxy_config, traffic_annotation);
 }
 
 }  // namespace
 
-ProxyConfigServiceIOS::ProxyConfigServiceIOS()
+ProxyConfigServiceIOS::ProxyConfigServiceIOS(
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : PollingProxyConfigService(base::TimeDelta::FromSeconds(kPollIntervalSec),
-                                GetCurrentProxyConfig) {
-}
+                                GetCurrentProxyConfig,
+                                traffic_annotation) {}
 
 ProxyConfigServiceIOS::~ProxyConfigServiceIOS() {
 }

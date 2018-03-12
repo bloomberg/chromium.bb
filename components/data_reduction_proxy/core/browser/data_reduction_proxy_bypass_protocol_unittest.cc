@@ -171,8 +171,7 @@ TEST_F(DataReductionProxyProtocolEmbeddedServerTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxy, proxy_server.host_port_pair().ToString());
   test_context_->config()->ResetParamFlagsForTest();
-  ConfigureTestDependencies(
-      ProxyResolutionService::CreateFixedFromPacResult("DIRECT"));
+  ConfigureTestDependencies(ProxyResolutionService::CreateDirect());
 
   test_context_->RunUntilIdle();
   base::RunLoop().RunUntilIdle();
@@ -584,11 +583,13 @@ TEST_F(DataReductionProxyProtocolTest, BypassRetryOnPostConnectionErrors) {
     ConfigureTestDependencies(
         ProxyResolutionService::CreateFixedFromPacResult(
             net::ProxyServer::FromURI(primary, net::ProxyServer::SCHEME_HTTP)
-                .ToPacString() +
-            "; " +
-            net::ProxyServer::FromURI(fallback, net::ProxyServer::SCHEME_HTTP)
-                .ToPacString() +
-            "; DIRECT"),
+                    .ToPacString() +
+                "; " +
+                net::ProxyServer::FromURI(fallback,
+                                          net::ProxyServer::SCHEME_HTTP)
+                    .ToPacString() +
+                "; DIRECT",
+            TRAFFIC_ANNOTATION_FOR_TESTS),
         true /* use_mock_socket_factory */, false /* use_drp_proxy_delegate */,
         false /* use_test_network_delegate */);
     // Only 1 set of valid response headers are expected since the proxy
@@ -1030,11 +1031,13 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
     ConfigureTestDependencies(
         ProxyResolutionService::CreateFixedFromPacResult(
             net::ProxyServer::FromURI(primary, net::ProxyServer::SCHEME_HTTP)
-                .ToPacString() +
-            "; " +
-            net::ProxyServer::FromURI(fallback, net::ProxyServer::SCHEME_HTTP)
-                .ToPacString() +
-            "; DIRECT"),
+                    .ToPacString() +
+                "; " +
+                net::ProxyServer::FromURI(fallback,
+                                          net::ProxyServer::SCHEME_HTTP)
+                    .ToPacString() +
+                "; DIRECT",
+            TRAFFIC_ANNOTATION_FOR_TESTS),
         true /* use_mock_socket_factory */, false /* use_drp_proxy_delegate */,
         true /* use_test_network_delegate */);
     TestProxyFallback(
@@ -1138,8 +1141,8 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
     const std::string kPrimary = "https://unrecognized-drp.net:443";
 
     ResetDependencies();
-    storage()->set_proxy_resolution_service(
-        ProxyResolutionService::CreateFixed(kPrimary + ",direct://"));
+    storage()->set_proxy_resolution_service(ProxyResolutionService::CreateFixed(
+        kPrimary + ",direct://", TRAFFIC_ANNOTATION_FOR_TESTS));
     AttachToContextAndInit();
 
     // The proxy is an HTTPS proxy, so set up the fake SSL socket data.
@@ -1209,7 +1212,8 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
   for (const auto& test : test_cases) {
     ResetDependencies();
     storage()->set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixed(test.proxy_rules));
+        net::ProxyResolutionService::CreateFixed(test.proxy_rules,
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS));
     AttachToContextAndInit();
     if (test.enable_data_reduction_proxy) {
       drp_test_context()->DisableWarmupURLFetch();
@@ -1241,10 +1245,10 @@ TEST_F(DataReductionProxyProtocolTest,
        ProxyBypassIgnoredOnDirectConnection) {
   // Verify that a Chrome-Proxy header is ignored when returned from a directly
   // connected origin server.
-  ConfigureTestDependencies(
-      ProxyResolutionService::CreateFixedFromPacResult("DIRECT"),
-      true /* use_mock_socket_factory */, false /* use_drp_proxy_delegate */,
-      true /* use_test_network_delegate */);
+  ConfigureTestDependencies(ProxyResolutionService::CreateDirect(),
+                            true /* use_mock_socket_factory */,
+                            false /* use_drp_proxy_delegate */,
+                            true /* use_test_network_delegate */);
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"

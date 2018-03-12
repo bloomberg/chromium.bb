@@ -22,7 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
-#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 using base::android::AttachCurrentThread;
@@ -146,9 +146,14 @@ bool GetProxyRules(const GetPropertyCallback& get_property,
 };
 
 void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
-                                  ProxyConfig* config) {
-  if (!GetProxyRules(get_property, &config->proxy_rules()))
-    *config = ProxyConfig::CreateDirect();
+                                  ProxyConfigWithAnnotation* config) {
+  ProxyConfig proxy_config;
+  if (GetProxyRules(get_property, &proxy_config.proxy_rules())) {
+    *config =
+        ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
+  } else {
+    *config = ProxyConfigWithAnnotation::CreateDirect();
+  }
 }
 
 std::string GetJavaProperty(const std::string& property) {
@@ -166,14 +171,17 @@ void CreateStaticProxyConfig(const std::string& host,
                              int port,
                              const std::string& pac_url,
                              const std::vector<std::string>& exclusion_list,
-                             ProxyConfig* config) {
+                             ProxyConfigWithAnnotation* config) {
+  ProxyConfig proxy_config;
   if (!pac_url.empty()) {
-    config->set_pac_url(GURL(pac_url));
-    config->set_pac_mandatory(false);
+    proxy_config.set_pac_url(GURL(pac_url));
+    proxy_config.set_pac_mandatory(false);
+    *config =
+        ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
   } else if (port != 0) {
     std::string rules = base::StringPrintf("%s:%d", host.c_str(), port);
-    config->proxy_rules().ParseFromString(rules);
-    config->proxy_rules().bypass_rules.Clear();
+    proxy_config.proxy_rules().ParseFromString(rules);
+    proxy_config.proxy_rules().bypass_rules.Clear();
 
     std::vector<std::string>::const_iterator it;
     for (it = exclusion_list.begin(); it != exclusion_list.end(); ++it) {
@@ -181,10 +189,13 @@ void CreateStaticProxyConfig(const std::string& host,
       base::TrimWhitespaceASCII(*it, base::TRIM_ALL, &pattern);
       if (pattern.empty())
           continue;
-      config->proxy_rules().bypass_rules.AddRuleForHostname("", pattern, -1);
+      proxy_config.proxy_rules().bypass_rules.AddRuleForHostname("", pattern,
+                                                                 -1);
     }
+    *config =
+        ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
   } else {
-    *config = ProxyConfig::CreateDirect();
+    *config = ProxyConfigWithAnnotation::CreateDirect();
   }
 }
 
@@ -216,7 +227,7 @@ class ProxyConfigServiceAndroid::Delegate
 
   void FetchInitialConfig() {
     DCHECK(InJNISequence());
-    ProxyConfig proxy_config;
+    ProxyConfigWithAnnotation proxy_config;
     GetLatestProxyConfigInternal(get_property_callback_, &proxy_config);
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Delegate::SetNewConfigInNetworkSequence, this,
@@ -243,7 +254,7 @@ class ProxyConfigServiceAndroid::Delegate
     observers_.RemoveObserver(observer);
   }
 
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) {
+  ConfigAvailability GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
     DCHECK(InNetworkSequence());
     if (!config)
       return ProxyConfigService::CONFIG_UNSET;
@@ -254,7 +265,7 @@ class ProxyConfigServiceAndroid::Delegate
   // Called in the JNI sequence.
   void ProxySettingsChanged() {
     DCHECK(InJNISequence());
-    ProxyConfig proxy_config;
+    ProxyConfigWithAnnotation proxy_config;
     GetLatestProxyConfigInternal(get_property_callback_, &proxy_config);
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Delegate::SetNewConfigInNetworkSequence, this,
@@ -267,7 +278,7 @@ class ProxyConfigServiceAndroid::Delegate
                               const std::string& pac_url,
                               const std::vector<std::string>& exclusion_list) {
     DCHECK(InJNISequence());
-    ProxyConfig proxy_config;
+    ProxyConfigWithAnnotation proxy_config;
     if (exclude_pac_url_) {
       CreateStaticProxyConfig(host, port, "", exclusion_list, &proxy_config);
     } else {
@@ -327,7 +338,8 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   // Called on the network sequence.
-  void SetNewConfigInNetworkSequence(const ProxyConfig& proxy_config) {
+  void SetNewConfigInNetworkSequence(
+      const ProxyConfigWithAnnotation& proxy_config) {
     DCHECK(InNetworkSequence());
     proxy_config_ = proxy_config;
     for (auto& observer : observers_) {
@@ -351,7 +363,7 @@ class ProxyConfigServiceAndroid::Delegate
   scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> jni_task_runner_;
   GetPropertyCallback get_property_callback_;
-  ProxyConfig proxy_config_;
+  ProxyConfigWithAnnotation proxy_config_;
   bool exclude_pac_url_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -383,7 +395,8 @@ void ProxyConfigServiceAndroid::RemoveObserver(Observer* observer) {
 }
 
 ProxyConfigService::ConfigAvailability
-ProxyConfigServiceAndroid::GetLatestProxyConfig(ProxyConfig* config) {
+ProxyConfigServiceAndroid::GetLatestProxyConfig(
+    ProxyConfigWithAnnotation* config) {
   return delegate_->GetLatestProxyConfig(config);
 }
 

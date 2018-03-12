@@ -198,7 +198,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
 
       socks_params = new SOCKSSocketParams(
           proxy_tcp_params, socks_version == '5', origin_host_port,
-          proxy_info.traffic_annotation());
+          NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     }
   }
 

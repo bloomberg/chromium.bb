@@ -33,7 +33,7 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
-  params->initial_proxy_config = net::ProxyConfig::CreateDirect();
+  params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
   return params;
 }
 

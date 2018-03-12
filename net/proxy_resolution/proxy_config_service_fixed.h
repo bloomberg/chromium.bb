@@ -8,24 +8,25 @@
 #include "base/compiler_specific.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 namespace net {
 
 // Implementation of ProxyConfigService that returns a fixed result.
 class NET_EXPORT ProxyConfigServiceFixed : public ProxyConfigService {
  public:
-  explicit ProxyConfigServiceFixed(const ProxyConfig& pc);
+  explicit ProxyConfigServiceFixed(const ProxyConfigWithAnnotation& pc);
   ~ProxyConfigServiceFixed() override;
 
   // ProxyConfigService methods:
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
-  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  ConfigAvailability GetLatestProxyConfig(
+      ProxyConfigWithAnnotation* config) override;
 
  private:
-  ProxyConfig pc_;
+  ProxyConfigWithAnnotation pc_;
 };
 
 }  // namespace net

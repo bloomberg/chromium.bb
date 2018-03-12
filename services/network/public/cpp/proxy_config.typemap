@@ -6,7 +6,6 @@ mojom = "//services/network/public/mojom/proxy_config.mojom"
 public_headers = [
   "//net/proxy_resolution/proxy_bypass_rules.h",
   "//net/proxy_resolution/proxy_config.h",
-  "//net/proxy_resolution/proxy_config_source.h",
   "//net/proxy_resolution/proxy_list.h",
 ]
 traits_headers = [ "//services/network/public/cpp/proxy_config_mojom_traits.h" ]
@@ -19,6 +18,6 @@ type_mappings = [
   "network.mojom.ProxyList=net::ProxyList",
   "network.mojom.ProxyRulesType=net::ProxyConfig::ProxyRules::Type",
   "network.mojom.ProxyRule=net::ProxyConfig::ProxyRule",
-  "network.mojom.ProxyConfigSource=net::ProxyConfigSource",
   "network.mojom.ProxyConfig=net::ProxyConfig",
+  "network.mojom.ProxyConfigWithAnnotation=net::ProxyConfigWithAnnotation",
 ]

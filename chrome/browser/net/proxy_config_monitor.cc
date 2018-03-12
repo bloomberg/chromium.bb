@@ -71,7 +71,7 @@ void ProxyConfigMonitor::AddToNetworkContextParams(
   binding_set_.AddBinding(
       this,
       mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
-  net::ProxyConfig proxy_config;
+  net::ProxyConfigWithAnnotation proxy_config;
   net::ProxyConfigService::ConfigAvailability availability =
       proxy_config_service_->GetLatestProxyConfig(&proxy_config);
   if (availability != net::ProxyConfigService::CONFIG_PENDING)
@@ -83,7 +83,7 @@ void ProxyConfigMonitor::FlushForTesting() {
 }
 
 void ProxyConfigMonitor::OnProxyConfigChanged(
-    const net::ProxyConfig& config,
+    const net::ProxyConfigWithAnnotation& config,
     net::ProxyConfigService::ConfigAvailability availability) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   proxy_config_client_set_.ForAllPtrs(
@@ -95,7 +95,7 @@ void ProxyConfigMonitor::OnProxyConfigChanged(
             break;
           case net::ProxyConfigService::CONFIG_UNSET:
             proxy_config_client->OnProxyConfigUpdated(
-                net::ProxyConfig::CreateDirect());
+                net::ProxyConfigWithAnnotation::CreateDirect());
             break;
           case net::ProxyConfigService::CONFIG_PENDING:
             NOTREACHED();

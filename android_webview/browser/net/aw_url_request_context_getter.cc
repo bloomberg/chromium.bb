@@ -304,7 +304,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kProxyServerSwitch)) {
     std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
-    builder.set_proxy_resolution_service(net::ProxyResolutionService::CreateFixed(proxy));
+    builder.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateFixed(proxy,
+                                                 NO_TRAFFIC_ANNOTATION_YET));
   } else {
     builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateWithoutProxyResolver(

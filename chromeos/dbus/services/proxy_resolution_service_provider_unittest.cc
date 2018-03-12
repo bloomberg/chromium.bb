@@ -24,6 +24,7 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -154,7 +155,9 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
     config.set_pac_url(GURL("http://www.example.com"));
     config.set_pac_mandatory(true);
     proxy_resolution_service_ = std::make_unique<net::ProxyResolutionService>(
-        std::make_unique<net::ProxyConfigServiceFixed>(config),
+        std::make_unique<net::ProxyConfigServiceFixed>(
+            net::ProxyConfigWithAnnotation(config,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
         std::make_unique<TestProxyResolverFactory>(proxy_resolver_),
         nullptr /* net_log */);
     context_getter_->GetURLRequestContext()->set_proxy_resolution_service(

@@ -15,7 +15,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 
 namespace net {
@@ -39,20 +38,20 @@ bool GetBoolFromDictionary(CFDictionaryRef dict,
     return default_value;
 }
 
-void GetCurrentProxyConfig(ProxyConfig* config) {
+void GetCurrentProxyConfig(const NetworkTrafficAnnotationTag traffic_annotation,
+                           ProxyConfigWithAnnotation* config) {
   base::ScopedCFTypeRef<CFDictionaryRef> config_dict(
       SCDynamicStoreCopyProxies(NULL));
   DCHECK(config_dict);
+  ProxyConfig proxy_config;
 
   // auto-detect
 
   // There appears to be no UI for this configuration option, and we're not sure
   // if Apple's proxy code even takes it into account. But the constant is in
   // the header file so we'll use it.
-  config->set_auto_detect(
-      GetBoolFromDictionary(config_dict.get(),
-                            kSCPropNetProxiesProxyAutoDiscoveryEnable,
-                            false));
+  proxy_config.set_auto_detect(GetBoolFromDictionary(
+      config_dict.get(), kSCPropNetProxiesProxyAutoDiscoveryEnable, false));
 
   // PAC file
 
@@ -62,7 +61,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
     CFStringRef pac_url_ref = base::mac::GetValueFromDictionary<CFStringRef>(
         config_dict.get(), kSCPropNetProxiesProxyAutoConfigURLString);
     if (pac_url_ref)
-      config->set_pac_url(GURL(base::SysCFStringRefToUTF8(pac_url_ref)));
+      proxy_config.set_pac_url(GURL(base::SysCFStringRefToUTF8(pac_url_ref)));
   }
 
   // proxies (for now ftp, http, https, and SOCKS)
@@ -76,9 +75,10 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesFTPProxy,
                                     kSCPropNetProxiesFTPPort);
     if (proxy_server.is_valid()) {
-      config->proxy_rules().type =
+      proxy_config.proxy_rules().type =
           ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-      config->proxy_rules().proxies_for_ftp.SetSingleProxyServer(proxy_server);
+      proxy_config.proxy_rules().proxies_for_ftp.SetSingleProxyServer(
+          proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -90,9 +90,10 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesHTTPProxy,
                                     kSCPropNetProxiesHTTPPort);
     if (proxy_server.is_valid()) {
-      config->proxy_rules().type =
+      proxy_config.proxy_rules().type =
           ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-      config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
+      proxy_config.proxy_rules().proxies_for_http.SetSingleProxyServer(
+          proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -104,10 +105,10 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesHTTPSProxy,
                                     kSCPropNetProxiesHTTPSPort);
     if (proxy_server.is_valid()) {
-      config->proxy_rules().type =
+      proxy_config.proxy_rules().type =
           ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-      config->proxy_rules().proxies_for_https.
-          SetSingleProxyServer(proxy_server);
+      proxy_config.proxy_rules().proxies_for_https.SetSingleProxyServer(
+          proxy_server);
     }
   }
   if (GetBoolFromDictionary(config_dict.get(),
@@ -119,9 +120,10 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesSOCKSProxy,
                                     kSCPropNetProxiesSOCKSPort);
     if (proxy_server.is_valid()) {
-      config->proxy_rules().type =
+      proxy_config.proxy_rules().type =
           ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-      config->proxy_rules().fallback_proxies.SetSingleProxyServer(proxy_server);
+      proxy_config.proxy_rules().fallback_proxies.SetSingleProxyServer(
+          proxy_server);
     }
   }
 
@@ -140,7 +142,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                         " to be a CFStringRef but it was not";
 
       } else {
-        config->proxy_rules().bypass_rules.AddRuleFromString(
+        proxy_config.proxy_rules().bypass_rules.AddRuleFromString(
             base::SysCFStringRefToUTF8(bypass_item_ref));
       }
     }
@@ -151,11 +153,10 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
   if (GetBoolFromDictionary(config_dict.get(),
                             kSCPropNetProxiesExcludeSimpleHostnames,
                             false)) {
-    config->proxy_rules().bypass_rules.AddRuleToBypassLocal();
+    proxy_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
   }
 
-  // Source
-  config->set_source(PROXY_CONFIG_SOURCE_SYSTEM);
+  *config = ProxyConfigWithAnnotation(proxy_config, traffic_annotation);
 }
 
 }  // namespace
@@ -175,7 +176,7 @@ class ProxyConfigServiceMac::Helper
     parent_ = NULL;
   }
 
-  void OnProxyConfigChanged(const ProxyConfig& new_config) {
+  void OnProxyConfigChanged(const ProxyConfigWithAnnotation& new_config) {
     if (parent_)
       parent_->OnProxyConfigChanged(new_config);
   }
@@ -198,11 +199,13 @@ void ProxyConfigServiceMac::Forwarder::OnNetworkConfigChange(
 }
 
 ProxyConfigServiceMac::ProxyConfigServiceMac(
-    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarder_(this),
       has_fetched_config_(false),
       helper_(new Helper(this)),
-      sequenced_task_runner_(sequenced_task_runner) {
+      sequenced_task_runner_(sequenced_task_runner),
+      traffic_annotation_(traffic_annotation) {
   DCHECK(sequenced_task_runner_.get());
   config_watcher_.reset(new NetworkConfigWatcherMac(&forwarder_));
 }
@@ -226,12 +229,12 @@ void ProxyConfigServiceMac::RemoveObserver(Observer* observer) {
 }
 
 ProxyConfigService::ConfigAvailability
-ProxyConfigServiceMac::GetLatestProxyConfig(ProxyConfig* config) {
+ProxyConfigServiceMac::GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
   DCHECK(sequenced_task_runner_->RunsTasksInCurrentSequence());
 
   // Lazy-initialize by fetching the proxy setting from this thread.
   if (!has_fetched_config_) {
-    GetCurrentProxyConfig(&last_config_fetched_);
+    GetCurrentProxyConfig(traffic_annotation_, &last_config_fetched_);
     has_fetched_config_ = true;
   }
 
@@ -259,8 +262,8 @@ void ProxyConfigServiceMac::OnNetworkConfigChange(CFArrayRef changed_keys) {
   // Called on notifier thread.
 
   // Fetch the new system proxy configuration.
-  ProxyConfig new_config;
-  GetCurrentProxyConfig(&new_config);
+  ProxyConfigWithAnnotation new_config;
+  GetCurrentProxyConfig(traffic_annotation_, &new_config);
 
   // Call OnProxyConfigChanged() on the TakeRunner to notify our observers.
   sequenced_task_runner_->PostTask(
@@ -269,7 +272,7 @@ void ProxyConfigServiceMac::OnNetworkConfigChange(CFArrayRef changed_keys) {
 }
 
 void ProxyConfigServiceMac::OnProxyConfigChanged(
-    const ProxyConfig& new_config) {
+    const ProxyConfigWithAnnotation& new_config) {
   DCHECK(sequenced_task_runner_->RunsTasksInCurrentSequence());
 
   // Keep track of the last value we have seen.
