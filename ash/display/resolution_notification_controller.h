@@ -12,9 +12,11 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace chromeos {
 FORWARD_DECLARE_TEST(DisplayPrefsTest, PreventStore);
@@ -26,7 +28,8 @@ namespace ash {
 // also manages the timeout in case the new resolution is unusable.
 class ASH_EXPORT ResolutionNotificationController
     : public display::DisplayObserver,
-      public WindowTreeHostManager::Observer {
+      public WindowTreeHostManager::Observer,
+      public message_center::NotificationObserver {
  public:
   ResolutionNotificationController();
   ~ResolutionNotificationController() override;
@@ -64,14 +67,10 @@ class ASH_EXPORT ResolutionNotificationController
   // the notification times out.
   bool DoesNotificationTimeout();
 
-  // Called by the notification delegate when the user accepts the display
-  // resolution change. Set |close_notification| to true when the notification
-  // should be removed.
-  void AcceptResolutionChange(bool close_notification);
-
-  // Called by the notification delegate when the user wants to revert the
-  // display resolution change.
-  void RevertResolutionChange(bool display_was_removed);
+  // message_center::NotificationObserver
+  void Close(bool by_user) override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
 
  private:
   friend class ResolutionNotificationControllerTest;
@@ -90,6 +89,13 @@ class ASH_EXPORT ResolutionNotificationController
   // feedback.
   void CreateOrUpdateNotification(bool enable_spoken_feedback);
 
+  // Called when the user accepts the display resolution change. Set
+  // |close_notification| to true when the notification should be removed.
+  void AcceptResolutionChange(bool close_notification);
+
+  // Called when the user wants to revert the display resolution change.
+  void RevertResolutionChange(bool display_was_removed);
+
   // Called every second for timeout.
   void OnTimerTick();
 
@@ -105,6 +111,8 @@ class ASH_EXPORT ResolutionNotificationController
   static void SuppressTimerForTest();
 
   std::unique_ptr<ResolutionChangeInfo> change_info_;
+
+  base::WeakPtrFactory<ResolutionNotificationController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };
