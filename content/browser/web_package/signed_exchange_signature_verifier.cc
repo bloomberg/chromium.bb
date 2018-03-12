@@ -53,38 +53,18 @@ base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
 base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
     const SignedExchangeHeader& header) {
   const auto& headers = header.response_headers();
-
-  auto it = headers.find(kSignedHeadersName);
-  if (it == headers.end()) {
-    DVLOG(1) << "The Signed-Headers http header not found";
-    return base::nullopt;
-  }
-  const std::string& signed_header_value = it->second;
-
-  base::Optional<std::vector<std::string>> signed_headers =
-      SignedExchangeHeaderParser::ParseSignedHeaders(signed_header_value);
-  if (!signed_headers)
-    return base::nullopt;
-
   cbor::CBORValue::MapValue map;
   std::string response_code_str = base::NumberToString(header.response_code());
   map.insert_or_assign(
       cbor::CBORValue(kStatusKey, cbor::CBORValue::Type::BYTE_STRING),
       cbor::CBORValue(response_code_str, cbor::CBORValue::Type::BYTE_STRING));
-
-  for (const std::string& name : *signed_headers) {
-    auto headers_it = headers.find(name);
-    if (headers_it == headers.end()) {
-      DVLOG(1) << "Signed header \"" << name
-               << "\" expected, but not found in response_headers.";
-      return base::nullopt;
-    }
-    const std::string& value = headers_it->second;
+  for (const auto& pair : headers) {
+    if (pair.first == kSignature)
+      continue;
     map.insert_or_assign(
-        cbor::CBORValue(name, cbor::CBORValue::Type::BYTE_STRING),
-        cbor::CBORValue(value, cbor::CBORValue::Type::BYTE_STRING));
+        cbor::CBORValue(pair.first, cbor::CBORValue::Type::BYTE_STRING),
+        cbor::CBORValue(pair.second, cbor::CBORValue::Type::BYTE_STRING));
   }
-
   return cbor::CBORValue(map);
 }
 

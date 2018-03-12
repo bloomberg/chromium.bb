@@ -12,39 +12,6 @@ class SignedExchangeHeaderParserTest : public ::testing::Test {
   SignedExchangeHeaderParserTest() {}
 };
 
-TEST_F(SignedExchangeHeaderParserTest, ParseSignedHeaders) {
-  const char hdr_string[] = "\"content-type\", \"digest\"";
-  base::Optional<std::vector<std::string>> headers =
-      SignedExchangeHeaderParser::ParseSignedHeaders(hdr_string);
-  EXPECT_TRUE(headers.has_value());
-  ASSERT_EQ(headers->size(), 2u);
-  EXPECT_EQ(headers->at(0), "content-type");
-  EXPECT_EQ(headers->at(1), "digest");
-}
-
-TEST_F(SignedExchangeHeaderParserTest, SignedHeadersNoQuotes) {
-  const char hdr_string[] = "content-type, digest";
-  base::Optional<std::vector<std::string>> headers =
-      SignedExchangeHeaderParser::ParseSignedHeaders(hdr_string);
-  EXPECT_FALSE(headers.has_value());
-}
-
-TEST_F(SignedExchangeHeaderParserTest, SignedHeadersParseError) {
-  const char hdr_string[] = "\"content-type\", \"digest";
-  base::Optional<std::vector<std::string>> headers =
-      SignedExchangeHeaderParser::ParseSignedHeaders(hdr_string);
-  EXPECT_FALSE(headers.has_value());
-}
-
-TEST_F(SignedExchangeHeaderParserTest, QuotedChar) {
-  const char hdr_string[] = R"("\\o/")";
-  base::Optional<std::vector<std::string>> headers =
-      SignedExchangeHeaderParser::ParseSignedHeaders(hdr_string);
-  EXPECT_TRUE(headers.has_value());
-  ASSERT_EQ(headers->size(), 1u);
-  EXPECT_EQ(headers->at(0), "\\o/");
-}
-
 TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
   const char hdr_string[] =
       "sig1;"

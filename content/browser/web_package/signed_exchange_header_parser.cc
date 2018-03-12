@@ -187,17 +187,6 @@ class StructuredHeaderParser {
 
 }  // namespace
 
-base::Optional<std::vector<std::string>>
-SignedExchangeHeaderParser::ParseSignedHeaders(
-    const std::string& signed_headers_str) {
-  std::vector<std::string> headers;
-  StructuredHeaderParser parser(signed_headers_str);
-  parser.ParseStringList(&headers);
-  if (!parser.ParsedSuccessfully())
-    return base::nullopt;
-  return headers;
-}
-
 base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
 SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
   StructuredHeaderParser parser(signature_str);

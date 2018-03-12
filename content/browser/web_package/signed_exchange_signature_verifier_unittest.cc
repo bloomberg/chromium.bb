@@ -20,9 +20,6 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
   header.set_response_code(net::HTTP_OK);
   header.AddResponseHeader("content-type", "text/html; charset=utf-8");
   header.AddResponseHeader("content-encoding", "mi-sha256");
-  header.AddResponseHeader("unsigned-header", "foobar");
-  header.AddResponseHeader("signed-headers",
-                           "\"content-type\", \"content-encoding\"");
 
   base::Optional<std::vector<uint8_t>> encoded =
       SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(header);
@@ -120,8 +117,6 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   header.AddResponseHeader("content-encoding", "mi-sha256");
   header.AddResponseHeader(
       "mi", "mi-sha256=4ld4G-h-sQSoLBD39ndIO15O_82NXSzq9UMFEYI02JQ");
-  header.AddResponseHeader("signed-headers",
-                           "\"content-type\", \"content-encoding\", \"mi\"");
   header.SetSignatureForTesting((*signature)[0]);
 
   auto certificate = certlist[0];

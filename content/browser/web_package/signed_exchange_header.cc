@@ -127,7 +127,7 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
       !ParseResponseMap(top_level_array[1], &ret))
     return base::nullopt;
 
-  auto signature_iter = ret.response_headers_.find("signature");
+  auto signature_iter = ret.response_headers_.find(kSignature);
   if (signature_iter == ret.response_headers_.end())
     return base::nullopt;
 
