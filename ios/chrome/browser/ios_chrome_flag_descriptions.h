@@ -85,10 +85,10 @@ extern const char kPasswordExportDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
-// Title and description for the flag to enable the new UI Reboot on Recent
-// Tabs.
-extern const char kRecentTabsUIRebootName[];
-extern const char kRecentTabsUIRebootDescription[];
+// Title and description for the flag to enable the new UI Reboot on existing
+// Collections.
+extern const char kCollectionsUIRebootName[];
+extern const char kCollectionsUIRebootDescription[];
 
 // Title and description for the flag to share the canonical URL of the
 // current page instead of the visible URL.

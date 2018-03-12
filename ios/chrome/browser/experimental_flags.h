@@ -60,6 +60,9 @@ bool IsThirdPartyKeyboardWorkaroundEnabled();
 // Whether RecentTabs UI Reboot is enabled.
 bool IsRecentTabsUIRebootEnabled();
 
+// Whether the Collections UI Reboot is enabled.
+bool IsCollectionsUIRebootEnabled();
+
 // Whether the application group sandbox must be cleared before starting.
 // Calling this method will reset the flag to false, so the sandbox is cleared
 // only once.

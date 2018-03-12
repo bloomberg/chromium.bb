@@ -97,9 +97,9 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
-const char kRecentTabsUIRebootName[] = "Recent Tabs UI Reboot";
-const char kRecentTabsUIRebootDescription[] =
-    "When enabled, Recent Tabs will use the new UI Reboot stack.";
+const char kCollectionsUIRebootName[] = "Collections UI Reboot";
+const char kCollectionsUIRebootDescription[] =
+    "When enabled, Collections will use the new UI Reboot stack.";
 
 const char kShareCanonicalURLName[] = "Share Canonical URL";
 const char kShareCanonicalURLDescription[] =
