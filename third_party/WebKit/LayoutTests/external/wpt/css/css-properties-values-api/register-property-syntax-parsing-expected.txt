@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 121 tests; 120 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS syntax:'*', initialValue:'a' is valid
 PASS syntax:' * ', initialValue:'b' is valid
 PASS syntax:'<length>', initialValue:'2px' is valid
