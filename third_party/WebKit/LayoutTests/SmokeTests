@@ -69,8 +69,6 @@ css-parser/font-size-adjust.html
 custom-elements/array-squat-crash.html
 custom-elements/imports/upgrade-order.html
 custom-elements/spec/state-failed-create.html
-custom-properties/register-property.html
-custom-properties/var-reference-registered-properties.html
 device_orientation/motion/add-listener-from-callback.html
 device_orientation/orientation/create-event.html
 dom/attr/parent-adopt-node.html
@@ -157,6 +155,8 @@ external/wpt/css/cssom/cssom-cssText-serialize.html
 external/wpt/css/cssom/medialist-interfaces-004.html
 external/wpt/css/cssom-view/cssom-view/media-query-list-interface.xht
 external/wpt/css/cssom-view/cssom-view-window-screen-interface.html
+external/wpt/css/css-properties-values-api/register-property.html
+external/wpt/css/css-properties-values-api/var-reference-registered-properties.html
 external/wpt/css/cssom-view/ttwf-scrollintoview.html
 external/wpt/css/css-timing/cubic-bezier-timing-functions-output.html
 external/wpt/css/css-timing/frames-timing-functions-output.html
