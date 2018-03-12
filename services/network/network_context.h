@@ -20,8 +20,10 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
 namespace net {
@@ -33,7 +35,6 @@ namespace network {
 class NetworkService;
 class ResourceScheduler;
 class ResourceSchedulerClient;
-class UDPSocketFactory;
 class URLRequestContextBuilderMojo;
 
 // A NetworkContext creates and manages access to a URLRequestContext.
@@ -112,6 +113,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                             mojom::NetworkConditionsPtr conditions) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
+  void CreateTCPServerSocket(
+      const net::IPEndPoint& local_addr,
+      uint32_t backlog,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPServerSocketRequest request,
+      CreateTCPServerSocketCallback callback) override;
+  void CreateTCPConnectedSocket(
+      const base::Optional<net::IPEndPoint>& local_addr,
+      const net::AddressList& remote_addr_list,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPConnectedSocketRequest request,
+      mojom::TCPConnectedSocketObserverPtr observer,
+      CreateTCPConnectedSocketCallback callback) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -169,7 +183,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<CookieManager> cookie_manager_;
 
-  std::unique_ptr<UDPSocketFactory> udp_socket_factory_;
+  SocketFactory socket_factory_;
 
   std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
 
