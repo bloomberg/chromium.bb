@@ -7,6 +7,7 @@
 
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace vr {
 
@@ -37,9 +38,18 @@ class Rect : public UiElement {
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const override;
 
+  void set_center_point(const gfx::PointF& center_point) {
+    center_point_ = center_point;
+  }
+
  private:
   SkColor center_color_ = SK_ColorWHITE;
   SkColor edge_color_ = SK_ColorWHITE;
+
+  // This is the center point of the gradient, in aspect-corrected, local
+  // coordinates. That is, {0, 0} is always the center of the quad, and the
+  // longer extent always varies between -0.5 and 0.5.
+  gfx::PointF center_point_;
 
   DISALLOW_COPY_AND_ASSIGN(Rect);
 };

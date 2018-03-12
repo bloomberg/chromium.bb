@@ -32,6 +32,7 @@ static constexpr char const* kVertexShader = SHADER(
   uniform vec2 u_URCornerOffset;
   uniform vec2 u_LRCornerOffset;
   uniform vec2 u_LLCornerOffset;
+  uniform mediump float u_AspectRatio;
   attribute vec4 a_Position;
   attribute vec2 a_CornerPosition;
   attribute vec2 a_OffsetScale;
@@ -55,7 +56,11 @@ static constexpr char const* kVertexShader = SHADER(
         a_Position[1] + corner_offset[1] * a_OffsetScale[1],
         a_Position[2],
         a_Position[3]);
-    v_Position = position.xy;
+    if (u_AspectRatio > 1.0) {
+      v_Position = vec2(position.x, position.y / u_AspectRatio);
+    } else {
+      v_Position = vec2(position.x * u_AspectRatio, position.y);
+    }
     gl_Position = u_ModelViewProjMatrix * position;
   }
 );
@@ -67,12 +72,14 @@ static constexpr char const* kFragmentShader = SHADER(
   uniform mediump float u_Opacity;
   uniform vec4 u_CenterColor;
   uniform vec4 u_EdgeColor;
+  uniform vec2 u_CenterPosition;
   void main() {
     // NB: this is on the range [0, 1] and hits its extrema at the horizontal
     // and vertical edges of the quad, regardless of its aspect ratio. If we
     // want to have a true circular gradient, we will need to do some extra
     // math.
-    float edge_color_weight = clamp(2.0 * length(v_Position), 0.0, 1.0);
+    vec2 position = v_Position - u_CenterPosition;
+    float edge_color_weight = clamp(2.0 * length(position), 0.0, 1.0);
     float center_color_weight = 1.0 - edge_color_weight;
     vec4 color = u_CenterColor * center_color_weight + u_EdgeColor *
         edge_color_weight;
@@ -114,6 +121,9 @@ GradientQuadRenderer::GradientQuadRenderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
   center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
   edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
+  aspect_ratio_handle_ = glGetUniformLocation(program_handle_, "u_AspectRatio");
+  center_position_handle_ =
+      glGetUniformLocation(program_handle_, "u_CenterPosition");
 }
 
 GradientQuadRenderer::~GradientQuadRenderer() = default;
@@ -121,6 +131,7 @@ GradientQuadRenderer::~GradientQuadRenderer() = default;
 void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
+                                const gfx::PointF& center_position,
                                 float opacity,
                                 const gfx::SizeF& element_size,
                                 const CornerRadii& radii) {
@@ -155,6 +166,11 @@ void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
   SetColorUniform(edge_color_handle_, edge_color);
   SetColorUniform(center_color_handle_, center_color);
   glUniform1f(opacity_handle_, opacity);
+  glUniform1f(aspect_ratio_handle_,
+              element_size.width() / element_size.height());
+
+  glUniform2f(center_position_handle_, center_position.x(),
+              center_position.y());
 
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
