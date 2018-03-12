@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesForModules.cpp.tmpl
+// third_party/WebKit/Source/bindings/templates/origin_trial_features_for_modules.cc.tmpl
 // by the script generate_origin_trial_features.py.
 // DO NOT MODIFY!
 
 // clang-format off
 
-#include "bindings/modules/v8/OriginTrialFeaturesForModules.h"
+#include "bindings/modules/v8/origin_trial_features_for_modules.h"
 
-#include "bindings/core/v8/OriginTrialFeaturesForCore.h"
+#include "bindings/core/v8/origin_trial_features_for_core.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/context_features/ContextFeatureSettings.h"
 #include "core/dom/ExecutionContext.h"

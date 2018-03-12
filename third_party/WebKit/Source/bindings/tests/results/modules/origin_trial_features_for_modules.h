@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesForModules.h.tmpl
+// third_party/WebKit/Source/bindings/templates/origin_trial_features_for_modules.h.tmpl
 // by the script generate_origin_trial_features.py.
 // DO NOT MODIFY!
 
 // clang-format off
 
-#ifndef OriginTrialFeaturesForModules_h
-#define OriginTrialFeaturesForModules_h
+#ifndef BLINK_BINDINGS_MODULES_V8_ORIGIN_TRIAL_FEATURES_FOR_MODULES_H_
+#define BLINK_BINDINGS_MODULES_V8_ORIGIN_TRIAL_FEATURES_FOR_MODULES_H_
 
 namespace blink {
 
@@ -18,4 +18,4 @@ void RegisterInstallOriginTrialFeaturesForModules();
 
 }  // namespace blink
 
-#endif  // OriginTrialFeaturesForModules_h
+#endif  // BLINK_BINDINGS_MODULES_V8_ORIGIN_TRIAL_FEATURES_FOR_MODULES_H_

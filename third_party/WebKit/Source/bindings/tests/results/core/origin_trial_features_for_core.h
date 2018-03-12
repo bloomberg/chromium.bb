@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesForCore.h.tmpl
+// third_party/WebKit/Source/bindings/templates/origin_trial_features_for_core.h.tmpl
 // by the script generate_origin_trial_features.py.
 // DO NOT MODIFY!
 
 // clang-format off
 
-#ifndef OriginTrialFeaturesForCore_h
-#define OriginTrialFeaturesForCore_h
+#ifndef BLINK_BINDINGS_CORE_V8_ORIGIN_TRIAL_FEATURES_FOR_CORE_H_
+#define BLINK_BINDINGS_CORE_V8_ORIGIN_TRIAL_FEATURES_FOR_CORE_H_
 
 #include "core/CoreExport.h"
 
@@ -20,4 +20,4 @@ CORE_EXPORT void RegisterInstallOriginTrialFeaturesForCore();
 
 }  // namespace blink
 
-#endif  // OriginTrialFeaturesForCore_h
+#endif  // BLINK_BINDINGS_CORE_V8_ORIGIN_TRIAL_FEATURES_FOR_CORE_H_
