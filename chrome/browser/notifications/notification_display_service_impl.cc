@@ -289,6 +289,7 @@ void NotificationDisplayServiceImpl::ProfileLoadedCallback(
 
 void NotificationDisplayServiceImpl::OnNotificationPlatformBridgeReady(
     bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
     UMA_HISTOGRAM_BOOLEAN("Notifications.UsingNativeNotificationCenter",
                           success);
