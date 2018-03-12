@@ -34,7 +34,15 @@ class CompositingInputsUpdater {
   struct AncestorInfo {
     PaintLayer* enclosing_composited_layer = nullptr;
     PaintLayer* last_overflow_clip_layer = nullptr;
-    bool has_ancestor_with_clip_related_property = false;
+
+    PaintLayer* clip_chain_parent_for_absolute = nullptr;
+    PaintLayer* clip_chain_parent_for_fixed = nullptr;
+    // These flags are set if we encountered a stacking context
+    // that will make descendants to inherit more clip than desired,
+    // so we have to setup an alternative clip parent instead.
+    PaintLayer* escape_clip_to = nullptr;
+    PaintLayer* escape_clip_to_for_absolute = nullptr;
+    PaintLayer* escape_clip_to_for_fixed = nullptr;
 
     PaintLayer* scrolling_ancestor = nullptr;
     PaintLayer* scrolling_ancestor_for_absolute = nullptr;

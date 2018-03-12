@@ -16,6 +16,13 @@
 
 namespace blink {
 
+static const LayoutBoxModelObject* ClippingContainerFromClipChainParent(
+    const PaintLayer* clip_chain_parent) {
+  return clip_chain_parent->GetLayoutObject().HasClipRelatedProperty()
+             ? &clip_chain_parent->GetLayoutObject()
+             : clip_chain_parent->ClippingContainer();
+}
+
 CompositingInputsUpdater::CompositingInputsUpdater(PaintLayer* root_layer)
     : geometry_map_(kUseTransforms), root_layer_(root_layer) {}
 
@@ -24,53 +31,6 @@ CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 void CompositingInputsUpdater::Update() {
   TRACE_EVENT0("blink", "CompositingInputsUpdater::update");
   UpdateRecursive(root_layer_, kDoNotForceUpdate, AncestorInfo());
-}
-
-static const PaintLayer* FindParentLayerOnClippingContainerChain(
-    const PaintLayer* layer) {
-  LayoutObject* current = &layer->GetLayoutObject();
-  while (current) {
-    if (current->Style()->GetPosition() == EPosition::kFixed) {
-      for (current = current->Parent();
-           current && !current->CanContainFixedPositionObjects();
-           current = current->Parent()) {
-        // CSS clip applies to fixed position elements even for ancestors that
-        // are not what the fixed element is positioned with respect to.
-        if (current->HasClip()) {
-          DCHECK(current->HasLayer());
-          return static_cast<const LayoutBoxModelObject*>(current)->Layer();
-        }
-      }
-    } else {
-      current = current->ContainingBlock();
-    }
-
-    if (current->HasLayer())
-      return static_cast<const LayoutBoxModelObject*>(current)->Layer();
-    // Having clip or overflow clip forces the LayoutObject to become a layer,
-    // except for contains: paint, which may apply to SVG, and
-    // control clip, which may apply to LayoutBox subtypes.
-    // SVG (other than LayoutSVGRoot) cannot have PaintLayers.
-    DCHECK(!current->HasClipRelatedProperty() ||
-           current->StyleRef().ContainsPaint() ||
-           (current->IsBox() && ToLayoutBox(current)->HasControlClip()) ||
-           current->IsSVGChild());
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-static bool NeedsToEscapeClipInheritedFromCompositingContainer(
-    const PaintLayer* layer,
-    const LayoutObject& desired_clip) {
-  const PaintLayer* compositing_parent = layer->CompositingContainer();
-  DCHECK(compositing_parent);
-  const LayoutObject* inherited_clip = &compositing_parent->GetLayoutObject();
-  if (!inherited_clip->HasClipRelatedProperty())
-    inherited_clip = compositing_parent->ClippingContainer();
-  if (!inherited_clip)
-    return false;
-  return !desired_clip.IsDescendantOf(inherited_clip);
 }
 
 void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
@@ -133,9 +93,11 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   }
 
   if (style.GetPosition() == EPosition::kAbsolute) {
+    info.escape_clip_to = info.escape_clip_to_for_absolute;
     info.scrolling_ancestor = info.scrolling_ancestor_for_absolute;
     info.needs_reparent_scroll = info.needs_reparent_scroll_for_absolute;
   } else if (style.GetPosition() == EPosition::kFixed) {
+    info.escape_clip_to = info.escape_clip_to_for_fixed;
     info.scrolling_ancestor = info.scrolling_ancestor_for_fixed;
     info.needs_reparent_scroll = info.needs_reparent_scroll_for_fixed;
   }
@@ -148,9 +110,6 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   if (layer->IsRootLayer() || layout_object.HasOverflowClip())
     info.last_overflow_clip_layer = layer;
 
-  if (layout_object.HasClipRelatedProperty())
-    info.has_ancestor_with_clip_related_property = true;
-
   // Handles sibling scroll problem, i.e. a non-stacking context scroller
   // needs to propagate scroll to its descendants that are siblings in
   // paint order. For example:
@@ -162,15 +121,72 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     info.needs_reparent_scroll = true;
   }
   if (layout_object.CanContainAbsolutePositionObjects()) {
+    info.clip_chain_parent_for_absolute = layer;
+    info.escape_clip_to_for_absolute = info.escape_clip_to;
     info.scrolling_ancestor_for_absolute = info.scrolling_ancestor;
     info.needs_reparent_scroll_for_absolute = info.needs_reparent_scroll;
   }
+
+  // LayoutView isn't really the containing block for fixed-pos descendants
+  // in the sense that they don't scroll along with its in-flow contents.
+  // However LayoutView does clip them.
   if (layout_object.CanContainFixedPositionObjects() &&
       !layout_object.IsLayoutView()) {
+    info.clip_chain_parent_for_fixed = layer;
+    info.escape_clip_to_for_fixed = info.escape_clip_to;
     info.scrolling_ancestor_for_fixed = info.scrolling_ancestor;
     info.needs_reparent_scroll_for_fixed = info.needs_reparent_scroll;
   }
+  if (layout_object.IsLayoutView())
+    info.clip_chain_parent_for_fixed = layer;
+
+  // CSS clip affects all descendants, not just containing-block descendants.
+  // We don't have to set clip_chain_parent_for_absolute here because CSS clip
+  // requires position:absolute, so the element must contain absolute-positioned
+  // descendants.
+  // However it is incorrect to let fixed-positioned descendants to inherit the
+  // clip state from this element either, because the overflow clip and the
+  // inherited clip of the current element shouldn't apply to them if the
+  // current element is not a fixed-pos container. This is a known bug but too
+  // difficult to fix in SPv1 compositing.
+  if (layout_object.HasClip())
+    info.clip_chain_parent_for_fixed = layer;
+
   if (style.IsStackingContext()) {
+    info.escape_clip_to = nullptr;
+    const LayoutBoxModelObject* clipping_container =
+        ClippingContainerFromClipChainParent(layer);
+    info.escape_clip_to_for_absolute =
+        ClippingContainerFromClipChainParent(
+            info.clip_chain_parent_for_absolute) != clipping_container
+            ? info.clip_chain_parent_for_absolute
+            : nullptr;
+    info.escape_clip_to_for_fixed =
+        ClippingContainerFromClipChainParent(
+            info.clip_chain_parent_for_fixed) != clipping_container
+            ? info.clip_chain_parent_for_fixed
+            : nullptr;
+    // Workaround crbug.com/817175
+    // We can't escape clip to a layer that paints after us, because in SPv1*
+    // cc needs to reverse engineer clip tree from the layer tree, and we
+    // can't refer to a clip node that hasn't been built yet.
+    // This will result in wrong clip in some rare cases, for example:
+    // <div style="display:grid;">
+    //   <div style="z-index:-1; overflow:hidden;">
+    //     <div style="position:absolute;"></div>
+    //   </div>
+    // </div>
+    if (info.escape_clip_to_for_absolute && style.ZIndex() < 0 &&
+        !info.escape_clip_to_for_absolute->GetLayoutObject()
+             .StyleRef()
+             .IsStackingContext())
+      info.escape_clip_to_for_absolute = nullptr;
+    if (info.escape_clip_to_for_fixed && style.ZIndex() < 0 &&
+        !info.escape_clip_to_for_fixed->GetLayoutObject()
+             .StyleRef()
+             .IsStackingContext())
+      info.escape_clip_to_for_fixed = nullptr;
+
     info.needs_reparent_scroll = info.needs_reparent_scroll_for_absolute =
         info.needs_reparent_scroll_for_fixed = false;
   }
@@ -247,49 +263,19 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.mask_ancestor =
       parent->GetLayoutObject().HasMask() ? parent : parent->MaskAncestor();
 
-  bool layer_is_fixed_position =
-      layout_object.Style()->GetPosition() == EPosition::kFixed;
-
+  EPosition position = layout_object.StyleRef().GetPosition();
   properties.nearest_fixed_position_layer =
-      layer_is_fixed_position ? layer : parent->NearestFixedPositionLayer();
+      position == EPosition::kFixed ? layer
+                                    : parent->NearestFixedPositionLayer();
 
-  if (info.has_ancestor_with_clip_related_property) {
-    // This is the ancestor that is |layer|'s containing block, or has a
-    // CSS clip, which ever is the closest.
-    const PaintLayer* parent_layer_on_clipping_container_chain =
-        FindParentLayerOnClippingContainerChain(layer);
-    const bool parent_has_clip_related_property =
-        parent_layer_on_clipping_container_chain->GetLayoutObject()
-            .HasClipRelatedProperty();
-    properties.clipping_container =
-        parent_has_clip_related_property
-            ? &parent_layer_on_clipping_container_chain->GetLayoutObject()
-            : parent_layer_on_clipping_container_chain->ClippingContainer();
-
-    if (!layer->SubtreeIsInvisible()) {
-      if (layout_object.IsOutOfFlowPositioned() &&
-          NeedsToEscapeClipInheritedFromCompositingContainer(
-              layer,
-              parent_layer_on_clipping_container_chain->GetLayoutObject())) {
-        properties.clip_parent = parent_layer_on_clipping_container_chain;
-      } else if (parent_layer_on_clipping_container_chain
-                     ->CompositingContainer() ==
-                 layer->CompositingContainer()) {
-        // If the clipping container of |layer| is a sibling in the
-        // stacking tree, and it escapes a stacking ancestor clip,
-        // this layer should escape that clip also.
-        if (parent_layer_on_clipping_container_chain->ClipParent()) {
-          // It may be attempting to inherit the clip state of
-          // parent_layer_on_clipping_container_chain directly, but our
-          // paint order can be before the clipping parent due to negative
-          // z-index. Our compositor implementation currently only allow
-          // inheriting clip from layer that paints before us.
-          properties.clip_parent =
-              parent_layer_on_clipping_container_chain->ClipParent();
-        }
-      }
-    }
-  }
+  PaintLayer* clip_chain_parent = layer->Parent();
+  if (position == EPosition::kAbsolute)
+    clip_chain_parent = info.clip_chain_parent_for_absolute;
+  else if (position == EPosition::kFixed)
+    clip_chain_parent = info.clip_chain_parent_for_fixed;
+  properties.clipping_container =
+      ClippingContainerFromClipChainParent(clip_chain_parent);
+  properties.clip_parent = info.escape_clip_to;
 
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
   if (info.needs_reparent_scroll && layer->StackingNode()->IsStacked())
