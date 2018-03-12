@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "platform/SharedBuffer.h"

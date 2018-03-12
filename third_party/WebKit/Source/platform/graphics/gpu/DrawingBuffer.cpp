@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "build/build_config.h"
 #include "components/viz/common/quads/shared_bitmap.h"

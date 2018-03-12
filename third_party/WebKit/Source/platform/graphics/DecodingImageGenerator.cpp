@@ -26,7 +26,6 @@
 #include "platform/graphics/DecodingImageGenerator.h"
 
 #include <utility>
-#include <vector>
 
 #include <memory>
 #include "platform/SharedBuffer.h"

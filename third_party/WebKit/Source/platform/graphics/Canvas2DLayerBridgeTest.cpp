@@ -26,7 +26,6 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
