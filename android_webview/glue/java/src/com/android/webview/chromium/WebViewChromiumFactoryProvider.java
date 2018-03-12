@@ -100,6 +100,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
+    private Object mServiceWorkerControllerAdapter;
 
     /**
      * Thread-safe way to set the one and only WebViewChromiumFactoryProvider.
@@ -422,7 +423,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public ServiceWorkerController getServiceWorkerController() {
-        return mAwInit.getServiceWorkerController();
+        synchronized (mAwInit.getLock()) {
+            if (mServiceWorkerControllerAdapter == null) {
+                mServiceWorkerControllerAdapter =
+                        new ServiceWorkerControllerAdapter(mAwInit.getServiceWorkerController());
+            }
+        }
+        return (ServiceWorkerController) mServiceWorkerControllerAdapter;
     }
 
     @Override
