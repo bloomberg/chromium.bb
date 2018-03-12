@@ -95,8 +95,9 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
     // Choose random locations within the source block
     int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
     int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-    aom_convolve8_add_src_hip_c(input + offset_r * w + offset_c, w, output,
-                                out_w, hkernel, 16, vkernel, 16, out_w, out_h);
+    av1_wiener_convolve_add_src_hip_c(input + offset_r * w + offset_c, w,
+                                      output, out_w, hkernel, 16, vkernel, 16,
+                                      out_w, out_h);
     test_impl(input + offset_r * w + offset_c, w, output2, out_w, hkernel, 16,
               vkernel, 16, out_w, out_h);
 
@@ -140,8 +141,9 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
   for (i = 0; i < num_iters; ++i) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
-        aom_convolve8_add_src_hip_c(input + j * w + k, w, output, out_w,
-                                    hkernel, 16, vkernel, 16, out_w, out_h);
+        av1_wiener_convolve_add_src_hip_c(input + j * w + k, w, output, out_w,
+                                          hkernel, 16, vkernel, 16, out_w,
+                                          out_h);
       }
     }
   }
@@ -232,9 +234,9 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
     // Choose random locations within the source block
     int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
     int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-    aom_highbd_convolve8_add_src_hip_c(input_ptr + offset_r * w + offset_c, w,
-                                       output_ptr, out_w, hkernel, 16, vkernel,
-                                       16, out_w, out_h, bd);
+    av1_highbd_wiener_convolve_add_src_hip_c(
+        input_ptr + offset_r * w + offset_c, w, output_ptr, out_w, hkernel, 16,
+        vkernel, 16, out_w, out_h, bd);
     test_impl(input_ptr + offset_r * w + offset_c, w, output2_ptr, out_w,
               hkernel, 16, vkernel, 16, out_w, out_h, bd);
 
@@ -283,9 +285,9 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
   for (i = 0; i < num_iters; ++i) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
-        aom_highbd_convolve8_add_src_hip_c(input_ptr + j * w + k, w, output_ptr,
-                                           out_w, hkernel, 16, vkernel, 16,
-                                           out_w, out_h, bd);
+        av1_highbd_wiener_convolve_add_src_hip_c(input_ptr + j * w + k, w,
+                                                 output_ptr, out_w, hkernel, 16,
+                                                 vkernel, 16, out_w, out_h, bd);
       }
     }
   }

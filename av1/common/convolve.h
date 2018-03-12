@@ -41,6 +41,11 @@ typedef struct ConvolveParams {
 #define COMPOUND_ROUND1_BITS 0
 #endif  // CONFIG_LOWPRECISION_BLEND
 
+#define WIENER_ROUND0_BITS 5
+#define WIENER_ROUND1_BITS (FILTER_BITS * 2 - WIENER_ROUND0_BITS)
+#define WIENER_CLAMP_LIMIT(bd) \
+  (1 << ((bd) + 1 + FILTER_BITS - WIENER_ROUND0_BITS))
+
 typedef void (*aom_convolve_fn_t)(const uint8_t *src, int src_stride,
                                   uint8_t *dst, int dst_stride, int w, int h,
                                   InterpFilterParams *filter_params_x,

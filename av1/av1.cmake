@@ -259,7 +259,6 @@ set(AOM_AV1_COMMON_INTRIN_AVX2
     ${AOM_AV1_COMMON_INTRIN_AVX2}
     "${AOM_ROOT}/av1/common/x86/convolve_2d_avx2.c")
 
-
   set(AOM_AV1_COMMON_INTRIN_AVX2
       ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
@@ -271,11 +270,11 @@ set(AOM_AV1_COMMON_INTRIN_AVX2
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c")
-  
+
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse2.c")
-  
+
   set(AOM_AV1_COMMON_INTRIN_AVX2
       ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/highbd_jnt_convolve_avx2.c")
@@ -303,6 +302,19 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1
 set(AOM_AV1_COMMON_INTRIN_AVX2
     ${AOM_AV1_COMMON_INTRIN_AVX2}
     "${AOM_ROOT}/av1/common/x86/convolve_avx2.c")
+
+set(AOM_AV1_COMMON_INTRIN_SSE2
+    ${AOM_AV1_COMMON_INTRIN_SSE2}
+    "${AOM_ROOT}/av1/common/x86/wiener_convolve_sse2.c")
+
+set(AOM_AV1_COMMON_INTRIN_SSSE3
+    ${AOM_AV1_COMMON_INTRIN_SSSE3}
+    "${AOM_ROOT}/av1/common/x86/highbd_wiener_convolve_ssse3.c")
+
+set(AOM_AV1_COMMON_INTRIN_AVX2
+    ${AOM_AV1_COMMON_INTRIN_AVX2}
+    "${AOM_ROOT}/av1/common/x86/highbd_wiener_convolve_avx2.c"
+    "${AOM_ROOT}/av1/common/x86/wiener_convolve_avx2.c")
 
 set(AOM_AV1_ENCODER_SOURCES
     ${AOM_AV1_ENCODER_SOURCES}
