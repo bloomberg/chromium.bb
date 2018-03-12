@@ -176,7 +176,8 @@ void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
 }
 
 void AppListMainView::BackButtonPressed() {
-  contents_view_->Back();
+  if (!contents_view_->Back())
+    app_list_view_->Dismiss();
 }
 
 }  // namespace app_list

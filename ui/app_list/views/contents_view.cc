@@ -372,7 +372,8 @@ bool ContentsView::Back() {
       if (GetAppsContainerView()->IsInFolderView()) {
         GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
       } else {
-        app_list_view_->Dismiss();
+        // Close the app list when Back() is called from the apps page.
+        return false;
       }
       break;
     case ash::AppListState::kStateSearchResults:
