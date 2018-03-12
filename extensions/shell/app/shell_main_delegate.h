@@ -36,6 +36,9 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
                           delegates) override;
 #endif
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  void ZygoteForked() override;
+#endif
 
  protected:
   // The created object is owned by this object.

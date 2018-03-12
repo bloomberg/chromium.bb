@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "components/nacl/common/buildflags.h"
@@ -48,7 +49,20 @@
 #include "base/base_paths_mac.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/crash_reporter_client.h"
+#include "extensions/shell/app/shell_crash_reporter_client.h"
+#endif
+
 namespace {
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+extensions::ShellCrashReporterClient* GetCrashReporterClient() {
+  static base::NoDestructor<extensions::ShellCrashReporterClient> instance;
+  return instance.get();
+}
+#endif
 
 // Returns the same directory that the browser context will later be
 // initialized with.
@@ -153,6 +167,13 @@ void ShellMainDelegate::PreSandboxStartup() {
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  crash_reporter::SetCrashReporterClient(GetCrashReporterClient());
+  // Reporting for sub-processes will be initialized in ZygoteForked.
+  if (process_type != switches::kZygoteProcess)
+    breakpad::InitCrashReporter(process_type);
+#endif
+
   if (ProcessNeedsResourceBundle(process_type))
     InitializeResourceBundle();
 }
@@ -180,6 +201,15 @@ void ShellMainDelegate::ZygoteStarting(
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
 #endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+void ShellMainDelegate::ZygoteForked() {
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  breakpad::InitCrashReporter(process_type);
+}
+#endif
 
 content::ContentClient* ShellMainDelegate::CreateContentClient() {
   return new ShellContentClient();
