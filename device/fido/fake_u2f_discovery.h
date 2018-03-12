@@ -23,10 +23,54 @@ namespace test {
 
 // Fake U2F discovery simulating the behavior of the production implementations,
 // and can be used to feed U2fRequests with fake/mock U2F devices.
+//
+// Most often this class is used together with ScopedFakeU2fDiscoveryFactory:
+//
+//   ScopedFakeU2fDiscoveryFactory factory;
+//   auto* fake_hid_discovery = factory.ForgeNextHidDiscovery();
+//   auto* fake_ble_discovery = factory.ForgeNextBleDiscovery();
+//
+//   // Run the production code that will eventually call:
+//   //// U2fDiscovery::Create(U2fTransportProtocol::kUsbHumanInterfaceDevice)
+//   //// hid_instance->Start();
+//   //// U2fDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy)
+//   //// ble_instance->Start();
+//
+//   // Wait, i.e. spin the message loop until the fake discoveries are started.
+//   fake_hid_discovery->WaitForCallToStart();
+//   fake_ble_discovery->WaitForCallToStart();
+//
+//   // Add devices to be discovered immediately.
+//   fake_hid_discovery->AddDevice(std::make_unique<MockU2fDevice>(...));
+//
+//   // Start discoveries (HID succeeds, BLE fails).
+//   fake_hid_discovery->SimulateStart(true /* success */);
+//   fake_ble_discovery->SimulateStart(false /* success */);
+//
+//   // Add devices discovered after doing some heavy lifting.
+//   fake_hid_discovery->AddDevice(std::make_unique<MockU2fDevice>(...));
+//
+//   // Run the production code that will eventually stop the discovery.
+//   //// hid_instance->Stop();
+//
+//   // Wait for discovery to be stopped by the production code, and simulate
+//   // the discovery starting successfully.
+//   fake_hid_discovery->WaitForCallToStopAndSimulateSuccess();
+//
 class FakeU2fDiscovery : public U2fDiscovery,
                          public base::SupportsWeakPtr<FakeU2fDiscovery> {
  public:
-  explicit FakeU2fDiscovery(U2fTransportProtocol transport);
+  enum class StartStopMode {
+    // SimulateStarted()/SimualteStopped() needs to be called manually after the
+    // production code calls Start()/Stop().
+    kManual,
+    // The discovery is automatically and successfully started/stopped once
+    // Start()/Stop() is called.
+    kAutomatic
+  };
+
+  explicit FakeU2fDiscovery(U2fTransportProtocol transport,
+                            StartStopMode mode = StartStopMode::kManual);
   ~FakeU2fDiscovery() override;
 
   // Blocks until start/stop is requested.
@@ -56,8 +100,9 @@ class FakeU2fDiscovery : public U2fDiscovery,
   void Stop() override;
 
  private:
-  U2fTransportProtocol transport_;
+  const U2fTransportProtocol transport_;
 
+  const StartStopMode mode_;
   bool is_running_ = false;
 
   base::RunLoop wait_for_start_loop_;
@@ -69,35 +114,35 @@ class FakeU2fDiscovery : public U2fDiscovery,
   DISALLOW_COPY_AND_ASSIGN(FakeU2fDiscovery);
 };
 
-// Hijacks the U2fDiscovery::Create() factory method to return user-defined
-// U2fDiscovery instances while this instance is in scope.
-class ScopedFakeU2fDiscoveryFactory {
+// Overrides U2fDiscovery::Create to construct FakeU2fDiscoveries while this
+// instance is in scope.
+class ScopedFakeU2fDiscoveryFactory
+    : public ::device::internal::ScopedU2fDiscoveryFactory {
  public:
+  using StartStopMode = FakeU2fDiscovery::StartStopMode;
+
   ScopedFakeU2fDiscoveryFactory();
   ~ScopedFakeU2fDiscoveryFactory();
 
   // Constructs a fake BLE/HID discovery to be returned from the next call to
   // U2fDiscovery::Create. Returns a raw pointer to the fake so that tests can
   // set it up according to taste.
-  FakeU2fDiscovery* ForgeNextBleDiscovery();
-  FakeU2fDiscovery* ForgeNextHidDiscovery();
+  //
+  // It is an error not to call the relevant method prior to a call to
+  // U2fDiscovery::Create with the respective transport.
+  FakeU2fDiscovery* ForgeNextHidDiscovery(
+      StartStopMode mode = StartStopMode::kManual);
+  FakeU2fDiscovery* ForgeNextBleDiscovery(
+      StartStopMode mode = StartStopMode::kManual);
 
-  // Same as above, but the test can supply whatever custom |discovery| instance
-  // that it wants to be returned from the next call to U2fDiscovery::Create.
-  U2fDiscovery* SetNextHidDiscovery(std::unique_ptr<U2fDiscovery> discovery);
-  U2fDiscovery* SetNextBleDiscovery(std::unique_ptr<U2fDiscovery> discovery);
+ protected:
+  std::unique_ptr<U2fDiscovery> CreateU2fDiscovery(
+      U2fTransportProtocol transport,
+      ::service_manager::Connector* connector) override;
 
  private:
-  static std::unique_ptr<U2fDiscovery> CreateFakeU2fDiscovery(
-      U2fTransportProtocol transport,
-      ::service_manager::Connector* connector);
-
-  static ScopedFakeU2fDiscoveryFactory* g_current_factory;
-
-  U2fDiscovery::FactoryFuncPtr original_factory_func_;
-
-  std::unique_ptr<U2fDiscovery> next_hid_discovery_;
-  std::unique_ptr<U2fDiscovery> next_ble_discovery_;
+  std::unique_ptr<FakeU2fDiscovery> next_hid_discovery_;
+  std::unique_ptr<FakeU2fDiscovery> next_ble_discovery_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeU2fDiscoveryFactory);
 };
