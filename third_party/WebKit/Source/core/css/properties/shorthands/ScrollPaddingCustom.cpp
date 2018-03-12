@@ -4,10 +4,10 @@
 
 #include "core/css/properties/shorthands/scroll_padding.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/ComputedStyleUtils.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSShorthand {

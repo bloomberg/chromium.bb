@@ -5,7 +5,6 @@
 #include "core/animation/CSSInterpolationType.h"
 
 #include <memory>
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -20,6 +19,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"
+#include "core/style_property_shorthand.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

@@ -5,11 +5,11 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/style_property_shorthand.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {

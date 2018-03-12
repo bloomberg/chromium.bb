@@ -4,7 +4,6 @@
 
 #include "core/css/properties/shorthands/animation.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
@@ -12,6 +11,7 @@
 #include "core/css/properties/CSSParsingUtils.h"
 #include "core/css/properties/ComputedStyleUtils.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace {

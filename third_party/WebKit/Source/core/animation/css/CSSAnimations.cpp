@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include <bitset>
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/Animation.h"
 #include "core/animation/CSSInterpolationTypesMap.h"
 #include "core/animation/CompositorAnimations.h"
@@ -64,6 +63,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
+#include "core/style_property_shorthand.h"
 #include "platform/Histogram.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/HashSet.h"

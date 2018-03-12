@@ -4,7 +4,6 @@
 
 #include "core/css/cssom/StyleValueFactory.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
@@ -24,6 +23,7 @@
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/properties/css_property.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

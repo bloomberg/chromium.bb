@@ -5,7 +5,6 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 
 #include "build/build_config.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -18,6 +17,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/properties/css_property.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/style_property_shorthand.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/StringToNumber.h"
 

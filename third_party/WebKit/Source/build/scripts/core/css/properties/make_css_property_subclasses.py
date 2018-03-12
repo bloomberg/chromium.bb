@@ -144,7 +144,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         else:
             yield "core/css/properties/" + property_['namespace_group'] + ".h"
             if property_['direction_aware_options']:
-                yield "core/StylePropertyShorthand.h"
+                yield "core/style_property_shorthand.h"
             if property_['runtime_flag']:
                 yield "platform/runtime_enabled_features.h"
             if property_['should_implement_apply_functions']:

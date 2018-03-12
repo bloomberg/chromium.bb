@@ -45,9 +45,9 @@ class StylePropertyShorthandWriter(json5_generator.Writer):
         super(StylePropertyShorthandWriter, self).__init__([])
         self._input_files = json5_file_paths
         self._outputs = {
-            'StylePropertyShorthand.cpp':
+            'style_property_shorthand.cc':
                 self.generate_style_property_shorthand_cpp,
-            'StylePropertyShorthand.h':
+            'style_property_shorthand.h':
                 self.generate_style_property_shorthand_h}
 
         json5_properties = css_properties.CSSProperties(json5_file_paths)
@@ -69,7 +69,7 @@ class StylePropertyShorthandWriter(json5_generator.Writer):
             )
 
     @template_expander.use_jinja(
-        'core/css/templates/StylePropertyShorthand.cpp.tmpl')
+        'core/css/templates/style_property_shorthand.cc.tmpl')
     def generate_style_property_shorthand_cpp(self):
         return {
             'input_files': self._input_files,
@@ -78,7 +78,7 @@ class StylePropertyShorthandWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'core/css/templates/StylePropertyShorthand.h.tmpl')
+        'core/css/templates/style_property_shorthand.h.tmpl')
     def generate_style_property_shorthand_h(self):
         return {
             'input_files': self._input_files,

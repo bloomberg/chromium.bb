@@ -5,7 +5,6 @@
 #include "core/css/cssom/StylePropertyMapReadOnly.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
@@ -15,6 +14,7 @@
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/properties/css_property.h"
 #include "core/css_property_names.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

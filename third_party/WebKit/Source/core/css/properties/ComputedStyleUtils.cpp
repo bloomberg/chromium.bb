@@ -4,7 +4,6 @@
 
 #include "core/css/properties/ComputedStyleUtils.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
@@ -30,6 +29,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 

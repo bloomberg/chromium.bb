@@ -4,9 +4,9 @@
 
 #include "core/css/properties/shorthands/overscroll_behavior.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSShorthand {

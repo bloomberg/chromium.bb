@@ -4,10 +4,10 @@
 
 #include "core/css/properties/longhands/scroll_padding_block_start.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSLonghand {
