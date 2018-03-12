@@ -1162,7 +1162,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
                              paint_info.paint_recording_scale_y(), nullptr);
 
   gfx::Canvas* canvas = recorder.canvas();
-  if (active_tab) {
+  if (active_tab && active_tab->visible()) {
     canvas->sk_canvas()->clipRect(
         gfx::RectToSkRect(active_tab->GetMirroredBounds()),
         SkClipOp::kDifference);
