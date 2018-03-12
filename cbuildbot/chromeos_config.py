@@ -2434,6 +2434,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'falco',
       'fizz',
       'glados',
+      'guado_moblab',
       'hana',
       'kahlee',
       'kevin',
@@ -2498,7 +2499,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
-      'guado_moblab', # contact:haddowk@ (crbug.com/819695, crbug.com/819017)
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
