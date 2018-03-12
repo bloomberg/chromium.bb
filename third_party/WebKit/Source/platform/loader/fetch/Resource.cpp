@@ -510,7 +510,7 @@ std::unique_ptr<CachedMetadataSender> Resource::CreateCachedMetadataSender()
       return std::make_unique<NullCachedMetadataSender>();
     }
     return std::make_unique<ServiceWorkerCachedMetadataSender>(
-        this, fetcher_security_origin_.get());
+        this, source_origin_.get());
   }
   return std::make_unique<CachedMetadataSenderImpl>(this);
 }

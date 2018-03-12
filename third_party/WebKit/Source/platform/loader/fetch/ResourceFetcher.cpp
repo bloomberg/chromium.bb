@@ -1519,8 +1519,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                       resource->GetType(),
                                       resource->Options().initiator_info);
 
-    const SecurityOrigin* source_origin = Context().GetSecurityOrigin();
-
     // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
     // remove once dispatchWillSendRequest() takes const ResourceRequest.
     // crbug.com/632580
@@ -1547,7 +1545,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       non_blocking_loaders_.insert(loader);
 
     StorePerformanceTimingInitiatorInformation(resource);
-    resource->SetFetcherSecurityOrigin(source_origin);
 
     // NotifyStartLoad() shouldn't cause AddClient/RemoveClient().
     Resource::ProhibitAddRemoveClientInScope
