@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/fido/u2f_discovery.h"
@@ -25,7 +26,9 @@ namespace device {
 // servicification is unblocked, we'll move U2F back to //service/device/.
 // Then it will talk to HID via C++ as part of servicifying U2F.
 
-class U2fHidDiscovery : public U2fDiscovery, device::mojom::HidManagerClient {
+class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDiscovery
+    : public U2fDiscovery,
+      device::mojom::HidManagerClient {
  public:
   explicit U2fHidDiscovery(::service_manager::Connector* connector);
   ~U2fHidDiscovery() override;

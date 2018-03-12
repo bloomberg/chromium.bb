@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -19,7 +20,7 @@ namespace device {
 // Object that encapsulates request parameters for AuthenticatorGetAssertion as
 // specified in the CTAP spec.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20161004/fido-client-to-authenticator-protocol-v2.0-rd-20161004.html#authenticatorgetassertion
-class CtapGetAssertionRequest {
+class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
   CtapGetAssertionRequest(std::string rp_id,
                           std::vector<uint8_t> client_data_hash);

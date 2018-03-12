@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
@@ -18,7 +19,7 @@ namespace device {
 // Data structure containing information about relying party that invoked
 // WebAuth API. Includes a relying party id, an optional relying party name,,
 // and optional relying party display image url.
-class PublicKeyCredentialRpEntity {
+class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
  public:
   explicit PublicKeyCredentialRpEntity(std::string rp_id);
   PublicKeyCredentialRpEntity(PublicKeyCredentialRpEntity&& other);

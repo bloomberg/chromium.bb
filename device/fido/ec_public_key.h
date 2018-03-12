@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "device/fido/public_key.h"
@@ -19,7 +20,7 @@ namespace device {
 // An uncompressed ECPublicKey consisting of 64 bytes:
 // - the 32-byte x coordinate
 // - the 32-byte y coordinate.
-class ECPublicKey : public PublicKey {
+class COMPONENT_EXPORT(DEVICE_FIDO) ECPublicKey : public PublicKey {
  public:
   static std::unique_ptr<ECPublicKey> ExtractFromU2fRegistrationResponse(
       std::string algorithm,
