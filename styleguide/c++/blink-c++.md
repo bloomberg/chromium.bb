@@ -47,6 +47,28 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 }
 ```
 
+## Prefer WTF types over STL types
+
+Outside of `//third_party/WebKit/common`, Blink should use WTF types. STL string
+and container types should only be used at the boundary to interoperate with
+'//base', `//third_party/WebKit/common`, and other Chromium-side code.
+Similarly, Blink should prefer `KURL` over `GURL` and `SecurityOrigin` over
+`url::Origin`.
+
+**Good:**
+```c++
+  String title;
+  Vector<KURL> urls;
+  HashMap<int, Deque<RefPtr<SecurityOrigin>>> origins;
+```
+
+**Bad:**
+```c++
+  std::string title;
+  std::vector<GURL> urls;
+  std::unordered_map<int, std::deque<url::Origin>> origins;
+```
+
 ## Use Filename_h as the header include guard
 
 Header include guards in Blink should match the filename exactly, replacing the
