@@ -331,6 +331,7 @@ class SandwichRunner(object):
       self._chrome_ctl = controller.RemoteChromeController(self.android_device)
     else:
       self._chrome_ctl = controller.LocalChromeController()
+    self._chrome_ctl.AddChromeArguments(['--disable-infobars'])
     self._chrome_ctl.AddChromeArguments(self.chrome_args)
     if self.cache_operation == CacheOperation.SAVE:
       self._chrome_ctl.SetSlowDeath()
