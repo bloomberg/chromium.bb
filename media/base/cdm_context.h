@@ -15,7 +15,7 @@ namespace media {
 
 class CdmProxyContext;
 class Decryptor;
-class MediaDrmBridgeCdmContext;
+class MediaCryptoContext;
 
 // An interface representing the context that a media player needs from a
 // content decryption module (CDM) to decrypt (and decode) encrypted buffers.
@@ -47,10 +47,10 @@ class MEDIA_EXPORT CdmContext {
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_ANDROID)
-  // Returns a MediaDrmBridgeCdmContext that can be used by MediaCodec based
-  // decoders. The returned object is only guaranteed to be valid during the
-  // CDM's lifetime.
-  virtual MediaDrmBridgeCdmContext* GetMediaDrmBridgeCdmContext();
+  // Returns a MediaCryptoContext that can be used by MediaCodec based decoders.
+  // The returned object is only guaranteed to be valid during the CDM's
+  // lifetime.
+  virtual MediaCryptoContext* GetMediaCryptoContext();
 #endif
 
   // Returns a unique class identifier. Some subclasses override and use this

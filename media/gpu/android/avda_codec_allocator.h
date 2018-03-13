@@ -22,7 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/android_overlay.h"
 #include "media/base/android/media_codec_bridge_impl.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/media.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_codecs.h"

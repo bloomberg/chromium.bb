@@ -31,7 +31,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       channel_count_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
       sample_rate_(0),
-      media_drm_bridge_cdm_context_(nullptr),
+      media_crypto_context_(nullptr),
       cdm_registration_id_(0),
       pool_(new AudioBufferMemoryPool()),
       weak_factory_(this) {
@@ -43,14 +43,14 @@ MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
 
   codec_loop_.reset();
 
-  if (media_drm_bridge_cdm_context_) {
+  if (media_crypto_context_) {
     DCHECK(cdm_registration_id_);
 
     // Cancel previously registered callback (if any).
-    media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
-        MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+    media_crypto_context_->SetMediaCryptoReadyCB(
+        MediaCryptoContext::MediaCryptoReadyCB());
 
-    media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
+    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
   }
 
   ClearInputQueue(DecodeStatus::ABORTED);
@@ -106,11 +106,11 @@ void MediaCodecAudioDecoder::Initialize(
   SetInitialConfiguration();
 
   if (config_.is_encrypted() && !media_crypto_) {
-    media_drm_bridge_cdm_context_ =
-        cdm_context ? cdm_context->GetMediaDrmBridgeCdmContext() : nullptr;
-    if (!media_drm_bridge_cdm_context_) {
+    media_crypto_context_ =
+        cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
+    if (!media_crypto_context_) {
       LOG(ERROR) << "The stream is encrypted but there is no CdmContext or "
-                    "MediaDrmBridgeCdmContext is not supported";
+                    "MediaCryptoContext is not supported";
       SetState(STATE_ERROR);
       bound_init_cb.Run(false);
       return;
@@ -215,7 +215,7 @@ bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {
 }
 
 void MediaCodecAudioDecoder::SetCdm(const InitCB& init_cb) {
-  DCHECK(media_drm_bridge_cdm_context_);
+  DCHECK(media_crypto_context_);
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.
@@ -225,12 +225,12 @@ void MediaCodecAudioDecoder::SetCdm(const InitCB& init_cb) {
   // destructed as well. So the |cdm_unset_cb| will never have a chance to be
   // called.
   // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
+  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
       media::BindToCurrentLoop(base::Bind(&MediaCodecAudioDecoder::OnKeyAdded,
                                           weak_factory_.GetWeakPtr())),
       base::DoNothing());
 
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+  media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::Bind(&MediaCodecAudioDecoder::OnMediaCryptoReady,
                  weak_factory_.GetWeakPtr(), init_cb)));
 }

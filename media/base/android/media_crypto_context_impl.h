@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_IMPL_H_
-#define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_IMPL_H_
+#ifndef MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_IMPL_H_
+#define MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_IMPL_H_
 
 #include <jni.h>
 
@@ -11,24 +11,23 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
 class MediaDrmBridge;
 
-// Implementation of MediaDrmBridgeCdmContext.
+// Implementation of MediaCryptoContext.
 //
 // The registered callbacks will be fired on the thread |media_drm_bridge_| is
 // running on.
-class MEDIA_EXPORT MediaDrmBridgeCdmContextImpl
-    : public MediaDrmBridgeCdmContext {
+class MEDIA_EXPORT MediaCryptoContextImpl : public MediaCryptoContext {
  public:
   // The |media_drm_bridge| owns |this| and is guaranteed to outlive |this|.
-  explicit MediaDrmBridgeCdmContextImpl(MediaDrmBridge* media_drm_bridge);
+  explicit MediaCryptoContextImpl(MediaDrmBridge* media_drm_bridge);
 
-  ~MediaDrmBridgeCdmContextImpl() final;
+  ~MediaCryptoContextImpl() final;
 
   // PlayerTracker implementation.
   // Methods can be called on any thread. The registered callbacks will be fired
@@ -41,16 +40,16 @@ class MEDIA_EXPORT MediaDrmBridgeCdmContextImpl
                      const base::Closure& cdm_unset_cb) final;
   void UnregisterPlayer(int registration_id) final;
 
-  // MediaDrmBridgeCdmContext implementation.
+  // MediaCryptoContext implementation.
   void SetMediaCryptoReadyCB(
       const MediaCryptoReadyCB& media_crypto_ready_cb) final;
 
  private:
   MediaDrmBridge* const media_drm_bridge_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDrmBridgeCdmContextImpl);
+  DISALLOW_COPY_AND_ASSIGN(MediaCryptoContextImpl);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_IMPL_H_
+#endif  // MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_IMPL_H_

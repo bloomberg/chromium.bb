@@ -133,16 +133,16 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   ReleaseCodec();
   codec_allocator_->StopThread(this);
 
-  if (!media_drm_bridge_cdm_context_)
+  if (!media_crypto_context_)
     return;
 
   DCHECK(cdm_registration_id_);
 
   // Cancel previously registered callback (if any).
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
-      MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+  media_crypto_context_->SetMediaCryptoReadyCB(
+      MediaCryptoContext::MediaCryptoReadyCB());
 
-  media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
+  media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
@@ -207,9 +207,9 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
     return;
   }
 
-  media_drm_bridge_cdm_context_ = cdm_context->GetMediaDrmBridgeCdmContext();
-  if (!media_drm_bridge_cdm_context_) {
-    LOG(ERROR) << "MediaDrmBridgeCdmContext not supported";
+  media_crypto_context_ = cdm_context->GetMediaCryptoContext();
+  if (!media_crypto_context_) {
+    LOG(ERROR) << "MediaCryptoContext not supported";
     EnterTerminalState(State::kError);
     init_cb.Run(false);
     return;
@@ -223,12 +223,12 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
   // destructed as well. So the |cdm_unset_cb| will never have a chance to be
   // called.
   // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
+  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
       media::BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::OnKeyAdded,
                                           weak_factory_.GetWeakPtr())),
       base::DoNothing());
 
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+  media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
                  weak_factory_.GetWeakPtr(), init_cb)));
 }

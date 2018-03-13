@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MOCK_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
-#define MEDIA_BASE_ANDROID_MOCK_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
+#ifndef MEDIA_BASE_ANDROID_MOCK_MEDIA_CRYPTO_CONTEXT_H_
+#define MEDIA_BASE_ANDROID_MOCK_MEDIA_CRYPTO_CONTEXT_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 
-class MEDIA_EXPORT MockMediaDrmBridgeCdmContext
+class MEDIA_EXPORT MockMediaCryptoContext
     : public CdmContext,
-      public testing::NiceMock<MediaDrmBridgeCdmContext> {
+      public testing::NiceMock<MediaCryptoContext> {
  public:
-  MockMediaDrmBridgeCdmContext();
-  ~MockMediaDrmBridgeCdmContext() override;
+  MockMediaCryptoContext();
+  ~MockMediaCryptoContext() override;
 
   // CdmContext implementation.
-  MediaDrmBridgeCdmContext* GetMediaDrmBridgeCdmContext() override;
+  MediaCryptoContext* GetMediaCryptoContext() override;
 
-  // MediaDrmBridgeCdmContext implementation.
+  // MediaCryptoContext implementation.
   MOCK_METHOD2(RegisterPlayer,
                int(const base::Closure& new_key_cb,
                    const base::Closure& cdm_unset_cb));
@@ -40,9 +40,9 @@ class MEDIA_EXPORT MockMediaDrmBridgeCdmContext
   MediaCryptoReadyCB media_crypto_ready_cb;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaDrmBridgeCdmContext);
+  DISALLOW_COPY_AND_ASSIGN(MockMediaCryptoContext);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MOCK_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
+#endif  // MEDIA_BASE_ANDROID_MOCK_MEDIA_CRYPTO_CONTEXT_H_

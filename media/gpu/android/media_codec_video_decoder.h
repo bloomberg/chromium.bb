@@ -271,9 +271,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
 
   // CDM related stuff.
 
-  // CDM context that knowns about MediaCrypto. Owned by CDM which is external
-  // to this decoder.
-  MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_ = nullptr;
+  // Owned by CDM which is external to this decoder.
+  MediaCryptoContext* media_crypto_context_ = nullptr;
 
   // MediaDrmBridge requires registration/unregistration of the player, this
   // registration id is used for this.
