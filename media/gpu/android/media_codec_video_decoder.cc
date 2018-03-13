@@ -15,6 +15,7 @@
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
@@ -206,9 +207,13 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
     return;
   }
 
-  // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
-  media_drm_bridge_cdm_context_ =
-      static_cast<media::MediaDrmBridgeCdmContext*>(cdm_context);
+  media_drm_bridge_cdm_context_ = cdm_context->GetMediaDrmBridgeCdmContext();
+  if (!media_drm_bridge_cdm_context_) {
+    LOG(ERROR) << "MediaDrmBridgeCdmContext not supported";
+    EnterTerminalState(State::kError);
+    init_cb.Run(false);
+    return;
+  }
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.

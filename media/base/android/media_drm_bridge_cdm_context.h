@@ -10,24 +10,20 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/android/android_util.h"
-#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/player_tracker.h"
 
 namespace media {
 
-// The CdmContext implementation for MediaDrmBridge. MediaDrmBridge supports
-// neither Decryptor nor CDM ID, but uses MediaCrypto to connect to MediaCodec.
-// MediaCodec-based decoders should cast the given CdmContext to this class to
-// access APIs defined in this class.
+// A class that provides MediaCrypto from MediaDrm to support decrypting and
+// decoding of encrypted streams, typically by MediaCodec-based decoders.
 //
-// Methods can be called on any thread. The registered callbacks will be fired
+// Methods can be called on any thread. The registered callbacks can be fired
 // on any thread. The caller should make sure that the callbacks are posted to
 // the correct thread.
 //
 // TODO(xhwang): Remove PlayerTracker interface.
-class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
-                                              public PlayerTracker {
+class MEDIA_EXPORT MediaDrmBridgeCdmContext : public PlayerTracker {
  public:
   // Notification called when MediaCrypto object is ready.
   // Parameters:

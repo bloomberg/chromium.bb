@@ -16,6 +16,7 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/ac3/ac3_util.h"
 
@@ -100,22 +101,25 @@ void MediaCodecAudioDecoder::Initialize(
     return;
   }
 
-  if (config.is_encrypted() && !cdm_context) {
-    NOTREACHED() << "The stream is encrypted but there is no CDM context";
-    bound_init_cb.Run(false);
-    return;
-  }
-
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
-
   SetInitialConfiguration();
 
   if (config_.is_encrypted() && !media_crypto_) {
+    media_drm_bridge_cdm_context_ =
+        cdm_context ? cdm_context->GetMediaDrmBridgeCdmContext() : nullptr;
+    if (!media_drm_bridge_cdm_context_) {
+      LOG(ERROR) << "The stream is encrypted but there is no CdmContext or "
+                    "MediaDrmBridgeCdmContext is not supported";
+      SetState(STATE_ERROR);
+      bound_init_cb.Run(false);
+      return;
+    }
+
     // Postpone initialization after MediaCrypto is available.
     // SetCdm uses init_cb in a method that's already bound to the current loop.
     SetState(STATE_WAITING_FOR_MEDIA_CRYPTO);
-    SetCdm(cdm_context, init_cb);
+    SetCdm(init_cb);
     return;
   }
 
@@ -210,13 +214,8 @@ bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {
   return config_.codec() == kCodecAAC;
 }
 
-void MediaCodecAudioDecoder::SetCdm(CdmContext* cdm_context,
-                                    const InitCB& init_cb) {
-  DCHECK(cdm_context);
-
-  // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
-  media_drm_bridge_cdm_context_ =
-      static_cast<media::MediaDrmBridgeCdmContext*>(cdm_context);
+void MediaCodecAudioDecoder::SetCdm(const InitCB& init_cb) {
+  DCHECK(media_drm_bridge_cdm_context_);
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.

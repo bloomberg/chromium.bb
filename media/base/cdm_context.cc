@@ -10,8 +10,6 @@ CdmContext::CdmContext() = default;
 
 CdmContext::~CdmContext() = default;
 
-void IgnoreCdmAttached(bool /* success */) {}
-
 Decryptor* CdmContext::GetDecryptor() {
   return nullptr;
 }
@@ -26,8 +24,16 @@ CdmProxyContext* CdmContext::GetCdmProxyContext() {
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
+#if defined(OS_ANDROID)
+MediaDrmBridgeCdmContext* CdmContext::GetMediaDrmBridgeCdmContext() {
+  return nullptr;
+}
+#endif
+
 void* CdmContext::GetClassIdentifier() const {
   return nullptr;
 }
+
+void IgnoreCdmAttached(bool /* success */) {}
 
 }  // namespace media

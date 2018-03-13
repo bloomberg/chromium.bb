@@ -1451,16 +1451,20 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 #if !BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   NOTIMPLEMENTED();
   NOTIFY_ERROR(PLATFORM_FAILURE, "Cdm support needs mojo in the gpu process");
+  return;
 #else
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
       CdmManager::GetInstance()->GetCdm(config_.cdm_id);
   DCHECK(cdm_for_reference_holding_only_);
 
-  // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
-  media_drm_bridge_cdm_context_ = static_cast<MediaDrmBridgeCdmContext*>(
-      cdm_for_reference_holding_only_->GetCdmContext());
-  DCHECK(media_drm_bridge_cdm_context_);
+  auto* cdm_context = cdm_for_reference_holding_only_->GetCdmContext();
+  media_drm_bridge_cdm_context_ =
+      cdm_context ? cdm_context->GetMediaDrmBridgeCdmContext() : nullptr;
+  if (!media_drm_bridge_cdm_context_) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaDrmBridgeCdmContext not available.");
+    return;
+  }
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.

@@ -571,8 +571,7 @@ void MediaDrmBridge::RemoveSession(
 
 CdmContext* MediaDrmBridge::GetCdmContext() {
   DVLOG(2) << __func__;
-
-  return &media_drm_bridge_cdm_context_;
+  return this;
 }
 
 void MediaDrmBridge::DeleteOnCorrectThread() const {
@@ -584,6 +583,11 @@ void MediaDrmBridge::DeleteOnCorrectThread() const {
   } else {
     delete this;
   }
+}
+
+MediaDrmBridgeCdmContext* MediaDrmBridge::GetMediaDrmBridgeCdmContext() {
+  DVLOG(2) << __func__;
+  return &media_drm_bridge_cdm_context_;
 }
 
 int MediaDrmBridge::RegisterPlayer(const base::Closure& new_key_cb,

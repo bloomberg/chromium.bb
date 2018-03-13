@@ -126,7 +126,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
 
   // A helper method to start CDM initialization.  This must be called if and
   // only if we were constructed with |is_encrypted| set to true.
-  void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
+  void SetCdm(const InitCB& init_cb);
 
   // This callback is called after CDM obtained a MediaCrypto object.
   void OnMediaCryptoReady(const InitCB& init_cb,

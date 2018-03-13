@@ -16,14 +16,6 @@ MediaDrmBridgeCdmContextImpl::MediaDrmBridgeCdmContextImpl(
 
 MediaDrmBridgeCdmContextImpl::~MediaDrmBridgeCdmContextImpl() {}
 
-Decryptor* MediaDrmBridgeCdmContextImpl::GetDecryptor() {
-  return nullptr;
-}
-
-int MediaDrmBridgeCdmContextImpl::GetCdmId() const {
-  return kInvalidCdmId;
-}
-
 int MediaDrmBridgeCdmContextImpl::RegisterPlayer(
     const base::Closure& new_key_cb,
     const base::Closure& cdm_unset_cb) {
