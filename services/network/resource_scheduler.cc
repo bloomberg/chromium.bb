@@ -1257,6 +1257,11 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
   static const char kNonDelayableWeightBase[] = "NonDelayableWeight";
 
   ParamsForNetworkQualityContainer result;
+  // Set the default params for networks with ECT Slow2G and 2G. These params
+  // can still be overridden using the field trial.
+  result.push_back({net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, 8, 3});
+  result.push_back({net::EFFECTIVE_CONNECTION_TYPE_2G, 8, 3});
+
   if (!base::FeatureList::IsEnabled(kThrottleDelayable))
     return result;
 
@@ -1290,8 +1295,22 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
       return result;
     }
 
-    result.push_back({effective_connection_type.value(), max_delayable_requests,
-                      non_delayable_weight});
+    // Check if the entry is already present. This will happen if the default
+    // params are being overridden by the field trial.
+    bool entry_found = false;
+    for (auto& range : result) {
+      if (effective_connection_type == range.effective_connection_type) {
+        range.max_delayable_requests = max_delayable_requests;
+        range.non_delayable_weight = non_delayable_weight;
+        entry_found = true;
+        break;
+      }
+    }
+
+    if (!entry_found) {
+      result.push_back({effective_connection_type.value(),
+                        max_delayable_requests, non_delayable_weight});
+    }
     config_param_index++;
   }
 }

@@ -281,7 +281,7 @@ class ResourceSchedulerTest : public testing::Test {
                                           experiment_status, 0.0);
 
     // Set the effective connection type to Slow-2G, which is slower than the
-    // threshold configured in |InitializeMaxDelayableRequestsExperiment|. Needs
+    // threshold configured in |InitializeThrottleDelayableExperiment|. Needs
     // to be done before initializing the scheduler because the client is
     // created on the call to |InitializeScheduler|, which is where the initial
     // limits for the delayable requests in flight are computed.
@@ -303,7 +303,7 @@ class ResourceSchedulerTest : public testing::Test {
     EXPECT_TRUE(high2->started());
 
     // Should match the configuration set by
-    // |InitializeMaxDelayableRequestsExperiment|
+    // |InitializeThrottleDelayableExperiment|
     const int kOverriddenNumRequests = 2;
 
     std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
@@ -366,7 +366,7 @@ class ResourceSchedulerTest : public testing::Test {
       experiment_enabled = true;
       params["EffectiveConnectionType1"] = "Slow-2G";
       if (params["MaxDelayableRequests1"] == "")
-        params["MaxDelayableRequests1"] = "10";
+        params["MaxDelayableRequests1"] = "8";
       params["NonDelayableWeight1"] =
           base::NumberToString(non_delayable_weight);
     }
@@ -395,26 +395,38 @@ class ResourceSchedulerTest : public testing::Test {
             ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
 
     if (!lower_delayable_count_enabled && non_delayable_weight <= 0.0) {
-      ASSERT_EQ(0u, params_network_quality_container.size());
+      ASSERT_EQ(2u, params_network_quality_container.size());
+      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+                params_network_quality_container[0].effective_connection_type);
+      EXPECT_EQ(8u, params_network_quality_container[0].max_delayable_requests);
+      EXPECT_EQ(3.0, params_network_quality_container[0].non_delayable_weight);
+
+      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+                params_network_quality_container[1].effective_connection_type);
+      EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
+      EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
       return;
     }
 
     // Check that the configuration was parsed and stored correctly.
-    ASSERT_EQ(lower_delayable_count_enabled ? 2u : 1u,
+    ASSERT_EQ(lower_delayable_count_enabled ? 3u : 2u,
               params_network_quality_container.size());
 
     EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
               params_network_quality_container[0].effective_connection_type);
-    EXPECT_EQ(non_delayable_weight > 0.0 ? 10u : 2u,
+    EXPECT_EQ(non_delayable_weight > 0.0 ? 8u : 2u,
               params_network_quality_container[0].max_delayable_requests);
     EXPECT_EQ(non_delayable_weight > 0.0 ? non_delayable_weight : 0.0,
               params_network_quality_container[0].non_delayable_weight);
 
+    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+              params_network_quality_container[1].effective_connection_type);
+
     if (lower_delayable_count_enabled) {
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
-                params_network_quality_container[1].effective_connection_type);
-      EXPECT_EQ(4u, params_network_quality_container[1].max_delayable_requests);
-      EXPECT_EQ(0.0, params_network_quality_container[1].non_delayable_weight);
+                params_network_quality_container[2].effective_connection_type);
+      EXPECT_EQ(4u, params_network_quality_container[2].max_delayable_requests);
+      EXPECT_EQ(0.0, params_network_quality_container[2].non_delayable_weight);
     }
   }
 
@@ -450,23 +462,38 @@ class ResourceSchedulerTest : public testing::Test {
             ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
 
     // Check that the configuration was parsed and stored correctly.
-    ASSERT_EQ(params_network_quality_container.size(), num_ranges);
-    for (size_t index = 1; index <= num_ranges; index++) {
+    ASSERT_EQ(std::max(static_cast<size_t>(2u), num_ranges),
+              params_network_quality_container.size());
+    for (size_t index = 1; index <= params_network_quality_container.size();
+         index++) {
       EXPECT_EQ(1 + index,
                 static_cast<size_t>(params_network_quality_container[index - 1]
                                         .effective_connection_type));
-      EXPECT_EQ(
-          index * 10u,
-          params_network_quality_container[index - 1].max_delayable_requests);
-      EXPECT_EQ(
-          0, params_network_quality_container[index - 1].non_delayable_weight);
+      if (params_network_quality_container[index - 1]
+                  .effective_connection_type <=
+              net::EFFECTIVE_CONNECTION_TYPE_2G &&
+          num_ranges < index) {
+        EXPECT_EQ(
+            8u,
+            params_network_quality_container[index - 1].max_delayable_requests);
+        EXPECT_EQ(
+            3,
+            params_network_quality_container[index - 1].non_delayable_weight);
+      } else {
+        EXPECT_EQ(
+            index * 10u,
+            params_network_quality_container[index - 1].max_delayable_requests);
+        EXPECT_EQ(
+            0,
+            params_network_quality_container[index - 1].non_delayable_weight);
+      }
     }
   }
 
   void NonDelayableThrottlesDelayableHelper(double non_delayable_weight) {
     base::test::ScopedFeatureList scoped_feature_list;
-    // Should be in sync with .cc.
-    const int kDefaultMaxNumDelayableRequestsPerClient = 10;
+    // Should be in sync with .cc for ECT SLOW_2G,
+    const int kDefaultMaxNumDelayableRequestsPerClient = 8;
     // Initialize the experiment.
     InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
                                           non_delayable_weight);
@@ -1598,7 +1625,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   EXPECT_TRUE(high->started());
 
   // Should be based on the value set by
-  // |InitializeMaxDelayableRequestsExperiment| for the given range.
+  // |InitializeThrottleDelayableExperiment| for the given range.
   const int kOverriddenNumRequests = 2;
 
   std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
@@ -1791,11 +1818,16 @@ TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
   // Only the first configuration parameter must be read because a match was not
   // found for index 2. The configuration parameters with index 3 and 4 must be
   // ignored, even though they are valid configuration parameters.
-  EXPECT_EQ(1u, params_network_quality_container.size());
+  EXPECT_EQ(2u, params_network_quality_container.size());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
             params_network_quality_container[0].effective_connection_type);
   EXPECT_EQ(10u, params_network_quality_container[0].max_delayable_requests);
   EXPECT_EQ(0.0, params_network_quality_container[0].non_delayable_weight);
+
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params_network_quality_container[1].effective_connection_type);
+  EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
+  EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
 }
 
 // Test that the default limit is used for delayable requests when the
@@ -1841,7 +1873,7 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
   base::test::ScopedFeatureList scoped_feature_list;
   const double kNonDelayableWeight = 2.0;
   const int kDefaultMaxNumDelayableRequestsPerClient =
-      10;  // Should be in sync with cc.
+      8;  // Should be in sync with cc.
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
   InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
@@ -1877,12 +1909,6 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
         NewRequest("http://lasthost/low", net::LOWEST));
     EXPECT_FALSE(last_low->started());
   }
-}
-
-// Test that the default limit is used for delayable requests in the presence of
-// non-delayable requests when the non-delayable request weight is zero.
-TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableWeight0) {
-  NonDelayableThrottlesDelayableHelper(0.0);
 }
 
 // Test that each non-delayable request in-flight results in the reduction of
