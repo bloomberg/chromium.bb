@@ -41,31 +41,14 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
   ~UserActivityLoggerDelegateUkm() override;
 
   // chromeos::power::ml::UserActivityLoggerDelegate overrides:
-  void UpdateOpenTabsURLs() override;
-  void LogActivity(const UserActivityEvent& event) override;
+  void LogActivity(
+      const UserActivityEvent& event,
+      const std::map<ukm::SourceId, TabProperty>& open_tabs) override;
 
  private:
+  friend class UserActivityLoggerDelegateUkmTest;
+
   ukm::UkmRecorder* ukm_recorder_;  // not owned
-
-  struct TabProperty {
-    // Whether the tab is the selected one in its containing browser.
-    bool is_active;
-    // Whether the containing browser is in focus.
-    bool is_browser_focused;
-    // Whether the containing browser is visible.
-    bool is_browser_visible;
-    // Whether the containing browser is the topmost one on the screen.
-    bool is_topmost_browser;
-    // Tab URL's engagement score. -1 if engagement service is disabled.
-    int engagement_score;
-    // Tab content type.
-    metrics::TabMetricsEvent::ContentType content_type;
-    // Whether user has form entry, i.e. text input.
-    bool has_form_entry;
-  };
-
-  // Source IDs of open tabs' URLs.
-  std::map<ukm::SourceId, TabProperty> source_ids_;
 
   // This ID is incremented each time a UserActivity is logged to UKM.
   // Event index starts from 1, and resets when a new session starts.

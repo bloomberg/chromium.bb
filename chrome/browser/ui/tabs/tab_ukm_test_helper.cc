@@ -192,9 +192,3 @@ const ukm::mojom::UkmEntry* UkmEntryChecker::LastUkmEntry(
   CHECK(!entries.empty());
   return entries.back();
 }
-
-ukm::SourceId UkmEntryChecker::GetSourceIdForUrl(const GURL& source_url) const {
-  const ukm::UkmSource* source = ukm_recorder_.GetSourceForUrl(source_url);
-  CHECK(source);
-  return source->id();
-}

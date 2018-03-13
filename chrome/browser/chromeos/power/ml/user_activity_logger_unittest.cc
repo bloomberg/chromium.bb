@@ -15,17 +15,31 @@
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_activity_simulator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/test_browser_window_aura.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/session_manager_types.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 namespace power {
 namespace ml {
+
+using content::WebContentsTester;
 
 void EqualEvent(const UserActivityEvent::Event& expected_event,
                 const UserActivityEvent::Event& result_event) {
@@ -42,29 +56,23 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
 
   const std::vector<UserActivityEvent>& events() const { return events_; }
 
-  int num_update_open_tabs_urls_calls() const {
-    return num_update_open_tabs_urls_calls_;
-  }
-
   // UserActivityLoggerDelegate overrides:
-  void LogActivity(const UserActivityEvent& event) override {
+  void LogActivity(
+      const UserActivityEvent& event,
+      const std::map<ukm::SourceId, TabProperty>& source_ids) override {
     events_.push_back(event);
   }
-  void UpdateOpenTabsURLs() override { ++num_update_open_tabs_urls_calls_; }
 
  private:
   std::vector<UserActivityEvent> events_;
-  int num_update_open_tabs_urls_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestingUserActivityLoggerDelegate);
 };
 
-class UserActivityLoggerTest : public testing::Test {
+class UserActivityLoggerTest : public ChromeRenderViewHostTestHarness {
  public:
   UserActivityLoggerTest()
-      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
-        scoped_context_(task_runner_.get()) {
+      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
@@ -134,22 +142,121 @@ class UserActivityLoggerTest : public testing::Test {
     fake_power_manager_client_.SetInactivityDelays(proto);
   }
 
+  void UpdateOpenTabsURLs() { activity_logger_->UpdateOpenTabsURLs(); }
+
+  // Creates a test browser window and sets its visibility, activity and
+  // incognito status.
+  std::unique_ptr<Browser> CreateTestBrowser(bool is_visible,
+                                             bool is_focused,
+                                             bool is_incognito = false) {
+    Profile* const original_profile = profile();
+    Profile* const used_profile =
+        is_incognito ? original_profile->GetOffTheRecordProfile()
+                     : original_profile;
+    Browser::CreateParams params(used_profile, true);
+
+    auto dummy_window = std::make_unique<aura::Window>(nullptr);
+    dummy_window->Init(ui::LAYER_SOLID_COLOR);
+    root_window()->AddChild(dummy_window.get());
+    dummy_window->SetBounds(gfx::Rect(root_window()->bounds().size()));
+    if (is_visible) {
+      dummy_window->Show();
+    } else {
+      dummy_window->Hide();
+    }
+
+    std::unique_ptr<Browser> browser =
+        chrome::CreateBrowserWithAuraTestWindowForParams(
+            std::move(dummy_window), &params);
+    if (is_focused) {
+      browser->window()->Activate();
+    } else {
+      browser->window()->Deactivate();
+    }
+    return browser;
+  }
+
+  // Adds a tab with specified url to the tab strip model. Also optionally sets
+  // the tab to be the active one in the tab strip model.
+  // If |mime_type| is an empty string, the content has a default text type.
+  // TODO(jiameng): there doesn't seem to be a way to set form entry (via
+  // page importance signal). Check if there's some other way to set it.
+  void CreateTestWebContents(TabStripModel* const tab_strip_model,
+                             const GURL& url,
+                             bool is_active,
+                             const std::string& mime_type = "") {
+    DCHECK(tab_strip_model);
+    DCHECK(!url.is_empty());
+    content::WebContents* contents =
+        tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model, url);
+    if (is_active) {
+      tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1, false);
+    }
+    if (!mime_type.empty())
+      WebContentsTester::For(contents)->SetMainFrameMimeType(mime_type);
+
+    WebContentsTester::For(contents)->TestSetIsLoading(false);
+  }
+
+  ukm::SourceId GetSourceIdForUrl(const GURL& url) {
+    const ukm::UkmSource* source = ukm_recorder_.GetSourceForUrl(url);
+    DCHECK(source);
+    return source->id();
+  }
+
+  void CheckTabsProperties(
+      const std::map<ukm::SourceId, TabProperty>& expected_map) {
+    // Does not just use std::equal to give a better sense of where they fail
+    // when debugging.
+    const auto& actual_map = activity_logger_->open_tabs_;
+    EXPECT_EQ(expected_map.size(), actual_map.size());
+    for (const auto& expected_value : expected_map) {
+      const auto& it = actual_map.find(expected_value.first);
+      ASSERT_TRUE(it != actual_map.end())
+          << "Failed to find a match for " << expected_value.first;
+      const TabProperty& actual = it->second;
+      const TabProperty& expected = expected_value.second;
+      EXPECT_EQ(expected.is_active, actual.is_active) << expected_value.first;
+      EXPECT_EQ(expected.is_browser_focused, actual.is_browser_focused)
+          << expected_value.first;
+      EXPECT_EQ(expected.is_browser_visible, actual.is_browser_visible)
+          << expected_value.first;
+      EXPECT_EQ(expected.is_topmost_browser, actual.is_topmost_browser)
+          << expected_value.first;
+      EXPECT_EQ(expected.engagement_score, actual.engagement_score)
+          << expected_value.first;
+      EXPECT_EQ(expected.content_type, actual.content_type)
+          << expected_value.first;
+      EXPECT_EQ(expected.has_form_entry, actual.has_form_entry)
+          << expected_value.first;
+    }
+  }
+
   const scoped_refptr<base::TestMockTimeTaskRunner>& GetTaskRunner() {
     return task_runner_;
   }
 
   TestingUserActivityLoggerDelegate delegate_;
   chromeos::FakeChromeUserManager fake_user_manager_;
+  // Only used to get SourceIds for URLs.
+  ukm::TestAutoSetUkmRecorder ukm_recorder_;
+  TabActivitySimulator tab_activity_simulator_;
+
+  const GURL url1_ = GURL("https://example1.com/");
+  const GURL url2_ = GURL("https://example2.com/");
+  const GURL url3_ = GURL("https://example3.com/");
+  const GURL url4_ = GURL("https://example4.com/");
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  const base::TestMockTimeTaskRunner::ScopedContext scoped_context_;
 
   ui::UserActivityDetector user_activity_detector_;
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   chromeos::FakePowerManagerClient fake_power_manager_client_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<UserActivityLogger> activity_logger_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerTest);
 };
 
 // After an idle event, we have a ui::Event, we should expect one
@@ -496,17 +603,6 @@ TEST_F(UserActivityLoggerTest, ManagedDevice) {
   EXPECT_EQ(UserActivityEvent::Features::MANAGED, features.device_management());
 }
 
-TEST_F(UserActivityLoggerTest, UpdateOpenTabsURLsCalledTimes) {
-  const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
-  ReportUserActivity(nullptr);
-  EXPECT_EQ(1, delegate_.num_update_open_tabs_urls_calls());
-
-  ReportIdleEvent({});
-  ReportUserActivity(nullptr);
-  EXPECT_EQ(2, delegate_.num_update_open_tabs_urls_calls());
-}
-
 TEST_F(UserActivityLoggerTest, DimAndOffDelays) {
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
@@ -553,6 +649,158 @@ TEST_F(UserActivityLoggerTest, OffDelays) {
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_EQ(4, features.dim_to_screen_off_sec());
   EXPECT_TRUE(!features.has_on_to_dim_sec());
+}
+
+TEST_F(UserActivityLoggerTest, BasicTabs) {
+  std::unique_ptr<Browser> browser =
+      CreateTestBrowser(true /* is_visible */, true /* is_focused */);
+  BrowserList::GetInstance()->SetLastActive(browser.get());
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  CreateTestWebContents(tab_strip_model, url1_, true /* is_active */,
+                        "application/pdf");
+  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(url1_, 95);
+  const ukm::SourceId source_id1 = GetSourceIdForUrl(url1_);
+
+  CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
+  const ukm::SourceId source_id2 = GetSourceIdForUrl(url2_);
+
+  UpdateOpenTabsURLs();
+
+  TabProperty expected_property1;
+  expected_property1.is_active = true;
+  expected_property1.is_browser_focused = true;
+  expected_property1.is_browser_visible = true;
+  expected_property1.is_topmost_browser = true;
+  expected_property1.engagement_score = 90;
+  expected_property1.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_APPLICATION;
+  expected_property1.has_form_entry = false;
+
+  TabProperty expected_property2;
+  expected_property2.is_active = false;
+  expected_property2.is_browser_focused = true;
+  expected_property2.is_browser_visible = true;
+  expected_property2.is_topmost_browser = true;
+  expected_property2.engagement_score = 0;
+  expected_property2.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  expected_property2.has_form_entry = false;
+
+  const std::map<ukm::SourceId, TabProperty> expected_sources(
+      {{source_id1, expected_property1}, {source_id2, expected_property2}});
+  CheckTabsProperties(expected_sources);
+
+  tab_strip_model->CloseAllTabs();
+}
+
+TEST_F(UserActivityLoggerTest, MultiBrowsersAndTabs) {
+  // Simulates three browsers:
+  //  - browser1 is the last active but minimized and so not visible.
+  //  - browser2 and browser3 are both visible but browser2 is the topmost.
+  std::unique_ptr<Browser> browser1 =
+      CreateTestBrowser(false /* is_visible */, false /* is_focused */);
+  std::unique_ptr<Browser> browser2 =
+      CreateTestBrowser(true /* is_visible */, true /* is_focused */);
+  std::unique_ptr<Browser> browser3 =
+      CreateTestBrowser(true /* is_visible */, false /* is_focused */);
+
+  BrowserList::GetInstance()->SetLastActive(browser3.get());
+  BrowserList::GetInstance()->SetLastActive(browser2.get());
+  BrowserList::GetInstance()->SetLastActive(browser1.get());
+
+  TabStripModel* tab_strip_model1 = browser1->tab_strip_model();
+  CreateTestWebContents(tab_strip_model1, url1_, false /* is_active */);
+  CreateTestWebContents(tab_strip_model1, url2_, true /* is_active */);
+  const ukm::SourceId source_id1 = GetSourceIdForUrl(url1_);
+  const ukm::SourceId source_id2 = GetSourceIdForUrl(url2_);
+
+  TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
+  CreateTestWebContents(tab_strip_model2, url3_, true /* is_active */);
+  const ukm::SourceId source_id3 = GetSourceIdForUrl(url3_);
+
+  TabStripModel* tab_strip_model3 = browser3->tab_strip_model();
+  CreateTestWebContents(tab_strip_model3, url4_, true /* is_active */);
+  const ukm::SourceId source_id4 = GetSourceIdForUrl(url4_);
+
+  UpdateOpenTabsURLs();
+
+  TabProperty expected_property1;
+  expected_property1.is_active = false;
+  expected_property1.is_browser_focused = false;
+  expected_property1.is_browser_visible = false;
+  expected_property1.is_topmost_browser = false;
+  expected_property1.engagement_score = 0;
+  expected_property1.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  expected_property1.has_form_entry = false;
+
+  TabProperty expected_property2;
+  expected_property2.is_active = true;
+  expected_property2.is_browser_focused = false;
+  expected_property2.is_browser_visible = false;
+  expected_property2.is_topmost_browser = false;
+  expected_property2.engagement_score = 0;
+  expected_property2.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  expected_property2.has_form_entry = false;
+
+  TabProperty expected_property3;
+  expected_property3.is_active = true;
+  expected_property3.is_browser_focused = true;
+  expected_property3.is_browser_visible = true;
+  expected_property3.is_topmost_browser = true;
+  expected_property3.engagement_score = 0;
+  expected_property3.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  expected_property3.has_form_entry = false;
+
+  TabProperty expected_property4;
+  expected_property4.is_active = true;
+  expected_property4.is_browser_focused = false;
+  expected_property4.is_browser_visible = true;
+  expected_property4.is_topmost_browser = false;
+  expected_property4.engagement_score = 0;
+  expected_property4.content_type =
+      metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  expected_property4.has_form_entry = false;
+
+  const std::map<ukm::SourceId, TabProperty> expected_properties(
+      {{source_id1, expected_property1},
+       {source_id2, expected_property2},
+       {source_id3, expected_property3},
+       {source_id4, expected_property4}});
+  CheckTabsProperties(expected_properties);
+
+  tab_strip_model1->CloseAllTabs();
+  tab_strip_model2->CloseAllTabs();
+  tab_strip_model3->CloseAllTabs();
+}
+
+TEST_F(UserActivityLoggerTest, Incognito) {
+  std::unique_ptr<Browser> browser = CreateTestBrowser(
+      true /* is_visible */, true /* is_focused */, true /* is_incognito */);
+  BrowserList::GetInstance()->SetLastActive(browser.get());
+
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  CreateTestWebContents(tab_strip_model, url1_, true /* is_active */);
+  CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
+
+  UpdateOpenTabsURLs();
+
+  const std::map<ukm::SourceId, TabProperty> empty_map;
+  CheckTabsProperties(empty_map);
+
+  tab_strip_model->CloseAllTabs();
+}
+
+TEST_F(UserActivityLoggerTest, NoOpenTabs) {
+  std::unique_ptr<Browser> browser =
+      CreateTestBrowser(true /* is_visible */, true /* is_focused */);
+
+  UpdateOpenTabsURLs();
+
+  const std::map<ukm::SourceId, TabProperty> empty_map;
+  CheckTabsProperties(empty_map);
 }
 
 }  // namespace ml
