@@ -154,8 +154,8 @@ cr.define('settings_sync_account_control', function() {
             assertEquals(email, 'foo@foo.com');
 
             assertVisible(testElement.$$('#dropdown-arrow'), true);
-            assertFalse(
-                testElement.$$('#sync-icon-container').hasAttribute('syncing'));
+            assertFalse(testElement.$$('#sync-logo-container')
+                            .hasAttribute('signed-in'));
 
             testElement.$$('#dropdown-arrow').click();
             Polymer.dom.flush();
@@ -208,7 +208,8 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#dropdown-arrow'), false);
       assertVisible(testElement.$$('#promo-headers'), false);
       assertTrue(
-          testElement.$$('#sync-icon-container').hasAttribute('syncing'));
+          testElement.$$('#sync-logo-container').hasAttribute('signed-in'));
+
       assertFalse(!!testElement.$$('#menu'));
 
       const userInfo = testElement.$$('#user-info');
@@ -224,6 +225,14 @@ cr.define('settings_sync_account_control', function() {
       Polymer.dom.flush();
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SIGN_OUT);
+
+      sync_test_util.simulateSyncStatus(
+          {signedIn: true, signedInUsername: 'bar@bar.com', hasError: true});
+      assertTrue(
+          testElement.$$('#sync-logo-container').hasAttribute('has-error'));
+      assertFalse(userInfo.textContent.includes('barName'));
+      assertFalse(userInfo.textContent.includes('fooName'));
+      assertTrue(userInfo.textContent.includes('Sync isn\'t working'));
     });
   });
 });

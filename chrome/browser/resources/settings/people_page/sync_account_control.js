@@ -115,7 +115,10 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNameDisplay_: function(label, name) {
+  getNameDisplay_: function(label, name, errorLabel) {
+    if (this.syncStatus.hasError === true)
+      return errorLabel;
+
     return this.syncStatus.signedIn ?
         loadTimeData.substituteString(label, name) :
         name;
@@ -129,6 +132,14 @@ Polymer({
   getAccountImageSrc_: function(image) {
     // image can be undefined if the account has not set an avatar photo.
     return image || 'chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSyncIcon_: function() {
+    return this.syncStatus.hasError ? 'settings:sync-problem' : 'settings:sync';
   },
 
   /**
