@@ -1209,10 +1209,6 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   memset(cm->ref_frame_side, -1, sizeof(cm->ref_frame_side));
   if (!cm->seq_params.enable_order_hint || cm->error_resilient_mode) return;
 
-  int cur_frame_index = cm->cur_frame->cur_frame_offset;
-  int alt_frame_index = 0, gld_frame_index = 0;
-  int bwd_frame_index = 0, alt2_frame_index = 0;
-
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
   int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
   for (int idx = 0; idx < size; ++idx) {
@@ -1222,62 +1218,54 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     }
   }
 
-  int gld_buf_idx = cm->frame_refs[GOLDEN_FRAME - LAST_FRAME].idx;
-  int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
-  int lst_buf_idx = cm->frame_refs[LAST_FRAME - LAST_FRAME].idx;
-  int lst2_buf_idx = cm->frame_refs[LAST2_FRAME - LAST_FRAME].idx;
-  int bwd_buf_idx = cm->frame_refs[BWDREF_FRAME - LAST_FRAME].idx;
-  int alt2_buf_idx = cm->frame_refs[ALTREF2_FRAME - LAST_FRAME].idx;
+  const int cur_order_hint = cm->cur_frame->cur_frame_offset;
+  RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
-  if (alt_buf_idx >= 0)
-    alt_frame_index = cm->buffer_pool->frame_bufs[alt_buf_idx].cur_frame_offset;
+  int ref_buf_idx[INTER_REFS_PER_FRAME];
+  int ref_order_hint[INTER_REFS_PER_FRAME];
 
-  if (gld_buf_idx >= 0)
-    gld_frame_index = cm->buffer_pool->frame_bufs[gld_buf_idx].cur_frame_offset;
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
+    const int ref_idx = ref_frame - LAST_FRAME;
+    const int buf_idx = cm->frame_refs[ref_idx].idx;
+    int order_hint = 0;
 
-  if (bwd_buf_idx >= 0)
-    bwd_frame_index = cm->buffer_pool->frame_bufs[bwd_buf_idx].cur_frame_offset;
+    if (buf_idx >= 0) order_hint = frame_bufs[buf_idx].cur_frame_offset;
 
-  if (alt2_buf_idx >= 0)
-    alt2_frame_index =
-        cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
+    ref_buf_idx[ref_idx] = buf_idx;
+    ref_order_hint[ref_idx] = order_hint;
 
-  for (int ref_frame = LAST_FRAME; ref_frame <= INTER_REFS_PER_FRAME;
-       ++ref_frame) {
-    int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
-    int frame_index = -1;
-    if (buf_idx >= 0)
-      frame_index = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-    if (frame_index > cur_frame_index)
+    if (order_hint > cur_order_hint)
       cm->ref_frame_side[ref_frame] = 1;
-    else if (frame_index == cur_frame_index)
+    else if (order_hint == cur_order_hint)
       cm->ref_frame_side[ref_frame] = -1;
   }
 
   int ref_stamp = MFMV_STACK_SIZE - 1;
 
-  if (lst_buf_idx >= 0) {
-    const int alt_frame_idx = cm->buffer_pool->frame_bufs[lst_buf_idx]
-                                  .ref_frame_offset[ALTREF_FRAME - LAST_FRAME];
+  if (ref_buf_idx[LAST_FRAME - LAST_FRAME] >= 0) {
+    const int alt_of_lst_order_hint =
+        frame_bufs[ref_buf_idx[LAST_FRAME - LAST_FRAME]]
+            .ref_frame_offset[ALTREF_FRAME - LAST_FRAME];
 
-    const int is_lst_overlay = (alt_frame_idx == gld_frame_index);
+    const int is_lst_overlay =
+        (alt_of_lst_order_hint == ref_order_hint[GOLDEN_FRAME - LAST_FRAME]);
     if (!is_lst_overlay) motion_field_projection(cm, LAST_FRAME, ref_stamp, 2);
-
     --ref_stamp;
   }
 
-  if (bwd_frame_index > cur_frame_index) {
+  if (ref_order_hint[BWDREF_FRAME - LAST_FRAME] > cur_order_hint) {
     if (motion_field_projection(cm, BWDREF_FRAME, ref_stamp, 0)) --ref_stamp;
   }
 
-  if (alt2_frame_index > cur_frame_index) {
+  if (ref_order_hint[ALTREF2_FRAME - LAST_FRAME] > cur_order_hint) {
     if (motion_field_projection(cm, ALTREF2_FRAME, ref_stamp, 0)) --ref_stamp;
   }
 
-  if (alt_frame_index > cur_frame_index && ref_stamp >= 0)
+  if (ref_order_hint[ALTREF_FRAME - LAST_FRAME] > cur_order_hint &&
+      ref_stamp >= 0)
     if (motion_field_projection(cm, ALTREF_FRAME, ref_stamp, 0)) --ref_stamp;
 
-  if (ref_stamp >= 0 && lst2_buf_idx >= 0)
+  if (ref_stamp >= 0 && ref_buf_idx[LAST2_FRAME - LAST_FRAME] >= 0)
     if (motion_field_projection(cm, LAST2_FRAME, ref_stamp, 2)) --ref_stamp;
 }
 
