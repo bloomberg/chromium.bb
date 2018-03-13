@@ -138,6 +138,17 @@ class MockAuthenticator {
         webauth.mojom.AuthenticatorStatus.SUCCESS);
   }
 
+  // Sets everything needed for a GetAssertion success response.
+  setDefaultsForSuccessfulGetAssertion() {
+    mockAuthenticator.setRawId(RAW_ID);
+    mockAuthenticator.setId(ID);
+    mockAuthenticator.setClientDataJson(CLIENT_DATA_JSON);
+    mockAuthenticator.setAuthenticatorData(AUTHENTICATOR_DATA);
+    mockAuthenticator.setSignature(SIGNATURE);
+    mockAuthenticator.setAuthenticatorStatus(
+        webauth.mojom.AuthenticatorStatus.SUCCESS);
+  }
+
   setAuthenticatorStatus(status) {
     this.status_ = status;
   }
@@ -265,6 +276,16 @@ var GET_CREDENTIAL = "navigator.credentials.get({publicKey : GET_CREDENTIAL_OPTI
 
 function EncloseInScriptTag(code) {
   return "<script>" + code + "</scr" + "ipt>";
+}
+
+function deepCopy(value) {
+  if ([Number, String, Uint8Array].includes(value.constructor))
+    return value;
+
+  let copy = (value.constructor == Array) ? [] : {};
+  for (let key of Object.keys(value))
+    copy[key] = deepCopy(value[key]);
+  return copy;
 }
 
 // Verifies if |r| is the valid response to credentials.create(publicKey).
