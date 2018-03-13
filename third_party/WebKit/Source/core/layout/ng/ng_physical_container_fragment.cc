@@ -63,6 +63,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          style,
+                         NGStyleVariant::kStandard,
                          size,
                          type,
                          sub_type,

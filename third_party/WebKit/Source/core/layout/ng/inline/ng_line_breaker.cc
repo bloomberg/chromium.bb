@@ -468,7 +468,7 @@ void NGLineBreaker::AppendHyphen(const NGInlineItem& item,
       shaper.Shape(&style.GetFont(), direction);
   NGTextFragmentBuilder builder(node_, constraint_space_.GetWritingMode());
   builder.SetText(item.GetLayoutObject(), hyphen_string, &style,
-                  std::move(hyphen_result));
+                  /* is_ellipsis_style */ false, std::move(hyphen_result));
   SetLineEndFragment(builder.ToTextFragment(), line_info);
 }
 
@@ -968,7 +968,8 @@ void NGLineBreaker::TruncateOverflowingText(NGLineInfo* line_info) {
   // This is stored seprately from other results so that it can be appended
   // after bidi reorder.
   NGTextFragmentBuilder builder(node_, constraint_space_.GetWritingMode());
-  builder.SetText(layout_object, ellipsis, style, std::move(shape_result));
+  builder.SetText(layout_object, ellipsis, style, true /* is_ellipsis_style */,
+                  std::move(shape_result));
   SetLineEndFragment(builder.ToTextFragment(), line_info);
 }
 

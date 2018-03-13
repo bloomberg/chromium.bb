@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -182,6 +183,7 @@ void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        const ComputedStyle& style,
+                                       NGStyleVariant style_variant,
                                        NGPhysicalSize size,
                                        NGFragmentType type,
                                        unsigned sub_type,
@@ -193,7 +195,8 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       type_(type),
       sub_type_(sub_type),
       is_old_layout_root_(false),
-      is_placed_(false) {}
+      is_placed_(false),
+      style_variant_((unsigned)style_variant) {}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.
@@ -218,6 +221,16 @@ void NGPhysicalFragment::Destroy() const {
 
 const ComputedStyle& NGPhysicalFragment::Style() const {
   DCHECK(style_);
+  if (!GetLayoutObject())
+    return *style_;
+  switch ((NGStyleVariant)style_variant_) {
+    case NGStyleVariant::kStandard:
+      return *GetLayoutObject()->Style();
+    case NGStyleVariant::kFirstLine:
+      return *GetLayoutObject()->FirstLineStyle();
+    case NGStyleVariant::kEllipsis:
+      return *style_;
+  }
   return *style_;
 }
 

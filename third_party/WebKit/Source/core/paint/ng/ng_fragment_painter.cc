@@ -64,11 +64,11 @@ children with outlines.
   // Collect and group outline rects.
   for (auto& paint_descendant :
        NGPaintFragmentTraversal::DescendantsOf(paint_fragment_)) {
-    const ComputedStyle& descendant_style = paint_descendant.fragment->Style();
     if (!paint_descendant.fragment->PhysicalFragment().IsBox() ||
         paint_descendant.fragment->PhysicalFragment().IsAtomicInline())
       continue;
 
+    const ComputedStyle& descendant_style = paint_descendant.fragment->Style();
     if (!descendant_style.HasOutline() ||
         descendant_style.Visibility() != EVisibility::kVisible)
       continue;

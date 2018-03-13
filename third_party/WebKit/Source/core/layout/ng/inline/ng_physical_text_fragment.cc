@@ -73,6 +73,14 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   return {};
 }
 
+scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::CloneWithoutOffset()
+    const {
+  return base::AdoptRef(new NGPhysicalTextFragment(
+      layout_object_, Style(), static_cast<NGStyleVariant>(style_variant_),
+      TextType(), text_, start_offset_, end_offset_, size_, LineOrientation(),
+      EndEffect(), shape_result_));
+}
+
 bool NGPhysicalTextFragment::IsAnonymousText() const {
   // TODO(xiaochengh): Introduce and set a flag for anonymous text.
   const LayoutObject* layout_object = GetLayoutObject();

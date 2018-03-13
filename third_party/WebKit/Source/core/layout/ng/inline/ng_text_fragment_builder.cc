@@ -47,7 +47,7 @@ void NGTextFragmentBuilder::SetItem(
   item_index_ = item_result->item_index;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;
-  SetStyle(item_result->item->Style());
+  SetStyle(item_result->item->Style(), item_result->item->StyleVariant());
   size_ = {item_result->inline_size, line_height};
   end_effect_ = item_result->text_end_effect;
   shape_result_ = std::move(item_result->shape_result);
@@ -58,6 +58,7 @@ void NGTextFragmentBuilder::SetText(
     LayoutObject* layout_object,
     const String& text,
     scoped_refptr<const ComputedStyle> style,
+    bool is_ellipsis_style,
     scoped_refptr<const ShapeResult> shape_result) {
   DCHECK(layout_object);
   DCHECK(style);
@@ -68,7 +69,8 @@ void NGTextFragmentBuilder::SetText(
   item_index_ = std::numeric_limits<unsigned>::max();
   start_offset_ = shape_result->StartIndexForResult();
   end_offset_ = shape_result->EndIndexForResult();
-  SetStyle(style);
+  SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
+                                    : NGStyleVariant::kStandard);
   FontBaseline baseline_type = style->IsHorizontalWritingMode()
                                    ? kAlphabeticBaseline
                                    : kIdeographicBaseline;
@@ -82,8 +84,8 @@ void NGTextFragmentBuilder::SetText(
 scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment() {
   scoped_refptr<NGPhysicalTextFragment> fragment =
       base::AdoptRef(new NGPhysicalTextFragment(
-          layout_object_, Style(), text_type_, text_, start_offset_,
-          end_offset_, size_.ConvertToPhysical(GetWritingMode()),
+          layout_object_, Style(), style_variant_, text_type_, text_,
+          start_offset_, end_offset_, size_.ConvertToPhysical(GetWritingMode()),
           ToLineOrientation(GetWritingMode()), end_effect_,
           std::move(shape_result_)));
   return fragment;
