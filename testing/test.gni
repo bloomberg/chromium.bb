@@ -10,6 +10,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
+  import("//build/config/android/extract_unwind_tables.gni")
 }
 
 if (is_fuchsia) {
@@ -100,6 +101,18 @@ template("test") {
         "write_asset_list",
         "use_native_activity",
       ]
+
+      # Adds the unwind tables from unstripped binary as an asset file in the
+      # apk, if |add_unwind_tables_in_apk| is specified by the test.
+      if (defined(invoker.add_unwind_tables_in_apk) &&
+          invoker.add_unwind_tables_in_apk) {
+        _unwind_table_asset_name = "${target_name}_unwind_assets"
+        unwind_table_asset(_unwind_table_asset_name) {
+          testonly = true
+          library_target = _library_target
+        }
+      }
+
       shared_library(_library_target) {
         # Configs will always be defined since we set_defaults in BUILDCONFIG.gn.
         configs = []  # Prevent list overwriting warning.
@@ -128,6 +141,10 @@ template("test") {
 
         # Add the Java classes so that each target does not have to do it.
         deps += [ "//base/test:test_support_java" ]
+
+        if (defined(_unwind_table_asset_name)) {
+          deps += [ ":${_unwind_table_asset_name}" ]
+        }
 
         # TODO(agrieve): Remove this data_dep once bots don't build the _apk
         #     target (post-GYP).

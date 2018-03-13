@@ -2830,7 +2830,6 @@ if (enable_java_templates) {
 
     android_apk(target_name) {
       data_deps = []
-      deps = []
       forward_variables_from(invoker, "*")
       testonly = true
       create_apk_script = false
