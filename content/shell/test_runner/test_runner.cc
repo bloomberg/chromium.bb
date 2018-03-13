@@ -99,7 +99,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   static void Install(base::WeakPtr<TestRunner> test_runner,
                       base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
                       WebLocalFrame* frame,
-                      bool is_web_platform_tests_mode);
+                      bool is_wpt_reftest);
 
  private:
   explicit TestRunnerBindings(
@@ -292,7 +292,7 @@ void TestRunnerBindings::Install(
     base::WeakPtr<TestRunner> test_runner,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
     WebLocalFrame* frame,
-    bool is_web_platform_tests_mode) {
+    bool is_wpt_reftest) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -312,33 +312,44 @@ void TestRunnerBindings::Install(
 
   global->Set(gin::StringToV8(isolate, "testRunner"), v8_bindings);
 
-  // The web-platform-tests suite require that reference comparison is delayed
-  // for any test with a 'reftest-wait' class on the root element, until that
-  // class attribute is removed. To support this approach, we inject some
-  // JavaScript that implements the same behavior using TestRunner.
+  // Inject some JavaScript to the top-level frame of a reftest in the
+  // web-platform-tests suite to have the same reftest screenshot timing as
+  // upstream WPT:
   //
-  // See http://web-platform-tests.org/writing-tests/reftests.html for more
-  // details about reference tests in the web-platform-tests suite.
-  if (is_web_platform_tests_mode) {
+  // 1. For normal reftest, we would like to take screenshots after web fonts
+  //    are loaded, i.e. replicate the behavior of this injected script:
+  //    https://github.com/w3c/web-platform-tests/blob/master/tools/wptrunner/wptrunner/executors/reftest-wait_webdriver.js
+  // 2. For reftests with a 'reftest-wait' class on the root element, reference
+  //    comparison is delayed until that class attribute is removed. To support
+  //    this feature, we use a mutation observer.
+  //    http://web-platform-tests.org/writing-tests/reftests.html#controlling-when-comparison-occurs
+  //
+  // Note that this method may be called multiple times on a frame, so we put
+  // the code behind a flag. The flag is safe to be installed on testRunner
+  // because WPT reftests never access this object.
+  if (is_wpt_reftest && !frame->Parent()) {
     frame->ExecuteScript(blink::WebString(
-        R"(window.addEventListener('load', function() {
-          if (!window.testRunner) {
-            return;
-          }
-          const target = document.documentElement;
-          if (target != null && target.classList.contains('reftest-wait')) {
+        R"(if (!window.testRunner._wpt_reftest_setup) {
+          window.testRunner._wpt_reftest_setup = true;
+
+          window.addEventListener('load', function() {
             window.testRunner.waitUntilDone();
-            const observer = new MutationObserver(function(mutations) {
-              mutations.forEach(function(mutation) {
-                if (!target.classList.contains('reftest-wait')) {
-                  window.testRunner.notifyDone();
-                }
+            const target = document.documentElement;
+            if (target != null && target.classList.contains('reftest-wait')) {
+              const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                  if (!target.classList.contains('reftest-wait')) {
+                    window.testRunner.notifyDone();
+                  }
+                });
               });
-            });
-            const config = {attributes: true};
-            observer.observe(target, config);
-          }
-        });)"));
+              const config = {attributes: true};
+              observer.observe(target, config);
+            } else {
+              document.fonts.ready.then(() => window.testRunner.notifyDone());
+            }
+          });
+        })"));
   }
 }
 
@@ -1583,8 +1594,11 @@ TestRunner::~TestRunner() {}
 void TestRunner::Install(
     WebLocalFrame* frame,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
+  // In WPT, only reftests generate pixel results.
+  bool is_wpt_reftest =
+      is_web_platform_tests_mode() && ShouldGeneratePixelResults();
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, is_web_platform_tests_mode());
+                              frame, is_wpt_reftest);
   mock_screen_orientation_client_->OverrideAssociatedInterfaceProviderForFrame(
       frame);
 }
