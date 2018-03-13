@@ -73,8 +73,8 @@ class PLATFORM_EXPORT Visitor {
   explicit Visitor(ThreadState* state) : state_(state) {}
   virtual ~Visitor() = default;
 
-  inline ThreadState* GetState() const { return state_; }
-  inline ThreadHeap& Heap() const { return GetState()->Heap(); }
+  inline ThreadState* State() const { return state_; }
+  inline ThreadHeap& Heap() const { return state_->Heap(); }
 
   // Static visitor implementation forwarding to dynamic interface.
 
