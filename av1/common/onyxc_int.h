@@ -134,9 +134,7 @@ typedef struct {
   unsigned int cur_frame_offset;
   unsigned int ref_frame_offset[INTER_REFS_PER_FRAME];
 
-  uint8_t allow_mvs;
   MV_REF *mvs;
-
 #if CONFIG_SEGMENT_PRED_LAST
   uint8_t *seg_map;
 #endif

@@ -4340,7 +4340,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   x->txb_split_count = 0;
   av1_zero(x->blk_skip_drl);
 
-  cm->cur_frame->allow_mvs = 1;
   av1_setup_motion_field(cm);
 
   cpi->all_one_sided_refs =

@@ -1184,21 +1184,12 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 }
 
-static void reset_use_mvs_flags(AV1_COMMON *cm) {
-  for (MV_REFERENCE_FRAME rf = LAST_FRAME; rf <= INTER_REFS_PER_FRAME; ++rf) {
-    int buf_idx = cm->frame_refs[FWD_RF_OFFSET(rf)].idx;
-    if (buf_idx >= 0) cm->buffer_pool->frame_bufs[buf_idx].allow_mvs = 0;
-  }
-}
-
 void av1_setup_past_independence(AV1_COMMON *cm) {
   // Reset the segment feature data to the default stats:
   // Features disabled, 0, with delta coding (Default state).
   struct loopfilter *const lf = &cm->lf;
 
   av1_clearall_segfeatures(&cm->seg);
-
-  reset_use_mvs_flags(cm);
 
 #if CONFIG_SEGMENT_PRED_LAST
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
