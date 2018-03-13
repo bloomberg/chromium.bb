@@ -89,35 +89,9 @@ Current patches:
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
 
-  libavformat/mov.c
-    find_prev_closest_index(): It's possible *ctts_index == ctts_count. Thus add
-    a check to prevent access violation. https://crbug.com/804097
-
-  libavcodec/h264_cavlc.c
-    When ff_h264_decode_mb_cavlc() failed due to wrong sl->qscale values, e.g.
-    dquant out of range, set the qscale to be a valid value before returning -1
-    and exiting the function. The qscale value can be used later, e.g. in loop
-    filter and keeping an invalid qscale could cause trouble.
-    https://crbug.com/806122
-
-  libavformat/mov.c
-    mov_read_stts(): Fix stts memory allocation (use i + 1 instead of i).
-    https://crbug.com/801821
-
-  libavcodec/h264_cabac.c
-    decode_cabac_residual_internal(): Limit the value of |j| to avoid integer
-    overflow. https://crbug.com/806580
-
   libavcodec/mpegaudio_parser.c
     mpegaudio_parse(): Drop trailing garbage on flush. Submitted upstream, so
     should be present for M67 ffmpeg roll. http://crbug.com/794782
-
-  libavformat/mov.c
-    mov_read_trun(): Fix memset size on ctts_data. https://crbug.com/812567
-
-  libavformat/mov.c
-    mov_build_index(): Initialize the allocated new ctts_data when constructing
-    the normalized 1-1 version.  https://crbug.com/816787
 
   libavformat/oggparseflac.c
     flac_header(): Free extradata before reallocating. https://crbug.com/789835
