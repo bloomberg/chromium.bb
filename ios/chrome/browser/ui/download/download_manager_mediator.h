@@ -60,6 +60,10 @@ class DownloadManagerMediator : public web::DownloadTaskObserver {
   // Converts DownloadTask progress [0;100] to float progress [0.0f;1.0f].
   float GetDownloadManagerProgress() const;
 
+  // Returns accessibility announcement for download state change. -1 if there
+  // is no announcement.
+  int GetDownloadManagerA11yAnnouncement() const;
+
   // web::DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override;
   void OnDownloadDestroyed(web::DownloadTask* task) override;
