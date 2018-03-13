@@ -1127,6 +1127,7 @@ bool AXObject::CanSetSelectedAttribute() const {
   return IsSubWidget(RoleValue()) && Restriction() != kDisabled;
 }
 
+// static
 bool AXObject::IsSubWidget(AccessibilityRole role) {
   switch (role) {
     case kCellRole:
@@ -1634,9 +1635,8 @@ int AXObject::IndexInParent() const {
   int child_count = siblings.size();
 
   for (int index = 0; index < child_count; ++index) {
-    if (siblings[index].Get() == this) {
+    if (siblings[index].Get() == this)
       return index;
-    }
   }
   return 0;
 }
@@ -2500,11 +2500,13 @@ int AXObject::LineForPosition(const VisiblePosition& position) const {
   return line_count;
 }
 
+// static
 bool AXObject::IsARIAControl(AccessibilityRole aria_role) {
   return IsARIAInput(aria_role) || aria_role == kButtonRole ||
          aria_role == kComboBoxMenuButtonRole || aria_role == kSliderRole;
 }
 
+// static
 bool AXObject::IsARIAInput(AccessibilityRole aria_role) {
   return aria_role == kRadioButtonRole || aria_role == kCheckBoxRole ||
          aria_role == kTextFieldRole || aria_role == kSwitchRole ||
@@ -2731,12 +2733,14 @@ AccessibilityRole AXObject::ButtonRoleType() const {
   return kButtonRole;
 }
 
+// static
 const AtomicString& AXObject::RoleName(AccessibilityRole role) {
   static const Vector<AtomicString>* role_name_vector = CreateRoleNameVector();
 
   return role_name_vector->at(role);
 }
 
+// static
 const AtomicString& AXObject::InternalRoleName(AccessibilityRole role) {
   static const Vector<AtomicString>* internal_role_name_vector =
       CreateInternalRoleNameVector();
@@ -2744,8 +2748,100 @@ const AtomicString& AXObject::InternalRoleName(AccessibilityRole role) {
   return internal_role_name_vector->at(role);
 }
 
+// static
+const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
+                                               const AXObject& second,
+                                               int* index_in_ancestor1,
+                                               int* index_in_ancestor2) {
+  *index_in_ancestor1 = -1;
+  *index_in_ancestor2 = -1;
+
+  if (first.IsDetached() || second.IsDetached())
+    return nullptr;
+
+  if (first == second)
+    return &first;
+
+  HeapVector<Member<const AXObject>> ancestors1;
+  ancestors1.push_back(&first);
+  while (ancestors1.back())
+    ancestors1.push_back(ancestors1.back()->ParentObjectUnignored());
+
+  HeapVector<Member<const AXObject>> ancestors2;
+  ancestors2.push_back(&second);
+  while (ancestors2.back())
+    ancestors2.push_back(ancestors2.back()->ParentObjectUnignored());
+
+  const AXObject* common_ancestor = nullptr;
+  while (!ancestors1.IsEmpty() && !ancestors2.IsEmpty() &&
+         ancestors1.back() == ancestors2.back()) {
+    common_ancestor = ancestors1.back();
+    ancestors1.pop_back();
+    ancestors2.pop_back();
+  }
+
+  if (common_ancestor) {
+    if (!ancestors1.IsEmpty())
+      *index_in_ancestor1 = ancestors1.back()->IndexInParent();
+    if (!ancestors2.IsEmpty())
+      *index_in_ancestor2 = ancestors2.back()->IndexInParent();
+  }
+
+  return common_ancestor;
+}
+
 VisiblePosition AXObject::VisiblePositionForIndex(int) const {
   return VisiblePosition();
+}
+
+bool operator==(const AXObject& first, const AXObject& second) {
+  if (first.IsDetached() || second.IsDetached())
+    return false;
+  if (&first == &second) {
+    DCHECK_EQ(first.AXObjectID(), second.AXObjectID());
+    return true;
+  }
+  return false;
+}
+
+bool operator!=(const AXObject& first, const AXObject& second) {
+  return !(first == second);
+}
+
+bool operator<(const AXObject& first, const AXObject& second) {
+  if (first.IsDetached() || second.IsDetached())
+    return false;
+
+  int index_in_ancestor1, index_in_ancestor2;
+  const AXObject* ancestor = AXObject::LowestCommonAncestor(
+      first, second, &index_in_ancestor1, &index_in_ancestor2);
+  DCHECK_GE(index_in_ancestor1, -1);
+  DCHECK_GE(index_in_ancestor2, -1);
+  if (!ancestor)
+    return false;
+  return index_in_ancestor1 < index_in_ancestor2;
+}
+
+bool operator<=(const AXObject& first, const AXObject& second) {
+  return first == second || first < second;
+}
+
+bool operator>(const AXObject& first, const AXObject& second) {
+  if (first.IsDetached() || second.IsDetached())
+    return false;
+
+  int index_in_ancestor1, index_in_ancestor2;
+  const AXObject* ancestor = AXObject::LowestCommonAncestor(
+      first, second, &index_in_ancestor1, &index_in_ancestor2);
+  DCHECK_GE(index_in_ancestor1, -1);
+  DCHECK_GE(index_in_ancestor2, -1);
+  if (!ancestor)
+    return false;
+  return index_in_ancestor1 > index_in_ancestor2;
+}
+
+bool operator>=(const AXObject& first, const AXObject& second) {
+  return first == second || first > second;
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {

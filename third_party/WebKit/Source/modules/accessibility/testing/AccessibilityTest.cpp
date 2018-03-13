@@ -61,10 +61,9 @@ std::ostringstream& AccessibilityTest::PrintAXTreeHelper(
 
   stream << std::string(level * 2, '+');
   stream << *root << std::endl;
-  for (const auto child : const_cast<AXObject*>(root)->Children()) {
+  for (const Member<AXObject> child : root->Children()) {
     DCHECK(child);
     PrintAXTreeHelper(stream, child.Get(), level + 1);
-    stream << std::endl;
   }
   return stream;
 }
