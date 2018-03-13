@@ -140,8 +140,13 @@ class DialogLauncher : public content::NotificationObserver {
       auto* service =
           arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
               profile_);
-      if (service)
+      if (service) {
         service->StartVoiceInteractionOobe();
+      } else {
+        // Try launching the tutorial in case the voice interaction framework
+        // service is unavailable. See https://crbug.com/809756.
+        TryLaunchFirstRunDialog(profile_);
+      }
     } else {
       TryLaunchFirstRunDialog(profile_);
     }
