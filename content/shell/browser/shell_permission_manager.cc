@@ -25,7 +25,8 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
          // default.
          // TODO(nsatragno): add a command line flag so that it's only granted
          // for tests.
-         permission == PermissionType::BACKGROUND_SYNC;
+         permission == PermissionType::BACKGROUND_SYNC ||
+         permission == PermissionType::ACCESSIBILITY_EVENTS;
 }
 
 }  // namespace

@@ -228,3 +228,30 @@ async_test(function(t) {
   });
 }, "AOM event bubbling respects aria-owns over DOM parent chain");
 </script>
+
+<p id="container7" aria-label="Container7"></p>
+
+<script>
+async_test(function(t) {
+  enableAccessibilityEventsPermission().then(function() {
+    var container7 = document.getElementById("container7");
+    var axContainer7 = accessibilityController.accessibleElementById(
+        "container7");
+
+    var virtualNode = new AccessibleNode();
+    virtualNode.role = "button";
+    virtualNode.label = "Button7";
+    container7.accessibleNode.appendChild(virtualNode);
+    var axVirtualNode = axContainer7.childAtIndex(0);
+
+    var success = false;
+    virtualNode.onaccessibleclick = function() {
+      success = true;
+    };
+    axVirtualNode.press();
+
+    assert_true(success);
+    t.done();
+  });
+}, "AccessibleNode.onaccessibleclick on virtual node");
+</script>

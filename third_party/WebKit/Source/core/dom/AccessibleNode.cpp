@@ -991,6 +991,13 @@ void AccessibleNode::appendChild(AccessibleNode* child,
     return;
   }
 
+  if (child->parent_) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Reparenting is not supported yet.");
+    return;
+  }
+  child->parent_ = this;
+
   if (!GetDocument()->GetSecurityOrigin()->CanAccess(
           child->GetDocument()->GetSecurityOrigin())) {
     exception_state.ThrowDOMException(
@@ -1036,7 +1043,13 @@ const AtomicString& AccessibleNode::InterfaceName() const {
 }
 
 ExecutionContext* AccessibleNode::GetExecutionContext() const {
-  return element_->GetExecutionContext();
+  if (element_)
+    return element_->GetExecutionContext();
+
+  if (parent_)
+    return parent_->GetExecutionContext();
+
+  return nullptr;
 }
 
 void AccessibleNode::SetStringProperty(AOMStringProperty property,
@@ -1144,6 +1157,7 @@ void AccessibleNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(relation_properties_);
   visitor->Trace(relation_list_properties_);
   visitor->Trace(children_);
+  visitor->Trace(parent_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

@@ -873,17 +873,11 @@ const AXObject* AXObject::InertRoot() const {
   return nullptr;
 }
 
-bool AXObject::DispatchEventToAOMEventListeners(Event& event,
-                                                Element* target_element) {
+bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   HeapVector<Member<AccessibleNode>> event_path;
   for (AXObject* ancestor = this; ancestor;
        ancestor = ancestor->ParentObject()) {
-    Element* ancestor_element = ancestor->GetElement();
-    if (!ancestor_element)
-      continue;
-
-    AccessibleNode* ancestor_accessible_node =
-        ancestor_element->ExistingAccessibleNode();
+    AccessibleNode* ancestor_accessible_node = ancestor->GetAccessibleNode();
     if (!ancestor_accessible_node)
       continue;
 
@@ -916,13 +910,13 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event,
   // AccessibleNode for the target element and create it if necessary -
   // otherwise we wouldn't be able to set the event target. However note
   // that if it didn't previously exist it won't be part of the event path.
-  if (!target_element)
-    target_element = GetElement();
-  AccessibleNode* target = nullptr;
-  if (target_element) {
-    target = target_element->accessibleNode();
-    event.SetTarget(target);
+  AccessibleNode* target = GetAccessibleNode();
+  if (!target) {
+    Element* element = GetElement();
+    if (element)
+      target = element->accessibleNode();
   }
+  event.SetTarget(target);
 
   // Capturing phase.
   event.SetEventPhase(Event::kCapturingPhase);
@@ -2263,24 +2257,17 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 //
 
 bool AXObject::RequestDecrementAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibledecrement);
-    if (DispatchEventToAOMEventListeners(*event, element)) {
-      return true;
-    }
-  }
+  Event* event = Event::CreateCancelable(EventTypeNames::accessibledecrement);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeDecrementAction();
 }
 
 bool AXObject::RequestClickAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
+  Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeClickAction();
 }
@@ -2310,23 +2297,17 @@ bool AXObject::OnNativeClickAction() {
 }
 
 bool AXObject::RequestFocusAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessiblefocus);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
+  Event* event = Event::CreateCancelable(EventTypeNames::accessiblefocus);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeFocusAction();
 }
 
 bool AXObject::RequestIncrementAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibleincrement);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
+  Event* event = Event::CreateCancelable(EventTypeNames::accessibleincrement);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeIncrementAction();
 }
@@ -2336,13 +2317,10 @@ bool AXObject::RequestScrollToGlobalPointAction(const IntPoint& point) {
 }
 
 bool AXObject::RequestScrollToMakeVisibleAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event =
-        Event::CreateCancelable(EventTypeNames::accessiblescrollintoview);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
+  Event* event =
+      Event::CreateCancelable(EventTypeNames::accessiblescrollintoview);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeScrollToMakeVisibleAction();
 }
@@ -2369,13 +2347,9 @@ bool AXObject::RequestSetValueAction(const String& value) {
 }
 
 bool AXObject::RequestShowContextMenuAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event =
-        Event::CreateCancelable(EventTypeNames::accessiblecontextmenu);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
+  Event* event = Event::CreateCancelable(EventTypeNames::accessiblecontextmenu);
+  if (DispatchEventToAOMEventListeners(*event))
+    return true;
 
   return OnNativeShowContextMenuAction();
 }

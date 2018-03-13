@@ -74,3 +74,26 @@ test(function(t) {
     assert_equals(axListItem2.role, "AXRole: AXListItem");
 }, "Create a virtual list using AccessibleNodes");
 </script>
+
+<script>
+test(function(t) {
+    var container = document.getElementById("container2");
+
+    var list1 = new AccessibleNode();
+    list1.role = "list";
+    container.accessibleNode.appendChild(list1);
+
+    var list2 = new AccessibleNode();
+    list2.role = "list";
+    container.accessibleNode.appendChild(list2);
+
+    var item = new AccessibleNode();
+    item.role = "listitem";
+    list1.appendChild(item);
+
+    // TODO: support reparenting and then fix this test.
+    assert_throws('NotSupportedError', function() {
+      list2.appendChild(item);
+    });
+}, "Reparenting is not supported yet");
+</script>

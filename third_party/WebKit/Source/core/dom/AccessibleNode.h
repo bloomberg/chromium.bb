@@ -388,6 +388,10 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   // This object's AccessibleNode children, which must be only virtual
   // AccessibleNodes (with no associated Element).
   HeapVector<Member<AccessibleNode>> children_;
+
+  // This object's AccessibleNode parent. Only set if this is a
+  // virtual AccessibleNode that's in the tree.
+  Member<AccessibleNode> parent_;
 };
 
 }  // namespace blink
