@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_theme.h"
 
 @protocol GridImageDataSource;
+@class GridTransitionLayout;
 @class GridViewController;
 
 // Protocol used to relay relevant user interactions from a grid UI.
@@ -45,6 +46,13 @@
 @property(nonatomic, weak) id<GridViewControllerDelegate> delegate;
 // Data source for images.
 @property(nonatomic, weak) id<GridImageDataSource> imageDataSource;
+// YES if the selected cell is visible in the grid.
+@property(nonatomic, readonly, getter=isSelectedCellVisible)
+    BOOL selectedCellVisible;
+
+// Returns the layout of the grid for use in an animated transition.
+- (GridTransitionLayout*)transitionLayout;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_VIEW_CONTROLLER_H_

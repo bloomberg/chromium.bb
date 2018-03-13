@@ -30,6 +30,11 @@
 @property(nonatomic, weak) UIImage* icon;
 @property(nonatomic, weak) UIImage* snapshot;
 @property(nonatomic, copy) NSString* title;
+
+// Returns a cell with the same theme, icon, snapshot, and title as the reciever
+// (but no delegate or identifier) for use in animated transitions.
+- (GridCell*)proxyForTransitions;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CELL_H_

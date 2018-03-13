@@ -142,10 +142,39 @@ NSString* const kTabGridDoneButtonAccessibilityID =
   }
 }
 
-#pragma mark - TabGridTransitionStateProvider properties
+#pragma mark - GridTransitionStateProviding properties
 
-- (BOOL)selectedTabVisible {
-  return NO;
+- (BOOL)isSelectedCellVisible {
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      return self.incognitoTabsViewController.selectedCellVisible;
+    case TabGridPageRegularTabs:
+      return self.regularTabsViewController.selectedCellVisible;
+    case TabGridPageRemoteTabs:
+      return NO;
+  }
+}
+
+- (GridTransitionLayout*)layoutForTransitionContext:
+    (id<UIViewControllerContextTransitioning>)context {
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      return [self.incognitoTabsViewController transitionLayout];
+    case TabGridPageRegularTabs:
+      return [self.regularTabsViewController transitionLayout];
+    case TabGridPageRemoteTabs:
+      return nil;
+  }
+}
+
+- (UIView*)proxyContainerForTransitionContext:
+    (id<UIViewControllerContextTransitioning>)context {
+  return self.view;
+}
+
+- (UIView*)proxyPositionForTransitionContext:
+    (id<UIViewControllerContextTransitioning>)context {
+  return self.scrollView;
 }
 
 #pragma mark - Public
@@ -458,29 +487,38 @@ NSString* const kTabGridDoneButtonAccessibilityID =
 // interact with the layout system at all.
 - (void)animateToolbarsForAppearance {
   DCHECK(self.transitionCoordinator);
+  // TODO(crbug.com/820410): Tune the timing of these animations.
+
   // Capture the current toolbar transforms.
   CGAffineTransform topToolbarBaseTransform = self.topToolbar.transform;
   CGAffineTransform bottomToolbarBaseTransform = self.bottomToolbar.transform;
   // Translate the top toolbar up offscreen by shifting it up by its height.
-  self.topToolbar.transform =
-      CGAffineTransformTranslate(self.topToolbar.transform, /*tx=*/0,
-                                 /*ty=*/-self.topToolbar.bounds.size.height);
+  self.topToolbar.transform = CGAffineTransformTranslate(
+      self.topToolbar.transform, /*tx=*/0,
+      /*ty=*/-(self.topToolbar.bounds.size.height * 0.5));
   // Translate the bottom toolbar down offscreen by shifting it down by its
   // height.
-  self.bottomToolbar.transform =
-      CGAffineTransformTranslate(self.bottomToolbar.transform, /*tx=*/0,
-                                 /*ty=*/self.topToolbar.bounds.size.height);
+  self.bottomToolbar.transform = CGAffineTransformTranslate(
+      self.bottomToolbar.transform, /*tx=*/0,
+      /*ty=*/(self.topToolbar.bounds.size.height * 0.5));
+
   // Block that restores the toolbar transforms, suitable for using with the
   // transition coordinator.
-  void (^animation)(id<UIViewControllerTransitionCoordinatorContext>) =
-      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        self.topToolbar.transform = topToolbarBaseTransform;
-        self.bottomToolbar.transform = bottomToolbarBaseTransform;
-      };
-  // Animate the toolbars into place alongside the current transition by
-  // restoring their transforms.
+  auto animation = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    self.topToolbar.transform = topToolbarBaseTransform;
+    self.bottomToolbar.transform = bottomToolbarBaseTransform;
+  };
+
+  // Also hide the scroll view (and thus the tab grids) until the transition
+  // completes.
+  self.scrollView.hidden = YES;
+  auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    self.scrollView.hidden = NO;
+  };
+
+  // Animate the toolbars into place alongside the current transition.
   [self.transitionCoordinator animateAlongsideTransition:animation
-                                              completion:nil];
+                                              completion:cleanup];
 }
 
 // Update |enabled| property of the done and close all buttons.
