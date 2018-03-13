@@ -1034,3 +1034,22 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 }
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
+                       PersistentNotificationServiceWorkerScope) {
+  RequestAndAcceptPermission();
+
+  // Creates a simple notification.
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications(true /* is_persistent */);
+  ASSERT_EQ(1u, notifications.size());
+
+  EXPECT_EQ(
+      TestPageUrl(),
+      PersistentNotificationMetadata::From(
+          display_service_tester_->GetMetadataForNotification(notifications[0]))
+          ->service_worker_scope);
+}
