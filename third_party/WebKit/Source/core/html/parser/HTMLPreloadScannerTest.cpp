@@ -74,6 +74,11 @@ struct ContextTestCase {
   bool is_image_set;
 };
 
+struct IntegrityTestCase {
+  size_t number_of_integrity_metadata_found;
+  const char* input_html;
+};
+
 class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
  public:
   void PreloadRequestVerification(Resource::Type type,
@@ -164,6 +169,14 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   void ContextVerification(bool is_image_set) {
     ASSERT_TRUE(preload_request_.get());
     EXPECT_EQ(preload_request_->IsImageSetForTestingOnly(), is_image_set);
+  }
+
+  void CheckNumberOfIntegrityConstraints(size_t expected) {
+    size_t actual = 0;
+    if (preload_request_) {
+      actual = preload_request_->IntegrityMetadataForTestingOnly().size();
+      EXPECT_EQ(expected, actual);
+    }
   }
 
  protected:
@@ -305,6 +318,18 @@ class HTMLPreloadScannerTest : public PageTestBase {
     preloader.TakeAndPreload(requests);
 
     preloader.ContextVerification(test_case.is_image_set);
+  }
+
+  void Test(IntegrityTestCase test_case) {
+    SCOPED_TRACE(test_case.input_html);
+    HTMLMockHTMLResourcePreloader preloader;
+    KURL base_url("http://example.test/");
+    scanner_->AppendToEnd(String(test_case.input_html));
+    PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
+    preloader.TakeAndPreload(requests);
+
+    preloader.CheckNumberOfIntegrityConstraints(
+        test_case.number_of_integrity_metadata_found);
   }
 
  private:
@@ -1074,6 +1099,30 @@ TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
       kReferrerPolicyAlways,
       "http://whatever.test/"};
   Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, Integrity) {
+  IntegrityTestCase test_cases[] = {
+      {0, "<script src=bla.js>"},
+      {1,
+       "<script src=bla.js "
+       "integrity=sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=>"},
+      {0, "<script src=bla.js integrity=sha257-XXX>"},
+      {2,
+       "<script src=bla.js "
+       "integrity=sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng= "
+       "sha256-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxng=>"},
+      {1,
+       "<script src=bla.js "
+       "integrity=sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng= "
+       "integrity=sha257-XXXX>"},
+      {0,
+       "<script src=bla.js integrity=sha257-XXX "
+       "integrity=sha256-qznLcsROx4GACP2dm0UCKCzCG+HiZ1guq6ZZDob/Tng=>"},
+  };
+
+  for (const auto& test_case : test_cases)
+    Test(test_case);
 }
 
 }  // namespace blink
