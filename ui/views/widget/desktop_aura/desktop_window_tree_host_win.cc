@@ -955,6 +955,11 @@ bool DesktopWindowTreeHostWin::HandleScrollEvent(
   return event.handled();
 }
 
+bool DesktopWindowTreeHostWin::HandleGestureEvent(ui::GestureEvent* event) {
+  SendEventToSink(event);
+  return event->handled();
+}
+
 void DesktopWindowTreeHostWin::HandleWindowSizeChanging() {
   if (compositor())
     compositor()->DisableSwapUntilResize();

@@ -52,6 +52,10 @@ class DirectManipulationHandler
   DirectManipulationHandler();
   ~DirectManipulationHandler() override;
 
+  enum class Gesture { kNone, kScroll, kPinch };
+
+  void TransitionToState(Gesture gesture);
+
   HRESULT STDMETHODCALLTYPE
   OnViewportStatusChanged(_In_ IDirectManipulationViewport* viewport,
                           _In_ DIRECTMANIPULATION_STATUS current,
@@ -70,6 +74,9 @@ class DirectManipulationHandler
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
   bool first_ready_ = false;
+
+  // Current recognized gesture from Direct Manipulation.
+  Gesture gesture_state_ = Gesture::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHandler);
 };

@@ -1059,26 +1059,43 @@ void HWNDMessageHandler::HandleParentChanged() {
 }
 
 void HWNDMessageHandler::ApplyPinchZoomScale(float scale) {
-  // We fake a default ctrl+wheel event here. Offset 120 is the default scroll
-  // offset on Windows.
-  // TODO(chaopeng) Send pinch-zoom event here.
-  gfx::Vector2d offset =
-      scale > 1 ? gfx::Vector2d(120, 120) : gfx::Vector2d(-120, -120);
+  POINT cursor_pos = {0};
+  ::GetCursorPos(&cursor_pos);
+  ScreenToClient(hwnd(), &cursor_pos);
 
-  POINT root_location = {0};
-  ::GetCursorPos(&root_location);
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_PINCH_UPDATE);
+  event_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  event_details.set_scale(scale);
 
-  POINT location = {root_location.x, root_location.y};
-  ScreenToClient(hwnd(), &root_location);
+  ui::GestureEvent event(cursor_pos.x, cursor_pos.y, ui::EF_NONE,
+                         base::TimeTicks::Now(), event_details);
+  delegate_->HandleGestureEvent(&event);
+}
 
-  gfx::Point cursor_location(location);
-  gfx::Point cursor_root_location(root_location);
+void HWNDMessageHandler::ApplyPinchZoomBegin() {
+  POINT cursor_pos = {0};
+  ::GetCursorPos(&cursor_pos);
+  ScreenToClient(hwnd(), &cursor_pos);
 
-  ui::MouseWheelEvent wheel_event(offset, cursor_location, cursor_root_location,
-                                  base::TimeTicks::Now(), ui::EF_CONTROL_DOWN,
-                                  ui::EF_PRECISION_SCROLLING_DELTA);
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_PINCH_BEGIN);
+  event_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
 
-  delegate_->HandleMouseEvent(wheel_event);
+  ui::GestureEvent event(cursor_pos.x, cursor_pos.y, ui::EF_NONE,
+                         base::TimeTicks::Now(), event_details);
+  delegate_->HandleGestureEvent(&event);
+}
+
+void HWNDMessageHandler::ApplyPinchZoomEnd() {
+  POINT cursor_pos = {0};
+  ::GetCursorPos(&cursor_pos);
+  ScreenToClient(hwnd(), &cursor_pos);
+
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_PINCH_END);
+  event_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+
+  ui::GestureEvent event(cursor_pos.x, cursor_pos.y, ui::EF_NONE,
+                         base::TimeTicks::Now(), event_details);
+  delegate_->HandleGestureEvent(&event);
 }
 
 void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
