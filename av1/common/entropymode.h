@@ -235,6 +235,7 @@ typedef struct FRAME_COUNTS {
   unsigned int intrabc[2];
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
+  unsigned int intra_tx_size[MAX_TX_CATS][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
   unsigned int skip[SKIP_CONTEXTS][2];
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];

@@ -4793,14 +4793,16 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         }
       } else {
         intra_tx_size = mbmi->tx_size;
-        if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
-            tile_data->allow_update_cdf) {
+        if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id]) {
           const int tx_size_ctx = get_tx_size_context(xd);
           const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
           const int depth = tx_size_to_depth(intra_tx_size, bsize, 0);
           const int max_depths = bsize_to_max_depth(bsize, 0);
-          update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
-                     max_depths + 1);
+
+          if (tile_data->allow_update_cdf)
+            update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
+                       depth, max_depths + 1);
+          ++td->counts->intra_tx_size[tx_size_cat][tx_size_ctx][depth];
         }
       }
 
