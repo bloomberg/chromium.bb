@@ -356,26 +356,31 @@ void ServerObject::OnResourceDestroyed(wl_resource* resource) {
   obj->resource_ = nullptr;
 }
 
+template <class T>
+void SetImplementation(wl_resource* resource,
+                       const void* implementation,
+                       T* user_data) {
+  wl_resource_set_implementation(resource, implementation, user_data,
+                                 &ServerObject::OnResourceDestroyed);
+}
+
 MockXdgSurface::MockXdgSurface(wl_resource* resource,
                                const void* implementation)
     : ServerObject(resource) {
-  wl_resource_set_implementation(resource, implementation, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, implementation, this);
 }
 
 MockXdgSurface::~MockXdgSurface() {}
 
 MockXdgTopLevel::MockXdgTopLevel(wl_resource* resource)
     : MockXdgSurface(resource, &zxdg_surface_v6_impl) {
-  wl_resource_set_implementation(resource, &zxdg_toplevel_v6_impl, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, &zxdg_toplevel_v6_impl, this);
 }
 
 MockXdgTopLevel::~MockXdgTopLevel() {}
 
 MockSurface::MockSurface(wl_resource* resource) : ServerObject(resource) {
-  wl_resource_set_implementation(resource, &surface_impl, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, &surface_impl, this);
 }
 
 MockSurface::~MockSurface() {
@@ -390,22 +395,19 @@ MockSurface* MockSurface::FromResource(wl_resource* resource) {
 }
 
 MockPointer::MockPointer(wl_resource* resource) : ServerObject(resource) {
-  wl_resource_set_implementation(resource, &pointer_impl, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, &pointer_impl, this);
 }
 
 MockPointer::~MockPointer() {}
 
 MockKeyboard::MockKeyboard(wl_resource* resource) : ServerObject(resource) {
-  wl_resource_set_implementation(resource, &keyboard_impl, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, &keyboard_impl, this);
 }
 
 MockKeyboard::~MockKeyboard() {}
 
 MockTouch::MockTouch(wl_resource* resource) : ServerObject(resource) {
-  wl_resource_set_implementation(resource, &touch_impl, this,
-                                 &ServerObject::OnResourceDestroyed);
+  SetImplementation(resource, &touch_impl, this);
 }
 
 MockTouch::~MockTouch() {}
@@ -442,8 +444,7 @@ void Global::Bind(wl_client* client,
   }
   if (!global->resource_)
     global->resource_ = resource;
-  wl_resource_set_implementation(resource, global->implementation_, global,
-                                 &Global::OnResourceDestroyed);
+  SetImplementation(resource, global->implementation_, global);
   global->OnBind();
 }
 
