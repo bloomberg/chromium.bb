@@ -23,6 +23,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
@@ -325,18 +326,17 @@ TEST_F(ServiceWorkerHandleTest,
   EXPECT_EQ(remaining_time, version_->remaining_timeout());
 }
 
-// Constantly fails on Android/Linux CFI builder.  http://crbug.com/820620
-TEST_F(ServiceWorkerHandleTest,
-       DISABLED_DispatchExtendableMessageEvent_FromClient) {
+TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<ExtendableMessageEventTestHelper>());
   SetUpRegistration(pattern, script_url);
 
-  // Prepare a ServiceWorkerProviderHost for a window client. Use a real
-  // RenderFrameHost because it's needed to populate
-  // ExtendableMessageEvent#source.
+  // Prepare a ServiceWorkerProviderHost for a window client. A
+  // WebContents/RenderFrameHost must be created too because it's needed for
+  // DispatchExtendableMessageEvent to populate ExtendableMessageEvent#source.
+  RenderViewHostTestEnabler rvh_test_enabler;
   std::unique_ptr<WebContents> web_contents(
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
@@ -383,17 +383,17 @@ TEST_F(ServiceWorkerHandleTest,
             events[0]->source_info_for_client->client_type);
 }
 
-// Constantly fails on Android/Linux CFI builder.  http://crbug.com/820620
-TEST_F(ServiceWorkerHandleTest, DISABLED_DispatchExtendableMessageEvent_Fail) {
+TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<FailToStartWorkerTestHelper>());
   SetUpRegistration(pattern, script_url);
 
-  // Prepare a ServiceWorkerProviderHost for a window client. Use a real
-  // RenderFrameHost because it's needed to populate
-  // ExtendableMessageEvent#source.
+  // Prepare a ServiceWorkerProviderHost for a window client. A
+  // WebContents/RenderFrameHost must be created too because it's needed for
+  // DispatchExtendableMessageEvent to populate ExtendableMessageEvent#source.
+  RenderViewHostTestEnabler rvh_test_enabler;
   std::unique_ptr<WebContents> web_contents(
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
