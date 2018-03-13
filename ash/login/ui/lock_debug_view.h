@@ -21,7 +21,6 @@ class MdTextButton;
 namespace ash {
 
 class LoginDataDispatcher;
-class LoginDetachableBaseModel;
 class LockContentsView;
 
 namespace mojom {
@@ -31,10 +30,8 @@ enum class TrayActionState;
 // Contains the debug UI row (ie, add user, toggle PIN buttons).
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
-  LockDebugView(
-      mojom::TrayActionState initial_note_action_state,
-      LoginDataDispatcher* data_dispatcher,
-      std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
+  LockDebugView(mojom::TrayActionState initial_note_action_state,
+                LoginDataDispatcher* data_dispatcher);
   ~LockDebugView() override;
 
   // views::View:
@@ -47,9 +44,18 @@ class LockDebugView : public views::View, public views::ButtonListener {
 
  private:
   class DebugDataDispatcherTransformer;
+  class DebugLoginDetachableBaseModel;
 
   // Rebuilds the debug user column which contains per-user actions.
   void RebuildDebugUserColumn();
+
+  // Initializes the detachable base column - used for overriding detachable
+  // base pairing state.
+  void BuildDetachableBaseColumn();
+
+  // Updates buttons provided in detachable base column, depending on detected
+  // detachable base pairing state..
+  void UpdateDetachableBaseColumn();
 
   // Creates a button on the debug row that cannot be focused.
   views::MdTextButton* AddButton(const std::string& text,
@@ -61,6 +67,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
   views::View* per_user_action_column_ = nullptr;
   std::vector<views::View*> per_user_action_column_toggle_pin_;
   std::vector<views::View*> per_user_action_column_cycle_easy_unlock_state_;
+  std::vector<views::View*> per_user_action_column_use_detachable_base_;
 
   // Debug row which contains buttons that affect the entire UI.
   views::View* debug_row_ = nullptr;
@@ -72,8 +79,16 @@ class LockDebugView : public views::View, public views::ButtonListener {
   views::MdTextButton* remove_user_ = nullptr;
   views::MdTextButton* toggle_auth_ = nullptr;
 
+  // Cloumn that contains buttons for debuggon detachable base state.
+  views::View* detachable_base_column_ = nullptr;
+  views::MdTextButton* toggle_debug_detachable_base_ = nullptr;
+  views::MdTextButton* cycle_detachable_base_status_ = nullptr;
+  views::MdTextButton* cycle_detachable_base_id_ = nullptr;
+
   // Debug dispatcher and cached data for the UI.
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
+  // Reference to the detachable base model passed to (and owned by) lock_.
+  DebugLoginDetachableBaseModel* debug_detachable_base_model_ = nullptr;
   size_t num_users_ = 1u;
   size_t num_dev_channel_info_clicks_ = 0u;
   LoginScreenController::ForceFailAuth force_fail_auth_ =
