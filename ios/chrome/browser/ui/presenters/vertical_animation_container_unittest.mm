@@ -49,6 +49,11 @@ class VerticalAnimationContainerTest : public PlatformTest {
 };
 
 TEST_F(VerticalAnimationContainerTest, TestPreparation) {
+  // Presenter does not set width constrains, so set them manually.
+  const CGFloat base_view_width = base_.view.frame.size.width;
+  [presented_.view.widthAnchor constraintEqualToConstant:base_view_width]
+      .active = YES;
+
   [presenter_ prepareForPresentation];
 
   // General expectations for presentation prep.
@@ -57,7 +62,7 @@ TEST_F(VerticalAnimationContainerTest, TestPreparation) {
 
   // For vertical animation, the presented view should start below the
   // base view controller's view, and be the same width.
-  EXPECT_EQ(base_.view.frame.size.width, presented_.view.bounds.size.width);
+  EXPECT_EQ(base_view_width, CGRectGetWidth(presented_.view.bounds));
   EXPECT_EQ(presented_.view.frame.origin.x, 0);
   EXPECT_GE(presented_.view.frame.origin.y, base_.view.bounds.size.height);
 }

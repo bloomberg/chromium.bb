@@ -44,11 +44,6 @@ NSTimeInterval kAnimationDuration = 0.2;
   // The contents view will be sized and positioned by constraints.
   contents.translatesAutoresizingMaskIntoConstraints = NO;
 
-  // Sizing constraints never change, so they don't need to be stored.
-  // Height is sized by the contents of |contents|.
-  [contents.widthAnchor constraintEqualToAnchor:container.widthAnchor].active =
-      YES;
-
   // The horizontal position of the contents in the container also doesn't
   // change.
   [contents.centerXAnchor constraintEqualToAnchor:container.centerXAnchor]
