@@ -1457,63 +1457,28 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
   if (is_compound && mbmi->mode != GLOBAL_GLOBALMV) {
-    uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+    int ref_mv_idx = mbmi->ref_mv_idx + 1;
+    nearestmv[0] = xd->ref_mv_stack[ref_frame][0].this_mv;
+    nearestmv[1] = xd->ref_mv_stack[ref_frame][0].comp_mv;
 
-    if (xd->ref_mv_count[ref_frame_type] > 0) {
-      if (mbmi->mode == NEAREST_NEARESTMV) {
-        nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
-        nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
-#if CONFIG_AMVR
-        lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
-        lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
-#else
-        lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
-        lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
-#endif
-      } else if (mbmi->mode == NEAREST_NEWMV) {
-        nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
+    nearmv[0] = xd->ref_mv_stack[ref_frame][ref_mv_idx].this_mv;
+    nearmv[1] = xd->ref_mv_stack[ref_frame][ref_mv_idx].comp_mv;
 
 #if CONFIG_AMVR
-        lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
+    lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
+                       cm->cur_frame_force_integer_mv);
+    lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
+                       cm->cur_frame_force_integer_mv);
+    lower_mv_precision(&nearmv[0].as_mv, allow_hp,
+                       cm->cur_frame_force_integer_mv);
+    lower_mv_precision(&nearmv[1].as_mv, allow_hp,
+                       cm->cur_frame_force_integer_mv);
 #else
-        lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
+    lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
+    lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
+    lower_mv_precision(&nearmv[0].as_mv, allow_hp);
+    lower_mv_precision(&nearmv[1].as_mv, allow_hp);
 #endif
-      } else if (mbmi->mode == NEW_NEARESTMV) {
-        nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
-#if CONFIG_AMVR
-        lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
-#else
-        lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
-#endif
-      }
-    }
-
-    if (xd->ref_mv_count[ref_frame_type] > 1) {
-      int ref_mv_idx = 1 + mbmi->ref_mv_idx;
-      if (compound_ref0_mode(mbmi->mode) == NEARMV) {
-        nearmv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-#if CONFIG_AMVR
-        lower_mv_precision(&nearmv[0].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
-#else
-        lower_mv_precision(&nearmv[0].as_mv, allow_hp);
-#endif
-      }
-
-      if (compound_ref1_mode(mbmi->mode) == NEARMV) {
-        nearmv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-#if CONFIG_AMVR
-        lower_mv_precision(&nearmv[1].as_mv, allow_hp,
-                           cm->cur_frame_force_integer_mv);
-#else
-        lower_mv_precision(&nearmv[1].as_mv, allow_hp);
-#endif
-      }
-    }
   } else if (mbmi->ref_mv_idx > 0 && mbmi->mode == NEARMV) {
     int_mv cur_mv =
         xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;
