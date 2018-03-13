@@ -1370,6 +1370,7 @@ weston_desktop_xdg_shell_protocol_get_xdg_surface(struct wl_client *wl_client,
 
 	surface->desktop = weston_desktop_client_get_desktop(client);
 	surface->surface = wsurface;
+	wl_list_init(&surface->configure_list);
 
 	surface->desktop_surface =
 		weston_desktop_surface_create(surface->desktop, client,
@@ -1395,8 +1396,6 @@ weston_desktop_xdg_shell_protocol_get_xdg_surface(struct wl_client *wl_client,
 				       "xdg_surface must not have a buffer at creation");
 		return;
 	}
-
-	wl_list_init(&surface->configure_list);
 }
 
 static void
