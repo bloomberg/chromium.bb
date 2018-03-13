@@ -187,7 +187,7 @@ void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
   DCHECK(deferred_);
   SupervisedUserNavigationObserver::OnRequestBlocked(
       navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
-      reason,
+      reason, navigation_handle()->GetNavigationId(),
       base::Bind(&SupervisedUserNavigationThrottle::OnInterstitialResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
