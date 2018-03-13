@@ -26,6 +26,9 @@ enum ObuType {
   OBU_FRAME_HEADER = 3,
   OBU_TILE_GROUP = 4,
   OBU_METADATA = 5,
+#if CONFIG_OBU_FRAME
+  OBU_FRAME = 6,
+#endif
   OBU_PADDING = 15,
 };
 

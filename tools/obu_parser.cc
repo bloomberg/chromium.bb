@@ -79,6 +79,9 @@ bool ValidObuType(int obu_type) {
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
     case OBU_TILE_GROUP:
+#if CONFIG_OBU_FRAME
+    case OBU_FRAME:
+#endif
     case OBU_METADATA:
     case OBU_PADDING: return true;
   }
@@ -135,6 +138,9 @@ std::string ObuTypeToString(int obu_type) {
     case OBU_TEMPORAL_DELIMITER: return "OBU_TEMPORAL_DELIMITER";
     case OBU_FRAME_HEADER: return "OBU_FRAME_HEADER";
     case OBU_TILE_GROUP: return "OBU_TILE_GROUP";
+#if CONFIG_OBU_FRAME
+    case OBU_FRAME: return "OBU_FRAME";
+#endif
     case OBU_METADATA: return "OBU_METADATA";
     case OBU_PADDING: return "OBU_PADDING";
   }
