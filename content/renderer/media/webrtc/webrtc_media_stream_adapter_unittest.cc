@@ -250,7 +250,7 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest, CreateStreamAdapter) {
   EXPECT_TRUE(adapter->IsEqual(web_stream));
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetAudioTracks().size());
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetVideoTracks().size());
-  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->label());
+  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->id());
 }
 
 TEST_F(LocalWebRtcMediaStreamAdapterTest,
@@ -263,7 +263,7 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest,
   EXPECT_TRUE(adapter->IsEqual(web_stream));
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetAudioTracks().size());
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetVideoTracks().size());
-  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->label());
+  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->id());
 }
 
 // It should not crash if |MediaStream| is created in blink with an unknown
@@ -294,7 +294,7 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest,
   EXPECT_TRUE(adapter->IsEqual(web_stream));
   EXPECT_EQ(0u, adapter->webrtc_stream()->GetAudioTracks().size());
   EXPECT_EQ(0u, adapter->webrtc_stream()->GetVideoTracks().size());
-  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->label());
+  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->id());
 }
 
 TEST_F(LocalWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
@@ -306,7 +306,7 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
   EXPECT_TRUE(adapter->IsEqual(web_stream));
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetAudioTracks().size());
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetVideoTracks().size());
-  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->label());
+  EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->id());
 
   // Modify the web layer stream, make sure the webrtc layer stream is updated.
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
