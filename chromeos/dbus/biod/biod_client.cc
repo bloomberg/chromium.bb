@@ -211,7 +211,7 @@ class BiodClientImpl : public BiodClient {
     bus_ = bus;
 
     dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
-        "%s/%s", biod::kBiodServicePath, biod::kFpcBiometricsManagerName));
+        "%s/%s", biod::kBiodServicePath, biod::kCrosFpBiometricsManagerName));
     biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
 
     biod_proxy_->SetNameOwnerChangedCallback(

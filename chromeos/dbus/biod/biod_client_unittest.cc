@@ -69,7 +69,7 @@ class BiodClientTest : public testing::Test {
     bus_ = new dbus::MockBus(options);
 
     dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
-        "%s/%s", biod::kBiodServicePath, biod::kFpcBiometricsManagerName));
+        "%s/%s", biod::kBiodServicePath, biod::kCrosFpBiometricsManagerName));
     proxy_ = new dbus::MockObjectProxy(bus_.get(), biod::kBiodServiceName,
                                        fpc_bio_path);
 
