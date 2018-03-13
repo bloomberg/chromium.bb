@@ -97,6 +97,7 @@ class CastExtensionSystem : public ExtensionSystem {
   std::unique_ptr<RuntimeData> runtime_data_;
   std::unique_ptr<QuotaService> quota_service_;
   std::unique_ptr<AppSorting> app_sorting_;
+  std::unique_ptr<SharedUserScriptMaster> shared_user_script_master_;
 
   scoped_refptr<ValueStoreFactory> store_factory_;
 
