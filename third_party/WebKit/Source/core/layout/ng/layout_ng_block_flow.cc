@@ -236,24 +236,4 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
 }
 
-bool LayoutNGBlockFlow::LocalVisualRectFor(const LayoutObject* layout_object,
-                                           NGPhysicalOffsetRect* visual_rect) {
-  DCHECK(layout_object &&
-         (layout_object->IsText() || layout_object->IsLayoutInline()));
-  DCHECK(visual_rect);
-  const NGPhysicalBoxFragment* box_fragment =
-      layout_object->EnclosingBlockFlowFragment();
-  // TODO(kojii): CurrentFragment isn't always available after layout clean.
-  // Investigate why.
-  if (!box_fragment)
-    return false;
-  auto children =
-      NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, layout_object);
-  for (const auto& child : children) {
-    NGPhysicalOffsetRect child_visual_rect = child.fragment->SelfVisualRect();
-    visual_rect->Unite(child_visual_rect + child.offset_to_container_box);
-  }
-  return true;
-}
-
 }  // namespace blink

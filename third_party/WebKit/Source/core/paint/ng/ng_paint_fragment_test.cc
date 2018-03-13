@@ -235,11 +235,14 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_TRUE(box1_inner);
   EXPECT_EQ(box1_inner->GetLayoutObject(), box1.GetLayoutObject());
 
-  // Test |InlineFragmentsFor| can find the inner text of "box1".
+  // Test the text fragment inside of the inline block.
   const NGPaintFragment& inner_line_box = *box1_inner->Children()[0];
   const NGPaintFragment& inner_text = *inner_line_box.Children()[0];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.VisualRect());
+
+  // Test |InlineFragmentsFor| can find the inner text of "box1".
   LayoutObject* layout_inner_text = layout_box1->SlowFirstChild();
   EXPECT_TRUE(layout_inner_text && layout_inner_text->IsText());
   fragments = NGPaintFragment::InlineFragmentsFor(layout_inner_text);
@@ -383,6 +386,57 @@ TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
   EXPECT_EQ(LayoutRect(0, 30, 30, 10), inner_text2.VisualRect());
+}
+
+TEST_F(NGPaintFragmentTest, FlippedBlock) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    div {
+      writing-mode: vertical-rl;
+      font: 10px Ahem;
+      width: 20em;
+      height: 10em;
+    }
+    span { background: yellow; }
+    </style>
+    <body>
+      <div id="container">1234567890
+        pppp<span>XXX</span></div>
+    </body>
+  )HTML");
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  EXPECT_EQ(2u, container->Children().size());
+  const NGPaintFragment& line1 = *container->Children()[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentLineBox,
+            line1.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(190, 0, 10, 100), line1.VisualRect());
+  EXPECT_EQ(1u, line1.Children().size());
+
+  const NGPaintFragment& text1 = *line1.Children()[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text1.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(190, 0, 10, 100), text1.VisualRect());
+
+  const NGPaintFragment& line2 = *container->Children()[1];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentLineBox,
+            line2.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(180, 0, 10, 70), line2.VisualRect());
+  EXPECT_EQ(2u, line2.Children().size());
+
+  const NGPaintFragment& text2 = *line2.Children()[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text2.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(180, 0, 10, 40), text2.VisualRect());
+
+  const NGPaintFragment& box = *line2.Children()[1];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(180, 40, 10, 30), box.VisualRect());
+  EXPECT_EQ(1u, box.Children().size());
+
+  const NGPaintFragment& text3 = *box.Children()[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text3.PhysicalFragment().Type());
+  EXPECT_EQ(LayoutRect(180, 40, 10, 30), text3.VisualRect());
 }
 
 }  // namespace blink

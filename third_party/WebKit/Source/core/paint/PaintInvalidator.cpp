@@ -58,7 +58,8 @@ template <typename Rect, typename Point>
 LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     const Rect& local_rect,
-    const PaintInvalidatorContext& context) {
+    const PaintInvalidatorContext& context,
+    bool disable_flip) {
   DCHECK(context.NeedsVisualRectUpdate(object));
   if (local_rect.IsEmpty())
     return LayoutRect();
@@ -71,7 +72,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
   // coordinates.
   Rect rect = local_rect;
   // Writing-mode flipping doesn't apply to non-root SVG.
-  if (!is_svg_child) {
+  if (!is_svg_child && !disable_flip) {
     if (object.IsBox()) {
       ToLayoutBox(object).FlipForWritingMode(rect);
     } else if (!(context.subtree_flags &
@@ -205,6 +206,21 @@ LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
   LayoutRect local_rect = object.LocalVisualRect();
   return MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
       object, local_rect, context);
+}
+
+LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
+    const NGPaintFragment& fragment,
+    const LayoutObject& object,
+    const PaintInvalidatorContext& context) {
+  const NGPhysicalFragment& physical_fragment = fragment.PhysicalFragment();
+  LayoutRect local_rect = physical_fragment.SelfVisualRect().ToLayoutRect();
+  bool disable_flip = true;
+  LayoutRect backing_rect =
+      MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
+          object, local_rect, context, disable_flip);
+  if (!object.IsBox())
+    backing_rect.Move(fragment.InlineOffsetToContainerBox().ToLayoutSize());
+  return backing_rect;
 }
 
 LayoutPoint PaintInvalidator::ComputeLocationInBacking(
@@ -447,26 +463,12 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
     // An inline LayoutObject can produce multiple NGPaintFragment. Compute
     // VisualRect for each fragment from |new_visual_rect|.
     auto fragments = NGPaintFragment::InlineFragmentsFor(&object);
-    if (!fragments.IsInLayoutNGInlineFormattingContext())
-      return;
-    // Compute the offset of |new_visual_rect| from the local coordinate.
-    LayoutRect local_object_rect = object.LocalVisualRect();
-    NGPhysicalOffset object_offset = NGPhysicalOffset(
-        new_visual_rect.Location() - local_object_rect.Location());
-    // Compute VisualRect for each fragment, by mapping each local VisualRect to
-    // the coordinate space of |new_visual_rect|.
-    // TODO(kojii): This logic needs to incorporate writing-mode.
-    for (NGPaintFragment* fragment : fragments) {
-      const NGPhysicalFragment& physical_fragment =
-          fragment->PhysicalFragment();
-      NGPhysicalOffsetRect fragment_rect = physical_fragment.SelfVisualRect();
-      fragment_rect.offset += object_offset;
-      // LayoutBox::LocalVisualRect() is in its local coordinate space, not in
-      // its inline formatting context, and that |object_offset| includes the
-      // offset to the inline container box.
-      if (!object.IsBox())
-        fragment_rect.offset += fragment->InlineOffsetToContainerBox();
-      fragment->SetVisualRect(fragment_rect.ToLayoutRect());
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (NGPaintFragment* fragment : fragments) {
+        LayoutRect fragment_visual_rect =
+            ComputeVisualRectInBacking(*fragment, object, context);
+        fragment->SetVisualRect(fragment_visual_rect);
+      }
     }
   }
 }

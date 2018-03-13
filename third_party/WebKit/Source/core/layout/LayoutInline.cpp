@@ -1235,9 +1235,9 @@ LayoutRect LayoutInline::AbsoluteVisualRect() const {
 
 LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    NGPhysicalOffsetRect visual_rect;
-    if (LayoutNGBlockFlow::LocalVisualRectFor(this, &visual_rect))
-      return visual_rect.ToLayoutRect();
+    LayoutRect visual_rect;
+    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &visual_rect))
+      return visual_rect;
   }
 
   // If we don't create line boxes, we don't have any invalidations to do.

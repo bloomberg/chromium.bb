@@ -21,8 +21,6 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutNGMixin<LayoutBlockFlow> {
 
   const char* GetName() const override { return "LayoutNGBlockFlow"; }
 
-  static bool LocalVisualRectFor(const LayoutObject*, NGPhysicalOffsetRect*);
-
  protected:
   bool IsOfType(LayoutObjectType) const override;
 
