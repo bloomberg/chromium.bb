@@ -18,6 +18,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -29,12 +30,13 @@
 #include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #endif
 
+using message_center::MessageCenter;
 using message_center::NotifierId;
 
-MessageCenterNotificationManager::MessageCenterNotificationManager(
-    message_center::MessageCenter* message_center)
-    : message_center_(message_center), system_observer_(this) {
-  message_center_->AddObserver(this);
+MessageCenterNotificationManager::MessageCenterNotificationManager()
+    : system_observer_(this) {
+  auto* message_center = MessageCenter::Get();
+  message_center->AddObserver(this);
 
 #if !defined(OS_CHROMEOS)
   blockers_.push_back(
@@ -52,7 +54,9 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
-  message_center_->RemoveObserver(this);
+  // The message center may have already been shut down (on Chrome OS).
+  if (MessageCenter::Get())
+    MessageCenter::Get()->RemoveObserver(this);
 
   profile_notifications_.clear();
 }
@@ -80,7 +84,7 @@ void MessageCenterNotificationManager::Add(
   // Takes ownership of profile_notification.
   AddProfileNotification(std::move(profile_notification_ptr));
 
-  message_center_->AddNotification(
+  MessageCenter::Get()->AddNotification(
       std::make_unique<message_center::Notification>(
           profile_notification->notification()));
 }
@@ -124,7 +128,7 @@ bool MessageCenterNotificationManager::Update(
     // WARNING: You MUST use AddProfileNotification or update the message
     // center via the notification within a ProfileNotification object or the
     // profile ID will not be correctly set for ChromeOS.
-    message_center_->UpdateNotification(
+    MessageCenter::Get()->UpdateNotification(
         old_id, std::make_unique<message_center::Notification>(notification));
     return true;
   }
@@ -154,8 +158,8 @@ bool MessageCenterNotificationManager::CancelById(const std::string& id,
     return false;
 
   RemoveProfileNotification(iter->first);
-  message_center_->RemoveNotification(profile_notification_id,
-                                      /* by_user */ false);
+  MessageCenter::Get()->RemoveNotification(profile_notification_id,
+                                           /* by_user */ false);
   return true;
 }
 
@@ -182,7 +186,7 @@ bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
     if ((*curiter).second->notification().origin_url() == source) {
       const std::string id = curiter->first;
       RemoveProfileNotification(id);
-      message_center_->RemoveNotification(id, /* by_user */ false);
+      MessageCenter::Get()->RemoveNotification(id, /* by_user */ false);
       removed = true;
     }
   }
@@ -200,7 +204,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
     if (profile_id == (*curiter).second->profile_id()) {
       const std::string id = curiter->first;
       RemoveProfileNotification(id);
-      message_center_->RemoveNotification(id, /* by_user */ false);
+      MessageCenter::Get()->RemoveNotification(id, /* by_user */ false);
       removed = true;
     }
   }
@@ -208,7 +212,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
 }
 
 void MessageCenterNotificationManager::CancelAll() {
-  message_center_->RemoveAllNotifications(
+  MessageCenter::Get()->RemoveAllNotifications(
       false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
 }
 

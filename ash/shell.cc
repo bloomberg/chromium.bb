@@ -808,7 +808,6 @@ Shell::~Shell() {
   wallpaper_controller_.reset();
   accessibility_controller_.reset();
   accessibility_delegate_.reset();
-  message_center_controller_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
@@ -867,6 +866,9 @@ Shell::~Shell() {
   // before it.
   detachable_base_handler_.reset();
 
+  // Destroys the MessageCenter singleton, so must happen late.
+  message_center_controller_.reset();
+
   local_state_.reset();
   shell_delegate_.reset();
 
@@ -880,6 +882,10 @@ Shell::~Shell() {
 void Shell::Init(ui::ContextFactory* context_factory,
                  ui::ContextFactoryPrivate* context_factory_private) {
   const Config config = shell_port_->GetAshConfig();
+
+  // This creates the MessageCenter object which is used by some other objects
+  // initialized here, so it needs to come early.
+  message_center_controller_ = std::make_unique<MessageCenterController>();
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1159,8 +1165,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // order to create mirror window. Run it after the main message loop
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
-
-  message_center_controller_ = std::make_unique<MessageCenterController>();
 
   // Mash implements the show taps feature with a separate mojo app.
   // GetShellConnector() is null in unit tests.

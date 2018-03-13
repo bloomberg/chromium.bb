@@ -18,6 +18,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_ui_delegate.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -33,9 +34,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
  protected:
   void SetUp() override {
 #if !defined(OS_CHROMEOS)
-    // BrowserWithTestWindowTest owns an AshTestHelper on OS_CHROMEOS, which
-    // in turn initializes the message center.  On other platforms, we need to
-    // initialize it here.
+    // Ash shell initializes the message center.
     MessageCenter::Initialize();
 #endif
 

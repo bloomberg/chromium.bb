@@ -30,7 +30,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/events/event.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
 
 namespace ash {
@@ -82,8 +81,6 @@ void WindowManagerService::InitWindowManager(
 }
 
 void WindowManagerService::InitializeComponents(bool init_network_handler) {
-  message_center::MessageCenter::Initialize();
-
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init(). Tests might initialize their own instance.
   if (!chromeos::DBusThreadManager::IsInitialized()) {
@@ -120,7 +117,6 @@ void WindowManagerService::ShutdownComponents() {
   bluez::BluezDBusManager::Shutdown();
   if (dbus_thread_manager_initialized_)
     chromeos::DBusThreadManager::Shutdown();
-  message_center::MessageCenter::Shutdown();
 }
 
 void WindowManagerService::OnStart() {

@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/termination_notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -18,6 +17,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"  // mash-ok
+#else
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #endif
 
 namespace chrome {
@@ -25,7 +26,6 @@ namespace chrome {
 void HandleAppExitingForPlatform() {
   // Close all non browser windows now. Those includes notifications
   // and windows created by Ash (launcher, background, etc).
-  g_browser_process->notification_ui_manager()->StartShutdown();
 
 #if defined(OS_CHROMEOS)
   // This is a no-op in mash, as shutting down the client will dismiss any of
@@ -38,6 +38,11 @@ void HandleAppExitingForPlatform() {
     aura::client::GetCaptureClient(ash::Shell::GetPrimaryRootWindow())->
         SetCapture(NULL);
   }
+#else
+  // This clears existing notifications from the message center and their
+  // associated ScopedKeepAlives. Chrome OS doesn't use ScopedKeepAlives for
+  // notifications.
+  g_browser_process->notification_ui_manager()->StartShutdown();
 #endif
 
   views::Widget::CloseAllSecondaryWidgets();

@@ -179,6 +179,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/touch/touch_device.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
@@ -704,8 +705,10 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
-  if (!base::FeatureList::IsEnabled(features::kNativeNotifications))
+  if (!base::FeatureList::IsEnabled(features::kNativeNotifications) &&
+      !base::FeatureList::IsEnabled(features::kMash)) {
     notification_client_.reset(NotificationPlatformBridge::Create());
+  }
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }

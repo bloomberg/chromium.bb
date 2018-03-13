@@ -525,7 +525,8 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
 // of icons it expects to see, this allows for icon lookup without
 // serialization/deserialization.
 MESSAGE_CENTER_PUBLIC_EXPORT
-void RegisterVectorIcon(const gfx::VectorIcon& vector_icon);
+void RegisterVectorIcons(
+    const std::vector<const gfx::VectorIcon*>& vector_icon);
 
 MESSAGE_CENTER_PUBLIC_EXPORT
 const gfx::VectorIcon* GetRegisteredVectorIcon(const std::string& id);

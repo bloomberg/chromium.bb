@@ -36,13 +36,18 @@ ProfileNotification::ProfileNotification(
               NotificationUIManager::GetProfileID(profile)),
           notification),
       original_id_(notification.id()),
-      type_(type),
-      keep_alive_(new ScopedKeepAlive(KeepAliveOrigin::NOTIFICATION,
-                                      KeepAliveRestartOption::DISABLED)) {
+      type_(type) {
   DCHECK(profile);
 #if defined(OS_CHROMEOS)
   notification_.set_profile_id(
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail());
+#else
+  // This ScopedKeepAlive prevents the browser process from shutting down when
+  // the last browser window is closed and there are open notifications. It's
+  // not used on Chrome OS as closing the last browser window never shuts down
+  // the process.
+  keep_alive_ = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::NOTIFICATION, KeepAliveRestartOption::DISABLED);
 #endif
 }
 

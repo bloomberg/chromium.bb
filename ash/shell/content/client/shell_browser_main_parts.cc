@@ -40,7 +40,6 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -70,10 +69,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::GetInstance())
     views_delegate_.reset(new ShellViewsDelegate);
-
-  // The global message center state must be initialized absent
-  // g_browser_process.
-  message_center::MessageCenter::Initialize();
 
   // Create CrasAudioHandler for testing since g_browser_process
   // is absent.
@@ -112,9 +107,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   window_watcher_.reset();
   ash::Shell::DeleteInstance();
   ShellContentState::DestroyInstance();
-  // The global message center state must be shutdown absent
-  // g_browser_process.
-  message_center::MessageCenter::Shutdown();
 
   chromeos::CrasAudioHandler::Shutdown();
 

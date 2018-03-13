@@ -85,34 +85,32 @@ class AshClientNotificationDelegate
 
 }  // namespace
 
-MessageCenterController::MessageCenterController()
-    : fullscreen_notification_blocker_(MessageCenter::Get()),
-      inactive_user_notification_blocker_(MessageCenter::Get()),
-      session_state_notification_blocker_(MessageCenter::Get()),
-      binding_(this) {
+MessageCenterController::MessageCenterController() : binding_(this) {
+  message_center::MessageCenter::Initialize();
+
+  fullscreen_notification_blocker_ =
+      std::make_unique<FullscreenNotificationBlocker>(MessageCenter::Get());
+  inactive_user_notification_blocker_ =
+      std::make_unique<InactiveUserNotificationBlocker>(MessageCenter::Get());
+  session_state_notification_blocker_ =
+      std::make_unique<SessionStateNotificationBlocker>(MessageCenter::Get());
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSuppressMessageCenterPopups)) {
     all_popup_blocker_ =
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
-  message_center::RegisterVectorIcon(kNotificationCaptivePortalIcon);
-  message_center::RegisterVectorIcon(kNotificationCellularAlertIcon);
-  message_center::RegisterVectorIcon(kNotificationDownloadIcon);
-  message_center::RegisterVectorIcon(kNotificationEndOfSupportIcon);
-  message_center::RegisterVectorIcon(kNotificationGoogleIcon);
-  message_center::RegisterVectorIcon(kNotificationImageIcon);
-  message_center::RegisterVectorIcon(kNotificationInstalledIcon);
-  message_center::RegisterVectorIcon(kNotificationMobileDataIcon);
-  message_center::RegisterVectorIcon(kNotificationMobileDataOffIcon);
-  message_center::RegisterVectorIcon(kNotificationPlayPrismIcon);
-  message_center::RegisterVectorIcon(kNotificationPrintingDoneIcon);
-  message_center::RegisterVectorIcon(kNotificationPrintingIcon);
-  message_center::RegisterVectorIcon(kNotificationPrintingWarningIcon);
-  message_center::RegisterVectorIcon(kNotificationStorageFullIcon);
-  message_center::RegisterVectorIcon(kNotificationVpnIcon);
-  message_center::RegisterVectorIcon(kNotificationWarningIcon);
-  message_center::RegisterVectorIcon(kNotificationWifiOffIcon);
+  message_center::RegisterVectorIcons(
+      {&kNotificationCaptivePortalIcon, &kNotificationCellularAlertIcon,
+       &kNotificationDownloadIcon, &kNotificationEndOfSupportIcon,
+       &kNotificationGoogleIcon, &kNotificationImageIcon,
+       &kNotificationInstalledIcon, &kNotificationMobileDataIcon,
+       &kNotificationMobileDataOffIcon, &kNotificationPlayPrismIcon,
+       &kNotificationPrintingDoneIcon, &kNotificationPrintingIcon,
+       &kNotificationPrintingWarningIcon, &kNotificationStorageFullIcon,
+       &kNotificationVpnIcon, &kNotificationWarningIcon,
+       &kNotificationWifiOffIcon});
 
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
@@ -120,7 +118,14 @@ MessageCenterController::MessageCenterController()
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME));
 }
 
-MessageCenterController::~MessageCenterController() = default;
+MessageCenterController::~MessageCenterController() {
+  all_popup_blocker_.reset();
+  session_state_notification_blocker_.reset();
+  inactive_user_notification_blocker_.reset();
+  fullscreen_notification_blocker_.reset();
+
+  message_center::MessageCenter::Shutdown();
+}
 
 void MessageCenterController::BindRequest(
     mojom::AshMessageCenterControllerRequest request) {

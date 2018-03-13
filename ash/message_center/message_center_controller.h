@@ -47,7 +47,7 @@ class ASH_EXPORT MessageCenterController
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {
-    return &inactive_user_notification_blocker_;
+    return inactive_user_notification_blocker_.get();
   }
 
   // An interface used to listen for changes to notifier settings information,
@@ -72,9 +72,12 @@ class ASH_EXPORT MessageCenterController
   // Callback for GetNotifierList.
   void OnGotNotifierList(std::vector<mojom::NotifierUiDataPtr> ui_data);
 
-  FullscreenNotificationBlocker fullscreen_notification_blocker_;
-  InactiveUserNotificationBlocker inactive_user_notification_blocker_;
-  SessionStateNotificationBlocker session_state_notification_blocker_;
+  std::unique_ptr<FullscreenNotificationBlocker>
+      fullscreen_notification_blocker_;
+  std::unique_ptr<InactiveUserNotificationBlocker>
+      inactive_user_notification_blocker_;
+  std::unique_ptr<SessionStateNotificationBlocker>
+      session_state_notification_blocker_;
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
   NotifierSettingsListener* notifier_id_ = nullptr;
