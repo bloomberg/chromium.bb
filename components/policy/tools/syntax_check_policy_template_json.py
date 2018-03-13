@@ -185,8 +185,9 @@ class PolicyTemplateChecker(object):
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
                      'id', 'schema', 'max_size', 'tags',
-                     'default_for_enterprise_users', 'arc_support',
-                     'supported_chrome_os_management'):
+                     'default_for_enterprise_users',
+                     'default_for_managed_devices_doc_only',
+                     'arc_support', 'supported_chrome_os_management'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -287,6 +288,28 @@ class PolicyTemplateChecker(object):
           features.get('per_profile', False)):
         self._Error('per_profile attribute should not be set '
                     'for policies with device_only=True')
+
+      # If 'device only' policy is on, 'default_for_enterprise_users' shouldn't
+      # exist.
+      if (policy.get('device_only', False) and
+          'default_for_enterprise_users' in policy):
+        self._Error('default_for_enteprise_users should not be set '
+                    'for policies with device_only=True. Please use '
+                    'default_for_managed_devices_doc_only to document a'
+                    'differing default value for enrolled devices. Please note '
+                    'that default_for_managed_devices_doc_only is for '
+                    'documentation only - it has no side effects, so you will '
+                    ' still have to implement the enrollment-dependent default '
+                    'value handling yourself in all places where the device '
+                    'policy proto is evaluated. This will probably include '
+                    'device_policy_decoder_chromeos.cc for chrome, but could '
+                    'also have to done in other components if they read the '
+                    'proto directly. Details: crbug.com/809653')
+
+      if (not policy.get('device_only', False) and
+          'default_for_managed_devices_doc_only' in policy):
+        self._Error('default_for_managed_devices_doc_only should only be used '
+                    'with policies that have device_only=True.')
 
       # All policies must declare whether they allow changes at runtime.
       self._CheckContains(features, 'dynamic_refresh', bool,
