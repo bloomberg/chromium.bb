@@ -12,6 +12,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_border_hit_test.h"
+#include "ash/frame/frame_header_origin_text.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -22,6 +23,10 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -67,6 +72,10 @@ constexpr int kTabShadowHeight = 4;
 constexpr SkColor kMdWebUIFrameColor =
     SkColorSetARGBMacro(0xff, 0x25, 0x4f, 0xae);
 
+// How long to wait before starting the titlebar animation.
+constexpr base::TimeDelta kTitlebarAnimationDelay =
+    base::TimeDelta::FromMilliseconds(750);
+
 bool IsV1AppBackButtonEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kAshEnableV1AppBackButton);
@@ -93,6 +102,16 @@ bool IsSnappedInSplitView(aura::Window* window,
   }
 }
 
+void SetRightSide(gfx::Rect* rect, int x) {
+  rect->set_x(x - rect->width());
+  DCHECK_EQ(rect->right(), x);
+}
+
+void AlignVerticalCenterWith(gfx::Rect* rect, const gfx::Rect& sibling) {
+  rect->set_y(sibling.y() + (sibling.height() - rect->height()) / 2);
+  DCHECK_EQ(rect->CenterPoint().y(), sibling.CenterPoint().y());
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,7 +125,8 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       back_button_(nullptr),
       window_icon_(nullptr),
       hosted_app_button_container_(nullptr),
-      observer_binding_(this) {
+      observer_binding_(this),
+      weak_factory_(this) {
   ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
                                                       nullptr);
   ash::Shell::Get()->AddShellObserver(this);
@@ -332,6 +352,9 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
 
+  if (frame_header_origin_text_)
+    frame_header_origin_text_->SetPaintAsActive(should_paint_as_active);
+
   if (browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty() &&
       browser_view()->IsTabStripVisible()) {
@@ -361,6 +384,21 @@ void BrowserNonClientFrameViewAsh::Layout() {
   const int inset =
       (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
+
+  if (frame_header_origin_text_) {
+    // Align the right side of the text with the left side of the caption
+    // buttons.
+    gfx::Size origin_text_preferred_size =
+        frame_header_origin_text_->GetPreferredSize();
+    int origin_text_width =
+        std::min(width() - caption_button_container_->width(),
+                 origin_text_preferred_size.width());
+    gfx::Rect text_bounds(origin_text_width,
+                          origin_text_preferred_size.height());
+    SetRightSide(&text_bounds, caption_button_container_->x());
+    AlignVerticalCenterWith(&text_bounds, caption_button_container_->bounds());
+    frame_header_origin_text_->SetBoundsRect(text_bounds);
+  }
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
@@ -557,6 +595,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
       std::make_unique<ash::DefaultFrameHeader>(frame(), this,
                                                 caption_button_container_);
+
+  // TODO(alancutter): Move this branch into a new HostedAppFrameHeader class.
   if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser)) {
     // Hosted apps apply a theme color if specified by the extension.
@@ -570,14 +610,33 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     }
 
     // Add the container for extra hosted app buttons (e.g app menu button).
-    SkColor button_color = ash::FrameCaptionButton::GetButtonColor(
+    SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
         default_frame_header->ShouldUseLightImages());
     const float inactive_alpha_ratio =
         ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
+    SkColor inactive_color =
+        SkColorSetA(active_color, 255 * inactive_alpha_ratio);
     hosted_app_button_container_ = new HostedAppButtonContainer(
-        browser_view(), button_color,
-        SkColorSetA(button_color, 255 * inactive_alpha_ratio));
+        browser_view(), active_color, inactive_color);
     caption_button_container_->AddChildViewAt(hosted_app_button_container_, 0);
+
+    // Add the origin text.
+    frame_header_origin_text_ =
+        std::make_unique<ash::FrameHeaderOriginText>(
+            base::UTF8ToUTF16(
+                browser->hosted_app_controller()->GetUrlOrigin().host()),
+            active_color, inactive_color,
+            default_frame_header->GetActiveFrameColor(),
+            default_frame_header->GetInactiveFrameColor())
+            .release();
+    AddChildView(frame_header_origin_text_);
+
+    // Schedule the title bar animation.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,
+                       weak_factory_.GetWeakPtr()),
+        kTitlebarAnimationDelay);
   } else if (!browser->is_app()) {
     // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
     default_frame_header->SetFrameColors(kMdWebUIFrameColor,
@@ -591,4 +650,10 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     default_frame_header->set_left_header_view(window_icon_);
 
   return default_frame_header;
+}
+
+void BrowserNonClientFrameViewAsh::StartHostedAppAnimation() {
+  frame_header_origin_text_->StartSlideAnimation();
+  hosted_app_button_container_->StartTitlebarAnimation(
+      frame_header_origin_text_->AnimationDuration());
 }

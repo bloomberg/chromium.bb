@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -200,10 +199,8 @@ std::string HostedAppBrowserController::GetAppShortName() const {
   return GetExtension()->short_name();
 }
 
-std::string HostedAppBrowserController::GetDomainAndRegistry() const {
-  return net::registry_controlled_domains::GetDomainAndRegistry(
-      AppLaunchInfo::GetLaunchWebURL(GetExtension()),
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+url::Origin HostedAppBrowserController::GetUrlOrigin() const {
+  return url::Origin::Create(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
 }
 
 void HostedAppBrowserController::OnEngagementEvent(
