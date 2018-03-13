@@ -22,12 +22,11 @@
 
 namespace {
 
-// TODO(rhalavati): Update annotation.
 constexpr net::NetworkTrafficAnnotationTag
     kSettingsProxyConfigTrafficAnnotation =
         net::DefineNetworkTrafficAnnotation("proxy_config_settings", R"(
       semantics {
-        sender: "Preferences Proxy Config"
+        sender: "Proxy Config"
         description:
           "Creates a proxy based on configuration received from settings."
         trigger:
