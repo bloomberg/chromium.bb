@@ -265,6 +265,17 @@ class ClientManager {
         mUidHasCalledWarmup.put(uid, true);
     }
 
+    /**
+     * @return all the sessions originating from a given {@code uid}.
+     */
+    public synchronized List<CustomTabsSessionToken> uidToSessions(int uid) {
+        List<CustomTabsSessionToken> sessions = new ArrayList<>();
+        for (Map.Entry<CustomTabsSessionToken, SessionParams> entry : mSessionParams.entrySet()) {
+            if (entry.getValue().uid == uid) sessions.add(entry.getKey());
+        }
+        return sessions;
+    }
+
     /** Updates the client behavior stats and returns whether speculation is allowed.
      *
      * The first call to the "low priority" mode is not throttled. Subsequent ones are.
