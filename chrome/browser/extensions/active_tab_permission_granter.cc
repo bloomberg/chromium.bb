@@ -69,7 +69,8 @@ void SendMessageToProcesses(
     tab_process->Send(create_message.Run(false));
 }
 
-ActiveTabPermissionGranter::Delegate* g_delegate = nullptr;
+ActiveTabPermissionGranter::Delegate* g_active_tab_permission_granter_delegate =
+    nullptr;
 
 }  // namespace
 
@@ -90,9 +91,9 @@ ActiveTabPermissionGranter::Delegate*
 ActiveTabPermissionGranter::SetPlatformDelegate(Delegate* delegate) {
   // Disallow setting it twice (but allow resetting - don't forget to free in
   // that case).
-  CHECK(!g_delegate || !delegate);
-  Delegate* previous_delegate = g_delegate;
-  g_delegate = delegate;
+  CHECK(!g_active_tab_permission_granter_delegate || !delegate);
+  Delegate* previous_delegate = g_active_tab_permission_granter_delegate;
+  g_active_tab_permission_granter_delegate = delegate;
   return previous_delegate;
 }
 
@@ -106,8 +107,9 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   const PermissionsData* permissions_data = extension->permissions_data();
 
   bool should_grant_active_tab =
-      !g_delegate ||
-      g_delegate->ShouldGrantActiveTab(extension, web_contents());
+      !g_active_tab_permission_granter_delegate ||
+      g_active_tab_permission_granter_delegate->ShouldGrantActiveTab(
+          extension, web_contents());
   // If the extension requested all-hosts but has had it withheld, we grant it
   // active tab-style permissions, even if it doesn't have the activeTab
   // permission in the manifest.

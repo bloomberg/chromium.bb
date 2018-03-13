@@ -30,7 +30,8 @@ namespace {
 // each user gesture. This variable should only be accessed from the UI thread.
 bool g_accept_requests = true;
 
-ExternalProtocolHandler::Delegate* g_delegate = nullptr;
+ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate =
+    nullptr;
 
 constexpr const char* kDeniedSchemes[] = {
     "afp", "data", "disk", "disks",
@@ -147,7 +148,7 @@ const char ExternalProtocolHandler::kHandleStateMetric[] =
 
 // static
 void ExternalProtocolHandler::SetDelegateForTesting(Delegate* delegate) {
-  g_delegate = delegate;
+  g_external_protocol_handler_delegate = delegate;
 }
 
 // static
@@ -237,11 +238,11 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
   Profile* profile = nullptr;
   if (web_contents)  // Maybe NULL during testing.
     profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  BlockState block_state =
-      GetBlockStateWithDelegate(escaped_url.scheme(), g_delegate, profile);
+  BlockState block_state = GetBlockStateWithDelegate(
+      escaped_url.scheme(), g_external_protocol_handler_delegate, profile);
   if (block_state == BLOCK) {
-    if (g_delegate)
-      g_delegate->BlockRequest();
+    if (g_external_protocol_handler_delegate)
+      g_external_protocol_handler_delegate->BlockRequest();
     return;
   }
 
@@ -252,12 +253,13 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
   shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
       &OnDefaultProtocolClientWorkerFinished, escaped_url,
       render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
-      page_transition, has_user_gesture, g_delegate);
+      page_transition, has_user_gesture, g_external_protocol_handler_delegate);
 
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to
   // OnDefaultProtocolClientWorkerFinished().
-  CreateShellWorker(callback, escaped_url.scheme(), g_delegate)
+  CreateShellWorker(callback, escaped_url.scheme(),
+                    g_external_protocol_handler_delegate)
       ->StartCheckIsDefault();
 }
 
