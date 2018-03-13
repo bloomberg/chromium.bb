@@ -1124,3 +1124,9 @@ void aom_smooth_predictor_64x16_ssse3(uint8_t *dst, ptrdiff_t stride,
                                       const uint8_t *left) {
   smooth_predictor_wxh(dst, stride, above, left, 64, 16);
 }
+
+void aom_smooth_predictor_16x64_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  smooth_predictor_wxh(dst, stride, above, left, 16, 64);
+}

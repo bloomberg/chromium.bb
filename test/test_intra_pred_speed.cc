@@ -614,6 +614,8 @@ INTRA_PRED_TEST(SSSE3_2, TX_16X8, NULL, NULL, NULL, NULL, NULL, NULL,
 INTRA_PRED_TEST(SSSE3_3, TX_16X32, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x32_ssse3,
                 aom_smooth_predictor_16x32_ssse3, NULL, NULL)
+INTRA_PRED_TEST(SSSE3_3, TX_16X64, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_smooth_predictor_16x64_ssse3, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
