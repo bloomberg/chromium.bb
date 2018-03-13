@@ -68,6 +68,7 @@ int WebSocketHttp2HandshakeStream::InitializeStream(
     RequestPriority priority,
     const NetLogWithSource& net_log,
     CompletionOnceCallback callback) {
+  DCHECK(request_info->traffic_annotation.is_valid());
   request_info_ = request_info;
   priority_ = priority;
   net_log_ = net_log;
@@ -117,13 +118,12 @@ int WebSocketHttp2HandshakeStream::SendRequest(
 
   callback_ = std::move(callback);
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
-  // TODO(https://crbug.com/656607): Add proper annotation here.
   int rv = spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, session_, request_info_->url, priority_,
       request_info_->socket_tag, net_log_,
       base::BindOnce(&WebSocketHttp2HandshakeStream::StartRequestCallback,
                      base::Unretained(this)),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      NetworkTrafficAnnotationTag(request_info_->traffic_annotation));
   if (rv == OK) {
     StartRequestCallback(rv);
     return ERR_IO_PENDING;
