@@ -81,8 +81,7 @@ SmbFileSystem::SmbFileSystem(
     const file_system_provider::ProvidedFileSystemInfo& file_system_info,
     UnmountCallback unmount_callback)
     : file_system_info_(file_system_info),
-      unmount_callback_(std::move(unmount_callback)),
-      weak_ptr_factory_(this) {}
+      unmount_callback_(std::move(unmount_callback)) {}
 
 SmbFileSystem::~SmbFileSystem() {}
 
@@ -158,15 +157,14 @@ void SmbFileSystem::Abort() {
 }
 
 AbortCallback SmbFileSystem::CreateAbortCallback() {
-  return base::BindRepeating(&SmbFileSystem::Abort,
-                             weak_ptr_factory_.GetWeakPtr());
+  return base::BindRepeating(&SmbFileSystem::Abort, AsWeakPtr());
 }
 
 AbortCallback SmbFileSystem::RequestUnmount(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->Unmount(
       GetMountId(), base::BindOnce(&SmbFileSystem::HandleRequestUnmountCallback,
-                                   weak_ptr_factory_.GetWeakPtr(), callback));
+                                   AsWeakPtr(), callback));
   return CreateAbortCallback();
 }
 
@@ -189,7 +187,7 @@ AbortCallback SmbFileSystem::GetMetadata(
   GetSmbProviderClient()->GetMetadataEntry(
       GetMountId(), entry_path,
       base::BindOnce(&SmbFileSystem::HandleRequestGetMetadataEntryCallback,
-                     weak_ptr_factory_.GetWeakPtr(), fields, callback));
+                     AsWeakPtr(), fields, callback));
   return CreateAbortCallback();
 }
 
@@ -216,7 +214,7 @@ AbortCallback SmbFileSystem::ReadDirectory(
   GetSmbProviderClient()->ReadDirectory(
       GetMountId(), directory_path,
       base::BindOnce(&SmbFileSystem::HandleRequestReadDirectoryCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     AsWeakPtr(), callback));
   return CreateAbortCallback();
 }
 
@@ -227,8 +225,8 @@ AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
       mode == file_system_provider::OPEN_FILE_MODE_WRITE ? true : false;
   GetSmbProviderClient()->OpenFile(
       GetMountId(), file_path, writeable,
-      base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -244,8 +242,8 @@ AbortCallback SmbFileSystem::CloseFile(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CloseFile(
       GetMountId(), file_handle,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -257,9 +255,8 @@ AbortCallback SmbFileSystem::ReadFile(
     const ReadChunkReceivedCallback& callback) {
   GetSmbProviderClient()->ReadFile(
       GetMountId(), file_handle, offset, length,
-      base::BindOnce(&SmbFileSystem::HandleRequestReadFileCallback,
-                     weak_ptr_factory_.GetWeakPtr(), length,
-                     scoped_refptr<net::IOBuffer>(buffer), callback));
+      base::BindOnce(&SmbFileSystem::HandleRequestReadFileCallback, AsWeakPtr(),
+                     length, scoped_refptr<net::IOBuffer>(buffer), callback));
   return CreateAbortCallback();
 }
 
@@ -269,8 +266,8 @@ AbortCallback SmbFileSystem::CreateDirectory(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CreateDirectory(
       GetMountId(), directory_path, recursive,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -279,8 +276,8 @@ AbortCallback SmbFileSystem::CreateFile(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CreateFile(
       GetMountId(), file_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -290,8 +287,8 @@ AbortCallback SmbFileSystem::DeleteEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->GetDeleteList(
       GetMountId(), entry_path,
-      base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -301,8 +298,8 @@ AbortCallback SmbFileSystem::CopyEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CopyEntry(
       GetMountId(), source_path, target_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -312,8 +309,8 @@ AbortCallback SmbFileSystem::MoveEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->MoveEntry(
       GetMountId(), source_path, target_path,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -323,8 +320,8 @@ AbortCallback SmbFileSystem::Truncate(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->Truncate(
       GetMountId(), file_path, length,
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -339,8 +336,8 @@ AbortCallback SmbFileSystem::WriteFile(
 
   GetSmbProviderClient()->WriteFile(
       GetMountId(), file_handle, offset, length, std::move(temp_fd),
-      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
+                     callback));
   return CreateAbortCallback();
 }
 
@@ -458,9 +455,8 @@ void SmbFileSystem::HandleGetDeleteListCallback(
 
     GetSmbProviderClient()->DeleteEntry(
         GetMountId(), entry_path, false /* recursive */,
-        base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback, list_error,
-                       is_last_entry));
+        base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback, AsWeakPtr(),
+                       callback, list_error, is_last_entry));
   }
 }
 
@@ -559,7 +555,7 @@ void SmbFileSystem::HandleStatusCallback(
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>
 SmbFileSystem::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+  return AsWeakPtr();
 }
 
 }  // namespace smb_client
