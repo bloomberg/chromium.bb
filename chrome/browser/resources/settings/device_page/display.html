@@ -166,6 +166,7 @@
             </div>
           </div>
           <settings-slider tick-values="[[zoomValues_]]"
+              disabled="[[!enableDisplayZoomSlider_(selectedDisplay)]]"
               pref="{{selectedZoomPref_}}" on-change="onSelectedZoomChange_"
               label-min="$i18n{displaySizeSliderMinLabel}"
               label-max="$i18n{displaySizeSliderMaxLabel}">

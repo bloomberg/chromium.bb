@@ -42,6 +42,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chromeos/system/devicemode.h"
+#include "ui/display/manager/chromeos/display_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1609,6 +1610,54 @@ bool DisplayManager::ZoomInternalDisplay(bool up) {
   }
 
   return result ? SetDisplayMode(display_id, mode) : false;
+}
+
+bool DisplayManager::ZoomDisplay(int64_t display_id, bool up) {
+#if defined(OS_CHROMEOS)
+  DCHECK(!IsInUnifiedMode());
+  ManagedDisplayMode display_mode;
+  if (!GetActiveModeForDisplayId(display_id, &display_mode))
+    return false;
+  const std::vector<double> zooms = GetDisplayZoomFactors(display_mode);
+  const double current_display_zoom =
+      base::ContainsKey(display_zoom_factors_, display_id)
+          ? display_zoom_factors_[display_id]
+          : 1.f;
+
+  // Find the index of |current_display_zoom| in |zooms|. The nearest value is
+  // used if the exact match is not found.
+  std::size_t zoom_idx = 0;
+  double min_diff = std::abs(zooms[zoom_idx] - current_display_zoom);
+  for (std::size_t i = 1; i < zooms.size(); i++) {
+    if (std::abs(current_display_zoom - zooms[i]) < min_diff) {
+      min_diff = std::abs(current_display_zoom - zooms[i]);
+      zoom_idx = i;
+    }
+  }
+  // The index of the next zoom value.
+  const std::size_t next_zoom_idx = zoom_idx + (up ? -1 : 1);
+
+  // If the zoom index is out of bounds, that is, the display is already at
+  // maximum or minimum zoom then do nothing.
+  if (next_zoom_idx < 0 || next_zoom_idx >= zooms.size())
+    return false;
+
+  display_zoom_factors_[display_id] = zooms[next_zoom_idx];
+  UpdateDisplays();
+  return true;
+#else
+  return false;
+#endif  // (OS_CHROMEOS)
+}
+
+void DisplayManager::ResetDisplayZoom(int64_t display_id) {
+  DCHECK(!IsInUnifiedMode());
+  if (!base::ContainsKey(display_zoom_factors_, display_id))
+    return;
+  if (std::abs(display_zoom_factors_[display_id] - 1.f) > 0.001) {
+    display_zoom_factors_[display_id] = 1.f;
+    UpdateDisplays();
+  }
 }
 
 bool DisplayManager::ResetDisplayToDefaultMode(int64_t id) {

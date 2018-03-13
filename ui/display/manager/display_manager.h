@@ -476,8 +476,16 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Zoom the internal display.
   bool ZoomInternalDisplay(bool up);
 
+  // Zooms the display identified by |display_id| by increasing or decreasing
+  // its zoom factor value by 1 unit. Zooming in will have no effect on the
+  // display if it is already at its maximum zoom. Vice versa for zooming out.
+  bool ZoomDisplay(int64_t display_id, bool up);
+
   // Reset the internal display zoom.
   void ResetInternalDisplayZoom();
+
+  // Resets the zoom value to 1 for the display identified by |display_id|.
+  void ResetDisplayZoom(int64_t display_id);
 
   // Notifies observers of display configuration changes.
   void NotifyMetricsChanged(const Display& display, uint32_t metrics);

@@ -11,8 +11,12 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/chromeos_switches.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ash {
 namespace accelerators {
@@ -20,23 +24,41 @@ namespace accelerators {
 bool IsInternalDisplayZoomEnabled() {
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   return display_manager->IsDisplayUIScalingEnabled() ||
-         display_manager->IsInUnifiedMode();
+         display_manager->IsInUnifiedMode() ||
+         chromeos::switches::IsDisplayZoomSettingEnabled();
 }
 
-bool ZoomInternalDisplay(bool up) {
+bool ZoomDisplay(bool up) {
   if (up)
     base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Up"));
   else
     base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Down"));
 
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  return display_manager->ZoomInternalDisplay(up);
+
+  if (display_manager->IsInUnifiedMode() ||
+      !chromeos::switches::IsDisplayZoomSettingEnabled()) {
+    return display_manager->ZoomInternalDisplay(up);
+  }
+
+  gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  return display_manager->ZoomDisplay(display.id(), up);
 }
 
-void ResetInternalDisplayZoom() {
+void ResetDisplayZoom() {
   base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Reset"));
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  display_manager->ResetInternalDisplayZoom();
+  if (chromeos::switches::IsDisplayZoomSettingEnabled() &&
+      !display_manager->IsInUnifiedMode()) {
+    gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestPoint(point);
+    display_manager->ResetDisplayZoom(display.id());
+  } else {
+    display_manager->ResetInternalDisplayZoom();
+  }
 }
 
 bool ToggleMinimized() {

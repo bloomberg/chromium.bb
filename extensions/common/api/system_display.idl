@@ -186,6 +186,9 @@ namespace system.display {
     // Settings switches to a mojo API. NOTE: The name of this may change.
     [nodoc] boolean hasAccelerometerSupport;
 
+    // A list of zoom factor values that can be set for the display.
+    double[] availableDisplayZoomFactors;
+
     // The ratio between the display's current and default zoom.
     // For example, value 1 is equivalent to 100% zoom, and value 1.5 is
     // equivalent to 150% zoom.

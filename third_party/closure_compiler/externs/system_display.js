@@ -130,6 +130,7 @@ chrome.system.display.DisplayLayout;
  *   modes: !Array<!chrome.system.display.DisplayMode>,
  *   hasTouchSupport: boolean,
  *   hasAccelerometerSupport: boolean,
+ *   availableDisplayZoomFactors: !Array<number>,
  *   displayZoomFactor: number
  * }}
  * @see https://developer.chrome.com/extensions/system.display#type-DisplayUnitInfo
