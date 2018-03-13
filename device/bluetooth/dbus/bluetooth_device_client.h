@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -111,13 +111,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
     // Manufacturer specific advertisement data. Keys are 16 bits Manufacturer
     // ID followed by its byte array value. Read-only.
-    dbus::Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>
-        manufacturer_data;
+    dbus::Property<std::map<uint16_t, std::vector<uint8_t>>> manufacturer_data;
 
     // Service advertisement data. Keys are the UUIDs in string format followed
     // by its byte array value. Read-only.
-    dbus::Property<std::unordered_map<std::string, std::vector<uint8_t>>>
-        service_data;
+    dbus::Property<std::map<std::string, std::vector<uint8_t>>> service_data;
 
     // Indicate whether or not service discovery has been resolved. Read-only.
     dbus::Property<bool> services_resolved;

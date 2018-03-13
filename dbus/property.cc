@@ -661,13 +661,13 @@ void Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>::
 }
 
 //
-// Property<std::unordered_map<std::string, std::vector<uint8_t>>>
+// Property<std::map<std::string, std::vector<uint8_t>>>
 // specialization.
 //
 
 template <>
-bool Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
-    PopValueFromReader(MessageReader* reader) {
+bool Property<std::map<std::string, std::vector<uint8_t>>>::PopValueFromReader(
+    MessageReader* reader) {
   MessageReader variant_reader(nullptr);
   MessageReader dict_reader(nullptr);
   if (!reader->PopVariant(&variant_reader) ||
@@ -697,7 +697,7 @@ bool Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
 }
 
 template <>
-void Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
+void Property<std::map<std::string, std::vector<uint8_t>>>::
     AppendSetValueToWriter(MessageWriter* writer) {
   MessageWriter variant_writer(nullptr);
   MessageWriter dict_writer(nullptr);
@@ -725,13 +725,13 @@ void Property<std::unordered_map<std::string, std::vector<uint8_t>>>::
 }
 
 //
-// Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>
+// Property<std::map<uint16_t, std::vector<uint8_t>>>
 // specialization.
 //
 
 template <>
-bool Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
-    PopValueFromReader(MessageReader* reader) {
+bool Property<std::map<uint16_t, std::vector<uint8_t>>>::PopValueFromReader(
+    MessageReader* reader) {
   MessageReader variant_reader(nullptr);
   MessageReader dict_reader(nullptr);
   if (!reader->PopVariant(&variant_reader) ||
@@ -761,8 +761,8 @@ bool Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
 }
 
 template <>
-void Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>::
-    AppendSetValueToWriter(MessageWriter* writer) {
+void Property<std::map<uint16_t, std::vector<uint8_t>>>::AppendSetValueToWriter(
+    MessageWriter* writer) {
   MessageWriter variant_writer(nullptr);
   MessageWriter dict_writer(nullptr);
 
@@ -804,7 +804,7 @@ template class Property<std::vector<ObjectPath>>;
 template class Property<std::vector<uint8_t>>;
 template class Property<std::map<std::string, std::string>>;
 template class Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>;
-template class Property<std::unordered_map<std::string, std::vector<uint8_t>>>;
-template class Property<std::unordered_map<uint16_t, std::vector<uint8_t>>>;
+template class Property<std::map<std::string, std::vector<uint8_t>>>;
+template class Property<std::map<uint16_t, std::vector<uint8_t>>>;
 
 }  // namespace dbus

@@ -167,9 +167,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
       const std::string device_address,
       const std::vector<std::string>& service_uuids,
       device::BluetoothTransport type,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
-      const std::unordered_map<uint16_t, std::vector<uint8_t>>&
-          manufacturer_data);
+      const std::map<std::string, std::vector<uint8_t>>& service_data,
+      const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data);
 
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
@@ -184,9 +183,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void UpdateServiceAndManufacturerData(
       const dbus::ObjectPath& object_path,
       const std::vector<std::string>& service_uuids,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
-      const std::unordered_map<uint16_t, std::vector<uint8_t>>&
-          manufacturer_data);
+      const std::map<std::string, std::vector<uint8_t>>& service_data,
+      const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data);
 
   static const char kTestPinCode[];
   static const int kTestPassKey;
