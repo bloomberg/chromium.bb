@@ -26,6 +26,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/extension_prefs.h"
@@ -42,158 +43,6 @@
 namespace extensions {
 
 namespace {
-
-class JobObserver : public ContentVerifyJob::TestObserver {
- public:
-  JobObserver();
-  virtual ~JobObserver();
-
-  enum class Result { SUCCESS, FAILURE };
-
-  // Call this to add an expected job result.
-  void ExpectJobResult(const std::string& extension_id,
-                       const base::FilePath& relative_path,
-                       Result expected_result);
-
-  // Wait to see expected jobs. Returns true when we've seen all expected jobs
-  // finish, or false if there was an error or timeout.
-  bool WaitForExpectedJobs();
-
-  // ContentVerifyJob::TestObserver interface
-  void JobStarted(const ExtensionId& extension_id,
-                  const base::FilePath& relative_path) override;
-  void JobFinished(const ExtensionId& extension_id,
-                   const base::FilePath& relative_path,
-                   ContentVerifyJob::FailureReason failure_reason) override;
-  void OnHashesReady(const ExtensionId& extension_id,
-                     const base::FilePath& relative_path,
-                     bool success) override {}
-
- private:
-  struct ExpectedResult {
-   public:
-    std::string extension_id;
-    base::FilePath path;
-    Result result;
-
-    ExpectedResult(const ExtensionId& extension_id,
-                   const base::FilePath& path,
-                   Result result)
-        : extension_id(extension_id), path(path), result(result) {}
-  };
-  std::list<ExpectedResult> expectations_;
-  content::BrowserThread::ID creation_thread_;
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-};
-
-void JobObserver::ExpectJobResult(const std::string& extension_id,
-                                  const base::FilePath& relative_path,
-                                  Result expected_result) {
-  expectations_.push_back(ExpectedResult(
-      extension_id, relative_path, expected_result));
-}
-
-JobObserver::JobObserver() {
-  EXPECT_TRUE(
-      content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
-  ContentVerifyJob::SetObserverForTests(this);
-}
-
-JobObserver::~JobObserver() {
-  ContentVerifyJob::SetObserverForTests(nullptr);
-}
-
-bool JobObserver::WaitForExpectedJobs() {
-  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(creation_thread_));
-  if (!expectations_.empty()) {
-    loop_runner_ = new content::MessageLoopRunner();
-    loop_runner_->Run();
-    loop_runner_ = nullptr;
-  }
-  return expectations_.empty();
-}
-
-void JobObserver::JobStarted(const std::string& extension_id,
-                             const base::FilePath& relative_path) {
-}
-
-void JobObserver::JobFinished(const std::string& extension_id,
-                              const base::FilePath& relative_path,
-                              ContentVerifyJob::FailureReason failure_reason) {
-  if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    content::BrowserThread::PostTask(
-        creation_thread_, FROM_HERE,
-        base::BindOnce(&JobObserver::JobFinished, base::Unretained(this),
-                       extension_id, relative_path, failure_reason));
-    return;
-  }
-  Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
-                                                           : Result::FAILURE;
-  bool found = false;
-  for (std::list<ExpectedResult>::iterator i = expectations_.begin();
-       i != expectations_.end(); ++i) {
-    if (i->extension_id == extension_id && i->path == relative_path &&
-        i->result == result) {
-      found = true;
-      expectations_.erase(i);
-      break;
-    }
-  }
-  if (found) {
-    if (expectations_.empty() && loop_runner_.get())
-      loop_runner_->Quit();
-  } else {
-    LOG(WARNING) << "Ignoring unexpected JobFinished " << extension_id << "/"
-                 << relative_path.value()
-                 << " failure_reason:" << failure_reason;
-  }
-}
-
-class VerifierObserver : public ContentVerifier::TestObserver {
- public:
-  VerifierObserver();
-  virtual ~VerifierObserver();
-
-  const std::set<std::string>& completed_fetches() {
-    return completed_fetches_;
-  }
-
-  // Returns when we've seen OnFetchComplete for |extension_id|.
-  void WaitForFetchComplete(const std::string& extension_id);
-
-  // ContentVerifier::TestObserver
-  void OnFetchComplete(const std::string& extension_id, bool success) override;
-
- private:
-  std::set<std::string> completed_fetches_;
-  std::string id_to_wait_for_;
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-};
-
-VerifierObserver::VerifierObserver() {
-  ContentVerifier::SetObserverForTests(this);
-}
-
-VerifierObserver::~VerifierObserver() {
-  ContentVerifier::SetObserverForTests(nullptr);
-}
-
-void VerifierObserver::WaitForFetchComplete(const std::string& extension_id) {
-  EXPECT_TRUE(id_to_wait_for_.empty());
-  EXPECT_EQ(loop_runner_.get(), nullptr);
-  id_to_wait_for_ = extension_id;
-  loop_runner_ = new content::MessageLoopRunner();
-  loop_runner_->Run();
-  id_to_wait_for_.clear();
-  loop_runner_ = nullptr;
-}
-
-void VerifierObserver::OnFetchComplete(const std::string& extension_id,
-                                       bool success) {
-  completed_fetches_.insert(extension_id);
-  if (extension_id == id_to_wait_for_)
-    loop_runner_->Quit();
-}
 
 // This lets us intercept requests for update checks of extensions, and
 // substitute a local file as a simulated response.
@@ -365,11 +214,11 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     // Now disable the extension, since content scripts are read at enable time,
     // set up our job observer, and re-enable, expecting a success this time.
     DisableExtension(id);
-    JobObserver job_observer;
+    using Result = TestContentVerifyJobObserver::Result;
+    TestContentVerifyJobObserver job_observer;
     base::FilePath script_relfilepath =
         base::FilePath().AppendASCII(script_relpath);
-    job_observer.ExpectJobResult(id, script_relfilepath,
-                                 JobObserver::Result::SUCCESS);
+    job_observer.ExpectJobResult(id, script_relfilepath, Result::SUCCESS);
     EnableExtension(id);
     EXPECT_TRUE(job_observer.WaitForExpectedJobs());
 
@@ -383,35 +232,31 @@ class ContentVerifierTest : public ExtensionBrowserTest {
       ASSERT_TRUE(base::AppendToFile(scriptfile, extra.data(), extra.size()));
     }
     DisableExtension(id);
-    job_observer.ExpectJobResult(id, script_relfilepath,
-                                 JobObserver::Result::FAILURE);
+    job_observer.ExpectJobResult(id, script_relfilepath, Result::FAILURE);
     EnableExtension(id);
     EXPECT_TRUE(job_observer.WaitForExpectedJobs());
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
-  JobObserver job_observer;
+  TestContentVerifyJobObserver job_observer;
   std::string id = "hoipipabpcoomfapcecilckodldhmpgl";
 
+  using Result = TestContentVerifyJobObserver::Result;
   job_observer.ExpectJobResult(
-      id, base::FilePath(FILE_PATH_LITERAL("background.js")),
-      JobObserver::Result::SUCCESS);
-  job_observer.ExpectJobResult(id,
-                               base::FilePath(FILE_PATH_LITERAL("page.html")),
-                               JobObserver::Result::SUCCESS);
+      id, base::FilePath(FILE_PATH_LITERAL("background.js")), Result::SUCCESS);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("page.html")), Result::SUCCESS);
   job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("page.js")),
-                               JobObserver::Result::SUCCESS);
+                               Result::SUCCESS);
   job_observer.ExpectJobResult(
-      id, base::FilePath(FILE_PATH_LITERAL("dir/page2.html")),
-      JobObserver::Result::SUCCESS);
-  job_observer.ExpectJobResult(id,
-                               base::FilePath(FILE_PATH_LITERAL("page2.js")),
-                               JobObserver::Result::SUCCESS);
+      id, base::FilePath(FILE_PATH_LITERAL("dir/page2.html")), Result::SUCCESS);
+  job_observer.ExpectJobResult(
+      id, base::FilePath(FILE_PATH_LITERAL("page2.js")), Result::SUCCESS);
   job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs1.js")),
-                               JobObserver::Result::SUCCESS);
+                               Result::SUCCESS);
   job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs2.js")),
-                               JobObserver::Result::SUCCESS);
+                               Result::SUCCESS);
 
   VerifierObserver verifier_observer;
 

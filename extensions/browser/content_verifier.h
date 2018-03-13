@@ -74,6 +74,9 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  GURL GetSignatureFetchUrlForTest(const ExtensionId& extension_id,
+                                   const base::Version& extension_version);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 
