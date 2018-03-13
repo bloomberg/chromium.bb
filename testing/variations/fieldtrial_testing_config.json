@@ -4290,21 +4290,6 @@
             ]
         }
     ],
-    "WindowService-ChromeOS": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "Mus"
-                    ]
-                }
-            ]
-        }
-    ],
     "WorkStealingInScriptRunner": [
         {
             "platforms": [
