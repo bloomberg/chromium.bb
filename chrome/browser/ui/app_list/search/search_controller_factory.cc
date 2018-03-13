@@ -26,6 +26,7 @@
 #include "ui/app_list/app_list_switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 #endif
 
@@ -46,6 +47,8 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 // filter out more than half of results.
 // TODO(753947): Consider progressive algorithm of getting Play Store results.
 constexpr size_t kMaxPlayStoreResults = 12;
+
+constexpr size_t kMaxAppDataResults = 6;
 #endif
 
 }  // namespace
@@ -114,6 +117,13 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
                                                      profile, list_controller));
   }
+
+  size_t app_data_api_group_id =
+      controller->AddGroup(kMaxAppDataResults, 1.0, 10.0);
+  controller->AddProvider(app_data_api_group_id,
+                          std::make_unique<ArcAppDataSearchProvider>(
+                              kMaxAppDataResults, profile, list_controller));
+
 #endif
   return controller;
 }

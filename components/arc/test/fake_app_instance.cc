@@ -341,6 +341,14 @@ void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
                           std::move(fake_apps));
 }
 
+void FakeAppInstance::GetIcingGlobalQueryResults(
+    const std::string& query,
+    int32_t max_results,
+    GetIcingGlobalQueryResultsCallback callback) {
+  std::move(callback).Run(arc::mojom::AppDataRequestState::REQUEST_SUCCESS,
+                          std::vector<arc::mojom::AppDataResultPtr>());
+}
+
 void FakeAppInstance::StartPaiFlow() {
   ++start_pai_request_count_;
 }
