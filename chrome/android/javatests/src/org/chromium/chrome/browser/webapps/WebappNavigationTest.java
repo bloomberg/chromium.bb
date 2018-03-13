@@ -17,6 +17,7 @@ import android.support.test.filters.SmallTest;
 import android.util.Base64;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +67,11 @@ public class WebappNavigationTest {
 
     @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
+
+    @Before
+    public void setUp() {
+        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+    }
 
     /**
      * Test that navigating a webapp whose launch intent does not specify a theme colour outside of
