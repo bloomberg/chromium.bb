@@ -1527,6 +1527,20 @@ void ProfileSyncService::OnUserChoseDatatypes(
   ChangePreferredDataTypes(chosen_types);
 }
 
+void ProfileSyncService::OnUserChangedSyncEverythingOnly(bool sync_everything) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!engine_ && !HasUnrecoverableError()) {
+    NOTREACHED();
+    return;
+  }
+
+  sync_prefs_.SetKeepEverythingSynced(sync_everything);
+  UpdateSelectedTypesHistogram(sync_everything, GetPreferredDataTypes());
+  if (data_type_manager_)
+    data_type_manager_->ResetDataTypeErrors();
+  ReconfigureDatatypeManager();
+}
+
 void ProfileSyncService::ChangePreferredDataTypes(
     syncer::ModelTypeSet preferred_types) {
   DCHECK(thread_checker_.CalledOnValidThread());

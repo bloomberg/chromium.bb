@@ -153,6 +153,11 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('SettingIndividualDatatypes', function() {
+      // Simulate syncAllDataType being true.
+      const expected = getSyncAllPrefs();
+      expected.syncAllDataTypes = true;
+      cr.webUIListenerCallback('sync-prefs-changed', expected);
+
       const syncAllDataTypesControl = syncPage.$.syncAllDataTypesControl;
       assertFalse(syncAllDataTypesControl.disabled);
       assertTrue(syncAllDataTypesControl.checked);
@@ -168,32 +173,25 @@ cr.define('settings_people_page_sync_page', function() {
       // Uncheck the Sync All control.
       MockInteractions.tap(syncAllDataTypesControl);
 
-      function verifyPrefs(prefs) {
-        const expected = getSyncAllPrefs();
-        expected.syncAllDataTypes = false;
-        assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
+      return browserProxy.whenCalled('setSyncEverything')
+          .then(syncEverything => {
+            assertFalse(syncEverything);
 
-        cr.webUIListenerCallback('sync-prefs-changed', expected);
+            // Assert that all the individual datatype controls are enabled.
+            for (const control of datatypeControls) {
+              assertFalse(control.disabled);
+              assertTrue(control.checked);
+            }
 
-        // Assert that all the individual datatype controls are enabled.
-        for (const control of datatypeControls) {
-          assertFalse(control.disabled);
-          assertTrue(control.checked);
-        }
-
-        browserProxy.resetResolver('setSyncDatatypes');
-
-        // Test an arbitrarily-selected control (extensions synced control).
-        MockInteractions.tap(datatypeControls[3]);
-        return browserProxy.whenCalled('setSyncDatatypes').then(
-            function(prefs) {
-              const expected = getSyncAllPrefs();
-              expected.syncAllDataTypes = false;
-              expected.extensionsSynced = false;
-              assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
-            });
-      }
-      return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
+            // Test an arbitrarily-selected control (extensions synced control).
+            MockInteractions.tap(datatypeControls[3]);
+            return browserProxy.whenCalled('setSyncDatatypes')
+                .then(function(prefs) {
+                  assertFalse(datatypeControls[3].checked);
+                  expected.extensionsSynced = false;
+                  assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
+                });
+          });
     });
 
     test('RadioBoxesEnabledWhenUnencrypted', function() {
