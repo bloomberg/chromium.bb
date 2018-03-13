@@ -1707,6 +1707,9 @@ extern const char kQuickUnlockFingerprintDescription[];
 extern const char kOfficeEditingComponentAppName[];
 extern const char kOfficeEditingComponentAppDescription[];
 
+extern const char kSkipExtraAshWindowPositioningName[];
+extern const char kSkipExtraAshWindowPositioningDescription[];
+
 extern const char kTeamDrivesName[];
 extern const char kTeamDrivesDescription[];
 
