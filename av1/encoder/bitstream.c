@@ -3692,8 +3692,13 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     data += tg_hdr_size;
 
 #if CONFIG_OBU_FRAME
-    total_size += write_frame_header_obu(cpi, saved_wb, data);
+    const uint32_t frame_header_size =
+        write_frame_header_obu(cpi, saved_wb, data);
+#else
+    const uint32_t frame_header_size = 0;
 #endif  // CONFIG_OBU_FRAME
+    data += frame_header_size;
+    total_size += frame_header_size;
 
     int tile_size_bytes = 0;
     int tile_col_size_bytes = 0;
@@ -3781,9 +3786,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     }
 
     if (have_tiles) {
-      total_size =
-          remux_tiles(cm, data, total_size, *max_tile_size, *max_tile_col_size,
-                      &tile_size_bytes, &tile_col_size_bytes);
+      total_size = remux_tiles(cm, data, total_size - frame_header_size,
+                               *max_tile_size, *max_tile_col_size,
+                               &tile_size_bytes, &tile_col_size_bytes);
+      total_size += frame_header_size;
     }
 
     // In EXT_TILE case, only use 1 tile group. Follow the obu syntax, write
@@ -3799,6 +3805,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       assert(0);
     }
     total_size += (uint32_t)length_field_size;
+#if CONFIG_OBU_FRAME
+    saved_wb->bit_buffer += length_field_size;
+#endif  // CONFIG_OBU_FRAME
 #else
     mem_put_le32(dst, total_size);
     total_size += PRE_OBU_SIZE_BYTES;
