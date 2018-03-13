@@ -161,8 +161,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   SpellChecker& GetSpellChecker() const;
   FrameConsole& Console() const;
 
-  void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&);
-
   // A local root is the root of a connected subtree that contains only
   // LocalFrames. The local root is responsible for coordinating input, layout,
   // et cetera for that subtree of frames.

@@ -518,6 +518,13 @@ bool SVGSVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   return IsValid() && Element::LayoutObjectIsNeeded(style);
 }
 
+void SVGSVGElement::AttachLayoutTree(AttachContext& context) {
+  SVGGraphicsElement::AttachLayoutTree(context);
+
+  if (GetLayoutObject() && GetLayoutObject()->IsSVGRoot())
+    ToLayoutSVGRoot(GetLayoutObject())->IntrinsicSizingInfoChanged();
+}
+
 LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&) {
   if (IsOutermostSVGSVGElement())
     return new LayoutSVGRoot(this);
