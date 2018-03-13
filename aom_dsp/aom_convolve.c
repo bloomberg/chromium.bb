@@ -52,27 +52,6 @@ static void convolve_horiz(const uint8_t *src, ptrdiff_t src_stride,
   }
 }
 
-static void convolve_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                   uint8_t *dst, ptrdiff_t dst_stride,
-                                   const InterpKernel *x_filters, int x0_qn,
-                                   int x_step_qn, int w, int h) {
-  src -= SUBPEL_TAPS / 2 - 1;
-  for (int y = 0; y < h; ++y) {
-    int x_qn = x0_qn;
-    for (int x = 0; x < w; ++x) {
-      const uint8_t *const src_x = &src[x_qn >> SCALE_SUBPEL_BITS];  // q8
-      const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
-      assert(x_filter_idx < SUBPEL_SHIFTS);
-      const int16_t *const x_filter = x_filters[x_filter_idx];
-      const int sum = horz_scalar_product(src_x, x_filter);
-      dst[x] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-      x_qn += x_step_qn;
-    }
-    src += src_stride;
-    dst += dst_stride;
-  }
-}
-
 static void convolve_avg_horiz(const uint8_t *src, ptrdiff_t src_stride,
                                uint8_t *dst, ptrdiff_t dst_stride,
                                const InterpKernel *x_filters, int x0_q4,
@@ -87,28 +66,6 @@ static void convolve_avg_horiz(const uint8_t *src, ptrdiff_t src_stride,
       dst[x] = ROUND_POWER_OF_TWO(
           dst[x] + clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS)), 1);
       x_q4 += x_step_q4;
-    }
-    src += src_stride;
-    dst += dst_stride;
-  }
-}
-
-static void convolve_avg_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                       uint8_t *dst, ptrdiff_t dst_stride,
-                                       const InterpKernel *x_filters, int x0_qn,
-                                       int x_step_qn, int w, int h) {
-  src -= SUBPEL_TAPS / 2 - 1;
-  for (int y = 0; y < h; ++y) {
-    int x_qn = x0_qn;
-    for (int x = 0; x < w; ++x) {
-      const uint8_t *const src_x = &src[x_qn >> SCALE_SUBPEL_BITS];
-      const int x_filter_idx = (x_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS;
-      assert(x_filter_idx < SUBPEL_SHIFTS);
-      const int16_t *const x_filter = x_filters[x_filter_idx];
-      const int sum = horz_scalar_product(src_x, x_filter);
-      dst[x] = ROUND_POWER_OF_TWO(
-          dst[x] + clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS)), 1);
-      x_qn += x_step_qn;
     }
     src += src_stride;
     dst += dst_stride;
@@ -135,28 +92,6 @@ static void convolve_vert(const uint8_t *src, ptrdiff_t src_stride,
   }
 }
 
-static void convolve_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                  uint8_t *dst, ptrdiff_t dst_stride,
-                                  const InterpKernel *y_filters, int y0_qn,
-                                  int y_step_qn, int w, int h) {
-  src -= src_stride * (SUBPEL_TAPS / 2 - 1);
-
-  for (int x = 0; x < w; ++x) {
-    int y_qn = y0_qn;
-    for (int y = 0; y < h; ++y) {
-      const unsigned char *src_y =
-          &src[(y_qn >> SCALE_SUBPEL_BITS) * src_stride];
-      const int16_t *const y_filter =
-          y_filters[(y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS];
-      const int sum = vert_scalar_product(src_y, src_stride, y_filter);
-      dst[y * dst_stride] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-      y_qn += y_step_qn;
-    }
-    ++src;
-    ++dst;
-  }
-}
-
 static void convolve_avg_vert(const uint8_t *src, ptrdiff_t src_stride,
                               uint8_t *dst, ptrdiff_t dst_stride,
                               const InterpKernel *y_filters, int y0_q4,
@@ -174,31 +109,6 @@ static void convolve_avg_vert(const uint8_t *src, ptrdiff_t src_stride,
               clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS)),
           1);
       y_q4 += y_step_q4;
-    }
-    ++src;
-    ++dst;
-  }
-}
-
-static void convolve_avg_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                      uint8_t *dst, ptrdiff_t dst_stride,
-                                      const InterpKernel *y_filters, int y0_qn,
-                                      int y_step_qn, int w, int h) {
-  src -= src_stride * (SUBPEL_TAPS / 2 - 1);
-
-  for (int x = 0; x < w; ++x) {
-    int y_qn = y0_qn;
-    for (int y = 0; y < h; ++y) {
-      const unsigned char *src_y =
-          &src[(y_qn >> SCALE_SUBPEL_BITS) * src_stride];
-      const int16_t *const y_filter =
-          y_filters[(y_qn & SCALE_SUBPEL_MASK) >> SCALE_EXTRA_BITS];
-      const int sum = vert_scalar_product(src_y, src_stride, y_filter);
-      dst[y * dst_stride] = ROUND_POWER_OF_TWO(
-          dst[y * dst_stride] +
-              clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS)),
-          1);
-      y_qn += y_step_qn;
     }
     ++src;
     ++dst;
@@ -239,41 +149,6 @@ static void convolve(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
                 dst_stride, y_filters, y0_q4, y_step_q4, w, h);
 }
 
-static void convolve_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                             uint8_t *dst, ptrdiff_t dst_stride,
-                             const InterpKernel *const x_filters, int x0_qn,
-                             int x_step_qn, const InterpKernel *const y_filters,
-                             int y0_qn, int y_step_qn, int w, int h) {
-  // TODO(afergs): Update comment here
-  // Note: Fixed size intermediate buffer, temp, places limits on parameters.
-  // 2d filtering proceeds in 2 steps:
-  //   (1) Interpolate horizontally into an intermediate buffer, temp.
-  //   (2) Interpolate temp vertically to derive the sub-pixel result.
-  // Deriving the maximum number of rows in the temp buffer (135):
-  // --Smallest scaling factor is x1/2 ==> y_step_qn = 32 (Normative).
-  // --Largest block size is 64x64 pixels.
-  // --64 rows in the downscaled frame span a distance of (64 - 1) * 32 in the
-  //   original frame (in 1/16th pixel units).
-  // --Must round-up because block may be located at sub-pixel position.
-  // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
-  // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
-  uint8_t temp[MAX_EXT_SIZE * MAX_SB_SIZE];
-  const int intermediate_height =
-      (((h - 1) * y_step_qn + y0_qn) >> SCALE_SUBPEL_BITS) + SUBPEL_TAPS;
-
-  assert(w <= MAX_SB_SIZE);
-  assert(h <= MAX_SB_SIZE);
-
-  assert(y_step_qn <= SCALE_SUBPEL_BITS * 2);
-  assert(x_step_qn <= SCALE_SUBPEL_BITS * 2);
-
-  convolve_horiz_scale_c(src - src_stride * (SUBPEL_TAPS / 2 - 1), src_stride,
-                         temp, MAX_SB_SIZE, x_filters, x0_qn, x_step_qn, w,
-                         intermediate_height);
-  convolve_vert_scale_c(temp + MAX_SB_SIZE * (SUBPEL_TAPS / 2 - 1), MAX_SB_SIZE,
-                        dst, dst_stride, y_filters, y0_qn, y_step_qn, w, h);
-}
-
 static const InterpKernel *get_filter_base(const int16_t *filter) {
   // NOTE: This assumes that the filter table is 256-byte aligned.
   // TODO(agrange) Modify to make independent of table alignment.
@@ -299,21 +174,6 @@ void aom_convolve8_horiz_c(const uint8_t *src, ptrdiff_t src_stride,
                  w, h);
 }
 
-void aom_convolve8_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                 uint8_t *dst, ptrdiff_t dst_stride,
-                                 const int16_t *filter_x, int subpel_x,
-                                 int x_step_qn, const int16_t *filter_y,
-                                 int subpel_y, int y_step_qn, int w, int h) {
-  const InterpKernel *const filters_x = get_filter_base(filter_x);
-
-  (void)subpel_y;
-  (void)filter_y;
-  (void)y_step_qn;
-
-  convolve_horiz_scale_c(src, src_stride, dst, dst_stride, filters_x, subpel_x,
-                         x_step_qn, w, h);
-}
-
 void aom_convolve8_avg_horiz_c(const uint8_t *src, ptrdiff_t src_stride,
                                uint8_t *dst, ptrdiff_t dst_stride,
                                const int16_t *filter_x, int x_step_q4,
@@ -327,22 +187,6 @@ void aom_convolve8_avg_horiz_c(const uint8_t *src, ptrdiff_t src_stride,
 
   convolve_avg_horiz(src, src_stride, dst, dst_stride, filters_x, x0_q4,
                      x_step_q4, w, h);
-}
-
-void aom_convolve8_avg_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                     uint8_t *dst, ptrdiff_t dst_stride,
-                                     const int16_t *filter_x, int subpel_x,
-                                     int x_step_qn, const int16_t *filter_y,
-                                     int subpel_y, int y_step_qn, int w,
-                                     int h) {
-  const InterpKernel *const filters_x = get_filter_base(filter_x);
-
-  (void)subpel_y;
-  (void)filter_y;
-  (void)y_step_qn;
-
-  convolve_avg_horiz_scale_c(src, src_stride, dst, dst_stride, filters_x,
-                             subpel_x, x_step_qn, w, h);
 }
 
 void aom_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride,
@@ -360,21 +204,6 @@ void aom_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride,
                 w, h);
 }
 
-void aom_convolve8_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                uint8_t *dst, ptrdiff_t dst_stride,
-                                const int16_t *filter_x, int subpel_x,
-                                int x_step_qn, const int16_t *filter_y,
-                                int subpel_y, int y_step_qn, int w, int h) {
-  const InterpKernel *const filters_y = get_filter_base(filter_y);
-
-  (void)subpel_x;
-  (void)filter_x;
-  (void)x_step_qn;
-
-  convolve_vert_scale_c(src, src_stride, dst, dst_stride, filters_y, subpel_y,
-                        y_step_qn, w, h);
-}
-
 void aom_convolve8_avg_vert_c(const uint8_t *src, ptrdiff_t src_stride,
                               uint8_t *dst, ptrdiff_t dst_stride,
                               const int16_t *filter_x, int x_step_q4,
@@ -388,21 +217,6 @@ void aom_convolve8_avg_vert_c(const uint8_t *src, ptrdiff_t src_stride,
 
   convolve_avg_vert(src, src_stride, dst, dst_stride, filters_y, y0_q4,
                     y_step_q4, w, h);
-}
-
-void aom_convolve8_avg_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                    uint8_t *dst, ptrdiff_t dst_stride,
-                                    const int16_t *filter_x, int subpel_x,
-                                    int x_step_qn, const int16_t *filter_y,
-                                    int subpel_y, int y_step_qn, int w, int h) {
-  const InterpKernel *const filters_y = get_filter_base(filter_y);
-
-  (void)subpel_x;
-  (void)filter_x;
-  (void)x_step_qn;
-
-  convolve_avg_vert_scale_c(src, src_stride, dst, dst_stride, filters_y,
-                            subpel_y, y_step_qn, w, h);
 }
 
 void aom_convolve8_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
@@ -419,19 +233,6 @@ void aom_convolve8_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
            filters_y, y0_q4, y_step_q4, w, h);
 }
 
-void aom_convolve8_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                           uint8_t *dst, ptrdiff_t dst_stride,
-                           const int16_t *filter_x, int subpel_x, int x_step_qn,
-                           const int16_t *filter_y, int subpel_y, int y_step_qn,
-                           int w, int h) {
-  const InterpKernel *const filters_x = get_filter_base(filter_x);
-
-  const InterpKernel *const filters_y = get_filter_base(filter_y);
-
-  convolve_scale_c(src, src_stride, dst, dst_stride, filters_x, subpel_x,
-                   x_step_qn, filters_y, subpel_y, y_step_qn, w, h);
-}
-
 void aom_convolve8_avg_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
                          ptrdiff_t dst_stride, const int16_t *filter_x,
                          int x_step_q4, const int16_t *filter_y, int y_step_q4,
@@ -443,22 +244,6 @@ void aom_convolve8_avg_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
 
   aom_convolve8_c(src, src_stride, temp, MAX_SB_SIZE, filter_x, x_step_q4,
                   filter_y, y_step_q4, w, h);
-  aom_convolve_avg_c(temp, MAX_SB_SIZE, dst, dst_stride, NULL, 0, NULL, 0, w,
-                     h);
-}
-
-void aom_convolve8_avg_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                               uint8_t *dst, ptrdiff_t dst_stride,
-                               const int16_t *filter_x, int subpel_x,
-                               int x_step_qn, const int16_t *filter_y,
-                               int subpel_y, int y_step_qn, int w, int h) {
-  /* Fixed size intermediate buffer places limits on parameters. */
-  DECLARE_ALIGNED(16, uint8_t, temp[MAX_SB_SIZE * MAX_SB_SIZE]);
-  assert(w <= MAX_SB_SIZE);
-  assert(h <= MAX_SB_SIZE);
-
-  aom_convolve8_scale_c(src, src_stride, temp, MAX_SB_SIZE, filter_x, subpel_x,
-                        x_step_qn, filter_y, subpel_y, y_step_qn, w, h);
   aom_convolve_avg_c(temp, MAX_SB_SIZE, dst, dst_stride, NULL, 0, NULL, 0, w,
                      h);
 }
@@ -498,56 +283,6 @@ void aom_convolve_avg_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
   }
 }
 
-void aom_scaled_horiz_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-                        ptrdiff_t dst_stride, const int16_t *filter_x,
-                        int x_step_q4, const int16_t *filter_y, int y_step_q4,
-                        int w, int h) {
-  aom_convolve8_horiz_c(src, src_stride, dst, dst_stride, filter_x, x_step_q4,
-                        filter_y, y_step_q4, w, h);
-}
-
-void aom_scaled_vert_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-                       ptrdiff_t dst_stride, const int16_t *filter_x,
-                       int x_step_q4, const int16_t *filter_y, int y_step_q4,
-                       int w, int h) {
-  aom_convolve8_vert_c(src, src_stride, dst, dst_stride, filter_x, x_step_q4,
-                       filter_y, y_step_q4, w, h);
-}
-
-void aom_scaled_2d_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-                     ptrdiff_t dst_stride, const int16_t *filter_x,
-                     int x_step_q4, const int16_t *filter_y, int y_step_q4,
-                     int w, int h) {
-  aom_convolve8_c(src, src_stride, dst, dst_stride, filter_x, x_step_q4,
-                  filter_y, y_step_q4, w, h);
-}
-
-void aom_scaled_avg_horiz_c(const uint8_t *src, ptrdiff_t src_stride,
-                            uint8_t *dst, ptrdiff_t dst_stride,
-                            const int16_t *filter_x, int x_step_q4,
-                            const int16_t *filter_y, int y_step_q4, int w,
-                            int h) {
-  aom_convolve8_avg_horiz_c(src, src_stride, dst, dst_stride, filter_x,
-                            x_step_q4, filter_y, y_step_q4, w, h);
-}
-
-void aom_scaled_avg_vert_c(const uint8_t *src, ptrdiff_t src_stride,
-                           uint8_t *dst, ptrdiff_t dst_stride,
-                           const int16_t *filter_x, int x_step_q4,
-                           const int16_t *filter_y, int y_step_q4, int w,
-                           int h) {
-  aom_convolve8_avg_vert_c(src, src_stride, dst, dst_stride, filter_x,
-                           x_step_q4, filter_y, y_step_q4, w, h);
-}
-
-void aom_scaled_avg_2d_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-                         ptrdiff_t dst_stride, const int16_t *filter_x,
-                         int x_step_q4, const int16_t *filter_y, int y_step_q4,
-                         int w, int h) {
-  aom_convolve8_avg_c(src, src_stride, dst, dst_stride, filter_x, x_step_q4,
-                      filter_y, y_step_q4, w, h);
-}
-
 static INLINE int highbd_vert_scalar_product(const uint16_t *a,
                                              ptrdiff_t a_stride,
                                              const int16_t *b) {
@@ -556,7 +291,6 @@ static INLINE int highbd_vert_scalar_product(const uint16_t *a,
   return sum;
 }
 
-// TODO(afergs): Make sure this works too
 static void convolve_add_src_horiz(const uint8_t *src, ptrdiff_t src_stride,
                                    uint8_t *dst, ptrdiff_t dst_stride,
                                    const InterpKernel *x_filters, int x0_q4,

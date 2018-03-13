@@ -275,19 +275,6 @@ add_proto qw/void aom_convolve8_vert/,            "const uint8_t *src, ptrdiff_t
 add_proto qw/void aom_convolve8_avg/,             "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 add_proto qw/void aom_convolve8_avg_horiz/,       "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 add_proto qw/void aom_convolve8_avg_vert/,        "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_2d/,                 "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_horiz/,              "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_vert/,               "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_avg_2d/,             "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_avg_horiz/,          "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_scaled_avg_vert/,           "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-
-add_proto qw/void aom_convolve8_horiz_scale/,     "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8_vert_scale/,      "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8_avg_horiz_scale/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8_avg_vert_scale/,  "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8_scale/,           "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8_avg_scale/,       "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int subpel_x, int x_step_q4, const int16_t *filter_y, int subpel_y, int y_step_q4, int w, int h";
 
 specialize qw/aom_convolve_copy       sse2      /;
 specialize qw/aom_convolve_avg        sse2      /;
@@ -297,7 +284,6 @@ specialize qw/aom_convolve8_vert      sse2 ssse3/, "$avx2_ssse3";
 specialize qw/aom_convolve8_avg       sse2 ssse3/;
 specialize qw/aom_convolve8_avg_horiz sse2 ssse3/;
 specialize qw/aom_convolve8_avg_vert  sse2 ssse3/;
-specialize qw/aom_scaled_2d                ssse3/;
 
 add_proto qw/void aom_convolve8_add_src/,       "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 add_proto qw/void aom_convolve8_add_src_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
