@@ -2,12 +2,3 @@
 
 # These tests are too slow under Fuchsia in QEMU w/out KVM.
 -IPCSyncChannelTest.ChattyServer*
-
-# Flaky, https://crbug.com/764018.
--IPCChannelBadMessageTest.BadMessage
-
-# Flaky, https://crbug.com/764015.
--IPCChannelProxyTest.*MessageClassFilters
-
-# Flaky, https://crbug.com/756112.
--IPCMojoBootstrapTest.Connect
