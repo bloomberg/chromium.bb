@@ -1120,6 +1120,10 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
   if (!provider_host ||
       provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
+    // Note that we don't BadMessage here since Clients#get() can be passed an
+    // arbitrary UUID. The BadMessages for the origin mismatches below are
+    // appropriate because the UUID is taken directly from a Client object so we
+    // expect it to be valid.
     std::move(callback).Run(nullptr);
     return;
   }
@@ -1166,15 +1170,16 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     return;
   }
   if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
-    // The client does not belong to the same origin as this ServiceWorker,
-    // possibly due to timing issue or bad message.
-    std::move(callback).Run(nullptr /* client */);
+    mojo::ReportBadMessage(
+        "Received WindowClient#focus() request for a cross-origin client.");
+    binding_.Close();
     return;
   }
   if (provider_host->client_type() !=
       blink::mojom::ServiceWorkerClientType::kWindow) {
     // focus() should be called only for WindowClient.
-    mojo::ReportBadMessage("Received focus() request for a non-window client.");
+    mojo::ReportBadMessage(
+        "Received WindowClient#focus() request for a non-window client.");
     binding_.Close();
     return;
   }
@@ -1217,6 +1222,20 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   if (!provider_host) {
     std::move(callback).Run(false /* success */, nullptr /* client */,
                             std::string("The client was not found."));
+    return;
+  }
+  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    mojo::ReportBadMessage(
+        "Received WindowClient#navigate() request for a cross-origin client.");
+    binding_.Close();
+    return;
+  }
+  if (provider_host->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
+    // navigate() should be called only for WindowClient.
+    mojo::ReportBadMessage(
+        "Received WindowClient#navigate() request for a non-window client.");
+    binding_.Close();
     return;
   }
   if (provider_host->active_version() != this) {
@@ -1372,8 +1391,7 @@ void ServiceWorkerVersion::OnPostMessageToClient(
         message) {
   if (!context_)
     return;
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerVersion::OnPostMessageToDocument",
+  TRACE_EVENT1("ServiceWorker", "ServiceWorkerVersion::OnPostMessageToClient",
                "Client id", client_uuid);
   ServiceWorkerProviderHost* provider_host =
       context_->GetProviderHostByClientID(client_uuid);
@@ -1382,8 +1400,9 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     return;
   }
   if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
-    // The client does not belong to the same origin as this ServiceWorker,
-    // possibly due to timing issue or bad message.
+    mojo::ReportBadMessage(
+        "Received Client#postMessage() request for a cross-origin client.");
+    binding_.Close();
     return;
   }
   provider_host->PostMessageToClient(this, std::move(message->data));
