@@ -1301,8 +1301,22 @@ class Port(object):
         """Whether a test is considered a web-platform-tests test."""
         return re.match(r'(virtual/[^/]+/)?external/wpt/', test)
 
-    def should_use_wptserve(self, test):
-        return self.is_wpt_test(test)
+    @staticmethod
+    def should_use_wptserve(test):
+        return Port.is_wpt_test(test)
+
+    @staticmethod
+    def should_run_in_wpt_mode(test):
+        """Whether content_shell should run a test in the WPT mode.
+
+        Some tests outside external/wpt should also be run in the WPT mode in
+        content_shell, namely: harness-tests/wpt/ (tests for console log
+        filtering).
+        """
+        # Note: match rules in TestInterfaces::ConfigureForTestWithURL in
+        # //src/content/shell/test_runner/test_interfaces.cc.
+        return (Port.is_wpt_test(test) or
+                re.match(r'harness-tests/wpt/', test))
 
     def start_wptserve(self):
         """Starts a WPT web server.
@@ -1814,12 +1828,19 @@ class Port(object):
         return []
 
     def should_run_as_pixel_test(self, test_input):
+        """Whether a test should run as pixel test (when there is no reference).
+
+        This provides the *default* value for whether a test should run as
+        pixel test. When reference files exist (checked by layout_test_runner
+        before calling this method), the test always runs as pixel test.
+        """
         if not self._options.pixel_tests:
             return False
         if self._options.pixel_test_directories:
             return any(test_input.test_name.startswith(directory) for directory in self._options.pixel_test_directories)
-        # TODO(burnik): Make sure this is the right way to do it.
-        if self.should_use_wptserve(test_input.test_name):
+        if self.should_run_in_wpt_mode(test_input.test_name):
+            # WPT should not run as pixel test by default, except reftests
+            # (for which reference files would exist).
             return False
         return True
 

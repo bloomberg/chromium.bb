@@ -38,6 +38,7 @@ from webkitpy.common.system.platform_info_mock import MockPlatformInfo
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.layout_tests.models.test_input import TestInput
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
 
@@ -586,18 +587,42 @@ class PortTest(unittest.TestCase):
         self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt_automation', 'foo.html'))
 
     def test_is_wpt_test(self):
-        port = self.make_port(with_tests=True)
-        filesystem = port.host.filesystem
-        PortTest._add_manifest_to_mock_file_system(filesystem)
+        self.assertTrue(Port.is_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
+        self.assertTrue(Port.is_wpt_test('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'))
+        self.assertFalse(Port.is_wpt_test('dom/domparsing/namespaces-1.html'))
+        self.assertFalse(Port.is_wpt_test('rutabaga'))
 
-        self.assertTrue(port.is_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
-        self.assertTrue(port.is_wpt_test('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'))
-        self.assertFalse(port.is_wpt_test('dom/domparsing/namespaces-1.html'))
-        self.assertFalse(port.is_wpt_test('rutabaga'))
+        self.assertTrue(Port.is_wpt_test('virtual/a-name/external/wpt/baz/qux.htm'))
+        self.assertFalse(Port.is_wpt_test('virtual/external/wpt/baz/qux.htm'))
+        self.assertFalse(Port.is_wpt_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
 
-        self.assertTrue(port.is_wpt_test('virtual/a-name/external/wpt/baz/qux.htm'))
-        self.assertFalse(port.is_wpt_test('virtual/external/wpt/baz/qux.htm'))
-        self.assertFalse(port.is_wpt_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
+    def test_should_use_wptserve(self):
+        self.assertTrue(Port.should_use_wptserve('external/wpt/dom/interfaces.html'))
+        self.assertTrue(Port.should_use_wptserve('virtual/a-name/external/wpt/dom/interfaces.html'))
+        self.assertFalse(Port.should_use_wptserve('harness-tests/wpt/console_logging.html'))
+        self.assertFalse(Port.should_use_wptserve('dom/domparsing/namespaces-1.html'))
+
+    def test_should_run_as_pixel_test_with_no_pixel_tests_in_args(self):
+        # With the --no-pixel-tests flag, no tests should run as pixel tests.
+        options = optparse.Values({'pixel_tests': False})
+        port = self.make_port(options=options)
+        self.assertFalse(port.should_run_as_pixel_test(TestInput('fast/css/001.html')))
+
+    def test_should_run_as_pixel_test_with_pixel_test_directories(self):
+        # When --pixel-test-directory is supplied, only tests in those
+        # directories are allowed to run as pixel tests.
+        options = optparse.Values({'pixel_tests': True, 'pixel_test_directories': ['foo']})
+        port = self.make_port(options=options)
+        self.assertTrue(port.should_run_as_pixel_test(TestInput('foo/bar.html')))
+        self.assertFalse(port.should_run_as_pixel_test(TestInput('bar/baz.html')))
+
+    def test_should_run_as_pixel_test_default(self):
+        options = optparse.Values({'pixel_tests': True, 'pixel_test_directories': None})
+        port = self.make_port(options=options)
+        self.assertFalse(port.should_run_as_pixel_test(TestInput('external/wpt/dom/interfaces.html')))
+        self.assertFalse(port.should_run_as_pixel_test(TestInput('virtual/a-name/external/wpt/dom/interfaces.html')))
+        self.assertFalse(port.should_run_as_pixel_test(TestInput('harness-tests/wpt/console_logging.html')))
+        self.assertTrue(port.should_run_as_pixel_test(TestInput('fast/css/001.html')))
 
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)
