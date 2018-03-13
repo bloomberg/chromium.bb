@@ -1452,13 +1452,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleRotateActiveWindow();
       break;
     case SCALE_UI_DOWN:
-      accelerators::ZoomInternalDisplay(false /* down */);
+      accelerators::ZoomDisplay(false /* down */);
       break;
     case SCALE_UI_RESET:
-      accelerators::ResetInternalDisplayZoom();
+      accelerators::ResetDisplayZoom();
       break;
     case SCALE_UI_UP:
-      accelerators::ZoomInternalDisplay(true /* up */);
+      accelerators::ZoomDisplay(true /* up */);
       break;
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();

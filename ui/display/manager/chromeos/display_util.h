@@ -15,6 +15,7 @@
 namespace display {
 
 class DisplaySnapshot;
+class ManagedDisplayMode;
 
 // Returns a string describing |state|.
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state);
@@ -34,6 +35,10 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 // display. Currently only DISPLAY_CONNECTION_TYPE_NETWORK return false.
 // All other types return true.
 bool IsPhysicalDisplayType(DisplayConnectionType type);
+
+// Returns a list of display zooms supported by the given |mode|.
+std::vector<double> DISPLAY_MANAGER_EXPORT
+GetDisplayZoomFactors(const ManagedDisplayMode& mode);
 
 }  // namespace display
 

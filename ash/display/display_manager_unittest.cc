@@ -40,6 +40,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
+#include "ui/display/manager/chromeos/display_util.h"
 #include "ui/display/manager/chromeos/test/touch_device_manager_test_api.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -1371,6 +1372,112 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_2.id()).device_scale_factor(),
       zoom_factor_3 * display_2_dsf);
+}
+
+TEST_F(DisplayManagerTest, ZoomDisplay) {
+  // Initialize a display pair.
+  UpdateDisplay("1920x1080#1920x1080|1280x720%60, 2560x1440*2#2560x1440");
+  reset();
+
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+
+  const display::ManagedDisplayInfo& info_1 = GetDisplayInfoAt(0);
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes_1 =
+      info_1.display_modes();
+
+  const display::ManagedDisplayInfo& info_2 = GetDisplayInfoAt(1);
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes_2 =
+      info_2.display_modes();
+
+  // Set the display mode for each display.
+  display::test::SetDisplayResolution(display_manager(), info_1.id(),
+                                      modes_1[0].size());
+  display::test::SetDisplayResolution(display_manager(), info_2.id(),
+                                      modes_2[0].size());
+  display_manager()->UpdateDisplays();
+
+  // Enumerate the zoom factors for display.
+  const std::vector<double> zoom_factors_1 =
+      display::GetDisplayZoomFactors(modes_1[0]);
+
+  // Set the zoom factor to one of the enumerated zoom factors for the said
+  // display.
+  const std::size_t zoom_factor_idx_1 = 0;
+  display_manager()->UpdateZoomFactor(info_1.id(),
+                                      zoom_factors_1[zoom_factor_idx_1]);
+
+  // Make sure the chage was successful.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+
+  // Zoom out the display. This should have no effect, since the display is
+  // already at the minimum zoom level.
+  display_manager()->ZoomDisplay(info_1.id(), true /* up */);
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+
+  // Ensure that this call did not modify the zoom value for the other display.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()), 1.f,
+              0.001f);
+
+  // Zoom in the display.
+  display_manager()->ZoomDisplay(info_1.id(), false /* up */);
+
+  // The zoom factor for the display should be set to the next zoom factor in
+  // list.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+              zoom_factors_1[zoom_factor_idx_1 + 1], 0.001f);
+
+  // Zoom out the display.
+  display_manager()->ZoomDisplay(info_1.id(), true /* up */);
+
+  // The zoom level should decrease from the previous level.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+
+  // Enumerate the zoom factors for display.
+  const std::vector<double> zoom_factors_2 =
+      display::GetDisplayZoomFactors(modes_2[0]);
+
+  // Set the zoom factor to one of the enumerated zoom factors for the said
+  // display.
+  const std::size_t zoom_factor_idx_2 = zoom_factors_2.size() - 1;
+  display_manager()->UpdateZoomFactor(info_2.id(),
+                                      zoom_factors_2[zoom_factor_idx_2]);
+
+  // Make sure the chage was successful.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()),
+              zoom_factors_2[zoom_factor_idx_2], 0.001f);
+
+  // Zoom in the display. This should have no effect since we are already at
+  // maximum zoom.
+  display_manager()->ZoomDisplay(info_2.id(), false /* up */);
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()),
+              zoom_factors_2[zoom_factor_idx_2], 0.001f);
+
+  // Zoom out the display
+  display_manager()->ZoomDisplay(info_2.id(), true /* up */);
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()),
+              zoom_factors_2[zoom_factor_idx_2 - 1], 0.001f);
+
+  // Ensure that this call did not modify the zoom value for the other display.
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+              zoom_factors_1[zoom_factor_idx_1], 0.001f);
+
+  // Reset the zoom value for displays.
+  display_manager()->ResetDisplayZoom(info_1.id());
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()), 1.f,
+              0.001f);
+  // Resetting the zoom level of one display should not effect the other display
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()),
+              zoom_factors_2[zoom_factor_idx_2 - 1], 0.001f);
+
+  // Now reset the zoom value for other display.
+  display_manager()->ResetDisplayZoom(info_2.id());
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_2.id()), 1.f,
+              0.001f);
+  EXPECT_NEAR(display_manager()->GetZoomFactorForDisplay(info_1.id()), 1.f,
+              0.001f);
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
@@ -2709,7 +2816,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   EXPECT_EQ("1025x500", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1025x500",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  accelerators::ZoomInternalDisplay(false);
+  accelerators::ZoomDisplay(false);
   // (800 / 500 * 400 + 500) /2 = 820
   EXPECT_EQ("820x400", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("820x400",
@@ -2728,7 +2835,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   EXPECT_EQ("1000x400", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1000x400",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  accelerators::ZoomInternalDisplay(true);
+  accelerators::ZoomDisplay(true);
   // 1000 / 800 * 1200 + 1000 = 2500
   EXPECT_EQ("2500x1000", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("2500x1000",
@@ -2747,7 +2854,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   EXPECT_EQ("1000x400", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1000x400",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  accelerators::ZoomInternalDisplay(true);
+  accelerators::ZoomDisplay(true);
   EXPECT_EQ("1250x500", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1250x500",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
@@ -2765,7 +2872,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   EXPECT_EQ("650x400", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("650x400",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  accelerators::ZoomInternalDisplay(true);
+  accelerators::ZoomDisplay(true);
   EXPECT_EQ("1300x800", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1300x800",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
@@ -2782,7 +2889,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWith2xDSF) {
   EXPECT_EQ("1300x800", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("1300x800",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  accelerators::ZoomInternalDisplay(false);
+  accelerators::ZoomDisplay(false);
   EXPECT_EQ("650x400", screen->GetPrimaryDisplay().size().ToString());
   EXPECT_EQ("650x400",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());

@@ -23,6 +23,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/manager/chromeos/display_util.h"
 #include "ui/display/manager/chromeos/touch_device_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -783,6 +784,14 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
 
   unit->display_zoom_factor =
       display_manager->GetZoomFactorForDisplay(display.id());
+  display::ManagedDisplayMode active_mode;
+  if (display_manager->GetActiveModeForDisplayId(display.id(), &active_mode)) {
+    unit->available_display_zoom_factors =
+        display::GetDisplayZoomFactors(active_mode);
+  } else {
+    unit->available_display_zoom_factors.push_back(
+        display_manager->GetZoomFactorForDisplay(display.id()));
+  }
 
   const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(display.id());
