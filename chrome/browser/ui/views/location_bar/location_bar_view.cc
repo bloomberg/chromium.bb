@@ -569,18 +569,18 @@ void LocationBarView::Layout() {
     }
   };
 
+  if (star_view_)
+    add_trailing_decoration(star_view_);
+  add_trailing_decoration(zoom_view_);
+  add_trailing_decoration(find_bar_icon_);
 #if defined(OS_CHROMEOS)
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
 #endif
-  if (star_view_)
-    add_trailing_decoration(star_view_);
-  add_trailing_decoration(find_bar_icon_);
   add_trailing_decoration(translate_icon_view_);
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
   add_trailing_decoration(manage_passwords_icon_view_);
-  add_trailing_decoration(zoom_view_);
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin());
        i != content_setting_views_.rend(); ++i) {
