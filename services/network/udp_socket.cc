@@ -137,14 +137,21 @@ UDPSocket::PendingSendRequest::PendingSendRequest() {}
 
 UDPSocket::PendingSendRequest::~PendingSendRequest() {}
 
-UDPSocket::UDPSocket(mojom::UDPSocketReceiverPtr receiver, net::NetLog* net_log)
-    : net_log_(net_log),
-      is_bound_(false),
+UDPSocket::UDPSocket(mojom::UDPSocketRequest request,
+                     mojom::UDPSocketReceiverPtr receiver)
+    : is_bound_(false),
       is_connected_(false),
       receiver_(std::move(receiver)),
-      remaining_recv_slots_(0) {}
+      remaining_recv_slots_(0),
+      binding_(this) {
+  binding_.Bind(std::move(request));
+}
 
 UDPSocket::~UDPSocket() {}
+
+void UDPSocket::set_connection_error_handler(base::OnceClosure handler) {
+  binding_.set_connection_error_handler(std::move(handler));
+}
 
 void UDPSocket::Connect(const net::IPEndPoint& remote_addr,
                         mojom::UDPSocketOptionsPtr options,
@@ -288,7 +295,7 @@ std::unique_ptr<UDPSocket::SocketWrapper> UDPSocket::CreateSocketWrapper()
     const {
   return std::make_unique<SocketWrapperImpl>(
       net::DatagramSocket::RANDOM_BIND, base::BindRepeating(&base::RandInt),
-      net_log_, net::NetLogSource());
+      nullptr, net::NetLogSource());
 }
 
 bool UDPSocket::IsConnectedOrBound() const {
