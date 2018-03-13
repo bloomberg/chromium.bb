@@ -54,6 +54,9 @@ PdfAccessibilityTree::PdfAccessibilityTree(
 }
 
 PdfAccessibilityTree::~PdfAccessibilityTree() {
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (render_accessibility)
+    render_accessibility->SetPluginTreeSource(nullptr);
 }
 
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
@@ -65,12 +68,18 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
   offset_ = ToVector2dF(viewport_info.offset);
   offset_.Scale(1.0 / zoom_);
 
+  selection_start_page_index_ = viewport_info.selection_start_page_index;
+  selection_start_char_index_ = viewport_info.selection_start_char_index;
+  selection_end_page_index_ = viewport_info.selection_end_page_index;
+  selection_end_char_index_ = viewport_info.selection_end_char_index;
+
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility && tree_.size() > 1) {
     ui::AXNode* root = tree_.root();
     ui::AXNodeData root_data = root->data();
     root_data.transform = base::WrapUnique(MakeTransformFromViewInfo());
     root->SetData(root_data);
+    UpdateAXTreeDataFromSelection();
     render_accessibility->OnPluginRootNodeUpdated();
   }
 }
@@ -129,6 +138,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     std::vector<int32_t> char_offsets = GetTextRunCharOffsets(
         text_run, chars, char_index);
     static_text += chars_utf8;
+    uint32_t initial_char_index = char_index;
     char_index += text_run.len;
 
     // If we don't have a paragraph, create one.
@@ -149,6 +159,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
       // the text of all of the text runs.
       static_text_node = CreateNode(ax::mojom::Role::kStaticText);
       para_node->child_ids.push_back(static_text_node->id);
+      node_id_to_char_index_in_page_[static_text_node->id] = initial_char_index;
     }
 
     // Add this text run to the current static text node.
@@ -211,9 +222,58 @@ void PdfAccessibilityTree::Finish() {
     base::debug::SetCrashKeyString(ax_tree_update, update.ToString());
     LOG(FATAL) << tree_.error();
   }
+
+  UpdateAXTreeDataFromSelection();
+
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility)
     render_accessibility->SetPluginTreeSource(this);
+}
+
+void PdfAccessibilityTree::UpdateAXTreeDataFromSelection() {
+  FindNodeOffset(selection_start_page_index_, selection_start_char_index_,
+                 &tree_data_.sel_anchor_object_id,
+                 &tree_data_.sel_anchor_offset);
+  FindNodeOffset(selection_end_page_index_, selection_end_char_index_,
+                 &tree_data_.sel_focus_object_id, &tree_data_.sel_focus_offset);
+}
+
+void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
+                                          uint32_t page_char_index,
+                                          int32_t* out_node_id,
+                                          int32_t* out_node_char_index) {
+  *out_node_id = -1;
+  *out_node_char_index = 0;
+  ui::AXNode* root = tree_.root();
+  if (page_index >= static_cast<uint32_t>(root->child_count()))
+    return;
+  ui::AXNode* page = root->ChildAtIndex(page_index);
+
+  // Iterate over all paragraphs within this given page, and static text nodes
+  // within each paragraph.
+  for (int i = 0; i < page->child_count(); i++) {
+    ui::AXNode* para = page->ChildAtIndex(i);
+    for (int j = 0; j < para->child_count(); j++) {
+      ui::AXNode* static_text = para->ChildAtIndex(j);
+
+      // Look up the page-relative character index for this node from a map
+      // we built while the document was initially built.
+      DCHECK(
+          base::ContainsKey(node_id_to_char_index_in_page_, static_text->id()));
+      uint32_t char_index = node_id_to_char_index_in_page_[static_text->id()];
+      uint32_t len = static_text->data()
+                         .GetStringAttribute(ax::mojom::StringAttribute::kName)
+                         .size();
+
+      // If the character index we're looking for falls within the range
+      // of this node, return the node ID and index within this node's text.
+      if (page_char_index <= char_index + len) {
+        *out_node_id = static_text->id();
+        *out_node_char_index = page_char_index - char_index;
+        return;
+      }
+    }
+  }
 }
 
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
@@ -367,7 +427,11 @@ void PdfAccessibilityTree::AddWordStartsAndEnds(
 //
 
 bool PdfAccessibilityTree::GetTreeData(ui::AXTreeData* tree_data) const {
-  return false;
+  tree_data->sel_anchor_object_id = tree_data_.sel_anchor_object_id;
+  tree_data->sel_anchor_offset = tree_data_.sel_anchor_offset;
+  tree_data->sel_focus_object_id = tree_data_.sel_focus_object_id;
+  tree_data->sel_focus_offset = tree_data_.sel_focus_offset;
+  return true;
 }
 
 ui::AXNode* PdfAccessibilityTree::GetRoot() const {

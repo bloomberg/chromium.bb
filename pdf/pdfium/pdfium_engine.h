@@ -115,6 +115,10 @@ class PDFiumEngine : public PDFEngine,
   void MoveRangeSelectionExtent(const pp::Point& extent) override;
   void SetSelectionBounds(const pp::Point& base,
                           const pp::Point& extent) override;
+  void GetSelection(uint32_t* selection_start_page_index,
+                    uint32_t* selection_start_char_index,
+                    uint32_t* selection_end_page_index,
+                    uint32_t* selection_end_char_index) override;
 
   // DocumentLoader::Client implementation.
   pp::Instance* GetPluginInstance() override;

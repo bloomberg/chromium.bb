@@ -65,6 +65,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/test_clipboard.h"
@@ -838,6 +840,53 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityWordBoundaries) {
     }
   }
   ASSERT_TRUE(found);
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  WebContents* web_contents = GetActiveWebContents();
+  CHECK(content::ExecuteScript(web_contents,
+                               "var scriptingAPI = new PDFScriptingAPI(window, "
+                               "    document.getElementsByTagName('embed')[0]);"
+                               "scriptingAPI.selectAll();"));
+
+  EnableAccessibilityForWebContents(guest_contents);
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+                                                "1 First Section\r\n");
+  ui::AXTreeUpdate ax_tree_update =
+      GetAccessibilityTreeSnapshot(guest_contents);
+  ui::AXTree ax_tree(ax_tree_update);
+
+  // Ensure that the selection spans the beginning of the first text
+  // node to the end of the last one.
+  ui::AXNode* sel_start_node =
+      ax_tree.GetFromId(ax_tree.data().sel_anchor_object_id);
+  ASSERT_TRUE(sel_start_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, sel_start_node->data().role);
+  std::string start_node_name = sel_start_node->data().GetStringAttribute(
+      ax::mojom::StringAttribute::kName);
+  EXPECT_EQ("1 First Section\r\n", start_node_name);
+  EXPECT_EQ(0, ax_tree.data().sel_anchor_offset);
+  ui::AXNode* para = sel_start_node->parent();
+  EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
+  ui::AXNode* region = para->parent();
+  EXPECT_EQ(ax::mojom::Role::kRegion, region->data().role);
+
+  ui::AXNode* sel_end_node =
+      ax_tree.GetFromId(ax_tree.data().sel_focus_object_id);
+  ASSERT_TRUE(sel_end_node);
+  std::string end_node_name = sel_end_node->data().GetStringAttribute(
+      ax::mojom::StringAttribute::kName);
+  EXPECT_EQ("3", end_node_name);
+  EXPECT_EQ(static_cast<int>(end_node_name.size()),
+            ax_tree.data().sel_focus_offset);
+  para = sel_end_node->parent();
+  EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
+  region = para->parent();
+  EXPECT_EQ(ax::mojom::Role::kRegion, region->data().role);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)

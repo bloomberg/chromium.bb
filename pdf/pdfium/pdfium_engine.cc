@@ -4376,6 +4376,35 @@ void PDFiumEngine::SetSelectionBounds(const pp::Point& base,
                                    : RangeSelectionDirection::Right;
 }
 
+void PDFiumEngine::GetSelection(uint32_t* selection_start_page_index,
+                                uint32_t* selection_start_char_index,
+                                uint32_t* selection_end_page_index,
+                                uint32_t* selection_end_char_index) {
+  size_t len = selection_.size();
+  if (len == 0) {
+    *selection_start_page_index = 0;
+    *selection_start_char_index = 0;
+    *selection_end_page_index = 0;
+    *selection_end_char_index = 0;
+    return;
+  }
+
+  *selection_start_page_index = selection_[0].page_index();
+  *selection_start_char_index = selection_[0].char_index();
+  *selection_end_page_index = selection_[len - 1].page_index();
+
+  // If the selection is all within one page, the end index is the
+  // start index plus the char count. But if the selection spans
+  // multiple pages, the selection starts at the beginning of the
+  // last page in |selection_| and goes to the char count.
+  if (len == 1) {
+    *selection_end_char_index =
+        selection_[0].char_index() + selection_[0].char_count();
+  } else {
+    *selection_end_char_index = selection_[len - 1].char_count();
+  }
+}
+
 PDFiumEngine::FormFillTimerData::FormFillTimerData(base::TimeDelta period,
                                                    TimerCallback callback)
     : timer_period(period), timer_callback(callback) {}
