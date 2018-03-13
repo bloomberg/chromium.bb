@@ -104,7 +104,7 @@ int GetTabIdForExtensions(const WebContents* web_contents) {
   return SessionTabHelper::IdForTab(web_contents);
 }
 
-ExtensionTabUtil::Delegate* g_delegate = nullptr;
+ExtensionTabUtil::Delegate* g_extension_tab_util_delegate = nullptr;
 
 }  // namespace
 
@@ -476,8 +476,8 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
 void ExtensionTabUtil::SetPlatformDelegate(Delegate* delegate) {
   // Allow setting it only once (also allow reset to nullptr, but then take
   // special care to free it).
-  CHECK(!g_delegate || !delegate);
-  g_delegate = delegate;
+  CHECK(!g_extension_tab_util_delegate || !delegate);
+  g_extension_tab_util_delegate = delegate;
 }
 
 // static
@@ -507,8 +507,9 @@ void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
     tab->title.reset();
     tab->fav_icon_url.reset();
   }
-  if (g_delegate)
-    g_delegate->ScrubTabForExtension(extension, contents, tab);
+  if (g_extension_tab_util_delegate)
+    g_extension_tab_util_delegate->ScrubTabForExtension(extension, contents,
+                                                        tab);
 }
 
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
