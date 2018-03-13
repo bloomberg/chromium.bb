@@ -783,6 +783,11 @@ const char kHarfbuzzRendertextDescription[] =
     "Enable cross-platform HarfBuzz layout engine for UI text. Doesn't affect "
     "web content.";
 
+const char kHideNonActiveAppsFromShelfName[] =
+    "Hide apps that are not running from the shelf";
+const char kHideNonActiveAppsFromShelfDescription[] =
+    "Save space in the shelf by hiding apps that are not running.";
+
 const char kHistoryRequiresUserGestureName[] =
     "New history entries require a user gesture.";
 const char kHistoryRequiresUserGestureDescription[] =
