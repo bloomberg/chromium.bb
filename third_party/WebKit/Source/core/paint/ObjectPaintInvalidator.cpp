@@ -308,13 +308,10 @@ void ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect(
       squashing_layer->SetNeedsDisplayInRect(EnclosingIntRect(rect), reason,
                                              object_);
     }
-  } else if (object_.CompositedScrollsWithRespectTo(
-                 paint_invalidation_container)) {
-    layer.GetCompositedLayerMapping()->SetScrollingContentsNeedDisplayInRect(
-        rect, reason, object_);
   } else if (paint_invalidation_container.UsesCompositedScrolling()) {
-    DCHECK(object_ == paint_invalidation_container);
-    if (reason ==
+    // If object_ is not paint_invalidation_container, then it scrolls.
+    if (&object_ != paint_invalidation_container ||
+        reason ==
             PaintInvalidationReason::kBackgroundOnScrollingContentsLayer ||
         reason == PaintInvalidationReason::kCaret) {
       layer.GetCompositedLayerMapping()->SetScrollingContentsNeedDisplayInRect(
