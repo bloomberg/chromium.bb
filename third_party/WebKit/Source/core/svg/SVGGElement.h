@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class SVGGElement final : public SVGGraphicsElement {
+class CORE_EXPORT SVGGElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
