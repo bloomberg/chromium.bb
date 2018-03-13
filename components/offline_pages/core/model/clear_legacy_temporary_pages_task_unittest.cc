@@ -9,85 +9,25 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
-#include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
-class ClearLegacyTemporaryPagesTaskTest : public testing::Test {
+class ClearLegacyTemporaryPagesTaskTest : public ModelTaskTestBase {
  public:
-  ClearLegacyTemporaryPagesTaskTest();
-  ~ClearLegacyTemporaryPagesTaskTest() override;
+  ~ClearLegacyTemporaryPagesTaskTest() override {}
 
-  void SetUp() override;
-  void TearDown() override;
-
-  OfflinePageItem AddPage(const std::string& name_space,
-                          const base::FilePath& archive_dir);
-
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
+  OfflinePageItem AddPage(const std::string& name_space) {
+    generator()->SetNamespace(name_space);
+    OfflinePageItem page = generator()->CreateItemWithTempFile();
+    store_test_util()->InsertItem(page);
+    return page;
   }
-  OfflinePageItemGenerator* generator() { return &generator_; }
-  TestTaskRunner* runner() { return &runner_; }
-  ClientPolicyController* policy_controller() {
-    return policy_controller_.get();
-  }
-
-  const base::FilePath& legacy_archives_dir() {
-    return legacy_archives_dir_.GetPath();
-  }
-
- private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  OfflinePageItemGenerator generator_;
-  TestTaskRunner runner_;
-  std::unique_ptr<ClientPolicyController> policy_controller_;
-
-  base::ScopedTempDir legacy_archives_dir_;
 };
-
-ClearLegacyTemporaryPagesTaskTest::ClearLegacyTemporaryPagesTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      runner_(task_runner_) {}
-
-ClearLegacyTemporaryPagesTaskTest::~ClearLegacyTemporaryPagesTaskTest() {}
-
-void ClearLegacyTemporaryPagesTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-  ASSERT_TRUE(legacy_archives_dir_.CreateUniqueTempDir());
-  policy_controller_ = std::make_unique<ClientPolicyController>();
-}
-
-void ClearLegacyTemporaryPagesTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  if (!legacy_archives_dir_.Delete())
-    DVLOG(1) << "ScopedTempDir deletion failed.";
-}
-
-OfflinePageItem ClearLegacyTemporaryPagesTaskTest::AddPage(
-    const std::string& name_space,
-    const base::FilePath& archive_dir) {
-  generator()->SetNamespace(name_space);
-  generator()->SetArchiveDirectory(archive_dir);
-  OfflinePageItem page = generator()->CreateItemWithTempFile();
-  store_test_util()->InsertItem(page);
-  return page;
-}
 
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.
@@ -100,18 +40,18 @@ OfflinePageItem ClearLegacyTemporaryPagesTaskTest::AddPage(
 #endif
 TEST_F(ClearLegacyTemporaryPagesTaskTest,
        MAYBE_TestDeletePageInLegacyArchivesDir) {
-  OfflinePageItem page1 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, legacy_archives_dir());
+  OfflinePageItem page1 = AddPage(kLastNNamespace);
+  OfflinePageItem page2 = AddPage(kDownloadNamespace);
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(legacy_archives_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
 
   auto task = std::make_unique<ClearLegacyTemporaryPagesTask>(
-      store(), policy_controller(), legacy_archives_dir());
-  runner()->RunTask(std::move(task));
+      store(), policy_controller(), TemporaryDir());
+  RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(legacy_archives_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
   EXPECT_FALSE(store_test_util()->GetPageByOfflineId(page1.offline_id));
 }
 

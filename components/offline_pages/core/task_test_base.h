@@ -5,15 +5,12 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASK_TEST_BASE_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_TASK_TEST_BASE_H_
 
-#include <memory>
-#include <set>
-#include <vector>
+#include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/task.h"
+#include "components/offline_pages/core/test_task_runner.h"
 
 namespace offline_pages {
 
@@ -26,8 +23,13 @@ class TaskTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Runs task with expectation that it correctly completes.
+  // Task is also cleaned up after completing.
+  void RunTask(std::unique_ptr<Task> task);
+  // Runs task with expectation that it correctly completes.
+  // Task is not cleaned up after completing.
+  void RunTask(Task* task);
   void RunUntilIdle();
-  void ExpectTaskCompletes(Task* task);
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() {
     return task_runner_;
@@ -36,9 +38,7 @@ class TaskTestBase : public testing::Test {
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-
-  std::vector<std::unique_ptr<base::MockCallback<Task::TaskCompletionCallback>>>
-      completion_callbacks_;
+  TestTaskRunner test_task_runner_;
 };
 
 }  // namespace offline_pages

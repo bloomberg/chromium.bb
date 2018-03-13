@@ -7,12 +7,7 @@
 #include <memory>
 
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
-#include "components/offline_pages/core/test_task_runner.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -35,23 +30,15 @@ base::FilePath PrepareTemporaryFile(const base::FilePath& temp_dir) {
 
 }  // namespace
 
-class CompleteOfflinePageUpgradeTaskTest : public testing::Test {
+class CompleteOfflinePageUpgradeTaskTest : public ModelTaskTestBase {
  public:
   CompleteOfflinePageUpgradeTaskTest();
   ~CompleteOfflinePageUpgradeTaskTest() override;
 
   void SetUp() override;
-  void TearDown() override;
   OfflinePageItem CreateOfflinePage();
 
   void CompleteUpgradeDone(CompleteUpgradeStatus result);
-
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
-  }
-  OfflinePageItemGenerator* generator() { return &generator_; }
-  TestTaskRunner* runner() { return &runner_; }
 
   CompleteUpgradeCallback callback() {
     return base::BindOnce(
@@ -59,7 +46,6 @@ class CompleteOfflinePageUpgradeTaskTest : public testing::Test {
         base::Unretained(this));
   }
 
-  const base::FilePath& temp_dir_path() const { return temp_dir_.GetPath(); }
   const base::FilePath& temporary_file_path() const {
     return temporary_file_path_;
   }
@@ -68,37 +54,21 @@ class CompleteOfflinePageUpgradeTaskTest : public testing::Test {
   CompleteUpgradeStatus last_status() const { return last_status_; }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  OfflinePageItemGenerator generator_;
-  TestTaskRunner runner_;
   CompleteUpgradeStatus last_status_;
-  base::ScopedTempDir temp_dir_;
   base::FilePath temporary_file_path_;
   base::FilePath target_file_path_;
 };
 
 CompleteOfflinePageUpgradeTaskTest::CompleteOfflinePageUpgradeTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      runner_(task_runner_),
-      last_status_(CompleteUpgradeStatus::DB_ERROR) {}
+    : last_status_(CompleteUpgradeStatus::DB_ERROR) {}
 
 CompleteOfflinePageUpgradeTaskTest::~CompleteOfflinePageUpgradeTaskTest() {}
 
 void CompleteOfflinePageUpgradeTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  generator()->SetArchiveDirectory(temp_dir_path());
+  ModelTaskTestBase::SetUp();
 
-  temporary_file_path_ = PrepareTemporaryFile(temp_dir_path());
-  target_file_path_ = temp_dir_path().AppendASCII(kTargetFileName);
-}
-
-void CompleteOfflinePageUpgradeTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
+  temporary_file_path_ = PrepareTemporaryFile(TemporaryDir());
+  target_file_path_ = TemporaryDir().AppendASCII(kTargetFileName);
 }
 
 OfflinePageItem CompleteOfflinePageUpgradeTaskTest::CreateOfflinePage() {
@@ -120,7 +90,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, Success) {
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(CompleteUpgradeStatus::SUCCESS, last_status());
 
@@ -142,7 +112,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, ItemMissing) {
   auto task = std::make_unique<CompleteOfflinePageUpgradeTask>(
       store(), 42, temporary_file_path(), target_file_path(), kDummyDigest,
       sizeof(kContentsOfTempFile), callback());
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(CompleteUpgradeStatus::ITEM_MISSING, last_status());
 
@@ -160,7 +130,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, TemporaryFileMissing) {
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(CompleteUpgradeStatus::TEMPORARY_FILE_MISSING, last_status());
 
@@ -184,7 +154,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, TargetFileNameInUse) {
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(CompleteUpgradeStatus::TARGET_FILE_NAME_IN_USE, last_status());
 

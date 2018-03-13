@@ -17,7 +17,11 @@ TestTaskRunner::TestTaskRunner(
 TestTaskRunner::~TestTaskRunner() {}
 
 void TestTaskRunner::RunTask(std::unique_ptr<Task> task) {
-  DCHECK(task.get());
+  RunTask(task.get());
+}
+
+void TestTaskRunner::RunTask(Task* task) {
+  DCHECK(task);
   Task* completed_task = nullptr;
   task->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
@@ -26,7 +30,7 @@ void TestTaskRunner::RunTask(std::unique_ptr<Task> task) {
                  &completed_task));
   task->Run();
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(task.get(), completed_task);
+  EXPECT_EQ(task, completed_task);
 }
 
 }  // namespace offline_pages

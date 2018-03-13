@@ -52,9 +52,7 @@ class ImportCleanupTaskTest : public PrefetchTaskTestBase {
 TEST_F(ImportCleanupTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
-  ImportCleanupTask task(store(), importer());
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCleanupTask>(store(), importer()));
 }
 
 TEST_F(ImportCleanupTaskTest, DoCleanup) {
@@ -74,9 +72,7 @@ TEST_F(ImportCleanupTaskTest, DoCleanup) {
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item3));
 
   // Clean up the imports.
-  ImportCleanupTask task(store(), importer());
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCleanupTask>(store(), importer()));
 
   // Item 1 is cleaned up.
   std::unique_ptr<PrefetchItem> store_item1 =
@@ -127,9 +123,7 @@ TEST_F(ImportCleanupTaskTest, NoCleanupForOutstandingImport) {
   importer()->ImportArchive(archive_info3);
 
   // Clean up the imports.
-  ImportCleanupTask task(store(), importer());
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCleanupTask>(store(), importer()));
 
   // Item 1 is intact since it is in the outstanding list.
   std::unique_ptr<PrefetchItem> store_item1 =
@@ -154,9 +148,7 @@ TEST_F(ImportCleanupTaskTest, NoCleanupForOutstandingImport) {
   importer()->MarkImportCompleted(item1.offline_id);
 
   // Trigger another import cleanup.
-  ImportCleanupTask task2(store(), importer());
-  task2.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCleanupTask>(store(), importer()));
 
   // Item 1 should now be cleaned up.
   store_item1 = store_util()->GetPrefetchItem(item1.offline_id);

@@ -38,10 +38,8 @@ TEST_F(GetOperationTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
 
-  GetOperationTask task(store(), prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GetOperationTask>(
+      store(), prefetch_request_factory(), callback.Get()));
 }
 
 TEST_F(GetOperationTaskTest, NormalOperationTask) {
@@ -50,10 +48,8 @@ TEST_F(GetOperationTaskTest, NormalOperationTask) {
       kOperationName, PrefetchItemState::RECEIVED_GCM);
   ASSERT_NE(nullptr, store_util()->GetPrefetchItem(id));
 
-  GetOperationTask task(store(), prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GetOperationTask>(
+      store(), prefetch_request_factory(), callback.Get()));
 
   EXPECT_NE(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          kOperationName));
@@ -76,10 +72,8 @@ TEST_F(GetOperationTaskTest, NotMatchingEntries) {
         InsertPrefetchItemInStateWithOperation(kOperationName, state));
   }
 
-  GetOperationTask task(store(), prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GetOperationTask>(
+      store(), prefetch_request_factory(), callback.Get()));
 
   EXPECT_EQ(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          kOperationName));
@@ -103,10 +97,8 @@ TEST_F(GetOperationTaskTest, TwoOperations) {
   int64_t unused_item = InsertPrefetchItemInStateWithOperation(
       kOperationShouldNotBeRequested, PrefetchItemState::SENT_GET_OPERATION);
 
-  GetOperationTask task(store(), prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GetOperationTask>(
+      store(), prefetch_request_factory(), callback.Get()));
 
   EXPECT_NE(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          kOperationName));

@@ -7,9 +7,7 @@
 
 #include <memory>
 #include <set>
-#include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
@@ -20,7 +18,6 @@
 namespace offline_pages {
 struct PrefetchItem;
 class PrefetchStore;
-class Task;
 
 // Base class for testing prefetch requests with simulated responses.
 class PrefetchTaskTestBase : public TaskTestBase {
@@ -74,9 +71,6 @@ class PrefetchTaskTestBase : public TaskTestBase {
   TestPrefetchNetworkRequestFactory prefetch_request_factory_;
   PrefetchStoreTestUtil store_test_util_;
   MockPrefetchItemGenerator item_generator_;
-
-  std::vector<std::unique_ptr<base::MockCallback<Task::TaskCompletionCallback>>>
-      completion_callbacks_;
 };
 
 }  // namespace offline_pages

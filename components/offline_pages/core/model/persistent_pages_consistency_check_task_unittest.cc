@@ -10,107 +10,39 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
-#include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
-class PersistentPagesConsistencyCheckTaskTest : public testing::Test {
+class PersistentPagesConsistencyCheckTaskTest : public ModelTaskTestBase {
  public:
   PersistentPagesConsistencyCheckTaskTest();
   ~PersistentPagesConsistencyCheckTaskTest() override;
 
   void SetUp() override;
-  void TearDown() override;
 
-  OfflinePageItem AddPage(const std::string& name_space,
-                          const base::FilePath& archive_dir);
-  void SetShouldCreateDbEntry(bool should_create_db_entry);
-  void SetShouldCreateFile(bool should_create_file);
   bool IsPageRemovedFromBothPlaces(const OfflinePageItem& page);
 
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
-  }
-  OfflinePageItemGenerator* generator() { return &generator_; }
-  TestTaskRunner* runner() { return &runner_; }
-  ClientPolicyController* policy_controller() {
-    return policy_controller_.get();
-  }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
-  const base::FilePath& persistent_dir() { return persistent_dir_.GetPath(); }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  OfflinePageItemGenerator generator_;
-  TestTaskRunner runner_;
-  std::unique_ptr<ClientPolicyController> policy_controller_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-
-  base::ScopedTempDir persistent_dir_;
-  bool should_create_db_entry_;
-  bool should_create_file_;
 };
 
 PersistentPagesConsistencyCheckTaskTest::
-    PersistentPagesConsistencyCheckTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      runner_(task_runner_),
-      should_create_db_entry_(false),
-      should_create_file_(false) {}
+    PersistentPagesConsistencyCheckTaskTest() {}
 
 PersistentPagesConsistencyCheckTaskTest::
     ~PersistentPagesConsistencyCheckTaskTest() {}
 
 void PersistentPagesConsistencyCheckTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-  ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
-  policy_controller_ = std::make_unique<ClientPolicyController>();
+  ModelTaskTestBase::SetUp();
+  generator()->SetNamespace(kDownloadNamespace);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
-}
-
-void PersistentPagesConsistencyCheckTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  if (!persistent_dir_.Delete())
-    DVLOG(1) << "ScopedTempDir deletion failed.";
-  task_runner_->RunUntilIdle();
-}
-
-OfflinePageItem PersistentPagesConsistencyCheckTaskTest::AddPage(
-    const std::string& name_space,
-    const base::FilePath& archive_dir) {
-  generator()->SetNamespace(name_space);
-  generator()->SetArchiveDirectory(archive_dir);
-  OfflinePageItem page = generator()->CreateItemWithTempFile();
-  if (should_create_db_entry_)
-    store_test_util()->InsertItem(page);
-  if (!should_create_file_)
-    EXPECT_TRUE(base::DeleteFile(page.file_path, false));
-  return page;
-}
-
-void PersistentPagesConsistencyCheckTaskTest::SetShouldCreateDbEntry(
-    bool should_create_db_entry) {
-  should_create_db_entry_ = should_create_db_entry;
-}
-
-void PersistentPagesConsistencyCheckTaskTest::SetShouldCreateFile(
-    bool should_create_file) {
-  should_create_file_ = should_create_file;
 }
 
 bool PersistentPagesConsistencyCheckTaskTest::IsPageRemovedFromBothPlaces(
@@ -130,22 +62,18 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
        MAYBE_TestDeleteFileWithoutDbEntry) {
   // Only the files without DB entry and in persistent archive directory will
   // be deleted.
-  SetShouldCreateFile(true);
-
-  SetShouldCreateDbEntry(true);
-  OfflinePageItem page1 = AddPage(kDownloadNamespace, persistent_dir());
-  SetShouldCreateDbEntry(false);
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, persistent_dir());
+  OfflinePageItem page1 = AddPage();
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
 
   auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
-      store(), policy_controller(), persistent_dir());
-  runner()->RunTask(std::move(task));
+      store(), policy_controller(), TemporaryDir());
+  RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -170,22 +98,18 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
        MAYBE_TestDeleteDbEntryWithoutFile) {
   // The persistent pages will be deleted from DB if their DB entries exist but
   // files are missing.
-  SetShouldCreateDbEntry(true);
-
-  SetShouldCreateFile(true);
-  OfflinePageItem page1 = AddPage(kDownloadNamespace, persistent_dir());
-  SetShouldCreateFile(false);
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, persistent_dir());
+  OfflinePageItem page1 = AddPage();
+  OfflinePageItem page2 = AddPageWithoutFile();
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
 
   auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
-      store(), policy_controller(), persistent_dir());
-  runner()->RunTask(std::move(task));
+      store(), policy_controller(), TemporaryDir());
+  RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -208,25 +132,19 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
 TEST_F(PersistentPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   // Adding a bunch of pages with different setups.
   // After the consistency check, only page1 will exist.
-  SetShouldCreateDbEntry(true);
-  SetShouldCreateFile(true);
-  OfflinePageItem page1 = AddPage(kDownloadNamespace, persistent_dir());
-  SetShouldCreateDbEntry(false);
-  SetShouldCreateFile(true);
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, persistent_dir());
-  SetShouldCreateDbEntry(true);
-  SetShouldCreateFile(false);
-  OfflinePageItem page3 = AddPage(kDownloadNamespace, persistent_dir());
+  OfflinePageItem page1 = AddPage();
+  OfflinePageItem page2 = generator()->CreateItemWithTempFile();
+  OfflinePageItem page3 = AddPageWithoutFile();
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
 
   auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
-      store(), policy_controller(), persistent_dir());
-  runner()->RunTask(std::move(task));
+      store(), policy_controller(), TemporaryDir());
+  RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page3));
@@ -243,24 +161,22 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
 
 TEST_F(PersistentPagesConsistencyCheckTaskTest, TestKeepingNonMhtmlFile) {
   // Create an offline page with mhtml extension but has no DB entry.
-  SetShouldCreateDbEntry(false);
-  SetShouldCreateFile(true);
-  OfflinePageItem page1 = AddPage(kDownloadNamespace, persistent_dir());
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
   // Create a file with non-mhtml extension.
   base::FilePath path;
-  base::CreateTemporaryFileInDir(persistent_dir(), &path);
+  base::CreateTemporaryFileInDir(TemporaryDir(), &path);
   base::FilePath mp3_path = path.AddExtension(FILE_PATH_LITERAL("mp3"));
   EXPECT_TRUE(base::Move(path, mp3_path));
 
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
 
   auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
-      store(), policy_controller(), persistent_dir());
-  runner()->RunTask(std::move(task));
+      store(), policy_controller(), TemporaryDir());
+  RunTask(std::move(task));
 
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(TemporaryDir()));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page1));
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",

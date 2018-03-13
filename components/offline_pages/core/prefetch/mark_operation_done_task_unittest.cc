@@ -65,29 +65,20 @@ class MarkOperationDoneTaskTest : public PrefetchTaskTestBase {
 TEST_F(MarkOperationDoneTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
-  MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
-  ExpectTaskCompletes(&task);
-
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<MarkOperationDoneTask>(dispatcher(), store(),
+                                                  kOperationName));
 }
 
 TEST_F(MarkOperationDoneTaskTest, NoOpTask) {
   MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
-  ExpectTaskCompletes(&task);
-
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
   ExpectStoreChangeCount(&task, 0);
 }
 
 TEST_F(MarkOperationDoneTaskTest, SingleMatchingURL) {
   int64_t id = InsertAwaitingGCMOperation(kOperationName);
   MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
-
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
   ExpectStoreChangeCount(&task, 1);
 
   EXPECT_EQ(1, store_util()->CountPrefetchItems());
@@ -102,10 +93,7 @@ TEST_F(MarkOperationDoneTaskTest, NoSuchURLs) {
 
   // Start a task for an unrelated operation name.
   MarkOperationDoneTask task(dispatcher(), store(), kOtherOperationName);
-
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
   ExpectStoreChangeCount(&task, 0);
 
   ASSERT_TRUE(store_util()->GetPrefetchItem(id1));
@@ -127,10 +115,7 @@ TEST_F(MarkOperationDoneTaskTest, ManyURLs) {
 
   // Start a task for the first operation name.
   MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
-
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
   ExpectStoreChangeCount(&task, ids.size());
 
   // The items should be in the new state.
@@ -159,10 +144,7 @@ TEST_F(MarkOperationDoneTaskTest, URLsInWrongState) {
 
   // Start a task for the operation name.
   MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
-
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
   ExpectStoreChangeCount(&task, 0);
 
   // No item should have been changed.

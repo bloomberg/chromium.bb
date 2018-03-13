@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
@@ -64,37 +65,20 @@ class TestPrefetchImporter : public PrefetchImporter {
 
 }  // namespace
 
-// TODO(carlosk, jianli): Update this test to extend and use the functionality
-// provided by TaskTestBase.
-class ImportArchivesTaskTest : public testing::Test {
+class ImportArchivesTaskTest : public PrefetchTaskTestBase {
  public:
-  ImportArchivesTaskTest();
   ~ImportArchivesTaskTest() override = default;
 
   void SetUp() override;
-  void TearDown() override;
 
-  void PumpLoop();
-
-  PrefetchStore* store() { return store_test_util_.store(); }
-  PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
   TestPrefetchImporter* importer() { return &test_importer_; }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  PrefetchStoreTestUtil store_test_util_;
   TestPrefetchImporter test_importer_;
 };
 
-ImportArchivesTaskTest::ImportArchivesTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
-
 void ImportArchivesTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-
+  PrefetchTaskTestBase::SetUp();
   PrefetchItem item;
   item.offline_id = kTestOfflineID;
   item.state = PrefetchItemState::DOWNLOADED;
@@ -107,7 +91,7 @@ void ImportArchivesTaskTest::SetUp() {
   item.file_size = kTestFileSize;
   item.creation_time = base::Time::Now();
   item.freshness_time = item.creation_time;
-  EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item));
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
 
   PrefetchItem item2;
   item2.offline_id = kTestOfflineID2;
@@ -121,36 +105,23 @@ void ImportArchivesTaskTest::SetUp() {
   item2.file_size = kTestFileSize2;
   item2.creation_time = base::Time::Now();
   item2.freshness_time = item.creation_time;
-  EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item2));
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
 
   PrefetchItem item3;
   item3.offline_id = kTestOfflineID3;
   item3.state = PrefetchItemState::NEW_REQUEST;
   item3.creation_time = base::Time::Now();
   item3.freshness_time = item.creation_time;
-  EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item3));
-}
-
-void ImportArchivesTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  PumpLoop();
-}
-
-void ImportArchivesTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item3));
 }
 
 TEST_F(ImportArchivesTaskTest, NullConnection) {
   store_util()->SimulateInitializationError();
-  ImportArchivesTask task(store(), importer());
-  task.Run();
-  PumpLoop();
+  RunTask(std::make_unique<ImportArchivesTask>(store(), importer()));
 }
 
 TEST_F(ImportArchivesTaskTest, Importing) {
-  ImportArchivesTask task(store(), importer());
-  task.Run();
-  PumpLoop();
+  RunTask(std::make_unique<ImportArchivesTask>(store(), importer()));
 
   // Two items are updated.
   std::unique_ptr<PrefetchItem> item =

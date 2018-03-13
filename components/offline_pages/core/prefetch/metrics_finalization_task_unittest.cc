@@ -44,9 +44,7 @@ TEST_F(MetricsFinalizationTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
   // Execute the metrics task.
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 }
 
 // Tests that the task works correctly with an empty database.
@@ -54,9 +52,7 @@ TEST_F(MetricsFinalizationTaskTest, EmptyRun) {
   EXPECT_EQ(0, store_util()->CountPrefetchItems());
 
   // Execute the metrics task.
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
   EXPECT_EQ(0, store_util()->CountPrefetchItems());
 }
 
@@ -74,9 +70,7 @@ TEST_F(MetricsFinalizationTaskTest, LeavesOtherStatesAlone) {
   EXPECT_EQ(10U, store_util()->GetAllItems(&all_inserted_items));
 
   // Execute the task.
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 
   std::set<PrefetchItem> all_items_after_task;
   EXPECT_EQ(10U, store_util()->GetAllItems(&all_items_after_task));
@@ -98,9 +92,7 @@ TEST_F(MetricsFinalizationTaskTest, FinalizesMultipleItems) {
   ASSERT_TRUE(store_util()->InsertPrefetchItem(unfinished_item));
 
   // Execute the metrics task.
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 
   std::set<PrefetchItem> all_items;
   // The finished ones should be zombies and the new request should be
@@ -134,9 +126,7 @@ TEST_F(MetricsFinalizationTaskTest, MetricsAreReported) {
 
   // Execute the metrics task.
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 
   std::set<PrefetchItem> all_items;
   EXPECT_EQ(3U, store_util()->GetAllItems(&all_items));
@@ -219,9 +209,7 @@ TEST_F(MetricsFinalizationTaskTest, FileSizeMetricsAreReportedCorrectly) {
 
   // Execute the metrics task.
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 
   std::set<PrefetchItem> all_items;
   EXPECT_EQ(5U, store_util()->GetAllItems(&all_items));
@@ -261,9 +249,7 @@ TEST_F(MetricsFinalizationTaskTest,
 
   // Execute the task.
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(metrics_finalization_task_.get());
-  metrics_finalization_task_->Run();
-  RunUntilIdle();
+  RunTask(metrics_finalization_task_.get());
 
   histogram_tester.ExpectTotalCount("OfflinePages.Prefetching.StateCounts", 66);
 
