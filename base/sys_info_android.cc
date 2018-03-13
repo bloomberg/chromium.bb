@@ -222,7 +222,7 @@ static base::LazyInstance<
         android::SysUtils::IsLowEndDeviceFromJni> >::Leaky
     g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
 
-bool SysInfo::IsLowEndDevice() {
+bool SysInfo::IsLowEndDeviceImpl() {
   // This code might be used in some environments
   // which might not have a Java environment.
   // Note that we need to call the Java version here.

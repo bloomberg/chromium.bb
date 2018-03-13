@@ -172,6 +172,7 @@ class BASE_EXPORT SysInfo {
 
   static int64_t AmountOfPhysicalMemoryImpl();
   static int64_t AmountOfAvailablePhysicalMemoryImpl();
+  static bool IsLowEndDeviceImpl();
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
   static int64_t AmountOfAvailablePhysicalMemory(
