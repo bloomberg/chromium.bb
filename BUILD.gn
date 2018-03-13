@@ -1154,10 +1154,10 @@ template("assert_valid_out_dir") {
       "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
 }
 
-if (!is_win && !is_ios) {
+if (!is_win) {
   group("webui_closure_compile") {
     data_deps = [
-      "chrome/browser/resources:closure_compile",
+      "chrome/browser/resources/engagement:closure_compile",
       "ui/webui/resources:closure_compile",
     ]
   }
