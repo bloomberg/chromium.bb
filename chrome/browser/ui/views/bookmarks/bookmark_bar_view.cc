@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -124,9 +125,6 @@ static const int kNewTabHorizontalPadding = 2;
 // Maximum size of buttons on the bookmark bar.
 static const int kMaxButtonWidth = 150;
 
-// Corner radius for masking the ink drop effects on buttons.
-static const int kInkDropCornerRadius = 2;
-
 // Number of pixels the attached bookmark bar overlaps with the toolbar.
 static const int kToolbarAttachedBookmarkBarOverlap = 3;
 
@@ -167,13 +165,62 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-constexpr int kInkDropVerticalInsetPx = 1;
+bool IsTouchOptimized() {
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+}
 
-// Ink drop ripple/highlight for bookmark buttons should be inset 1px vertically
-// so that they do not touch the bookmark bar borders.
-// TODO(estade): currently this is used as DIP rather than pixels. This should
-// be fixed: see crbug.com/706228
-constexpr gfx::Insets kInkDropInsets(kInkDropVerticalInsetPx, 0);
+int GetInkDropCornerRadius() {
+  return IsTouchOptimized() ? 4 : 2;
+}
+
+gfx::Insets GetInkDropInsets() {
+  // Ink drop ripple/highlight for bookmark buttons should be inset 1px
+  // vertically so that they do not touch the bookmark bar borders.
+  // TODO(estade): currently this is used as DIP rather than pixels. This
+  // should be fixed: see https://crbug.com/706228
+  return IsTouchOptimized() ? gfx::Insets(3, 3) : gfx::Insets(1, 0);
+}
+
+SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
+  if (IsTouchOptimized()) {
+    return color_utils::BlendTowardOppositeLuma(
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR), SK_AlphaOPAQUE);
+  }
+  return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+}
+
+std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
+    std::unique_ptr<views::InkDropImpl> ink_drop) {
+  ink_drop->SetShowHighlightOnFocus(true);
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
+    const views::InkDropHostView* host_view,
+    const gfx::Point& center_point) {
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      host_view->size(), GetInkDropInsets(), center_point,
+      GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider()),
+      host_view->ink_drop_visible_opacity());
+}
+
+std::unique_ptr<views::InkDropMask> CreateBookmarkButtonInkDropMask(
+    const views::InkDropHostView* host_view) {
+  return std::make_unique<views::RoundRectInkDropMask>(
+      host_view->size(), GetInkDropInsets(), GetInkDropCornerRadius());
+}
+
+std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
+    const views::InkDropHostView* host_view) {
+  std::unique_ptr<views::InkDropHighlight> highlight(
+      new views::InkDropHighlight(
+          host_view->size(), GetInkDropCornerRadius(),
+          gfx::RectF(gfx::Rect(host_view->size())).CenterPoint(),
+          GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider())));
+  if (IsTouchOptimized())
+    highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
+  return highlight;
+}
 
 // BookmarkButtonBase -----------------------------------------------
 
@@ -189,6 +236,8 @@ class BookmarkButtonBase : public views::LabelButton {
     SetElideBehavior(kElideBehavior);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
+    if (IsTouchOptimized())
+      set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -213,37 +262,21 @@ class BookmarkButtonBase : public views::LabelButton {
 
   // LabelButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    std::unique_ptr<views::InkDropImpl> ink_drop =
-        CreateDefaultFloodFillInkDropImpl();
-    ink_drop->SetShowHighlightOnFocus(true);
-    return std::move(ink_drop);
+    return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor(), ink_drop_visible_opacity());
+    return CreateBookmarkButtonInkDropRipple(
+        this, GetInkDropCenterBasedOnLastEvent());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    gfx::RectF bounds((gfx::Rect(size())));
-    bounds.Inset(gfx::InsetsF(
-        kInkDropVerticalInsetPx /
-            GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
-        0));
-    return std::make_unique<views::InkDropHighlight>(
-        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
+    return CreateBookmarkButtonInkDropHighlight(this);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
-                                                         kInkDropCornerRadius);
-  }
-
-  SkColor GetInkDropBaseColor() const override {
-    return GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    return CreateBookmarkButtonInkDropMask(this);
   }
 
  private:
@@ -340,42 +373,28 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     SetInkDropMode(InkDropMode::ON);
+    if (IsTouchOptimized())
+      set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
   }
 
   // MenuButton:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    std::unique_ptr<views::InkDropImpl> ink_drop =
-        CreateDefaultFloodFillInkDropImpl();
-    ink_drop->SetShowHighlightOnFocus(true);
-    return std::move(ink_drop);
+    return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
-        GetInkDropBaseColor(), ink_drop_visible_opacity());
+    return CreateBookmarkButtonInkDropRipple(
+        this, GetInkDropCenterBasedOnLastEvent());
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    gfx::RectF bounds((gfx::Rect(size())));
-    bounds.Inset(gfx::InsetsF(
-        kInkDropVerticalInsetPx /
-            GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
-        0));
-    return std::make_unique<views::InkDropHighlight>(
-        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
+    return CreateBookmarkButtonInkDropHighlight(this);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
-                                                         kInkDropCornerRadius);
-  }
-
-  SkColor GetInkDropBaseColor() const override {
-    return GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    return CreateBookmarkButtonInkDropMask(this);
   }
 
  private:
@@ -1720,8 +1739,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() &&
-          GetThemeProvider()) {
+      if (IsTouchOptimized() && GetThemeProvider()) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -2047,11 +2065,9 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
 
   const SkColor overflow_color =
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  const bool is_touch_optimized =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(is_touch_optimized ? kBookmarkbarTouchOverflowIcon
+      gfx::CreateVectorIcon(IsTouchOptimized() ? kBookmarkbarTouchOverflowIcon
                                                : kOverflowChevronIcon,
                             overflow_color));
 
