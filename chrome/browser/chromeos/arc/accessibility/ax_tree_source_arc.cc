@@ -500,7 +500,8 @@ void AXTreeSourceArc::GetChildren(
               if (width_difference != 0)
                 return width_difference > 0;
 
-              return true;
+              // The rects are equal.
+              return false;
             });
 }
 
