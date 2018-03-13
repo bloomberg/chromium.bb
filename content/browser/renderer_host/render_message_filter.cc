@@ -216,9 +216,9 @@ void RenderMessageFilter::SetThreadPriorityOnFileThread(
 }
 #endif
 
+#if defined(OS_LINUX)
 void RenderMessageFilter::SetThreadPriority(int32_t ns_tid,
                                             base::ThreadPriority priority) {
-#if defined(OS_LINUX)
   constexpr base::TaskTraits kTraits = {
       base::MayBlock(), base::TaskPriority::USER_BLOCKING,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
@@ -226,10 +226,8 @@ void RenderMessageFilter::SetThreadPriority(int32_t ns_tid,
       FROM_HERE, kTraits,
       base::BindOnce(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
                      static_cast<base::PlatformThreadId>(ns_tid), priority));
-#else
-  mojo::ReportBadMessage("SetThreadPriority is only supported on OS_LINUX");
-#endif
 }
+#endif
 
 void RenderMessageFilter::DidGenerateCacheableMetadata(
     const GURL& url,

@@ -158,7 +158,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // mojom::ChildControl
   void ProcessShutdown() override;
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabled(bool enable) override;
+#endif
   void OnChildControlRequest(mojom::ChildControlRequest);
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);

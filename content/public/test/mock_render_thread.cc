@@ -86,8 +86,10 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     std::move(callback).Run(false);
   }
 
+#if defined(OS_LINUX)
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
+#endif
 
  private:
   MockRenderThread* const thread_;

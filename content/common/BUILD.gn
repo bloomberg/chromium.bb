@@ -6,6 +6,7 @@ import("features.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//ipc/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
@@ -594,6 +595,14 @@ mojom("mojo_bindings") {
 
   if (is_mac) {
     sources += [ "font_loader_mac.mojom" ]
+  }
+
+  enabled_features = []
+  if (enable_ipc_logging) {
+    enabled_features += [ "ipc_logging" ]
+  }
+  if (is_linux || is_chromeos) {
+    enabled_features += [ "supports_thread_priorities" ]
   }
 
   import_dirs = [ "//mojo/services" ]

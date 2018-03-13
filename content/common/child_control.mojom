@@ -9,5 +9,6 @@ interface ChildControl {
   ProcessShutdown();
 
   // Tell the child process to begin or end IPC message logging.
+  [EnableIf=ipc_logging]
   SetIPCLoggingEnabled(bool on);
 };
