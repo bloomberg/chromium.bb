@@ -540,7 +540,7 @@ IconDescription::IconDescription(const VectorIcon& icon,
 
   // If an icon has a .1x.icon version, it should only be rendered at the size
   // specified in that definition.
-  if (icon.path_1x)
+  if (icon.rep_1x)
     DCHECK_EQ(this->dip_size, GetDefaultSizeOfVectorIcon(icon));
 }
 
@@ -562,16 +562,19 @@ void PaintVectorIcon(Canvas* canvas,
                      SkColor color,
                      const base::TimeDelta& elapsed_time) {
   DCHECK(!icon.is_empty());
-  if (icon.path) {
-    DCHECK(icon.path_size > 0);
-    DCHECK_EQ(END, icon.path[icon.path_size - 1].command) << icon.name;
+  if (icon.rep) {
+    DCHECK(icon.rep->path_size > 0);
+    DCHECK_EQ(END, icon.rep->path[icon.rep->path_size - 1].command)
+        << icon.name;
   }
-  if (icon.path_1x) {
-    DCHECK(icon.path_1x_size > 0);
-    DCHECK_EQ(END, icon.path_1x[icon.path_1x_size - 1].command) << icon.name;
+  if (icon.rep_1x) {
+    DCHECK(icon.rep_1x->path_size > 0);
+    DCHECK_EQ(END, icon.rep_1x->path[icon.rep_1x->path_size - 1].command)
+        << icon.name;
   }
-  const PathElement* path =
-      (canvas->image_scale() == 1.f && icon.path_1x) ? icon.path_1x : icon.path;
+  const PathElement* path = (canvas->image_scale() == 1.f && icon.rep_1x)
+                                ? icon.rep_1x->path
+                                : icon.rep->path;
   PaintPath(canvas, path, dip_size, color, elapsed_time);
 }
 
@@ -609,14 +612,15 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
 }
 
 int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
-  const PathElement* one_x_path = icon.path_1x ? icon.path_1x : icon.path;
+  const PathElement* one_x_path =
+      icon.rep_1x ? icon.rep_1x->path : icon.rep->path;
   return one_x_path[0].command == CANVAS_DIMENSIONS ? one_x_path[1].arg
                                                     : kReferenceSizeDip;
 }
 
 base::TimeDelta GetDurationOfAnimation(const VectorIcon& icon) {
   base::TimeDelta last_motion;
-  for (PathParser parser(icon.path); parser.CurrentCommand() != END;
+  for (PathParser parser(icon.rep->path); parser.CurrentCommand() != END;
        parser.Advance()) {
     if (parser.CurrentCommand() != TRANSITION_END)
       continue;

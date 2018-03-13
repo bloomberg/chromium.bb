@@ -79,18 +79,29 @@ struct PathElement {
   };
 };
 
-struct VectorIcon {
-  VectorIcon() = default;
+// Describes the drawing commands for a single vector icon at a particular pixel
+// size or range of sizes.
+struct VectorIconRep {
+  VectorIconRep() = default;
 
-  bool is_empty() const { return !path; }
+  const PathElement* path = nullptr;
 
-  const gfx::PathElement* path = nullptr;
   // The length of |path|.
   size_t path_size = 0u;
 
-  const gfx::PathElement* path_1x = nullptr;
-  // The length of |path_1x|.
-  size_t path_1x_size = 0u;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VectorIconRep);
+};
+
+// A vector icon that stores one or more representations to be used for various
+// scale factors and pixel dimensions.
+struct VectorIcon {
+  VectorIcon() = default;
+
+  bool is_empty() const { return !rep; }
+
+  const VectorIconRep* rep = nullptr;
+  const VectorIconRep* rep_1x = nullptr;
 
   // A human-readable name, useful for debugging, derived from the name of the
   // icon file. This can also be used as an identifier, but vector icon targets
