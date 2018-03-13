@@ -776,14 +776,14 @@ void ChildThreadImpl::ProcessShutdown() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
   if (enable)
     IPC::Logging::GetInstance()->Enable();
   else
     IPC::Logging::GetInstance()->Disable();
-#endif  //  IPC_MESSAGE_LOG_ENABLED
 }
+#endif  //  IPC_MESSAGE_LOG_ENABLED
 
 void ChildThreadImpl::OnChildControlRequest(
     mojom::ChildControlRequest request) {

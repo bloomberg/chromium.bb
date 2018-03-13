@@ -41,7 +41,7 @@ interface RenderMessageFilter {
   [Sync] HasGpuProcess() => (bool has_gpu_process);
 
   // Asks the browser to change the priority of thread.
-  // (Linux only, NOP on other platforms.)
+  [EnableIf=supports_thread_priorities]
   SetThreadPriority(int32 platform_thread_id,
                     mojo.common.mojom.ThreadPriority thread_priority);
 };
