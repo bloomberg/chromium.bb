@@ -60,6 +60,18 @@ bool IsCSSStyleValuePosition(const CSSStyleValue& value) {
 
 }
 
+bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
+  switch (id) {
+    case CSSPropertyVariable:
+  {% for property in properties if property.typedom_types %}
+    case {{property.property_id}}:
+  {% endfor %}
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
                                  const CSSStyleValue& value) {
   if (value.GetType() == CSSStyleValue::kKeywordType) {
@@ -77,12 +89,14 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
     case CSSPropertyVariable:
       return value.GetType() == CSSStyleValue::kUnparsedType;
     {% for property in properties if property.typedom_types %}
+    {% if property.typedom_types != ['Keyword'] %}
     case {{property.property_id}}:
       return (
-          {% for type in property.typedom_types %}
+          {% for type in property.typedom_types if type != 'Keyword' %}
           {{ "|| " if not loop.first }}IsCSSStyleValue{{type}}(value)
           {% endfor %}
       );
+    {% endif %}
     {% endfor %}
     default:
       return false;
