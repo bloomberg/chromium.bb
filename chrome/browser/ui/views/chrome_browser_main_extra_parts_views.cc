@@ -17,6 +17,7 @@
 #if defined(USE_AURA)
 #include "base/run_loop.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/css_agent.h"
 #include "components/ui_devtools/views/dom_agent.h"
 #include "components/ui_devtools/views/overlay_agent.h"
@@ -113,7 +114,8 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
     IMEDriver::Register();
 
   // Start devtools server
-  devtools_server_ = ui_devtools::UiDevToolsServer::Create(nullptr);
+  devtools_server_ = ui_devtools::UiDevToolsServer::Create(
+      nullptr, ui_devtools::kEnableUiDevTools, 9223);
   if (devtools_server_) {
     auto dom_backend = std::make_unique<ui_devtools::DOMAgent>();
     auto overlay_backend =

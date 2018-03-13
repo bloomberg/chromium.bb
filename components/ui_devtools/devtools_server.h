@@ -25,9 +25,12 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer : public net::HttpServer::Delegate {
   ~UiDevToolsServer() override;
 
   // Returns an empty unique_ptr if ui devtools flag isn't enabled or if a
-  // server instance has already been created.
+  // server instance has already been created. Server doesn't know anything
+  // about the caller, so both UI and Viz pass their corresponding params.
   static std::unique_ptr<UiDevToolsServer> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      const char* enable_devtools_flag,
+      int default_port);
 
   // Returns a list of attached UiDevToolsClient name + URL
   using NameUrlPair = std::pair<std::string, std::string>;
@@ -36,12 +39,16 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer : public net::HttpServer::Delegate {
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
   void SendOverWebSocket(int connection_id, const String& message);
 
+  int port() const { return port_; }
+
  private:
   explicit UiDevToolsServer(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      const char* enable_devtools_flag,
+      int default_port);
 
-  void Start(const std::string& address_string, uint16_t port);
-  void StartServer(const std::string& address_string, uint16_t port);
+  void Start(const std::string& address_string);
+  void StartServer(const std::string& address_string);
 
   // HttpServer::Delegate
   void OnConnect(int connection_id) override;
@@ -61,6 +68,9 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer : public net::HttpServer::Delegate {
   std::unique_ptr<net::HttpServer> server_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  // The port the devtools server listens on
+  const int port_;
 
   // The server (owned by ash for now)
   static UiDevToolsServer* devtools_server_;
