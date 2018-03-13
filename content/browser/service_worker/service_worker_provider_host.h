@@ -232,6 +232,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Sets the |document_url_|.  When this object is for a client,
   // |matching_registrations_| gets also updated to ensure that |document_url_|
   // is in scope of all |matching_registrations_|.
+  // |document_url_| is the service worker script URL if this is hosting a
+  // running service worker, it will be used when creating ServiceWorkerHandle
+  // or handling ServiceWorkerRegistration#{*} calls etc.
+  // TODO(leonhsl): We should rename |document_url_| to something more
+  // appropriate and/or split this class into one for clients vs one for service
+  // workers.
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 

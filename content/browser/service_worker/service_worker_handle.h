@@ -15,10 +15,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
-
-namespace url {
-class Origin;
-}  // namespace url
+#include "url/origin.h"
 
 namespace content {
 
@@ -83,13 +80,15 @@ class CONTENT_EXPORT ServiceWorkerHandle
                       ServiceWorkerVersion* version);
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
-  void PostMessageToServiceWorker(::blink::TransferableMessage message,
-                                  const url::Origin& source_origin) override;
+  void PostMessageToServiceWorker(
+      ::blink::TransferableMessage message) override;
   void TerminateForTesting(TerminateForTestingCallback callback) override;
 
+  // TODO(leonhsl): Remove |callback| parameter because it's just for unit tests
+  // and production code does not use it. We need to figure out another way to
+  // observe the dispatch result in unit tests.
   void DispatchExtendableMessageEvent(
       ::blink::TransferableMessage message,
-      const url::Origin& source_origin,
       base::OnceCallback<void(ServiceWorkerStatusCode)> callback);
 
   base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
@@ -103,6 +102,11 @@ class CONTENT_EXPORT ServiceWorkerHandle
   ServiceWorkerDispatcherHost* dispatcher_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  // The origin of the |provider_host_|. Note that this is const because once a
+  // JavaScript ServiceWorker object is created for an execution context, we
+  // don't expect that context to change origins and still hold on to the
+  // object.
+  const url::Origin provider_origin_;
   const int provider_id_;
   const int handle_id_;
   scoped_refptr<ServiceWorkerVersion> version_;

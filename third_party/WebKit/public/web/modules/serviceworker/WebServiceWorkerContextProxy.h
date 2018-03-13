@@ -42,6 +42,7 @@ namespace blink {
 struct WebBackgroundFetchSettledFetch;
 struct WebCanMakePaymentEventData;
 class WebDataConsumerHandle;
+class WebSecurityOrigin;
 class WebServiceWorkerRequest;
 class WebString;
 struct WebNotificationData;

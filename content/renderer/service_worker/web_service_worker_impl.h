@@ -59,9 +59,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::WebServiceWorkerProxy* Proxy() override;
   blink::WebURL Url() const override;
   blink::mojom::ServiceWorkerState GetState() const override;
-  void PostMessageToServiceWorker(
-      blink::TransferableMessage message,
-      const blink::WebSecurityOrigin& source_origin) override;
+  void PostMessageToServiceWorker(blink::TransferableMessage message) override;
   void TerminateForTesting(
       std::unique_ptr<TerminateForTestingCallback> callback) override;
 

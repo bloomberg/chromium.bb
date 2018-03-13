@@ -73,7 +73,6 @@ mojom("mojom_core") {
     ":mojom_platform",
     "//skia/public/interfaces",
     "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
   ]
 
   overridden_deps_blink = [ ":mojom_platform" ]

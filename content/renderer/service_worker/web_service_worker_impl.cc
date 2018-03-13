@@ -13,11 +13,9 @@
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
 
-using blink::WebSecurityOrigin;
 using blink::WebString;
 
 namespace content {
@@ -98,10 +96,8 @@ blink::mojom::ServiceWorkerState WebServiceWorkerImpl::GetState() const {
 }
 
 void WebServiceWorkerImpl::PostMessageToServiceWorker(
-    blink::TransferableMessage message,
-    const WebSecurityOrigin& source_origin) {
-  GetObjectHost()->PostMessageToServiceWorker(std::move(message),
-                                              url::Origin(source_origin));
+    blink::TransferableMessage message) {
+  GetObjectHost()->PostMessageToServiceWorker(std::move(message));
 }
 
 void WebServiceWorkerImpl::TerminateForTesting(

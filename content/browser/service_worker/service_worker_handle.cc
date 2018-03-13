@@ -175,6 +175,7 @@ ServiceWorkerHandle::ServiceWorkerHandle(
     : dispatcher_host_(dispatcher_host),
       context_(context),
       provider_host_(provider_host),
+      provider_origin_(url::Origin::Create(provider_host->document_url())),
       provider_id_(provider_host->provider_id()),
       handle_id_(context->GetNewServiceWorkerHandleId()),
       version_(version),
@@ -223,16 +224,14 @@ void ServiceWorkerHandle::RegisterIntoDispatcherHost(
 }
 
 void ServiceWorkerHandle::PostMessageToServiceWorker(
-    ::blink::TransferableMessage message,
-    const url::Origin& source_origin) {
+    ::blink::TransferableMessage message) {
   // When this method is called the encoded_message inside message could just
   // point to the IPC message's buffer. But that buffer can become invalid
   // before the message is passed on to the service worker, so make sure
   // message owns its data.
   message.EnsureDataIsOwned();
 
-  DispatchExtendableMessageEvent(std::move(message), source_origin,
-                                 base::DoNothing());
+  DispatchExtendableMessageEvent(std::move(message), base::DoNothing());
 }
 
 void ServiceWorkerHandle::TerminateForTesting(
@@ -242,18 +241,19 @@ void ServiceWorkerHandle::TerminateForTesting(
 
 void ServiceWorkerHandle::DispatchExtendableMessageEvent(
     ::blink::TransferableMessage message,
-    const url::Origin& source_origin,
     StatusCallback callback) {
   if (!context_ || !provider_host_) {
     std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
+  DCHECK_EQ(provider_origin_,
+            url::Origin::Create(provider_host_->document_url()));
   switch (provider_host_->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       service_worker_client_utils::GetClient(
           provider_host_.get(),
           base::BindOnce(&DispatchExtendableMessageEventFromClient, version_,
-                         std::move(message), source_origin,
+                         std::move(message), provider_origin_,
                          std::move(callback)));
       return;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker: {
@@ -265,7 +265,7 @@ void ServiceWorkerHandle::DispatchExtendableMessageEvent(
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&DispatchExtendableMessageEventFromServiceWorker,
-                         version_, std::move(message), source_origin,
+                         version_, std::move(message), provider_origin_,
                          base::make_optional(timeout), std::move(callback),
                          provider_host_));
       return;
