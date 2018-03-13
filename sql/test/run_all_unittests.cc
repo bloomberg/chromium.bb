@@ -10,7 +10,6 @@ int main(int argc, char** argv) {
   sql::SQLTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
-      base::Bind(&sql::SQLTestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&sql::SQLTestSuite::Run, base::Unretained(&test_suite)));
 }
