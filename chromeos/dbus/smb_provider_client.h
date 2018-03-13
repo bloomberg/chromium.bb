@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/smbprovider/directory_entry.pb.h"
@@ -19,7 +20,9 @@ namespace chromeos {
 // SmbProviderClient is used to communicate with the org.chromium.SmbProvider
 // service. All methods should be called from the origin thread (UI thread)
 // which initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
+class CHROMEOS_EXPORT SmbProviderClient
+    : public DBusClient,
+      public base::SupportsWeakPtr<SmbProviderClient> {
  public:
   using GetMetdataEntryCallback =
       base::OnceCallback<void(smbprovider::ErrorType error,

@@ -58,7 +58,7 @@ bool ParseDeleteList(const base::ScopedFD& fd,
 
 class SmbProviderClientImpl : public SmbProviderClient {
  public:
-  SmbProviderClientImpl() : weak_ptr_factory_(this) {}
+  SmbProviderClientImpl() = default;
 
   ~SmbProviderClientImpl() override {}
 
@@ -260,9 +260,9 @@ class SmbProviderClientImpl : public SmbProviderClient {
   void CallMethod(dbus::MethodCall* method_call,
                   CallbackHandler handler,
                   Callback callback) {
-    proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(handler, weak_ptr_factory_.GetWeakPtr(),
-                                      base::Passed(callback)));
+    proxy_->CallMethod(
+        method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(handler, GetWeakPtr(), base::Passed(callback)));
   }
 
   // Calls the D-Bus method |name|, passing the |protobuf| as an argument.
@@ -284,7 +284,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     proxy_->CallMethod(
         method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SmbProviderClientImpl::HandleDefaultCallback,
-                       weak_ptr_factory_.GetWeakPtr(), method_call->GetMember(),
+                       GetWeakPtr(), method_call->GetMember(),
                        base::Passed(callback)));
   }
 
@@ -413,11 +413,11 @@ class SmbProviderClientImpl : public SmbProviderClient {
     std::move(callback).Run(error, proto);
   }
 
-  dbus::ObjectProxy* proxy_ = nullptr;
+  base::WeakPtr<SmbProviderClientImpl> GetWeakPtr() {
+    return base::AsWeakPtr(this);
+  }
 
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<SmbProviderClientImpl> weak_ptr_factory_;
+  dbus::ObjectProxy* proxy_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SmbProviderClientImpl);
 };
