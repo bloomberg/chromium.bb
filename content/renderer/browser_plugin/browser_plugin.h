@@ -280,7 +280,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Pointer to the RenderWidget that embeds this plugin.
-  RenderWidget* embedding_render_widget_ = nullptr;
+  base::WeakPtr<RenderWidget> embedding_render_widget_;
 
   // The layer used to embed the out-of-process content.
   std::unique_ptr<blink::WebLayer> web_layer_;
