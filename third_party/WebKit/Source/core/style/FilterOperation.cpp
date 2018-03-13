@@ -25,7 +25,7 @@
 
 #include "core/style/FilterOperation.h"
 
-#include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGResource.h"
 #include "platform/LengthFunctions.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/graphics/filters/FEDropShadow.h"
@@ -45,7 +45,7 @@ FilterOperation* FilterOperation::Blend(const FilterOperation* from,
 }
 
 void ReferenceFilterOperation::Trace(blink::Visitor* visitor) {
-  visitor->Trace(element_proxy_);
+  visitor->Trace(resource_);
   visitor->Trace(filter_);
   FilterOperation::Trace(visitor);
 }
@@ -57,26 +57,25 @@ FloatRect ReferenceFilterOperation::MapRect(const FloatRect& rect) const {
   return last_effect->MapRect(rect);
 }
 
-ReferenceFilterOperation::ReferenceFilterOperation(
-    const String& url,
-    SVGElementProxy& element_proxy)
-    : FilterOperation(REFERENCE), url_(url), element_proxy_(&element_proxy) {}
+ReferenceFilterOperation::ReferenceFilterOperation(const String& url,
+                                                   SVGResource* resource)
+    : FilterOperation(REFERENCE), url_(url), resource_(resource) {}
 
-void ReferenceFilterOperation::AddClient(
-    SVGResourceClient* client,
-    base::SingleThreadTaskRunner* task_runner) {
-  element_proxy_->AddClient(client, task_runner);
+void ReferenceFilterOperation::AddClient(SVGResourceClient& client) {
+  if (resource_)
+    resource_->AddClient(client);
 }
 
-void ReferenceFilterOperation::RemoveClient(SVGResourceClient* client) {
-  element_proxy_->RemoveClient(client);
+void ReferenceFilterOperation::RemoveClient(SVGResourceClient& client) {
+  if (resource_)
+    resource_->RemoveClient(client);
 }
 
 bool ReferenceFilterOperation::operator==(const FilterOperation& o) const {
   if (!IsSameType(o))
     return false;
   const ReferenceFilterOperation& other = ToReferenceFilterOperation(o);
-  return url_ == other.url_ && element_proxy_ == other.element_proxy_;
+  return url_ == other.url_ && resource_ == other.resource_;
 }
 
 FilterOperation* BasicColorMatrixFilterOperation::Blend(

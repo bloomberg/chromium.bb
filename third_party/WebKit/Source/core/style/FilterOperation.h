@@ -27,7 +27,6 @@
 #define FilterOperation_h
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
 #include "core/style/ShadowData.h"
 #include "platform/Length.h"
@@ -40,8 +39,8 @@
 namespace blink {
 
 class Filter;
+class SVGResource;
 class SVGResourceClient;
-class SVGElementProxy;
 
 // CSS Filters
 
@@ -132,8 +131,8 @@ class CORE_EXPORT FilterOperation
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
   static ReferenceFilterOperation* Create(const String& url,
-                                          SVGElementProxy& element_proxy) {
-    return new ReferenceFilterOperation(url, element_proxy);
+                                          SVGResource* resource) {
+    return new ReferenceFilterOperation(url, resource);
   }
 
   bool AffectsOpacity() const override { return true; }
@@ -145,15 +144,15 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   Filter* GetFilter() const { return filter_.Get(); }
   void SetFilter(Filter* filter) { filter_ = filter; }
 
-  SVGElementProxy& ElementProxy() const { return *element_proxy_; }
+  SVGResource* Resource() const { return resource_; }
 
-  void AddClient(SVGResourceClient*, base::SingleThreadTaskRunner*);
-  void RemoveClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient&);
+  void RemoveClient(SVGResourceClient&);
 
   virtual void Trace(blink::Visitor*);
 
  private:
-  ReferenceFilterOperation(const String& url, SVGElementProxy&);
+  ReferenceFilterOperation(const String& url, SVGResource*);
 
   FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override {
@@ -164,7 +163,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   bool operator==(const FilterOperation&) const override;
 
   String url_;
-  Member<SVGElementProxy> element_proxy_;
+  Member<SVGResource> resource_;
   Member<Filter> filter_;
 };
 

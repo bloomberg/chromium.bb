@@ -39,7 +39,6 @@ class Filter;
 class FilterEffect;
 class FilterOperations;
 class FloatRect;
-class Node;
 class ReferenceFilterOperation;
 class SVGFilterElement;
 class SVGFilterGraphNodeMap;
@@ -49,11 +48,6 @@ class CORE_EXPORT FilterEffectBuilder final {
 
  public:
   FilterEffectBuilder(const FloatRect& reference_box,
-                      float zoom,
-                      const PaintFlags* fill_flags = nullptr,
-                      const PaintFlags* stroke_flags = nullptr);
-  FilterEffectBuilder(Node*,
-                      const FloatRect& reference_box,
                       float zoom,
                       const PaintFlags* fill_flags = nullptr,
                       const PaintFlags* stroke_flags = nullptr);
@@ -71,7 +65,6 @@ class CORE_EXPORT FilterEffectBuilder final {
   Filter* BuildReferenceFilter(const ReferenceFilterOperation&,
                                FilterEffect* previous_effect) const;
 
-  Member<Node> target_context_;
   FloatRect reference_box_;
   float zoom_;
   const PaintFlags* fill_flags_;

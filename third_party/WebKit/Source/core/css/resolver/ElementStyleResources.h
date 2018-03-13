@@ -43,7 +43,6 @@ class CSSURIValue;
 class CSSValue;
 class ComputedStyle;
 class Document;
-class SVGElementProxy;
 class SVGResource;
 class StyleImage;
 class StylePendingImage;
@@ -60,8 +59,12 @@ class ElementStyleResources {
   StyleImage* GetStyleImage(CSSPropertyID, const CSSValue&);
   StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
   StyleImage* SetOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
-  SVGElementProxy& CachedOrPendingFromValue(const CSSURIValue&);
-  SVGResource* GetSVGResourceFromValue(TreeScope&, const CSSURIValue&) const;
+
+  enum AllowExternal { kDontAllowExternalResource, kAllowExternalResource };
+  SVGResource* GetSVGResourceFromValue(
+      TreeScope&,
+      const CSSURIValue&,
+      AllowExternal = kDontAllowExternalResource) const;
 
   void LoadPendingResources(ComputedStyle*);
 
@@ -69,7 +72,7 @@ class ElementStyleResources {
   StyleImage* GeneratedOrPendingFromValue(CSSPropertyID,
                                           const CSSImageGeneratorValue&);
 
-  void LoadPendingSVGDocuments(ComputedStyle*);
+  void LoadPendingSVGResources(ComputedStyle*);
   void LoadPendingImages(ComputedStyle*);
 
   StyleImage* LoadPendingImage(

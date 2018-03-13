@@ -138,10 +138,12 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       CountFilterUse(FilterOperation::REFERENCE, state.GetDocument());
 
       const CSSURIValue& url_value = ToCSSURIValue(*curr_value);
-      SVGElementProxy& element_proxy =
-          state.GetElementStyleResources().CachedOrPendingFromValue(url_value);
+      SVGResource* resource =
+          state.GetElementStyleResources().GetSVGResourceFromValue(
+              state.GetTreeScope(), url_value,
+              ElementStyleResources::kAllowExternalResource);
       operations.Operations().push_back(
-          ReferenceFilterOperation::Create(url_value.Value(), element_proxy));
+          ReferenceFilterOperation::Create(url_value.Value(), resource));
       continue;
     }
 

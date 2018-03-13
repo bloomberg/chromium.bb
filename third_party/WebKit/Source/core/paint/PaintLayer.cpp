@@ -189,7 +189,7 @@ PaintLayer::~PaintLayer() {
   if (rare_data_ && rare_data_->resource_info) {
     const ComputedStyle& style = GetLayoutObject().StyleRef();
     if (style.HasFilter())
-      style.Filter().RemoveClient(rare_data_->resource_info);
+      style.Filter().RemoveClient(*rare_data_->resource_info);
     if (IsReferenceClipPath(style.ClipPath())) {
       ToReferenceClipPathOperation(style.ClipPath())
           ->RemoveClient(*rare_data_->resource_info);
@@ -2908,15 +2908,10 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
     return;
 
   const bool had_resource_info = ResourceInfo();
-  if (new_style.HasFilterInducingProperty()) {
-    new_style.Filter().AddClient(&EnsureResourceInfo(),
-                                 GetLayoutObject()
-                                     .GetDocument()
-                                     .GetTaskRunner(TaskType::kUnspecedLoading)
-                                     .get());
-  }
+  if (new_style.HasFilterInducingProperty())
+    new_style.Filter().AddClient(EnsureResourceInfo());
   if (had_resource_info && old_style)
-    old_style->Filter().RemoveClient(ResourceInfo());
+    old_style->Filter().RemoveClient(*ResourceInfo());
   if (PaintLayerResourceInfo* resource_info = ResourceInfo())
     resource_info->InvalidateFilterChain();
 }
@@ -3084,8 +3079,8 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
       reference_box == operations.ReferenceBox())
     return;
 
-  operations = FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
-                   .BuildFilterOperations(filter);
+  operations =
+      FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
 }
 
 CompositorFilterOperations
@@ -3093,7 +3088,7 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   const auto& style = GetLayoutObject().StyleRef();
   float zoom = style.EffectiveZoom();
   FloatRect reference_box = FilterReferenceBox(style.BackdropFilter(), zoom);
-  return FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
+  return FilterEffectBuilder(reference_box, zoom)
       .BuildFilterOperations(style.BackdropFilter());
 }
 
@@ -3148,8 +3143,7 @@ FilterEffect* PaintLayer::LastFilterEffect() const {
 
   const auto& style = GetLayoutObject().StyleRef();
   float zoom = style.EffectiveZoom();
-  FilterEffectBuilder builder(EnclosingNode(),
-                              FilterReferenceBox(style.Filter(), zoom), zoom);
+  FilterEffectBuilder builder(FilterReferenceBox(style.Filter(), zoom), zoom);
   resource_info->SetLastEffect(
       builder.BuildFilterEffect(FilterOperationsIncludingReflection()));
   return resource_info->LastEffect();

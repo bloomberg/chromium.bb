@@ -12,7 +12,7 @@ namespace blink {
 
 class Document;
 class KURL;
-class SVGElementProxy;
+class SVGResource;
 
 class CSSURIValue : public CSSValue {
  public:
@@ -24,7 +24,7 @@ class CSSURIValue : public CSSValue {
   }
   ~CSSURIValue();
 
-  SVGElementProxy& EnsureElementProxy(const Document&) const;
+  SVGResource* EnsureResourceReference() const;
   void ReResolveUrl(const Document&) const;
 
   const String& Value() const { return relative_url_; }
@@ -48,7 +48,7 @@ class CSSURIValue : public CSSValue {
   AtomicString relative_url_;
   bool is_local_;
 
-  mutable Member<SVGElementProxy> proxy_;
+  mutable Member<SVGResource> resource_;
   mutable AtomicString absolute_url_;
 };
 

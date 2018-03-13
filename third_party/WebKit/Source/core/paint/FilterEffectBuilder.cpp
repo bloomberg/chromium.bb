@@ -28,9 +28,9 @@
 
 #include <algorithm>
 #include "core/style/FilterOperations.h"
-#include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGResource.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/CompositorFilterOperations.h"
@@ -124,19 +124,7 @@ FilterEffectBuilder::FilterEffectBuilder(const FloatRect& reference_box,
                                          float zoom,
                                          const PaintFlags* fill_flags,
                                          const PaintFlags* stroke_flags)
-    : FilterEffectBuilder(nullptr,
-                          reference_box,
-                          zoom,
-                          fill_flags,
-                          stroke_flags) {}
-
-FilterEffectBuilder::FilterEffectBuilder(Node* target,
-                                         const FloatRect& reference_box,
-                                         float zoom,
-                                         const PaintFlags* fill_flags,
-                                         const PaintFlags* stroke_flags)
-    : target_context_(target),
-      reference_box_(reference_box),
+    : reference_box_(reference_box),
       zoom_(zoom),
       fill_flags_(fill_flags),
       stroke_flags_(stroke_flags) {}
@@ -420,10 +408,9 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
 Filter* FilterEffectBuilder::BuildReferenceFilter(
     const ReferenceFilterOperation& reference_operation,
     FilterEffect* previous_effect) const {
-  DCHECK(target_context_);
-  Element* filter_element = reference_operation.ElementProxy().FindElement(
-      target_context_->GetTreeScope());
-  if (auto* filter = ToSVGFilterElementOrNull(filter_element))
+  SVGResource* resource = reference_operation.Resource();
+  if (auto* filter =
+          ToSVGFilterElementOrNull(resource ? resource->Target() : nullptr))
     return BuildReferenceFilter(*filter, previous_effect);
   return nullptr;
 }

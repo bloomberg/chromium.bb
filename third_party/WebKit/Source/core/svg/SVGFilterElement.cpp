@@ -24,7 +24,8 @@
 #include "core/svg/SVGFilterElement.h"
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGResource.h"
+#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -103,22 +104,27 @@ void SVGFilterElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGElement::SvgAttributeChanged(attr_name);
 }
 
+LocalSVGResource* SVGFilterElement::AssociatedResource() const {
+  return GetTreeScope().EnsureSVGTreeScopedResources().ExistingResourceForId(
+      GetIdAttribute());
+}
+
 void SVGFilterElement::PrimitiveAttributeChanged(
     SVGFilterPrimitiveStandardAttributes& primitive,
     const QualifiedName& attribute) {
   if (LayoutObject* layout_object = GetLayoutObject()) {
     ToLayoutSVGResourceFilter(layout_object)
         ->PrimitiveAttributeChanged(primitive, attribute);
-  } else if (SVGElementProxySet* proxy_set = ElementProxySet()) {
-    proxy_set->NotifyContentChanged(GetTreeScope());
+  } else if (LocalSVGResource* resource = AssociatedResource()) {
+    resource->NotifyContentChanged();
   }
 }
 
 void SVGFilterElement::InvalidateFilterChain() {
   if (LayoutObject* layout_object = GetLayoutObject())
     ToLayoutSVGResourceFilter(layout_object)->RemoveAllClientsFromCache();
-  else if (SVGElementProxySet* proxy_set = ElementProxySet())
-    proxy_set->NotifyContentChanged(GetTreeScope());
+  else if (LocalSVGResource* resource = AssociatedResource())
+    resource->NotifyContentChanged();
 }
 
 void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {

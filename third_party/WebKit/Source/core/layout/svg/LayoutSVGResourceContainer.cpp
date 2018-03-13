@@ -21,7 +21,6 @@
 
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGResource.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "platform/wtf/AutoReset.h"
@@ -61,17 +60,6 @@ void LayoutSVGResourceContainer::UpdateLayout() {
   LayoutSVGHiddenContainer::UpdateLayout();
 
   ClearInvalidationMask();
-}
-
-SVGElementProxySet* LayoutSVGResourceContainer::ElementProxySet() {
-  return GetElement()->ElementProxySet();
-}
-
-void LayoutSVGResourceContainer::NotifyContentChanged() {
-  if (LocalSVGResource* resource = ResourceForContainer(*this))
-    resource->NotifyContentChanged();
-  if (SVGElementProxySet* proxy_set = ElementProxySet())
-    proxy_set->NotifyContentChanged(GetElement()->GetTreeScope());
 }
 
 void LayoutSVGResourceContainer::WillBeDestroyed() {
@@ -117,9 +105,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   if (is_invalidating_)
     return;
   LocalSVGResource* resource = ResourceForContainer(*this);
-  SVGElementProxySet* proxy_set = ElementProxySet();
-  if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()) &&
-      (!resource || !resource->HasClients()))
+  if (clients_.IsEmpty() && (!resource || !resource->HasClients()))
     return;
   // Remove modes for which invalidations have already been
   // performed. If no modes remain we are done.
@@ -147,8 +133,9 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     MarkForLayoutAndParentResourceInvalidation(*client, needs_layout);
   }
 
-  // Invalidate clients registered via an SVGElementProxy/SVGResource.
-  NotifyContentChanged();
+  // Invalidate clients registered via an SVGResource.
+  if (resource)
+    resource->NotifyContentChanged();
 
   is_invalidating_ = false;
 }

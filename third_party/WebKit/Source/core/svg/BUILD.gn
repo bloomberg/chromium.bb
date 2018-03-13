@@ -82,8 +82,6 @@ blink_core_sources("svg") {
     "SVGDocumentExtensions.h",
     "SVGElement.cpp",
     "SVGElement.h",
-    "SVGElementProxy.cpp",
-    "SVGElementProxy.h",
     "SVGElementRareData.cpp",
     "SVGElementRareData.h",
     "SVGEllipseElement.cpp",

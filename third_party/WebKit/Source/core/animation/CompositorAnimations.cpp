@@ -519,7 +519,7 @@ void AddKeyframeToCurve(CompositorFilterAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
                         const AnimatableValue* value,
                         const TimingFunction& keyframe_timing_function) {
-  FilterEffectBuilder builder(nullptr, FloatRect(), 1);
+  FilterEffectBuilder builder(FloatRect(), 1);
   CompositorFilterKeyframe filter_keyframe(
       keyframe->Offset(),
       builder.BuildFilterOperations(

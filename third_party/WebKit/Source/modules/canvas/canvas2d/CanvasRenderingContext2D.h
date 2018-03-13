@@ -150,7 +150,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   String GetIdFromControl(const Element*) override;
 
   // SVGResourceClient implementation
-  TreeScope* GetTreeScope() override;
   void ResourceContentChanged() override;
   void ResourceElementChanged() override;
 
