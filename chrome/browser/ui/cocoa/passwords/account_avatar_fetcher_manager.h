@@ -8,7 +8,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/memory/ref_counted.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class AccountAvatarFetcherBridge;
 @class CredentialItemButton;
@@ -17,12 +17,12 @@ class GURL;
 // Handles retrieving avatar images for credential items.
 @interface AccountAvatarFetcherManager : NSObject {
   std::vector<std::unique_ptr<AccountAvatarFetcherBridge>> bridges_;
-  scoped_refptr<content::SharedURLLoaderFactory> loaderFactory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loaderFactory_;
 }
 
 // Initializes a manager with the specified URL loader factory.
 - (id)initWithLoaderFactory:
-    (scoped_refptr<content::SharedURLLoaderFactory>)loaderFactory;
+    (scoped_refptr<network::SharedURLLoaderFactory>)loaderFactory;
 
 // Retrieves the image located at |avatarURL| and updates |view| if successful.
 - (void)fetchAvatar:(const GURL&)avatarURL forView:(CredentialItemButton*)view;

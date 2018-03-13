@@ -21,13 +21,16 @@ namespace net {
 class X509Certificate;
 }  // namespace net
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace mojo {
 class SimpleWatcher;
 }  // namespace mojo
 
 namespace content {
 
-class SharedURLLoaderFactory;
 class ThrottlingURLLoader;
 class URLLoaderThrottle;
 
@@ -43,7 +46,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   // with null. If the returned fetcher is destructed before the |callback| is
   // called, the request will be canceled and the |callback| will no be called.
   static std::unique_ptr<SignedExchangeCertFetcher> CreateAndStart(
-      scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       const GURL& cert_url,
       url::Origin request_initiator,
@@ -68,7 +71,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   static base::ScopedClosureRunner SetMaxCertSizeForTest(size_t max_cert_size);
 
   SignedExchangeCertFetcher(
-      scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       const GURL& cert_url,
       url::Origin request_initiator,
@@ -96,7 +99,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
   std::unique_ptr<network::ResourceRequest> resource_request_;
   CertificateCallback callback_;

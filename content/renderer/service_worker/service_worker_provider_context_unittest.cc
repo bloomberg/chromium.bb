@@ -17,7 +17,6 @@
 #include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -28,6 +27,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -327,7 +327,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   // S13nServiceWorker:
   base::test::ScopedFeatureList scoped_feature_list_;
   FakeURLLoaderFactory fake_loader_factory_;
-  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };

@@ -23,7 +23,8 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
     base::WaitableEvent* event) {
@@ -41,13 +42,13 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
 
 SyncLoadContext::SyncLoadContext(
     network::ResourceRequest* request,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
     SyncLoadResponse* response,
     base::WaitableEvent* event,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response), event_(event), task_runner_(std::move(task_runner)) {
   url_loader_factory_ =
-      SharedURLLoaderFactory::Create(std::move(url_loader_factory));
+      network::SharedURLLoaderFactory::Create(std::move(url_loader_factory));
 
   // Constructs a new ResourceDispatcher specifically for this request.
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();

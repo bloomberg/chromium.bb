@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace content {
+namespace network {
 
 // static
 scoped_refptr<SharedURLLoaderFactory> SharedURLLoaderFactory::Create(
@@ -25,4 +25,4 @@ SharedURLLoaderFactoryInfo::SharedURLLoaderFactoryInfo() = default;
 
 SharedURLLoaderFactoryInfo::~SharedURLLoaderFactoryInfo() = default;
 
-}  // namespace content
+}  // namespace network

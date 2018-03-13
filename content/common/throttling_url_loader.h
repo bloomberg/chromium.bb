@@ -14,9 +14,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -38,7 +38,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // note that the request may not start immediately since it could be deferred
   // by throttles.
   static std::unique_ptr<ThrottlingURLLoader> CreateLoaderAndStart(
-      scoped_refptr<SharedURLLoaderFactory> factory,
+      scoped_refptr<network::SharedURLLoaderFactory> factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       int32_t routing_id,
       int32_t request_id,
@@ -72,14 +72,14 @@ class CONTENT_EXPORT ThrottlingURLLoader
       network::mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
-  void Start(scoped_refptr<SharedURLLoaderFactory> factory,
+  void Start(scoped_refptr<network::SharedURLLoaderFactory> factory,
              int32_t routing_id,
              int32_t request_id,
              uint32_t options,
              network::ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void StartNow(SharedURLLoaderFactory* factory,
+  void StartNow(network::SharedURLLoaderFactory* factory,
                 int32_t routing_id,
                 int32_t request_id,
                 uint32_t options,
@@ -171,15 +171,16 @@ class CONTENT_EXPORT ThrottlingURLLoader
   network::mojom::URLLoaderPtr url_loader_;
 
   struct StartInfo {
-    StartInfo(scoped_refptr<SharedURLLoaderFactory> in_url_loader_factory,
-              int32_t in_routing_id,
-              int32_t in_request_id,
-              uint32_t in_options,
-              network::ResourceRequest* in_url_request,
-              scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
+    StartInfo(
+        scoped_refptr<network::SharedURLLoaderFactory> in_url_loader_factory,
+        int32_t in_routing_id,
+        int32_t in_request_id,
+        uint32_t in_options,
+        network::ResourceRequest* in_url_request,
+        scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
     ~StartInfo();
 
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory;
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     int32_t routing_id;
     int32_t request_id;
     uint32_t options;

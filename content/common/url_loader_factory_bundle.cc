@@ -20,7 +20,7 @@ URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
 
 URLLoaderFactoryBundleInfo::~URLLoaderFactoryBundleInfo() = default;
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<URLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
@@ -78,7 +78,8 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
                                     traffic_annotation);
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo> URLLoaderFactoryBundle::Clone() {
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+URLLoaderFactoryBundle::Clone() {
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
   if (default_factory_)
     default_factory_->Clone(mojo::MakeRequest(&default_factory_info));

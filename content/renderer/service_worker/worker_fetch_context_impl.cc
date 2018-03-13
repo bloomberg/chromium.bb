@@ -29,8 +29,9 @@ namespace content {
 class WorkerFetchContextImpl::URLLoaderFactoryImpl
     : public blink::WebURLLoaderFactory {
  public:
-  URLLoaderFactoryImpl(base::WeakPtr<ResourceDispatcher> resource_dispatcher,
-                       scoped_refptr<SharedURLLoaderFactory> loader_factory)
+  URLLoaderFactoryImpl(
+      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
       : resource_dispatcher_(std::move(resource_dispatcher)),
         loader_factory_(std::move(loader_factory)),
         weak_ptr_factory_(this) {}
@@ -87,8 +88,9 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
   }
 
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
-  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
-  scoped_refptr<SharedURLLoaderFactory> service_worker_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      service_worker_url_loader_factory_;
   base::WeakPtrFactory<URLLoaderFactoryImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);
 };
@@ -96,8 +98,10 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
 WorkerFetchContextImpl::WorkerFetchContextImpl(
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> direct_network_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        direct_network_factory_info,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
@@ -122,9 +126,9 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread() {
   DCHECK(!binding_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
 
-  shared_url_loader_factory_ =
-      SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
-  direct_network_loader_factory_ = SharedURLLoaderFactory::Create(
+  shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
+      std::move(url_loader_factory_info_));
+  direct_network_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::move(direct_network_loader_factory_info_));
   if (service_worker_client_request_.is_pending())
     binding_.Bind(std::move(service_worker_client_request_));

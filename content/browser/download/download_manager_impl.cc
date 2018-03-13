@@ -216,7 +216,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     return nullptr;
   }
 
-  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory;
   if (params->url().SchemeIs(url::kBlobScheme)) {
     network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
     storage::BlobURLLoaderFactory::Create(

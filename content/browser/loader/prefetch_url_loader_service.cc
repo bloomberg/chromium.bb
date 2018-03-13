@@ -12,11 +12,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
@@ -55,7 +55,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(RESOURCE_TYPE_PREFETCH, resource_request.resource_type);

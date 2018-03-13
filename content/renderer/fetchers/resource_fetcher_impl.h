@@ -33,7 +33,7 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetHeader(const std::string& header, const std::string& value) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
-             scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              Callback callback,
              size_t maximum_download_size) override;

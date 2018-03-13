@@ -37,7 +37,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Binding<network::mojom::URLLoader>& url_loader_binding() {
     return url_loader_binding_;
   }
-  scoped_refptr<SharedURLLoaderFactory> shared_factory() {
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory() {
     return shared_factory_;
   }
 

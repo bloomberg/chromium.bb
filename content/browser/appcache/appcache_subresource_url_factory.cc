@@ -12,7 +12,6 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -20,6 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {

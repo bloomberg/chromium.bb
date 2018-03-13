@@ -8,12 +8,12 @@
 #include "base/strings/string_piece.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
@@ -85,7 +85,7 @@ bool Consume3Bytes(base::StringPiece* data, uint32_t* out) {
 // static
 std::unique_ptr<SignedExchangeCertFetcher>
 SignedExchangeCertFetcher::CreateAndStart(
-    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
     url::Origin request_initiator,
@@ -155,7 +155,7 @@ SignedExchangeCertFetcher::GetCertChainFromMessage(base::StringPiece message) {
 }
 
 SignedExchangeCertFetcher::SignedExchangeCertFetcher(
-    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
     url::Origin request_initiator,

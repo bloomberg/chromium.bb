@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -16,7 +16,7 @@ namespace content {
 // A SharedURLLoaderFactoryInfo implementation that wraps a
 // network::mojom::URLLoaderFactoryPtrInfo.
 class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
-    : public SharedURLLoaderFactoryInfo {
+    : public network::SharedURLLoaderFactoryInfo {
  public:
   WrapperSharedURLLoaderFactoryInfo();
   explicit WrapperSharedURLLoaderFactoryInfo(
@@ -26,7 +26,7 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
 
  private:
   // SharedURLLoaderFactoryInfo implementation.
-  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info_;
 };
@@ -34,7 +34,8 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
 // A SharedURLLoaderFactory implementation that wraps a
 // PtrTemplateType<network::mojom::URLLoaderFactory>.
 template <template <typename> class PtrTemplateType>
-class WrapperSharedURLLoaderFactoryBase : public SharedURLLoaderFactory {
+class WrapperSharedURLLoaderFactoryBase
+    : public network::SharedURLLoaderFactory {
  public:
   using PtrType = PtrTemplateType<network::mojom::URLLoaderFactory>;
   using PtrInfoType = typename PtrType::PtrInfoType;
@@ -61,7 +62,7 @@ class WrapperSharedURLLoaderFactoryBase : public SharedURLLoaderFactory {
                                        std::move(client), traffic_annotation);
   }
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
     network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
     if (factory_ptr_)
       factory_ptr_->Clone(mojo::MakeRequest(&factory_ptr_info));

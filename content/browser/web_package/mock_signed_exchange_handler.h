@@ -50,7 +50,7 @@ class MockSignedExchangeHandlerFactory final
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
       url::Origin request_initiator,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter) override;
 
  private:

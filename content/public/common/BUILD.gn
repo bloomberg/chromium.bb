@@ -215,8 +215,6 @@ jumbo_source_set("common_sources") {
     "screen_orientation_values.h",
     "send_zygote_child_ping_linux.h",
     "service_manager_connection.h",
-    "shared_url_loader_factory.cc",
-    "shared_url_loader_factory.h",
     "simple_connection_filter.cc",
     "simple_connection_filter.h",
     "socket_permission_request.h",

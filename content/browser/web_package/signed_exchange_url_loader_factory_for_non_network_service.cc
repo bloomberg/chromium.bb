@@ -50,7 +50,7 @@ void SignedExchangeURLLoaderFactoryForNonNetworkService::CreateLoaderAndStart(
       std::move(client), traffic_annotation);
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 SignedExchangeURLLoaderFactoryForNonNetworkService::Clone() {
   NOTREACHED();
   return nullptr;

@@ -359,7 +359,7 @@ StreamOverrideParameters::~StreamOverrideParameters() {
 
 WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
     base::WeakPtr<ResourceDispatcher> resource_dispatcher,
-    scoped_refptr<SharedURLLoaderFactory> loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : resource_dispatcher_(std::move(resource_dispatcher)),
       loader_factory_(std::move(loader_factory)) {}
 
@@ -399,7 +399,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   Context(WebURLLoaderImpl* loader,
           ResourceDispatcher* resource_dispatcher,
           scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-          scoped_refptr<SharedURLLoaderFactory> factory,
+          scoped_refptr<network::SharedURLLoaderFactory> factory,
           mojom::KeepAliveHandlePtr keep_alive_handle);
 
   ResourceDispatcher* resource_dispatcher() { return resource_dispatcher_; }
@@ -463,7 +463,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   DeferState defers_loading_;
   int request_id_;
 
-  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
 
 // A thin wrapper class for Context to ensure its lifetime while it is
@@ -526,7 +526,7 @@ WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
     : loader_(loader),
       use_stream_on_response_(false),
@@ -1141,7 +1141,7 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : WebURLLoaderImpl(resource_dispatcher,
                        std::move(task_runner),
                        std::move(url_loader_factory),
@@ -1150,7 +1150,7 @@ WebURLLoaderImpl::WebURLLoaderImpl(
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle)
     : context_(new Context(this,
                            resource_dispatcher,

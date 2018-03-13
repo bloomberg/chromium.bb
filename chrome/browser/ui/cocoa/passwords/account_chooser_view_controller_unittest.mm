@@ -82,7 +82,7 @@ class AccountChooserViewControllerTest : public CocoaTest,
   // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
-  scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
  private:
@@ -122,7 +122,7 @@ AccountChooserViewControllerTest::GetDialogController() {
   return &dialog_controller_;
 }
 
-scoped_refptr<content::SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 AccountChooserViewControllerTest::GetURLLoaderFactory() const {
   NOTREACHED();
   return nullptr;

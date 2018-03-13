@@ -109,7 +109,7 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
 };
 
 ThrottlingURLLoader::StartInfo::StartInfo(
-    scoped_refptr<SharedURLLoaderFactory> in_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> in_url_loader_factory,
     int32_t in_routing_id,
     int32_t in_request_id,
     uint32_t in_options,
@@ -150,7 +150,7 @@ ThrottlingURLLoader::PriorityInfo::~PriorityInfo() = default;
 
 // static
 std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
-    scoped_refptr<SharedURLLoaderFactory> factory,
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
@@ -219,7 +219,7 @@ ThrottlingURLLoader::ThrottlingURLLoader(
 }
 
 void ThrottlingURLLoader::Start(
-    scoped_refptr<SharedURLLoaderFactory> factory,
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -256,7 +256,7 @@ void ThrottlingURLLoader::Start(
 }
 
 void ThrottlingURLLoader::StartNow(
-    SharedURLLoaderFactory* factory,
+    network::SharedURLLoaderFactory* factory,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

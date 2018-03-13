@@ -500,7 +500,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::TaskType task_type) override;
   int GetEnabledBindings() const override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
-  scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   // blink::mojom::EngagementClient implementation:
   void SetEngagementLevel(const url::Origin& origin,

@@ -578,7 +578,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // TODO(https://crbug.com/796425): We temporarily wrap raw
     // mojom::URLLoaderFactory pointers into SharedURLLoaderFactory. Need to
     // further refactor the factory getters to avoid this.
-    scoped_refptr<SharedURLLoaderFactory> factory;
+    scoped_refptr<network::SharedURLLoaderFactory> factory;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
       factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(

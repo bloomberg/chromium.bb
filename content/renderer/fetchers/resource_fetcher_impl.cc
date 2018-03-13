@@ -18,6 +18,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -66,7 +67,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
   }
 
   void Start(const network::ResourceRequest& request,
-             scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     status_ = Status::kStarted;
@@ -288,7 +289,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 void ResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     Callback callback,
     size_t maximum_download_size) {

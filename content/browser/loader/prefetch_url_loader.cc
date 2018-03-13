@@ -7,9 +7,9 @@
 #include "base/feature_list.h"
 #include "content/browser/web_package/web_package_prefetch_handler.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)

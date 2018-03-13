@@ -19,10 +19,13 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace content {
 
 class ResourceContext;
-class SharedURLLoaderFactory;
 class URLLoaderThrottle;
 class WebPackagePrefetchHandler;
 
@@ -46,7 +49,7 @@ class CONTENT_EXPORT PrefetchURLLoader
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
@@ -85,7 +88,7 @@ class CONTENT_EXPORT PrefetchURLLoader
 
   void OnNetworkConnectionError();
 
-  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   // For the actual request.
   network::mojom::URLLoaderPtr loader_;

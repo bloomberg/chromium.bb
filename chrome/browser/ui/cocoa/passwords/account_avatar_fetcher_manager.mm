@@ -55,7 +55,7 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
 @implementation AccountAvatarFetcherManager
 
 - (id)initWithLoaderFactory:
-    (scoped_refptr<content::SharedURLLoaderFactory>)loaderFactory {
+    (scoped_refptr<network::SharedURLLoaderFactory>)loaderFactory {
   if ((self = [super init])) {
     loaderFactory_ = std::move(loaderFactory);
   }

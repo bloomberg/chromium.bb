@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
  public:
   ServiceWorkerFetchContextImpl(
       const GURL& worker_script_url,
-      std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info,
       int service_worker_provider_id,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider);
   ~ServiceWorkerFetchContextImpl() override;
@@ -34,12 +35,12 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
  private:
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |url_loader_factory_|.
-  std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
   const int service_worker_provider_id_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
-  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
 };
