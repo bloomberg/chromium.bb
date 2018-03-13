@@ -462,6 +462,14 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
+void ShelfLayoutManager::OnSplitViewModeStarted() {
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
+void ShelfLayoutManager::OnSplitViewModeEnded() {
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
@@ -513,6 +521,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       window_overlaps_shelf_ || state_.visibility_state == SHELF_AUTO_HIDE) {
     return SHELF_BACKGROUND_OVERLAP;
   }
+
+  // If split view mode is active, make the shelf fully opapue.
+  if (Shell::Get()->IsSplitViewModeActive())
+    return SHELF_BACKGROUND_SPLIT_VIEW;
 
   return SHELF_BACKGROUND_DEFAULT;
 }

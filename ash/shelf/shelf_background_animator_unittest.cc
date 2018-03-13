@@ -246,6 +246,15 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 
+// Verify the alpha values for the SHELF_BACKGROUND_SPLIT_VIEW state.
+TEST_F(ShelfBackgroundAnimatorTest, SplitViewBackground) {
+  PaintBackground(SHELF_BACKGROUND_SPLIT_VIEW);
+
+  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, animator_->target_background_type());
+  EXPECT_EQ(kMaxAlpha, observer_.GetBackgroundAlpha());
+  EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
+}
+
 // Verify the alpha values for the SHELF_BACKGROUND_APP_LIST state.
 TEST_F(ShelfBackgroundAnimatorTest, FullscreenAppListBackground) {
   PaintBackground(SHELF_BACKGROUND_APP_LIST);
