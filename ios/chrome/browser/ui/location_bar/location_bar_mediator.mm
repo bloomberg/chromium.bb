@@ -115,6 +115,7 @@
                      reason:(int)reason {
   DCHECK_EQ(_webStateList, webStateList);
   self.webState = newWebState;
+  [self.consumer defocusOmnibox];
 }
 
 #pragma mark - Setters

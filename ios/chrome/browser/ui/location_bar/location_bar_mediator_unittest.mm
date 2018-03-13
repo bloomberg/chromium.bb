@@ -213,3 +213,15 @@ TEST_F(LocationBarMediatorTest, TestDidChangeVisibleSecurityState) {
 
   EXPECT_OCMOCK_VERIFY(consumer_);
 }
+
+// Test the omnibox is defocused when the active webstate is changed.
+TEST_F(LocationBarMediatorTest, TestChangeActiveWebState) {
+  mediator_.webStateList = web_state_list_.get();
+  SetUpActiveWebState();
+  mediator_.consumer = consumer_;
+
+  OCMExpect([consumer_ defocusOmnibox]);
+  web_state_list_->ActivateWebStateAt(1);
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}

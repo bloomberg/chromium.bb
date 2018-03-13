@@ -12,6 +12,9 @@
 // text and the cursor position.
 - (void)updateOmniboxState;
 
+// Notifies consumer to defocus the omnibox (for example on tab change).
+- (void)defocusOmnibox;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
