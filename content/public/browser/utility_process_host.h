@@ -18,7 +18,6 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 }
 
@@ -53,10 +52,6 @@ class UtilityProcessHost : public IPC::Sender {
   ~UtilityProcessHost() override {}
 
   virtual base::WeakPtr<UtilityProcessHost> AsWeakPtr() = 0;
-
-  // Allows a directory to be opened through the sandbox, in case it's needed by
-  // the operation.
-  virtual void SetExposedDir(const base::FilePath& dir) = 0;
 
   // Make the process run with a specific sandbox type, or unsandboxed if
   // SANDBOX_TYPE_NO_SANDBOX is specified.

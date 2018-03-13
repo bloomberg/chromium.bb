@@ -134,17 +134,6 @@ void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
 void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
                                    const base::CommandLine& command_line) {
   SetupCommonSandboxParameters(client);
-
-  base::FilePath permitted_dir =
-      command_line.GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
-
-  if (!permitted_dir.empty()) {
-    std::string permitted_dir_canonical =
-        service_manager::SandboxMac::GetCanonicalPath(permitted_dir).value();
-    CHECK(
-        client->SetParameter(service_manager::SandboxMac::kSandboxPermittedDir,
-                             permitted_dir_canonical));
-  }
 }
 
 }  // namespace content

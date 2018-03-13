@@ -16,7 +16,6 @@
 ; Define constants for all of the parameter strings passed in.
 (define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
 (define enable-logging "ENABLE_LOGGING")
-(define permitted-dir "PERMITTED_DIR")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
 (define elcap-or-later "ELCAP_OR_LATER")
 (define macos-1013 "MACOS_1013")

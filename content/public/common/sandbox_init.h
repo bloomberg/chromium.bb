@@ -19,7 +19,6 @@
 
 namespace base {
 class CommandLine;
-class FilePath;
 }
 
 namespace sandbox {
@@ -65,8 +64,8 @@ CONTENT_EXPORT sandbox::ResultCode StartSandboxedProcess(
 // Returns true if the sandbox was initialized succesfully, false if an error
 // occurred.  If process_type isn't one that needs sandboxing, no action is
 // taken and true is always returned.
-CONTENT_EXPORT bool InitializeSandbox(service_manager::SandboxType sandbox_type,
-                                      const base::FilePath& allowed_path);
+CONTENT_EXPORT bool InitializeSandbox(
+    service_manager::SandboxType sandbox_type);
 
 // Initialize the sandbox for renderer, gpu, utility, worker, and plugin
 // processes, depending on the command line flags. For the browser process which

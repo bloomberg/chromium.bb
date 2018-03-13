@@ -54,10 +54,9 @@ class UtilitySandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
   UtilitySandboxedProcessLauncherDelegate(
-      const base::FilePath& exposed_dir,
       service_manager::SandboxType sandbox_type,
       const base::EnvironmentMap& env)
-      : exposed_dir_(exposed_dir),
+      :
 #if defined(OS_POSIX)
         env_(env),
 #endif
@@ -88,29 +87,14 @@ class UtilitySandboxedProcessLauncherDelegate
   }
 
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    if (exposed_dir_.empty())
       return true;
-
-    sandbox::ResultCode result;
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_dir_.value().c_str());
-    if (result != sandbox::SBOX_ALL_OK)
-      return false;
-
-    base::FilePath exposed_files = exposed_dir_.AppendASCII("*");
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_files.value().c_str());
-    return result == sandbox::SBOX_ALL_OK;
   }
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   ZygoteHandle GetZygote() override {
     if (service_manager::IsUnsandboxedSandboxType(sandbox_type_) ||
-        sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
-        !exposed_dir_.empty()) {
+        sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK) {
       return nullptr;
     }
     return GetGenericZygote();
@@ -126,8 +110,6 @@ class UtilitySandboxedProcessLauncherDelegate
   }
 
  private:
-  base::FilePath exposed_dir_;
-
 #if defined(OS_POSIX)
   base::EnvironmentMap env_;
 #endif  // OS_WIN
@@ -178,10 +160,6 @@ bool UtilityProcessHostImpl::Send(IPC::Message* message) {
     return false;
 
   return process_->Send(message);
-}
-
-void UtilityProcessHostImpl::SetExposedDir(const base::FilePath& dir) {
-  exposed_dir_ = dir;
 }
 
 void UtilityProcessHostImpl::SetSandboxType(
@@ -330,11 +308,6 @@ bool UtilityProcessHostImpl::StartProcess() {
           switches::kUtilityCmdPrefix));
     }
 
-    if (!exposed_dir_.empty()) {
-      cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir,
-                                 exposed_dir_);
-    }
-
     const bool is_service = service_identity_.has_value();
     if (is_service) {
       GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
@@ -342,7 +315,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     }
 
     process_->Launch(std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
-                         exposed_dir_, sandbox_type_, env_),
+                         sandbox_type_, env_),
                      std::move(cmd_line), true);
   }
 

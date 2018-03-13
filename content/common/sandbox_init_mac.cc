@@ -70,23 +70,13 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
       base::Passed(std::move(original)));
 }
 
-// Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
-// false if the current process type doesn't need to be sandboxed or if the
-// sandbox was disabled from the command line.
-bool GetSandboxInfoFromCommandLine(service_manager::SandboxType* sandbox_type,
-                                   base::FilePath* allowed_dir) {
+// Fill in |sandbox_type| based on the command line.  Returns false if the
+// current process type doesn't need to be sandboxed or if the sandbox was
+// disabled from the command line.
+bool GetSandboxTypeFromCommandLine(service_manager::SandboxType* sandbox_type) {
   DCHECK(sandbox_type);
-  DCHECK(allowed_dir);
 
-  *allowed_dir = base::FilePath();  // Empty by default.
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  if (process_type == switches::kUtilityProcess) {
-    *allowed_dir =
-        command_line->GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
-  }
-
   *sandbox_type = service_manager::SandboxTypeFromCommandLine(*command_line);
   if (service_manager::IsUnsandboxedSandboxType(*sandbox_type))
     return false;
@@ -102,22 +92,19 @@ bool GetSandboxInfoFromCommandLine(service_manager::SandboxType* sandbox_type,
 
 }  // namespace
 
-bool InitializeSandbox(service_manager::SandboxType sandbox_type,
-                       const base::FilePath& allowed_dir) {
+bool InitializeSandbox(service_manager::SandboxType sandbox_type) {
   return service_manager::Sandbox::Initialize(
-      sandbox_type, allowed_dir,
+      sandbox_type,
       MaybeWrapWithGPUSandboxHook(sandbox_type, base::OnceClosure()));
 }
 
 bool InitializeSandbox(base::OnceClosure post_warmup_hook) {
   service_manager::SandboxType sandbox_type =
       service_manager::SANDBOX_TYPE_INVALID;
-  base::FilePath allowed_dir;
-  return !GetSandboxInfoFromCommandLine(&sandbox_type, &allowed_dir) ||
+  return !GetSandboxTypeFromCommandLine(&sandbox_type) ||
          service_manager::Sandbox::Initialize(
-             sandbox_type, allowed_dir,
-             MaybeWrapWithGPUSandboxHook(sandbox_type,
-                                         std::move(post_warmup_hook)));
+             sandbox_type, MaybeWrapWithGPUSandboxHook(
+                               sandbox_type, std::move(post_warmup_hook)));
 }
 
 bool InitializeSandbox() {

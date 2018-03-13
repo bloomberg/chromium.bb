@@ -31,9 +31,7 @@ bool Sandbox::Initialize(SandboxType sandbox_type,
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
-bool Sandbox::Initialize(SandboxType sandbox_type,
-                         const base::FilePath& allowed_dir,
-                         base::OnceClosure hook) {
+bool Sandbox::Initialize(SandboxType sandbox_type, base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
   SandboxMac::Warmup(sandbox_type);
 
@@ -42,7 +40,7 @@ bool Sandbox::Initialize(SandboxType sandbox_type,
     std::move(hook).Run();
 
   // Actually sandbox the process.
-  return SandboxMac::Enable(sandbox_type, allowed_dir);
+  return SandboxMac::Enable(sandbox_type);
 }
 #endif  // defined(OS_MACOSX)
 

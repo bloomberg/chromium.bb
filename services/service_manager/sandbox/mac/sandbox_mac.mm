@@ -92,7 +92,6 @@ const char* SandboxMac::kSandboxEnableLogging = "ENABLE_LOGGING";
 const char* SandboxMac::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
 const char* SandboxMac::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
 const char* SandboxMac::kSandboxOSVersion = "OS_VERSION";
-const char* SandboxMac::kSandboxPermittedDir = "PERMITTED_DIR";
 const char* SandboxMac::kSandboxElCapOrLater = "ELCAP_OR_LATER";
 const char* SandboxMac::kSandboxMacOS1013 = "MACOS_1013";
 const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
@@ -198,28 +197,12 @@ std::string LoadSandboxTemplate(SandboxType sandbox_type) {
 // Turns on the OS X sandbox for this process.
 
 // static
-bool SandboxMac::Enable(SandboxType sandbox_type,
-                        const base::FilePath& allowed_dir) {
-  // Sanity - currently only some sandboxes support a directory being
-  // passed in.
-  if (sandbox_type != SANDBOX_TYPE_UTILITY) {
-    DCHECK(allowed_dir.empty())
-        << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
-  }
-
+bool SandboxMac::Enable(SandboxType sandbox_type) {
   std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
   if (sandbox_data.empty())
     return false;
 
   sandbox::SandboxCompiler compiler(sandbox_data);
-
-  if (!allowed_dir.empty()) {
-    // Add the sandbox parameters necessary to access the given directory.
-    base::FilePath allowed_dir_canonical = GetCanonicalPath(allowed_dir);
-    if (!compiler.InsertStringParam(kSandboxPermittedDir,
-                                    allowed_dir_canonical.value()))
-      return false;
-  }
 
   // Enable verbose logging if enabled on the command line. (See common.sb
   // for details).

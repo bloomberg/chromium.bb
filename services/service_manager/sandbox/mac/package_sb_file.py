@@ -18,7 +18,8 @@ h_definition = ('SERVICE_MANAGER_SANDBOX_EXPORT\n' +
                 'extern const char kSeatbeltPolicyString_%s[];\n\n')
 cc_include = '#include "services/service_manager/sandbox/mac/%s.sb.h"\n'
 cc_definition = 'const char kSeatbeltPolicyString_%s[] = \n'
-cc_definition_end = ';\n'
+cc_definition_end = '"";\n'  # Add "" so the definition has some content
+                             # (the empty string) if the sb file is empty.
 
 def escape_for_c(line):
   if line and line[0] == ';':
