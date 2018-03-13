@@ -14,6 +14,7 @@
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/ec_public_key.h"
+#include "device/fido/fake_u2f_device.h"
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/mock_u2f_device.h"
@@ -395,6 +396,21 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_id());
+}
+
+TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
+  auto request = CreateRegisterRequest();
+  request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<test::FakeU2fDevice>();
+  discovery()->AddDevice(std::move(device));
+
+  register_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+
+  // We don't verify the response from the fake, but do a quick sanity check.
+  EXPECT_EQ(32ul, register_callback_receiver().value()->raw_id().size());
 }
 
 TEST_F(U2fRegisterTest, TestDelayedSuccess) {

@@ -215,6 +215,8 @@ is_linux_without_udev = is_linux && !use_udev
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_u2f_device.cc",
+    "fake_u2f_device.h",
     "fake_u2f_discovery.cc",
     "fake_u2f_discovery.h",
     "test_callback_receiver.h",

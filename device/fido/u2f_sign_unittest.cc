@@ -8,7 +8,10 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "crypto/ec_private_key.h"
+#include "crypto/sha2.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/fake_u2f_device.h"
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/mock_u2f_device.h"
 #include "device/fido/sign_response_data.h"
@@ -67,6 +70,11 @@ constexpr uint8_t kTestSignAuthenticatorData[] = {
     0x00, 0x00, 0x00, 0x25  // counter
     // clang-format on
 };
+
+std::vector<uint8_t> GetTestRelyingPartyIdSHA256() {
+  return std::vector<uint8_t>(std::begin(kTestRelyingPartyIdSHA256),
+                              std::end(kTestRelyingPartyIdSHA256));
+}
 
 std::vector<uint8_t> GetTestCredentialRawIdBytes() {
   return std::vector<uint8_t>(std::begin(test_data::kTestCredentialRawIdBytes),
@@ -127,8 +135,9 @@ class U2fSignTest : public ::testing::Test {
         nullptr /* connector */,
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
-        registered_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-        base::nullopt, sign_callback_receiver_.callback());
+        registered_keys, std::vector<uint8_t>(32),
+        GetTestRelyingPartyIdSHA256(), base::nullopt,
+        sign_callback_receiver_.callback());
   }
 
   test::FakeU2fDiscovery* discovery() const { return discovery_; }
@@ -230,6 +239,40 @@ TEST_F(U2fSignTest, TestSignSuccess) {
 
   // Verify that we get the key handle used for signing.
   EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
+}
+
+TEST_F(U2fSignTest, TestSignSuccessWithFake) {
+  auto private_key = crypto::ECPrivateKey::Create();
+  std::string public_key;
+  private_key->ExportRawPublicKey(&public_key);
+  std::vector<uint8_t> key_handle(32);
+  crypto::SHA256HashString(public_key, key_handle.data(), key_handle.size());
+
+  std::vector<std::vector<uint8_t>> handles{key_handle};
+  auto request = CreateSignRequestWithKeys(handles);
+  request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<test::FakeU2fDevice>();
+  device->AddRegistration(key_handle, std::move(private_key),
+                          GetTestRelyingPartyIdSHA256(), 42);
+  discovery()->AddDevice(std::move(device));
+
+  sign_callback_receiver().WaitForCallback();
+  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+
+  // Just a sanity check, we don't verify the actual signature.
+  ASSERT_GE(
+      (size_t)(32 + 1 + 4 + 8),  // Minimal ECDSA signature is 8 bytes
+      sign_callback_receiver().value()->GetAuthenticatorDataBytes().size());
+  EXPECT_EQ(0x01,
+            sign_callback_receiver()
+                .value()
+                ->GetAuthenticatorDataBytes()[32]);  // UP flag
+  EXPECT_EQ(43,
+            sign_callback_receiver()
+                .value()
+                ->GetAuthenticatorDataBytes()[36]);  // counter
 }
 
 TEST_F(U2fSignTest, TestDelayedSuccess) {
