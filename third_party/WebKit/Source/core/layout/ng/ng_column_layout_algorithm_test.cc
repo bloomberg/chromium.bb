@@ -2566,12 +2566,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeBfc) {
 }
 
 TEST_F(NGColumnLayoutAlgorithmTest, NoClassCBreakPointBeforeBfc) {
-  // TODO(mstensho): Get rid of #workaround below. It's needed because clearance
-  // is applied after layout, with no second layout pass. A second pass is
-  // really needed by fragmentation, since the amount of remaining space may
-  // have decreased so much that we need to break inside (while we didn't have
-  // to in the first pass). Ideally, we'd specify clear:both on #container
-  // instead, but that doesn't work currently.
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -2586,8 +2580,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NoClassCBreakPointBeforeBfc) {
       <div id="parent">
         <div style="width:50px; height:50px;"></div>
         <div style="float:left; width:100%; height:40px;"></div>
-        <div id="workaround" style="clear:both; width:1px;"></div>
-        <div id="container" style="width:55px;">
+        <div id="container" style="clear:both; width:55px;">
           <div style="display:flow-root; break-inside:avoid; width:44px; height:60px;"></div>
         </div>
       </div>
@@ -2601,7 +2594,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, NoClassCBreakPointBeforeBfc) {
       offset:0,0 size:100x100
         offset:0,0 size:50x50
         offset:0,50 size:100x40
-        offset:0,90 size:1x0
       offset:110,0 size:100x60
         offset:0,0 size:55x60
           offset:0,0 size:44x60
