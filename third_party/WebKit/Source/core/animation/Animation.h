@@ -112,7 +112,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   double currentTime(bool& is_null);
   double currentTime();
-  void setCurrentTime(double new_current_time, bool is_null);
+  void setCurrentTime(double new_current_time,
+                      bool is_null,
+                      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   double CurrentTimeInternal() const;
   double UnlimitedCurrentTimeInternal() const;

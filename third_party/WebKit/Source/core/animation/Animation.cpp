@@ -164,8 +164,21 @@ bool Animation::Limited(double current_time) const {
          (playback_rate_ > 0 && current_time >= EffectEnd());
 }
 
-void Animation::setCurrentTime(double new_current_time, bool is_null) {
+void Animation::setCurrentTime(double new_current_time,
+                               bool is_null,
+                               ExceptionState& exception_state) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
+
+  // Step 1. of the procedure to silently set the current time of an
+  // animation states that we abort if the new time is null.
+  if (is_null) {
+    // If the current time is resolved, then throw a TypeError.
+    if (!IsNull(CurrentTimeInternal())) {
+      exception_state.ThrowTypeError(
+          "currentTime may not be changed from resolved to unresolved");
+    }
+    return;
+  }
 
   if (PlayStateInternal() == kIdle)
     paused_ = true;
@@ -455,6 +468,7 @@ double Animation::CalculateStartTime(double current_time) const {
 }
 
 double Animation::CalculateCurrentTime() const {
+  // TODO(crbug.com/818196): By spec, this should be unresolved, not 0.
   if (IsNull(start_time_) || !timeline_)
     return 0;
   return (timeline_->EffectiveTime() - start_time_) * playback_rate_;

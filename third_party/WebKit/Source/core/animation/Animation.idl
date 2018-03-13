@@ -43,7 +43,7 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     [RuntimeEnabled=WebAnimationsAPI] attribute AnimationEffectReadOnly? effect;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute AnimationTimeline? timeline;
     [Measure] attribute double?    startTime;
-    [Measure] attribute double?    currentTime;
+    [Measure, RaisesException=Setter] attribute double?    currentTime;
     [Measure] attribute double     playbackRate;
     [Measure] readonly attribute AnimationPlayState playState;
     [Measure, RaisesException] void finish();
