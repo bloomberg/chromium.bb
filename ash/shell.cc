@@ -535,7 +535,8 @@ void Shell::DoInitialWorkspaceAnimation() {
 }
 
 bool Shell::IsSplitViewModeActive() const {
-  return split_view_controller_->IsSplitViewModeActive();
+  return split_view_controller_.get() &&
+         split_view_controller_->IsSplitViewModeActive();
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {
@@ -569,6 +570,11 @@ void Shell::NotifyOverviewModeEnded() {
 void Shell::NotifySplitViewModeStarting() {
   for (auto& observer : shell_observers_)
     observer.OnSplitViewModeStarting();
+}
+
+void Shell::NotifySplitViewModeStarted() {
+  for (auto& observer : shell_observers_)
+    observer.OnSplitViewModeStarted();
 }
 
 void Shell::NotifySplitViewModeEnded() {

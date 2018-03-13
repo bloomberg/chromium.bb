@@ -75,6 +75,10 @@ std::pair<int, int> GetTargetColorAlphaValues(
       target_shelf_color_alpha = 0;
       target_item_color_alpha = 0;
       break;
+    case SHELF_BACKGROUND_SPLIT_VIEW:
+      target_shelf_color_alpha = ShelfBackgroundAnimator::kMaxAlpha;
+      target_item_color_alpha = 0;
+      break;
     default:
       NOTREACHED();
   }
@@ -250,6 +254,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
       duration_ms = 500;
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
+    case SHELF_BACKGROUND_SPLIT_VIEW:
       duration_ms = 250;
       break;
   }
@@ -303,6 +308,9 @@ void ShelfBackgroundAnimator::GetTargetValues(
         break;
       case SHELF_BACKGROUND_MAXIMIZED:
         darkening_alpha = kShelfOpaqueColorDarkenAlpha;
+        break;
+      case SHELF_BACKGROUND_SPLIT_VIEW:
+        darkening_alpha = ShelfBackgroundAnimator::kMaxAlpha;
         break;
     }
     target_color = color_utils::GetResultingPaintColor(

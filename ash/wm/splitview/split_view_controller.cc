@@ -274,6 +274,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
     wm::GetWindowState(window)->OnWMEvent(&event);
   }
 
+  if (previous_state == NO_SNAP && previous_state != state_)
+    Shell::Get()->NotifySplitViewModeStarted();
   NotifySplitViewStateChanged(previous_state, state_);
   base::RecordAction(base::UserMetricsAction("SplitView_SnapWindow"));
 }

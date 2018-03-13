@@ -59,6 +59,9 @@ class ASH_EXPORT ShellObserver {
   // gets snapped and activated).
   virtual void OnSplitViewModeStarting() {}
 
+  // Called when the split view mode has been started.
+  virtual void OnSplitViewModeStarted() {}
+
   // Called after split view mode has ended.
   virtual void OnSplitViewModeEnded() {}
 

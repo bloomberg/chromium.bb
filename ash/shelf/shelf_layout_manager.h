@@ -154,6 +154,8 @@ class ASH_EXPORT ShelfLayoutManager
                                      aura::Window* root_window) override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
+  void OnSplitViewModeStarted() override;
+  void OnSplitViewModeEnded() override;
 
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

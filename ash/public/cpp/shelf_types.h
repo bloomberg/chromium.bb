@@ -61,6 +61,9 @@ enum ShelfBackgroundType {
 
   // The background when fullscreen app list is visible.
   SHELF_BACKGROUND_APP_LIST,
+
+  // The background when split view mode is active.
+  SHELF_BACKGROUND_SPLIT_VIEW,
 };
 
 // Source of the launch or activation request, for tracking.
