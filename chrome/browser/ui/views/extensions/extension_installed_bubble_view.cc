@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -78,6 +79,12 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
                                   Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* reference_view = nullptr;
+
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return nullptr;
+#endif
+
   switch (controller->anchor_position()) {
     case ExtensionInstalledBubble::ANCHOR_ACTION: {
       BrowserActionsContainer* container =
