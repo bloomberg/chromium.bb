@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 
-#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -51,6 +51,11 @@ class FullscreenController : public KeyedService {
   virtual bool IsEnabled() const = 0;
   virtual void IncrementDisabledCounter() = 0;
   virtual void DecrementDisabledCounter() = 0;
+
+  // Returns the current fullscreen progress value.  This is a float between 0.0
+  // and 1.0, where 0.0 denotes that the toolbar should be completely hidden and
+  // 1.0 denotes that the toolbar should be completely visible.
+  virtual CGFloat GetProgress() const = 0;
 
  private:
 

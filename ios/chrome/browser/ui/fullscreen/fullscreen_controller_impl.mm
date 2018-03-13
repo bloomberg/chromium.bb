@@ -83,6 +83,10 @@ void FullscreenControllerImpl::DecrementDisabledCounter() {
   model_->DecrementDisabledCounter();
 }
 
+CGFloat FullscreenControllerImpl::GetProgress() const {
+  return model_->progress();
+}
+
 void FullscreenControllerImpl::Shutdown() {
   mediator_->Disconnect();
   [notification_observer_ disconnect];
