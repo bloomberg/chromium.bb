@@ -13,8 +13,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
+#include "base/sequenced_task_runner.h"
 
 // This is a helper class to facilitate the usage of the UI Automation API in
 // the Chrome codebase. It takes care of initializing the Automation context and
@@ -27,11 +28,11 @@
 // outside of the Task Scheduler's control.
 class AutomationController {
  public:
-  // The delegate is passed to the automation thread and the event handlers,
+  // The delegate is passed to the automation sequence and the event handlers,
   // which runs in the context of a MTA.
   //
   // The call order is as follows:
-  // - OnInitialized() is invoked on the automation thread.
+  // - OnInitialized() is invoked in the automation sequence.
   // If initialization succeeds:
   // - ConfigureCacheRequest() is invoked once per type of event.
   // - OnAutomationEvent() and OnFocusChangedEvent() are invoked as events
@@ -52,20 +53,20 @@ class AutomationController {
 
     // Used to configure the event handlers so that the event sender element has
     // the required properties cached.
-    // Runs on the context thread.
+    // Runs in the automation sequence.
     virtual void ConfigureCacheRequest(
         IUIAutomationCacheRequest* cache_request) const = 0;
 
     // Invoked when an automation event happens.
-    // This can be invoked on any thread in the automation MTA and so |this|
-    // should be accessed carefully.
+    // This can be invoked on any MTA thread in the process and so |this| should
+    // be accessed carefully.
     virtual void OnAutomationEvent(IUIAutomation* automation,
                                    IUIAutomationElement* sender,
                                    EVENTID event_id) const = 0;
 
     // Invoked when a focus changed event happens.
-    // This can be invoked on any thread in the automation MTA and so |this|
-    // should be accessed carefully.
+    // This can be invoked on any MTA thread in the process and so |this| should
+    // be accessed carefully.
     virtual void OnFocusChangedEvent(IUIAutomation* automation,
                                      IUIAutomationElement* sender) const = 0;
   };
@@ -76,10 +77,10 @@ class AutomationController {
  private:
   class Context;
 
-  // A thread in the COM MTA in which automation calls are made.
-  base::Thread automation_thread_;
+  // The sequence in which automation calls are made.
+  scoped_refptr<base::SequencedTaskRunner> automation_task_runner_;
 
-  // A pointer to the context object that lives on the automation thread.
+  // A pointer to the context object that lives in the automation sequence.
   base::WeakPtr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationController);

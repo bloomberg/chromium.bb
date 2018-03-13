@@ -16,10 +16,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_checker.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/ui_automation_util.h"
 #include "ui/base/win/atl_module.h"
@@ -96,15 +96,16 @@ RefCountedDelegate::~RefCountedDelegate() = default;
 
 }  // namespace
 
-// This class lives on the automation thread and is responsible for initializing
-// the UIAutomation library and installing the event observers.
+// This class lives in the automation sequence and is responsible for
+// initializing the UIAutomation library and installing the event observers.
 class AutomationController::Context {
  public:
-  // Returns a new instance ready for initialization and use on another thread.
+  // Returns a new instance ready for initialization and use in another
+  // sequence.
   static base::WeakPtr<Context> Create();
 
   // Deletes the instance.
-  void DeleteOnAutomationThread();
+  void DeleteInAutomationSequence();
 
   // Initializes the context, invoking the delegate's OnInitialized() method
   // when done. On success, the delegate's other On*() methods will be invoked
@@ -116,7 +117,7 @@ class AutomationController::Context {
   class EventHandler;
 
   // The one and only method that may be called from outside of the automation
-  // thread.
+  // sequence.
   Context();
   ~Context();
 
@@ -136,7 +137,7 @@ class AutomationController::Context {
   // Pointer to the delegate. Passed to event handlers.
   scoped_refptr<RefCountedDelegate> ref_counted_delegate_;
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The automation client.
   Microsoft::WRL::ComPtr<IUIAutomation> automation_;
@@ -250,15 +251,15 @@ AutomationController::Context::Create() {
   return context->weak_ptr_factory_.GetWeakPtr();
 }
 
-void AutomationController::Context::DeleteOnAutomationThread() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void AutomationController::Context::DeleteInAutomationSequence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delete this;
 }
 
 void AutomationController::Context::Initialize(
     std::unique_ptr<Delegate> delegate) {
-  // This and all other methods must be called on the automation thread.
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // This and all other methods must be called in the automation sequence.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ref_counted_delegate_ =
       base::MakeRefCounted<RefCountedDelegate>(std::move(delegate));
@@ -279,11 +280,11 @@ void AutomationController::Context::Initialize(
 }
 
 AutomationController::Context::Context() : weak_ptr_factory_(this) {
-  DETACH_FROM_THREAD(thread_checker_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 AutomationController::Context::~Context() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (event_handler_) {
     event_handler_.Reset();
     automation_->RemoveAllEventHandlers();
@@ -292,7 +293,7 @@ AutomationController::Context::~Context() {
 
 Microsoft::WRL::ComPtr<IUnknown>
 AutomationController::Context::GetEventHandler() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!event_handler_) {
     ATL::CComObject<EventHandler>* obj = nullptr;
     HRESULT result = ATL::CComObject<EventHandler>::CreateInstance(&obj);
@@ -306,7 +307,7 @@ AutomationController::Context::GetEventHandler() {
 
 Microsoft::WRL::ComPtr<IUIAutomationEventHandler>
 AutomationController::Context::GetAutomationEventHandler() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Microsoft::WRL::ComPtr<IUIAutomationEventHandler> handler;
   GetEventHandler().CopyTo(handler.GetAddressOf());
   return handler;
@@ -314,14 +315,14 @@ AutomationController::Context::GetAutomationEventHandler() {
 
 Microsoft::WRL::ComPtr<IUIAutomationFocusChangedEventHandler>
 AutomationController::Context::GetFocusChangedEventHandler() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Microsoft::WRL::ComPtr<IUIAutomationFocusChangedEventHandler> handler;
   GetEventHandler().CopyTo(handler.GetAddressOf());
   return handler;
 }
 
 HRESULT AutomationController::Context::InstallObservers() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(automation_);
 
   // Create a cache request so that elements received by way of events contain
@@ -354,25 +355,28 @@ HRESULT AutomationController::Context::InstallObservers() {
 
 // AutomationController --------------------------------------------------------
 
-AutomationController::AutomationController(std::unique_ptr<Delegate> delegate)
-    : automation_thread_("AutomationControllerThread") {
+AutomationController::AutomationController(std::unique_ptr<Delegate> delegate) {
   ui::win::CreateATLModuleIfNeeded();
-  // Start the automation thread and initialize the automation client on it.
+
+  // Create the task runner on which the automation client lives.
+  automation_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  // Initialize the context on the automation task runner.
   context_ = Context::Create();
-  automation_thread_.init_com_with_mta(true);
-  automation_thread_.Start();
-  automation_thread_.task_runner()->PostTask(
+  automation_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AutomationController::Context::Initialize,
                                 context_, std::move(delegate)));
 }
 
 AutomationController::~AutomationController() {
   // context_ is still valid when the caller destroys the instance before the
-  // callback(s) have fired. In this case, delete the context on the automation
-  // thread before joining with it. DeleteSoon is not used because the monitor
-  // has only a WeakPtr to the context that is bound to the automation thread.
-  automation_thread_.task_runner()->PostTask(
+  // callback(s) have fired. In this case, delete the context in the automation
+  // sequence before joining with it. DeleteSoon is not used because the monitor
+  // has only a WeakPtr to the context that is bound to the automation sequence.
+  automation_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&AutomationController::Context::DeleteOnAutomationThread,
+      base::BindOnce(&AutomationController::Context::DeleteInAutomationSequence,
                      context_));
 }
