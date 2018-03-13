@@ -3659,7 +3659,11 @@ bool Element::ShouldStoreNonLayoutObjectComputedStyle(
   if (style.Display() == EDisplay::kContents && !NeedsReattachLayoutTree())
     DCHECK(!GetLayoutObject() || IsPseudoElement());
 #endif
-
+  if (IsSVGElement()) {
+    Element* parent_element = LayoutTreeBuilderTraversal::ParentElement(*this);
+    if (parent_element && !parent_element->IsSVGElement())
+      return false;
+  }
   return style.Display() == EDisplay::kContents ||
          IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this) ||
          IsSVGStopElement(*this);

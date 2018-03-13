@@ -9,6 +9,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/svg/SVGGElement.h"
 #include "platform/json/JSONValues.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -703,6 +704,24 @@ lime'>
       String("LayoutText\t#text \"\\n      testing "
              "\\u0421\\u0440\\u0435\\u045C\\u0435\\u043D "
              "\\u0440\\u043E\\u0434\\u0435\\u043D\\u0434\\u0435\\u043D\\n\""));
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
+  SetBodyInnerHTML(R"HTML(
+    <style>*|g { display:contents}</style>
+    <span id=span></span>
+  )HTML");
+
+  Element* span = GetDocument().getElementById("span");
+  SVGGElement* svg_element = SVGGElement::Create(GetDocument());
+  Text* text = Text::Create(GetDocument(), "text");
+  svg_element->appendChild(text);
+  span->appendChild(svg_element);
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  ASSERT_FALSE(svg_element->GetLayoutObject());
+  ASSERT_FALSE(text->GetLayoutObject());
 }
 
 }  // namespace blink
