@@ -213,6 +213,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_LEGACY_GPU_PIXEL_OPS
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_BLURMASKFILTER
+#define SK_SUPPORT_LEGACY_BLURMASKFILTER
+#endif
+
 #ifndef SK_SUPPORT_LEGACY_YUV_COLORSPACE
 #define SK_SUPPORT_LEGACY_YUV_COLORSPACE
 #endif
