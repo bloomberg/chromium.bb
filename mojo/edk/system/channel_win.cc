@@ -81,17 +81,19 @@ class ChannelWin : public Channel,
         handle_(std::move(handle)),
         io_task_runner_(io_task_runner) {
     CHECK(handle_.is_valid());
+
+    wait_for_connect_ = handle_.get().needs_connection;
   }
 
   void Start() override {
     io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ChannelWin::StartOnIOThread, this));
+        FROM_HERE, base::Bind(&ChannelWin::StartOnIOThread, this));
   }
 
   void ShutDownImpl() override {
     // Always shut down asynchronously when called through the public interface.
     io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ChannelWin::ShutDownOnIOThread, this));
+        FROM_HERE, base::Bind(&ChannelWin::ShutDownOnIOThread, this));
   }
 
   void Write(MessagePtr message) override {
@@ -107,11 +109,11 @@ class ChannelWin : public Channel,
         reject_writes_ = write_error = true;
     }
     if (write_error) {
-      // Do not synchronously invoke OnWriteError(). Write() may have been
-      // called by the delegate and we don't want to re-enter it.
-      io_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(&ChannelWin::OnWriteError, this,
-                                               Error::kDisconnected));
+      // Do not synchronously invoke OnError(). Write() may have been called by
+      // the delegate and we don't want to re-enter it.
+      io_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ChannelWin::OnError, this, Error::kDisconnected));
     }
   }
 
@@ -151,7 +153,7 @@ class ChannelWin : public Channel,
     base::MessageLoopForIO::current()->RegisterIOHandler(
         handle_.get().handle, this);
 
-    if (handle_.get().needs_connection) {
+    if (wait_for_connect_) {
       BOOL ok = ConnectNamedPipe(handle_.get().handle,
                                  &connect_context_.overlapped);
       if (ok) {
@@ -163,12 +165,12 @@ class ChannelWin : public Channel,
       const DWORD err = GetLastError();
       switch (err) {
         case ERROR_PIPE_CONNECTED:
+          wait_for_connect_ = false;
           break;
         case ERROR_IO_PENDING:
-          is_connect_pending_ = this;
+          AddRef();
           return;
         case ERROR_NO_DATA:
-        default:
           OnError(Error::kConnectionFailed);
           return;
       }
@@ -199,7 +201,7 @@ class ChannelWin : public Channel,
       ignore_result(handle_.release());
     handle_.reset();
 
-    // Allow |this| to be destroyed as soon as no IO is pending.
+    // May destroy the |this| if it was the last reference.
     self_ = nullptr;
   }
 
@@ -215,13 +217,10 @@ class ChannelWin : public Channel,
                      DWORD bytes_transfered,
                      DWORD error) override {
     if (error != ERROR_SUCCESS) {
-      if (context == &write_context_)
-        OnWriteError(Error::kDisconnected);
-      else
-        OnError(Error::kDisconnected);
+      OnError(Error::kDisconnected);
     } else if (context == &connect_context_) {
-      DCHECK(is_connect_pending_);
-      scoped_refptr<ChannelWin> self(std::move(is_connect_pending_));
+      DCHECK(wait_for_connect_);
+      wait_for_connect_ = false;
       ReadMore(0);
 
       base::AutoLock lock(write_lock_);
@@ -230,14 +229,12 @@ class ChannelWin : public Channel,
         WriteNextNoLock();
       }
     } else if (context == &read_context_) {
-      scoped_refptr<ChannelWin> self(std::move(is_read_pending_));
       OnReadDone(static_cast<size_t>(bytes_transfered));
     } else {
       CHECK(context == &write_context_);
-      scoped_refptr<ChannelWin> self(std::move(is_write_pending_));
       OnWriteDone(static_cast<size_t>(bytes_transfered));
     }
-    // |this| may have been deleted by the time we reach here.
+    Release();  // Balancing reference taken after ReadFile / WriteFile.
   }
 
   void OnReadDone(size_t bytes_read) {
@@ -279,7 +276,7 @@ class ChannelWin : public Channel,
         reject_writes_ = write_error = true;
     }
     if (write_error)
-      OnWriteError(Error::kDisconnected);
+      OnError(Error::kDisconnected);
   }
 
   void ReadMore(size_t next_read_size_hint) {
@@ -294,7 +291,7 @@ class ChannelWin : public Channel,
                        &read_context_.overlapped);
 
     if (ok || GetLastError() == ERROR_IO_PENDING) {
-      is_read_pending_ = this;
+      AddRef();  // Will be balanced in OnIOCompleted
     } else {
       OnError(Error::kDisconnected);
     }
@@ -311,7 +308,7 @@ class ChannelWin : public Channel,
                         &write_context_.overlapped);
 
     if (ok || GetLastError() == ERROR_IO_PENDING) {
-      is_write_pending_ = this;
+      AddRef();  // Will be balanced in OnIOCompleted.
       return true;
     }
     return false;
@@ -323,21 +320,6 @@ class ChannelWin : public Channel,
     return WriteNoLock(outgoing_messages_.front());
   }
 
-  void OnWriteError(Error error) {
-    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-    DCHECK(reject_writes_);
-
-    if (error == Error::kDisconnected) {
-      // If we can't write because the pipe is disconnected then continue
-      // reading to fetch any in-flight messages, relying on end-of-stream to
-      // signal the actual disconnection.
-      if (is_read_pending_ || is_connect_pending_)
-        return;
-    }
-
-    OnError(error);
-  }
-
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
@@ -347,15 +329,16 @@ class ChannelWin : public Channel,
   base::MessageLoopForIO::IOContext connect_context_;
   base::MessageLoopForIO::IOContext read_context_;
   base::MessageLoopForIO::IOContext write_context_;
-  scoped_refptr<ChannelWin> is_connect_pending_;
-  scoped_refptr<ChannelWin> is_read_pending_;
-  scoped_refptr<ChannelWin> is_write_pending_;
 
-  // Protects |delay_writes_|, |reject_writes_| and |outgoing_messages_|.
+  // Protects |reject_writes_| and |outgoing_messages_|.
   base::Lock write_lock_;
-  base::circular_deque<MessageView> outgoing_messages_;
+
   bool delay_writes_ = true;
+
   bool reject_writes_ = false;
+  base::circular_deque<MessageView> outgoing_messages_;
+
+  bool wait_for_connect_;
 
   bool leak_handle_ = false;
 
