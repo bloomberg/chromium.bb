@@ -65,13 +65,20 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   DCHECK(delegate_);
   DCHECK(signin::IsDicePrepareMigrationEnabled());
   DCHECK(profile_);
-  DCHECK(!account_info_.gaia.empty());
-  DCHECK(!account_info_.email.empty());
   // Should not start syncing if the profile is already authenticated
   DCHECK(!signin_manager_->IsAuthenticated());
 
   // Force sign-in uses the modal sign-in flow.
   DCHECK(!signin_util::IsForceSigninEnabled());
+
+  if (account_info_.gaia.empty() || account_info_.email.empty()) {
+    LOG(ERROR) << "Cannot turn Sync On for invalid account.";
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    return;
+  }
+
+  DCHECK(!account_info_.gaia.empty());
+  DCHECK(!account_info_.email.empty());
 
   if (HasCanOfferSigninError()) {
     // Do not self-destruct synchronously in the constructor.

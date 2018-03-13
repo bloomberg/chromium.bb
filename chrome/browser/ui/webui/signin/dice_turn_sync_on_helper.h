@@ -113,6 +113,8 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   void SyncStartupFailed() override;
 
  private:
+  friend class base::DeleteHelper<DiceTurnSyncOnHelper>;
+
   enum class ProfileMode {
     // Attempts to sign the user in |profile_|. Note that if the account to be
     // signed in is a managed account, then a profile confirmation dialog is
