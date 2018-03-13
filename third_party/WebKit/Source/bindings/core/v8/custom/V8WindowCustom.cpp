@@ -112,8 +112,12 @@ void V8Window::eventAttributeGetterCustom(
     return;
   }
 
-  v8::Local<v8::Value> js_event =
-      V8PrivateProperty::GetGlobalEvent(isolate).GetOrUndefined(info.Holder());
+  v8::Local<v8::Value> js_event;
+  if (!V8PrivateProperty::GetGlobalEvent(isolate)
+           .GetOrUndefined(info.Holder())
+           .ToLocal(&js_event)) {
+    return;
+  }
 
   // Track usage of window.event when the event's target is inside V0 shadow
   // tree.

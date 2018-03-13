@@ -77,7 +77,8 @@ class ScriptWrappable;
 // Usage 1) Fast path to use a pre-registered symbol.
 //   auto private = V8PrivateProperty::getMessageEventCachedData(isolate);
 //   v8::Local<v8::Object> object = ...;
-//   v8::Local<v8::Value> value = private.getOrUndefined(object);
+//   v8::Local<v8::Value> value;
+//   if (!private.GetOrUndefined(object).ToLocal(&value)) return;
 //   value = ...;
 //   private.set(object, value);
 //
@@ -109,16 +110,9 @@ class PLATFORM_EXPORT V8PrivateProperty {
     }
 
     // Returns the value of the private property if set, or undefined.
-    v8::Local<v8::Value> GetOrUndefined(v8::Local<v8::Object> object) const {
-      return object->GetPrivate(GetContext(), private_symbol_).ToLocalChecked();
-    }
-
-    // TODO(peria): Remove this method, and use getOrUndefined() instead.
-    // Returns the value of the private property if set, or an empty handle.
-    v8::Local<v8::Value> GetOrEmpty(v8::Local<v8::Object> object) const {
-      if (HasValue(object))
-        return GetOrUndefined(object);
-      return v8::Local<v8::Value>();
+    WARN_UNUSED_RESULT v8::MaybeLocal<v8::Value> GetOrUndefined(
+        v8::Local<v8::Object> object) const {
+      return object->GetPrivate(GetContext(), private_symbol_);
     }
 
     bool Set(v8::Local<v8::Object> object, v8::Local<v8::Value> value) const {
@@ -148,7 +142,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
     }
 
     // Only friend classes are allowed to use this API.
-    v8::Local<v8::Value> GetFromMainWorld(ScriptWrappable*);
+    WARN_UNUSED_RESULT v8::MaybeLocal<v8::Value> GetFromMainWorld(
+        ScriptWrappable*);
 
     v8::Local<v8::Private> private_symbol_;
     v8::Isolate* isolate_;

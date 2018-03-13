@@ -68,8 +68,9 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
   if (!js_event->ToObject(context).ToLocal(&event_object))
     return v8::Null(GetIsolate());
   auto private_error = V8PrivateProperty::GetErrorEventError(GetIsolate());
-  v8::Local<v8::Value> error = private_error.GetOrUndefined(event_object);
-  if (error->IsUndefined())
+  v8::Local<v8::Value> error;
+  if (!private_error.GetOrUndefined(event_object).ToLocal(&error) ||
+      error->IsUndefined())
     error = v8::Null(GetIsolate());
 
   v8::Local<v8::Value> parameters[5] = {
@@ -120,10 +121,12 @@ v8::Local<v8::Value> V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
   DCHECK(wrapped_event->IsObject());
   auto private_error =
       V8PrivateProperty::GetErrorEventError(script_state->GetIsolate());
-  v8::Local<v8::Value> error =
-      private_error.GetOrUndefined(wrapped_event.As<v8::Object>());
-  if (error->IsUndefined())
+  v8::Local<v8::Value> error;
+  if (!private_error.GetOrUndefined(wrapped_event.As<v8::Object>())
+           .ToLocal(&error) ||
+      error->IsUndefined()) {
     return v8::Local<v8::Value>();
+  }
   return error;
 }
 

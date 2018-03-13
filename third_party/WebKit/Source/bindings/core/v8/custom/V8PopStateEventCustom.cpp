@@ -59,9 +59,10 @@ void V8PopStateEvent::stateAttributeGetterCustom(
   ScriptState* script_state = ScriptState::Current(isolate);
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetPopStateEventState(isolate);
-  v8::Local<v8::Value> result = property_symbol.GetOrEmpty(info.Holder());
+  v8::Local<v8::Value> result;
 
-  if (!result.IsEmpty()) {
+  if (property_symbol.GetOrUndefined(info.Holder()).ToLocal(&result) &&
+      !result->IsUndefined()) {
     V8SetReturnValue(info, result);
     return;
   }
@@ -100,9 +101,10 @@ void V8PopStateEvent::stateAttributeGetterCustom(
       return;
     v8::Local<v8::Object> v8_history = v8_history_value.As<v8::Object>();
     if (!history->stateChanged() && history_state.HasValue(v8_history)) {
-      V8SetReturnValue(info,
-                       CacheState(script_state, info.Holder(),
-                                  history_state.GetOrUndefined(v8_history)));
+      v8::Local<v8::Value> value;
+      if (!history_state.GetOrUndefined(v8_history).ToLocal(&value))
+        return;
+      V8SetReturnValue(info, CacheState(script_state, info.Holder(), value));
       return;
     }
     result = event->SerializedState()->Deserialize(isolate);

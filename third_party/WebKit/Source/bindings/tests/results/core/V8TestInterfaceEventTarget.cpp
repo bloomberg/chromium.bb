@@ -136,9 +136,9 @@ void V8TestInterfaceEventTargetConstructor::NamedConstructorAttributeGetter(
   // Set the prototype of named constructors to the regular constructor.
   auto privateProperty = V8PrivateProperty::GetNamedConstructorInitialized(info.GetIsolate());
   v8::Local<v8::Context> currentContext = info.GetIsolate()->GetCurrentContext();
-  v8::Local<v8::Value> privateValue = privateProperty.GetOrEmpty(namedConstructor);
+  v8::Local<v8::Value> privateValue;
 
-  if (privateValue.IsEmpty()) {
+  if (!privateProperty.GetOrUndefined(namedConstructor).ToLocal(&privateValue) || privateValue->IsUndefined()) {
     v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestInterfaceEventTarget::wrapperTypeInfo);
     v8::Local<v8::Value> interfacePrototype = interface->Get(currentContext, V8AtomicString(info.GetIsolate(), "prototype")).ToLocalChecked();
     bool result = namedConstructor->Set(currentContext, V8AtomicString(info.GetIsolate(), "prototype"), interfacePrototype).ToChecked();

@@ -1949,8 +1949,8 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedattributeanyattribute");
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
-    v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
-    if (!v8Value->IsUndefined()) {
+    v8::Local<v8::Value> v8Value;
+    if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
@@ -1996,8 +1996,8 @@ static void cachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedarrayattribute");
   if (!static_cast<const TestObject*>(impl)->isFrozenArrayDirty()) {
-    v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
-    if (!v8Value->IsUndefined()) {
+    v8::Local<v8::Value> v8Value;
+    if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
@@ -2047,8 +2047,8 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedstringornoneattribute");
   if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
-    v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
-    if (!v8Value->IsUndefined()) {
+    v8::Local<v8::Value> v8Value;
+    if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
@@ -3058,8 +3058,8 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "TestObject#Cachedattributeraisesexceptiongetteranyattribute");
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
-    v8::Local<v8::Value> v8Value = propertySymbol.GetOrUndefined(holder);
-    if (!v8Value->IsUndefined()) {
+    v8::Local<v8::Value> v8Value;
+    if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
@@ -4118,8 +4118,8 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   //   X(SameObject, TestObjectSaveSameObjectAttribute)
   auto privateSameObject = V8PrivateProperty::GetSameObjectTestObjectSaveSameObjectAttribute(info.GetIsolate());
   {
-    v8::Local<v8::Value> v8Value = privateSameObject.GetOrEmpty(holder);
-    if (!v8Value.IsEmpty()) {
+    v8::Local<v8::Value> v8Value;
+    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
@@ -4155,8 +4155,8 @@ static void staticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallb
   //   X(SameObject, TestObjectStaticSaveSameObjectAttribute)
   auto privateSameObject = V8PrivateProperty::GetSameObjectTestObjectStaticSaveSameObjectAttribute(info.GetIsolate());
   {
-    v8::Local<v8::Value> v8Value = privateSameObject.GetOrEmpty(holder);
-    if (!v8Value.IsEmpty()) {
+    v8::Local<v8::Value> v8Value;
+    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
       V8SetReturnValue(info, v8Value);
       return;
     }
