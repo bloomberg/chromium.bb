@@ -19,7 +19,9 @@
 #include "util.h"
 #include "virgl_hw.h"
 
+#ifndef PAGE_SIZE
 #define PAGE_SIZE 0x1000
+#endif
 #define PIPE_TEXTURE_2D 2
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
@@ -139,6 +141,7 @@ static void *virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t
 		return MAP_FAILED;
 	}
 
+	vma->length = bo->total_size;
 	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    gem_map.offset);
 }
