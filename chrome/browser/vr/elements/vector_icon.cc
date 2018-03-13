@@ -23,8 +23,7 @@ class VectorIconTexture : public UiTexture {
   SkColor GetColor() const { return color_; }
 
   void SetIcon(const gfx::VectorIcon& icon) {
-    SetAndDirty(&icon_no_1x_.path, icon.path);
-    SetAndDirty(&icon_no_1x_.path_size, icon.path_size);
+    SetAndDirty(&icon_no_1x_.rep, icon.rep);
   }
 
  private:
@@ -90,7 +89,7 @@ void VectorIcon::DrawVectorIcon(gfx::Canvas* canvas,
   // 1x version if device scale factor isn't set. See crbug.com/749146. If all
   // icons end up being drawn via VectorIcon instances, this will not be
   // required (the 1x version is automatically elided by this class).
-  gfx::VectorIcon icon_no_1x{icon.path, icon.path_size};
+  gfx::VectorIcon icon_no_1x{icon.rep};
   PaintVectorIcon(canvas, icon_no_1x, size_px, color);
 }
 

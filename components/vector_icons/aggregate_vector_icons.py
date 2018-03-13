@@ -21,6 +21,18 @@ def CamelCase(name, suffix):
   return 'k' + ''.join(words) + suffix
 
 
+def GetPathName(name, append_1x = False):
+  return CamelCase(name, "Path1x" if append_1x else "Path");
+
+
+def GetRepName(name, append_1x = False):
+  return CamelCase(name, "Rep1x" if append_1x else "Rep");
+
+
+def GetIconName(name):
+  return CamelCase(name, "Icon");
+
+
 def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
   """Compiles all .icon files in a directory into two C++ files.
 
@@ -82,8 +94,8 @@ def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
       (icon_name, extension) = os.path.splitext(
                                os.path.basename(path_map[icon]))
       (icon_name, scale_factor) = os.path.splitext(icon_name)
-      output_header.write(
-          "VECTOR_ICON_TEMPLATE_H({})\n".format(CamelCase(icon_name, "Icon")))
+      output_header.write("VECTOR_ICON_TEMPLATE_H({})\n".format(
+          GetIconName(icon_name)))
   output_header.close()
 
   # Copy the vector icon drawing commands from the .icon and .1x.icon files
@@ -110,8 +122,8 @@ def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
       icon_file = open(path_map[icon])
       vector_commands = "".join(icon_file.readlines())
       icon_file.close()
-      output_cc.write("PATH_ELEMENT_TEMPLATE({}, {})\n".format(
-          CamelCase(icon_name, "Path"), vector_commands))
+      output_cc.write("VECTOR_ICON_REP_TEMPLATE({}, {}, {})\n".format(
+          GetPathName(icon_name), GetRepName(icon_name), vector_commands))
 
       # Store the vector-drawing commands for foo_bar.1x.icon in the temporary
       # variable kFooBarPath1x, if the file exists.
@@ -120,17 +132,18 @@ def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
         icon_file = open(path_map_1x[icon])
         vector_commands_1x = "".join(icon_file.readlines())
         icon_file.close()
-        output_cc.write("PATH_ELEMENT_TEMPLATE({}, {})\n".format(
-            CamelCase(icon_name, "Path1x"), vector_commands_1x))
+        output_cc.write("VECTOR_ICON_REP_TEMPLATE({}, {}, {})\n".format(
+            GetPathName(icon_name, True), GetRepName(icon_name, True),
+            vector_commands_1x))
 
       # Define the value of kFooBarIcon.
       if vector_commands_1x is None:
-        output_cc.write("VECTOR_ICON_TEMPLATE({}, {})\n".format(CamelCase(
-            icon_name, "Icon"), CamelCase(icon_name, "Path")))
+        output_cc.write("VECTOR_ICON_TEMPLATE({}, {})\n".format(
+            GetIconName(icon_name), GetRepName(icon_name)))
       else:
-        output_cc.write("VECTOR_ICON_TEMPLATE2({}, {}, {})\n".format(CamelCase(
-            icon_name, "Icon"), CamelCase(icon_name, "Path"), CamelCase(
-                  icon_name, "Path1x")))
+        output_cc.write("VECTOR_ICON_TEMPLATE2({}, {}, {})\n".format(
+            GetIconName(icon_name), GetRepName(icon_name),
+            GetRepName(icon_name, True)))
 
   output_cc.close()
 
