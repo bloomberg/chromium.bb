@@ -94,6 +94,13 @@ CGFloat kUIPickerFontSize = 26;
   ]];
 }
 
+- (void)updateViewConstraints {
+  [super updateViewConstraints];
+
+  [[self.view.superview.widthAnchor
+      constraintEqualToAnchor:self.view.widthAnchor] setActive:YES];
+}
+
 #pragma mark - UIPickerViewDataSource
 
 - (NSInteger)pickerView:(UIPickerView*)pickerView
