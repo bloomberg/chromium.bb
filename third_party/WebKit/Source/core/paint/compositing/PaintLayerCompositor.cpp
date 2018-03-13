@@ -111,6 +111,10 @@ void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
   else
     DestroyRootLayer();
 
+  LocalFrameView* view = layout_view_.GetFrameView();
+  view->SetUsesCompositedScrolling(
+      view->GetFrame().GetSettings()->GetPreferCompositingToLCDTextEnabled());
+
   // Schedule an update in the parent frame so the <iframe>'s layer in the owner
   // document matches the compositing state here.
   if (HTMLFrameOwnerElement* owner_element =

@@ -87,7 +87,8 @@ ScrollableArea::ScrollableArea()
       scrollbars_hidden_(false),
       scrollbar_captured_(false),
       mouse_over_scrollbar_(false),
-      needs_show_scrollbar_layers_(false) {}
+      needs_show_scrollbar_layers_(false),
+      uses_composited_scrolling_(false) {}
 
 ScrollableArea::~ScrollableArea() = default;
 

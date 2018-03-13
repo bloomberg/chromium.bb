@@ -277,7 +277,12 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void RegisterForAnimation() {}
   virtual void DeregisterForAnimation() {}
 
-  virtual bool UsesCompositedScrolling() const { return false; }
+  virtual bool UsesCompositedScrolling() const {
+    return uses_composited_scrolling_;
+  }
+  void SetUsesCompositedScrolling(bool uses_composited_scrolling) {
+    uses_composited_scrolling_ = uses_composited_scrolling;
+  }
   virtual bool ShouldScrollOnMainThread() const;
 
   // Overlay scrollbars can "fade-out" when inactive.
@@ -492,6 +497,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Indicates that the next compositing update needs to call
   // WebLayer::showScrollbars on our scroll layer. Ignored if not composited.
   unsigned needs_show_scrollbar_layers_ : 1;
+  unsigned uses_composited_scrolling_ : 1;
 
   // There are 6 possible combinations of writing mode and direction. Scroll
   // origin will be non-zero in the x or y axis if there is any reversed
