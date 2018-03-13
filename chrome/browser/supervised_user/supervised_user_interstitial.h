@@ -53,6 +53,12 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
       Profile* profile,
       supervised_user_error_page::FilteringBehaviorReason reason);
 
+  // InterstitialPageDelegate implementation. This method was made public while
+  // both committed and non-committed interstitials are supported. Once
+  // committed interstitials are the only codepath, this method will be removed
+  // and replaced with separate handlers for go back and request permission.
+  void CommandReceived(const std::string& command) override;
+
  private:
   SupervisedUserInterstitial(
       content::WebContents* web_contents,
@@ -65,7 +71,6 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
 
   // InterstitialPageDelegate implementation.
   std::string GetHTMLContents() override;
-  void CommandReceived(const std::string& command) override;
   void OnProceed() override;
   void OnDontProceed() override;
   content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
