@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+from infra_libs import ts_mon
+
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
@@ -18,6 +20,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import metrics
 from chromite.lib import tree_status
 
 
@@ -240,12 +243,34 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           ', '.join(sorted(no_stat)),
           'Please check the logs of these builders for details.']))
 
+  @staticmethod
+  def _EmitImportanceMetric(master_config, important_configs,
+                            experimental_configs):
+    """Emit monarch metrics about which slave configs were important."""
+    importance = {build_config: True for build_config in important_configs}
+    for build_config in experimental_configs:
+      importance[build_config] = False
+
+    m = metrics.BooleanMetric('chromeos/cbuildbot/master/has_important_slave',
+                              description='Slaves that were considered '
+                                          'important by master.',
+                              field_spec=[ts_mon.StringField('master_config'),
+                                          ts_mon.StringField('slave_config')])
+    for slave_config, is_important in importance.iteritems():
+      m.set(is_important, fields={'master_config': master_config,
+                                  'slave_config': slave_config})
+
   def PerformStage(self):
     super(MasterSlaveSyncCompletionStage, self).PerformStage()
 
     builder_statusess_fetcher = self._GetBuilderStatusesFetcher()
     self._slave_statuses, self._experimental_build_statuses = (
         builder_statusess_fetcher.GetBuilderStatuses())
+
+    if self._run.config.master:
+      self._EmitImportanceMetric(self._run.config.name,
+                                 self._slave_statuses,
+                                 self._experimental_build_statuses)
 
     no_stat = builder_status_lib.BuilderStatusesFetcher.GetNostatBuilds(
         self._slave_statuses)
