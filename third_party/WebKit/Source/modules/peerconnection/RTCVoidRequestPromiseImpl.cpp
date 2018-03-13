@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/peerconnection/RTCErrorUtil.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 
 namespace blink {
@@ -39,17 +40,14 @@ void RTCVoidRequestPromiseImpl::RequestSucceeded() {
   Clear();
 }
 
-void RTCVoidRequestPromiseImpl::RequestFailed(const String& error) {
+void RTCVoidRequestPromiseImpl::RequestFailed(const WebRTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    // TODO(guidou): The error code should come from the content layer. See
-    // crbug.com/589455
-    resolver_->Reject(DOMException::Create(kOperationError, error));
+    resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.
     resolver_->Detach();
   }
-
   Clear();
 }
 

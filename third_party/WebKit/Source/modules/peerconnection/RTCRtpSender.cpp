@@ -8,6 +8,7 @@
 #include "core/dom/DOMException.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/peerconnection/RTCDTMFSender.h"
+#include "modules/peerconnection/RTCErrorUtil.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "modules/peerconnection/RTCRtpParameters.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
@@ -30,11 +31,8 @@ class ReplaceTrackRequest : public RTCVoidRequest {
     resolver_->Resolve();
   }
 
-  // TODO(hbos): Surface RTCError instead of hard-coding which exception type to
-  // use. This requires the webrtc layer sender interface to be updated.
-  // https://crbug.com/webrtc/8690
-  void RequestFailed(const String& error) override {
-    resolver_->Reject(DOMException::Create(kInvalidModificationError, error));
+  void RequestFailed(const WebRTCError& error) override {
+    resolver_->Reject(CreateDOMExceptionFromWebRTCError(error));
   }
 
   void Trace(blink::Visitor* visitor) override {

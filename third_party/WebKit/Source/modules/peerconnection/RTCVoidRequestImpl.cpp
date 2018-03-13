@@ -32,6 +32,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/peerconnection/RTCErrorUtil.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 
 namespace blink {
@@ -68,14 +69,12 @@ void RTCVoidRequestImpl::RequestSucceeded() {
   Clear();
 }
 
-void RTCVoidRequestImpl::RequestFailed(const String& error) {
+void RTCVoidRequestImpl::RequestFailed(const WebRTCError& error) {
   bool should_fire_callback =
       requester_ && requester_->ShouldFireDefaultCallbacks();
   if (should_fire_callback && error_callback_.Get()) {
-    // TODO(guidou): The error code should come from the content layer. See
-    // crbug.com/589455
     error_callback_->InvokeAndReportException(
-        nullptr, DOMException::Create(kOperationError, error));
+        nullptr, CreateDOMExceptionFromWebRTCError(error));
   }
 
   Clear();
