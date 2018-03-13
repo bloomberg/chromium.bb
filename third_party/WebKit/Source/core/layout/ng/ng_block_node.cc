@@ -312,6 +312,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
       ToNGPhysicalBoxFragment(*layout_result.PhysicalFragment());
 
   NGBoxFragment fragment(constraint_space.GetWritingMode(), physical_fragment);
+  NGLogicalSize fragment_logical_size = fragment.Size();
   // For each fragment we process, we'll accumulate the logical height and
   // logical intrinsic content box height. We reset it at the first fragment,
   // and accumulate at each method call for fragments belonging to the same
@@ -321,14 +322,14 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   LayoutUnit logical_height;
   LayoutUnit intrinsic_content_logical_height;
   if (IsFirstFragment(constraint_space, physical_fragment)) {
-    box_->SetLogicalWidth(fragment.InlineSize());
+    box_->SetLogicalWidth(fragment_logical_size.inline_size);
   } else {
-    DCHECK_EQ(box_->LogicalWidth(), fragment.InlineSize())
+    DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
         << "Variable fragment inline size not supported";
     logical_height = box_->LogicalHeight();
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
-  logical_height += fragment.BlockSize();
+  logical_height += fragment_logical_size.block_size;
   intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
   NGBoxStrut border_scrollbar_padding =
       ComputeBorders(constraint_space, Style()) +
@@ -361,8 +362,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (box_->IsLayoutBlock() && IsLastFragment(physical_fragment)) {
     LayoutBlock* block = ToLayoutBlock(box_);
-    WritingMode writing_mode = constraint_space.GetWritingMode();
-    NGBoxFragment fragment(writing_mode, physical_fragment);
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
     if (constraint_space.HasBlockFragmentation()) {
       intrinsic_block_size +=
