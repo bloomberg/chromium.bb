@@ -7,6 +7,8 @@
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -39,7 +42,11 @@ using browsertest_util::WaitForTaskManagerRows;
 
 class TaskManagerViewTest : public InProcessBrowserTest {
  public:
-  TaskManagerViewTest() {}
+  TaskManagerViewTest() {
+#if defined(OS_MACOSX)
+    feature_list_.InitAndEnableFeature(features::kViewsTaskManager);
+#endif
+  }
   ~TaskManagerViewTest() override {}
 
   void SetUpOnMainThread() override {
@@ -104,6 +111,8 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskManagerViewTest);
 };
 
