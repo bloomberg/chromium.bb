@@ -130,7 +130,10 @@ class PLATFORM_EXPORT HeapAllocator {
 
   static void BackingWriteBarrier(void* address) {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    ThreadState::Current()->Heap().WriteBarrier(address);
+    if (!address)
+      return;
+    ThreadState* state = PageFromObject(address)->Arena()->GetThreadState();
+    state->Heap().WriteBarrier(address);
 #endif
   }
 
