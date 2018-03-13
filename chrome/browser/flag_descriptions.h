@@ -1002,9 +1002,6 @@ extern const char kV8ContextSnapshotDescription[];
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 
-extern const char kVibrateRequiresUserGestureName[];
-extern const char kVibrateRequiresUserGestureDescription[];
-
 extern const char kVideoFullscreenOrientationLockName[];
 extern const char kVideoFullscreenOrientationLockDescription[];
 

@@ -424,10 +424,6 @@ const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether vibrate requires user gesture.
-const base::Feature kVibrateRequiresUserGesture{
-    "VibrateRequiresUserGesture", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether editing web input fields is enabled in VR.
 const base::Feature kVrWebInputEditing{"VrWebInputEditing",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
