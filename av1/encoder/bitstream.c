@@ -63,7 +63,8 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
                                              const RestorationUnitInfo *rui,
-                                             aom_writer *const w, int plane);
+                                             aom_writer *const w, int plane,
+                                             FRAME_COUNTS *counts);
 
 static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
                                 const MODE_INFO *above_mi,
@@ -1711,7 +1712,8 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
           const int runit_idx = tile_tl_idx + rcol + rrow * rstride;
           const RestorationUnitInfo *rui =
               &cm->rst_info[plane].unit_info[runit_idx];
-          loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
+          loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane,
+                                           cpi->td.counts);
         }
       }
     }
@@ -1990,7 +1992,8 @@ static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
                                              const RestorationUnitInfo *rui,
-                                             aom_writer *const w, int plane) {
+                                             aom_writer *const w, int plane,
+                                             FRAME_COUNTS *counts) {
   const RestorationInfo *rsi = cm->rst_info + plane;
   RestorationType frame_rtype = rsi->frame_restoration_type;
   if (frame_rtype == RESTORE_NONE) return;
@@ -2005,6 +2008,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   if (frame_rtype == RESTORE_SWITCHABLE) {
     aom_write_symbol(w, unit_rtype, xd->tile_ctx->switchable_restore_cdf,
                      RESTORE_SWITCHABLE_TYPES);
+    ++counts->switchable_restore[unit_rtype];
     switch (unit_rtype) {
       case RESTORE_WIENER:
         write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
@@ -2017,12 +2021,14 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   } else if (frame_rtype == RESTORE_WIENER) {
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->wiener_restore_cdf, 2);
+    ++counts->wiener_restore[unit_rtype != RESTORE_NONE];
     if (unit_rtype != RESTORE_NONE) {
       write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
     }
   } else if (frame_rtype == RESTORE_SGRPROJ) {
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->sgrproj_restore_cdf, 2);
+    ++counts->sgrproj_restore[unit_rtype != RESTORE_NONE];
     if (unit_rtype != RESTORE_NONE) {
       write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
     }
