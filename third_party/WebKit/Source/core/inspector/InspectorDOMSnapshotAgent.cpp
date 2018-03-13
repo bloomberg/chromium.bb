@@ -30,9 +30,14 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerStackingNode.h"
+#include "core/paint/PaintLayerStackingNodeIterator.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -50,6 +55,19 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
       .setWidth(rect.Width())
       .setHeight(rect.Height())
       .build();
+}
+
+Document* GetEmbeddedDocument(PaintLayer* layer) {
+  // Documents are embedded on their own PaintLayer via a LayoutEmbeddedContent.
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+    FrameView* frame_view =
+        ToLayoutEmbeddedContent(layer->GetLayoutObject()).ChildFrameView();
+    if (frame_view && frame_view->IsLocalFrameView()) {
+      LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
+      return local_frame_view->GetFrame().GetDocument();
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -99,7 +117,8 @@ InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
     std::unique_ptr<protocol::Array<String>> style_whitelist,
-    protocol::Maybe<bool> get_dom_listeners,
+    protocol::Maybe<bool> include_event_listeners,
+    protocol::Maybe<bool> include_paint_order,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>>* dom_nodes,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>>*
         layout_tree_nodes,
@@ -129,8 +148,14 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
         std::make_pair(style_whitelist->get(i), property_id));
   }
 
+  if (include_paint_order.fromMaybe(false)) {
+    paint_order_map_ = std::make_unique<PaintOrderMap>();
+    next_paint_order_index_ = 0;
+    TraversePaintLayerTree(document);
+  }
+
   // Actual traversal.
-  VisitNode(document, get_dom_listeners.fromMaybe(false));
+  VisitNode(document, include_event_listeners.fromMaybe(false));
 
   // Extract results from state and reset.
   *dom_nodes = std::move(dom_nodes_);
@@ -138,16 +163,18 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   *computed_styles = std::move(computed_styles_);
   computed_styles_map_.reset();
   css_property_whitelist_.reset();
+  paint_order_map_.reset();
   return Response::OK();
 }
 
 int InspectorDOMSnapshotAgent::VisitNode(Node* node,
                                          bool include_event_listeners) {
-  if (node->IsDocumentNode()) {
-    // Update layout tree before traversal of document so that we inspect a
-    // current and consistent state of all trees.
+  // Update layout tree before traversal of document so that we inspect a
+  // current and consistent state of all trees. No need to do this if paint
+  // order was calculated, since layout trees were already updated during
+  // TraversePaintLayerTree().
+  if (node->IsDocumentNode() && !paint_order_map_)
     node->GetDocument().UpdateStyleAndLayoutTree();
-  }
 
   String node_value;
   switch (node->getNodeType()) {
@@ -363,6 +390,16 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
   if (style_index != -1)
     layout_tree_node->setStyleIndex(style_index);
 
+  if (paint_order_map_) {
+    PaintLayer* paint_layer = layout_object->EnclosingLayer();
+
+    // We visited all PaintLayers when building |paint_order_map_|.
+    DCHECK(paint_order_map_->Contains(paint_layer));
+
+    if (int paint_order = paint_order_map_->at(paint_layer))
+      layout_tree_node->setPaintOrder(paint_order);
+  }
+
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
@@ -433,6 +470,41 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
                                 .build());
   computed_styles_map_->insert(std::move(style), index);
   return index;
+}
+
+void InspectorDOMSnapshotAgent::TraversePaintLayerTree(Document* document) {
+  // Update layout tree before traversal of document so that we inspect a
+  // current and consistent state of all trees.
+  document->UpdateStyleAndLayoutTree();
+
+  PaintLayer* root_layer = document->GetLayoutView()->Layer();
+  // LayoutView requires a PaintLayer.
+  DCHECK(root_layer);
+
+  VisitPaintLayer(root_layer);
+}
+
+void InspectorDOMSnapshotAgent::VisitPaintLayer(PaintLayer* layer) {
+  DCHECK(!paint_order_map_->Contains(layer));
+
+  paint_order_map_->Set(layer, next_paint_order_index_);
+  next_paint_order_index_++;
+
+  // If there is an embedded document, integrate it into the painting order.
+  Document* embedded_document = GetEmbeddedDocument(layer);
+  if (embedded_document)
+    TraversePaintLayerTree(embedded_document);
+
+  // If there's an embedded document, there shouldn't be any children.
+  DCHECK(!embedded_document || !layer->FirstChild());
+
+  if (!embedded_document) {
+    PaintLayerStackingNode* node = layer->StackingNode();
+    PaintLayerStackingNodeIterator iterator(*node, kAllChildren);
+    while (PaintLayerStackingNode* child_node = iterator.Next()) {
+      VisitPaintLayer(child_node->Layer());
+    }
+  }
 }
 
 void InspectorDOMSnapshotAgent::Trace(blink::Visitor* visitor) {
