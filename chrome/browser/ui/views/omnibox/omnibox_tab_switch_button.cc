@@ -12,7 +12,6 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/button/label_button_border.h"
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
     : MdTextButton(this, views::style::CONTEXT_BUTTON_MD),
@@ -27,45 +26,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
   SetText(base::ASCIIToUTF16("Switch to open tab"));
 }
 
-void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(color_utils::AlphaBlend(
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-                      OmniboxPartState::SELECTED),
-      SK_ColorBLACK, 0.8 * 255));
-}
-
-void OmniboxTabSwitchButton::ClearState() {
-  SetBgColorOverride(GetBackgroundColor());
-}
-
-bool OmniboxTabSwitchButton::OnMousePressed(const ui::MouseEvent& event) {
-  SetPressed();
-
-  // We return true to tell caller, "We want drag events."
-  return true;
-}
-
-bool OmniboxTabSwitchButton::OnMouseDragged(const ui::MouseEvent& event) {
-  if (HitTestPoint(event.location())) {
-    // TODO: Only do this on the first movement.
-    SetPressed();
-    // I don't think this has any effect.
-    return true;
-  } else {
-    ClearState();
-    SetMouseHandler(result_view_);
-    return false;
-  }
-}
-
-void OmniboxTabSwitchButton::OnMouseReleased(const ui::MouseEvent& event) {
-  // We're not going to be called again.
-  ClearState();
-  const ui::MouseEvent* mouse = event.AsMouseEvent();
-  if (mouse->IsOnlyLeftMouseButton())
-    result_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
-}
-
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
   const int horizontal_padding =
@@ -76,8 +36,23 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
 }
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
-  SetBgColorOverride(GetBackgroundColor());
-  MdTextButton::StateChanged(old_state);
+  if (state() == STATE_NORMAL) {
+    SetBgColorOverride(GetBackgroundColor());
+    // If used to be pressed, transer ownership.
+    if (old_state == STATE_PRESSED)
+      SetMouseHandler(result_view_);
+  }
+  if (state() == STATE_HOVERED) {
+    if (old_state == STATE_NORMAL) {
+      SetBgColorOverride(GetBackgroundColor());
+    } else {
+      // The button was released.
+      result_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+    }
+  }
+  if (state() == STATE_PRESSED)
+    SetPressed();
+  LabelButton::StateChanged(old_state);
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
@@ -85,4 +60,11 @@ SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
                          result_view_->GetTint(),
                          state() == STATE_HOVERED ? OmniboxPartState::HOVERED
                                                   : OmniboxPartState::NORMAL);
+}
+
+void OmniboxTabSwitchButton::SetPressed() {
+  SetBgColorOverride(color_utils::AlphaBlend(
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
+                      OmniboxPartState::SELECTED),
+      SK_ColorBLACK, 0.8 * 255));
 }
