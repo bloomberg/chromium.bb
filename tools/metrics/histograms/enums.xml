@@ -26014,6 +26014,7 @@ from previous Chrome versions.
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
+  <int value="-1222805155" label="PdfIsolation:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
@@ -26096,6 +26097,7 @@ from previous Chrome versions.
   <int value="-1039555838" label="GamepadExtensions:enabled"/>
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
+  <int value="-1031350684" label="PdfIsolation:disabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
