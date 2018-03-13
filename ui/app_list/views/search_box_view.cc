@@ -300,6 +300,7 @@ void SearchBoxView::HintTextChanged() {
       search_model_->search_box();
   search_box()->set_placeholder_text(search_box_model->hint_text());
   search_box()->SetAccessibleName(search_box_model->accessible_name());
+  SchedulePaint();
 }
 
 void SearchBoxView::SelectionModelChanged() {
