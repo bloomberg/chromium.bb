@@ -30,7 +30,11 @@
 
 #include "core/layout/TextAutosizer.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -49,7 +53,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -323,7 +326,7 @@ void TextAutosizer::PrepareClusterStack(LayoutObject* layout_object) {
     blocks_that_have_begun_layout_.insert(block);
 #endif
     if (Cluster* cluster = MaybeCreateCluster(block))
-      cluster_stack_.push_back(WTF::WrapUnique(cluster));
+      cluster_stack_.push_back(base::WrapUnique(cluster));
   }
 }
 
@@ -341,7 +344,7 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
   DCHECK(!cluster_stack_.IsEmpty() || block->IsLayoutView());
 
   if (Cluster* cluster = MaybeCreateCluster(block))
-    cluster_stack_.push_back(WTF::WrapUnique(cluster));
+    cluster_stack_.push_back(base::WrapUnique(cluster));
 
   DCHECK(!cluster_stack_.IsEmpty());
 
@@ -855,7 +858,7 @@ TextAutosizer::FingerprintMapper::CreateSuperclusterIfNeeded(
     return add_result.stored_value->value.get();
 
   Supercluster* supercluster = new Supercluster(roots);
-  add_result.stored_value->value = WTF::WrapUnique(supercluster);
+  add_result.stored_value->value = base::WrapUnique(supercluster);
   return supercluster;
 }
 
@@ -1249,7 +1252,7 @@ void TextAutosizer::FingerprintMapper::AddTentativeClusterRoot(
   ReverseFingerprintMap::AddResult add_result =
       blocks_for_fingerprint_.insert(fingerprint, std::unique_ptr<BlockSet>());
   if (add_result.is_new_entry)
-    add_result.stored_value->value = WTF::WrapUnique(new BlockSet);
+    add_result.stored_value->value = std::make_unique<BlockSet>();
   add_result.stored_value->value->insert(block);
 #if DCHECK_IS_ON()
   AssertMapsAreConsistent();

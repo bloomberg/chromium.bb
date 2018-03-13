@@ -6,9 +6,10 @@
 #define CSSTransitionData_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/css/CSSTimingData.h"
 #include "core/css_property_names.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -51,11 +52,11 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
   };
 
   static std::unique_ptr<CSSTransitionData> Create() {
-    return WTF::WrapUnique(new CSSTransitionData);
+    return base::WrapUnique(new CSSTransitionData);
   }
 
   std::unique_ptr<CSSTransitionData> Clone() {
-    return WTF::WrapUnique(new CSSTransitionData(*this));
+    return base::WrapUnique(new CSSTransitionData(*this));
   }
 
   bool TransitionsMatchForStyleRecalc(const CSSTransitionData& other) const;

@@ -30,6 +30,9 @@
 
 #include "core/animation/KeyframeEffectModel.h"
 
+#include <limits>
+#include <utility>
+
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -40,7 +43,6 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {
@@ -222,7 +224,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   if (keyframe_groups_)
     return;
 
-  keyframe_groups_ = WTF::WrapUnique(new KeyframeGroupMap);
+  keyframe_groups_ = std::make_unique<KeyframeGroupMap>();
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
   DCHECK_EQ(computed_offsets.size(), keyframes_.size());
@@ -239,7 +241,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
       if (group_iter == keyframe_groups_->end()) {
         group = keyframe_groups_
                     ->insert(property,
-                             WTF::WrapUnique(new PropertySpecificKeyframeGroup))
+                             std::make_unique<PropertySpecificKeyframeGroup>())
                     .stored_value->value.get();
       } else {
         group = group_iter->value.get();

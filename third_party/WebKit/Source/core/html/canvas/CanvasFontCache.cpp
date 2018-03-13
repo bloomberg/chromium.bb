@@ -10,7 +10,6 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace {
@@ -137,7 +136,7 @@ void CanvasFontCache::SchedulePruningIfNeeded() {
   if (pruning_scheduled_)
     return;
   DCHECK(!main_cache_purge_preventer_);
-  main_cache_purge_preventer_ = WTF::WrapUnique(new FontCachePurgePreventer);
+  main_cache_purge_preventer_ = std::make_unique<FontCachePurgePreventer>();
   Platform::Current()->CurrentThread()->AddTaskObserver(this);
   pruning_scheduled_ = true;
 }

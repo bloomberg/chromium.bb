@@ -30,7 +30,10 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "core/editing/Editor.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -57,7 +60,6 @@
 #include "core/paint/BlockFlowPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -2877,7 +2879,7 @@ LayoutUnit LayoutBlockFlow::GetClearDelta(LayoutBox* child,
 
 void LayoutBlockFlow::CreateFloatingObjects() {
   floating_objects_ =
-      WTF::WrapUnique(new FloatingObjects(this, IsHorizontalWritingMode()));
+      std::make_unique<FloatingObjects>(this, IsHorizontalWritingMode());
 }
 
 void LayoutBlockFlow::WillBeDestroyed() {

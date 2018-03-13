@@ -6,10 +6,12 @@
 #define LengthUnitsChecker_h
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSInterpolationType.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -30,7 +32,7 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
     }
     if (!create)
       return nullptr;
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new LengthUnitsChecker(std::move(length_array), last_index));
   }
 

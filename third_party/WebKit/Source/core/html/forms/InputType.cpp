@@ -28,7 +28,9 @@
 
 #include "core/html/forms/InputType.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -72,7 +74,6 @@
 #include "platform/json/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -84,7 +85,7 @@ using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
 
 static std::unique_ptr<InputTypeFactoryMap> CreateInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
-      WTF::WrapUnique(new InputTypeFactoryMap);
+      std::make_unique<InputTypeFactoryMap>();
   map->insert(InputTypeNames::button, ButtonInputType::Create);
   map->insert(InputTypeNames::checkbox, CheckboxInputType::Create);
   map->insert(InputTypeNames::color, ColorInputType::Create);

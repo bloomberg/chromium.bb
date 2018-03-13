@@ -5,6 +5,9 @@
 #include "core/animation/CSSLengthListInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/LengthListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
@@ -13,7 +16,6 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -70,7 +72,7 @@ class InheritedLengthListChecker
   static std::unique_ptr<InheritedLengthListChecker> Create(
       const CSSProperty& property,
       const Vector<Length>& inherited_length_list) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedLengthListChecker(property, inherited_length_list));
   }
 

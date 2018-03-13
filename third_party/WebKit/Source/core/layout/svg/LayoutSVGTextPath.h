@@ -22,8 +22,9 @@
 #define LayoutSVGTextPath_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/layout/svg/LayoutSVGInline.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -37,7 +38,7 @@ class PathPositionMapper {
   static std::unique_ptr<PathPositionMapper> Create(const Path& path,
                                                     float computed_path_length,
                                                     float start_offset) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new PathPositionMapper(path, computed_path_length, start_offset));
   }
 

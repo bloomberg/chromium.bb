@@ -27,6 +27,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "core/frame/UseCounter.h"
 #include "core/layout/GridLayoutUtils.h"
 #include "core/layout/LayoutState.h"
@@ -37,7 +39,6 @@
 #include "core/style/GridArea.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/WritingMode.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -717,7 +718,7 @@ LayoutGrid::ComputeEmptyTracksForAutoRepeat(
       first_auto_repeat_track + grid.AutoRepeatTracks(direction);
 
   if (!grid.HasGridItems()) {
-    empty_track_indexes = WTF::WrapUnique(new OrderedTrackIndexSet);
+    empty_track_indexes = std::make_unique<OrderedTrackIndexSet>();
     for (size_t track_index = first_auto_repeat_track;
          track_index < last_auto_repeat_track; ++track_index)
       empty_track_indexes->insert(track_index);
@@ -727,7 +728,7 @@ LayoutGrid::ComputeEmptyTracksForAutoRepeat(
       GridIterator iterator(grid, direction, track_index);
       if (!iterator.NextGridItem()) {
         if (!empty_track_indexes)
-          empty_track_indexes = WTF::WrapUnique(new OrderedTrackIndexSet);
+          empty_track_indexes = std::make_unique<OrderedTrackIndexSet>();
         empty_track_indexes->insert(track_index);
       }
     }
@@ -932,11 +933,11 @@ LayoutGrid::CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
   GridSpan cross_direction_positions = GridSpan::TranslatedDefiniteGridSpan(
       end_of_cross_direction,
       end_of_cross_direction + cross_direction_span_size);
-  return WTF::WrapUnique(new GridArea(
+  return std::make_unique<GridArea>(
       specified_direction == kForColumns ? cross_direction_positions
                                          : specified_positions,
       specified_direction == kForColumns ? specified_positions
-                                         : cross_direction_positions));
+                                         : cross_direction_positions);
 }
 
 void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(

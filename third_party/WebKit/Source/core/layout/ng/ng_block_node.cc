@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_block_node.h"
 
+#include <memory>
+
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSet.h"
@@ -569,7 +571,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   // over to LayoutNG yet.
   // TODO(ikilpatrick): Remove this once the above isn't true.
   builder.SetExclusionSpace(
-      WTF::WrapUnique(new NGExclusionSpace(constraint_space.ExclusionSpace())));
+      std::make_unique<NGExclusionSpace>(constraint_space.ExclusionSpace()));
 
   CopyBaselinesFromOldLayout(constraint_space, &builder);
   return builder.ToBoxFragment();

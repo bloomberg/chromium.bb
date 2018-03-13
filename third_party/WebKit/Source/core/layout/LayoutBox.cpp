@@ -74,7 +74,6 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollIntoViewParams.h"
 
@@ -5198,8 +5197,7 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
   }
 
   if (!overflow_) {
-    overflow_ =
-        WTF::WrapUnique(new BoxOverflowModel(client_box, BorderBoxRect()));
+    overflow_ = std::make_unique<BoxOverflowModel>(client_box, BorderBoxRect());
   }
 
   overflow_->AddLayoutOverflow(overflow_rect);
@@ -5215,7 +5213,7 @@ void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
 
   if (!overflow_) {
     overflow_ =
-        WTF::WrapUnique(new BoxOverflowModel(NoOverflowRect(), border_box));
+        std::make_unique<BoxOverflowModel>(NoOverflowRect(), border_box);
   }
 
   overflow_->AddSelfVisualOverflow(rect);
@@ -5236,7 +5234,7 @@ void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
 
   if (!overflow_) {
     overflow_ =
-        WTF::WrapUnique(new BoxOverflowModel(NoOverflowRect(), border_box));
+        std::make_unique<BoxOverflowModel>(NoOverflowRect(), border_box);
   }
   overflow_->AddContentsVisualOverflow(rect);
 }

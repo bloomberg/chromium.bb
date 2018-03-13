@@ -5,12 +5,14 @@
 #include "core/animation/CSSPaintInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/css/StyleColor.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -70,11 +72,11 @@ class InheritedPaintChecker
   static std::unique_ptr<InheritedPaintChecker> Create(
       const CSSProperty& property,
       const StyleColor& color) {
-    return WTF::WrapUnique(new InheritedPaintChecker(property, color));
+    return base::WrapUnique(new InheritedPaintChecker(property, color));
   }
   static std::unique_ptr<InheritedPaintChecker> Create(
       const CSSProperty& property) {
-    return WTF::WrapUnique(new InheritedPaintChecker(property));
+    return base::WrapUnique(new InheritedPaintChecker(property));
   }
 
  private:

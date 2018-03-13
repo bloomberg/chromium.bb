@@ -5,6 +5,9 @@
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/BasicShapeInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -12,7 +15,6 @@
 #include "core/style/BasicShapes.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -46,7 +48,7 @@ class UnderlyingCompatibilityChecker
  public:
   static std::unique_ptr<UnderlyingCompatibilityChecker> Create(
       scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value) {
-    return WTF::WrapUnique(new UnderlyingCompatibilityChecker(
+    return base::WrapUnique(new UnderlyingCompatibilityChecker(
         std::move(underlying_non_interpolable_value)));
   }
 
@@ -72,7 +74,7 @@ class InheritedShapeChecker
   static std::unique_ptr<InheritedShapeChecker> Create(
       const CSSProperty& property,
       scoped_refptr<BasicShape> inherited_shape) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedShapeChecker(property, std::move(inherited_shape)));
   }
 

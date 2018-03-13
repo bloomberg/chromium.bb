@@ -4,6 +4,9 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "core/css/CSSMarkup.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NthIndexCache.h"
@@ -140,7 +143,7 @@ static bool IsOnlySiblingWithTagName(Element* element) {
 static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
   DCHECK(element);
 
-  auto classname_filter = WTF::WrapUnique(new ClassnameFilter());
+  auto classname_filter = std::make_unique<ClassnameFilter>();
 
   Element* parent_element = ElementTraversal::FirstAncestor(*element->ToNode());
   Element* sibling_element =

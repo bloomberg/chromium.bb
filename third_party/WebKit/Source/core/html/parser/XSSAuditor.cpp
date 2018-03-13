@@ -27,6 +27,7 @@
 #include "core/html/parser/XSSAuditor.h"
 
 #include <memory>
+
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -46,7 +47,6 @@
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace {
 
@@ -476,9 +476,11 @@ void XSSAuditor::SetEncoding(const WTF::TextEncoding& encoding) {
     http_body_as_string_ = String();
     if (decoded_http_body_.Find(IsRequiredForInjection) == kNotFound)
       decoded_http_body_ = String();
-    if (decoded_http_body_.length() >= kMiniumLengthForSuffixTree)
-      decoded_http_body_suffix_tree_ = WTF::WrapUnique(
-          new SuffixTree<ASCIICodebook>(decoded_http_body_, kSuffixTreeDepth));
+    if (decoded_http_body_.length() >= kMiniumLengthForSuffixTree) {
+      decoded_http_body_suffix_tree_ =
+          std::make_unique<SuffixTree<ASCIICodebook>>(decoded_http_body_,
+                                                      kSuffixTreeDepth);
+    }
   }
 
   if (decoded_url_.IsEmpty() && decoded_http_body_.IsEmpty())

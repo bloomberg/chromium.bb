@@ -4,10 +4,12 @@
 
 #include "core/layout/ng/ng_layout_result.h"
 
+#include <memory>
+#include <utility>
+
 #include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/ng_positioned_float.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -57,9 +59,10 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
   std::unique_ptr<const NGExclusionSpace> exclusion_space;
   // TODO(layoutng) Replace this with DCHECK(exclusion_space_) when
   // callers guarantee exclusion_space_ != null.
-  if (exclusion_space_)
-    exclusion_space = WTF::WrapUnique(new NGExclusionSpace(*exclusion_space_));
-
+  if (exclusion_space_) {
+    std::unique_ptr<const NGExclusionSpace> exclusion_space(
+        std::make_unique<NGExclusionSpace>(*exclusion_space_));
+  }
   return base::AdoptRef(new NGLayoutResult(
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
       positioned_floats, unpositioned_floats, unpositioned_list_marker_,

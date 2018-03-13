@@ -45,7 +45,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebMouseEvent.h"
@@ -121,7 +120,7 @@ void ExternalPopupMenu::Show() {
 #if defined(OS_MACOSX)
   const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event && current_event->GetType() == WebInputEvent::kMouseDown) {
-    synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
+    synthetic_event_ = std::make_unique<WebMouseEvent>();
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);
     synthetic_event_->SetType(WebInputEvent::kMouseUp);
     dispatch_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);

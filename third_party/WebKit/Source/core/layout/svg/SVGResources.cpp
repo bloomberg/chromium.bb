@@ -20,6 +20,8 @@
 #include "core/layout/svg/SVGResources.h"
 
 #include <memory>
+#include <utility>
+
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
@@ -32,7 +34,6 @@
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg_names.h"
-#include "platform/wtf/PtrUtil.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -178,7 +179,7 @@ bool SVGResources::HasResourceData() const {
 static inline SVGResources& EnsureResources(
     std::unique_ptr<SVGResources>& resources) {
   if (!resources)
-    resources = WTF::WrapUnique(new SVGResources);
+    resources = std::make_unique<SVGResources>();
 
   return *resources.get();
 }

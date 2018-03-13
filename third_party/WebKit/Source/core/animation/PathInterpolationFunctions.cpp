@@ -5,6 +5,9 @@
 #include "core/animation/PathInterpolationFunctions.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/InterpolatedSVGPathSource.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
@@ -13,7 +16,6 @@
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathParser.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -99,7 +101,7 @@ class UnderlyingPathSegTypesChecker
 
   static std::unique_ptr<UnderlyingPathSegTypesChecker> Create(
       const InterpolationValue& underlying) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new UnderlyingPathSegTypesChecker(GetPathSegTypes(underlying)));
   }
 

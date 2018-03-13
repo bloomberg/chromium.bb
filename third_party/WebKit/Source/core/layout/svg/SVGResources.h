@@ -21,11 +21,12 @@
 #define SVGResources_h
 
 #include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -135,7 +136,7 @@ class SVGResources {
         : clipper(nullptr), filter(nullptr), masker(nullptr) {}
 
     static std::unique_ptr<ClipperFilterMaskerData> Create() {
-      return WTF::WrapUnique(new ClipperFilterMaskerData);
+      return base::WrapUnique(new ClipperFilterMaskerData);
     }
 
     LayoutSVGResourceClipper* clipper;
@@ -153,7 +154,7 @@ class SVGResources {
         : marker_start(nullptr), marker_mid(nullptr), marker_end(nullptr) {}
 
     static std::unique_ptr<MarkerData> Create() {
-      return WTF::WrapUnique(new MarkerData);
+      return std::make_unique<MarkerData>();
     }
 
     LayoutSVGResourceMarker* marker_start;
@@ -173,7 +174,7 @@ class SVGResources {
     FillStrokeData() : fill(nullptr), stroke(nullptr) {}
 
     static std::unique_ptr<FillStrokeData> Create() {
-      return WTF::WrapUnique(new FillStrokeData);
+      return std::make_unique<FillStrokeData>();
     }
 
     LayoutSVGResourcePaintServer* fill;

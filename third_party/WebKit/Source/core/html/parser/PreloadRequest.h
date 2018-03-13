@@ -6,6 +6,8 @@
 #define PreloadRequest_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/script/Script.h"
 #include "platform/CrossOriginAttributeValue.h"
@@ -16,7 +18,6 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
@@ -60,7 +61,7 @@ class CORE_EXPORT PreloadRequest {
         ProtocolIs(resource_url, "data")) {
       return nullptr;
     }
-    return WTF::WrapUnique(new PreloadRequest(
+    return base::WrapUnique(new PreloadRequest(
         initiator_name, initiator_position, resource_url, base_url,
         resource_type, resource_width, client_hints_preferences, request_type,
         referrer_policy, referrer_source, is_image_set));

@@ -5,13 +5,15 @@
 #include "core/animation/CSSFontSizeInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontDescription.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -20,7 +22,7 @@ namespace {
 class IsMonospaceChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<IsMonospaceChecker> Create(bool is_monospace) {
-    return WTF::WrapUnique(new IsMonospaceChecker(is_monospace));
+    return base::WrapUnique(new IsMonospaceChecker(is_monospace));
   }
 
  private:
@@ -39,7 +41,7 @@ class InheritedFontSizeChecker
  public:
   static std::unique_ptr<InheritedFontSizeChecker> Create(
       const FontDescription::Size& inherited_font_size) {
-    return WTF::WrapUnique(new InheritedFontSizeChecker(inherited_font_size));
+    return base::WrapUnique(new InheritedFontSizeChecker(inherited_font_size));
   }
 
  private:

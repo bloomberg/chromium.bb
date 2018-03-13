@@ -26,7 +26,10 @@
 
 #include "core/html/media/HTMLMediaElement.h"
 
+#include <algorithm>
 #include <limits>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
@@ -86,7 +89,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
@@ -3919,7 +3921,7 @@ void HTMLMediaElement::SetWebLayer(WebLayer* web_layer) {
 
 void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {
   SetShouldDelayLoadEvent(false);
-  media_source_->SetWebMediaSourceAndOpen(WTF::WrapUnique(web_media_source));
+  media_source_->SetWebMediaSourceAndOpen(base::WrapUnique(web_media_source));
 }
 
 bool HTMLMediaElement::IsInteractiveContent() const {

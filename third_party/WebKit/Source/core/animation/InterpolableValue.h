@@ -6,11 +6,12 @@
 #define InterpolableValue_h
 
 #include <memory>
+#include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -53,7 +54,7 @@ class CORE_EXPORT InterpolableValue {
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
  public:
   static std::unique_ptr<InterpolableNumber> Create(double value) {
-    return WTF::WrapUnique(new InterpolableNumber(value));
+    return base::WrapUnique(new InterpolableNumber(value));
   }
 
   bool IsNumber() const final { return true; }
@@ -90,11 +91,11 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
 
   static std::unique_ptr<InterpolableList> Create(
       const InterpolableList& other) {
-    return WTF::WrapUnique(new InterpolableList(other));
+    return base::WrapUnique(new InterpolableList(other));
   }
 
   static std::unique_ptr<InterpolableList> Create(size_t size) {
-    return WTF::WrapUnique(new InterpolableList(size));
+    return base::WrapUnique(new InterpolableList(size));
   }
 
   bool IsList() const final { return true; }

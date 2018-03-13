@@ -4,6 +4,10 @@
 
 #include "core/animation/CSSFontVariationSettingsInterpolationType.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/style/ComputedStyle.h"
@@ -56,7 +60,7 @@ class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
 
   static std::unique_ptr<UnderlyingTagsChecker> Create(
       const Vector<AtomicString>& tags) {
-    return WTF::WrapUnique(new UnderlyingTagsChecker(tags));
+    return base::WrapUnique(new UnderlyingTagsChecker(tags));
   }
 
  private:
@@ -77,7 +81,8 @@ class InheritedFontVariationSettingsChecker
 
   static std::unique_ptr<InheritedFontVariationSettingsChecker> Create(
       const FontVariationSettings* settings) {
-    return WTF::WrapUnique(new InheritedFontVariationSettingsChecker(settings));
+    return base::WrapUnique(
+        new InheritedFontVariationSettingsChecker(settings));
   }
 
  private:

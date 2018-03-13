@@ -24,7 +24,11 @@
 
 #include "core/layout/LayoutBlock.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -58,7 +62,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
@@ -947,7 +950,7 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
       g_positioned_descendants_map->at(this);
   if (!descendant_set) {
     descendant_set = new TrackedLayoutBoxListHashSet;
-    g_positioned_descendants_map->Set(this, WTF::WrapUnique(descendant_set));
+    g_positioned_descendants_map->Set(this, base::WrapUnique(descendant_set));
   }
   descendant_set->insert(o);
 
@@ -1058,7 +1061,7 @@ void LayoutBlock::AddPercentHeightDescendant(LayoutBox* descendant) {
   if (!descendant_set) {
     descendant_set = new TrackedLayoutBoxListHashSet;
     g_percent_height_descendants_map->Set(this,
-                                          WTF::WrapUnique(descendant_set));
+                                          base::WrapUnique(descendant_set));
   }
   descendant_set->insert(descendant);
 

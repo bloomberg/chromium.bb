@@ -5,13 +5,15 @@
 #include "core/animation/SVGTransformListInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/NonInterpolableValue.h"
 #include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -175,7 +177,7 @@ class SVGTransformListChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<SVGTransformListChecker> Create(
       const InterpolationValue& underlying) {
-    return WTF::WrapUnique(new SVGTransformListChecker(underlying));
+    return base::WrapUnique(new SVGTransformListChecker(underlying));
   }
 
   bool IsValid(const InterpolationEnvironment&,

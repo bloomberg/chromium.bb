@@ -5,11 +5,12 @@
 #include "core/animation/CSSRotateInterpolationType.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/Rotation.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -156,7 +157,7 @@ class InheritedRotationChecker
  public:
   static std::unique_ptr<InheritedRotationChecker> Create(
       const OptionalRotation& inherited_rotation) {
-    return WTF::WrapUnique(new InheritedRotationChecker(inherited_rotation));
+    return base::WrapUnique(new InheritedRotationChecker(inherited_rotation));
   }
 
   bool IsValid(const StyleResolverState& state,

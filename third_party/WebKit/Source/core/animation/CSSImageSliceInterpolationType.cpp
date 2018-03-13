@@ -5,12 +5,14 @@
 #include "core/animation/CSSImageSliceInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/ImageSlicePropertyFunctions.h"
 #include "core/animation/SideIndex.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -82,7 +84,7 @@ class UnderlyingSliceTypesChecker
  public:
   static std::unique_ptr<UnderlyingSliceTypesChecker> Create(
       const SliceTypes& underlying_types) {
-    return WTF::WrapUnique(new UnderlyingSliceTypesChecker(underlying_types));
+    return base::WrapUnique(new UnderlyingSliceTypesChecker(underlying_types));
   }
 
   static SliceTypes GetUnderlyingSliceTypes(
@@ -110,7 +112,7 @@ class InheritedSliceTypesChecker
   static std::unique_ptr<InheritedSliceTypesChecker> Create(
       const CSSProperty& property,
       const SliceTypes& inherited_types) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedSliceTypesChecker(property, inherited_types));
   }
 

@@ -5,11 +5,12 @@
 #include "core/animation/CSSFontWeightInterpolationType.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -18,7 +19,7 @@ class InheritedFontWeightChecker
  public:
   static std::unique_ptr<InheritedFontWeightChecker> Create(
       FontSelectionValue font_weight) {
-    return WTF::WrapUnique(new InheritedFontWeightChecker(font_weight));
+    return base::WrapUnique(new InheritedFontWeightChecker(font_weight));
   }
 
  private:

@@ -29,9 +29,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextCodec.h"
 #include "platform/wtf/text/TextEncoding.h"
 
@@ -44,7 +44,7 @@ class HTMLMetaCharsetParser {
 
  public:
   static std::unique_ptr<HTMLMetaCharsetParser> Create() {
-    return WTF::WrapUnique(new HTMLMetaCharsetParser());
+    return base::WrapUnique(new HTMLMetaCharsetParser());
   }
 
   ~HTMLMetaCharsetParser();

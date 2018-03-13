@@ -28,8 +28,10 @@
 #define HTMLPreloadScanner_h
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/dom/ViewportDescription.h"
@@ -38,7 +40,6 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "platform/text/SegmentedString.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -60,11 +61,11 @@ struct CORE_EXPORT CachedDocumentParameters {
 
  public:
   static std::unique_ptr<CachedDocumentParameters> Create(Document* document) {
-    return WTF::WrapUnique(new CachedDocumentParameters(document));
+    return base::WrapUnique(new CachedDocumentParameters(document));
   }
 
   static std::unique_ptr<CachedDocumentParameters> Create() {
-    return WTF::WrapUnique(new CachedDocumentParameters);
+    return base::WrapUnique(new CachedDocumentParameters);
   }
 
   bool do_html_preload_scanning;
@@ -178,7 +179,7 @@ class CORE_EXPORT HTMLPreloadScanner {
       std::unique_ptr<CachedDocumentParameters> document_parameters,
       const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
       const TokenPreloadScanner::ScannerType scanner_type) {
-    return WTF::WrapUnique(new HTMLPreloadScanner(
+    return base::WrapUnique(new HTMLPreloadScanner(
         options, document_url, std::move(document_parameters),
         media_values_cached_data, scanner_type));
   }

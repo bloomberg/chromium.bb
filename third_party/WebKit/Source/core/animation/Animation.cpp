@@ -30,6 +30,9 @@
 
 #include "core/animation/Animation.h"
 
+#include <limits>
+#include <memory>
+
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
@@ -51,7 +54,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -341,7 +343,7 @@ bool Animation::PreCommit(
       if (failure_code.Ok()) {
         CreateCompositorAnimation();
         StartAnimationOnCompositor(composited_element_ids);
-        compositor_state_ = WTF::WrapUnique(new CompositorState(*this));
+        compositor_state_ = std::make_unique<CompositorState>(*this);
       } else {
         // failure_code.Ok() is equivalent of |will_composite| = true, so if the
         // |can_composite| is true here, then we know that it is a main thread

@@ -4,6 +4,9 @@
 
 #include "core/html/media/HTMLMediaElement.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "core/dom/UserGestureIndicator.h"
 #include "core/event_type_names.h"
 #include "core/fullscreen/Fullscreen.h"
@@ -85,7 +88,7 @@ class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client,
       WebLayerTreeView*) override {
-    return WTF::WrapUnique(new FakeWebMediaPlayer(client));
+    return std::make_unique<FakeWebMediaPlayer>(client);
   }
 };
 

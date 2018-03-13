@@ -6,9 +6,10 @@
 #define UnderlyingLengthChecker_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/InterpolationType.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -16,7 +17,7 @@ class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
  public:
   static std::unique_ptr<UnderlyingLengthChecker> Create(
       size_t underlying_length) {
-    return WTF::WrapUnique(new UnderlyingLengthChecker(underlying_length));
+    return base::WrapUnique(new UnderlyingLengthChecker(underlying_length));
   }
 
   static size_t GetUnderlyingLength(const InterpolationValue& underlying) {

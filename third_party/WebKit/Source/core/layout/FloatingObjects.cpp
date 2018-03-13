@@ -26,13 +26,15 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -90,7 +92,7 @@ FloatingObject::FloatingObject(LayoutBox* layout_object,
 std::unique_ptr<FloatingObject> FloatingObject::Create(
     LayoutBox* layout_object) {
   std::unique_ptr<FloatingObject> new_obj =
-      WTF::WrapUnique(new FloatingObject(layout_object));
+      base::WrapUnique(new FloatingObject(layout_object));
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.
@@ -114,14 +116,14 @@ std::unique_ptr<FloatingObject> FloatingObject::CopyToNewContainer(
     LayoutSize offset,
     bool should_paint,
     bool is_descendant) const {
-  return WTF::WrapUnique(new FloatingObject(
+  return base::WrapUnique(new FloatingObject(
       GetLayoutObject(), GetType(),
       LayoutRect(FrameRect().Location() - offset, FrameRect().Size()),
       should_paint, is_descendant, IsLowestNonOverhangingFloatInChild()));
 }
 
 std::unique_ptr<FloatingObject> FloatingObject::UnsafeClone() const {
-  std::unique_ptr<FloatingObject> clone_object = WTF::WrapUnique(
+  std::unique_ptr<FloatingObject> clone_object = base::WrapUnique(
       new FloatingObject(GetLayoutObject(), GetType(), frame_rect_,
                          should_paint_, is_descendant_, false));
   clone_object->is_placed_ = is_placed_;
@@ -547,7 +549,7 @@ FloatingObject* FloatingObjects::Add(
     std::unique_ptr<FloatingObject> floating_object) {
   FloatingObject* new_object = floating_object.release();
   IncreaseObjectsCount(new_object->GetType());
-  set_.insert(WTF::WrapUnique(new_object));
+  set_.insert(base::WrapUnique(new_object));
   if (new_object->IsPlaced())
     AddPlacedObject(*new_object);
   MarkLowestFloatLogicalBottomCacheAsDirty();

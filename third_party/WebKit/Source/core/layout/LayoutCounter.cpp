@@ -22,6 +22,8 @@
 #include "core/layout/LayoutCounter.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -34,7 +36,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/ListMarkerText.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 
 #ifndef NDEBUG
@@ -415,7 +416,7 @@ static CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
     node_map = GetCounterMaps().at(&object);
   } else {
     node_map = new CounterMap;
-    GetCounterMaps().Set(&object, WTF::WrapUnique(node_map));
+    GetCounterMaps().Set(&object, base::WrapUnique(node_map));
     object.SetHasCounterNodeMap(true);
   }
   node_map->Set(identifier, new_node);

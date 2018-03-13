@@ -31,11 +31,12 @@
 #define ShapeOutsideInfo_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/layout/shapes/Shape.h"
 #include "core/style/ShapeValue.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -120,7 +121,7 @@ class ShapeOutsideInfo final {
 
   static std::unique_ptr<ShapeOutsideInfo> CreateInfo(
       const LayoutBox& layout_box) {
-    return WTF::WrapUnique(new ShapeOutsideInfo(layout_box));
+    return base::WrapUnique(new ShapeOutsideInfo(layout_box));
   }
   static bool IsEnabledFor(const LayoutBox&);
 

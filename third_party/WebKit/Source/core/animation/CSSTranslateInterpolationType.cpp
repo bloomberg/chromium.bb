@@ -5,12 +5,14 @@
 #include "core/animation/CSSTranslateInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -31,7 +33,7 @@ class InheritedTranslateChecker
 
   static std::unique_ptr<InheritedTranslateChecker> Create(
       scoped_refptr<TranslateTransformOperation> inherited_translate) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedTranslateChecker(std::move(inherited_translate)));
   }
 

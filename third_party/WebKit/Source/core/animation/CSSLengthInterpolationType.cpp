@@ -5,6 +5,9 @@
 #include "core/animation/CSSLengthInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/LengthPropertyFunctions.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -14,7 +17,6 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -37,7 +39,7 @@ class InheritedLengthChecker
   static std::unique_ptr<InheritedLengthChecker> Create(
       const CSSProperty& property,
       const Length& length) {
-    return WTF::WrapUnique(new InheritedLengthChecker(property, length));
+    return base::WrapUnique(new InheritedLengthChecker(property, length));
   }
 
  private:

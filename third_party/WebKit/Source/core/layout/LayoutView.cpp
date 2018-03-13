@@ -22,6 +22,7 @@
 #include "core/layout/LayoutView.h"
 
 #include <inttypes.h>
+
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
@@ -34,7 +35,6 @@
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/ChromeClient.h"
@@ -50,7 +50,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -305,7 +304,7 @@ void LayoutView::UpdateLayout() {
         LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =
-          WTF::WrapUnique(new ViewFragmentationContext(*this));
+          std::make_unique<ViewFragmentationContext>(*this);
       pagination_state_changed_ = true;
     }
   } else if (fragmentation_context_) {
@@ -839,7 +838,7 @@ bool LayoutView::UsesCompositing() const {
 
 PaintLayerCompositor* LayoutView::Compositor() {
   if (!compositor_)
-    compositor_ = WTF::WrapUnique(new PaintLayerCompositor(*this));
+    compositor_ = std::make_unique<PaintLayerCompositor>(*this);
 
   return compositor_.get();
 }

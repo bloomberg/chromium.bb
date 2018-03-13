@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/testing/sim/SimCompositor.h"
@@ -34,7 +36,7 @@ class MediaElementFillingViewportTest : public SimTest {
 
   std::unique_ptr<SimRequest> CreateMainResource() {
     std::unique_ptr<SimRequest> main_resource =
-        WTF::WrapUnique(new SimRequest("https://example.com/", "text/html"));
+        std::make_unique<SimRequest>("https://example.com/", "text/html");
     LoadURL("https://example.com");
     return main_resource;
   }

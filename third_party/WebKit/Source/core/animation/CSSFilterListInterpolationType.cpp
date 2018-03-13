@@ -5,6 +5,9 @@
 #include "core/animation/CSSFilterListInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/FilterInterpolationFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -12,7 +15,6 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -52,7 +54,7 @@ class UnderlyingFilterListChecker
  public:
   static std::unique_ptr<UnderlyingFilterListChecker> Create(
       scoped_refptr<NonInterpolableList> non_interpolable_list) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new UnderlyingFilterListChecker(std::move(non_interpolable_list)));
   }
 
@@ -86,7 +88,7 @@ class InheritedFilterListChecker
   static std::unique_ptr<InheritedFilterListChecker> Create(
       const CSSProperty& property,
       const FilterOperations& filter_operations) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedFilterListChecker(property, filter_operations));
   }
 

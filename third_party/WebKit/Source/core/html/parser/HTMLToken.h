@@ -27,12 +27,12 @@
 #define HTMLToken_h
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -217,7 +217,7 @@ class HTMLToken {
   void BeginDOCTYPE() {
     DCHECK_EQ(type_, kUninitialized);
     type_ = DOCTYPE;
-    doctype_data_ = WTF::WrapUnique(new DoctypeData);
+    doctype_data_ = std::make_unique<DoctypeData>();
   }
 
   void BeginDOCTYPE(UChar character) {

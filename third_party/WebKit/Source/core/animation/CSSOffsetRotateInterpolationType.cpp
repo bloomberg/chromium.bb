@@ -5,10 +5,12 @@
 #include "core/animation/CSSOffsetRotateInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleOffsetRotation.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -43,7 +45,7 @@ class UnderlyingRotationTypeChecker
  public:
   static std::unique_ptr<UnderlyingRotationTypeChecker> Create(
       OffsetRotationType underlying_rotation_type) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new UnderlyingRotationTypeChecker(underlying_rotation_type));
   }
 
@@ -66,7 +68,7 @@ class InheritedOffsetRotationChecker
  public:
   static std::unique_ptr<InheritedOffsetRotationChecker> Create(
       StyleOffsetRotation inherited_rotation) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedOffsetRotationChecker(inherited_rotation));
   }
 

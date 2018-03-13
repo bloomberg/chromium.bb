@@ -26,6 +26,8 @@
 #include "core/html/parser/BackgroundHTMLParser.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -36,7 +38,6 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "public/platform/Platform.h"
@@ -114,13 +115,13 @@ BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : weak_factory_(this),
-      token_(WTF::WrapUnique(new HTMLToken)),
+      token_(std::make_unique<HTMLToken>()),
       tokenizer_(HTMLTokenizer::Create(config->options)),
       tree_builder_simulator_(config->options),
       options_(config->options),
       outstanding_token_limit_(config->outstanding_token_limit),
       parser_(config->parser),
-      pending_tokens_(WTF::WrapUnique(new CompactHTMLTokenStream)),
+      pending_tokens_(std::make_unique<CompactHTMLTokenStream>()),
       pending_token_limit_(config->pending_token_limit),
       xss_auditor_(std::move(config->xss_auditor)),
       decoder_(std::move(config->decoder)),
@@ -317,7 +318,7 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
 #endif
 
   std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk =
-      WTF::WrapUnique(new HTMLDocumentParser::TokenizedChunk);
+      std::make_unique<HTMLDocumentParser::TokenizedChunk>();
   TRACE_EVENT_WITH_FLOW0("blink,loading",
                          "BackgroundHTMLParser::sendTokensToMainThread",
                          chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
@@ -339,7 +340,7 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
 
   bool is_empty = tokenized_chunk_queue_->Enqueue(std::move(chunk));
 
-  pending_tokens_ = WTF::WrapUnique(new CompactHTMLTokenStream);
+  pending_tokens_ = std::make_unique<CompactHTMLTokenStream>();
   return is_empty;
 }
 

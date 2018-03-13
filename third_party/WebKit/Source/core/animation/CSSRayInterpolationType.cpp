@@ -4,11 +4,14 @@
 
 #include "core/animation/CSSRayInterpolationType.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleRay.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -71,7 +74,7 @@ class UnderlyingRayModeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<UnderlyingRayModeChecker> Create(const RayMode& mode) {
-    return WTF::WrapUnique(new UnderlyingRayModeChecker(mode));
+    return base::WrapUnique(new UnderlyingRayModeChecker(mode));
   }
 
   bool IsValid(const StyleResolverState&,
@@ -91,7 +94,7 @@ class InheritedRayChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedRayChecker> Create(
       scoped_refptr<StyleRay> style_ray) {
-    return WTF::WrapUnique(new InheritedRayChecker(std::move(style_ray)));
+    return base::WrapUnique(new InheritedRayChecker(std::move(style_ray)));
   }
 
  private:

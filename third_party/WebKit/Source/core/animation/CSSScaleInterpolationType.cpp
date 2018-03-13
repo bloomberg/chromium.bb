@@ -5,11 +5,13 @@
 #include "core/animation/CSSScaleInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -67,7 +69,7 @@ class InheritedScaleChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedScaleChecker> Create(const Scale& scale) {
-    return WTF::WrapUnique(new InheritedScaleChecker(scale));
+    return base::WrapUnique(new InheritedScaleChecker(scale));
   }
 
  private:

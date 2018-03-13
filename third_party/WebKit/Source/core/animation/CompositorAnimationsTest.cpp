@@ -30,7 +30,11 @@
 
 #include "core/animation/CompositorAnimations.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
@@ -62,7 +66,6 @@
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -221,7 +224,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   std::unique_ptr<StringKeyframeVector> CreateCompositableFloatKeyframeVector(
       Vector<double>& values) {
     std::unique_ptr<StringKeyframeVector> frames =
-        WTF::WrapUnique(new StringKeyframeVector);
+        base::WrapUnique(new StringKeyframeVector);
     for (size_t i = 0; i < values.size(); i++) {
       double offset = 1.0 / (values.size() - 1) * i;
       String value = String::Number(values[i]);
@@ -234,7 +237,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   std::unique_ptr<StringKeyframeVector>
   CreateCompositableTransformKeyframeVector(const Vector<String>& values) {
     std::unique_ptr<StringKeyframeVector> frames =
-        WTF::WrapUnique(new StringKeyframeVector);
+        base::WrapUnique(new StringKeyframeVector);
     for (size_t i = 0; i < values.size(); ++i) {
       double offset = 1.0f / (values.size() - 1) * i;
       frames->push_back(
