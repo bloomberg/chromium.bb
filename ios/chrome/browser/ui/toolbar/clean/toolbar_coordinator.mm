@@ -340,6 +340,9 @@ initWithToolsMenuConfigurationProvider:
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
 
+  if (self.webStateList->GetActiveWebState())
+    [self updateToolbarForSnapshot:self.webStateList->GetActiveWebState()];
+
   self.viewController.view.superview.frame = newFrame;
   [self.toolbarViewController activateFakeSafeAreaInsets:safeAreaInsets];
   [self.viewController.view.superview layoutIfNeeded];
@@ -349,11 +352,17 @@ initWithToolsMenuConfigurationProvider:
   self.viewController.view.superview.frame = oldFrame;
   [self.toolbarViewController deactivateFakeSafeAreaInsets];
 
+  if (self.webStateList->GetActiveWebState())
+    [self resetToolbarAfterSnapshot];
+
   return toolbarSnapshotView;
 }
 
 - (UIColor*)toolbarBackgroundColor {
-  return self.toolbarViewController.backgroundColor;
+  if (self.webStateList && self.webStateList->GetActiveWebState() &&
+      IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState()))
+    return self.toolbarViewController.backgroundColorNTP;
+  return nil;
 }
 
 #pragma mark - FakeboxFocuser
@@ -400,12 +409,12 @@ initWithToolsMenuConfigurationProvider:
 #pragma mark - SideSwipeToolbarSnapshotProviding
 
 - (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
-  [self updateToolbarForSideSwipeSnapshot:webState];
+  [self updateToolbarForSnapshot:webState];
   UIImage* toolbarSnapshot = CaptureViewWithOption(
       [self.viewController view], [[UIScreen mainScreen] scale],
       kClientSideRendering);
 
-  [self resetToolbarAfterSideSwipeSnapshot];
+  [self resetToolbarAfterSnapshot];
   return toolbarSnapshot;
 }
 
@@ -483,28 +492,29 @@ initWithToolsMenuConfigurationProvider:
 
 // Updates the toolbar so it is in a state where a snapshot for |webState| can
 // be taken.
-- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
+- (void)updateToolbarForSnapshot:(web::WebState*)webState {
   BOOL isNTP = IsVisibleUrlNewTabPage(webState);
 
-  // Don't do anything for a live non-ntp tab.
-  if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
+  self.viewController.view.hidden = NO;
+  // Don't do anything for the current tab if it is not a non-incognito NTP.
+  if (webState == self.webStateList->GetActiveWebState() &&
+      !(isNTP && !self.browserState->IsOffTheRecord())) {
     [self.locationBarCoordinator.view setHidden:NO];
     return;
   }
 
-  self.viewController.view.hidden = NO;
   [self.locationBarCoordinator.view setHidden:YES];
   [self.mediator updateConsumerForWebState:webState];
-  [self.toolbarViewController updateForSideSwipeSnapshotOnNTP:isNTP];
+  [self.toolbarViewController updateForSnapshotOnNTP:isNTP];
 }
 
-// Resets the toolbar after taking a side swipe snapshot. After calling this
-// method the toolbar is adapted to the current webState.
-- (void)resetToolbarAfterSideSwipeSnapshot {
+// Resets the toolbar after taking a snapshot. After calling this method the
+// toolbar is adapted to the current webState.
+- (void)resetToolbarAfterSnapshot {
   [self.mediator
       updateConsumerForWebState:self.webStateList->GetActiveWebState()];
   [self.locationBarCoordinator.view setHidden:NO];
-  [self.toolbarViewController resetAfterSideSwipeSnapshot];
+  [self.toolbarViewController resetAfterSnapshot];
 }
 
 // Animates |_toolbar| and |_locationBarView| for omnibox expansion. If

@@ -236,7 +236,7 @@ const CGFloat kScrollFadeDistance = 30;
   self.expanded = NO;
 }
 
-- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
+- (void)updateForSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
   if (onNTP) {
     self.view.backgroundView.alpha = 1;
@@ -247,7 +247,7 @@ const CGFloat kScrollFadeDistance = 30;
   }
 }
 
-- (void)resetAfterSideSwipeSnapshot {
+- (void)resetAfterSnapshot {
   self.view.backgroundView.alpha = 0;
   self.view.locationBarContainer.hidden = NO;
   self.view.backButton.hiddenInCurrentState = NO;
@@ -331,9 +331,7 @@ const CGFloat kScrollFadeDistance = 30;
   return self.view.toolsMenuButton;
 }
 
-- (UIColor*)backgroundColor {
-  if (self.view.backgroundView.hidden || self.view.backgroundView.alpha == 0)
-    return nil;
+- (UIColor*)backgroundColorNTP {
   return self.view.backgroundView.backgroundColor;
 }
 

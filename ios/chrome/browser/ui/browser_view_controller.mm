@@ -4778,15 +4778,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   id<ToolbarSnapshotProviding> toolbarSnapshotProvider = nil;
-  if (_toolbarCoordinator.viewController.view.hidden) {
-    Tab* currentTab = [_model currentTab];
-    if (currentTab.webState &&
-        UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
-      // Use the native content controller's toolbar when the BVC's is hidden.
-      id nativeController = [self nativeControllerForTab:currentTab];
-      if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-        toolbarSnapshotProvider = [nativeController toolbarSnapshotProvider];
-      }
+  Tab* currentTab = [_model currentTab];
+  if (_toolbarCoordinator.viewController.view.hidden && currentTab.webState &&
+      UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
+    // Use the native content controller's toolbar when the BVC's is hidden.
+    id nativeController = [self nativeControllerForTab:currentTab];
+    if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
+      toolbarSnapshotProvider = [nativeController toolbarSnapshotProvider];
     }
   } else {
     toolbarSnapshotProvider = _toolbarCoordinator;
