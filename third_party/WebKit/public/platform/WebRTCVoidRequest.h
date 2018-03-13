@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "WebRTCError.h"
 #include "WebString.h"
 
 namespace blink {
@@ -56,7 +57,7 @@ class WebRTCVoidRequest {
   bool IsNull() const { return private_.IsNull(); }
 
   BLINK_PLATFORM_EXPORT void RequestSucceeded() const;
-  BLINK_PLATFORM_EXPORT void RequestFailed(const WebString& error) const;
+  BLINK_PLATFORM_EXPORT void RequestFailed(WebRTCError) const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCVoidRequest(RTCVoidRequest*);

@@ -55,7 +55,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
 
   // RTCVoidRequest
   void RequestSucceeded() override;
-  void RequestFailed(const String& error) override;
+  void RequestFailed(const WebRTCError&) override;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

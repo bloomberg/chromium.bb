@@ -51,9 +51,10 @@ void WebRTCVoidRequest::RequestSucceeded() const {
     private_->RequestSucceeded();
 }
 
-void WebRTCVoidRequest::RequestFailed(const WebString& error) const {
-  if (private_.Get())
+void WebRTCVoidRequest::RequestFailed(WebRTCError error) const {
+  if (private_.Get()) {
     private_->RequestFailed(error);
+  }
 }
 
 }  // namespace blink

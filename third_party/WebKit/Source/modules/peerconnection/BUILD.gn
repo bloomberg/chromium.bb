@@ -16,6 +16,8 @@ blink_modules_sources("peerconnection") {
     "RTCDataChannel.h",
     "RTCDataChannelEvent.cpp",
     "RTCDataChannelEvent.h",
+    "RTCErrorUtil.cpp",
+    "RTCErrorUtil.h",
     "RTCIceCandidate.cpp",
     "RTCIceCandidate.h",
     "RTCLegacyStatsReport.cpp",

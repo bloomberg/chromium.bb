@@ -10,6 +10,7 @@
 // WebRTCPeerConnectionHandler implementation.
 
 #include "WebCommon.h"
+#include "WebString.h"
 
 namespace blink {
 
@@ -23,18 +24,23 @@ enum class WebRTCErrorType {
   kInvalidModification,
   kNetworkError,
   kInternalError,
+  kOperationError,
 };
 
 class WebRTCError {
  public:
   WebRTCError() : type_(WebRTCErrorType::kNone) {}
   explicit WebRTCError(WebRTCErrorType type) : type_(type) {}
+  WebRTCError(WebRTCErrorType type, WebString message)
+      : type_(type), message_(message) {}
 
   WebRTCErrorType GetType() const { return type_; }
   void SetType(WebRTCErrorType type) { type_ = type; }
+  WebString message() const { return message_; }
 
  private:
   WebRTCErrorType type_;
+  WebString message_;
 };
 
 }  // namespace blink

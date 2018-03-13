@@ -21,7 +21,8 @@ void OnReplaceTrackCompleted(blink::WebRTCVoidRequest request, bool result) {
   if (result)
     request.RequestSucceeded();
   else
-    request.RequestFailed(blink::WebString());
+    request.RequestFailed(blink::WebRTCError(
+        blink::WebRTCErrorType::kInvalidModification, blink::WebString()));
 }
 
 }  // namespace
