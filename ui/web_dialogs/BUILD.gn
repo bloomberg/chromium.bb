@@ -24,6 +24,7 @@ jumbo_component("web_dialogs") {
     "//content/public/common",
     "//skia",
     "//ui/base",
+    "//ui/webui",
     "//url",
   ]
 
