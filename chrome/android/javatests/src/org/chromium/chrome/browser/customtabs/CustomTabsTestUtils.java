@@ -8,9 +8,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Process;
+import android.support.customtabs.CustomTabsCallback;
+import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
+import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
 
@@ -19,6 +24,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Utility class that contains convenience calls related with custom tabs testing.
@@ -49,31 +55,45 @@ public class CustomTabsTestUtils {
     }
 
     public static void cleanupSessions(final CustomTabsConnection connection) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                connection.cleanupAll();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(connection::cleanupAll);
+    }
+
+    public static CustomTabsSession bindWithCallback(final CustomTabsCallback callback)
+            throws InterruptedException, TimeoutException {
+        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>(null);
+        final CallbackHelper waitForConnection = new CallbackHelper();
+        CustomTabsClient.bindCustomTabsService(InstrumentationRegistry.getContext(),
+                InstrumentationRegistry.getTargetContext().getPackageName(),
+                new CustomTabsServiceConnection() {
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {}
+
+                    @Override
+                    public void onCustomTabsServiceConnected(
+                            ComponentName name, CustomTabsClient client) {
+                        sessionReference.set(client.newSession(callback));
+                        waitForConnection.notifyCalled();
+                    }
+                });
+        waitForConnection.waitForCallback(0);
+        return sessionReference.get();
     }
 
     /** Calls warmup() and waits for all the tasks to complete. Fails the test otherwise. */
     public static CustomTabsConnection warmUpAndWait()
             throws InterruptedException, TimeoutException {
         CustomTabsConnection connection = setUpConnection();
-        try {
-            final CallbackHelper startupCallbackHelper = new CallbackHelper();
-            connection.setWarmupCompletedCallbackForTesting(new Runnable() {
-                @Override
-                public void run() {
+        final CallbackHelper startupCallbackHelper = new CallbackHelper();
+        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void extraCallback(String callbackName, Bundle args) {
+                if (callbackName.equals(CustomTabsConnection.ON_WARMUP_COMPLETED)) {
                     startupCallbackHelper.notifyCalled();
                 }
-            });
-            Assert.assertTrue(connection.warmup(0));
-            startupCallbackHelper.waitForCallback(0);
-        } finally {
-            connection.setWarmupCompletedCallbackForTesting(null);
-        }
+            }
+        });
+        Assert.assertTrue(connection.warmup(0));
+        startupCallbackHelper.waitForCallback(0);
         return connection;
     }
 }

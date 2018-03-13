@@ -35,10 +35,8 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.DrawableRes;
 import android.support.customtabs.CustomTabsCallback;
-import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
@@ -709,10 +707,10 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testOpenInBrowser() throws InterruptedException, TimeoutException {
+    public void testOpenInBrowser() throws Exception {
         // Augment the CustomTabsSession to catch the callback.
         CallbackHelper callbackTriggered = new CallbackHelper();
-        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
             @Override
             public void extraCallback(String callbackName, Bundle args) {
                 if (callbackName.equals(CustomTabsConnection.OPEN_IN_BROWSER_CALLBACK)) {
@@ -1031,7 +1029,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    public void testRemoteViews() throws InterruptedException {
+    public void testRemoteViews() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
 
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
@@ -1058,7 +1056,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testLaunchWithSession() throws InterruptedException, TimeoutException {
+    public void testLaunchWithSession() throws Exception {
         CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession();
         Assert.assertEquals(getActivity().getIntentDataProvider().getSession(), session);
     }
@@ -1066,7 +1064,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testLoadNewUrlWithSession() throws InterruptedException, TimeoutException {
+    public void testLoadNewUrlWithSession() throws Exception {
         final Context context = InstrumentationRegistry.getTargetContext();
         final Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
         CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
@@ -1100,7 +1098,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testCreateNewTab() throws InterruptedException, TimeoutException {
+    public void testCreateNewTab() throws Exception {
         final String testUrl = mTestServer.getURL(
                 "/chrome/test/data/android/customtabs/test_window_open.html");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
@@ -1130,7 +1128,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testReferrerAddedAutomatically() throws InterruptedException, TimeoutException {
+    public void testReferrerAddedAutomatically() throws Exception {
         final Context context = InstrumentationRegistry.getInstrumentation()
                                         .getTargetContext()
                                         .getApplicationContext();
@@ -1165,7 +1163,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testVerifiedReferrer() throws InterruptedException, TimeoutException {
+    public void testVerifiedReferrer() throws Exception {
         final Context context = InstrumentationRegistry.getInstrumentation()
                                         .getTargetContext()
                                         .getApplicationContext();
@@ -1207,10 +1205,10 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    public void testCallbacksAreSent() throws InterruptedException {
+    public void testCallbacksAreSent() throws Exception {
         final Semaphore navigationStartSemaphore = new Semaphore(0);
         final Semaphore navigationFinishedSemaphore = new Semaphore(0);
-        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onNavigationEvent(int navigationEvent, Bundle extras) {
                 Assert.assertNotEquals(CustomTabsCallback.NAVIGATION_FAILED, navigationEvent);
@@ -1241,7 +1239,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPageLoadMetricIsSent() throws InterruptedException {
+    public void testPageLoadMetricIsSent() throws Exception {
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
         final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
@@ -1280,7 +1278,7 @@ public class CustomTabActivityTest {
             }
         };
 
-        CustomTabsSession session = bindWithCallback(cb);
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(cb);
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(mTestPage));
         intent.setComponent(new ComponentName(
@@ -1322,14 +1320,14 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    public void testNavigationHistogramsRecorded() throws InterruptedException {
+    public void testNavigationHistogramsRecorded() throws Exception {
         String startHistogramPrefix = "CustomTabs.IntentToFirstNavigationStartTime";
         String commitHistogramPrefix = "CustomTabs.IntentToFirstCommitNavigationTime3";
         assertSuffixedHistogramTotalCount(0, startHistogramPrefix);
         assertSuffixedHistogramTotalCount(0, commitHistogramPrefix);
 
         final Semaphore semaphore = new Semaphore(0);
-        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onNavigationEvent(int navigationEvent, Bundle extras) {
                 if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) semaphore.release();
@@ -1376,15 +1374,14 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    public void testToolbarTitleOnlyStateWithDelayedTitle()
-            throws TimeoutException, InterruptedException {
+    public void testToolbarTitleOnlyStateWithDelayedTitle() throws Exception {
         final String url = mWebServer.setResponse("/test.html", DELAYED_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(
                 url, CustomTabsConnection.SpeculationParams.NO_SPECULATION, "nytimes.com");
     }
 
-    private void hideDomainAndEnsureTitleIsSet(final String url, int speculation,
-            final String expectedTitle) throws InterruptedException, TimeoutException {
+    private void hideDomainAndEnsureTitleIsSet(
+            final String url, int speculation, final String expectedTitle) throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
@@ -1428,7 +1425,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageBasic() throws InterruptedException, TimeoutException {
+    public void testPostMessageBasic() throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -1468,8 +1465,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageWebContentsDestroyed()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageWebContentsDestroyed() throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -1514,7 +1510,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageRequiresValidation() throws InterruptedException, TimeoutException {
+    public void testPostMessageRequiresValidation() throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -1539,7 +1535,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageReceivedInPage() throws InterruptedException, TimeoutException {
+    public void testPostMessageReceivedInPage() throws Exception {
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
@@ -1574,22 +1570,23 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageReceivedFromPage() throws InterruptedException, TimeoutException {
+    public void testPostMessageReceivedFromPage() throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
         CustomTabsTestUtils.warmUpAndWait();
-        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
-            @Override
-            public void onMessageChannelReady(Bundle extras) {
-                messageChannelHelper.notifyCalled();
-            }
+        final CustomTabsSession session =
+                CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
+                    @Override
+                    public void onMessageChannelReady(Bundle extras) {
+                        messageChannelHelper.notifyCalled();
+                    }
 
-            @Override
-            public void onPostMessage(String message, Bundle extras) {
-                onPostMessageHelper.notifyCalled();
-            }
-        });
+                    @Override
+                    public void onPostMessage(String message, Bundle extras) {
+                        onPostMessageHelper.notifyCalled();
+                    }
+                });
         session.requestPostMessageChannel(null);
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -1612,23 +1609,23 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPostMessageReceivedFromPageWithLateRequest()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageReceivedFromPageWithLateRequest() throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
         CustomTabsTestUtils.warmUpAndWait();
-        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
-            @Override
-            public void onMessageChannelReady(Bundle extras) {
-                messageChannelHelper.notifyCalled();
-            }
+        final CustomTabsSession session =
+                CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
+                    @Override
+                    public void onMessageChannelReady(Bundle extras) {
+                        messageChannelHelper.notifyCalled();
+                    }
 
-            @Override
-            public void onPostMessage(String message, Bundle extras) {
-                onPostMessageHelper.notifyCalled();
-            }
-        });
+                    @Override
+                    public void onPostMessage(String message, Bundle extras) {
+                        onPostMessageHelper.notifyCalled();
+                    }
+                });
 
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -1665,8 +1662,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPostMessageThroughPrerenderWithRequestBeforeMayLaunchUrl()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughPrerenderWithRequestBeforeMayLaunchUrl() throws Exception {
         sendPostMessageDuringPrerenderTransition(BEFORE_MAY_LAUNCH_URL);
     }
 
@@ -1678,8 +1674,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPostMessageThroughPrerenderWithRequestBeforeIntent()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughPrerenderWithRequestBeforeIntent() throws Exception {
         sendPostMessageDuringPrerenderTransition(BEFORE_INTENT);
     }
 
@@ -1691,13 +1686,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPostMessageThroughPrerenderWithRequestAfterIntent()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughPrerenderWithRequestAfterIntent() throws Exception {
         sendPostMessageDuringPrerenderTransition(AFTER_INTENT);
     }
 
-    private void sendPostMessageDuringPrerenderTransition(int requestTime)
-            throws InterruptedException, TimeoutException {
+    private void sendPostMessageDuringPrerenderTransition(int requestTime) throws Exception {
         sendPostMessageDuringSpeculationTransition(
                 requestTime, CustomTabsConnection.SpeculationParams.PRERENDER);
     }
@@ -1711,8 +1704,7 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
-    public void testPostMessageThroughHiddenTabWithRequestBeforeMayLaunchUrl()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughHiddenTabWithRequestBeforeMayLaunchUrl() throws Exception {
         sendPostMessageDuringHiddenTabTransition(BEFORE_MAY_LAUNCH_URL);
     }
 
@@ -1725,8 +1717,7 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
-    public void testPostMessageThroughHiddenTabWithRequestBeforeIntent()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughHiddenTabWithRequestBeforeIntent() throws Exception {
         sendPostMessageDuringHiddenTabTransition(BEFORE_INTENT);
     }
 
@@ -1739,31 +1730,30 @@ public class CustomTabActivityTest {
     @RetryOnFailure
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
-    public void testPostMessageThroughHiddenTabWithRequestAfterIntent()
-            throws InterruptedException, TimeoutException {
+    public void testPostMessageThroughHiddenTabWithRequestAfterIntent() throws Exception {
         sendPostMessageDuringHiddenTabTransition(AFTER_INTENT);
     }
 
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
-    private void sendPostMessageDuringHiddenTabTransition(int requestTime)
-            throws InterruptedException, TimeoutException {
+    private void sendPostMessageDuringHiddenTabTransition(int requestTime) throws Exception {
         sendPostMessageDuringSpeculationTransition(
                 requestTime, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
 
     private void sendPostMessageDuringSpeculationTransition(int requestTime, int speculationMode)
-            throws InterruptedException, TimeoutException {
+            throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
 
-        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
-            @Override
-            public void onMessageChannelReady(Bundle extras) {
-                messageChannelHelper.notifyCalled();
-            }
-        });
+        final CustomTabsSession session =
+                CustomTabsTestUtils.bindWithCallback(new CustomTabsCallback() {
+                    @Override
+                    public void onMessageChannelReady(Bundle extras) {
+                        messageChannelHelper.notifyCalled();
+                    }
+                });
 
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -1914,7 +1904,7 @@ public class CustomTabActivityTest {
     @DisabledTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-    public void testWarmupAndLaunchRegularChrome() throws InterruptedException, TimeoutException {
+    public void testWarmupAndLaunchRegularChrome() throws Exception {
         CustomTabsTestUtils.warmUpAndWait();
         Intent intent = new Intent(
                 InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class);
@@ -1942,8 +1932,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-    public void testWarmupAndLaunchRightToolbarLayout()
-            throws InterruptedException, TimeoutException {
+    public void testWarmupAndLaunchRightToolbarLayout() throws Exception {
         CustomTabsTestUtils.warmUpAndWait();
         mCustomTabActivityTestRule.startActivityCompletely(createMinimalCustomTabIntent());
         Assert.assertNull("Should not have a tab switcher button.",
@@ -2683,7 +2672,7 @@ public class CustomTabActivityTest {
     }
 
     private void verifyHistoryAfterSpeculation(int speculationMode, boolean speculationWasAHit)
-            throws InterruptedException, TimeoutException {
+            throws Exception {
         String speculationUrl = mTestPage;
         String navigationUrl = speculationWasAHit ? mTestPage : mTestPage2;
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
@@ -2778,7 +2767,7 @@ public class CustomTabActivityTest {
     }
 
     private CustomTabsSessionToken warmUpAndLaunchUrlWithSession(Intent intentWithSession)
-            throws InterruptedException, TimeoutException {
+            throws Exception {
         CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         CustomTabsSessionToken token =
                 CustomTabsSessionToken.getSessionTokenFromIntent(intentWithSession);
@@ -2788,8 +2777,7 @@ public class CustomTabActivityTest {
         return token;
     }
 
-    private CustomTabsSessionToken warmUpAndLaunchUrlWithSession()
-            throws InterruptedException, TimeoutException {
+    private CustomTabsSessionToken warmUpAndLaunchUrlWithSession() throws Exception {
         return warmUpAndLaunchUrlWithSession(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), mTestPage));
     }
@@ -2817,29 +2805,6 @@ public class CustomTabActivityTest {
             }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
             ChromeTabUtils.waitForTabPageLoaded(connection.mSpeculation.tab, url);
         }
-    }
-
-    private CustomTabsSession bindWithCallback(final CustomTabsCallback callback) {
-        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>(null);
-        CustomTabsClient.bindCustomTabsService(InstrumentationRegistry.getContext(),
-                InstrumentationRegistry.getTargetContext().getPackageName(),
-                new CustomTabsServiceConnection() {
-                    @Override
-                    public void onServiceDisconnected(ComponentName name) {}
-
-                    @Override
-                    public void onCustomTabsServiceConnected(
-                            ComponentName name, CustomTabsClient client) {
-                        sessionReference.set(client.newSession(callback));
-                    }
-                });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return sessionReference.get() != null;
-            }
-        });
-        return sessionReference.get();
     }
 
     /**
