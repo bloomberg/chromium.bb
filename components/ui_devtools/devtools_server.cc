@@ -28,20 +28,20 @@ namespace {
 const char kChromeDeveloperToolsPrefix[] =
     "chrome-devtools://devtools/bundled/inspector.html?ws=";
 
-bool IsUiDevToolsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableUiDevTools);
+bool IsDevToolsEnabled(const char* enable_devtools_flag) {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      enable_devtools_flag);
 }
 
-int GetUiDevToolsPort() {
-  DCHECK(IsUiDevToolsEnabled());
+int GetUiDevToolsPort(const char* enable_devtools_flag, int default_port) {
+  DCHECK(IsDevToolsEnabled(enable_devtools_flag));
   // This value is duplicated in the chrome://flags description.
-  constexpr int kDefaultPort = 9223;
   int port;
   if (!base::StringToInt(
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              kEnableUiDevTools),
+              enable_devtools_flag),
           &port))
-    port = kDefaultPort;
+    port = default_port;
   return port;
 }
 
@@ -71,8 +71,11 @@ constexpr net::NetworkTrafficAnnotationTag kUIDevtoolsServer =
 UiDevToolsServer* UiDevToolsServer::devtools_server_ = nullptr;
 
 UiDevToolsServer::UiDevToolsServer(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-    : io_thread_task_runner_(io_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    const char* enable_devtools_flag,
+    int default_port)
+    : io_thread_task_runner_(io_thread_task_runner),
+      port_(GetUiDevToolsPort(enable_devtools_flag, default_port)) {
   DCHECK(!devtools_server_);
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   devtools_server_ = this;
@@ -96,12 +99,15 @@ UiDevToolsServer::~UiDevToolsServer() {
 
 // static
 std::unique_ptr<UiDevToolsServer> UiDevToolsServer::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    const char* enable_devtools_flag,
+    int default_port) {
   std::unique_ptr<UiDevToolsServer> server;
-  if (IsUiDevToolsEnabled() && !devtools_server_) {
+  if (IsDevToolsEnabled(enable_devtools_flag) && !devtools_server_) {
     // TODO(mhashmi): Change port if more than one inspectable clients
-    server.reset(new UiDevToolsServer(io_thread_task_runner));
-    server->Start("0.0.0.0", GetUiDevToolsPort());
+    server.reset(new UiDevToolsServer(io_thread_task_runner,
+                                      enable_devtools_flag, default_port));
+    server->Start("0.0.0.0");
   }
   return server;
 }
@@ -118,7 +124,7 @@ UiDevToolsServer::GetClientNamesAndUrls() {
     pairs.push_back(std::pair<std::string, std::string>(
         devtools_server_->clients_[i]->name(),
         base::StringPrintf("%s0.0.0.0:%d/%" PRIuS, kChromeDeveloperToolsPrefix,
-                           GetUiDevToolsPort(), i)));
+                           devtools_server_->port(), i)));
   }
   return pairs;
 }
@@ -135,19 +141,18 @@ void UiDevToolsServer::SendOverWebSocket(int connection_id,
                             message, kUIDevtoolsServer));
 }
 
-void UiDevToolsServer::Start(const std::string& address_string, uint16_t port) {
+void UiDevToolsServer::Start(const std::string& address_string) {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UiDevToolsServer::StartServer,
-                            base::Unretained(this), address_string, port));
+                            base::Unretained(this), address_string));
 }
 
-void UiDevToolsServer::StartServer(const std::string& address_string,
-                                   uint16_t port) {
+void UiDevToolsServer::StartServer(const std::string& address_string) {
   DCHECK(!server_);
   std::unique_ptr<net::ServerSocket> socket(
       new net::TCPServerSocket(nullptr, net::NetLogSource()));
   constexpr int kBacklog = 1;
-  if (socket->ListenWithAddressAndPort(address_string, port, kBacklog) !=
+  if (socket->ListenWithAddressAndPort(address_string, port_, kBacklog) !=
       net::OK)
     return;
   server_ = std::make_unique<net::HttpServer>(std::move(socket), this);

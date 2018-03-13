@@ -20,6 +20,10 @@ const char kDeadlineToSynchronizeSurfaces[] =
 // by the parent compositor.
 const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 
+// Enables inspecting Viz Display Compositor objects. Default port is 9229.
+// For local inspection use chrome://inspect#other
+const char kEnableVizDevTools[] = "enable-viz-devtools";
+
 // Effectively disables pipelining of compositor frame production stages by
 // waiting for each stage to finish before completing a frame.
 const char kRunAllCompositorStagesBeforeDraw[] =
