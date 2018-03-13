@@ -558,10 +558,6 @@ void DocumentWebSocketChannel::HandleDidClose(bool was_clean,
   // client->DidClose may delete this object.
 }
 
-ThreadableLoadingContext* DocumentWebSocketChannel::LoadingContext() {
-  return loading_context_;
-}
-
 Document* DocumentWebSocketChannel::GetDocument() {
   ExecutionContext* context = loading_context_->GetExecutionContext();
   if (context->IsDocument())
