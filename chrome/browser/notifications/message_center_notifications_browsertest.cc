@@ -191,36 +191,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
-  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
-      KeepAliveOrigin::NOTIFICATION));
-
-  TestDelegate* delegate;
-  manager()->Add(CreateTestNotification("a", &delegate), profile());
-  RunLoopUntilIdle();
-  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
-      KeepAliveOrigin::NOTIFICATION));
-
-  TestDelegate* delegate2;
-  manager()->Add(CreateRichTestNotification("b", &delegate2), profile());
-  RunLoopUntilIdle();
-  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
-      KeepAliveOrigin::NOTIFICATION));
-
-  manager()->CancelById("a", NotificationUIManager::GetProfileID(profile()));
-  RunLoopUntilIdle();
-  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
-      KeepAliveOrigin::NOTIFICATION));
-
-  manager()->CancelById("b", NotificationUIManager::GetProfileID(profile()));
-  RunLoopUntilIdle();
-  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
-      KeepAliveOrigin::NOTIFICATION));
-
-  delegate->Release();
-  delegate2->Release();
-}
-
 // Notification center is only used on ChromeOS.
 #if defined(OS_CHROMEOS)
 
@@ -337,4 +307,37 @@ IN_PROC_BROWSER_TEST_F(
   delegate->Release();
 }
 
-#endif  // defined(OS_CHROMEOS)
+#else  // !defined(OS_CHROMEOS)
+
+// ScopedKeepAlives are not used on Chrome OS notifications.
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  TestDelegate* delegate;
+  manager()->Add(CreateTestNotification("a", &delegate), profile());
+  RunLoopUntilIdle();
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  TestDelegate* delegate2;
+  manager()->Add(CreateRichTestNotification("b", &delegate2), profile());
+  RunLoopUntilIdle();
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  manager()->CancelById("a", NotificationUIManager::GetProfileID(profile()));
+  RunLoopUntilIdle();
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  manager()->CancelById("b", NotificationUIManager::GetProfileID(profile()));
+  RunLoopUntilIdle();
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  delegate->Release();
+  delegate2->Release();
+}
+
+#endif  // !defined(OS_CHROMEOS)

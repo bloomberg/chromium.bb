@@ -53,7 +53,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
-#include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
@@ -133,10 +132,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   if (config_ == Config::CLASSIC) {
     // All of this initialization is done in WindowManagerService for mash.
-
-    // Creates MessageCenter since g_browser_process is not created in
-    // AshTestBase tests.
-    message_center::MessageCenter::Initialize();
 
     if (!chromeos::DBusThreadManager::IsInitialized()) {
       chromeos::DBusThreadManager::Initialize(
@@ -225,9 +220,6 @@ void AshTestHelper::TearDown() {
   ash_test_environment_->TearDown();
 
   if (config_ == Config::CLASSIC) {
-    // Remove global message center state.
-    message_center::MessageCenter::Shutdown();
-
     chromeos::SystemSaltGetter::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
   }

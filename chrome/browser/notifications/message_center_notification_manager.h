@@ -17,7 +17,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/notifications/notification_system_observer.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -43,8 +42,7 @@ class MessageCenterNotificationManager
     : public NotificationUIManager,
       public message_center::MessageCenterObserver {
  public:
-  explicit MessageCenterNotificationManager(
-      message_center::MessageCenter* message_center);
+  MessageCenterNotificationManager();
   ~MessageCenterNotificationManager() override;
 
   // NotificationUIManager
@@ -80,7 +78,6 @@ class MessageCenterNotificationManager
                            ManuallyCloseMessageCenter);
 
   std::unique_ptr<message_center::UiDelegate> tray_;
-  message_center::MessageCenter* message_center_;  // Weak, global.
 
   // Use a map by notification_id since this mapping is the most often used.
   std::map<std::string, std::unique_ptr<ProfileNotification>>

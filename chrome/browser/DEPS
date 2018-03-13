@@ -89,6 +89,10 @@ include_rules = [
   "+ash/public",
   "+ash/components/quick_launch/public/mojom",
 
+  # The message center may not exist, or may run out of process (in mash).
+  "-ui/message_center",
+  "+ui/message_center/public",
+
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
   # is needed these files need to move to base/
@@ -206,5 +210,10 @@ specific_include_rules = {
   ],
   "display_info_provider_chromeos_unittest.cc": [
     "+ui/events/devices/touch_device_transform.h"
-  ]
+  ],
+  # TODO(estade): the message center is initialized and shut down here, but it
+  # should be the responsibility of code in chrome/browser/notifications/
+  "browser_process_impl.cc": [
+    "+ui/message_center/message_center.h",
+  ],
 }

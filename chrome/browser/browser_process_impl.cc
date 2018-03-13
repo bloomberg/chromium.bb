@@ -143,7 +143,13 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
+#else  // !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
@@ -178,10 +184,6 @@
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/ui/user_manager.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -264,9 +266,16 @@ void BrowserProcessImpl::Init() {
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 
-  // TODO(estade): don't initialize the MessageCenter until we know it's needed
-  // (i.e. because a NotificationPlatformBridgeMessageCenter has been created).
-  message_center::MessageCenter::Initialize();
+  bool initialize_message_center = true;
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the message center is initialized and shut down by Ash and
+  // should not be directly accessible to Chrome. However, ARC++ still relies
+  // on the existence of a MessageCenter object, so in Mash, initialize one
+  // here.
+  initialize_message_center = ash_util::IsRunningInMash();
+#endif
+  if (initialize_message_center)
+    message_center::MessageCenter::Initialize();
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
@@ -376,7 +385,8 @@ void BrowserProcessImpl::StartTearDown() {
   storage_monitor::StorageMonitor::Destroy();
 #endif
 
-  message_center::MessageCenter::Shutdown();
+  if (message_center::MessageCenter::Get())
+    message_center::MessageCenter::Shutdown();
 
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive. The monitoring

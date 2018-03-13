@@ -14,9 +14,8 @@
 NotificationUIManager* NotificationUIManager::Create() {
   // If there's no MessageCenter, there should be no NotificationUIManager to
   // manage it.
-  auto* message_center = message_center::MessageCenter::Get();
-  if (!message_center)
+  if (!message_center::MessageCenter::Get())
     return nullptr;
 
-  return new MessageCenterNotificationManager(message_center);
+  return new MessageCenterNotificationManager();
 }

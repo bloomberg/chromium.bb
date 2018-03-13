@@ -12,12 +12,4 @@ NotificationDisplayService* NotificationDisplayService::GetForProfile(
   return NotificationDisplayServiceFactory::GetForProfile(profile);
 }
 
-#if !defined(OS_CHROMEOS)
-// static
-NotificationDisplayService*
-NotificationDisplayService::GetForSystemNotifications() {
-  return nullptr;
-}
-#endif
-
 NotificationDisplayService::~NotificationDisplayService() = default;

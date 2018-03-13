@@ -227,10 +227,12 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
 }
 
 // static
-void RegisterVectorIcon(const gfx::VectorIcon& vector_icon) {
-  g_vector_icon_registry.Get().insert(
-      std::pair<std::string, const gfx::VectorIcon&>(vector_icon.name,
-                                                     vector_icon));
+void RegisterVectorIcons(
+    const std::vector<const gfx::VectorIcon*>& vector_icons) {
+  for (const gfx::VectorIcon* icon : vector_icons) {
+    g_vector_icon_registry.Get().insert(
+        std::pair<std::string, const gfx::VectorIcon&>(icon->name, *icon));
+  }
 }
 
 // static

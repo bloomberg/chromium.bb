@@ -22,7 +22,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display_switches.h"
-#include "ui/message_center/message_center.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace {
@@ -50,9 +49,6 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
 ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private) {
-  // Ash Shell can't just live on its own without a browser process, we need to
-  // also create the message center.
-  message_center::MessageCenter::Initialize();
   chromeos::DBusThreadManager::Initialize();
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
@@ -83,9 +79,6 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   chromeos::CrasAudioHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
-  // Ash Shell can't just live on its own without a browser process, we need to
-  // also shut down the message center.
-  message_center::MessageCenter::Shutdown();
 }
 
 }  // namespace
