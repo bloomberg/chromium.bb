@@ -95,18 +95,7 @@ const Extension* CastExtensionSystem::LoadExtensionByManifest(
     return nullptr;
   }
 
-  ExtensionRegistry::Get(browser_context_)->AddEnabled(extension.get());
-
-  RegisterExtensionWithRequestContexts(
-      extension.get(),
-      base::BindRepeating(
-          &CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
-          weak_factory_.GetWeakPtr(), extension));
-
-  RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
-      ->OnExtensionLoaded(*extension);
-
-  ExtensionRegistry::Get(browser_context_)->TriggerOnLoaded(extension.get());
+  extension_registrar_->AddExtension(extension);
 
   return extension.get();
 }
@@ -135,25 +124,7 @@ const Extension* CastExtensionSystem::LoadExtension(
       LOG(WARNING) << warning.message;
   }
 
-  // TODO(b/70902491): We may want to do some of these things here:
-  // * Create a PermissionsUpdater.
-  // * Call PermissionsUpdater::GrantActivePermissions().
-  // * Call ExtensionService::SatisfyImports().
-  // * Call ExtensionPrefs::OnExtensionInstalled().
-  // * Call ExtensionRegistryObserver::OnExtensionWillbeInstalled().
-
-  ExtensionRegistry::Get(browser_context_)->AddEnabled(extension.get());
-
-  RegisterExtensionWithRequestContexts(
-      extension.get(),
-      base::BindRepeating(
-          &CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
-          weak_factory_.GetWeakPtr(), extension));
-
-  RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
-      ->OnExtensionLoaded(*extension);
-
-  ExtensionRegistry::Get(browser_context_)->TriggerOnLoaded(extension.get());
+  extension_registrar_->AddExtension(extension);
 
   return extension.get();
 }
@@ -197,6 +168,9 @@ void CastExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 
   shared_user_script_master_ =
       std::make_unique<SharedUserScriptMaster>(browser_context_);
+
+  extension_registrar_ =
+      std::make_unique<ExtensionRegistrar>(browser_context_, this);
 }
 
 void CastExtensionSystem::InitForIncognitoProfile() {
@@ -296,6 +270,32 @@ void CastExtensionSystem::OnExtensionRegisteredWithRequestContexts(
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   registry->AddReady(extension);
   registry->TriggerOnReady(extension.get());
+}
+
+void CastExtensionSystem::PreAddExtension(const Extension* extension,
+                                          const Extension* old_extension) {}
+
+void CastExtensionSystem::PostActivateExtension(
+    scoped_refptr<const Extension> extension) {}
+
+void CastExtensionSystem::PostDeactivateExtension(
+    scoped_refptr<const Extension> extension) {}
+
+void CastExtensionSystem::LoadExtensionForReload(
+    const ExtensionId& extension_id,
+    const base::FilePath& path,
+    ExtensionRegistrar::LoadErrorBehavior load_error_behavior) {}
+
+bool CastExtensionSystem::CanEnableExtension(const Extension* extension) {
+  return true;
+}
+
+bool CastExtensionSystem::CanDisableExtension(const Extension* extension) {
+  return true;
+}
+
+bool CastExtensionSystem::ShouldBlockExtension(const Extension* extension) {
+  return false;
 }
 
 }  // namespace extensions
