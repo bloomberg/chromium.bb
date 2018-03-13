@@ -123,7 +123,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/features.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -3983,9 +3982,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
 // Test that when password protection warning trigger is set by policy, chrome
 // password protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTrigger) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -4023,9 +4019,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTrigger) {
 // Test that when password protection risk trigger is set by policy, chrome
 // password protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTrigger) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -4063,9 +4056,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTrigger) {
 // Test that when safe browsing whitelist domains are set by policy, safe
 // browsing service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetSafeBrowsingDomainsPref(..) should return empty list.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -4111,9 +4101,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
 // Test that when password protection login URLs are set by policy, password
 // protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetPasswordProtectionLoginURLsPref(..) should return empty list.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -4157,9 +4144,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
 // Test that when password protection change password URL is set by policy,
 // password protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetChangePasswordURL(..) should return default GAIA change password URL.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
