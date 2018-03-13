@@ -14,6 +14,10 @@
 
 namespace device {
 
+namespace test {
+class FakeU2fDevice;
+}
+
 // APDU commands are defined as part of ISO 7816-4. Commands can be serialized
 // into either short length encodings, where the maximum data length is 256
 // bytes, or an extended length encoding, where the maximum data length is 65536
@@ -72,6 +76,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduCommand {
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateRegister);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateVersion);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestCreateLegacyVersion);
+
+  // Built-in software key for testing.
+  friend class test::FakeU2fDevice;
 
   static constexpr size_t kApduMinHeader = 4;
   static constexpr size_t kApduMaxHeader = 7;
