@@ -1574,30 +1574,4 @@ public class BottomSheet
     public @Nullable TextBubble getHelpBubbleForTests() {
         return getIphBubbleController().getHelpBubbleForTests();
     }
-
-    // ---------------------------------------------------------------------------------------------
-    // TODO(mdjones): Remove the methods below once bottom-toolbar Chrome Home is no longer
-    //                supported.
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * @return Whether or not the bottom sheet's toolbar is using the expand button.
-     */
-    public boolean isUsingExpandButton() {
-        return false;
-    }
-
-    /**
-     * Defocus the omnibox.
-     */
-    public void defocusOmnibox() {
-        throw new RuntimeException("This functionality is not supported in the base sheet.");
-    }
-
-    /**
-     * Set the color of the pull handle used by the toolbar.
-     */
-    public void updateHandleTint() {
-        throw new RuntimeException("This functionality is not supported in the base sheet.");
-    }
 }
