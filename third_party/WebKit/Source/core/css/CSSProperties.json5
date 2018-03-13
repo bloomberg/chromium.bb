@@ -213,10 +213,8 @@
     },
 
     // Flags which go into CSSOMTypes:
-    // - typedom_types: ["Type", "OtherType"]
+    // - typedom_types: ["Keyword", "Type", "OtherType"]
     // The property can take types specified in typedom_types for CSS Typed OM.
-    // Keyword does not need to be specified as every property can take
-    // keywords.
     // - separator
     // The property supports a list of values, and when there is more than one,
     // it is separated with this character.
@@ -227,6 +225,7 @@
         "Angle",
         "Flex",
         "Frequency",
+        "Keyword",
         "Length",
         "Number",
         "Percentage",
@@ -361,6 +360,7 @@
       name: "animation-direction",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
+      typedom_types: ["Keyword"],
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
@@ -368,7 +368,6 @@
     {
       name: "animation-duration",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      typedom_types: ["Time"],
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
@@ -414,7 +413,7 @@
     {
       name: "transition-duration",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      typedom_types: ["Time"],
+      typedom_types: ["Keyword", "Time"],
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
@@ -448,7 +447,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
       priority: "High",
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "direction",
@@ -458,6 +458,7 @@
       field_template: "keyword",
       include_paths: ["platform/text/TextDirection.h"],
       keywords: ["ltr", "rtl"],
+      typedom_types: ["Keyword"],
       default_value: "ltr",
       type_name: "TextDirection",
       custom_apply_functions_value: true,
@@ -524,7 +525,8 @@
       name_for_methods: "Style",
       converter: "ConvertFontStyle",
       priority: "High",
-      keywords: ["normal", "italic", "oblique"]
+      keywords: ["normal", "italic", "oblique"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-variant-ligatures",
@@ -574,7 +576,7 @@
       converter: "ConvertFontWeight",
       priority: "High",
       keywords: ["normal", "bold", "bolder", "lighter"],
-      typedom_types: ["Number"]
+      typedom_types: ["Keyword", "Number"]
     },
     {
       name: "font-feature-settings",
@@ -728,6 +730,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["visible", "hidden"],
+      typedom_types: ["Keyword"],
       default_value: "visible",
     },
     {
@@ -756,14 +759,15 @@
       type_name: "StyleColor",
       computed_style_custom_functions: ["getter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "background-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       keywords: ["auto", "none"],
-      typedom_types: ["Image"],
+      typedom_types: ["Keyword", "Image"],
       separator: " ",
       custom_apply_functions_all: true,
     },
@@ -817,7 +821,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "border-bottom-left-radius",
@@ -850,6 +855,7 @@
         "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
         "dashed", "solid", "double"
       ],
+      typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
     },
@@ -862,7 +868,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
-      typedom_types: ["Length"],
+      typedom_types: ["Keyword", "Length"],
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
@@ -874,6 +880,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["separate", "collapse"],
+      typedom_types: ["Keyword"],
       default_value: "separate",
     },
     {
@@ -898,7 +905,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       keywords: ["none"],
-      typedom_types: ["Image"],
+      typedom_types: ["Keyword", "Image"],
       custom_apply_functions_value: true,
     },
     {
@@ -918,7 +925,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "border-left-style",
@@ -929,6 +937,7 @@
         "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
         "dashed", "solid", "double"
       ],
+      typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
     },
@@ -941,7 +950,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
-      typedom_types: ["Length"],
+      typedom_types: ["Keyword", "Length"],
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
@@ -957,7 +966,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "border-right-style",
@@ -968,6 +978,7 @@
         "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
         "dashed", "solid", "double"
       ],
+      typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
     },
@@ -980,7 +991,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
-      typedom_types: ["Length"],
+      typedom_types: ["Keyword", "Length"],
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
@@ -996,7 +1007,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "border-top-left-radius",
@@ -1029,6 +1041,7 @@
         "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
         "dashed", "solid", "double"
       ],
+      typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
     },
@@ -1041,7 +1054,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
-      typedom_types: ["Length"],
+      typedom_types: ["Keyword", "Length"],
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
@@ -1055,7 +1068,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -1076,6 +1089,7 @@
       field_group: "box",
       field_template: "keyword",
       keywords: ["content-box", "border-box"],
+      typedom_types: ["Keyword"],
       default_value: "content-box",
     },
     {
@@ -1139,13 +1153,15 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["auto", "currentcolor"]
+      keywords: ["auto", "currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "clear",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: ["none", "left", "right", "both"],
+      typedom_types: ["Keyword"],
       default_value: "none",
     },
     {
@@ -1227,7 +1243,6 @@
       include_paths: ["core/style/ContentData.h"],
       wrapper_pointer_name: "Persistent",
       default_value: "nullptr",
-      typedom_types: ["Image"],
       separator: ",",
       type_name: "ContentData",
       computed_style_custom_functions: ["getter", "setter"],
@@ -1291,6 +1306,7 @@
         "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
       ],
+      typedom_types: ["Keyword"],
       custom_apply_functions_all: true,
     },
     {
@@ -1306,6 +1322,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["show", "hide"],
+      typedom_types: ["Keyword"],
       default_value: "show",
     },
     {
@@ -1394,6 +1411,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: ["none", "left", "right"],
+      typedom_types: ["Keyword"],
       default_value: "none",
       name_for_methods: "Floating",
       type_name: "EFloat",
@@ -1520,7 +1538,7 @@
       field_template: "<length>",
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthSizing",
     },
     {
@@ -1604,7 +1622,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -1633,7 +1651,7 @@
       computed_style_custom_functions: ["getter"],
       converter: "ConvertLineHeight",
       keywords: ["normal"],
-      typedom_types: ["Length", "Number", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Number", "Percentage"]
     },
     {
       name: "line-height-step",
@@ -1656,7 +1674,7 @@
       include_paths: ["core/style/StyleImage.h"],
       wrapper_pointer_name: "Persistent",
       default_value: "nullptr",
-      typedom_types: ["Image"],
+      typedom_types: ["Keyword", "Image"],
       type_name: "StyleImage",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_value: true,
@@ -1669,6 +1687,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["outside", "inside"],
+      typedom_types: ["Keyword"],
       default_value: "outside",
     },
     {
@@ -1703,7 +1722,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "margin-left",
@@ -1715,7 +1734,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "margin-right",
@@ -1727,7 +1746,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "margin-top",
@@ -1739,7 +1758,7 @@
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "marker-end",
@@ -1857,7 +1876,7 @@
       default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
       type_name: "LengthPoint",
       converter: "ConvertPosition",
-      typedom_types: ["Position"],
+      typedom_types: ["Keyword", "Position"],
     },
     {
       name: "offset-anchor",
@@ -1925,7 +1944,7 @@
       default_value: "1.0",
       type_name: "float",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Number"]
+      typedom_types: ["Keyword", "Number"]
     },
     {
       name: "order",
@@ -1958,7 +1977,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "outline-offset",
@@ -1980,6 +2000,7 @@
         "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
         "dashed", "solid", "double"
       ],
+      typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
       custom_apply_functions_all: true,
@@ -2005,6 +2026,7 @@
       keywords: [
         "visible", "none", "auto"
       ],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
@@ -2024,6 +2046,7 @@
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
         "-webkit-paged-y"
       ],
+      typedom_types: ["Keyword"],
       default_value: "visible",
       type_name: "EOverflow",
     },
@@ -2035,6 +2058,7 @@
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
         "-webkit-paged-y"
       ],
+      typedom_types: ["Keyword"],
       default_value: "visible",
       type_name: "EOverflow",
     },
@@ -2065,7 +2089,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "padding-left",
@@ -2076,7 +2100,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "padding-right",
@@ -2087,7 +2111,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "padding-top",
@@ -2098,7 +2122,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertLength",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "paint-order",
@@ -2148,6 +2172,7 @@
       keywords: [
         "static", "relative", "absolute", "fixed", "sticky"
       ],
+      typedom_types: ["Keyword"],
       default_value: "static",
       getter: "GetPosition",
       custom_apply_functions_inherit: true,
@@ -2170,6 +2195,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["none", "both", "horizontal", "vertical"],
+      typedom_types: ["Keyword"],
       default_value: "none",
       custom_apply_functions_value: true,
     },
@@ -2182,7 +2208,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2309,7 +2335,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2322,7 +2348,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2337,7 +2363,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2345,7 +2371,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2358,7 +2384,7 @@
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2373,7 +2399,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2383,7 +2409,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2393,7 +2419,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2456,7 +2482,7 @@
       include_paths: ["core/style/ShapeValue.h"],
       wrapper_pointer_name: "Persistent",
       default_value: "nullptr",
-      typedom_types: ["Image"],
+      typedom_types: ["Keyword", "Image"],
       type_name: "ShapeValue",
       computed_style_custom_functions: ["getter"],
       converter: "ConvertShapeValue",
@@ -2598,6 +2624,7 @@
         "left", "right", "center", "justify", "-webkit-left", "-webkit-right",
         "-webkit-center", "start", "end"
       ],
+      typedom_types: ["Keyword"],
       default_value: "start",
       getter: "GetTextAlign",
       custom_apply_functions_value: true,
@@ -2637,7 +2664,8 @@
       default_value: "StyleColor::CurrentColor()",
       type_name: "StyleColor",
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "text-decoration-line",
@@ -2665,6 +2693,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["solid", "double", "dotted", "dashed", "wavy"],
+      typedom_types: ["Keyword"],
       default_value: "solid",
     },
     {
@@ -2730,6 +2759,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["capitalize", "uppercase", "lowercase", "none"],
+      typedom_types: ["Keyword"],
       default_value: "none",
     },
     // FIXME: Implement support for 'under left' and 'under right' values.
@@ -2752,7 +2782,7 @@
       field_template: "<length>",
       keywords: ["auto"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2777,7 +2807,7 @@
       include_paths: ["platform/transforms/TransformOperations.h"],
       keywords: ["none"],
       default_value: "EmptyTransformOperations()",
-      typedom_types: ["Transform"],
+      typedom_types: ["Keyword", "Transform"],
       type_name: "TransformOperations",
       converter: "ConvertTransformOperations",
     },
@@ -2878,7 +2908,7 @@
       interpolable: true,
       custom_apply_functions_inherit: true,
       custom_apply_functions_value: true,
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
     },
     {
@@ -2889,6 +2919,7 @@
       inherited: true,
       field_template: "keyword",
       keywords: ["visible", "hidden", "collapse"],
+      typedom_types: ["Keyword"],
       default_value: "visible",
     },
     {
@@ -3085,7 +3116,8 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter","setter"],
       custom_apply_functions_all: true,
-      keywords: ["currentcolor"]
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "column-rule-style",
@@ -3470,6 +3502,7 @@
       keywords: [
         "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"
       ],
+      typedom_types: ["Keyword"],
       default_value: "normal",
     },
     {
@@ -3492,7 +3525,7 @@
       field_template: "<length>",
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       default_value: "Length()",
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthSizing",
     },
     {
