@@ -152,6 +152,31 @@ std::string RebasePath(
     const SourceDir& dest_dir,
     const base::StringPiece& source_root = base::StringPiece());
 
+// Resolves a file or dir name (parameter input) relative to
+// value directory. Will return an empty SourceDir/File on error
+// and set the give *err pointer (required). Empty input is always an error.
+// Returned value can be used to set value in either SourceFile or SourceDir
+// (based on as_file parameter).
+//
+// Parameter as_file defines whether result path will look like a file path
+// or it should be treated as a directory (contains "/" and the end
+// of the string).
+//
+// If source_root is supplied, these functions will additionally handle the
+// case where the input is a system-absolute but still inside the source
+// tree. This is the case for some external tools.
+template <typename StringType>
+std::string ResolveRelative(const StringType& input,
+                            const std::string& value,
+                            bool as_file,
+                            const base::StringPiece& source_root);
+
+// Resolves source file or directory relative to some given source root. Returns
+// an empty file path on error.
+base::FilePath ResolvePath(const std::string& value,
+                           bool as_file,
+                           const base::FilePath& source_root);
+
 // Returns the given directory with no terminating slash at the end, such that
 // appending a slash and more stuff will produce a valid path.
 //

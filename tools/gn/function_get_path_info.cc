@@ -41,7 +41,7 @@ SourceDir DirForInput(const Settings* settings,
         settings->build_settings()->root_path_utf8());
   }
 
-  // Input is a directory.
+  // Input is a file.
   return current_dir.ResolveRelativeFile(input, err,
       settings->build_settings()->root_path_utf8()).GetDir();
 }
@@ -100,14 +100,12 @@ std::string GetOnePathInfo(const Settings* settings,
           BuildDirType::OBJ));
     }
     case WHAT_ABSPATH: {
-      if (!input_string.empty() &&
-          input_string[input_string.size() - 1] == '/') {
-        return current_dir.ResolveRelativeDir(input, err,
-            settings->build_settings()->root_path_utf8()).value();
-      } else {
-        return current_dir.ResolveRelativeFile(input, err,
-            settings->build_settings()->root_path_utf8()).value();
-      }
+      bool as_dir =
+          !input_string.empty() && input_string[input_string.size() - 1] == '/';
+
+      return current_dir.ResolveRelativeAs(
+          !as_dir, input, err, settings->build_settings()->root_path_utf8(),
+          &input_string);
     }
     default:
       NOTREACHED();

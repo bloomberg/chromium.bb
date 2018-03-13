@@ -79,12 +79,21 @@ class BuildSettings {
   // root source tree.
   base::FilePath GetFullPath(const SourceFile& file) const;
   base::FilePath GetFullPath(const SourceDir& dir) const;
+  // Works the same way as other GetFullPath.
+  // Parameter as_file defines whether path should be treated as a
+  // SourceFile or SourceDir value.
+  base::FilePath GetFullPath(const std::string& path, bool as_file) const;
 
   // Returns the absolute OS path inside the secondary source path. Will return
   // an empty FilePath if the secondary source path is empty. When loading a
   // buildfile, the GetFullPath should always be consulted first.
   base::FilePath GetFullPathSecondary(const SourceFile& file) const;
   base::FilePath GetFullPathSecondary(const SourceDir& dir) const;
+  // Works the same way as other GetFullPathSecondary.
+  // Parameter as_file defines whether path should be treated as a
+  // SourceFile or SourceDir value.
+  base::FilePath GetFullPathSecondary(const std::string& path,
+                                      bool as_file) const;
 
   // Called when an item is defined from a background thread.
   void ItemDefined(std::unique_ptr<Item> item) const;

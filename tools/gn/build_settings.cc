@@ -49,6 +49,11 @@ base::FilePath BuildSettings::GetFullPath(const SourceDir& dir) const {
   return dir.Resolve(root_path_).NormalizePathSeparatorsTo('/');
 }
 
+base::FilePath BuildSettings::GetFullPath(const std::string& path,
+                                          bool as_file) const {
+  return ResolvePath(path, as_file, root_path_).NormalizePathSeparatorsTo('/');
+}
+
 base::FilePath BuildSettings::GetFullPathSecondary(
     const SourceFile& file) const {
   return file.Resolve(secondary_source_path_).NormalizePathSeparatorsTo('/');
@@ -57,6 +62,12 @@ base::FilePath BuildSettings::GetFullPathSecondary(
 base::FilePath BuildSettings::GetFullPathSecondary(
     const SourceDir& dir) const {
   return dir.Resolve(secondary_source_path_).NormalizePathSeparatorsTo('/');
+}
+
+base::FilePath BuildSettings::GetFullPathSecondary(const std::string& path,
+                                                   bool as_file) const {
+  return ResolvePath(path, as_file, secondary_source_path_)
+      .NormalizePathSeparatorsTo('/');
 }
 
 void BuildSettings::ItemDefined(std::unique_ptr<Item> item) const {
