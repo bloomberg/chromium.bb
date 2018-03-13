@@ -93,7 +93,9 @@ class RTCCertificateGeneratorRequest
         FROM_HERE,
         base::BindOnce(&RTCCertificateGeneratorRequest::DoCallbackOnMainThread,
                        this, std::move(observer),
-                       std::make_unique<RTCCertificate>(certificate)));
+                       certificate
+                           ? std::make_unique<RTCCertificate>(certificate)
+                           : nullptr));
   }
 
   void DoCallbackOnMainThread(
