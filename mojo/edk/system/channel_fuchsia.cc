@@ -201,14 +201,14 @@ class ChannelFuchsia : public Channel,
       StartOnIOThread();
     } else {
       io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ChannelFuchsia::StartOnIOThread, this));
+          FROM_HERE, base::BindOnce(&ChannelFuchsia::StartOnIOThread, this));
     }
   }
 
   void ShutDownImpl() override {
     // Always shut down asynchronously when called through the public interface.
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChannelFuchsia::ShutDownOnIOThread, this));
+        FROM_HERE, base::BindOnce(&ChannelFuchsia::ShutDownOnIOThread, this));
   }
 
   void Write(MessagePtr message) override {
@@ -221,11 +221,11 @@ class ChannelFuchsia : public Channel,
         reject_writes_ = write_error = true;
     }
     if (write_error) {
-      // Do not synchronously invoke OnError(). Write() may have been called by
-      // the delegate and we don't want to re-enter it.
+      // Do not synchronously invoke OnWriteError(). Write() may have been
+      // called by the delegate and we don't want to re-enter it.
       io_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ChannelFuchsia::OnError, this, Error::kDisconnected));
+          FROM_HERE, base::BindOnce(&ChannelFuchsia::OnWriteError, this,
+                                    Error::kDisconnected));
     }
   }
 
@@ -408,6 +408,24 @@ class ChannelFuchsia : public Channel,
     } while (write_bytes < message_view.data_num_bytes());
 
     return true;
+  }
+
+  void OnWriteError(Error error) {
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK(reject_writes_);
+
+    if (error == Error::kDisconnected) {
+      // If we can't write because the pipe is disconnected then continue
+      // reading to fetch any in-flight messages, relying on end-of-stream to
+      // signal the actual disconnection.
+      if (read_watch_) {
+        // TODO: When we add flow-control for writes, we also need to reset the
+        // write-watcher here.
+        return;
+      }
+    }
+
+    OnError(error);
   }
 
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.

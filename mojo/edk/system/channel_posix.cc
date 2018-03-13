@@ -105,14 +105,14 @@ class ChannelPosix : public Channel,
       StartOnIOThread();
     } else {
       io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ChannelPosix::StartOnIOThread, this));
+          FROM_HERE, base::BindOnce(&ChannelPosix::StartOnIOThread, this));
     }
   }
 
   void ShutDownImpl() override {
     // Always shut down asynchronously when called through the public interface.
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChannelPosix::ShutDownOnIOThread, this));
+        FROM_HERE, base::BindOnce(&ChannelPosix::ShutDownOnIOThread, this));
   }
 
   void Write(MessagePtr message) override {
@@ -129,11 +129,11 @@ class ChannelPosix : public Channel,
       }
     }
     if (write_error) {
-      // Do not synchronously invoke OnError(). Write() may have been called by
-      // the delegate and we don't want to re-enter it.
+      // Invoke OnWriteError() asynchronously on the IO thread, in case Write()
+      // was called by the delegate, in which case we should not re-enter it.
       io_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ChannelPosix::OnError, this, Error::kDisconnected));
+          FROM_HERE, base::BindOnce(&ChannelPosix::OnWriteError, this,
+                                    Error::kDisconnected));
     }
   }
 
@@ -243,7 +243,8 @@ class ChannelPosix : public Channel,
           base::MessageLoopForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
       io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ChannelPosix::WaitForWriteOnIOThread, this));
+          FROM_HERE,
+          base::BindOnce(&ChannelPosix::WaitForWriteOnIOThread, this));
     }
   }
 
@@ -340,7 +341,7 @@ class ChannelPosix : public Channel,
         reject_writes_ = write_error = true;
     }
     if (write_error)
-      OnError(Error::kDisconnected);
+      OnWriteError(Error::kDisconnected);
   }
 
   // Attempts to write a message directly to the channel. If the full message
@@ -523,6 +524,23 @@ class ChannelPosix : public Channel,
     return true;
   }
 #endif  // defined(OS_MACOSX)
+
+  void OnWriteError(Error error) {
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK(reject_writes_);
+
+    if (error == Error::kDisconnected) {
+      // If we can't write because the pipe is disconnected then continue
+      // reading to fetch any in-flight messages, relying on end-of-stream to
+      // signal the actual disconnection.
+      if (read_watcher_) {
+        write_watcher_.reset();
+        return;
+      }
+    }
+
+    OnError(error);
+  }
 
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
