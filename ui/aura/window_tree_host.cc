@@ -123,6 +123,7 @@ void WindowTreeHost::UpdateRootWindowSizeInPixels(
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
   window()->layer()->transform().TransformRect(&new_bounds);
   window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
+  window()->SetDeviceScaleFactor(device_scale_factor_);
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
