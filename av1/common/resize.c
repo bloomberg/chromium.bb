@@ -1218,6 +1218,18 @@ void av1_calculate_unscaled_superres_size(int *width, int *height, int denom) {
   }
 }
 
+// Copy only the config data from 'src' to 'dst'.
+static void copy_buffer_config(const YV12_BUFFER_CONFIG *const src,
+                               YV12_BUFFER_CONFIG *const dst) {
+  dst->bit_depth = src->bit_depth;
+  dst->color_primaries = src->color_primaries;
+  dst->transfer_characteristics = src->transfer_characteristics;
+  dst->matrix_coefficients = src->matrix_coefficients;
+  dst->monochrome = src->monochrome;
+  dst->chroma_sample_position = src->chroma_sample_position;
+  dst->color_range = src->color_range;
+}
+
 // TODO(afergs): Look for in-place upscaling
 // TODO(afergs): aom_ vs av1_ functions? Which can I use?
 // Upscale decoded image.
@@ -1271,14 +1283,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
           "Failed to allocate current frame buffer for superres upscaling");
   } else {
     // Make a copy of the config data for frame_to_show in copy_buffer
-    copy_buffer.bit_depth = frame_to_show->bit_depth;
-    copy_buffer.color_primaries = frame_to_show->color_primaries;
-    copy_buffer.transfer_characteristics =
-        frame_to_show->transfer_characteristics;
-    copy_buffer.matrix_coefficients = frame_to_show->matrix_coefficients;
-    copy_buffer.monochrome = frame_to_show->monochrome;
-    copy_buffer.chroma_sample_position = frame_to_show->chroma_sample_position;
-    copy_buffer.color_range = frame_to_show->color_range;
+    copy_buffer_config(frame_to_show, &copy_buffer);
 
     // Don't use callbacks on the encoder.
     // aom_alloc_frame_buffer() clears the config data for frame_to_show
@@ -1290,15 +1295,8 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate current frame buffer for superres upscaling");
 
-    // Restore config data to frame_to_show
-    frame_to_show->bit_depth = copy_buffer.bit_depth;
-    frame_to_show->color_primaries = copy_buffer.color_primaries;
-    frame_to_show->transfer_characteristics =
-        copy_buffer.transfer_characteristics;
-    frame_to_show->matrix_coefficients = copy_buffer.matrix_coefficients;
-    frame_to_show->monochrome = copy_buffer.monochrome;
-    frame_to_show->chroma_sample_position = copy_buffer.chroma_sample_position;
-    frame_to_show->color_range = copy_buffer.color_range;
+    // Restore config data back to frame_to_show
+    copy_buffer_config(&copy_buffer, frame_to_show);
   }
   // TODO(afergs): verify frame_to_show is correct after realloc
   //               encoder:
