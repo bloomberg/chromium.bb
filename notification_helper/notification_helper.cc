@@ -20,13 +20,20 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
                                HINSTANCE prev_instance,
                                wchar_t* command_line,
                                int show_command) {
+  // Initialize the CommandLine singleton from the environment.
+  base::CommandLine::Init(0, nullptr);
+
+  // This process is designed to be launched by COM only, which appends the
+  // "-Embedding" flag to the command line. If this flag is not found, the
+  // process should exit immediately.
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683844.aspx
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("embedding"))
+    return 0;
+
   install_static::InitializeProductDetailsForPrimaryModule();
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
-
-  // Initialize the CommandLine singleton from the environment.
-  base::CommandLine::Init(0, nullptr);
 
   // Use crashpad embedded in chrome.exe as the crash handler.
   base::FilePath chrome_exe_path = notification_helper::GetChromeExePath();
