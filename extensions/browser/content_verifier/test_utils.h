@@ -8,6 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
+#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/common/extension_id.h"
@@ -16,14 +19,14 @@ namespace extensions {
 
 class Extension;
 
-// Test class to observe a particular extension resource's ContentVerifyJob
+// Test class to observe *a particular* extension resource's ContentVerifyJob
 // lifetime.  Provides a way to wait for a job to finish and return
 // the job's result.
-class TestContentVerifyJobObserver : ContentVerifyJob::TestObserver {
+class TestContentVerifySingleJobObserver : ContentVerifyJob::TestObserver {
  public:
-  TestContentVerifyJobObserver(const ExtensionId& extension_id,
-                               const base::FilePath& relative_path);
-  ~TestContentVerifyJobObserver();
+  TestContentVerifySingleJobObserver(const ExtensionId& extension_id,
+                                     const base::FilePath& relative_path);
+  ~TestContentVerifySingleJobObserver();
 
   // ContentVerifyJob::TestObserver:
   void JobStarted(const ExtensionId& extension_id,
@@ -50,6 +53,53 @@ class TestContentVerifyJobObserver : ContentVerifyJob::TestObserver {
   base::Optional<ContentVerifyJob::FailureReason> failure_reason_;
   bool seen_on_hashes_ready_ = false;
 
+  DISALLOW_COPY_AND_ASSIGN(TestContentVerifySingleJobObserver);
+};
+
+// Test class to observe expected set of ContentVerifyJobs.
+class TestContentVerifyJobObserver : public ContentVerifyJob::TestObserver {
+ public:
+  TestContentVerifyJobObserver();
+  virtual ~TestContentVerifyJobObserver();
+
+  enum class Result { SUCCESS, FAILURE };
+
+  // Call this to add an expected job result.
+  void ExpectJobResult(const ExtensionId& extension_id,
+                       const base::FilePath& relative_path,
+                       Result expected_result);
+
+  // Wait to see expected jobs. Returns true when we've seen all expected jobs
+  // finish, or false if there was an error or timeout.
+  bool WaitForExpectedJobs();
+
+  // ContentVerifyJob::TestObserver interface
+  void JobStarted(const ExtensionId& extension_id,
+                  const base::FilePath& relative_path) override;
+  void JobFinished(const ExtensionId& extension_id,
+                   const base::FilePath& relative_path,
+                   ContentVerifyJob::FailureReason failure_reason) override;
+  void OnHashesReady(const ExtensionId& extension_id,
+                     const base::FilePath& relative_path,
+                     bool success) override {}
+
+ private:
+  struct ExpectedResult {
+   public:
+    ExtensionId extension_id;
+    base::FilePath path;
+    Result result;
+
+    ExpectedResult(const ExtensionId& extension_id,
+                   const base::FilePath& path,
+                   Result result)
+        : extension_id(extension_id), path(path), result(result) {}
+  };
+  std::list<ExpectedResult> expectations_;
+  content::BrowserThread::ID creation_thread_;
+  // Accessed on |creation_thread_|.
+  base::OnceClosure job_quit_closure_;
+
   DISALLOW_COPY_AND_ASSIGN(TestContentVerifyJobObserver);
 };
 
@@ -74,6 +124,28 @@ class MockContentVerifierDelegate : public ContentVerifierDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockContentVerifierDelegate);
+};
+
+// Observes ContentVerifier::OnFetchComplete of a particular extension.
+class VerifierObserver : public ContentVerifier::TestObserver {
+ public:
+  VerifierObserver();
+  virtual ~VerifierObserver();
+
+  const std::set<ExtensionId>& completed_fetches() {
+    return completed_fetches_;
+  }
+
+  // Returns when we've seen OnFetchComplete for |extension_id|.
+  void WaitForFetchComplete(const ExtensionId& extension_id);
+
+  // ContentVerifier::TestObserver
+  void OnFetchComplete(const ExtensionId& extension_id, bool success) override;
+
+ private:
+  std::set<ExtensionId> completed_fetches_;
+  ExtensionId id_to_wait_for_;
+  scoped_refptr<content::MessageLoopRunner> loop_runner_;
 };
 
 namespace content_verifier_test_utils {

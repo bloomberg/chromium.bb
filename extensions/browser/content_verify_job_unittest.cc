@@ -61,7 +61,7 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
       const base::FilePath& resource_path,
       std::string& resource_contents,
       ContentVerifyJobAsyncRunMode run_mode) {
-    TestContentVerifyJobObserver observer(extension.id(), resource_path);
+    TestContentVerifySingleJobObserver observer(extension.id(), resource_path);
     scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
         extension.id(), extension.version(), extension.path(), resource_path,
         ContentVerifierKey(kWebstoreSignaturesPublicKey,

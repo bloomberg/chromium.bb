@@ -206,6 +206,12 @@ void ContentVerifier::OnExtensionUnloaded(
     fetcher_->ExtensionUnloaded(extension);
 }
 
+GURL ContentVerifier::GetSignatureFetchUrlForTest(
+    const ExtensionId& extension_id,
+    const base::Version& extension_version) {
+  return delegate_->GetSignatureFetchUrl(extension_id, extension_version);
+}
+
 void ContentVerifier::OnFetchCompleteHelper(
     const std::string& extension_id,
     bool should_verify_any_paths_result) {
