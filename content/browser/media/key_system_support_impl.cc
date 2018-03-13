@@ -14,29 +14,9 @@
 #include "media/base/key_systems.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-#if DCHECK_IS_ON()
-#include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/plugin_service.h"
-#include "content/public/common/webplugininfo.h"
-#endif  // DCHECK_IS_ON()
-
 namespace content {
 
 namespace {
-
-#if DCHECK_IS_ON()
-// TODO(crbug.com/772160) Remove this when pepper CDM support removed.
-bool IsPepperPluginRegistered(const std::string& plugin_name) {
-  std::vector<WebPluginInfo> plugins;
-  PluginService::GetInstance()->GetInternalPlugins(&plugins);
-  for (const auto& plugin : plugins) {
-    if (plugin.is_pepper_plugin() &&
-        plugin.name == base::ASCIIToUTF16(plugin_name))
-      return true;
-  }
-  return false;
-}
-#endif  // DCHECK_IS_ON()
 
 void SendCdmAvailableUMA(const std::string& key_system, bool available) {
   base::UmaHistogramBoolean("Media.EME." +
@@ -85,11 +65,6 @@ void KeySystemSupportImpl::IsKeySystemSupported(
     std::move(callback).Run(false, {}, false);
     return;
   }
-
-#if DCHECK_IS_ON()
-  DCHECK(IsPepperPluginRegistered(cdm->name))
-      << "Pepper plugin for " << key_system << " should also be registered.";
-#endif
 
   SendCdmAvailableUMA(key_system, true);
   std::move(callback).Run(true, cdm->supported_video_codecs,

@@ -93,7 +93,7 @@ enum {
   DIR_PNACL_BASE,               // Full path to the base dir for PNaCl.
   DIR_PNACL_COMPONENT,          // Full path to the latest PNaCl version
                                 // (subdir of DIR_PNACL_BASE).
-  FILE_WIDEVINE_CDM_ADAPTER,    // Full path to the Widevine CDM adapter file.
+  FILE_WIDEVINE_CDM,            // Full path to the Widevine CDM.
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
                                 // used by internal pages).

@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -375,15 +376,15 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    // TODO(xhwang): FILE_WIDEVINE_CDM_ADAPTER has different meanings.
-    // In the component case, this is the source adapter. Otherwise, it is the
-    // actual Pepper module that gets loaded.
-    case chrome::FILE_WIDEVINE_CDM_ADAPTER:
+    // TODO(crbug.com/663554): Remove this after component updated CDM is
+    // supported on Linux and ChromeOS.
+    case chrome::FILE_WIDEVINE_CDM:
       if (!GetComponentDirectory(&cur))
         return false;
-      cur = cur.Append(
-          media::GetPlatformSpecificDirectory(kWidevineCdmBaseDirectory));
-      cur = cur.AppendASCII(kWidevineCdmAdapterFileName);
+      cur =
+          cur.Append(
+                 media::GetPlatformSpecificDirectory(kWidevineCdmBaseDirectory))
+              .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
       break;
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
     case chrome::FILE_RESOURCES_PACK:
