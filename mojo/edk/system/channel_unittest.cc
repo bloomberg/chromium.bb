@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "mojo/edk/system/channel.h"
+
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,6 +174,101 @@ TEST(ChannelTest, OnReadNonLegacyMessage) {
   TestMemoryEqual(message->payload(), message->payload_size(),
                   channel_delegate.GetReceivedPayload(),
                   channel_delegate.GetReceivedPayloadSize());
+}
+
+class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
+ public:
+  ChannelTestShutdownAndWriteDelegate(
+      ScopedPlatformHandle handle,
+      scoped_refptr<base::TaskRunner> task_runner,
+      scoped_refptr<Channel> client_channel,
+      std::unique_ptr<base::Thread> client_thread,
+      base::RepeatingClosure quit_closure)
+      : quit_closure_(std::move(quit_closure)),
+        client_channel_(std::move(client_channel)),
+        client_thread_(std::move(client_thread)) {
+    channel_ = Channel::Create(
+        this, ConnectionParams(TransportProtocol::kLegacy, std::move(handle)),
+        std::move(task_runner));
+    channel_->Start();
+  }
+  ~ChannelTestShutdownAndWriteDelegate() override { channel_->ShutDown(); }
+
+  // Channel::Delegate implementation
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<ScopedPlatformHandle> handles) override {
+    ++message_count_;
+
+    // If |client_channel_| exists then close it and its thread.
+    if (client_channel_) {
+      // Write a fresh message, making our channel readable again.
+      Channel::MessagePtr message = CreateDefaultMessage(false);
+      client_thread_->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&Channel::Write, client_channel_,
+                                    base::Passed(&message)));
+
+      // Close the channel and wait for it to shutdown.
+      client_channel_->ShutDown();
+      client_channel_ = nullptr;
+
+      client_thread_->Stop();
+      client_thread_ = nullptr;
+    }
+
+    // Write a message to the channel, to verify whether this triggers an
+    // OnChannelError callback before all messages were read.
+    Channel::MessagePtr message = CreateDefaultMessage(false);
+    channel_->Write(std::move(message));
+  }
+
+  void OnChannelError(Channel::Error error) override {
+    EXPECT_EQ(2, message_count_);
+    quit_closure_.Run();
+  }
+
+  base::RepeatingClosure quit_closure_;
+  int message_count_ = 0;
+  scoped_refptr<Channel> channel_;
+
+  scoped_refptr<Channel> client_channel_;
+  std::unique_ptr<base::Thread> client_thread_;
+};
+
+TEST(ChannelTest, PeerShutdownDuringRead) {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  PlatformChannelPair channel_pair;
+
+  // Create a "client" Channel with one end of the pipe, and Start() it.
+  std::unique_ptr<base::Thread> client_thread =
+      std::make_unique<base::Thread>("clientio_thread");
+  client_thread->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
+  scoped_refptr<Channel> client_channel =
+      Channel::Create(nullptr,
+                      ConnectionParams(TransportProtocol::kLegacy,
+                                       channel_pair.PassClientHandle()),
+                      client_thread->task_runner());
+  client_channel->Start();
+
+  // On the "client" IO thread, create and write a message.
+  Channel::MessagePtr message = CreateDefaultMessage(false);
+  client_thread->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Channel::Write, client_channel, base::Passed(&message)));
+
+  // Create a "server" Channel with the other end of the pipe, and process the
+  // messages from it. The |server_delegate| will ShutDown the client end of
+  // the pipe after the first message, and quit the RunLoop when OnChannelError
+  // is received.
+  base::RunLoop run_loop;
+  ChannelTestShutdownAndWriteDelegate server_delegate(
+      channel_pair.PassServerHandle(), message_loop.task_runner(),
+      std::move(client_channel), std::move(client_thread),
+      run_loop.QuitClosure());
+
+  run_loop.Run();
 }
 
 }  // namespace
