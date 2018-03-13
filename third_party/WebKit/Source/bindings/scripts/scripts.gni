@@ -212,88 +212,50 @@ template("idl_compiler") {
     "//third_party/WebKit/Source/core:generated_testing_idls",
   ]
 
-  # On mac spawning a python process per IDL file is slow. Use a single action
-  # instead.
-  # TODO(bashi,tikuta): Use a pool when crbug.com/635308 is fixed.
-  if (is_mac) {
-    action(target_name) {
-      script = _script
-      inputs = _inputs
-      public_deps = _public_deps
+  # Spawning a python process per IDL file is slow. Use a single action
+  # instead (crbug.com/821256).
+  action(target_name) {
+    script = _script
+    inputs = _inputs
+    public_deps = _public_deps
 
-      sources = invoker.sources
-      outputs = []
-      foreach(_source, sources) {
-        _name_part = get_path_info(_source, "name")
-        if (snake_case_source_files) {
-          outputs += [
-            "$output_dir/v8_${_name_part}${output_name_suffix}.cc",
-            "$output_dir/v8_${_name_part}${output_name_suffix}.h",
-          ]
-        } else {
-          outputs += [
-            "$output_dir/V8${_name_part}${output_name_suffix}.cpp",
-            "$output_dir/V8${_name_part}${output_name_suffix}.h",
-          ]
-        }
-      }
-
-      idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
-      write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
-      inputs += [ idl_files_list ]
-
-      args = []
+    sources = invoker.sources
+    outputs = []
+    foreach(_source, sources) {
+      _name_part = get_path_info(_source, "name")
       if (snake_case_source_files) {
-        args += [ "--snake-case-generated-files" ]
-      }
-      args += [
-        "--cache-dir",
-        rebase_path(bindings_scripts_output_dir, root_build_dir),
-        "--output-dir",
-        rebase_path(output_dir, root_build_dir),
-        "--info-dir",
-        rebase_path("$bindings_output_dir", root_build_dir),
-        "--target-component",
-        invoker.target_component,
-        "--read-idl-list-from-file",
-        rebase_path(idl_files_list, root_build_dir),
-      ]
-    }
-  } else {
-    action_foreach(target_name) {
-      script = _script
-      inputs = _inputs
-      public_deps = _public_deps
-
-      sources = invoker.sources
-      if (snake_case_source_files) {
-        outputs = [
-          "$output_dir/v8_{{source_name_part}}${output_name_suffix}.cc",
-          "$output_dir/v8_{{source_name_part}}${output_name_suffix}.h",
+        outputs += [
+          "$output_dir/v8_${_name_part}${output_name_suffix}.cc",
+          "$output_dir/v8_${_name_part}${output_name_suffix}.h",
         ]
       } else {
-        outputs = [
-          "$output_dir/V8{{source_name_part}}${output_name_suffix}.cpp",
-          "$output_dir/V8{{source_name_part}}${output_name_suffix}.h",
+        outputs += [
+          "$output_dir/V8${_name_part}${output_name_suffix}.cpp",
+          "$output_dir/V8${_name_part}${output_name_suffix}.h",
         ]
       }
-
-      args = []
-      if (snake_case_source_files) {
-        args += [ "--snake-case-generated-files" ]
-      }
-      args += [
-        "--cache-dir",
-        rebase_path(bindings_scripts_output_dir, root_build_dir),
-        "--output-dir",
-        rebase_path(output_dir, root_build_dir),
-        "--info-dir",
-        rebase_path("$bindings_output_dir", root_build_dir),
-        "--target-component",
-        invoker.target_component,
-        "{{source}}",
-      ]
     }
+
+    idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
+    write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
+    inputs += [ idl_files_list ]
+
+    args = []
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
+    args += [
+      "--cache-dir",
+      rebase_path(bindings_scripts_output_dir, root_build_dir),
+      "--output-dir",
+      rebase_path(output_dir, root_build_dir),
+      "--info-dir",
+      rebase_path("$bindings_output_dir", root_build_dir),
+      "--target-component",
+      invoker.target_component,
+      "--read-idl-list-from-file",
+      rebase_path(idl_files_list, root_build_dir),
+    ]
   }
 }
 
