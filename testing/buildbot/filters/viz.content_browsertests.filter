@@ -3,9 +3,6 @@
 # http://crbug.com/784941
 -CaptureScreenshotTest.*
 
-# OnGpuSwapBuffersCompletedInternal not called. http://crbug.com/791557
--MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
-
 #### GPU
 # GPU Shutdown https://crbug.com/781714
 -WebRtcCaptureFromElementBrowserTest.CaptureFromCanvas2DHandlesContextLoss
