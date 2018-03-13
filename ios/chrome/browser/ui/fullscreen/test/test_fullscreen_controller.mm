@@ -38,3 +38,7 @@ void TestFullscreenController::IncrementDisabledCounter() {
 void TestFullscreenController::DecrementDisabledCounter() {
   model_->DecrementDisabledCounter();
 }
+
+CGFloat TestFullscreenController::GetProgress() const {
+  return model_->progress();
+}

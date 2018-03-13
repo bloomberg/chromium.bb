@@ -1255,6 +1255,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     StartBroadcastingMainContentUI(self, broadcaster);
 
     fullscreenController->AddObserver(_fullscreenUIUpdater.get());
+    [self updateForFullscreenProgress:fullscreenController->GetProgress()];
   } else {
     StopBroadcastingToolbarUI(broadcaster);
     StopBroadcastingMainContentUI(broadcaster);
