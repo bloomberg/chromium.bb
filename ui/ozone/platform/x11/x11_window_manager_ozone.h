@@ -16,11 +16,12 @@ class X11WindowManagerOzone {
   X11WindowManagerOzone();
   ~X11WindowManagerOzone();
 
-  // Tries to set a given X11WindowOzone as the recipient for events. It will
-  // fail if there is already another X11WindowOzone as recipient.
+  // Sets a given X11WindowOzone as the recipient for events and calls
+  // OnLostCapture for another |event_grabber_| if it has been set previously.
   void GrabEvents(X11WindowOzone* window);
 
-  // Unsets a given X11WindowOzone as the recipient for events.
+  // Unsets a given X11WindowOzone as the recipient for events and calls
+  // OnLostCapture.
   void UngrabEvents(X11WindowOzone* window);
 
   // Gets the current X11WindowOzone recipient of mouse events.

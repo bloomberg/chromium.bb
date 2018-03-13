@@ -59,12 +59,19 @@ source_set("x11_unittests") {
   testonly = true
   sources = [
     "x11_cursor_factory_ozone_unittest.cc",
+    "x11_window_ozone_unittest.cc",
   ]
 
   deps = [
     ":x11",
+    "//testing/gmock",
     "//testing/gtest",
+    "//ui/events:test_support",
+    "//ui/events/devices/x11",
+    "//ui/events/platform/x11",
     "//ui/ozone:platform",
+    "//ui/ozone:test_support",
     "//ui/ozone/common",
+    "//ui/platform_window/x11:x11",
   ]
 }

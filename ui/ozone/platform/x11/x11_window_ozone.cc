@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
@@ -73,12 +74,29 @@ bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& platform_event) {
 }
 
 uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& platform_event) {
-  // This is unfortunately needed otherwise events that depend on global state
-  // (eg. double click) are broken.
-  DispatchEventFromNativeUiEvent(
-      platform_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                     base::Unretained(delegate())));
-  return POST_DISPATCH_STOP_PROPAGATION;
+  auto* event = static_cast<Event*>(platform_event);
+  if (!window_manager_->event_grabber() ||
+      window_manager_->event_grabber() == this) {
+    // This is unfortunately needed otherwise events that depend on global state
+    // (eg. double click) are broken.
+    DispatchEventFromNativeUiEvent(
+        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                              base::Unretained(delegate())));
+    return POST_DISPATCH_STOP_PROPAGATION;
+  }
+
+  if (event->IsLocatedEvent()) {
+    // Another X11WindowOzone has installed itself as capture. Translate the
+    // event's location and dispatch to the other.
+    ConvertEventLocationToTargetWindowLocation(
+        window_manager_->event_grabber()->GetBounds().origin(),
+        GetBounds().origin(), event->AsLocatedEvent());
+  }
+  return window_manager_->event_grabber()->DispatchEvent(event);
+}
+
+void X11WindowOzone::OnLostCapture() {
+  delegate()->OnLostCapture();
 }
 
 }  // namespace ui
