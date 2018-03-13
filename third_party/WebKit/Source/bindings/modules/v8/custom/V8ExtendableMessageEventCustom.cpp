@@ -64,8 +64,9 @@ void V8ExtendableMessageEvent::dataAttributeGetterCustom(
   v8::Isolate* isolate = info.GetIsolate();
   auto private_cached_data =
       V8PrivateProperty::GetMessageEventCachedData(isolate);
-  v8::Local<v8::Value> result = private_cached_data.GetOrEmpty(info.Holder());
-  if (!result.IsEmpty()) {
+  v8::Local<v8::Value> result;
+  if (private_cached_data.GetOrUndefined(info.Holder()).ToLocal(&result) &&
+      !result->IsUndefined()) {
     V8SetReturnValue(info, result);
     return;
   }
@@ -77,9 +78,9 @@ void V8ExtendableMessageEvent::dataAttributeGetterCustom(
     options.message_ports = &ports;
     data = serialized_value->Deserialize(isolate, options);
   } else if (DOMWrapperWorld::Current(isolate).IsIsolatedWorld()) {
-    v8::Local<v8::Value> main_world_data =
-        private_cached_data.GetFromMainWorld(event);
-    if (!main_world_data.IsEmpty()) {
+    v8::Local<v8::Value> main_world_data;
+    if (private_cached_data.GetFromMainWorld(event).ToLocal(&main_world_data) &&
+        !main_world_data->IsUndefined()) {
       // TODO(bashi): Enter the main world's ScriptState::Scope while
       // serializing the main world's value.
       event->SetSerializedData(

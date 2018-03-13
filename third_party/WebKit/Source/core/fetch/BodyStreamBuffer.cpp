@@ -144,7 +144,7 @@ ScriptValue BodyStreamBuffer::Stream() {
   return ScriptValue(
       script_state_.get(),
       V8PrivateProperty::GetInternalBodyStream(script_state_->GetIsolate())
-          .GetOrEmpty(body));
+          .GetOrUndefined(body));
 }
 
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(

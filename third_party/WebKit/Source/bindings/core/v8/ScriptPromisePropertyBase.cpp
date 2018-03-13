@@ -40,9 +40,11 @@ ScriptPromise ScriptPromisePropertyBase::Promise(DOMWrapperWorld& world) {
   v8::Local<v8::Object> wrapper = EnsureHolderWrapper(script_state);
   DCHECK(wrapper->CreationContext() == context);
 
-  v8::Local<v8::Value> cached_promise = PromiseSymbol().GetOrUndefined(wrapper);
-  if (!cached_promise->IsUndefined() && cached_promise->IsPromise())
+  v8::Local<v8::Value> cached_promise;
+  if (PromiseSymbol().GetOrUndefined(wrapper).ToLocal(&cached_promise) &&
+      cached_promise->IsPromise()) {
     return ScriptPromise(script_state, cached_promise);
+  }
 
   // Create and cache the Promise
   v8::Local<v8::Promise::Resolver> resolver;
@@ -90,11 +92,12 @@ void ScriptPromisePropertyBase::ResolveOrReject(State target_state) {
 
     V8PrivateProperty::Symbol symbol = ResolverSymbol();
     DCHECK(symbol.HasValue(wrapper));
-    v8::Local<v8::Promise::Resolver> resolver =
-        symbol.GetOrUndefined(wrapper).As<v8::Promise::Resolver>();
-
+    v8::Local<v8::Value> resolver_value;
+    if (!symbol.GetOrUndefined(wrapper).ToLocal(&resolver_value))
+      return;
     symbol.DeleteProperty(wrapper);
-    ResolveOrRejectInternal(resolver);
+    ResolveOrRejectInternal(
+        v8::Local<v8::Promise::Resolver>::Cast(resolver_value));
     ++i;
   }
 }

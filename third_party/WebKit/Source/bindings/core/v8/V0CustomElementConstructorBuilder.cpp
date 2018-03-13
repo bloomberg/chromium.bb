@@ -326,19 +326,36 @@ static void ConstructCustomElement(
   }
 
   v8::Local<v8::Object> data = v8::Local<v8::Object>::Cast(info.Data());
-  Document* document =
-      V8Document::ToImpl(V8PrivateProperty::GetCustomElementDocument(isolate)
-                             .GetOrEmpty(data)
-                             .As<v8::Object>());
-  TOSTRING_VOID(
-      V8StringResource<>, namespace_uri,
-      V8PrivateProperty::GetCustomElementNamespaceURI(isolate).GetOrEmpty(
-          data));
-  TOSTRING_VOID(
-      V8StringResource<>, tag_name,
-      V8PrivateProperty::GetCustomElementTagName(isolate).GetOrEmpty(data));
-  v8::Local<v8::Value> maybe_type =
-      V8PrivateProperty::GetCustomElementType(isolate).GetOrEmpty(data);
+  v8::Local<v8::Value> document_value;
+  if (!V8PrivateProperty::GetCustomElementDocument(isolate)
+           .GetOrUndefined(data)
+           .ToLocal(&document_value)) {
+    return;
+  }
+  Document* document = V8Document::ToImpl(document_value.As<v8::Object>());
+  v8::Local<v8::Value> namespace_uri_value;
+  if (!V8PrivateProperty::GetCustomElementNamespaceURI(isolate)
+           .GetOrUndefined(data)
+           .ToLocal(&namespace_uri_value) ||
+      namespace_uri_value->IsUndefined()) {
+    return;
+  }
+  TOSTRING_VOID(V8StringResource<>, namespace_uri, namespace_uri_value);
+  v8::Local<v8::Value> tag_name_value;
+  if (!V8PrivateProperty::GetCustomElementTagName(isolate)
+           .GetOrUndefined(data)
+           .ToLocal(&tag_name_value) ||
+      tag_name_value->IsUndefined()) {
+    return;
+  }
+  TOSTRING_VOID(V8StringResource<>, tag_name, tag_name_value);
+  v8::Local<v8::Value> maybe_type;
+  if (!V8PrivateProperty::GetCustomElementType(isolate)
+           .GetOrUndefined(data)
+           .ToLocal(&maybe_type) ||
+      maybe_type->IsUndefined()) {
+    return;
+  }
   TOSTRING_VOID(V8StringResource<>, type, maybe_type);
 
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,

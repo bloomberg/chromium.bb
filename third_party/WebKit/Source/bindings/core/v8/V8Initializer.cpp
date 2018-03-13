@@ -259,10 +259,12 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     // DOMException).
     DCHECK(exception->IsObject());
     auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
-    v8::Local<v8::Value> error =
-        private_error.GetOrUndefined(exception.As<v8::Object>());
-    if (!error->IsUndefined())
+    v8::Local<v8::Value> error;
+    if (private_error.GetOrUndefined(exception.As<v8::Object>())
+            .ToLocal(&error) &&
+        !error->IsUndefined()) {
       exception = error;
+    }
   }
 
   String error_message;

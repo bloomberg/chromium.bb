@@ -40,9 +40,9 @@ void V8ErrorEvent::errorAttributeGetterCustom(
   v8::Isolate* isolate = info.GetIsolate();
 
   auto private_error = V8PrivateProperty::GetErrorEventError(isolate);
-  v8::Local<v8::Value> cached_error =
-      private_error.GetOrUndefined(info.Holder());
-  if (!cached_error->IsUndefined()) {
+  v8::Local<v8::Value> cached_error;
+  if (private_error.GetOrUndefined(info.Holder()).ToLocal(&cached_error) &&
+      !cached_error->IsUndefined()) {
     V8SetReturnValue(info, cached_error);
     return;
   }

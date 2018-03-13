@@ -47,9 +47,9 @@ void V8MessageEvent::dataAttributeGetterCustom(
   v8::Isolate* isolate = info.GetIsolate();
   auto private_cached_data =
       V8PrivateProperty::GetMessageEventCachedData(isolate);
-  v8::Local<v8::Value> cached_data =
-      private_cached_data.GetOrEmpty(info.Holder());
-  if (!cached_data.IsEmpty()) {
+  v8::Local<v8::Value> cached_data;
+  if (private_cached_data.GetOrUndefined(info.Holder()).ToLocal(&cached_data) &&
+      !cached_data->IsUndefined()) {
     V8SetReturnValue(info, cached_data);
     return;
   }

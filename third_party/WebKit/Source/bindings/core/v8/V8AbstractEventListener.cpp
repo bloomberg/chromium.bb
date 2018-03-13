@@ -136,7 +136,9 @@ void V8AbstractEventListener::InvokeEventHandler(
     V8PrivateProperty::Symbol event_symbol =
         V8PrivateProperty::GetGlobalEvent(GetIsolate());
     // Save the old 'event' property so we can restore it later.
-    v8::Local<v8::Value> saved_event = event_symbol.GetOrUndefined(global);
+    v8::Local<v8::Value> saved_event;
+    if (!event_symbol.GetOrUndefined(global).ToLocal(&saved_event))
+      return;
     try_catch.Reset();
 
     // Expose the event object as |window.event|, except when the event's target
