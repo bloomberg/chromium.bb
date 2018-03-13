@@ -1442,8 +1442,10 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
                       ("Blink.UseCounter.Extensions.Features",
                        static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
+  // Track what features/properties have been reported to the browser side
+  // histogram.
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
-                      ("Blink.UseCounter.Features",
+                      ("Blink.UseCounter.Features_Legacy",
                        static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   switch (context_) {
     case kSVGImageContext:

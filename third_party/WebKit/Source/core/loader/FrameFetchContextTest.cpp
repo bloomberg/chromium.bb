@@ -1114,6 +1114,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
 // Tests that the client hints lifetime header is parsed correctly only when the
 // frame belongs to a secure context.
+// TODO(lunalu): remove this test when blink side use counter is removed
+// (crbug.com/811948).
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        PersistClientHintsSecureContext) {
   HistogramTester histogram_tester;
@@ -1136,7 +1138,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
         FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
     histogram_tester.ExpectBucketCount(
-        "Blink.UseCounter.Features",
+        "Blink.UseCounter.Features_Legacy",
         static_cast<int>(WebFeature::kPersistentClientHintHeader), 1);
   }
 
@@ -1161,7 +1163,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
     // There should not be a change in the usage count.
     histogram_tester.ExpectBucketCount(
-        "Blink.UseCounter.Features",
+        "Blink.UseCounter.Features_Legacy",
         static_cast<int>(WebFeature::kPersistentClientHintHeader), 1);
   }
 
@@ -1186,7 +1188,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
     // There should not be a change in the usage count.
     histogram_tester.ExpectBucketCount(
-        "Blink.UseCounter.Features",
+        "Blink.UseCounter.Features_Legacy",
         static_cast<int>(WebFeature::kPersistentClientHintHeader), 1);
   }
 }

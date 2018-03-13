@@ -963,6 +963,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {
   stop_run_loop.Run();
 }
 
+// TODO(lunalu): remove this test when blink side use counter is removed
+// (crbug.com/811948).
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        DropCountsOnBlinkUseCounter) {
   StartServerAndNavigateToSetup();
@@ -981,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
   // Expect no PageVisits count.
   EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                         "Blink.UseCounter.Features"));
+                         "Blink.UseCounter.Features_Legacy"));
 
   // Stop the worker.
   base::RunLoop stop_run_loop;
@@ -992,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   stop_run_loop.Run();
   // Expect no PageVisits count.
   EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                         "Blink.UseCounter.Features"));
+                         "Blink.UseCounter.Features_Legacy"));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {

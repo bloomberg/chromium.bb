@@ -13,8 +13,7 @@
 
 namespace internal {
 
-const char kFeaturesHistogramName[] =
-    "Blink.UseCounter.Features_TestBrowserProcessLogging";
+const char kFeaturesHistogramName[] = "Blink.UseCounter.Features";
 const char kUkmUseCounterEventName[] = "Blink.UseCounter";
 const char kUkmUseCounterFeature[] = "Feature";
 
