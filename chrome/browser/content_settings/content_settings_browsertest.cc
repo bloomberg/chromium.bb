@@ -41,22 +41,15 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "media/cdm/cdm_paths.h"
-#include "media/media_features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "ppapi/features/features.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "chrome/browser/media/library_cdm_test_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -497,21 +490,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
 // The following tests verify that Pepper plugins that use JavaScript settings
 // instead of Plugins settings still work when Plugins are blocked.
 
-// TODO(crbug.com/403462): Remove after pepper CDM is deprecated.
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) && \
-    !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
-                       WidevineCdm) {
-  // Check that Widevine CDM is available and registered.
-  base::FilePath adapter_path =
-      GetPepperCdmPath(kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName);
-  EXPECT_TRUE(base::PathExists(adapter_path)) << adapter_path.MaybeAsASCII();
-  EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
-  RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
-}
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) &&
-        // !defined(OS_CHROMEOS)
-
 #if BUILDFLAG(ENABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        NaCl) {
@@ -527,19 +505,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        Flash) {
   RunJavaScriptBlockedTest("/load_flash_no_js.html", false);
 }
-
-// TODO(crbug.com/403462): Remove after pepper CDM is deprecated.
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
-                       WidevineCdm) {
-  // Check that Widevine CDM is available and registered.
-  base::FilePath adapter_path =
-      GetPepperCdmPath(kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName);
-  EXPECT_TRUE(base::PathExists(adapter_path)) << adapter_path.MaybeAsASCII();
-  EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
-  RunJavaScriptBlockedTest("/load_widevine_no_js.html", true);
-}
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
 #if BUILDFLAG(ENABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,

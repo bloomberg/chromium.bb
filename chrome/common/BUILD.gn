@@ -475,13 +475,6 @@ static_library("common") {
       "pepper_permission_util.h",
     ]
   }
-  if (enable_library_cdms) {
-    sources += [
-      "widevine_cdm_constants.cc",
-      "widevine_cdm_constants.h",
-    ]
-    public_deps += [ "//media/cdm:cdm_paths" ]
-  }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]
   }

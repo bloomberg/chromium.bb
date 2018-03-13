@@ -27,8 +27,6 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -54,10 +52,6 @@ const char* const kWhitelistedHistogramPrefixes[] = {
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
-#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    kWidevineCdmAdapterFileName,  // see http://crbug.com/368743
-                                  // and http://crbug.com/410630
-#endif
     ChromeContentClient::kPDFPluginPath,
 };
 

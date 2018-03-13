@@ -74,16 +74,12 @@ void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
 }  // namespace
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
 TEST(LoadCDMPerfTest, Widevine) {
   MeasureSizeAndTimeToLoadCdm(
       kWidevineCdmBaseDirectory,
       base::GetNativeLibraryName(kWidevineCdmLibraryName));
-}
-
-TEST(LoadCDMPerfTest, WidevineAdapter) {
-  MeasureSizeAndTimeToLoadCdm(kWidevineCdmBaseDirectory,
-                              kWidevineCdmAdapterFileName);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -93,8 +89,4 @@ TEST(LoadCDMPerfTest, ExternalClearKey) {
       base::GetNativeLibraryName(media::kClearKeyCdmLibraryName));
 }
 
-TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {
-  MeasureSizeAndTimeToLoadCdm(media::kClearKeyCdmBaseDirectory,
-                              media::kClearKeyCdmAdapterFileName);
-}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

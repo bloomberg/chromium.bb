@@ -11,8 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_constants.h"
-#include "media/media_features.h"
-#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace {
 
@@ -179,11 +177,6 @@ PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
       mime_type == content::kFlashPluginSplMimeType) {
     return SHOCKWAVE_FLASH;
   }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  if (mime_type == kWidevineCdmPluginMimeType)
-    return WIDEVINE_CDM;
-#endif
 
   return UNSUPPORTED_MIMETYPE;
 }
