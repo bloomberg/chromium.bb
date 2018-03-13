@@ -8,7 +8,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
 
-namespace views {
+namespace message_center {
 
 SlideOutController::SlideOutController(ui::EventTarget* target,
                                        Delegate* delegate)
@@ -108,4 +108,4 @@ void SlideOutController::OnImplicitAnimationsCompleted() {
   delegate_->OnSlideOut();
 }
 
-}  // namespace views
+}  // namespace message_center
