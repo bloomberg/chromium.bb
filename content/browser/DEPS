@@ -8,7 +8,7 @@ include_rules = [
   "+components/download/quarantine/quarantine.h",
   "+components/filename_generation",
   "+components/filesystem",
-  "+components/leveldb",
+  "+components/services/leveldb",
   "+components/link_header_util",
   "+components/metrics",
   "+components/metrics:single_sample_metrics",

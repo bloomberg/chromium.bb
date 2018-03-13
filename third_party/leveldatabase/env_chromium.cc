@@ -532,7 +532,7 @@ void RecordCacheUsageInTracing(ProcessMemoryDump* pmd,
 
 Options::Options() {
 // Note: Ensure that these default values correspond to those in
-// components/leveldb/public/interfaces/leveldb.mojom.
+// components/services/leveldb/public/interfaces/leveldb.mojom.
 // TODO(cmumford) Create struct-trait for leveldb.mojom.OpenOptions to force
 // users to pass in a leveldb_env::Options instance (and it's defaults).
 //

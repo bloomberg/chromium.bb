@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_LEVELDB_APP_H_
-#define COMPONENTS_LEVELDB_LEVELDB_APP_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_LEVELDB_APP_H_
+#define COMPONENTS_SERVICES_LEVELDB_LEVELDB_APP_H_
 
 #include <memory>
 
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -43,4 +43,4 @@ class LevelDBApp : public service_manager::Service {
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_LEVELDB_APP_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_LEVELDB_APP_H_

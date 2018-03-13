@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_LEVELDB_MOJO_PROXY_H_
-#define COMPONENTS_LEVELDB_LEVELDB_MOJO_PROXY_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_LEVELDB_MOJO_PROXY_H_
+#define COMPONENTS_SERVICES_LEVELDB_LEVELDB_MOJO_PROXY_H_
 
 #include <map>
 #include <memory>
@@ -118,9 +118,7 @@ class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
   void SyncDirectoryImpl(OpaqueDir* dir,
                          std::string name,
                          base::File::Error* out_error);
-  void FileExistsImpl(OpaqueDir* dir,
-                      std::string name,
-                      bool* exists);
+  void FileExistsImpl(OpaqueDir* dir, std::string name, bool* exists);
   void GetChildrenImpl(OpaqueDir* dir,
                        std::string name,
                        std::vector<std::string>* contents,
@@ -158,4 +156,4 @@ class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_LEVELDB_MOJO_PROXY_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_LEVELDB_MOJO_PROXY_H_

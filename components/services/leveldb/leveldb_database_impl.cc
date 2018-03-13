@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/leveldb_database_impl.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
 
 #include <inttypes.h>
 #include <algorithm>
@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/leveldb/env_mojo.h"
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/env_mojo.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"

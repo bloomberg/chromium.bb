@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/leveldb_service_impl.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 
 #include <memory>
 #include <utility>
 
-#include "components/leveldb/env_mojo.h"
-#include "components/leveldb/leveldb_database_impl.h"
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/env_mojo.h"
+#include "components/services/leveldb/leveldb_database_impl.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

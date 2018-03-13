@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
-#define COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
+#define COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
 
 #include "base/unguessable_token.h"
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 
 namespace leveldb {
@@ -46,4 +46,4 @@ class RemoteIterator : public Iterator {
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_

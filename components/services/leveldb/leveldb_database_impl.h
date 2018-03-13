@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
-#define COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#define COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -104,4 +104,4 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_

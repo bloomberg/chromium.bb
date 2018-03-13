@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/env_mojo.h"
+#include "components/services/leveldb/env_mojo.h"
 
 #include <memory>
 #include <string>
@@ -70,9 +70,8 @@ class MojoSequentialFile : public leveldb::SequentialFile {
   ~MojoSequentialFile() override {}
 
   Status Read(size_t n, Slice* result, char* scratch) override {
-    int bytes_read = file_.ReadAtCurrentPosNoBestEffort(
-        scratch,
-        static_cast<int>(n));
+    int bytes_read =
+        file_.ReadAtCurrentPosNoBestEffort(scratch, static_cast<int>(n));
     if (bytes_read == -1) {
       base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordOSError(leveldb_env::kSequentialFileRead, error);
@@ -348,9 +347,9 @@ Status MojoEnv::NewRandomAccessFile(const std::string& fname,
 Status MojoEnv::NewWritableFile(const std::string& fname,
                                 WritableFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewWritableFile", "fname", fname);
-  base::File f =
-      thread_->OpenFileHandle(dir_, fname, filesystem::mojom::kCreateAlways |
-                                               filesystem::mojom::kFlagWrite);
+  base::File f = thread_->OpenFileHandle(
+      dir_, fname,
+      filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite);
   if (!f.IsValid()) {
     *result = nullptr;
     RecordOSError(leveldb_env::kNewWritableFile, f.error_details());
@@ -365,9 +364,9 @@ Status MojoEnv::NewWritableFile(const std::string& fname,
 Status MojoEnv::NewAppendableFile(const std::string& fname,
                                   WritableFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewAppendableFile", "fname", fname);
-  base::File f =
-      thread_->OpenFileHandle(dir_, fname, filesystem::mojom::kFlagOpenAlways |
-                                               filesystem::mojom::kFlagAppend);
+  base::File f = thread_->OpenFileHandle(
+      dir_, fname,
+      filesystem::mojom::kFlagOpenAlways | filesystem::mojom::kFlagAppend);
   if (!f.IsValid()) {
     *result = nullptr;
     RecordOSError(leveldb_env::kNewAppendableFile, f.error_details());

@@ -14,7 +14,7 @@ group("all") {
 
   deps = [
     ":mash_catalog",
-    "//components/leveldb",
+    "//components/services/leveldb",
     "//mash/catalog_viewer",
     "//mash/example",
     "//mash/runner",
@@ -41,7 +41,7 @@ catalog("catalog") {
   testonly = true
 
   standalone_services = [
-    "//components/leveldb:manifest",
+    "//components/services/leveldb:manifest",
     "//mash/catalog_viewer:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
