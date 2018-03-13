@@ -11,6 +11,7 @@
 
 #include "base/containers/queue.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "remoting/base/leaky_bucket.h"
 #include "remoting/base/running_samples.h"
@@ -47,19 +48,16 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   void OnFrameEncoded(const WebrtcVideoEncoder::EncodedFrame* encoded_frame,
                       HostFrameStats* frame_stats) override;
 
-  // Allows unit-tests to fake the current time.
-  void SetCurrentTimeForTest(base::TimeTicks now);
+  // Allows unit-tests to provide a mock clock.
+  void SetTickClockForTest(base::TickClock* tick_clock);
 
  private:
   void ScheduleNextFrame();
   void CaptureNextFrame();
 
-  // Returns the current time according to base::TimeTicks::Now(),
-  // or a fake time provided by a unit-test.
-  base::TimeTicks Now();
-
-  // Non-null if a fake current time is set by unit-test.
-  base::TimeTicks fake_now_for_test_;
+  // A TimeTicks provider which defaults to using a real system clock, but can
+  // be replaced for unittests.
+  base::TickClock* tick_clock_;
 
   base::Closure capture_callback_;
   bool paused_ = false;
