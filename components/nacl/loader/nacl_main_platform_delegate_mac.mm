@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
@@ -14,7 +13,6 @@
 
 void NaClMainPlatformDelegate::EnableSandbox(
     const content::MainFunctionParams& parameters) {
-  CHECK(content::InitializeSandbox(service_manager::SANDBOX_TYPE_NACL_LOADER,
-                                   base::FilePath()))
+  CHECK(content::InitializeSandbox(service_manager::SANDBOX_TYPE_NACL_LOADER))
       << "Error initializing sandbox for " << switches::kNaClLoaderProcess;
 }

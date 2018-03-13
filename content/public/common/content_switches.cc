@@ -827,10 +827,6 @@ const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";
 // Causes the process to run as a utility subprocess.
 const char kUtilityProcess[]                = "utility";
 
-// When utility process is sandboxed, there is still access to one directory.
-// This flag specifies the directory that can be accessed.
-const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
-
 // Causes the utility process to display a dialog on launch.
 const char kUtilityStartupDialog[] = "utility-startup-dialog";
 

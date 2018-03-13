@@ -18,7 +18,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 class Thread;
 }
@@ -46,7 +45,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // UtilityProcessHost:
   base::WeakPtr<UtilityProcessHost> AsWeakPtr() override;
   bool Send(IPC::Message* message) override;
-  void SetExposedDir(const base::FilePath& dir) override;
   void SetSandboxType(service_manager::SandboxType sandbox_type) override;
   const ChildProcessData& GetData() override;
 #if defined(OS_POSIX)
@@ -92,9 +90,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Task runner used for posting progess notifications to |client_|.
   scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-
-  // Directory opened through the child process sandbox if needed.
-  base::FilePath exposed_dir_;
 
   // Launch the child process with switches that will setup this sandbox type.
   service_manager::SandboxType sandbox_type_;

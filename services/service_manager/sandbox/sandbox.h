@@ -15,7 +15,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #endif  // defined(OS_MACOSX)
 
 namespace sandbox {
@@ -42,12 +41,10 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
-  // Initialize the sandbox of |sandbox_type|, permitting access to the one
-  // directory specified by |allowed_dir| if non-empty. Runs |post_warmup_hook|
-  // if non-empty after performing any sandbox warmup but immediately before
+  // Initialize the sandbox of |sandbox_type|. Runs |post_warmup_hook| if
+  // non-empty after performing any sandbox warmup but immediately before
   // engaging the sandbox. Return true on success, false otherwise.
   static bool Initialize(SandboxType sandbox_type,
-                         const base::FilePath& allowed_dir,
                          base::OnceClosure post_warmup_hook);
 #endif  // defined(OS_MACOSX)
 
