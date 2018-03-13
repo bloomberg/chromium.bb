@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/zucchini/disassembler.h"
 #include "components/zucchini/element_detection.h"

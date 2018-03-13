@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/gtest_util.h"
 #include "components/zucchini/address_translator.h"

@@ -43,14 +43,14 @@ class ImageIndex {
   size_t TypeCount() const {
     if (reference_sets_.empty())
       return 0U;
-    return reference_sets_.rbegin()->first.value() + 1;
+    return reference_sets_.rbegin()->first.value() + 1;  // Max key + 1.
   }
 
   // Returns the array size needed to accommodate all pool values.
   size_t PoolCount() const {
     if (target_pools_.empty())
       return 0U;
-    return target_pools_.rbegin()->first.value() + 1;
+    return target_pools_.rbegin()->first.value() + 1;  // Max key + 1.
   }
 
   // Returns true if |image_[location]| is either:

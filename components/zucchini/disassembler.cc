@@ -8,6 +8,8 @@
 
 namespace zucchini {
 
+/******** ReferenceGroup ********/
+
 std::unique_ptr<ReferenceReader> ReferenceGroup::GetReader(
     offset_t lower,
     offset_t upper,
@@ -25,12 +27,16 @@ std::unique_ptr<ReferenceReader> ReferenceGroup::GetReader(
 std::unique_ptr<ReferenceWriter> ReferenceGroup::GetWriter(
     MutableBufferView image,
     Disassembler* disasm) const {
-  DCHECK_EQ(image.begin(), disasm->GetImage().begin());
+  DCHECK_EQ(image.begin(), disasm->image().begin());
   DCHECK_EQ(image.size(), disasm->size());
   return (disasm->*writer_factory_)(image);
 }
 
-Disassembler::Disassembler() = default;
+/******** Disassembler ********/
+
+Disassembler::Disassembler(int num_equivalence_iterations)
+    : num_equivalence_iterations_(num_equivalence_iterations) {}
+
 Disassembler::~Disassembler() = default;
 
 }  // namespace zucchini

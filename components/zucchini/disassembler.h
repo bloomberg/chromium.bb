@@ -111,11 +111,13 @@ class Disassembler {
   // Groups must be aggregated by pool.
   virtual std::vector<ReferenceGroup> MakeReferenceGroups() const = 0;
 
-  ConstBufferView GetImage() const { return image_; }
+  ConstBufferView image() const { return image_; }
   size_t size() const { return image_.size(); }
 
+  int num_equivalence_iterations() const { return num_equivalence_iterations_; }
+
  protected:
-  Disassembler();
+  explicit Disassembler(int num_equivalence_iterations);
 
   // Parses |image| and initializes internal states. Returns true on success.
   // This must be called once and before any other operation.
@@ -124,6 +126,10 @@ class Disassembler {
   // Raw image data. After Parse(), a Disassembler should shrink this to contain
   // only the portion containing the executable file it recognizes.
   ConstBufferView image_;
+
+  // The number of iterations to run for equivalence map generation. This should
+  // roughly be the max length of reference indirection chains.
+  int num_equivalence_iterations_;
 
   DISALLOW_COPY_AND_ASSIGN(Disassembler);
 };
