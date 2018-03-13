@@ -5243,4 +5243,38 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithCSSMask) {
   EXPECT_TRUE(root.FirstFragment().PaintProperties()->Mask());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
+  // This test makes sure ClipPath effect node is cleared properly upon
+  // removal of a clip-path.
+
+  // SPv1 has no effect tree.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <clipPath clip-path="circle()" id="clip"></clipPath>
+      <rect id="rect" width="800" clip-path="url(#clip)" height="800"/>
+    </svg>
+  )HTML");
+
+  {
+    const auto* rect = GetLayoutObjectByElementId("rect");
+    ASSERT_TRUE(rect);
+    EXPECT_TRUE(rect->FirstFragment().PaintProperties()->MaskClip());
+    EXPECT_TRUE(rect->FirstFragment().PaintProperties()->ClipPath());
+  }
+
+  Element* clip = GetDocument().getElementById("clip");
+  ASSERT_TRUE(clip);
+  clip->remove();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  {
+    const auto* rect = GetLayoutObjectByElementId("rect");
+    ASSERT_TRUE(rect);
+    EXPECT_FALSE(rect->FirstFragment().PaintProperties()->MaskClip());
+    EXPECT_FALSE(rect->FirstFragment().PaintProperties()->ClipPath());
+  }
+}
+
 }  // namespace blink

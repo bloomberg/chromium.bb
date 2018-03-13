@@ -822,6 +822,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
     } else {
       OnClear(properties_->ClearEffect());
       OnClear(properties_->ClearMask());
+      OnClear(properties_->ClearClipPath());
       OnClearClip(properties_->ClearMaskClip());
     }
   }
