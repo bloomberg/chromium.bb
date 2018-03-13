@@ -116,7 +116,7 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   // This will be called on the IO thread.
   void NotifyUrlRequestFailed(net::URLRequest* request,
                               int net_error,
-                              bool canceled_by_devtools);
+                              DevToolsStatus devtools_status);
 
   void SetNetworkConditions(HeadlessNetworkConditions conditions);
   HeadlessNetworkConditions GetNetworkConditions() override;

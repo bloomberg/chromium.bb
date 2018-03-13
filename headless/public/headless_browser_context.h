@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/web_preferences.h"
 #include "headless/lib/browser/headless_network_conditions.h"
 #include "headless/public/headless_export.h"
@@ -31,6 +32,8 @@ class HeadlessBrowserContextOptions;
 // Imported into headless namespace for
 // Builder::SetOverrideWebPreferencesCallback().
 using content::WebPreferences;
+
+using DevToolsStatus = content::ResourceRequestInfo::DevToolsStatus;
 
 using ProtocolHandlerMap = std::unordered_map<
     std::string,
@@ -91,7 +94,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
   // delivered on the IO thread.
   virtual void UrlRequestFailed(net::URLRequest* request,
                                 int net_error,
-                                bool canceled_by_devtools) {}
+                                DevToolsStatus devtools_status) {}
 
   // Indicates the HeadlessBrowserContext is about to be deleted.
   virtual void OnHeadlessBrowserContextDestruct() {}

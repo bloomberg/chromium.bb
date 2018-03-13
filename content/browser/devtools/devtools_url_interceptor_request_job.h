@@ -128,10 +128,10 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   const net::HttpResponseHeaders* GetHttpResponseHeaders() const;
 
   void ProcessRedirect(int status_code, const std::string& new_url);
-  void ProcessInterceptionRespose(
+  void ProcessInterceptionResponse(
       std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modification);
 
-  bool ProcessAuthRespose(
+  bool ProcessAuthResponse(
       std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modification);
 
   enum class WaitingForUserResponse {
