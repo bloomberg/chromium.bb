@@ -270,8 +270,8 @@ ExtensionFunction::ResponseAction HistoryGetVisitsFunction::Run() {
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
-               base::Bind(&HistoryGetVisitsFunction::QueryComplete,
-                          base::Unretained(this)),
+               base::BindOnce(&HistoryGetVisitsFunction::QueryComplete,
+                              base::Unretained(this)),
                &task_tracker_);
   AddRef();               // Balanced in QueryComplete().
   return RespondLater();  // QueryComplete() will be called asynchronously.

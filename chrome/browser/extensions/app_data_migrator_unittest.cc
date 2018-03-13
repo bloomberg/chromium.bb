@@ -132,11 +132,11 @@ void OpenFileSystems(storage::FileSystemContext* fs_context,
                      GURL extension_url) {
   fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypeTemporary,
                              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                             base::Bind(&DidOpenFileSystem));
+                             base::BindOnce(&DidOpenFileSystem));
 
   fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypePersistent,
                              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                             base::Bind(&DidOpenFileSystem));
+                             base::BindOnce(&DidOpenFileSystem));
   content::RunAllTasksUntilIdle();
 }
 

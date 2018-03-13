@@ -35,8 +35,8 @@ void UnzipHelper::Unzip(const base::FilePath& image_path,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-  task_runner->PostTask(FROM_HERE, base::Bind(&UnzipHelper::UnzipImpl, this,
-                                              image_path, temp_dir_path));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&UnzipHelper::UnzipImpl, this,
+                                                  image_path, temp_dir_path));
 }
 
 void UnzipHelper::UnzipImpl(const base::FilePath& image_path,
@@ -72,12 +72,13 @@ void UnzipHelper::UnzipImpl(const base::FilePath& image_path,
 }
 
 void UnzipHelper::OnError(const std::string& error) {
-  owner_task_runner_->PostTask(FROM_HERE, base::Bind(failure_callback_, error));
+  owner_task_runner_->PostTask(FROM_HERE,
+                               base::BindOnce(failure_callback_, error));
 }
 
 void UnzipHelper::OnOpenSuccess(const base::FilePath& image_path) {
   owner_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(open_callback_, image_path));
+                               base::BindOnce(open_callback_, image_path));
 }
 
 void UnzipHelper::OnComplete() {
@@ -86,7 +87,7 @@ void UnzipHelper::OnComplete() {
 
 void UnzipHelper::OnProgress(int64_t total_bytes, int64_t curr_bytes) {
   owner_task_runner_->PostTask(
-      FROM_HERE, base::Bind(progress_callback_, total_bytes, curr_bytes));
+      FROM_HERE, base::BindOnce(progress_callback_, total_bytes, curr_bytes));
 }
 
 }  // namespace image_writer

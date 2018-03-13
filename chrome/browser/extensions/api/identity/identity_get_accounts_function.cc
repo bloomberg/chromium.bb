@@ -32,7 +32,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
                       mojo::MakeRequest(&identity_manager_));
 
   identity_manager_->GetAccounts(
-      base::Bind(&IdentityGetAccountsFunction::OnGotAccounts, this));
+      base::BindOnce(&IdentityGetAccountsFunction::OnGotAccounts, this));
 
   return RespondLater();
 }

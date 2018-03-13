@@ -44,7 +44,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&ImageWriterUtilityClientTest::FillFile, image_, pattern),
+        base::BindOnce(&ImageWriterUtilityClientTest::FillFile, image_,
+                       pattern),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -56,7 +57,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&ImageWriterUtilityClientTest::FillFile, device_, pattern),
+        base::BindOnce(&ImageWriterUtilityClientTest::FillFile, device_,
+                       pattern),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -72,8 +74,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     cancel_ = (option == CANCEL);
 
     CreateTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::StartWriteTest,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ImageWriterUtilityClientTest::StartWriteTest,
+                                  base::Unretained(this)));
     run_loop.Run();
 
     EXPECT_TRUE(quit_called_);
@@ -148,8 +150,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     }
 
     GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ImageWriterUtilityClientTest::Shutdown,
+                                  base::Unretained(this)));
   }
 
   void StartVerifyTest() {
@@ -179,8 +181,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     error_ = error;
 
     GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ImageWriterUtilityClientTest::Shutdown,
+                                  base::Unretained(this)));
   }
 
   void Verified() {
@@ -191,8 +193,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     success_ = !cancel_;
 
     GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ImageWriterUtilityClientTest::Shutdown,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ImageWriterUtilityClientTest::Shutdown,
+                                  base::Unretained(this)));
   }
 
   void Cancelled() {

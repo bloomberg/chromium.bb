@@ -298,11 +298,11 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExtensionUninstallDialog::ConfirmUninstall,
-                 uninstall_dialog_->AsWeakPtr(), base::RetainedRef(extension_),
-                 UNINSTALL_REASON_EXTENSION_DISABLED,
-                 UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
+      FROM_HERE, base::BindOnce(&ExtensionUninstallDialog::ConfirmUninstall,
+                                uninstall_dialog_->AsWeakPtr(),
+                                base::RetainedRef(extension_),
+                                UNINSTALL_REASON_EXTENSION_DISABLED,
+                                UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {

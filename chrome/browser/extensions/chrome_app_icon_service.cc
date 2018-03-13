@@ -90,8 +90,9 @@ void ChromeAppIconService::OnIconDestroyed(ChromeAppIcon* icon) {
   it->second.erase(icon);
   if (it->second.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ChromeAppIconService::MaybeCleanupIconSet,
-                              weak_ptr_factory_.GetWeakPtr(), icon->app_id()));
+        FROM_HERE,
+        base::BindOnce(&ChromeAppIconService::MaybeCleanupIconSet,
+                       weak_ptr_factory_.GetWeakPtr(), icon->app_id()));
   }
 }
 

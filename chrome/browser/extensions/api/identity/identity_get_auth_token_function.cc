@@ -293,8 +293,8 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   // Start listening for the primary account being available and display a
   // login prompt.
   GetIdentityManager()->GetPrimaryAccountWhenAvailable(
-      base::Bind(&IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable,
-                 base::Unretained(this)));
+      base::BindOnce(&IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable,
+                     base::Unretained(this)));
 
   ShowLoginPopup();
 }
