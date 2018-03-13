@@ -25,6 +25,7 @@
 
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "core/svg/SVGResource.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace blink {
@@ -129,7 +130,9 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     // Issue paint invalidations for the image on the screen.
     MarkClientForInvalidation(*filter.key, kPaintInvalidation);
   }
-  NotifyContentChanged();
+  if (LocalSVGResource* resource =
+          ToSVGFilterElement(GetElement())->AssociatedResource())
+    resource->NotifyContentChanged();
 }
 
 }  // namespace blink

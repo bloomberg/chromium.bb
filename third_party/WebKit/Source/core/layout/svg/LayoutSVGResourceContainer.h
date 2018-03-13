@@ -25,7 +25,6 @@
 namespace blink {
 
 class LocalSVGResource;
-class SVGElementProxySet;
 
 enum LayoutSVGResourceType {
   kMaskerResourceType,
@@ -92,9 +91,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  protected:
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
-
-  void NotifyContentChanged();
-  SVGElementProxySet* ElementProxySet();
 
   void WillBeDestroyed() override;
 

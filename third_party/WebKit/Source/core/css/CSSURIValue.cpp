@@ -6,9 +6,8 @@
 
 #include "core/css/CSSMarkup.h"
 #include "core/dom/Document.h"
-#include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGResource.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -24,16 +23,10 @@ CSSURIValue::CSSURIValue(const AtomicString& relative_url, const KURL& url)
 
 CSSURIValue::~CSSURIValue() = default;
 
-SVGElementProxy& CSSURIValue::EnsureElementProxy(
-    const Document& document) const {
-  if (proxy_)
-    return *proxy_;
-  AtomicString fragment_id = FragmentIdentifier();
-  if (IsLocal(document))
-    proxy_ = SVGElementProxy::Create(fragment_id);
-  else
-    proxy_ = SVGElementProxy::Create(absolute_url_, fragment_id);
-  return *proxy_;
+SVGResource* CSSURIValue::EnsureResourceReference() const {
+  if (!resource_)
+    resource_ = new ExternalSVGResource(AbsoluteUrl());
+  return resource_;
 }
 
 void CSSURIValue::ReResolveUrl(const Document& document) const {
@@ -44,7 +37,7 @@ void CSSURIValue::ReResolveUrl(const Document& document) const {
   if (url_string == absolute_url_)
     return;
   absolute_url_ = url_string;
-  proxy_ = nullptr;
+  resource_ = nullptr;
 }
 
 String CSSURIValue::CustomCSSText() const {
@@ -76,7 +69,7 @@ bool CSSURIValue::Equals(const CSSURIValue& other) const {
 }
 
 void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) {
-  visitor->Trace(proxy_);
+  visitor->Trace(resource_);
   CSSValue::TraceAfterDispatch(visitor);
 }
 

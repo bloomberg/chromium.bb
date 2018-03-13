@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class SVGElementProxySet;
-
 class SVGElementRareData
     : public GarbageCollectedFinalized<SVGElementRareData> {
  public:
@@ -49,8 +47,6 @@ class SVGElementRareData
   const SVGElementSet& IncomingReferences() const {
     return incoming_references_;
   }
-
-  SVGElementProxySet& EnsureElementProxySet();
 
   HeapHashSet<WeakMember<SVGElement>>& ElementInstances() {
     return element_instances_;
@@ -105,7 +101,6 @@ class SVGElementRareData
   SVGElementSet outgoing_references_;
   SVGElementSet incoming_references_;
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
-  Member<SVGElementProxySet> element_proxy_set_;
   Member<SVGElement> corresponding_element_;
   bool instances_updates_blocked_ : 1;
   bool use_override_computed_style_ : 1;

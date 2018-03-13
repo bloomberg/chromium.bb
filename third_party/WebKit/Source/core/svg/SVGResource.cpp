@@ -4,15 +4,21 @@
 
 #include "core/svg/SVGResource.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/TreeScope.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/loader/resource/DocumentResource.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGResourceClient.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 
 namespace blink {
 
@@ -31,6 +37,14 @@ void SVGResource::AddClient(SVGResourceClient& client) {
 
 void SVGResource::RemoveClient(SVGResourceClient& client) {
   clients_.erase(&client);
+}
+
+void SVGResource::NotifyElementChanged() {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceElementChanged();
 }
 
 LayoutSVGResourceContainer* SVGResource::ResourceContainer() const {
@@ -88,14 +102,6 @@ void LocalSVGResource::NotifyContentChanged() {
     client->ResourceContentChanged();
 }
 
-void LocalSVGResource::NotifyElementChanged() {
-  HeapVector<Member<SVGResourceClient>> clients;
-  CopyToVector(clients_, clients);
-
-  for (SVGResourceClient* client : clients)
-    client->ResourceElementChanged();
-}
-
 void LocalSVGResource::TargetChanged(const AtomicString& id) {
   Element* new_target = tree_scope_->getElementById(id);
   if (new_target == target_)
@@ -114,6 +120,49 @@ void LocalSVGResource::Trace(Visitor* visitor) {
   visitor->Trace(id_observer_);
   visitor->Trace(pending_clients_);
   SVGResource::Trace(visitor);
+}
+
+ExternalSVGResource::ExternalSVGResource(const KURL& url) : url_(url) {}
+
+void ExternalSVGResource::Load(const Document& document) {
+  if (resource_document_)
+    return;
+  ResourceLoaderOptions options;
+  options.initiator_info.name = FetchInitiatorTypeNames::css;
+  FetchParameters params(ResourceRequest(url_), options);
+  resource_document_ =
+      DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
+  target_ = ResolveTarget();
+}
+
+void ExternalSVGResource::NotifyFinished(Resource*) {
+  Element* new_target = ResolveTarget();
+  if (new_target == target_)
+    return;
+  target_ = new_target;
+  NotifyElementChanged();
+}
+
+String ExternalSVGResource::DebugName() const {
+  return "ExternalSVGResource";
+}
+
+Element* ExternalSVGResource::ResolveTarget() {
+  if (!resource_document_)
+    return nullptr;
+  if (!url_.HasFragmentIdentifier())
+    return nullptr;
+  Document* external_document = resource_document_->GetDocument();
+  if (!external_document)
+    return nullptr;
+  return external_document->getElementById(
+      AtomicString(url_.FragmentIdentifier()));
+}
+
+void ExternalSVGResource::Trace(Visitor* visitor) {
+  visitor->Trace(resource_document_);
+  SVGResource::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

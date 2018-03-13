@@ -580,21 +580,15 @@ void CanvasRenderingContext2D::StyleDidChange(const ComputedStyle* old_style,
   PruneLocalFontCache(0);
 }
 
-TreeScope* CanvasRenderingContext2D::GetTreeScope() {
-  return &canvas()->GetTreeScope();
-}
-
 void CanvasRenderingContext2D::ClearFilterReferences() {
-  filter_operations_.RemoveClient(this);
+  filter_operations_.RemoveClient(*this);
   filter_operations_.clear();
 }
 
 void CanvasRenderingContext2D::UpdateFilterReferences(
     const FilterOperations& filters) {
   ClearFilterReferences();
-  filters.AddClient(
-      this,
-      canvas()->GetDocument().GetTaskRunner(TaskType::kUnspecedLoading).get());
+  filters.AddClient(*this);
   filter_operations_ = filters;
 }
 

@@ -1244,13 +1244,6 @@ bool SVGElement::IsAnimatableAttribute(const QualifiedName& name) const {
 }
 #endif  // DCHECK_IS_ON()
 
-SVGElementProxySet* SVGElement::ElementProxySet() {
-  // Limit to specific element types.
-  if (!IsSVGFilterElement(*this) && !IsSVGClipPathElement(*this))
-    return nullptr;
-  return &EnsureSVGRareData()->EnsureElementProxySet();
-}
-
 SVGElementSet* SVGElement::SetOfIncomingReferences() const {
   if (!HasSVGRareData())
     return nullptr;

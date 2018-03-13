@@ -352,7 +352,6 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
 
     FilterEffectBuilder filter_effect_builder(
-        style_resolution_host,
         FloatRect((FloatPoint()), FloatSize(canvas_size)),
         1.0f,  // Deliberately ignore zoom on the canvas element.
         &fill_flags_for_filter, &stroke_flags_for_filter);

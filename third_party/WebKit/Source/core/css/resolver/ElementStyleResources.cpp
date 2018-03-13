@@ -39,7 +39,6 @@
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StylePendingImage.h"
-#include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "platform/Length.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -97,22 +96,21 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
   return value.CachedImage();
 }
 
-SVGElementProxy& ElementStyleResources::CachedOrPendingFromValue(
-    const CSSURIValue& value) {
-  return value.EnsureElementProxy(*document_);
-}
-
 SVGResource* ElementStyleResources::GetSVGResourceFromValue(
     TreeScope& tree_scope,
-    const CSSURIValue& value) const {
-  if (!value.IsLocal(*document_))
-    return nullptr;
-  SVGTreeScopeResources& tree_scope_resources =
-      tree_scope.EnsureSVGTreeScopedResources();
-  return tree_scope_resources.ResourceForId(value.FragmentIdentifier());
+    const CSSURIValue& value,
+    AllowExternal allow_external) const {
+  if (value.IsLocal(*document_)) {
+    SVGTreeScopeResources& tree_scope_resources =
+        tree_scope.EnsureSVGTreeScopedResources();
+    return tree_scope_resources.ResourceForId(value.FragmentIdentifier());
+  }
+  if (allow_external == kAllowExternalResource)
+    return value.EnsureResourceReference();
+  return nullptr;
 }
 
-void ElementStyleResources::LoadPendingSVGDocuments(
+void ElementStyleResources::LoadPendingSVGResources(
     ComputedStyle* computed_style) {
   if (!computed_style->HasFilter())
     return;
@@ -123,7 +121,8 @@ void ElementStyleResources::LoadPendingSVGDocuments(
       continue;
     ReferenceFilterOperation& reference_operation =
         ToReferenceFilterOperation(*filter_operation);
-    reference_operation.ElementProxy().Resolve(*document_);
+    if (SVGResource* resource = reference_operation.Resource())
+      resource->Load(*document_);
   }
 }
 
@@ -311,7 +310,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
 void ElementStyleResources::LoadPendingResources(
     ComputedStyle* computed_style) {
   LoadPendingImages(computed_style);
-  LoadPendingSVGDocuments(computed_style);
+  LoadPendingSVGResources(computed_style);
 }
 
 }  // namespace blink

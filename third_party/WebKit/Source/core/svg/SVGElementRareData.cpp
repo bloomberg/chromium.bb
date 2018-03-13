@@ -6,7 +6,6 @@
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 
@@ -41,7 +40,6 @@ ComputedStyle* SVGElementRareData::OverrideComputedStyle(
 void SVGElementRareData::Trace(blink::Visitor* visitor) {
   visitor->Trace(outgoing_references_);
   visitor->Trace(incoming_references_);
-  visitor->Trace(element_proxy_set_);
   visitor->Trace(animated_smil_style_properties_);
   visitor->Trace(element_instances_);
   visitor->Trace(corresponding_element_);
@@ -49,12 +47,6 @@ void SVGElementRareData::Trace(blink::Visitor* visitor) {
 
 AffineTransform* SVGElementRareData::AnimateMotionTransform() {
   return &animate_motion_transform_;
-}
-
-SVGElementProxySet& SVGElementRareData::EnsureElementProxySet() {
-  if (!element_proxy_set_)
-    element_proxy_set_ = new SVGElementProxySet;
-  return *element_proxy_set_;
 }
 
 }  // namespace blink

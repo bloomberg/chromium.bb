@@ -34,6 +34,7 @@
 namespace blink {
 
 class SVGFilterPrimitiveStandardAttributes;
+class LocalSVGResource;
 
 class CORE_EXPORT SVGFilterElement final : public SVGElement,
                                            public SVGURIReference {
@@ -63,6 +64,9 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
 
   // Invalidate the entire filter chain.
   void InvalidateFilterChain();
+
+  // Get the associated SVGResource object, if any.
+  LocalSVGResource* AssociatedResource() const;
 
  private:
   explicit SVGFilterElement(Document&);

@@ -63,8 +63,6 @@ class PaintLayerResourceInfo final
 
   void ClearLayer() { layer_ = nullptr; }
 
-  TreeScope* GetTreeScope() override;
-
   void ResourceContentChanged() override;
   void ResourceElementChanged() override;
 

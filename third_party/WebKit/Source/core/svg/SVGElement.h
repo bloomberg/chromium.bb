@@ -40,7 +40,6 @@ class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
 class SVGElement;
-class SVGElementProxySet;
 class SVGElementRareData;
 class SVGPropertyBase;
 class SVGSVGElement;
@@ -170,8 +169,6 @@ class CORE_EXPORT SVGElement : public Element {
   SVGAnimatedString* className() { return class_name_.Get(); }
 
   bool InUseShadowTree() const;
-
-  SVGElementProxySet* ElementProxySet();
 
   void AddReferenceTo(SVGElement*);
   void NotifyIncomingReferences(bool needs_layout);
