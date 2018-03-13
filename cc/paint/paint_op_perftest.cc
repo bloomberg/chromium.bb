@@ -11,7 +11,7 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/test/transfer_cache_test_helper.h"
 #include "testing/perf/perf_test.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/core/SkMaskFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -123,9 +123,8 @@ TEST_F(PaintOpPerfTest, ManyFlagsOps) {
   PaintFlags flags;
   SkScalar intervals[] = {1.f, 1.f};
   flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
-  flags.setMaskFilter(SkBlurMaskFilter::Make(SkBlurStyle::kOuter_SkBlurStyle,
-                                             4.3f, SkRect::MakeXYWH(1, 1, 1, 1),
-                                             kHigh_SkBlurQuality));
+  flags.setMaskFilter(SkMaskFilter::MakeBlur(
+      SkBlurStyle::kOuter_SkBlurStyle, 4.3f, SkRect::MakeXYWH(1, 1, 1, 1)));
   flags.setColorFilter(
       SkColorMatrixFilter::MakeLightingFilter(SK_ColorYELLOW, SK_ColorGREEN));
 

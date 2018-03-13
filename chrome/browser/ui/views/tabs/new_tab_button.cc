@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/feature_engagement/buildflags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/core/SkMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/default_theme_provider.h"
@@ -55,8 +55,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   layer_info.fColorMode = SkBlendMode::kDst;
   layer_info.fOffset.set(0, 1);
   SkPaint* layer_paint = looper_builder.addLayer(layer_info);
-  layer_paint->setMaskFilter(SkBlurMaskFilter::Make(
-      kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
+  layer_paint->setMaskFilter(SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, 0.5));
   layer_paint->setColorFilter(
       SkColorFilter::MakeModeFilter(color, SkBlendMode::kSrcIn));
   return looper_builder.detach();

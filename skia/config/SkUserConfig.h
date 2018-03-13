@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef SkUserConfig_DEFINED
-#define SkUserConfig_DEFINED
+#ifndef SKIA_CONFIG_SKUSERCONFIG_H_
+#define SKIA_CONFIG_SKUSERCONFIG_H_
 
 /*  SkTypes.h, the root of the public header files, does the following trick:
 
@@ -211,10 +211,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Remove after M66 branch to use new read/writePixels implementations
 #ifndef SK_LEGACY_GPU_PIXEL_OPS
 #define SK_LEGACY_GPU_PIXEL_OPS
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_BLURMASKFILTER
-#define SK_SUPPORT_LEGACY_BLURMASKFILTER
 #endif
 
 #ifndef SK_SUPPORT_LEGACY_YUV_COLORSPACE
