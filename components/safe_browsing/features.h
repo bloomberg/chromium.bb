@@ -52,9 +52,6 @@ extern const base::Feature kAppendRecentNavigationEvents;
 // unsafe.
 extern const base::Feature kInspectDownloadedRarFiles;
 
-// Control the Password Protection for Enterprise V1 feature;
-extern const base::Feature kEnterprisePasswordProtectionV1;
-
 base::ListValue GetFeatureStatusList();
 
 }  // namespace safe_browsing
