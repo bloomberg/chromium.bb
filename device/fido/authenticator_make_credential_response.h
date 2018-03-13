@@ -11,7 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 

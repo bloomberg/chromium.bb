@@ -13,7 +13,7 @@
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_writer.h"
 #include "device/fido/authenticator_supported_options.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 

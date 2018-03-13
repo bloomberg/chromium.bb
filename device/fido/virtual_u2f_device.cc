@@ -10,7 +10,7 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "crypto/sha2.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_apdu_command.h"
 
 namespace device {

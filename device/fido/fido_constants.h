@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_CTAP_CONSTANTS_H_
-#define DEVICE_FIDO_CTAP_CONSTANTS_H_
+#ifndef DEVICE_FIDO_FIDO_CONSTANTS_H_
+#define DEVICE_FIDO_FIDO_CONSTANTS_H_
 
 #include <stdint.h>
 
@@ -227,4 +227,4 @@ extern const std::array<uint8_t, 2> kLegacyVersionSuffix;
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_CTAP_CONSTANTS_H_
+#endif  // DEVICE_FIDO_FIDO_CONSTANTS_H_
