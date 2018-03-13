@@ -124,6 +124,10 @@ class FakeAppInstance : public mojom::AppInstance {
       const std::string& query,
       int32_t max_results,
       GetRecentAndSuggestedAppsFromPlayStoreCallback callback) override;
+  void GetIcingGlobalQueryResults(
+      const std::string& query,
+      int32_t max_results,
+      GetIcingGlobalQueryResultsCallback callback) override;
   void StartPaiFlow() override;
 
   // Methods to reply messages.
