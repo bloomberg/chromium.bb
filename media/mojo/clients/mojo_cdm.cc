@@ -14,11 +14,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
-#include "media/media_features.h"
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
@@ -319,15 +317,6 @@ Decryptor* MojoCdm::GetDecryptor() {
 int MojoCdm::GetCdmId() const {
   // Can be called on a different thread.
   base::AutoLock auto_lock(lock_);
-
-#if defined(OS_ANDROID)
-  // TODO(xhwang): On Android, we always assume the remote CDM is a
-  // MediaDrmBridge. If it supports a Decryptor here, then it's not a
-  // MediaDrmBridge, and we should not provide the CDM ID.
-  if (decryptor_ptr_info_.is_valid() || decryptor_)
-    return CdmContext::kInvalidCdmId;
-#endif
-
   DVLOG(2) << __func__ << ": cdm_id = " << cdm_id_;
   return cdm_id_;
 }
