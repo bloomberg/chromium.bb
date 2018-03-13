@@ -55,7 +55,6 @@
 
 namespace blink {
 
-class ThreadableLoadingContext;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeThrottle;
 
@@ -152,7 +151,6 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void HandleDidClose(bool was_clean,
                       unsigned short code,
                       const String& reason);
-  ThreadableLoadingContext* LoadingContext();
 
   // This may return nullptr.
   // TODO(kinuko): Remove dependency to document.
