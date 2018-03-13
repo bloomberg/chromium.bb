@@ -13,14 +13,20 @@ X11WindowManagerOzone::X11WindowManagerOzone() : event_grabber_(nullptr) {}
 X11WindowManagerOzone::~X11WindowManagerOzone() {}
 
 void X11WindowManagerOzone::GrabEvents(X11WindowOzone* window) {
-  if (event_grabber_ != window)
+  if (event_grabber_ == window)
     return;
+
+  X11WindowOzone* old_grabber = event_grabber_;
+  if (old_grabber)
+    old_grabber->OnLostCapture();
+
   event_grabber_ = window;
 }
 
 void X11WindowManagerOzone::UngrabEvents(X11WindowOzone* window) {
   if (event_grabber_ != window)
     return;
+  event_grabber_->OnLostCapture();
   event_grabber_ = nullptr;
 }
 

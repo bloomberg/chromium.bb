@@ -24,6 +24,9 @@ class X11WindowOzone : public X11WindowBase,
                  const gfx::Rect& bounds);
   ~X11WindowOzone() override;
 
+  // Called by |window_manager_| once capture is set to another X11WindowOzone.
+  void OnLostCapture();
+
   // PlatformWindow:
   void PrepareForShutdown() override;
   void SetCapture() override;
