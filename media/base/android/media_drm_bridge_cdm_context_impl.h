@@ -30,10 +30,6 @@ class MEDIA_EXPORT MediaDrmBridgeCdmContextImpl
 
   ~MediaDrmBridgeCdmContextImpl() final;
 
-  // CdmContext implementation.
-  Decryptor* GetDecryptor() final;
-  int GetCdmId() const final;
-
   // PlayerTracker implementation.
   // Methods can be called on any thread. The registered callbacks will be fired
   // on |task_runner_|. The caller should make sure that the callbacks are

@@ -9,26 +9,27 @@
 
 #include "base/macros.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 
 class MEDIA_EXPORT MockMediaDrmBridgeCdmContext
-    : public testing::NiceMock<MediaDrmBridgeCdmContext> {
+    : public CdmContext,
+      public testing::NiceMock<MediaDrmBridgeCdmContext> {
  public:
-  explicit MockMediaDrmBridgeCdmContext(int cdm_id);
-
+  MockMediaDrmBridgeCdmContext();
   ~MockMediaDrmBridgeCdmContext() override;
 
-  MOCK_METHOD0(GetDecryptor, Decryptor*());
-  MOCK_CONST_METHOD0(GetCdmId, int());
+  // CdmContext implementation.
+  MediaDrmBridgeCdmContext* GetMediaDrmBridgeCdmContext() override;
+
+  // MediaDrmBridgeCdmContext implementation.
   MOCK_METHOD2(RegisterPlayer,
                int(const base::Closure& new_key_cb,
                    const base::Closure& cdm_unset_cb));
   MOCK_METHOD1(UnregisterPlayer, void(int registration_id));
-
-  // MediaDrmBridgeCdmContext implementation.
   MOCK_METHOD1(SetMediaCryptoReadyCB,
                void(const MediaCryptoReadyCB& media_crypto_ready_cb));
 

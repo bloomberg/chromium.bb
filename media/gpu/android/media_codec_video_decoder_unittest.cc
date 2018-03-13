@@ -150,7 +150,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   }
 
   void CreateCdm(bool require_secure_video_decoder) {
-    cdm_ = std::make_unique<MockMediaDrmBridgeCdmContext>(cdm_id_);
+    cdm_ = std::make_unique<MockMediaDrmBridgeCdmContext>();
     require_secure_video_decoder_ = require_secure_video_decoder;
 
     // We need to send an object as the media crypto, but MCVD shouldn't
@@ -246,7 +246,6 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   bool restart_for_transitions_;
   gpu::GpuPreferences gpu_preferences_;
 
-  const int cdm_id_ = 123;
   // This is not an actual media crypto object.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
   bool require_secure_video_decoder_ = false;

@@ -17,9 +17,8 @@ using ::testing::_;
 
 namespace media {
 
-MockMediaDrmBridgeCdmContext::MockMediaDrmBridgeCdmContext(int cdm_id) {
+MockMediaDrmBridgeCdmContext::MockMediaDrmBridgeCdmContext() {
   // Provide some sane defaults.
-  ON_CALL(*this, GetCdmId()).WillByDefault(Return(cdm_id));
   ON_CALL(*this, RegisterPlayer(_, _))
       .WillByDefault(DoAll(SaveArg<0>(&new_key_cb), SaveArg<1>(&cdm_unset_cb),
                            Return(kRegistrationId)));
@@ -32,5 +31,10 @@ MockMediaDrmBridgeCdmContext::MockMediaDrmBridgeCdmContext(int cdm_id) {
 }
 
 MockMediaDrmBridgeCdmContext::~MockMediaDrmBridgeCdmContext() {}
+
+MediaDrmBridgeCdmContext*
+MockMediaDrmBridgeCdmContext::GetMediaDrmBridgeCdmContext() {
+  return this;
+}
 
 }  // namespace media

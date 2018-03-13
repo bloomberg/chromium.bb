@@ -23,6 +23,7 @@
 #include "media/base/android/media_drm_bridge_cdm_context_impl.h"
 #include "media/base/android/media_drm_storage.h"
 #include "media/base/android/media_drm_storage_bridge.h"
+#include "media/base/cdm_context.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
@@ -47,6 +48,7 @@ namespace media {
 // SetMediaCryptoReadyCB(), which can be called on any thread.
 
 class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
+                                    public CdmContext,
                                     public PlayerTracker {
  public:
   // TODO(ddorwin): These are specific to Widevine. http://crbug.com/459400
@@ -128,6 +130,9 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
                      std::unique_ptr<media::SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
   void DeleteOnCorrectThread() const override;
+
+  // CdmContext implementation.
+  MediaDrmBridgeCdmContext* GetMediaDrmBridgeCdmContext() override;
 
   // Unprovision the origin bound with |this|. This will remove the cert for
   // current origin and leave the offline licenses in invalid state (offline
