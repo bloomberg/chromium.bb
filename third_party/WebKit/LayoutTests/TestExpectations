@@ -3364,7 +3364,7 @@ crbug.com/811977 media/controls/picture-in-picture-interstitial.html [ Skip ]
 crbug.com/811977 virtual/new-remote-playback-pipeline/media/controls/picture-in-picture-interstitial.html [ Skip ]
 
 # Sheriff 2018-02-26
-crbug.com/816475 [ Win7 ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
+crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
