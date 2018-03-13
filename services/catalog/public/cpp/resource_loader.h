@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
 
 namespace base {
 class File;

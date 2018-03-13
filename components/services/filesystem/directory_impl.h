@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
-#define COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_DIRECTORY_IMPL_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_DIRECTORY_IMPL_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "components/filesystem/shared_temp_dir.h"
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/shared_temp_dir.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace filesystem {
@@ -78,4 +78,4 @@ class DirectoryImpl : public mojom::Directory {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_DIRECTORY_IMPL_H_

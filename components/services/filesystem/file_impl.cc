@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/file_impl.h"
+#include "components/services/filesystem/file_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,9 +16,9 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "components/filesystem/lock_table.h"
-#include "components/filesystem/shared_temp_dir.h"
-#include "components/filesystem/util.h"
+#include "components/services/filesystem/lock_table.h"
+#include "components/services/filesystem/shared_temp_dir.h"
+#include "components/services/filesystem/util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
@@ -169,8 +169,8 @@ void FileImpl::Write(const std::vector<uint8_t>& bytes_to_write,
   const char* buf = (bytes_to_write.size() > 0)
                         ? reinterpret_cast<const char*>(&bytes_to_write.front())
                         : nullptr;
-  int num_bytes_written = file_.WriteAtCurrentPos(
-      buf, static_cast<int>(bytes_to_write.size()));
+  int num_bytes_written =
+      file_.WriteAtCurrentPos(buf, static_cast<int>(bytes_to_write.size()));
   if (num_bytes_written < 0) {
     std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, 0);
     return;

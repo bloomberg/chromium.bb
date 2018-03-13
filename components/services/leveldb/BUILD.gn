@@ -21,7 +21,7 @@ static_library("lib") {
   ]
 
   public_deps = [
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem/public/interfaces",
     "//components/services/leveldb/public/cpp",
     "//components/services/leveldb/public/interfaces",
   ]
@@ -67,7 +67,7 @@ service_test("leveldb_service_unittests") {
 
   deps = [
     "//base",
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem/public/interfaces",
     "//components/services/leveldb/public/cpp",
     "//components/services/leveldb/public/interfaces",
     "//mojo/common",
@@ -80,7 +80,7 @@ service_test("leveldb_service_unittests") {
 
   data_deps = [
     ":leveldb",
-    "//components/filesystem:filesystem",
+    "//components/services/filesystem:filesystem",
   ]
 }
 
@@ -93,6 +93,6 @@ catalog("leveldb_service_unittests_catalog") {
   embedded_services = [ ":test_manifest" ]
   standalone_services = [
     ":manifest",
-    "//components/filesystem:manifest",
+    "//components/services/filesystem:manifest",
   ]
 }

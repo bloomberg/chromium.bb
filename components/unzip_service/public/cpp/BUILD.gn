@@ -11,7 +11,7 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    "//components/filesystem:lib",
+    "//components/services/filesystem:lib",
     "//components/unzip_service/public/interfaces",
     "//services/service_manager/public/cpp",
   ]

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_FILES_TEST_BASE_H_
-#define COMPONENTS_FILESYSTEM_FILES_TEST_BASE_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_FILES_TEST_BASE_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_FILES_TEST_BASE_H_
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "components/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
 namespace filesystem {
 
-template <typename... Args> void IgnoreAllArgs(Args&&... args) {}
+template <typename... Args>
+void IgnoreAllArgs(Args&&... args) {}
 
 template <typename... Args>
 void DoCaptures(Args*... out_args, Args... in_args) {
@@ -60,4 +61,4 @@ class FilesTestBase : public service_manager::test::ServiceTest {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_FILES_TEST_BASE_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_FILES_TEST_BASE_H_

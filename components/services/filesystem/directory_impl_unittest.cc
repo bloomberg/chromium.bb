@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/filesystem/files_test_base.h"
+#include "components/services/filesystem/files_test_base.h"
 
 namespace filesystem {
 namespace {

@@ -17,8 +17,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/filesystem:lib",
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem:lib",
+    "//components/services/filesystem/public/interfaces",
     "//components/services/leveldb:lib",
     "//components/services/leveldb/public/interfaces",
     "//mojo/common",

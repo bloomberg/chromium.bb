@@ -9,7 +9,7 @@
 
 module filesystem.mojom;
 
-import "components/filesystem/public/interfaces/types.mojom";
+import "components/services/filesystem/public/interfaces/types.mojom";
 import "mojo/common/file.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 

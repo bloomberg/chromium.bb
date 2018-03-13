@@ -26,7 +26,7 @@ static_library("lib") {
 
   deps = [
     "//base",
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/public/cpp/system",
@@ -48,7 +48,7 @@ if (!is_ios) {
     deps = [
       ":lib",
       "//base",
-      "//components/filesystem/public/interfaces",
+      "//components/services/filesystem/public/interfaces",
       "//mojo/common",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",
@@ -73,7 +73,7 @@ if (!is_ios) {
 
     deps = [
       "//base",
-      "//components/filesystem/public/interfaces",
+      "//components/services/filesystem/public/interfaces",
       "//mojo/common",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",

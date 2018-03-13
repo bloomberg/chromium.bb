@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/shared_temp_dir.h"
+#include "components/services/filesystem/shared_temp_dir.h"
 
 #include "base/files/scoped_temp_dir.h"
 

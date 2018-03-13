@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/file_system_impl.h"
+#include "components/services/filesystem/file_system_impl.h"
 
 #include <stddef.h>
 
@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "components/filesystem/directory_impl.h"
-#include "components/filesystem/lock_table.h"
+#include "components/services/filesystem/directory_impl.h"
+#include "components/services/filesystem/lock_table.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "url/gurl.h"
@@ -31,8 +31,7 @@ FileSystemImpl::FileSystemImpl(const service_manager::Identity& remote_identity,
       lock_table_(std::move(lock_table)),
       persistent_dir_(persistent_dir) {}
 
-FileSystemImpl::~FileSystemImpl() {
-}
+FileSystemImpl::~FileSystemImpl() {}
 
 void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
                                        OpenTempDirectoryCallback callback) {

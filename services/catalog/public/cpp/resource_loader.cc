@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "components/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
