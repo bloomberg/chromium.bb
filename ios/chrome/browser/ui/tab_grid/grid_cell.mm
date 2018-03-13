@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/top_aligned_image_view.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -19,8 +20,6 @@ namespace {
 const CGFloat kTopBarHeight = 28.0f;
 // Width and height of the icon.
 const CGFloat kIconDiameter = 20.0f;
-// Width and height of the close button.
-const CGFloat kCloseButtonDiameter = 16.0f;
 // Width of selection border.
 const CGFloat kBorderWidth = 6.0f;
 }  // namespace
@@ -133,9 +132,8 @@ const CGFloat kBorderWidth = 6.0f;
       self.titleLabel.textColor = [UIColor blackColor];
       self.line.backgroundColor = [UIColor colorWithWhite:0.6f alpha:1.0f];
       self.snapshotView.backgroundColor = [UIColor whiteColor];
-      self.closeButton.backgroundColor =
-          [UIColor colorWithWhite:0.6f alpha:1.0f];
-      self.closeButton.tintColor = [UIColor whiteColor];
+      self.closeButton.tintColor =
+          UIColorFromRGB(kGridLightThemeCellCloseButtonTintColor);
       self.tintColor =
           [UIColor colorWithRed:0.0 green:122.0 / 255.0 blue:1.0 alpha:1.0];
       self.border.layer.borderColor = self.tintColor.CGColor;
@@ -147,9 +145,8 @@ const CGFloat kBorderWidth = 6.0f;
       self.line.backgroundColor = [UIColor colorWithWhite:0.2f alpha:1.0f];
       self.snapshotView.backgroundColor =
           [UIColor colorWithWhite:0.4f alpha:1.0f];
-      self.closeButton.backgroundColor =
-          [UIColor colorWithWhite:0.4f alpha:1.0f];
-      self.closeButton.tintColor = [UIColor colorWithWhite:0.2f alpha:1.0f];
+      self.closeButton.tintColor =
+          UIColorFromRGB(kGridDarkThemeCellCloseButtonTintColor);
       self.tintColor = [UIColor colorWithWhite:0.9f alpha:1.0f];
       self.border.layer.borderColor = self.tintColor.CGColor;
       break;
@@ -205,9 +202,7 @@ const CGFloat kBorderWidth = 6.0f;
 
   UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-  closeButton.layer.cornerRadius = 8.0f;
-  closeButton.layer.masksToBounds = YES;
-  UIImage* closeImage = [[UIImage imageNamed:@"card_close_button"]
+  UIImage* closeImage = [[UIImage imageNamed:@"grid_close_cell"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [closeButton setImage:closeImage forState:UIControlStateNormal];
   [closeButton addTarget:self
@@ -234,12 +229,12 @@ const CGFloat kBorderWidth = 6.0f;
     [closeButton.leadingAnchor
         constraintEqualToAnchor:titleLabel.trailingAnchor],
     [closeButton.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
-    [closeButton.widthAnchor constraintEqualToConstant:kCloseButtonDiameter],
-    [closeButton.heightAnchor constraintEqualToConstant:kCloseButtonDiameter],
     [closeButton.trailingAnchor constraintEqualToAnchor:topBar.trailingAnchor
                                                constant:-6.0f],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
+  [closeButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                 forAxis:UILayoutConstraintAxisHorizontal];
   return topBar;
 }
 

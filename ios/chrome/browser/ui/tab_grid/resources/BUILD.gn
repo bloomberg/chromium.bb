@@ -1,0 +1,14 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ios/asset_catalog.gni")
+
+imageset("grid_close_cell") {
+  sources = [
+    "grid_close_cell.imageset/Contents.json",
+    "grid_close_cell.imageset/grid_close_cell.png",
+    "grid_close_cell.imageset/grid_close_cell@2x.png",
+    "grid_close_cell.imageset/grid_close_cell@3x.png",
+  ]
+}
