@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/gpu/shader_cache_factory.h"

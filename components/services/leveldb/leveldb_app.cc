@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/leveldb_app.h"
+#include "components/services/leveldb/leveldb_app.h"
 
 #include "base/task_scheduler/post_task.h"
-#include "components/leveldb/leveldb_service_impl.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace leveldb {

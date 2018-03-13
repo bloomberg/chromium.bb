@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {

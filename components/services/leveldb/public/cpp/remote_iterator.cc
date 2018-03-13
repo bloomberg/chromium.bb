@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/public/cpp/remote_iterator.h"
+#include "components/services/leveldb/public/cpp/remote_iterator.h"
 
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/cpp/util.h"
 
 namespace leveldb {
 

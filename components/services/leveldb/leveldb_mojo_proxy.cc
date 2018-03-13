@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb/leveldb_mojo_proxy.h"
+#include "components/services/leveldb/leveldb_mojo_proxy.h"
 
 #include <set>
 
@@ -37,38 +37,37 @@ LevelDBMojoProxy::OpaqueDir* LevelDBMojoProxy::RegisterDirectory(
     filesystem::mojom::DirectoryPtr directory) {
   OpaqueDir* out_dir = nullptr;
   RunInternal(base::Bind(&LevelDBMojoProxy::RegisterDirectoryImpl, this,
-                         base::Passed(directory.PassInterface()),
-                         &out_dir));
+                         base::Passed(directory.PassInterface()), &out_dir));
 
   return out_dir;
 }
 
 void LevelDBMojoProxy::UnregisterDirectory(OpaqueDir* dir) {
-  RunInternal(base::Bind(&LevelDBMojoProxy::UnregisterDirectoryImpl,
-                         this, dir));
+  RunInternal(
+      base::Bind(&LevelDBMojoProxy::UnregisterDirectoryImpl, this, dir));
 }
 
 base::File LevelDBMojoProxy::OpenFileHandle(OpaqueDir* dir,
                                             const std::string& name,
                                             uint32_t open_flags) {
   base::File file;
-  RunInternal(base::Bind(&LevelDBMojoProxy::OpenFileHandleImpl, this, dir,
-                         name, open_flags, &file));
+  RunInternal(base::Bind(&LevelDBMojoProxy::OpenFileHandleImpl, this, dir, name,
+                         open_flags, &file));
   return file;
 }
 
 base::File::Error LevelDBMojoProxy::SyncDirectory(OpaqueDir* dir,
                                                   const std::string& name) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  RunInternal(base::Bind(&LevelDBMojoProxy::SyncDirectoryImpl, this, dir,
-                         name, &error));
+  RunInternal(base::Bind(&LevelDBMojoProxy::SyncDirectoryImpl, this, dir, name,
+                         &error));
   return error;
 }
 
 bool LevelDBMojoProxy::FileExists(OpaqueDir* dir, const std::string& name) {
   bool exists = false;
-  RunInternal(base::Bind(&LevelDBMojoProxy::FileExistsImpl, this, dir,
-                         name, &exists));
+  RunInternal(
+      base::Bind(&LevelDBMojoProxy::FileExistsImpl, this, dir, name, &exists));
   return exists;
 }
 
@@ -77,8 +76,8 @@ base::File::Error LevelDBMojoProxy::GetChildren(
     const std::string& path,
     std::vector<std::string>* result) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  RunInternal(base::Bind(&LevelDBMojoProxy::GetChildrenImpl, this, dir,
-                         path, result, &error));
+  RunInternal(base::Bind(&LevelDBMojoProxy::GetChildrenImpl, this, dir, path,
+                         result, &error));
   return error;
 }
 
@@ -94,8 +93,8 @@ base::File::Error LevelDBMojoProxy::Delete(OpaqueDir* dir,
 base::File::Error LevelDBMojoProxy::CreateDir(OpaqueDir* dir,
                                               const std::string& path) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  RunInternal(base::Bind(&LevelDBMojoProxy::CreateDirImpl, this, dir, path,
-                         &error));
+  RunInternal(
+      base::Bind(&LevelDBMojoProxy::CreateDirImpl, this, dir, path, &error));
   return error;
 }
 
@@ -103,8 +102,8 @@ base::File::Error LevelDBMojoProxy::GetFileSize(OpaqueDir* dir,
                                                 const std::string& path,
                                                 uint64_t* file_size) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  RunInternal(base::Bind(&LevelDBMojoProxy::GetFileSizeImpl, this, dir,
-                         path, file_size, &error));
+  RunInternal(base::Bind(&LevelDBMojoProxy::GetFileSizeImpl, this, dir, path,
+                         file_size, &error));
   return error;
 }
 
@@ -112,8 +111,8 @@ base::File::Error LevelDBMojoProxy::RenameFile(OpaqueDir* dir,
                                                const std::string& old_path,
                                                const std::string& new_path) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  RunInternal(base::Bind(&LevelDBMojoProxy::RenameFileImpl, this, dir,
-                         old_path, new_path, &error));
+  RunInternal(base::Bind(&LevelDBMojoProxy::RenameFileImpl, this, dir, old_path,
+                         new_path, &error));
   return error;
 }
 
@@ -147,11 +146,8 @@ void LevelDBMojoProxy::RunInternal(const base::Closure& task) {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&LevelDBMojoProxy::DoOnOtherThread,
-                   this,
-                   task,
-                   base::Unretained(&done_event)));
+        FROM_HERE, base::Bind(&LevelDBMojoProxy::DoOnOtherThread, this, task,
+                              base::Unretained(&done_event)));
     base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
     done_event.Wait();
   }
@@ -171,8 +167,7 @@ void LevelDBMojoProxy::RegisterDirectoryImpl(
   outstanding_opaque_dirs_++;
 }
 
-void LevelDBMojoProxy::UnregisterDirectoryImpl(
-    OpaqueDir* dir) {
+void LevelDBMojoProxy::UnregisterDirectoryImpl(OpaqueDir* dir) {
   // Only delete the directories on the thread that owns them.
   delete dir;
   outstanding_opaque_dirs_--;

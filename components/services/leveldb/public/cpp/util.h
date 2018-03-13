@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PUBLIC_CPP_UTIL_H_
-#define COMPONENTS_LEVELDB_PUBLIC_CPP_UTIL_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_
+#define COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_
 
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb {
@@ -41,4 +41,4 @@ std::vector<uint8_t> StdStringToUint8Vector(const std::string& input);
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_PUBLIC_CPP_UTIL_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_

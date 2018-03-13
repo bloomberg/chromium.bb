@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_ENV_MOJO_H_
-#define COMPONENTS_LEVELDB_ENV_MOJO_H_
+#ifndef COMPONENTS_SERVICES_LEVELDB_ENV_MOJO_H_
+#define COMPONENTS_SERVICES_LEVELDB_ENV_MOJO_H_
 
 #include <string>
 #include <vector>
 
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "components/leveldb/leveldb_mojo_proxy.h"
+#include "components/services/leveldb/leveldb_mojo_proxy.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 
@@ -87,4 +87,4 @@ class MojoEnv : public Env,
 
 }  // namespace leveldb
 
-#endif  // COMPONENTS_LEVELDB_ENV_MOJO_H_
+#endif  // COMPONENTS_SERVICES_LEVELDB_ENV_MOJO_H_

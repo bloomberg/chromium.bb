@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "components/leveldb/public/interfaces/leveldb.mojom";
+import "components/services/leveldb/public/interfaces/leveldb.mojom";
 
 // Gives information about changes to a LevelDB database.
 // Note that observer methods are called before the callbacks for the

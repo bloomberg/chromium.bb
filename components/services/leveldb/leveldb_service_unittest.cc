@@ -8,8 +8,8 @@
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
-#include "components/leveldb/public/cpp/util.h"
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
@@ -17,7 +17,8 @@
 namespace leveldb {
 namespace {
 
-template <typename... Args> void IgnoreAllArgs(Args&&...) {}
+template <typename... Args>
+void IgnoreAllArgs(Args&&...) {}
 
 template <typename... Args>
 void DoCaptures(typename std::decay<Args>::type*... out_args,

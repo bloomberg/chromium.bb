@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "components/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_database.h"

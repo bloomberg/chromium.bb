@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/leveldb/public/cpp/remote_iterator.h"
-#include "components/leveldb/public/cpp/util.h"
-#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/cpp/remote_iterator.h"
+#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 

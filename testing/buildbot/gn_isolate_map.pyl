@@ -739,7 +739,7 @@
     "type": "console_test_launcher",
   },
   "leveldb_service_unittests": {
-    "label": "//components/leveldb:leveldb_service_unittests",
+    "label": "//components/services/leveldb:leveldb_service_unittests",
     "type": "console_test_launcher",
   },
   "libjingle_xmpp_unittests": {
