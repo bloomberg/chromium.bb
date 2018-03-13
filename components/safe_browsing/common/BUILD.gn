@@ -37,6 +37,7 @@ static_library("safe_browsing_prefs") {
     "//base:base",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
+    "//components/safe_browsing:features",
     "//content/public/browser:browser",
     "//net:net",
   ]
@@ -52,6 +53,7 @@ source_set("unit_tests") {
     "//base:base",
     "//base/test:test_support",
     "//components/prefs:test_support",
+    "//components/safe_browsing:features",
     "//content/test:test_support",
     "//testing/gtest",
     "//url:url",

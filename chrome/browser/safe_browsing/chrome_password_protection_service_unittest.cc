@@ -305,6 +305,9 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPingingIsSkippedIfMatchEnterpriseWhitelist) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kEnterprisePasswordProtectionV1);
   PasswordProtectionService::RequestOutcome reason =
       PasswordProtectionService::UNKNOWN;
   ASSERT_FALSE(

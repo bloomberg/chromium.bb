@@ -12,6 +12,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -61,6 +62,11 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     feature_list_->InitFromCommandLine(
         base::JoinString(enabled_features, ","),
         base::JoinString(disabled_features, ","));
+  }
+
+  void EnableEnterprisePasswordProtectionFeature() {
+    feature_list_.reset(new base::test::ScopedFeatureList);
+    feature_list_->InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   }
 
   std::string GetActivePref() { return GetExtendedReportingPrefName(prefs_); }
@@ -359,7 +365,9 @@ TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
   EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
 }
 
-TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionLoginURL) {
+TEST_F(SafeBrowsingPrefsTest, VerifyMatchesPasswordProtectionLoginURL) {
+  EnableEnterprisePasswordProtectionFeature();
+
   GURL url("https://mydomain.com/login.html#ref?username=alice");
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
   EXPECT_FALSE(MatchesPasswordProtectionLoginURL(url, prefs_));
@@ -376,7 +384,10 @@ TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionLoginURL) {
   EXPECT_TRUE(MatchesPasswordProtectionLoginURL(url, prefs_));
 }
 
-TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionChangePasswordURL) {
+TEST_F(SafeBrowsingPrefsTest,
+       VerifyMatchesPasswordProtectionChangePasswordURL) {
+  EnableEnterprisePasswordProtectionFeature();
+
   GURL url("https://mydomain.com/change_password.html#ref?username=alice");
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
   EXPECT_FALSE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));
@@ -427,6 +438,8 @@ TEST_F(SafeBrowsingPrefsTest, IsExtendedReportingPolicyManaged) {
 }
 
 TEST_F(SafeBrowsingPrefsTest, VerifyIsURLWhitelistedByPolicy) {
+  EnableEnterprisePasswordProtectionFeature();
+
   GURL target_url("https://www.foo.com");
   // When PrefMember is null, URL is not whitelisted.
   EXPECT_FALSE(IsURLWhitelistedByPolicy(target_url, nullptr));
