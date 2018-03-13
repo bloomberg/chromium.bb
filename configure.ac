@@ -44,7 +44,7 @@ AM_CONDITIONAL(ENABLE_CPP_TEST, test "x$have_cpp_compiler" = "xyes")
 
 # Initialize libtool
 LT_PREREQ([2.2])
-LT_INIT
+LT_INIT([disable-static])
 
 PKG_PROG_PKG_CONFIG()
 
