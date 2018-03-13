@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/time/default_tick_clock.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/webrtc_bandwidth_estimator.h"
@@ -62,7 +63,8 @@ int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
 // TODO(zijiehe): Use |options| to select bandwidth estimator.
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple(
     const SessionOptions& options)
-    : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
+    : tick_clock_(base::DefaultTickClock::GetInstance()),
+      pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
       updated_region_area_(kStatsWindow),
       bandwidth_estimator_(new WebrtcBandwidthEstimator()),
       weak_factory_(this) {}
@@ -92,8 +94,8 @@ void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
   bandwidth_estimator_->OnBitrateEstimation(bandwidth_kbps);
   processing_time_estimator_.SetBandwidthKbps(
       bandwidth_estimator_->GetBitrateKbps());
-  pacing_bucket_.UpdateRate(
-      bandwidth_estimator_->GetBitrateKbps() * 1000 / 8, Now());
+  pacing_bucket_.UpdateRate(bandwidth_estimator_->GetBitrateKbps() * 1000 / 8,
+                            tick_clock_->NowTicks());
   ScheduleNextFrame();
 }
 
@@ -122,7 +124,7 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
     WebrtcVideoEncoder::FrameParams* params_out) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::TimeTicks now = Now();
+  base::TimeTicks now = tick_clock_->NowTicks();
 
   // Null |frame| indicates a capturer error.
   if (!frame) {
@@ -204,7 +206,7 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   DCHECK(frame_pending_);
   frame_pending_ = false;
 
-  base::TimeTicks now = Now();
+  base::TimeTicks now = tick_clock_->NowTicks();
 
   if (frame_stats) {
     // Calculate |send_pending_delay| before refilling |pacing_bucket_|.
@@ -237,13 +239,14 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   bandwidth_estimator_->OnSendingFrame(*encoded_frame);
 }
 
-void WebrtcFrameSchedulerSimple::SetCurrentTimeForTest(base::TimeTicks now) {
-  fake_now_for_test_ = now;
+void WebrtcFrameSchedulerSimple::SetTickClockForTest(
+    base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeTicks now = Now();
+  base::TimeTicks now = tick_clock_->NowTicks();
 
   if (!encoder_ready_ || paused_ || pacing_bucket_.rate() == 0 ||
       capture_callback_.is_null() || frame_pending_) {
@@ -274,15 +277,10 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_pending_);
-  last_capture_started_time_ = Now();
+  last_capture_started_time_ = tick_clock_->NowTicks();
   processing_time_estimator_.StartFrame();
   frame_pending_ = true;
   capture_callback_.Run();
-}
-
-base::TimeTicks WebrtcFrameSchedulerSimple::Now() {
-  return fake_now_for_test_.is_null() ? base::TimeTicks::Now()
-                                      : fake_now_for_test_;
 }
 
 }  // namespace protocol
