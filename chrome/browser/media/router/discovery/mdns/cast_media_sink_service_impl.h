@@ -61,6 +61,10 @@ class CastMediaSinkServiceImpl
   // before we can say confidently that it is unlikely to be a Cast device.
   static constexpr int kMaxDialSinkFailureCount = 10;
 
+  // Returns the icon type to use according to |capabilities|. |capabilities| is
+  // a bit set of cast_channel::CastDeviceCapabilities in CastSinkExtraData.
+  static SinkIconType GetCastSinkIconType(uint8_t capabilities);
+
   // |callback|: Callback passed to MediaSinkServiceBase.
   // |observer|: Observer to invoke on sink updates. Can be nullptr.
   // |cast_socket_service|: CastSocketService to use to open Cast channels to

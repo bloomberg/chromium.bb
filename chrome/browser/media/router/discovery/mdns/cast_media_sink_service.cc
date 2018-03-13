@@ -62,10 +62,6 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
   std::string friendly_name = service_data["fn"];
   if (friendly_name.empty())
     return ErrorType::MISSING_FRIENDLY_NAME;
-  std::string processed_uuid = MediaSinkInternal::ProcessDeviceUUID(unique_id);
-  std::string sink_id = base::StringPrintf("cast:<%s>", processed_uuid.c_str());
-  MediaSink sink(sink_id, friendly_name, SinkIconType::CAST,
-                 MediaRouteProviderId::CAST);
 
   CastSinkExtraData extra_data;
   extra_data.ip_endpoint =
@@ -76,6 +72,13 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
   unsigned capacities;
   if (base::StringToUint(service_data["ca"], &capacities))
     extra_data.capabilities = capacities;
+
+  std::string processed_uuid = MediaSinkInternal::ProcessDeviceUUID(unique_id);
+  std::string sink_id = base::StringPrintf("cast:<%s>", processed_uuid.c_str());
+  MediaSink sink(
+      sink_id, friendly_name,
+      CastMediaSinkServiceImpl::GetCastSinkIconType(extra_data.capabilities),
+      MediaRouteProviderId::CAST);
 
   cast_sink->set_sink(sink);
   cast_sink->set_cast_data(extra_data);
