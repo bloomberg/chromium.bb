@@ -157,10 +157,10 @@ bool IncrementAuthUserIndex(GURL* url) {
 }  // namespace
 
 const char ExtensionDownloader::kUpdateInteractivityHeader[] =
-    "X-GoogleUpdate-Interactivity";
-const char ExtensionDownloader::kUpdateAppIdHeader[] = "X-GoogleUpdate-AppId";
+    "X-Goog-Update-Interactivity";
+const char ExtensionDownloader::kUpdateAppIdHeader[] = "X-Goog-Update-AppId";
 const char ExtensionDownloader::kUpdateUpdaterHeader[] =
-    "X-GoogleUpdate-Updater";
+    "X-Goog-Update-Updater";
 
 const char ExtensionDownloader::kUpdateInteractivityForeground[] = "fg";
 const char ExtensionDownloader::kUpdateInteractivityBackground[] = "bg";
