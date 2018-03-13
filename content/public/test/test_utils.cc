@@ -20,8 +20,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/variations/variations_params_manager.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -220,6 +223,60 @@ void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
   std::map<std::string, std::string> param_values = {{param_name, param_value}};
   variations::testing::VariationParamsManager::AppendVariationParams(
       kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
+}
+
+namespace {
+
+// Helper class for CreateAndAttachInnerContents.
+//
+// TODO(lfg): https://crbug.com/821187 Inner webcontentses currently require
+// supplying a BrowserPluginGuestDelegate; however, the oopif architecture
+// doesn't really require it. Refactor this so that we can create an inner
+// contents without any of the guest machinery.
+class InnerWebContentsHelper : public WebContentsObserver,
+                               public BrowserPluginGuestDelegate {
+ public:
+  explicit InnerWebContentsHelper(WebContents* outer_contents)
+      : WebContentsObserver(), outer_contents_(outer_contents) {}
+  ~InnerWebContentsHelper() override = default;
+
+  // BrowserPluginGuestDelegate:
+  WebContents* GetOwnerWebContents() const override { return outer_contents_; }
+
+  // WebContentsObserver:
+  void WebContentsDestroyed() override { delete this; }
+
+  void SetInnerWebContents(WebContents* inner_web_contents) {
+    Observe(inner_web_contents);
+  }
+
+ private:
+  WebContents* outer_contents_;
+  DISALLOW_COPY_AND_ASSIGN(InnerWebContentsHelper);
+};
+
+}  // namespace
+
+WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
+  WebContents* outer_contents =
+      static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
+  if (!outer_contents)
+    return nullptr;
+
+  auto guest_delegate =
+      std::make_unique<InnerWebContentsHelper>(outer_contents);
+
+  WebContents::CreateParams inner_params(outer_contents->GetBrowserContext());
+  inner_params.guest_delegate = guest_delegate.get();
+  WebContents* inner_contents = WebContents::Create(inner_params);
+
+  // Attach. |inner_contents| becomes owned by |outer_contents|.
+  inner_contents->AttachToOuterWebContentsFrame(outer_contents, rfh);
+
+  // |guest_delegate| becomes owned by |inner_contents|.
+  guest_delegate.release()->SetInnerWebContents(inner_contents);
+
+  return inner_contents;
 }
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
