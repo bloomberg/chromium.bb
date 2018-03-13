@@ -37,6 +37,10 @@ struct PP_PrivateAccessibilityViewportInfo {
   double zoom;
   struct PP_Point scroll;
   struct PP_Point offset;
+  uint32_t selection_start_page_index;
+  uint32_t selection_start_char_index;
+  uint32_t selection_end_page_index;
+  uint32_t selection_end_char_index;
 };
 
 struct PP_PrivateAccessibilityDocInfo {

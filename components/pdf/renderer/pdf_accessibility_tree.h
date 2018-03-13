@@ -60,6 +60,21 @@ class PdfAccessibilityTree
       const override;
 
  private:
+  // Update the AXTreeData when the selected range changed.
+  void UpdateAXTreeDataFromSelection();
+
+  // Given a 0-based page index and 0-based character index within a page,
+  // find the node ID of the associated static text AXNode, and the character
+  // index within that text node. Used to find the start and end of the
+  // selected text range.
+  void FindNodeOffset(uint32_t page_index,
+                      uint32_t page_char_index,
+                      int32_t* out_node_id,
+                      int32_t* out_node_char_index);
+
+  // Called after the data for all pages in the PDF have been received.
+  // Finishes assembling a complete accessibility tree and grafts it
+  // onto the host tree.
   void Finish();
 
   void ComputeParagraphAndHeadingThresholds(
@@ -82,15 +97,24 @@ class PdfAccessibilityTree
   gfx::Transform* MakeTransformFromViewInfo();
   void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box);
 
+  ui::AXTreeData tree_data_;
   ui::AXTree tree_;
   content::RendererPpapiHost* host_;
   PP_Instance instance_;
   double zoom_;
   gfx::Vector2dF scroll_;
   gfx::Vector2dF offset_;
+  uint32_t selection_start_page_index_ = 0;
+  uint32_t selection_start_char_index_ = 0;
+  uint32_t selection_end_page_index_ = 0;
+  uint32_t selection_end_char_index_ = 0;
   PP_PrivateAccessibilityDocInfo doc_info_;
   ui::AXNodeData* doc_node_;
   std::vector<std::unique_ptr<ui::AXNodeData>> nodes_;
+  // Map from the id of each static text AXNode to the index of the
+  // character within its page. Used to find the node associated with
+  // the start or end of a selection.
+  std::map<int32_t, uint32_t> node_id_to_char_index_in_page_;
 };
 
 }  // namespace pdf;

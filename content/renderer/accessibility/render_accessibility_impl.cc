@@ -450,6 +450,12 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     event_msg.id = event.id;
     event_msg.event_from = event.event_from;
     event_msg.action_request_id = event.action_request_id;
+
+    // If there's a plugin, force the tree data to be generated in every
+    // message so the plugin can merge its own tree data changes.
+    if (plugin_tree_source_)
+      event_msg.update.has_tree_data = true;
+
     if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
       VLOG(1) << "Failed to serialize one accessibility event.";
       continue;
@@ -755,6 +761,9 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
       break;
     }
   }
+
+  if (plugin_tree_source_->GetTreeData(&update->tree_data))
+    update->has_tree_data = true;
 }
 
 void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {

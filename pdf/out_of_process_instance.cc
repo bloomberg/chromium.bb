@@ -932,6 +932,12 @@ void OutOfProcessInstance::SendAccessibilityViewportInfo() {
       -top_toolbar_height_in_viewport_coords_ * device_scale_;
   viewport_info.offset = available_area_.point();
   viewport_info.zoom = zoom_ * device_scale_;
+
+  engine_->GetSelection(&viewport_info.selection_start_page_index,
+                        &viewport_info.selection_start_char_index,
+                        &viewport_info.selection_end_page_index,
+                        &viewport_info.selection_end_char_index);
+
   pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &viewport_info);
 }
 
@@ -947,6 +953,8 @@ void OutOfProcessInstance::SelectionChanged(const pp::Rect& left,
   pp::PDF::SelectionChanged(GetPluginInstance(),
                             PP_MakeFloatPoint(l.x(), l.y()), left.height(),
                             PP_MakeFloatPoint(r.x(), r.y()), right.height());
+  if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
+    SendAccessibilityViewportInfo();
 }
 
 void OutOfProcessInstance::SetCaretPosition(const pp::FloatPoint& position) {
