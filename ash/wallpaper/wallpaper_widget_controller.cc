@@ -178,6 +178,18 @@ bool WallpaperWidgetController::IsAnimating() const {
   return animating_widget_.get();
 }
 
+void WallpaperWidgetController::EndPendingAnimation() {
+  if (!IsAnimating())
+    return;
+  animating_widget_->StopAnimating();
+}
+
+void WallpaperWidgetController::AddPendingAnimationEndCallback(
+    base::OnceClosure callback) {
+  DCHECK(IsAnimating());
+  pending_animation_end_callbacks_.emplace_back(std::move(callback));
+}
+
 void WallpaperWidgetController::SetWallpaperWidget(views::Widget* widget,
                                                    float blur_sigma) {
   DCHECK(widget);
@@ -227,8 +239,10 @@ void WallpaperWidgetController::WidgetHandlerReset(WidgetHandler* widget) {
 }
 
 void WallpaperWidgetController::WidgetFinishedAnimating(WidgetHandler* widget) {
-  if (widget == animating_widget_.get())
-    SetAnimatingWidgetAsActive();
+  if (widget != animating_widget_.get())
+    return;
+
+  SetAnimatingWidgetAsActive();
 }
 
 void WallpaperWidgetController::SetAnimatingWidgetAsActive() {
@@ -241,7 +255,15 @@ void WallpaperWidgetController::SetAnimatingWidgetAsActive() {
     std::move(wallpaper_set_callback_).Run();
 
   // Notify observers that animation finished.
+  RunPendingAnimationEndCallbacks();
   Shell::Get()->wallpaper_controller()->OnWallpaperAnimationFinished();
+}
+
+void WallpaperWidgetController::RunPendingAnimationEndCallbacks() {
+  std::list<base::OnceClosure> callbacks;
+  pending_animation_end_callbacks_.swap(callbacks);
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 }  // namespace ash

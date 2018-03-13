@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "ash/public/cpp/config.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/bind.h"
@@ -50,6 +52,10 @@ bool ShouldLockOnSuspend() {
 // will not start drawing the next frame before the previous swap happens, when
 // the second compositing cycle ends, it should be safe to assume the required
 // buffer swap happened at that point.
+// Note that the compositor watcher will wait for any pending wallpaper
+// animation for a root window to finish before it starts observing compositor
+// cycles, to ensure it picks up wallpaper state from after the animation ends,
+// and avoids issues like https://crbug.com/820436.
 class CompositorWatcher : public ui::CompositorObserver {
  public:
   // |callback| - called when all visible root window compositors complete
@@ -117,6 +123,7 @@ class CompositorWatcher : public ui::CompositorObserver {
   // This enum is used to track this cycle. Compositing goes through the
   // following states: DidCommit -> CompositingStarted -> CompositingEnded.
   enum class CompositingState {
+    kWaitingForWallpaperAnimation,
     kWaitingForCommit,
     kWaitingForStarted,
     kWaitingForEnded,
@@ -142,12 +149,21 @@ class CompositorWatcher : public ui::CompositorObserver {
         continue;
 
       DCHECK(!pending_compositing_.count(compositor));
-      pending_compositing_[compositor].state =
-          CompositingState::kWaitingForCommit;
-      compositor_observer_.Add(compositor);
 
-      // Schedule a draw to force at least one more compositing cycle.
-      compositor->ScheduleDraw();
+      compositor_observer_.Add(compositor);
+      pending_compositing_[compositor].state =
+          CompositingState::kWaitingForWallpaperAnimation;
+
+      WallpaperWidgetController* wallpaper_widget_controller =
+          RootWindowController::ForWindow(window)
+              ->wallpaper_widget_controller();
+      if (wallpaper_widget_controller->IsAnimating()) {
+        wallpaper_widget_controller->AddPendingAnimationEndCallback(
+            base::BindOnce(&CompositorWatcher::StartObservingCompositing,
+                           weak_ptr_factory_.GetWeakPtr(), compositor));
+      } else {
+        StartObservingCompositing(compositor);
+      }
     }
 
     // Post task to make sure callback is not invoked synchronously as watcher
@@ -156,6 +172,22 @@ class CompositorWatcher : public ui::CompositorObserver {
         FROM_HERE,
         base::BindOnce(&CompositorWatcher::RunCallbackIfAllCompositingEnded,
                        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // Called when the wallpaper animations end for the root window associated
+  // with the compositor. It starts observing the compositor's compositing
+  // cycles.
+  void StartObservingCompositing(ui::Compositor* compositor) {
+    if (!pending_compositing_.count(compositor) ||
+        pending_compositing_[compositor].state !=
+            CompositingState::kWaitingForWallpaperAnimation) {
+      return;
+    }
+
+    pending_compositing_[compositor].state =
+        CompositingState::kWaitingForCommit;
+    // Schedule a draw to force at least one more compositing cycle.
+    compositor->ScheduleDraw();
   }
 
   // If all observed root window compositors have gone through a compositing
@@ -204,6 +236,11 @@ void PowerEventObserver::OnLockAnimationsComplete() {
 
   lock_state_ = LockState::kLockedCompositingPending;
 
+  // If suspending, run pending animations to the end immediately, as there is
+  // no point in waiting for them to finish given that the device is suspending.
+  if (displays_suspended_callback_)
+    EndPendingWallpaperAnimations();
+
   // The |compositor_watcher_| is owned by this, and the callback passed to it
   // won't be called  after |compositor_watcher_|'s destruction, so
   // base::Unretained is safe here.
@@ -233,6 +270,11 @@ void PowerEventObserver::SuspendImminent(
       VLOG(1) << "Requesting screen lock from PowerEventObserver";
       lock_state_ = LockState::kLocking;
       Shell::Get()->lock_state_controller()->LockWithoutAnimation();
+    } else if (lock_state_ != LockState::kLocking) {
+      // If the screen is still being locked (i.e. in kLocking state),
+      // EndPendingWallpaperAnimations() will be called in
+      // OnLockAnimationsComplete().
+      EndPendingWallpaperAnimations();
     }
   }
 }
@@ -313,6 +355,15 @@ void PowerEventObserver::StopCompositingAndSuspendDisplays() {
                    base::Passed(&displays_suspended_callback_)));
   } else {
     std::move(displays_suspended_callback_).Run();
+  }
+}
+
+void PowerEventObserver::EndPendingWallpaperAnimations() {
+  for (aura::Window* window : Shell::GetAllRootWindows()) {
+    WallpaperWidgetController* wallpaper_widget_controller =
+        RootWindowController::ForWindow(window)->wallpaper_widget_controller();
+    if (wallpaper_widget_controller->IsAnimating())
+      wallpaper_widget_controller->EndPendingAnimation();
   }
 }
 
