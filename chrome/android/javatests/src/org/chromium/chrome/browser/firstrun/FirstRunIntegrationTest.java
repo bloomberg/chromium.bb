@@ -186,9 +186,12 @@ public class FirstRunIntegrationTest {
     @Test
     @SmallTest
     public void testAbortFirstRun() throws Exception {
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+        final ActivityMonitor launcherActivityMonitor =
+                new ActivityMonitor(ChromeLauncherActivity.class.getName(), null, false);
+        instrumentation.addMonitor(launcherActivityMonitor);
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
-        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(freMonitor);
 
         final Context context = instrumentation.getTargetContext();
@@ -197,29 +200,35 @@ public class FirstRunIntegrationTest {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
 
-        // Because the AsyncInitializationActivity notices that the FRE hasn't been run yet, it
-        // redirects to it.  Once the user closes the FRE, the user should be kicked back into the
-        // startup flow where they were interrupted.
+        final Activity chromeLauncherActivity = instrumentation.waitForMonitorWithTimeout(
+                launcherActivityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertNotNull(chromeLauncherActivity);
+
+        // Because the ChromeLauncherActivity notices that the FRE hasn't been run yet, it
+        // redirects to it.
         mActivity = instrumentation.waitForMonitorWithTimeout(
                 freMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
         Assert.assertNotNull(mActivity);
 
-        ActivityMonitor activityMonitor =
-                new ActivityMonitor(ChromeLauncherActivity.class.getName(), null, false);
-        instrumentation.addMonitor(activityMonitor);
-
+        // Once the user closes the FRE, the user should be kicked back into the
+        // startup flow where they were interrupted.
         Assert.assertEquals(0, mTestObserver.abortFirstRunExperienceCallback.getCallCount());
         mActivity.onBackPressed();
         mTestObserver.abortFirstRunExperienceCallback.waitForCallback(
                 "FirstRunActivity didn't abort", 0);
 
-        mActivity = instrumentation.waitForMonitorWithTimeout(
-                activityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertNotNull(mActivity);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mActivity.isFinishing();
+            }
+        });
+
+        // ChromeLauncherActivity should finish if FRE was aborted.
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return chromeLauncherActivity.isFinishing();
             }
         });
     }
