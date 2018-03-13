@@ -614,6 +614,10 @@ IGNORED_INCLUDE_FILES = [
     # Chromium generated files
     'config.h',
     os.path.join('libavcodec', 'bsf_list.c'),
+    os.path.join('libavcodec', 'codec_list.c'),
+    os.path.join('libavcodec', 'parser_list.c'),
+    os.path.join('libavformat', 'demuxer_list.c'),
+    os.path.join('libavformat', 'muxer_list.c'),
     os.path.join('libavformat', 'protocol_list.c'),
     os.path.join('libavutil', 'avconfig.h'),
     os.path.join('libavutil', 'ffversion.h'),
