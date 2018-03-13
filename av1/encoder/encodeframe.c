@@ -4746,7 +4746,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           if (!dry_run) {
             av1_tokenize_color_map(x, plane, t, bsize, mbmi->tx_size,
-                                   PALETTE_MAP);
+                                   PALETTE_MAP, tile_data->allow_update_cdf,
+                                   td->counts);
           } else if (dry_run == DRY_RUN_COSTCOEFFS) {
             rate +=
                 av1_cost_color_map(x, plane, bsize, mbmi->tx_size, PALETTE_MAP);
