@@ -75,11 +75,15 @@
         right: initial;
       }
 
-      #sync-icon-container[syncing] {
+      #sync-logo-container[signed-in] {
         background: green;
       }
 
-      #sync-icon-container iron-icon {
+      #sync-logo-container[signed-in][has-error] {
+        background: var(--settings-error-color);
+      }
+
+      #sync-logo-container iron-icon {
         fill: white;
         height: 12px;
         margin: auto;
@@ -147,15 +151,17 @@
         <div id="avatar-container">
           <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
-          <div id="sync-icon-container" syncing$="[[syncStatus.signedIn]]">
-            <iron-icon icon="notification:sync"></iron-icon>
+          <div id="sync-logo-container" signed-in$="[[syncStatus.signedIn]]"
+              has-error$="[[syncStatus.hasError]]">
+            <iron-icon icon="[[getSyncIcon_(syncStatus.hasError)]]"></iron-icon>
           </div>
         </div>
         <div class="middle two-line no-min-width">
           <div class="flex text-elide" id="user-info">
             <span>
               [[getNameDisplay_('$i18nPolymer{syncedToName}',
-                  shownAccount_.fullName, syncStatus.signedIn)]]
+                  shownAccount_.fullName, '$i18nPolymer{syncNotWorking}',
+                  syncStatus)]]
             </span>
             <div class="secondary">[[shownAccount_.email]]</div>
           </div>

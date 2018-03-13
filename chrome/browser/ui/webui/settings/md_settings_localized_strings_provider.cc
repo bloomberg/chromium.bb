@@ -1509,6 +1509,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncAsName", IDS_SETTINGS_PEOPLE_SYNC_AS_NAME},
     {"syncedToName", IDS_SETTINGS_PEOPLE_SYNCED_AS_NAME},
     {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+    {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
 #endif
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncDisabledByAdministrator",
