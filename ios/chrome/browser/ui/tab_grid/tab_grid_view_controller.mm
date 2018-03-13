@@ -33,6 +33,7 @@ NSString* const kTabGridDoneButtonAccessibilityID =
 @property(nonatomic, weak) TabGridBottomToolbar* bottomToolbar;
 @property(nonatomic, weak) UIButton* closeAllButton;
 @property(nonatomic, weak) UIButton* doneButton;
+@property(nonatomic, weak) UIButton* createTabButton;
 @property(nonatomic, weak) UIButton* floatingButton;
 @end
 
@@ -55,6 +56,7 @@ NSString* const kTabGridDoneButtonAccessibilityID =
 @synthesize bottomToolbar = _bottomToolbar;
 @synthesize closeAllButton = _closeAllButton;
 @synthesize doneButton = _doneButton;
+@synthesize createTabButton = _createTabButton;
 @synthesize floatingButton = _floatingButton;
 
 - (instancetype)init {
@@ -75,16 +77,16 @@ NSString* const kTabGridDoneButtonAccessibilityID =
   [self setupRegularTabsViewController];
   [self setupRemoteTabsViewController];
   [self setupTopToolbar];
-  [self setupTopToolbarButtons];
   [self setupBottomToolbar];
-  [self setupBottomToolbarButtons];
+  [self setupFloatingButton];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
-  [self updateDoneAndCloseAllButtons];
+  [self updateToolbarsForCurrentSizeClass];
+  [self enableButtonsForCurrentPage];
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForAppearance];
   }
@@ -124,7 +126,7 @@ NSString* const kTabGridDoneButtonAccessibilityID =
   float fractionalPage = scrollView.contentOffset.x / pageWidth;
   NSUInteger page = lround(fractionalPage);
   _currentPage = static_cast<TabGridPage>(page);
-  [self updateDoneAndCloseAllButtons];
+  [self enableButtonsForCurrentPage];
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -446,40 +448,118 @@ NSString* const kTabGridDoneButtonAccessibilityID =
   }
 }
 
-// Adds the top toolbar buttons.
-- (void)setupTopToolbarButtons {
+// Adds floating button and constraints.
+- (void)setupFloatingButton {
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+  // TODO(crbug.com/818198) : Replace with assets.
+  button.backgroundColor = [UIColor whiteColor];
+  button.layer.cornerRadius = 22.0f;
+  button.layer.masksToBounds = YES;
+  [self.view addSubview:button];
+  self.floatingButton = button;
+  NSArray* constraints = @[
+    [button.widthAnchor constraintEqualToConstant:44.0f],
+    [button.heightAnchor constraintEqualToConstant:44.0f],
+    [button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
+                                          constant:-10.0f],
+    [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
+                                        constant:-10.0f]
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
+}
+
+// Sets visibility of toolbars and floating button in the arrangement containing
+// the floating button. Also updates |self.doneButton|, |self.closeAllButton|,
+// and |self.createTabButton| to the visible button.
+- (void)configureToolbarsWithFloatingButton {
+  self.topToolbar.leadingButton.hidden = NO;
+  self.topToolbar.trailingButton.hidden = NO;
+  self.bottomToolbar.hidden = YES;
+  self.floatingButton.hidden = NO;
   self.doneButton = self.topToolbar.leadingButton;
   self.closeAllButton = self.topToolbar.trailingButton;
-  self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
+  self.createTabButton = self.floatingButton;
+}
+
+// Sets visibility of toolbars and floating button in the arrangement that
+// includes the bottom toolbar. Also updates |self.doneButton|,
+// |self.closeAllButton|, and |self.createTabButton| to the visible button.
+- (void)configureToolbarsWithBottomToolbar {
+  self.topToolbar.leadingButton.hidden = YES;
+  self.topToolbar.trailingButton.hidden = YES;
+  self.bottomToolbar.hidden = NO;
+  self.floatingButton.hidden = YES;
+  self.doneButton = self.bottomToolbar.leadingButton;
+  self.closeAllButton = self.bottomToolbar.trailingButton;
+  self.createTabButton = self.bottomToolbar.roundButton;
+}
+
+// Call this method whenever |self.doneButton|, |self.closeAllButton|, or
+// |self.createTabButton| is updated.
+- (void)resetButtonLabelsAndActions {
   // TODO(crbug.com/818699) : Localize strings.
   [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
   [self.closeAllButton setTitle:@"Close All" forState:UIControlStateNormal];
+  self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
             forControlEvents:UIControlEventTouchUpInside];
   [self.closeAllButton addTarget:self
                           action:@selector(closeAllButtonTapped:)
                 forControlEvents:UIControlEventTouchUpInside];
+  [self.createTabButton addTarget:self
+                           action:@selector(createTabButtonTapped:)
+                 forControlEvents:UIControlEventTouchUpInside];
 }
 
-// Adds the bottom toolbar buttons.
-- (void)setupBottomToolbarButtons {
-  // TODO(crbug.com/818699) : Localize strings.
-  [self.bottomToolbar.leadingButton setTitle:@"Done"
-                                    forState:UIControlStateNormal];
-  [self.bottomToolbar.trailingButton setTitle:@"Close All"
-                                     forState:UIControlStateNormal];
-  [self.bottomToolbar.roundButton setTitle:@"New"
-                                  forState:UIControlStateNormal];
-  [self.bottomToolbar.leadingButton addTarget:self
-                                       action:@selector(doneButtonTapped:)
-                             forControlEvents:UIControlEventTouchUpInside];
-  [self.bottomToolbar.trailingButton addTarget:self
-                                        action:@selector(closeAllButtonTapped:)
-                              forControlEvents:UIControlEventTouchUpInside];
-  [self.bottomToolbar.roundButton addTarget:self
-                                     action:@selector(newTabButtonTapped:)
-                           forControlEvents:UIControlEventTouchUpInside];
+// Sets up the toolbars and buttons based on size class.
+- (void)updateToolbarsForCurrentSizeClass {
+  if (self.traitCollection.verticalSizeClass ==
+      UIUserInterfaceSizeClassCompact) {
+    // When the vertical size is limited, we don't want a bottom toolbar.
+    [self configureToolbarsWithFloatingButton];
+    [self resetButtonLabelsAndActions];
+    return;
+  }
+  switch (self.traitCollection.horizontalSizeClass) {
+    case UIUserInterfaceSizeClassCompact:
+      // The UI is vertically long and narrow so include a bottom toolbar.
+      [self configureToolbarsWithBottomToolbar];
+      [self resetButtonLabelsAndActions];
+      break;
+    case UIUserInterfaceSizeClassRegular:
+      // The UI is wide and long and looks best with a FAB.
+      [self configureToolbarsWithFloatingButton];
+      // There is enough space for the tab view to have a tab strip,
+      // so put the done button on the trailing side where the tab
+      // switcher button is located on the tab view.
+      self.doneButton = self.topToolbar.trailingButton;
+      self.closeAllButton = self.topToolbar.leadingButton;
+      [self resetButtonLabelsAndActions];
+      break;
+    case UIUserInterfaceSizeClassUnspecified:
+      NOTREACHED() << "Invalid size class.";
+      break;
+  }
+}
+
+// Update |enabled| property of the done and close all buttons.
+- (void)enableButtonsForCurrentPage {
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = self.doneButton.enabled;
+      break;
+    case TabGridPageRegularTabs:
+      self.doneButton.enabled = !self.regularTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = self.doneButton.enabled;
+      break;
+    case TabGridPageRemoteTabs:
+      self.doneButton.enabled = YES;
+      self.closeAllButton.enabled = NO;
+      break;
+  }
 }
 
 // Translates the toolbar views offscreen and then animates them back in using
@@ -521,24 +601,6 @@ NSString* const kTabGridDoneButtonAccessibilityID =
                                               completion:cleanup];
 }
 
-// Update |enabled| property of the done and close all buttons.
-- (void)updateDoneAndCloseAllButtons {
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
-      self.closeAllButton.enabled = self.doneButton.enabled;
-      break;
-    case TabGridPageRegularTabs:
-      self.doneButton.enabled = !self.regularTabsViewController.isGridEmpty;
-      self.closeAllButton.enabled = self.doneButton.enabled;
-      break;
-    case TabGridPageRemoteTabs:
-      self.doneButton.enabled = YES;
-      self.closeAllButton.enabled = NO;
-      break;
-  }
-}
-
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -562,12 +624,12 @@ NSString* const kTabGridDoneButtonAccessibilityID =
 
 - (void)lastItemWasClosedInGridViewController:
     (GridViewController*)gridViewController {
-  [self updateDoneAndCloseAllButtons];
+  [self enableButtonsForCurrentPage];
 }
 
 - (void)firstItemWasAddedInGridViewController:
     (GridViewController*)gridViewController {
-  [self updateDoneAndCloseAllButtons];
+  [self enableButtonsForCurrentPage];
 }
 
 #pragma mark - Button actions
@@ -590,7 +652,7 @@ NSString* const kTabGridDoneButtonAccessibilityID =
   }
 }
 
-- (void)newTabButtonTapped:(id)sender {
+- (void)createTabButtonTapped:(id)sender {
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate addNewItem];
