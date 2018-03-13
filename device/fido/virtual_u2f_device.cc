@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/fake_u2f_device.h"
+#include "device/fido/virtual_u2f_device.h"
 
 #include <utility>
 
@@ -12,7 +12,6 @@
 #include "device/fido/u2f_apdu_command.h"
 
 namespace device {
-namespace test {
 
 namespace {
 
@@ -81,9 +80,9 @@ void AppendTo(std::vector<uint8_t>* dst, const T& src) {
 
 }  // namespace
 
-FakeU2fDevice::RegistrationData::RegistrationData() = default;
+VirtualU2fDevice::RegistrationData::RegistrationData() = default;
 
-FakeU2fDevice::RegistrationData::RegistrationData(
+VirtualU2fDevice::RegistrationData::RegistrationData(
     std::unique_ptr<crypto::ECPrivateKey> private_key,
     std::vector<uint8_t> app_id_hash,
     uint32_t counter)
@@ -91,13 +90,13 @@ FakeU2fDevice::RegistrationData::RegistrationData(
       app_id_hash(std::move(app_id_hash)),
       counter(counter) {}
 
-FakeU2fDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
+VirtualU2fDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
     default;
-FakeU2fDevice::RegistrationData& FakeU2fDevice::RegistrationData::operator=(
-    RegistrationData&& other) = default;
-FakeU2fDevice::RegistrationData::~RegistrationData() = default;
+VirtualU2fDevice::RegistrationData& VirtualU2fDevice::RegistrationData::
+operator=(RegistrationData&& other) = default;
+VirtualU2fDevice::RegistrationData::~RegistrationData() = default;
 
-FakeU2fDevice::FakeU2fDevice()
+VirtualU2fDevice::VirtualU2fDevice()
     : attestation_private_key_(
           crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey())),
       attestation_cert_(std::begin(kAttestationCert),
@@ -106,18 +105,18 @@ FakeU2fDevice::FakeU2fDevice()
   DCHECK(attestation_private_key_);
 }
 
-FakeU2fDevice::~FakeU2fDevice() = default;
+VirtualU2fDevice::~VirtualU2fDevice() = default;
 
-void FakeU2fDevice::TryWink(WinkCallback cb) {
+void VirtualU2fDevice::TryWink(WinkCallback cb) {
   std::move(cb).Run();
 }
 
-std::string FakeU2fDevice::GetId() const {
+std::string VirtualU2fDevice::GetId() const {
   // Use our heap address to get a unique-ish number. (0xffe1 is a prime).
-  return "FakeU2fDevice-" + std::to_string((size_t)this % 0xffe1);
+  return "VirtualU2fDevice-" + std::to_string((size_t)this % 0xffe1);
 }
 
-void FakeU2fDevice::AddRegistration(
+void VirtualU2fDevice::AddRegistration(
     std::vector<uint8_t> key_handle,
     std::unique_ptr<crypto::ECPrivateKey> private_key,
     std::vector<uint8_t> app_id_hash,
@@ -126,8 +125,8 @@ void FakeU2fDevice::AddRegistration(
       RegistrationData(std::move(private_key), std::move(app_id_hash), counter);
 }
 
-void FakeU2fDevice::DeviceTransact(std::vector<uint8_t> command,
-                                   DeviceCallback cb) {
+void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
+                                      DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = U2fApduCommand::CreateFromMessage(command);
   switch (parsed_command->ins_) {
@@ -149,15 +148,15 @@ void FakeU2fDevice::DeviceTransact(std::vector<uint8_t> command,
   }
 }
 
-base::WeakPtr<U2fDevice> FakeU2fDevice::GetWeakPtr() {
+base::WeakPtr<U2fDevice> VirtualU2fDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void FakeU2fDevice::DoRegister(uint8_t ins,
-                               uint8_t p1,
-                               uint8_t p2,
-                               base::span<const uint8_t> data,
-                               DeviceCallback cb) {
+void VirtualU2fDevice::DoRegister(uint8_t ins,
+                                  uint8_t p1,
+                                  uint8_t p2,
+                                  base::span<const uint8_t> data,
+                                  DeviceCallback cb) {
   if (data.size() != 64) {
     std::move(cb).Run(true, std::make_unique<U2fApduResponse>(
                                 std::vector<uint8_t>(),
@@ -226,11 +225,11 @@ void FakeU2fDevice::DoRegister(uint8_t ins,
                 std::move(response), U2fApduResponse::Status::SW_NO_ERROR));
 }
 
-void FakeU2fDevice::DoSign(uint8_t ins,
-                           uint8_t p1,
-                           uint8_t p2,
-                           base::span<const uint8_t> data,
-                           DeviceCallback cb) {
+void VirtualU2fDevice::DoSign(uint8_t ins,
+                              uint8_t p1,
+                              uint8_t p2,
+                              base::span<const uint8_t> data,
+                              DeviceCallback cb) {
   if (!(p1 == U2fApduCommand::kP1CheckOnly ||
         p1 == U2fApduCommand::kP1TupRequiredConsumed ||
         p1 == U2fApduCommand::kP1IndividualAttestation) ||
@@ -315,5 +314,4 @@ void FakeU2fDevice::DoSign(uint8_t ins,
                 std::move(response), U2fApduResponse::Status::SW_NO_ERROR));
 }
 
-}  // namespace test
 }  // namespace device

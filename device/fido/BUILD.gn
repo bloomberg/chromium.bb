@@ -88,6 +88,8 @@ component("fido") {
     "u2f_sign.cc",
     "u2f_sign.h",
     "u2f_transport_protocol.h",
+    "virtual_u2f_device.cc",
+    "virtual_u2f_device.h",
   ]
 
   defines = [ "IS_DEVICE_FIDO_IMPL" ]
@@ -215,8 +217,6 @@ is_linux_without_udev = is_linux && !use_udev
 source_set("test_support") {
   testonly = true
   sources = [
-    "fake_u2f_device.cc",
-    "fake_u2f_device.h",
     "fake_u2f_discovery.cc",
     "fake_u2f_discovery.h",
     "test_callback_receiver.h",

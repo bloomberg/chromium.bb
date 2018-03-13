@@ -11,12 +11,12 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/sha2.h"
 #include "device/fido/authenticator_data.h"
-#include "device/fido/fake_u2f_device.h"
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/mock_u2f_device.h"
 #include "device/fido/sign_response_data.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_response_test_data.h"
+#include "device/fido/virtual_u2f_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -253,7 +253,7 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  auto device = std::make_unique<test::FakeU2fDevice>();
+  auto device = std::make_unique<VirtualU2fDevice>();
   device->AddRegistration(key_handle, std::move(private_key),
                           GetTestRelyingPartyIdSHA256(), 42);
   discovery()->AddDevice(std::move(device));

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_FAKE_U2F_DEVICE_H_
-#define DEVICE_FIDO_FAKE_U2F_DEVICE_H_
+#ifndef DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
+#define DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
 
 #include <stdint.h>
 
@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "device/fido/u2f_device.h"
@@ -21,12 +22,11 @@ class ECPrivateKey;
 }  // namespace crypto
 
 namespace device {
-namespace test {
 
-class FakeU2fDevice : public U2fDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public U2fDevice {
  public:
-  FakeU2fDevice();
-  ~FakeU2fDevice() override;
+  VirtualU2fDevice();
+  ~VirtualU2fDevice() override;
 
   void AddRegistration(std::vector<uint8_t> key_handle,
                        std::unique_ptr<crypto::ECPrivateKey> private_key,
@@ -77,10 +77,9 @@ class FakeU2fDevice : public U2fDevice {
   std::map<std::vector<uint8_t>, RegistrationData> registrations_;
   base::WeakPtrFactory<U2fDevice> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeU2fDevice);
+  DISALLOW_COPY_AND_ASSIGN(VirtualU2fDevice);
 };
 
-}  // namespace test
 }  // namespace device
 
-#endif  // DEVICE_FIDO_FAKE_U2F_DEVICE_H_
+#endif  // DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
