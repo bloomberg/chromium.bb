@@ -2715,6 +2715,22 @@
             ]
         }
     ],
+    "PreviewsNoScript": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "NoScriptWithWhiteList2",
+                    "enable_features": [
+                        "NoScriptPreviews",
+                        "OptimizationHints"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrintPdfAsImage": [
         {
             "platforms": [
