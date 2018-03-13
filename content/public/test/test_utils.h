@@ -101,6 +101,15 @@ void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
                                       const std::string& param_value,
                                       base::CommandLine* command_line);
 
+// Creates a WebContents and attaches it as an inner WebContents, replacing
+// |rfh| in the frame tree. |rfh| should not be a main frame (in a browser test,
+// it should be an <iframe>). Delegate interfaces are mocked out.
+//
+// Returns a pointer to the inner WebContents, which is now owned by the outer
+// WebContents. The caller should be careful when retaining the pointer, as the
+// inner WebContents will be deleted if the frame it's attached to goes away.
+WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
+
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
 // has returned is safe and has no effect.
