@@ -28,7 +28,8 @@ namespace ash {
 // screen is being locked during suspend - display compositing will not be
 // stopped before:
 //  1. lock screen window is shown
-//  2. the compositor goes through at least two compositing cycles after the
+//  2. wallpaper changes due to screen lock are finished
+//  3. the compositor goes through at least two compositing cycles after the
 //     screen lock
 // This is done to ensure that displays have picked up frames from after the
 // screen was locked. Without this, displays might initially show
@@ -83,6 +84,12 @@ class ASH_EXPORT PowerEventObserver
   // either if the screen is not expected to get locked, or all compositors
   // have gone through compositing cycle after the screen was locked.
   void StopCompositingAndSuspendDisplays();
+
+  // If any of the root windows have pending wallpaper animations, it stops
+  // them - this is used to stop wallpaper animations during suspend, and thus
+  // improve the suspend time (given that suspend will be delayed until the
+  // wallpaper animations finish).
+  void EndPendingWallpaperAnimations();
 
   // Callback run by |compositor_watcher_| when it detects that composting
   // can be stopped for all root windows when device suspends.

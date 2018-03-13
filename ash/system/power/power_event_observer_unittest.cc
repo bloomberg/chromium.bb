@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/test_session_state_animator.h"
@@ -20,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace ash {
 
@@ -379,6 +382,225 @@ TEST_F(PowerEventObserverTest, ImmediateLockAnimations) {
       SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE));
   EXPECT_EQ(0u, test_animator->GetAnimationCount());
   EXPECT_FALSE(lock_state_test_api.is_animating_lock());
+}
+
+// Tests that displays will not be considered ready to suspend until the
+// animated wallpaper change finishes (if the wallpaper is being animated to
+// another wallpaper after the screen is locked).
+TEST_F(PowerEventObserverTest,
+       DisplaysNotReadyForSuspendUntilWallpaperAnimationEnds) {
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+
+  SetCanLockScreen(true);
+  SetShouldLockScreenAutomatically(true);
+
+  // Set up animation state so wallpaper widget animations are not ended on
+  // their creation.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Lock screen - this is expected to start wallpaper change (e.g. to a
+  // widget with a blurred wallpaper).
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  observer_->OnLockAnimationsComplete();
+
+  WallpaperWidgetController* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  // Assert that the wallpaper is being animated here - otherwise the test will
+  // not work.
+  ASSERT_TRUE(wallpaper_widget_controller->IsAnimating());
+
+  ui::Compositor* compositor =
+      Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+  PowerEventObserverTestApi test_api(observer_.get());
+
+  // Simulate a single frame getting composited before the wallpaper animation
+  // is done - this frame is expected to be ignored by power event observer's
+  // compositing state observer.
+  test_api.CompositeFrame(compositor);
+
+  // Simulate wallpaper animation finishing - for the purpose of this test,
+  // before suspend begins.
+  wallpaper_widget_controller->EndPendingAnimation();
+
+  // Expect that two compositing cycles are completed before suspend continues,
+  // and displays get suspended.
+  test_api.CompositeFrame(compositor);
+  observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+}
+
+// Tests that animated wallpaper changes will be finished immediately when
+// suspend starts (if the screen was locked when suspend started).
+TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocked) {
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+
+  SetCanLockScreen(true);
+  SetShouldLockScreenAutomatically(true);
+
+  // Set up animation state so wallpaper widget animations are not ended on
+  // their creation.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Lock screen - this is expected to start wallpaper change (e.g. to a
+  // widget with a blurred wallpaper).
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  observer_->OnLockAnimationsComplete();
+
+  // Wallpaper animation should be stopped immediately on suspend.
+  observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
+
+  WallpaperWidgetController* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
+
+  ui::Compositor* compositor =
+      Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+  PowerEventObserverTestApi test_api(observer_.get());
+
+  // Expect that two compositing cycles are completed before suspend continues,
+  // and displays get suspended.
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+}
+
+// Tests that animated wallpaper changes will be finished immediately when
+// suspend starts (if the screen lock started before suspend).
+TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocking) {
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+
+  SetCanLockScreen(true);
+  SetShouldLockScreenAutomatically(true);
+
+  // Set up animation state so wallpaper widget animations are not ended on
+  // their creation.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Lock screen - this is expected to start wallpaper change (e.g. to a
+  // widget with a blurred wallpaper).
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+
+  // If suspend starts, wallpaper animation should be stopped after screen lock
+  // completes.
+  observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
+  observer_->OnLockAnimationsComplete();
+
+  WallpaperWidgetController* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
+
+  ui::Compositor* compositor =
+      Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+  PowerEventObserverTestApi test_api(observer_.get());
+
+  // Expect that two compositing cycles are completed before suspend continues,
+  // and displays get suspended.
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+}
+
+// Tests that animated wallpaper changes will be finished immediately when
+// suspend starts and causes a screen lock.
+TEST_F(PowerEventObserverTest, EndWallpaperAnimationAfterLockDueToSuspend) {
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+
+  SetCanLockScreen(true);
+  SetShouldLockScreenAutomatically(true);
+
+  // Set up animation state so wallpaper widget animations are not ended on
+  // their creation.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Start suspend (which should start screen lock) - verify that wallpaper is
+  // not animating after the screen lock animations are reported as complete.
+  observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
+  observer_->OnLockAnimationsComplete();
+
+  WallpaperWidgetController* wallpaper_widget_controller =
+      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
+  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
+
+  ui::Compositor* compositor =
+      Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+  PowerEventObserverTestApi test_api(observer_.get());
+
+  // Expect that two compositing cycles are completed before suspend continues,
+  // and displays get suspended.
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+}
+
+// Tests that removing a display while power event observer is waiting for the
+// wallpaper animation does not cause suspend to hang.
+TEST_F(PowerEventObserverTest, DisplayRemovedDuringWallpaperAnimation) {
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+
+  SetCanLockScreen(true);
+  SetShouldLockScreenAutomatically(true);
+
+  UpdateDisplay("100x100,200x200");
+
+  // Set up animation state so wallpaper widget animations are not ended on
+  // their creation.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Lock screen - this is expected to start wallpaper change (e.g. to a
+  // widget with a blurred wallpaper).
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  observer_->OnLockAnimationsComplete();
+
+  // Remove a display before wallpaper animation ends.
+  UpdateDisplay("100x100");
+  base::RunLoop().RunUntilIdle();
+
+  // Start suspend and verify the suspend proceeds when the primary window's
+  // compositors go throug two compositing cycles.
+  observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
+
+  ui::Compositor* compositor =
+      Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+  PowerEventObserverTestApi test_api(observer_.get());
+
+  // Expect that two compositing cycles are completed before suspend continues,
+  // and displays get suspended.
+  test_api.CompositeFrame(compositor);
+  test_api.CompositeFrame(compositor);
+  EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
 }
 
 }  // namespace ash
