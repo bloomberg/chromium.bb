@@ -15,13 +15,16 @@
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
@@ -30,6 +33,23 @@ namespace power {
 namespace ml {
 
 class BootClock;
+
+struct TabProperty {
+  // Whether the tab is the selected one in its containing browser.
+  bool is_active;
+  // Whether the containing browser is in focus.
+  bool is_browser_focused;
+  // Whether the containing browser is visible.
+  bool is_browser_visible;
+  // Whether the containing browser is the topmost one on the screen.
+  bool is_topmost_browser;
+  // Tab URL's engagement score. -1 if engagement service is disabled.
+  int engagement_score;
+  // Tab content type.
+  metrics::TabMetricsEvent::ContentType content_type;
+  // Whether user has form entry, i.e. text input.
+  bool has_form_entry;
+};
 
 // Logs user activity after an idle event is observed.
 // TODO(renjieliu): Add power-related activity as well.
@@ -95,6 +115,9 @@ class UserActivityLogger : public ui::UserActivityObserver,
   void OnReceiveInactivityDelays(
       base::Optional<power_manager::PowerManagementPolicy::Delays> delays);
 
+  // Updates |open_tabs_| to hold current information about all open tabs.
+  void UpdateOpenTabsURLs();
+
   // Extracts features from last known activity data and from device states.
   void ExtractFeatures(const IdleEventNotifier::ActivityData& activity_data);
 
@@ -106,6 +129,9 @@ class UserActivityLogger : public ui::UserActivityObserver,
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       std::unique_ptr<BootClock> test_boot_clock);
+
+  // Open tab properties, indexed by the source IDs of their URLs.
+  std::map<ukm::SourceId, TabProperty> open_tabs_;
 
   // Time when an idle event is received and we start logging. Null if an idle
   // event hasn't been observed.

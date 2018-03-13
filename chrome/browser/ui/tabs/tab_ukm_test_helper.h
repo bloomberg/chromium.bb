@@ -64,8 +64,6 @@ class UkmEntryChecker {
   // Returns the last recorded entry for |entry_name|.
   const ukm::mojom::UkmEntry* LastUkmEntry(const std::string& entry_name) const;
 
-  ukm::SourceId GetSourceIdForUrl(const GURL& source_url) const;
-
  private:
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
 

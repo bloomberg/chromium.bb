@@ -8,8 +8,15 @@
 
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/system/devicetype.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "content/public/common/page_importance_signals.h"
 
 namespace chromeos {
 namespace power {
@@ -292,7 +299,61 @@ void UserActivityLogger::ExtractFeatures(
         UserActivityEvent::Features::UNKNOWN_MANAGEMENT);
   }
 
-  logger_delegate_->UpdateOpenTabsURLs();
+  UpdateOpenTabsURLs();
+}
+
+void UserActivityLogger::UpdateOpenTabsURLs() {
+  open_tabs_.clear();
+  bool topmost_browser_found = false;
+  BrowserList* browser_list = BrowserList::GetInstance();
+  DCHECK(browser_list);
+
+  // Go through all browsers starting from last active ones.
+  for (auto browser_iterator = browser_list->begin_last_active();
+       browser_iterator != browser_list->end_last_active();
+       ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+
+    const bool is_browser_focused = browser->window()->IsActive();
+    const bool is_browser_visible =
+        browser->window()->GetNativeWindow()->IsVisible();
+
+    bool is_topmost_browser = false;
+    if (is_browser_visible && !topmost_browser_found) {
+      is_topmost_browser = true;
+      topmost_browser_found = true;
+    }
+
+    if (browser->profile()->IsOffTheRecord())
+      continue;
+
+    const TabStripModel* const tab_strip_model = browser->tab_strip_model();
+    DCHECK(tab_strip_model);
+
+    const int active_tab_index = tab_strip_model->active_index();
+
+    for (int i = 0; i < tab_strip_model->count(); ++i) {
+      content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
+      DCHECK(contents);
+      ukm::SourceId source_id =
+          ukm::GetSourceIdForWebContentsDocument(contents);
+      if (source_id == ukm::kInvalidSourceId)
+        continue;
+
+      const TabProperty tab_property = {
+          i == active_tab_index,
+          is_browser_focused,
+          is_browser_visible,
+          is_topmost_browser,
+          TabMetricsLogger::GetSiteEngagementScore(contents),
+          TabMetricsLogger::GetContentTypeFromMimeType(
+              contents->GetContentsMimeType()),
+          contents->GetPageImportanceSignals().had_form_interaction};
+
+      open_tabs_.insert(
+          std::pair<ukm::SourceId, TabProperty>(source_id, tab_property));
+    }
+  }
 }
 
 void UserActivityLogger::MaybeLogEvent(
@@ -313,7 +374,7 @@ void UserActivityLogger::MaybeLogEvent(
   *activity_event.mutable_features() = features_;
 
   // Log to metrics.
-  logger_delegate_->LogActivity(activity_event);
+  logger_delegate_->LogActivity(activity_event, open_tabs_);
   idle_event_start_since_boot_ = base::nullopt;
 }
 
