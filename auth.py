@@ -74,7 +74,7 @@ def normalize_host_url(url):
   if url.startswith('https://'):
     return url
   if url.startswith('http://'):
-    allowed = ('http://localhost:', 'http://127.0.0.1:', 'http://::1:')
+    allowed = ('http://localhost:', 'http://127.0.0.1:', 'http://[::1]:')
     if not url.startswith(allowed):
       raise ValueError(
           'URL must start with https:// or be on localhost with port number')
