@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,8 +39,9 @@ const CGFloat kFaviconViewSize = 56.0;
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)tableCell {
-  [super configureCell:tableCell];
+- (void)configureCell:(UITableViewCell*)tableCell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:tableCell withStyler:styler];
 
   TableViewURLCell* cell =
       base::mac::ObjCCastStrict<TableViewURLCell>(tableCell);
@@ -48,6 +50,11 @@ const CGFloat kFaviconViewSize = 56.0;
   cell.URLLabel.text = self.URL;
   cell.metadataLabel.text = self.metadata;
   cell.metadataLabel.hidden = ([self.metadata length] == 0);
+
+  cell.faviconView.backgroundColor = styler.tableViewBackgroundColor;
+  cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
+  cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
+  cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
 }
 
 @end

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -24,9 +25,39 @@ TEST_F(TableViewItemTest, ConfigureCellPortsAccessibilityProperties) {
   EXPECT_TRUE([cell isMemberOfClass:[UITableViewCell class]]);
   EXPECT_EQ(UIAccessibilityTraitNone, [cell accessibilityTraits]);
   EXPECT_FALSE([cell accessibilityIdentifier]);
-  [item configureCell:cell];
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:cell withStyler:styler];
   EXPECT_EQ(UIAccessibilityTraitButton, [cell accessibilityTraits]);
   EXPECT_NSEQ(@"test_identifier", [cell accessibilityIdentifier]);
+}
+
+TEST_F(TableViewItemTest, ConfigureCellWithStyler) {
+  TableViewItem* item = [[TableViewItem alloc] initWithType:0];
+  UITableViewCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell isMemberOfClass:[UITableViewCell class]]);
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  UIColor* testColor = [UIColor redColor];
+  styler.tableViewBackgroundColor = testColor;
+  [item configureCell:cell withStyler:styler];
+  EXPECT_NSEQ(testColor, cell.backgroundColor);
+}
+
+TEST_F(TableViewItemTest, NoBackgroundColorIfBackgroundViewIsPresent) {
+  TableViewItem* item = [[TableViewItem alloc] initWithType:0];
+  UITableViewCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell isMemberOfClass:[UITableViewCell class]]);
+
+  // If a background view is present on the cell, the styler's background color
+  // should be ignored.
+  cell.backgroundView = [[UIView alloc] init];
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  UIColor* testColor = [UIColor redColor];
+  styler.tableViewBackgroundColor = testColor;
+  [item configureCell:cell withStyler:styler];
+  EXPECT_FALSE([testColor isEqual:cell.backgroundColor]);
 }
 
 }  // namespace

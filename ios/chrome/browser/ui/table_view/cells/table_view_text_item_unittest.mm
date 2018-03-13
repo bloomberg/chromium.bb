@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -31,6 +32,19 @@ TEST_F(TableViewTextItemTest, TextLabels) {
       base::mac::ObjCCastStrict<TableViewTextCell>(cell);
   EXPECT_FALSE(textCell.textLabel.text);
 
-  [item configureCell:textCell];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:textCell withStyler:styler];
   EXPECT_NSEQ(text, textCell.textLabel.text);
+}
+
+TEST_F(TableViewTextItemTest, ConfigureCellWithStyler) {
+  TableViewTextItem* item = [[TableViewTextItem alloc] initWithType:0];
+  TableViewTextCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell isMemberOfClass:[TableViewTextCell class]]);
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  UIColor* testColor = [UIColor redColor];
+  styler.tableViewBackgroundColor = testColor;
+  [item configureCell:cell withStyler:styler];
+  EXPECT_NSEQ(testColor, cell.textLabel.backgroundColor);
 }

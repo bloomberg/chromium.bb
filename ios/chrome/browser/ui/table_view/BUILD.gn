@@ -13,12 +13,21 @@ source_set("table_view") {
     "table_view_model.mm",
   ]
   deps = [
+    ":styler",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/list_model",
     "//ui/base",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/table_view/cells",
+  ]
+}
+
+source_set("styler") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "chrome_table_view_styler.h",
+    "chrome_table_view_styler.mm",
   ]
 }
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -36,7 +37,8 @@ TEST_F(TableViewURLItemTest, TextLabels) {
   EXPECT_FALSE(URLCell.URLLabel.text);
   EXPECT_FALSE(URLCell.metadataLabel.text);
 
-  [item configureCell:URLCell];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:URLCell withStyler:styler];
   EXPECT_NSEQ(titleText, URLCell.titleLabel.text);
   EXPECT_NSEQ(URLText, URLCell.URLLabel.text);
   EXPECT_NSEQ(metadataText, URLCell.metadataLabel.text);
@@ -52,7 +54,8 @@ TEST_F(TableViewURLItemTest, MetadataLabelIsHiddenWhenEmpty) {
   ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
 
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
-  [item configureCell:URLCell];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:URLCell withStyler:styler];
   EXPECT_TRUE(URLCell.metadataLabel.hidden);
 }
 
@@ -66,6 +69,22 @@ TEST_F(TableViewURLItemTest, MetadataLabelIsVisibleWhenNonEmpty) {
   ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
 
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
-  [item configureCell:URLCell];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:URLCell withStyler:styler];
   EXPECT_FALSE(URLCell.metadataLabel.hidden);
+}
+
+TEST_F(TableViewURLItemTest, ConfigureCellWithStyler) {
+  TableViewURLItem* item = [[TableViewURLItem alloc] initWithType:0];
+  TableViewURLCell* cell = [[[item cellClass] alloc] init];
+  ASSERT_TRUE([cell isMemberOfClass:[TableViewURLCell class]]);
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  UIColor* testColor = [UIColor redColor];
+  styler.tableViewBackgroundColor = testColor;
+  [item configureCell:cell withStyler:styler];
+  EXPECT_NSEQ(testColor, cell.faviconView.backgroundColor);
+  EXPECT_NSEQ(testColor, cell.titleLabel.backgroundColor);
+  EXPECT_NSEQ(testColor, cell.URLLabel.backgroundColor);
+  EXPECT_NSEQ(testColor, cell.metadataLabel.backgroundColor);
 }

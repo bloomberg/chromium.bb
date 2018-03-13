@@ -19,6 +19,7 @@ source_set("cells") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/util:constraints_ui",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -37,6 +38,7 @@ source_set("unit_tests") {
   deps = [
     ":cells",
     "//base",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//testing/gtest",
   ]
 

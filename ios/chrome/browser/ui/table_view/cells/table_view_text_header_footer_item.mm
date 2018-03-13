@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,13 +27,16 @@ const CGFloat kMargin = 16;
   return self;
 }
 
-- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter {
-  [super configureHeaderFooterView:headerFooter];
+- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
+                       withStyler:(ChromeTableViewStyler*)styler {
+  [super configureHeaderFooterView:headerFooter withStyler:styler];
+
+  // Set the contentView backgroundColor, not the header's.
+  headerFooter.contentView.backgroundColor = styler.tableViewBackgroundColor;
+
   TableViewTextHeaderFooterView* header =
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   header.textLabel.text = self.text;
-  // Set the contentView backgroundColor, not the header's.
-  header.contentView.backgroundColor = [UIColor whiteColor];
   header.textLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 }
