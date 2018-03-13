@@ -105,7 +105,7 @@ import java.util.List;
 @DisableFeatures({ChromeFeatureList.NTP_CONDENSED_LAYOUT, ChromeFeatureList.CHROME_HOME,
         ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
         ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
-        ChromeFeatureList.NTP_SHORTCUTS})
+        ChromeFeatureList.NTP_SHORTCUTS, ChromeFeatureList.CHROME_DUPLEX})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();

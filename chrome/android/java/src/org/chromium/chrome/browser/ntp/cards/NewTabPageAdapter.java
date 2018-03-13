@@ -157,7 +157,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(mSiteSection);
         }
 
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeDuplexEnabled()) {
             if (mSigninPromo != null) mRoot.addChild(mSigninPromo);
             mRoot.addChildren(mAllDismissed);
 
