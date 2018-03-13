@@ -808,14 +808,14 @@ void ThreadHeap::DisableIncrementalMarkingBarrier() {
 }
 
 void ThreadHeap::WriteBarrier(const void* value) {
-  if (!value || !ThreadState::Current()->IsIncrementalMarking())
+  if (!value || !thread_state_->IsIncrementalMarking())
     return;
 
   WriteBarrierInternal(PageFromObject(value), value);
 }
 
 void ThreadHeap::WriteBarrierInternal(BasePage* page, const void* value) {
-  DCHECK(ThreadState::Current()->IsIncrementalMarking());
+  DCHECK(thread_state_->IsIncrementalMarking());
   DCHECK(page->IsIncrementalMarking());
   DCHECK(value);
   HeapObjectHeader* const header =
