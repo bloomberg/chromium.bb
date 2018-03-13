@@ -394,14 +394,6 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
   return true;
 }
 
-bool ChromeContentBrowserClientExtensionsPart::ShouldBypassDocumentBlocking(
-    const url::Origin& initiator) {
-  // Don't block responses for extension processes or for content scripts.
-  // TODO(creis): This check can be made stricter by checking what the extension
-  // has access to.
-  return initiator.scheme() == extensions::kExtensionScheme;
-}
-
 // static
 bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     content::RenderProcessHost* process_host, const GURL& url) {
