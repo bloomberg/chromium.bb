@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_style_variant.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
@@ -23,7 +24,8 @@ class CORE_EXPORT NGBaseFragmentBuilder {
     DCHECK(style_);
     return *style_;
   }
-  NGBaseFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>);
+  NGBaseFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>,
+                                  NGStyleVariant);
 
   WritingMode GetWritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
@@ -38,6 +40,9 @@ class CORE_EXPORT NGBaseFragmentBuilder {
   scoped_refptr<const ComputedStyle> style_;
   WritingMode writing_mode_;
   TextDirection direction_;
+
+ protected:
+  NGStyleVariant style_variant_;
 };
 
 }  // namespace blink

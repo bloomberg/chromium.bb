@@ -54,7 +54,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
       is_empty_item_(false),
-      should_create_box_fragment_(false) {
+      should_create_box_fragment_(false),
+      style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
 }

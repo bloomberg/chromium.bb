@@ -52,6 +52,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   NGPhysicalTextFragment(LayoutObject* layout_object,
                          const ComputedStyle& style,
+                         NGStyleVariant style_variant,
                          NGTextType text_type,
                          const String& text,
                          unsigned start_offset,
@@ -62,6 +63,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          scoped_refptr<const ShapeResult> shape_result)
       : NGPhysicalFragment(layout_object,
                            style,
+                           style_variant,
                            size,
                            kFragmentText,
                            text_type),
@@ -111,11 +113,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return static_cast<NGTextEndEffect>(end_effect_);
   }
 
-  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
-    return base::AdoptRef(new NGPhysicalTextFragment(
-        layout_object_, Style(), TextType(), text_, start_offset_, end_offset_,
-        size_, LineOrientation(), EndEffect(), shape_result_));
-  }
+  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 
   NGTextFragmentPaintInfo PaintInfo() const {
     return NGTextFragmentPaintInfo{text_, StartOffset(), EndOffset(),

@@ -11,6 +11,7 @@
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_style_variant.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
@@ -200,6 +201,7 @@ class CORE_EXPORT NGPhysicalFragment
  protected:
   NGPhysicalFragment(LayoutObject* layout_object,
                      const ComputedStyle& style,
+                     NGStyleVariant,
                      NGPhysicalSize size,
                      NGFragmentType type,
                      unsigned sub_type,
@@ -216,6 +218,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_old_layout_root_ : 1;
   unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+  unsigned style_variant_ : 2;  // NGStyleVariant
 
  private:
   friend struct NGPhysicalFragmentTraits;

@@ -6,6 +6,7 @@
 #define NGInlineItem_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_style_variant.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -93,6 +94,13 @@ class CORE_EXPORT NGInlineItem {
   bool HasStartEdge() const;
   bool HasEndEdge() const;
 
+  void SetStyleVariant(NGStyleVariant style_variant) {
+    style_variant_ = static_cast<unsigned>(style_variant);
+  }
+  NGStyleVariant StyleVariant() const {
+    return static_cast<NGStyleVariant>(style_variant_);
+  }
+
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
@@ -119,7 +127,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
   unsigned should_create_box_fragment_ : 1;
-
+  unsigned style_variant_ : 2;
   friend class NGInlineNode;
 };
 

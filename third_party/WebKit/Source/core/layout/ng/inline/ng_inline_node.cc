@@ -412,6 +412,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
     if (item.style_) {
       DCHECK(item.layout_object_);
       item.style_ = item.layout_object_->FirstLineStyle();
+      item.SetStyleVariant(NGStyleVariant::kFirstLine);
     }
   }
 
