@@ -334,6 +334,30 @@
     },
   },
 
+  'chromeos_remote_device_isolated_tests': {
+    'telemetry_perf_unittests': {
+      'args': [
+        '--browser=cros-chrome',
+        '--remote=variable_chromeos_device_hostname',
+        '--xvfb',
+      ],
+      'swarming': {
+        'hard_timeout': 960,
+        'shards': 12,
+      },
+    },
+    'telemetry_unittests': {
+      'args': [
+        '--browser=cros-chrome',
+        '--remote=variable_chromeos_device_hostname',
+        '--jobs=1',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+    },
+  },
+
   'chromium_android_asan_gtests': {
     # TODO(kbr): reduce duplication among these tests, and with other
     # test suites.
