@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -401,6 +400,31 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
       base::Bind(&ArcPolicyBridge::OnReportComplianceParseSuccess,
                  weak_ptr_factory_.GetWeakPtr(), repeating_callback),
       base::Bind(&OnReportComplianceParseFailure, repeating_callback));
+}
+
+void ArcPolicyBridge::ReportCloudDpsRequested(
+    base::Time time,
+    const std::vector<std::string>& package_names) {
+  const std::set<std::string> packages_set(package_names.begin(),
+                                           package_names.end());
+  for (Observer& observer : observers_)
+    observer.OnCloudDpsRequested(time, packages_set);
+}
+
+void ArcPolicyBridge::ReportCloudDpsSucceeded(
+    base::Time time,
+    const std::vector<std::string>& package_names) {
+  const std::set<std::string> packages_set(package_names.begin(),
+                                           package_names.end());
+  for (Observer& observer : observers_)
+    observer.OnCloudDpsSucceeded(time, packages_set);
+}
+
+void ArcPolicyBridge::ReportCloudDpsFailed(base::Time time,
+                                           const std::string& package_name,
+                                           mojom::InstallErrorReason reason) {
+  for (Observer& observer : observers_)
+    observer.OnCloudDpsFailed(time, package_name, reason);
 }
 
 void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,

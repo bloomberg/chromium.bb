@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/app_install_event_log_collector.h"
+
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -46,6 +48,11 @@ bool GetOnlineState() {
   return false;
 }
 
+void SetTimestampFromTime(em::AppInstallReportLogEvent* event,
+                          base::Time time) {
+  event->set_timestamp((time - base::Time::UnixEpoch()).InMicroseconds());
+}
+
 }  // namespace
 
 AppInstallEventLogCollector::AppInstallEventLogCollector(
@@ -56,12 +63,23 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  // Might not be available in unit test.
+  arc::ArcPolicyBridge* const policy_bridge =
+      arc::ArcPolicyBridge::GetForBrowserContext(profile_);
+  if (policy_bridge) {
+    policy_bridge->AddObserver(this);
+  }
 }
 
 AppInstallEventLogCollector::~AppInstallEventLogCollector() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  arc::ArcPolicyBridge* const policy_bridge =
+      arc::ArcPolicyBridge::GetForBrowserContext(profile_);
+  if (policy_bridge) {
+    policy_bridge->RemoveObserver(this);
+  }
 }
 
 void AppInstallEventLogCollector::OnPendingPackagesChanged(
@@ -116,6 +134,43 @@ void AppInstallEventLogCollector::OnNetworkChanged(
   event->set_event_type(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE);
   event->set_online(online_);
   delegate_->AddForAllPackages(std::move(event));
+}
+
+void AppInstallEventLogCollector::OnCloudDpsRequested(
+    base::Time time,
+    const std::set<std::string>& package_names) {
+  for (const std::string& package_name : package_names) {
+    auto event = std::make_unique<em::AppInstallReportLogEvent>();
+    event->set_event_type(em::AppInstallReportLogEvent::CLOUDDPS_REQUEST);
+    SetTimestampFromTime(event.get(), time);
+    delegate_->Add(package_name, true /* gather_disk_space_info */,
+                   std::move(event));
+  }
+}
+
+void AppInstallEventLogCollector::OnCloudDpsSucceeded(
+    base::Time time,
+    const std::set<std::string>& package_names) {
+  for (const std::string& package_name : package_names) {
+    auto event = std::make_unique<em::AppInstallReportLogEvent>();
+    event->set_event_type(em::AppInstallReportLogEvent::CLOUDDPS_RESPONSE);
+    SetTimestampFromTime(event.get(), time);
+    // Leave clouddps_response untouched.
+    delegate_->Add(package_name, true /* gather_disk_space_info */,
+                   std::move(event));
+  }
+}
+
+void AppInstallEventLogCollector::OnCloudDpsFailed(
+    base::Time time,
+    const std::string& package_name,
+    arc::mojom::InstallErrorReason reason) {
+  auto event = std::make_unique<em::AppInstallReportLogEvent>();
+  event->set_event_type(em::AppInstallReportLogEvent::CLOUDDPS_RESPONSE);
+  SetTimestampFromTime(event.get(), time);
+  event->set_clouddps_response(static_cast<int>(reason));
+  delegate_->Add(package_name, true /* gather_disk_space_info */,
+                 std::move(event));
 }
 
 }  // namespace policy
