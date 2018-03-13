@@ -525,14 +525,18 @@ def format_blink_cpp_source_code(text):
     output = []
     for line in text.split('\n'):
         # Skip empty lines.
-        if re_empty_line.match(line):
+        if line == '' or re_empty_line.match(line):
             was_empty_line = True
             continue
 
         # Emit a single empty line if needed.
         if was_empty_line:
             was_empty_line = False
-            match = re_first_brace.search(line)
+            if '}' in line:
+                match = re_first_brace.search(line)
+            else:
+                match = None
+
             if was_open_brace:
                 # No empty line just after an open brace.
                 pass
@@ -547,7 +551,10 @@ def format_blink_cpp_source_code(text):
         output.append(line)
 
         # Remember an open brace.
-        match = re_last_brace.search(line)
+        if '{' in line:
+            match = re_last_brace.search(line)
+        else:
+            match = None
         was_open_brace = (match and match.group('last') == '{' and 'namespace' not in line)
 
     # Let |'\n'.join| emit the last newline.
