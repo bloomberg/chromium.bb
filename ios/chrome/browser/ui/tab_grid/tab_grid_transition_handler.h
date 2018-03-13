@@ -7,12 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol TabGridTransitionStateProvider;
+@protocol GridTransitionStateProviding;
 
 @interface TabGridTransitionHandler
     : NSObject<UIViewControllerTransitioningDelegate>
 
-@property(nonatomic, weak) id<TabGridTransitionStateProvider> provider;
+@property(nonatomic, weak) id<GridTransitionStateProviding> provider;
 
 @end
 

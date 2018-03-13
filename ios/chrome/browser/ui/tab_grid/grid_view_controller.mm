@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -104,6 +105,39 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)isGridEmpty {
   return self.items.count == 0;
+}
+
+- (BOOL)isSelectedCellVisible {
+  if (self.collectionView.indexPathsForSelectedItems.count == 0)
+    return NO;
+  return [self.collectionView.indexPathsForVisibleItems
+      containsObject:self.collectionView.indexPathsForSelectedItems
+                         .firstObject];
+}
+
+- (GridTransitionLayout*)transitionLayout {
+  [self.collectionView layoutIfNeeded];
+  NSMutableArray<GridTransitionLayoutItem*>* items =
+      [[NSMutableArray alloc] init];
+  GridTransitionLayoutItem* selectedItem;
+  for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
+    GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
+        [self.collectionView cellForItemAtIndexPath:path]);
+    UICollectionViewLayoutAttributes* attributes =
+        [self.collectionView layoutAttributesForItemAtIndexPath:path];
+    // Normalize frame to window coordinates. The attributes class applies this
+    // change to the other properties such as center, bounds, etc.
+    attributes.frame =
+        [self.collectionView convertRect:attributes.frame toView:nil];
+    GridTransitionLayoutItem* item =
+        [GridTransitionLayoutItem itemWithCell:[cell proxyForTransitions]
+                                    attributes:attributes];
+    [items addObject:item];
+    if (cell.selected) {
+      selectedItem = item;
+    }
+  }
+  return [GridTransitionLayout layoutWithItems:items selectedItem:selectedItem];
 }
 
 #pragma mark - UICollectionViewDataSource

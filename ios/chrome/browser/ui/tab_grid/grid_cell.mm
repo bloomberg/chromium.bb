@@ -176,6 +176,16 @@ const CGFloat kBorderWidth = 6.0f;
   _title = title;
 }
 
+- (GridCell*)proxyForTransitions {
+  GridCell* proxy = [[[self class] alloc] initWithFrame:self.bounds];
+  proxy.selected = NO;
+  proxy.theme = self.theme;
+  proxy.icon = self.icon;
+  proxy.snapshot = self.snapshot;
+  proxy.title = self.title;
+  return proxy;
+}
+
 #pragma mark - Private
 
 // Sets up the top bar with icon, title, and close button.

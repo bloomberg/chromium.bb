@@ -7,7 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol GridTransitionStateProviding;
+
+// Animator object for transitioning from a fullscreen view controller (the
+// "tab") into a collection view of square-ish items (the "grid").
 @interface TabToGridAnimator : NSObject<UIViewControllerAnimatedTransitioning>
+
+// Initialize an animator object with |stateProvider| to provide state
+// information for the transition.
+- (instancetype)initWithStateProvider:
+    (id<GridTransitionStateProviding>)stateProvider;
 
 @end
 

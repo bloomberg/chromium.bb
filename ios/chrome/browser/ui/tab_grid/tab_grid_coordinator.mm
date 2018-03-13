@@ -85,6 +85,7 @@
       [[TabGridViewController alloc] init];
   self.transitionHandler = [[TabGridTransitionHandler alloc] init];
   self.transitionHandler.provider = mainViewController;
+  mainViewController.modalPresentationStyle = UIModalPresentationCustom;
   mainViewController.transitioningDelegate = self.transitionHandler;
   mainViewController.tabPresentationDelegate = self;
   _mainViewController = mainViewController;
