@@ -222,6 +222,17 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
+  // Check if sync is not in a permanent error state.
+  syncer::SyncService::SyncTokenStatus token_status =
+      sync_service->GetSyncTokenStatus();
+  if ((token_status.connection_status ==
+           syncer::ConnectionStatus::CONNECTION_AUTH_ERROR ||
+       token_status.connection_status ==
+           syncer::ConnectionStatus::CONNECTION_SERVER_ERROR) &&
+      token_status.last_get_token_error.IsPersistentError()) {
+    return false;
+  }
+
   // Users who have enabled a passphrase have chosen to not make their sync
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.

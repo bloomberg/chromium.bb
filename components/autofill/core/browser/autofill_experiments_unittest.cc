@@ -53,11 +53,28 @@ class TestSyncService : public syncer::FakeSyncService {
     is_using_secondary_passphrase_ = is_using_secondary_passphrase;
   }
 
+  syncer::SyncService::SyncTokenStatus GetSyncTokenStatus() const override {
+    syncer::SyncService::SyncTokenStatus token;
+
+    if (is_in_auth_error_) {
+      token.connection_status = syncer::ConnectionStatus::CONNECTION_AUTH_ERROR;
+      token.last_get_token_error =
+          GoogleServiceAuthError::FromServiceError("error");
+    }
+
+    return token;
+  }
+
+  void SetInAuthError(bool is_in_auth_error) {
+    is_in_auth_error_ = is_in_auth_error;
+  }
+
  private:
   bool can_sync_start_;
   syncer::ModelTypeSet preferred_data_types_;
   bool is_engine_initialized_;
   bool is_using_secondary_passphrase_;
+  bool is_in_auth_error_ = false;
 };
 
 }  // namespace
@@ -97,6 +114,11 @@ class AutofillExperimentsTest : public testing::Test {
 
 TEST_F(AutofillExperimentsTest, DenyUpload_SyncServiceCannotStart) {
   sync_service_.SetCanSyncStart(false);
+  EXPECT_FALSE(IsCreditCardUploadEnabled());
+}
+
+TEST_F(AutofillExperimentsTest, DenyUpload_AuthError) {
+  sync_service_.SetInAuthError(true);
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
