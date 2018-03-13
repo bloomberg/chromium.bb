@@ -13,6 +13,7 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -212,6 +214,56 @@ public class VrShellControllerInputTest {
         mController.sendClickButtonToggleEvent();
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
                 VrTestFramework.getHtmlTestFile("test_navigation_2d_page"));
+    }
+
+    /*
+     * Verifies that swiping up/down on the Daydream controller's touchpad
+     * scrolls a native page while in the VR browser.
+     */
+    @Test
+    @MediumTest
+    public void testControllerScrollingNative() throws InterruptedException {
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        // Fill history with enough items to scroll
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_navigation_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("generic_webxr_page"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_gamepad_button"), PAGE_LOAD_TIMEOUT_S);
+
+        mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
+
+        RecyclerView recyclerView =
+                ((HistoryPage) (mVrTestRule.getActivity().getActivityTab().getNativePage()))
+                        .getHistoryManagerForTesting()
+                        .getRecyclerViewForTests();
+
+        // Test that scrolling down works
+        int startScrollPoint = recyclerView.computeVerticalScrollOffset();
+        // Arbitrary, but valid values to scroll smoothly
+        int scrollSteps = 20;
+        int scrollSpeed = 60;
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed,
+                /* fling */ false);
+        int endScrollPoint = recyclerView.computeVerticalScrollOffset();
+        Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
+
+        // Test that scrolling up works
+        startScrollPoint = endScrollPoint;
+        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed,
+                /* fling */ false);
+        endScrollPoint = recyclerView.computeVerticalScrollOffset();
+        Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
     }
 
     /**
