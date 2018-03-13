@@ -38,7 +38,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/accessibility/ax_node_data.h"

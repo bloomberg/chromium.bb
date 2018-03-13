@@ -19,7 +19,7 @@
 #include "cc/test/test_skcanvas.h"
 #include "cc/test/transfer_cache_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/core/SkMaskFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -1134,9 +1134,8 @@ std::vector<PaintFlags> test_flags = {
 
       SkScalar intervals[] = {1.f, 1.f};
       flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
-      flags.setMaskFilter(
-          SkBlurMaskFilter::Make(SkBlurStyle::kOuter_SkBlurStyle, 4.3f,
-                                 test_rects[0], kHigh_SkBlurQuality));
+      flags.setMaskFilter(SkMaskFilter::MakeBlur(
+          SkBlurStyle::kOuter_SkBlurStyle, 4.3f, test_rects[0]));
       flags.setColorFilter(SkColorMatrixFilter::MakeLightingFilter(
           SK_ColorYELLOW, SK_ColorGREEN));
 
