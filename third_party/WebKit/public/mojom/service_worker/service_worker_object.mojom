@@ -6,7 +6,6 @@ module blink.mojom;
 
 import "third_party/WebKit/public/mojom/message_port/message_port.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_state.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 const int32 kInvalidServiceWorkerHandleId = -1;
@@ -38,13 +37,7 @@ struct ServiceWorkerObjectInfo {
 // implement ServiceWorker methods.
 interface ServiceWorkerObjectHost {
   // Corresponds to ServiceWorker#postMessage().
-  // TODO(leonhsl): Remove |source_origin| by having the browser process keep
-  // track of the origin of this endpoint at binding time. The original legacy
-  // IPC code this is converted from sent the origin in the IPC message, so it
-  // was kept as a convenience during migration to Mojo, but we should remove it
-  // now.
-  PostMessageToServiceWorker(TransferableMessage message,
-                             url.mojom.Origin source_origin);
+  PostMessageToServiceWorker(TransferableMessage message);
 
   // Tells the browser process to terminate the service worker. Used in layout
   // tests to verify behavior when a service worker isn't running. The callback

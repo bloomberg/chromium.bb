@@ -643,6 +643,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(dispatcher_host);
   render_process_id_ = process_id;
   dispatcher_host_ = dispatcher_host->AsWeakPtr();
+  SetDocumentUrl(running_hosted_version()->script_url());
 
   // Retrieve the registration associated with |version|. The registration
   // must be alive because the version keeps it during starting worker.
@@ -676,10 +677,6 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       mojom::kNavigation_ServiceWorkerSpec, process_id,
       mojo::MakeRequest(&provider_info->interface_provider)));
-
-  // Set the document URL to the script url in order to allow
-  // register/unregister/getRegistration on ServiceWorkerGlobalScope.
-  SetDocumentUrl(running_hosted_version()->script_url());
 
   return provider_info;
 }

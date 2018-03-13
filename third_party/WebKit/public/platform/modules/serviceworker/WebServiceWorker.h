@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class WebSecurityOrigin;
 class WebServiceWorkerProxy;
 
 class WebServiceWorker {
@@ -70,8 +69,7 @@ class WebServiceWorker {
     return mojom::ServiceWorkerState::kUnknown;
   }
 
-  virtual void PostMessageToServiceWorker(TransferableMessage,
-                                          const WebSecurityOrigin&) = 0;
+  virtual void PostMessageToServiceWorker(TransferableMessage) = 0;
 
   using TerminateForTestingCallback = WebCallbacks<void, void>;
   virtual void TerminateForTesting(

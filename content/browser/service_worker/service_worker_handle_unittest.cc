@@ -183,9 +183,8 @@ class ServiceWorkerHandleTest : public testing::Test {
   void CallDispatchExtendableMessageEvent(
       ServiceWorkerHandle* handle,
       ::blink::TransferableMessage message,
-      const url::Origin& source_origin,
       base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
-    handle->DispatchExtendableMessageEvent(std::move(message), source_origin,
+    handle->DispatchExtendableMessageEvent(std::move(message),
                                            std::move(callback));
   }
 
@@ -302,7 +301,6 @@ TEST_F(ServiceWorkerHandleTest,
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       sender_worker_handle.get(), std::move(message),
-      url::Origin::Create(version_->scope().GetOrigin()),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -349,6 +347,7 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
       ServiceWorkerProviderHost::Create(
           frame_host->GetProcess()->GetID(), std::move(provider_host_info),
           helper_->context()->AsWeakPtr(), dispatcher_host_->AsWeakPtr());
+  provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info;
   // ServiceWorkerHandle lifetime is controlled by |info| and is also owned by
@@ -364,7 +363,6 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       handle.get(), std::move(message),
-      url::Origin::Create(version_->scope().GetOrigin()),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -406,6 +404,7 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
       ServiceWorkerProviderHost::Create(
           frame_host->GetProcess()->GetID(), std::move(provider_host_info),
           helper_->context()->AsWeakPtr(), dispatcher_host_->AsWeakPtr());
+  provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info;
   // ServiceWorkerHandle lifetime is controlled by |info| and is also owned by
@@ -422,7 +421,6 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       handle.get(), std::move(message),
-      url::Origin::Create(version_->scope().GetOrigin()),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);

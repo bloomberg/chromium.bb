@@ -41,7 +41,6 @@
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "platform/bindings/ScriptState.h"
-#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_state.mojom-blink.h"
 
@@ -79,8 +78,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
   }
 
   handle_->ServiceWorker()->PostMessageToServiceWorker(
-      ToTransferableMessage(std::move(msg)),
-      WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()));
+      ToTransferableMessage(std::move(msg)));
 }
 
 ScriptPromise ServiceWorker::InternalsTerminate(ScriptState* script_state) {
