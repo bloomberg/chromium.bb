@@ -81,9 +81,6 @@ declare_args() {
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
   is_cast_using_cma_backend = is_cast_audio_only || !is_android
-
-  # A temporary arg for enabling D3D11VideoDecoder
-  enable_d3d11_video_decoder = false
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
@@ -135,8 +132,8 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = is_android || is_chromecast || enable_library_cdms ||
-                      enable_d3d11_video_decoder
+  enable_mojo_media =
+      is_android || is_chromecast || enable_library_cdms || is_win
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
@@ -203,41 +200,41 @@ declare_args() {
   # - "gpu": Use mojo media service hosted in the gpu process.
   # - "utility": Use mojo media service hosted in the utility process.
   mojo_media_host = "none"
+}
 
-  # Default mojo_media_services and mojo_media_host on various platforms.
-  # Can be overridden by gn build arguments from the --args command line flag
-  # for local testing.
-  if (enable_mojo_media) {
-    if (is_chromecast && is_cast_using_cma_backend) {
-      mojo_media_services = [
-        "cdm",
-        "renderer",
-      ]
-      mojo_media_host = "browser"
-    } else if (is_android) {
-      # Both chrome for Android and cast for ATV belongs to this case
-      mojo_media_services = [
-        "cdm",
-        "audio_decoder",
-      ]
-      mojo_media_services += [ "video_decoder" ]
-      mojo_media_host = "gpu"
-    } else if (enable_library_cdms) {
-      mojo_media_services = [ "cdm" ]
-      mojo_media_host = "gpu"
-    }
+# Default mojo_media_services and mojo_media_host on various platforms.
+# Can be overridden by gn build arguments from the --args command line flag
+# for local testing.
+if (enable_mojo_media) {
+  if (is_chromecast && is_cast_using_cma_backend) {
+    mojo_media_services = [
+      "cdm",
+      "renderer",
+    ]
+    mojo_media_host = "browser"
+  } else if (is_android) {
+    # Both chrome for Android and cast for ATV belongs to this case
+    mojo_media_services = [
+      "cdm",
+      "audio_decoder",
+      "video_decoder",
+    ]
+    mojo_media_host = "gpu"
+  } else if (is_win) {
+    mojo_media_services += [ "video_decoder" ]
+    mojo_media_host = "gpu"
+  }
 
-    if (is_win) {
-      if (enable_d3d11_video_decoder) {
-        mojo_media_services += [
-          "cdm",
-          "video_decoder",
-        ]
+  if (enable_library_cdms) {
+    mojo_media_services += [ "cdm" ]
+    assert(
+        mojo_media_host == "none" || mojo_media_host == "gpu",
+        "For now, mojo_media_host should not overwrite it with a different " +
+            "value if it has been set.")
 
-        # TODO(liberato): This is temporary.
-        mojo_media_host = "gpu"
-      }
-    }
+    # Having a CDM running means it could require a CdmProxy running in the GPU
+    # process.
+    mojo_media_host = "gpu"
   }
 }
 

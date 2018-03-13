@@ -31,9 +31,9 @@
 #endif  // defined(OS_ANDROID)
 
 // OS_WIN guards are needed for cross-compiling on linux.
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
+#if defined(OS_WIN)
 #include "media/gpu/windows/d3d11_video_decoder.h"
-#endif  // BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
+#endif  // defined(OS_WIN)
 
 namespace media {
 
@@ -61,8 +61,7 @@ std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID) || \
-    (defined(OS_WIN) && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER))
+#if defined(OS_ANDROID) || defined(OS_WIN)
 gpu::CommandBufferStub* GetCommandBufferStub(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
@@ -77,7 +76,7 @@ gpu::CommandBufferStub* GetCommandBufferStub(
 
   return channel->LookupCommandBuffer(route_id);
 }
-#endif  // OS_ANDROID || (OS_WIN && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER))
+#endif  // OS_ANDROID || OS_WIN
 
 }  // namespace
 
@@ -123,7 +122,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)));
-#elif defined(OS_WIN) && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
+#elif defined(OS_WIN)
   return std::make_unique<D3D11VideoDecoder>(
       gpu_task_runner_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
