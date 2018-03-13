@@ -126,9 +126,9 @@ class LocationBarView : public LocationBar,
   // It's guaranteed to be opaque.
   SkColor GetOpaqueBorderColor(bool incognito) const;
 
-  // Returns the color to be used for security text in the context of
+  // Returns the color to be used for the security chip in the context of
   // |security_level|.
-  SkColor GetSecureTextColor(
+  SkColor GetSecurityChipColor(
       security_state::SecurityLevel security_level) const;
 
   // Returns the theme color tint for the location bar and results.

@@ -652,7 +652,7 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   if (security_level_ == security_state::NONE ||
       security_level_ == security_state::HTTP_SHOW_WARNING)
     return;
-  ApplyColor(location_bar_view_->GetSecureTextColor(security_level_), range);
+  ApplyColor(location_bar_view_->GetSecurityChipColor(security_level_), range);
   if (security_level_ == security_state::DANGEROUS)
     ApplyStyle(gfx::STRIKE, true, range);
 }
