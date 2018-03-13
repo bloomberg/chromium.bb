@@ -5,7 +5,7 @@
 #include "core/css/parser/CSSTokenizer.h"
 
 namespace blink {
-#include "core/CSSTokenizerCodepoints.cpp"
+#include "core/css_tokenizer_codepoints.cc"
 }
 
 #include "core/css/parser/CSSParserIdioms.h"
