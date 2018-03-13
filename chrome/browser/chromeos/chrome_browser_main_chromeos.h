@@ -53,7 +53,7 @@ class SystemTokenCertDBInitializer;
 
 namespace power {
 namespace ml {
-class UserActivityLoggingController;
+class UserActivityController;
 }  // namespace ml
 }  // namespace power
 
@@ -126,8 +126,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   // send notifier settings information to Ash.
   std::unique_ptr<NotificationPlatformBridge> notification_client_;
 
-  std::unique_ptr<power::ml::UserActivityLoggingController>
-      user_activity_logging_controller_;
+  std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_H_
-#define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_MANAGER_H_
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -53,11 +53,11 @@ struct TabProperty {
 
 // Logs user activity after an idle event is observed.
 // TODO(renjieliu): Add power-related activity as well.
-class UserActivityLogger : public ui::UserActivityObserver,
-                           public IdleEventNotifier::Observer,
-                           public PowerManagerClient::Observer,
-                           public viz::mojom::VideoDetectorObserver,
-                           public session_manager::SessionManagerObserver {
+class UserActivityManager : public ui::UserActivityObserver,
+                            public IdleEventNotifier::Observer,
+                            public PowerManagerClient::Observer,
+                            public viz::mojom::VideoDetectorObserver,
+                            public session_manager::SessionManagerObserver {
  public:
   // Delay after screen idle event, used to trigger TIMEOUT for user activity
   // logging.
@@ -69,14 +69,14 @@ class UserActivityLogger : public ui::UserActivityObserver,
   static constexpr base::TimeDelta kMinSuspendDuration =
       base::TimeDelta::FromSeconds(10);
 
-  UserActivityLogger(UserActivityLoggerDelegate* delegate,
-                     IdleEventNotifier* idle_event_notifier,
-                     ui::UserActivityDetector* detector,
-                     chromeos::PowerManagerClient* power_manager_client,
-                     session_manager::SessionManager* session_manager,
-                     viz::mojom::VideoDetectorObserverRequest request,
-                     const chromeos::ChromeUserManager* user_manager);
-  ~UserActivityLogger() override;
+  UserActivityManager(UserActivityUkmLogger* ukm_logger,
+                      IdleEventNotifier* idle_event_notifier,
+                      ui::UserActivityDetector* detector,
+                      chromeos::PowerManagerClient* power_manager_client,
+                      session_manager::SessionManager* session_manager,
+                      viz::mojom::VideoDetectorObserverRequest request,
+                      const chromeos::ChromeUserManager* user_manager);
+  ~UserActivityManager() override;
 
   // ui::UserActivityObserver overrides.
   void OnUserActivity(const ui::Event* event) override;
@@ -106,7 +106,7 @@ class UserActivityLogger : public ui::UserActivityObserver,
   void OnSessionStateChanged() override;
 
  private:
-  friend class UserActivityLoggerTest;
+  friend class UserActivityManagerTest;
 
   // Updates lid state and tablet mode from received switch states.
   void OnReceiveSwitchStates(
@@ -165,7 +165,7 @@ class UserActivityLogger : public ui::UserActivityObserver,
   // It is RealBootClock, but will be set to FakeBootClock for tests.
   std::unique_ptr<BootClock> boot_clock_;
 
-  UserActivityLoggerDelegate* const logger_delegate_;
+  UserActivityUkmLogger* const ukm_logger_;
 
   ScopedObserver<IdleEventNotifier, IdleEventNotifier::Observer>
       idle_event_observer_;
@@ -191,13 +191,13 @@ class UserActivityLogger : public ui::UserActivityObserver,
   base::TimeDelta screen_dim_delay_;
   base::TimeDelta screen_off_delay_;
 
-  base::WeakPtrFactory<UserActivityLogger> weak_ptr_factory_;
+  base::WeakPtrFactory<UserActivityManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserActivityLogger);
+  DISALLOW_COPY_AND_ASSIGN(UserActivityManager);
 };
 
 }  // namespace ml
 }  // namespace power
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_MANAGER_H_

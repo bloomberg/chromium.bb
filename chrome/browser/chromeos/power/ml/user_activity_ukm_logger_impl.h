@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_DELEGATE_UKM_H_
-#define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_DELEGATE_UKM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_UKM_LOGGER_IMPL_H_
+#define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_UKM_LOGGER_IMPL_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -16,7 +16,7 @@ namespace ml {
 
 class UserActivityEvent;
 
-class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
+class UserActivityUkmLoggerImpl : public UserActivityUkmLogger {
  public:
   // Both |boundary_end| and |rounding| must be positive.
   struct Bucket {
@@ -37,16 +37,16 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
                        const Bucket* buckets,
                        size_t num_buckets);
 
-  UserActivityLoggerDelegateUkm();
-  ~UserActivityLoggerDelegateUkm() override;
+  UserActivityUkmLoggerImpl();
+  ~UserActivityUkmLoggerImpl() override;
 
-  // chromeos::power::ml::UserActivityLoggerDelegate overrides:
+  // chromeos::power::ml::UserActivityUkmLogger overrides:
   void LogActivity(
       const UserActivityEvent& event,
       const std::map<ukm::SourceId, TabProperty>& open_tabs) override;
 
  private:
-  friend class UserActivityLoggerDelegateUkmTest;
+  friend class UserActivityUkmLoggerTest;
 
   ukm::UkmRecorder* ukm_recorder_;  // not owned
 
@@ -54,11 +54,11 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
   // Event index starts from 1, and resets when a new session starts.
   int next_sequence_id_ = 1;
 
-  DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerDelegateUkm);
+  DISALLOW_COPY_AND_ASSIGN(UserActivityUkmLoggerImpl);
 };
 
 }  // namespace ml
 }  // namespace power
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_DELEGATE_UKM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_UKM_LOGGER_IMPL_H_

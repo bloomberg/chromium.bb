@@ -5,8 +5,8 @@
 #include <cmath>
 
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate_ukm.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/gfx/native_widget_types.h"
@@ -17,37 +17,33 @@ namespace ml {
 
 namespace {
 
-constexpr UserActivityLoggerDelegateUkm::Bucket kBatteryPercentBuckets[] = {
+constexpr UserActivityUkmLoggerImpl::Bucket kBatteryPercentBuckets[] = {
     {100, 5}};
 
-constexpr UserActivityLoggerDelegateUkm::Bucket kEventLogDurationBuckets[] = {
+constexpr UserActivityUkmLoggerImpl::Bucket kEventLogDurationBuckets[] = {
     {60, 1},
     {300, 10},
     {600, 20}};
 
-constexpr UserActivityLoggerDelegateUkm::Bucket kUserInputEventBuckets[] = {
+constexpr UserActivityUkmLoggerImpl::Bucket kUserInputEventBuckets[] = {
     {100, 1},
     {1000, 100},
     {10000, 1000}};
 
-constexpr UserActivityLoggerDelegateUkm::Bucket
-    kRecentVideoPlayingTimeBuckets[] = {{60, 1},
-                                        {1200, 300},
-                                        {3600, 600},
-                                        {18000, 1800}};
+constexpr UserActivityUkmLoggerImpl::Bucket kRecentVideoPlayingTimeBuckets[] = {
+    {60, 1},
+    {1200, 300},
+    {3600, 600},
+    {18000, 1800}};
 
-constexpr UserActivityLoggerDelegateUkm::Bucket
-    kTimeSinceLastVideoEndedBuckets[] = {{60, 1},
-                                         {600, 60},
-                                         {1200, 300},
-                                         {3600, 600},
-                                         {18000, 1800}};
+constexpr UserActivityUkmLoggerImpl::Bucket kTimeSinceLastVideoEndedBuckets[] =
+    {{60, 1}, {600, 60}, {1200, 300}, {3600, 600}, {18000, 1800}};
 
 }  // namespace
 
-int UserActivityLoggerDelegateUkm::Bucketize(int original_value,
-                                             const Bucket* buckets,
-                                             size_t num_buckets) {
+int UserActivityUkmLoggerImpl::Bucketize(int original_value,
+                                         const Bucket* buckets,
+                                         size_t num_buckets) {
   DCHECK_GE(original_value, 0);
   DCHECK(buckets);
   for (size_t i = 0; i < num_buckets; ++i) {
@@ -59,12 +55,12 @@ int UserActivityLoggerDelegateUkm::Bucketize(int original_value,
   return buckets[num_buckets - 1].boundary_end;
 }
 
-UserActivityLoggerDelegateUkm::UserActivityLoggerDelegateUkm()
+UserActivityUkmLoggerImpl::UserActivityUkmLoggerImpl()
     : ukm_recorder_(ukm::UkmRecorder::Get()) {}
 
-UserActivityLoggerDelegateUkm::~UserActivityLoggerDelegateUkm() = default;
+UserActivityUkmLoggerImpl::~UserActivityUkmLoggerImpl() = default;
 
-void UserActivityLoggerDelegateUkm::LogActivity(
+void UserActivityUkmLoggerImpl::LogActivity(
     const UserActivityEvent& event,
     const std::map<ukm::SourceId, TabProperty>& open_tabs) {
   DCHECK(ukm_recorder_);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/ml/user_activity_logger.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
 
 #include <memory>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -48,15 +48,15 @@ void EqualEvent(const UserActivityEvent::Event& expected_event,
   EXPECT_EQ(expected_event.log_duration_sec(), result_event.log_duration_sec());
 }
 
-// Testing logger delegate.
-class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
+// Testing UKM logger.
+class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
  public:
-  TestingUserActivityLoggerDelegate() = default;
-  ~TestingUserActivityLoggerDelegate() override = default;
+  TestingUserActivityUkmLogger() = default;
+  ~TestingUserActivityUkmLogger() override = default;
 
   const std::vector<UserActivityEvent>& events() const { return events_; }
 
-  // UserActivityLoggerDelegate overrides:
+  // UserActivityUkmLogger overrides:
   void LogActivity(
       const UserActivityEvent& event,
       const std::map<ukm::SourceId, TabProperty>& source_ids) override {
@@ -66,19 +66,19 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
  private:
   std::vector<UserActivityEvent> events_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingUserActivityLoggerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestingUserActivityUkmLogger);
 };
 
-class UserActivityLoggerTest : public ChromeRenderViewHostTestHarness {
+class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  UserActivityLoggerTest()
+  UserActivityManagerTest()
       : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {
     fake_power_manager_client_.Init(nullptr);
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         &fake_power_manager_client_, &user_activity_detector_,
         mojo::MakeRequest(&observer));
-    activity_logger_ = std::make_unique<UserActivityLogger>(
+    activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
         &fake_power_manager_client_, &session_manager_,
         mojo::MakeRequest(&observer), &fake_user_manager_);
@@ -87,7 +87,7 @@ class UserActivityLoggerTest : public ChromeRenderViewHostTestHarness {
                           task_runner_, base::TimeDelta::FromSeconds(10)));
   }
 
-  ~UserActivityLoggerTest() override = default;
+  ~UserActivityManagerTest() override = default;
 
  protected:
   void ReportUserActivity(const ui::Event* event) {
@@ -236,7 +236,7 @@ class UserActivityLoggerTest : public ChromeRenderViewHostTestHarness {
     return task_runner_;
   }
 
-  TestingUserActivityLoggerDelegate delegate_;
+  TestingUserActivityUkmLogger delegate_;
   chromeos::FakeChromeUserManager fake_user_manager_;
   // Only used to get SourceIds for URLs.
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
@@ -254,14 +254,14 @@ class UserActivityLoggerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   chromeos::FakePowerManagerClient fake_power_manager_client_;
   session_manager::SessionManager session_manager_;
-  std::unique_ptr<UserActivityLogger> activity_logger_;
+  std::unique_ptr<UserActivityManager> activity_logger_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerTest);
+  DISALLOW_COPY_AND_ASSIGN(UserActivityManagerTest);
 };
 
 // After an idle event, we have a ui::Event, we should expect one
 // UserActivityEvent.
-TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
+TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -279,7 +279,7 @@ TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
 }
 
 // Get a user event before an idle event, we should not log it.
-TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
+TEST_F(UserActivityManagerTest, LogBeforeIdleEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -290,7 +290,7 @@ TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
 
 // Get a user event, then an idle event, then another user event,
 // we should log the last one.
-TEST_F(UserActivityLoggerTest, LogSecondEvent) {
+TEST_F(UserActivityManagerTest, LogSecondEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -309,7 +309,7 @@ TEST_F(UserActivityLoggerTest, LogSecondEvent) {
 }
 
 // Log multiple events.
-TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
+TEST_F(UserActivityManagerTest, LogMultipleEvents) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -339,7 +339,7 @@ TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
   EqualEvent(expected_event2, events[1].event());
 }
 
-TEST_F(UserActivityLoggerTest, UserCloseLid) {
+TEST_F(UserActivityManagerTest, UserCloseLid) {
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -351,7 +351,7 @@ TEST_F(UserActivityLoggerTest, UserCloseLid) {
   EXPECT_TRUE(events.empty());
 }
 
-TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
+TEST_F(UserActivityManagerTest, PowerChangeActivity) {
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -371,7 +371,7 @@ TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, VideoActivity) {
+TEST_F(UserActivityManagerTest, VideoActivity) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -387,7 +387,7 @@ TEST_F(UserActivityLoggerTest, VideoActivity) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SystemIdle) {
+TEST_F(UserActivityManagerTest, SystemIdle) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -402,13 +402,13 @@ TEST_F(UserActivityLoggerTest, SystemIdle) {
   expected_event.set_type(UserActivityEvent::Event::TIMEOUT);
   expected_event.set_reason(UserActivityEvent::Event::SCREEN_OFF);
   expected_event.set_log_duration_sec(
-      UserActivityLogger::kIdleDelay.InSeconds());
+      UserActivityManager::kIdleDelay.InSeconds());
   EqualEvent(expected_event, events[0].event());
 }
 
 // Test system idle interrupt by user activity.
 // We should only observe user activity.
-TEST_F(UserActivityLoggerTest, SystemIdleInterrupted) {
+TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -429,7 +429,7 @@ TEST_F(UserActivityLoggerTest, SystemIdleInterrupted) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, ScreenLock) {
+TEST_F(UserActivityManagerTest, ScreenLock) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -445,13 +445,13 @@ TEST_F(UserActivityLoggerTest, ScreenLock) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendIdle) {
+TEST_F(UserActivityManagerTest, SuspendIdle) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
-                2 * UserActivityLogger::kMinSuspendDuration);
+                2 * UserActivityManager::kMinSuspendDuration);
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
@@ -461,13 +461,13 @@ TEST_F(UserActivityLoggerTest, SuspendIdle) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendIdleCancelled) {
+TEST_F(UserActivityManagerTest, SuspendIdleCancelled) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
-                UserActivityLogger::kMinSuspendDuration -
+                UserActivityManager::kMinSuspendDuration -
                     base::TimeDelta::FromSeconds(2));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -478,13 +478,13 @@ TEST_F(UserActivityLoggerTest, SuspendIdleCancelled) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendLidClosed) {
+TEST_F(UserActivityManagerTest, SuspendLidClosed) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
-                2 * UserActivityLogger::kMinSuspendDuration);
+                2 * UserActivityManager::kMinSuspendDuration);
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
@@ -494,13 +494,13 @@ TEST_F(UserActivityLoggerTest, SuspendLidClosed) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendLidClosedCancelled) {
+TEST_F(UserActivityManagerTest, SuspendLidClosedCancelled) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
-                UserActivityLogger::kMinSuspendDuration -
+                UserActivityManager::kMinSuspendDuration -
                     base::TimeDelta::FromSeconds(2));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -511,13 +511,13 @@ TEST_F(UserActivityLoggerTest, SuspendLidClosedCancelled) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendOther) {
+TEST_F(UserActivityManagerTest, SuspendOther) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
-                UserActivityLogger::kMinSuspendDuration);
+                UserActivityManager::kMinSuspendDuration);
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
@@ -527,13 +527,13 @@ TEST_F(UserActivityLoggerTest, SuspendOther) {
   EqualEvent(expected_event, events[0].event());
 }
 
-TEST_F(UserActivityLoggerTest, SuspendOtherCancelled) {
+TEST_F(UserActivityManagerTest, SuspendOtherCancelled) {
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
-                UserActivityLogger::kMinSuspendDuration -
+                UserActivityManager::kMinSuspendDuration -
                     base::TimeDelta::FromSeconds(2));
   const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -545,7 +545,7 @@ TEST_F(UserActivityLoggerTest, SuspendOtherCancelled) {
 }
 
 // Test feature extraction.
-TEST_F(UserActivityLoggerTest, FeatureExtraction) {
+TEST_F(UserActivityManagerTest, FeatureExtraction) {
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
@@ -589,7 +589,7 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   EXPECT_FALSE(features.has_time_since_last_key_sec());
 }
 
-TEST_F(UserActivityLoggerTest, ManagedDevice) {
+TEST_F(UserActivityManagerTest, ManagedDevice) {
   fake_user_manager_.set_is_enterprise_managed(true);
 
   const IdleEventNotifier::ActivityData data;
@@ -603,7 +603,7 @@ TEST_F(UserActivityLoggerTest, ManagedDevice) {
   EXPECT_EQ(UserActivityEvent::Features::MANAGED, features.device_management());
 }
 
-TEST_F(UserActivityLoggerTest, DimAndOffDelays) {
+TEST_F(UserActivityManagerTest, DimAndOffDelays) {
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(3000) /* screen_off_delay */);
@@ -619,7 +619,7 @@ TEST_F(UserActivityLoggerTest, DimAndOffDelays) {
   EXPECT_EQ(1, features.dim_to_screen_off_sec());
 }
 
-TEST_F(UserActivityLoggerTest, DimDelays) {
+TEST_F(UserActivityManagerTest, DimDelays) {
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta() /* screen_off_delay */);
@@ -635,7 +635,7 @@ TEST_F(UserActivityLoggerTest, DimDelays) {
   EXPECT_TRUE(!features.has_dim_to_screen_off_sec());
 }
 
-TEST_F(UserActivityLoggerTest, OffDelays) {
+TEST_F(UserActivityManagerTest, OffDelays) {
   ReportInactivityDelays(
       base::TimeDelta() /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(4000) /* screen_off_delay */);
@@ -651,7 +651,7 @@ TEST_F(UserActivityLoggerTest, OffDelays) {
   EXPECT_TRUE(!features.has_on_to_dim_sec());
 }
 
-TEST_F(UserActivityLoggerTest, BasicTabs) {
+TEST_F(UserActivityManagerTest, BasicTabs) {
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -693,7 +693,7 @@ TEST_F(UserActivityLoggerTest, BasicTabs) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(UserActivityLoggerTest, MultiBrowsersAndTabs) {
+TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
   // Simulates three browsers:
   //  - browser1 is the last active but minimized and so not visible.
   //  - browser2 and browser3 are both visible but browser2 is the topmost.
@@ -776,7 +776,7 @@ TEST_F(UserActivityLoggerTest, MultiBrowsersAndTabs) {
   tab_strip_model3->CloseAllTabs();
 }
 
-TEST_F(UserActivityLoggerTest, Incognito) {
+TEST_F(UserActivityManagerTest, Incognito) {
   std::unique_ptr<Browser> browser = CreateTestBrowser(
       true /* is_visible */, true /* is_focused */, true /* is_incognito */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -793,7 +793,7 @@ TEST_F(UserActivityLoggerTest, Incognito) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(UserActivityLoggerTest, NoOpenTabs) {
+TEST_F(UserActivityManagerTest, NoOpenTabs) {
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
 
