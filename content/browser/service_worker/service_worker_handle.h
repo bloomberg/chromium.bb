@@ -10,19 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
-
-#if defined(OS_WIN)
-// Since PostMessage is a Win32 macro, ensure that it has the same
-// value every time this header is parsed. This avoids strange
-// compilation and linking errors.
-#include "base/win/windows_types.h"
-#endif
 
 namespace url {
 class Origin;
@@ -91,8 +83,8 @@ class CONTENT_EXPORT ServiceWorkerHandle
                       ServiceWorkerVersion* version);
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
-  void PostMessage(::blink::TransferableMessage message,
-                   const url::Origin& source_origin) override;
+  void PostMessageToServiceWorker(::blink::TransferableMessage message,
+                                  const url::Origin& source_origin) override;
   void TerminateForTesting(TerminateForTestingCallback callback) override;
 
   void DispatchExtendableMessageEvent(

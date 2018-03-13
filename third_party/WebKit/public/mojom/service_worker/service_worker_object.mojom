@@ -43,7 +43,8 @@ interface ServiceWorkerObjectHost {
   // IPC code this is converted from sent the origin in the IPC message, so it
   // was kept as a convenience during migration to Mojo, but we should remove it
   // now.
-  PostMessage(TransferableMessage message, url.mojom.Origin source_origin);
+  PostMessageToServiceWorker(TransferableMessage message,
+                             url.mojom.Origin source_origin);
 
   // Tells the browser process to terminate the service worker. Used in layout
   // tests to verify behavior when a service worker isn't running. The callback

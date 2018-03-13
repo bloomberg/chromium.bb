@@ -97,9 +97,11 @@ blink::mojom::ServiceWorkerState WebServiceWorkerImpl::GetState() const {
   return state_;
 }
 
-void WebServiceWorkerImpl::PostMessage(blink::TransferableMessage message,
-                                       const WebSecurityOrigin& source_origin) {
-  GetObjectHost()->PostMessage(std::move(message), url::Origin(source_origin));
+void WebServiceWorkerImpl::PostMessageToServiceWorker(
+    blink::TransferableMessage message,
+    const WebSecurityOrigin& source_origin) {
+  GetObjectHost()->PostMessageToServiceWorker(std::move(message),
+                                              url::Origin(source_origin));
 }
 
 void WebServiceWorkerImpl::TerminateForTesting(

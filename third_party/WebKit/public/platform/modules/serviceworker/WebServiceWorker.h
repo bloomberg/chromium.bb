@@ -70,7 +70,8 @@ class WebServiceWorker {
     return mojom::ServiceWorkerState::kUnknown;
   }
 
-  virtual void PostMessage(TransferableMessage, const WebSecurityOrigin&) = 0;
+  virtual void PostMessageToServiceWorker(TransferableMessage,
+                                          const WebSecurityOrigin&) = 0;
 
   using TerminateForTestingCallback = WebCallbacks<void, void>;
   virtual void TerminateForTesting(

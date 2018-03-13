@@ -222,8 +222,9 @@ void ServiceWorkerHandle::RegisterIntoDispatcherHost(
   dispatcher_host_->RegisterServiceWorkerHandle(base::WrapUnique(this));
 }
 
-void ServiceWorkerHandle::PostMessage(::blink::TransferableMessage message,
-                                      const url::Origin& source_origin) {
+void ServiceWorkerHandle::PostMessageToServiceWorker(
+    ::blink::TransferableMessage message,
+    const url::Origin& source_origin) {
   // When this method is called the encoded_message inside message could just
   // point to the IPC message's buffer. But that buffer can become invalid
   // before the message is passed on to the service worker, so make sure
