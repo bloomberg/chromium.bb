@@ -186,7 +186,7 @@ else
   dep_rt = []
 endif
 dep_m = cc.find_library('m', required : false)
-foreach header : ['sys/sysctl.h', 'sys/select.h']
+foreach header : ['sys/sysctl.h', 'sys/select.h', 'alloca.h']
   if cc.compiles('#include <@0@>'.format(header), name : '@0@ works'.format(header))
     config.set10('HAVE_' + header.underscorify().to_upper(), true)
   endif
