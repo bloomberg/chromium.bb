@@ -72,7 +72,7 @@
                 "GridAutoRepeatRowsType", "-webkit-box-flex", 
                 "-webkit-box-ordinal-group", "-webkit-box-flex-group", "flex-basis", 
                 "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align", 
-                "-webkit-box-pack", "-webkit-box-lines", "-webkit-box-orient",
+                "-webkit-box-pack", "-webkit-box-orient",
                 "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
                 "column-gap", "column-width", "column-rule-style",
                 "column-rule-width", "column-rule-color", "ColumnRuleColorIsCurrentColor", "VisitedLinkColumnRuleColor",

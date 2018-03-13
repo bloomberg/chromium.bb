@@ -13,7 +13,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-direction: normal
 -webkit-box-flex: 0
 -webkit-box-flex-group: 1
--webkit-box-lines: single
 -webkit-box-ordinal-group: 1
 -webkit-box-orient: horizontal
 -webkit-box-pack: start

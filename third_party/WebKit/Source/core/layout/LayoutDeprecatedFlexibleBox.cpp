@@ -343,7 +343,7 @@ void LayoutDeprecatedFlexibleBox::StyleWillChange(
 void LayoutDeprecatedFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  if (HasMultipleLines() || IsVertical()) {
+  if (IsVertical()) {
     for (LayoutBox* child = FirstChildBox(); child;
          child = child->NextSiblingBox()) {
       if (ChildDoesNotAffectWidthOrFlexing(child))
@@ -386,9 +386,6 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   if (Style()->BoxDirection() !=
       ComputedStyleInitialValues::InitialBoxDirection())
     UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxDirectionNotInitial);
-
-  if (Style()->BoxLines() != ComputedStyleInitialValues::InitialBoxLines())
-    UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLinesNotInitial);
 
   if (Style()->BoxPack() != ComputedStyleInitialValues::InitialBoxPack())
     UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxPackNotInitial);
