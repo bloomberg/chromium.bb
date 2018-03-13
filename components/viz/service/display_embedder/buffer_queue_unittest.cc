@@ -94,6 +94,9 @@ const gpu::SurfaceHandle kFakeSurfaceHandle =
 const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
 #endif
 
+const unsigned int kBufferQueueInternalformat = GL_RGBA;
+const gfx::BufferFormat kBufferQueueFormat = gfx::BufferFormat::RGBA_8888;
+
 class MockBufferQueue : public BufferQueue {
  public:
   MockBufferQueue(gpu::gles2::GLES2Interface* gl,
@@ -102,8 +105,8 @@ class MockBufferQueue : public BufferQueue {
                   unsigned int internalformat)
       : BufferQueue(gl,
                     target,
-                    internalformat,
-                    display::DisplaySnapshot::PrimaryFormat(),
+                    kBufferQueueInternalformat,
+                    kBufferQueueFormat,
                     nullptr,
                     gpu_memory_buffer_manager,
                     kFakeSurfaceHandle) {}
@@ -123,7 +126,8 @@ class BufferQueueTest : public ::testing::Test {
     gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
     mock_output_surface_ = new MockBufferQueue(context_provider_->ContextGL(),
                                                gpu_memory_buffer_manager_.get(),
-                                               GL_TEXTURE_2D, GL_RGB);
+                                               GL_TEXTURE_2D,
+                                               kBufferQueueInternalformat);
     output_surface_.reset(mock_output_surface_);
     output_surface_->Initialize();
   }
@@ -263,7 +267,7 @@ std::unique_ptr<BufferQueue> CreateBufferQueue(
     gpu::gles2::GLES2Interface* gl,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<BufferQueue> buffer_queue(new BufferQueue(
-      gl, target, GL_RGB, display::DisplaySnapshot::PrimaryFormat(), nullptr,
+      gl, target, kBufferQueueInternalformat, kBufferQueueFormat, nullptr,
       gpu_memory_buffer_manager, kFakeSurfaceHandle));
   buffer_queue->Initialize();
   return buffer_queue;
@@ -302,7 +306,8 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
     EXPECT_CALL(*context, bindTexture(target, Ne(0U)));
     EXPECT_CALL(*context, destroyImageCHROMIUM(1));
     Expectation image =
-        EXPECT_CALL(*context, createImageCHROMIUM(_, 0, 0, GL_RGB))
+        EXPECT_CALL(*context,
+                    createImageCHROMIUM(_, 0, 0, kBufferQueueInternalformat))
             .WillOnce(Return(1));
     Expectation fb =
         EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
@@ -332,8 +337,9 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
                                context_provider->ContextSupport()));
 
   output_surface.reset(new BufferQueue(
-      context_provider->ContextGL(), GL_TEXTURE_2D, GL_RGB,
-      display::DisplaySnapshot::PrimaryFormat(), gl_helper.get(),
+      context_provider->ContextGL(), GL_TEXTURE_2D,
+      kBufferQueueInternalformat, kBufferQueueFormat,
+      gl_helper.get(),
       gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
   output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
@@ -622,7 +628,8 @@ TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
   // Expect all 4 images to be destroyed, 3 of the existing textures to be
   // copied from and 3 new images to be created.
   EXPECT_CALL(*context_, createImageCHROMIUM(_, screen_size.width(),
-                                             screen_size.height(), GL_RGB))
+                                             screen_size.height(),
+                                             kBufferQueueInternalformat))
       .Times(3);
   Expectation copy1 = EXPECT_CALL(*mock_output_surface_,
                                   CopyBufferDamage(_, displayed->texture, _, _))
