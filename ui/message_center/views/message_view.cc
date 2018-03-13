@@ -276,8 +276,17 @@ ui::Layer* MessageView::GetSlideOutLayer() {
 void MessageView::OnSlideChanged() {}
 
 void MessageView::OnSlideOut() {
-  MessageCenter::Get()->RemoveNotification(notification_id_,
-                                           true /* by_user */);
+  // As a workaround for a MessagePopupCollection bug https://crbug.com/805208,
+  // pass false to by_user although it is triggered by user.
+  // TODO(tetsui): Rewrite MessagePopupCollection and remove this hack.
+  if (pinned_) {
+    // Also a workaround to not break notification pinning.
+    MessageCenter::Get()->MarkSinglePopupAsShown(
+        notification_id_, true /* mark_notification_as_read */);
+  } else {
+    MessageCenter::Get()->RemoveNotification(notification_id_,
+                                             false /* by_user */);
+  }
 }
 
 bool MessageView::GetPinned() const {

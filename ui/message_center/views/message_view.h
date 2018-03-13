@@ -28,14 +28,17 @@ class ScrollView;
 
 namespace message_center {
 
+namespace test {
+class MessagePopupCollectionTest;
+}
+
 class Notification;
 class NotificationControlButtonsView;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
-class MESSAGE_CENTER_EXPORT MessageView
-    : public views::InkDropHostView,
-      public views::SlideOutController::Delegate {
+class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
+                                          public SlideOutController::Delegate {
  public:
   static const char kViewClassName[];
 
@@ -88,7 +91,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::SlideOutController::Delegate
+  // message_center::SlideOutController::Delegate
   ui::Layer* GetSlideOutLayer() override;
   void OnSlideChanged() override;
   void OnSlideOut() override;
@@ -114,6 +117,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   bool is_nested() const { return is_nested_; }
 
  private:
+  friend class test::MessagePopupCollectionTest;
+
   std::string notification_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   views::ScrollView* scroller_ = nullptr;
@@ -125,7 +130,7 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   std::unique_ptr<views::Painter> focus_painter_;
 
-  views::SlideOutController slide_out_controller_;
+  message_center::SlideOutController slide_out_controller_;
 
   // True if |this| is embedded in another view. Equivalent to |!top_level| in
   // MessageViewFactory parlance.

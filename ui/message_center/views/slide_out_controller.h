@@ -8,15 +8,16 @@
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/scoped_target_handler.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/views/view.h"
-#include "ui/views/views_export.h"
 
-namespace views {
+namespace message_center {
 
 // This class contains logic to control sliding out of a layer in response to
 // swipes, i.e. gesture scroll events.
-class SlideOutController : public ui::EventHandler,
-                           public ui::ImplicitAnimationObserver {
+class MESSAGE_CENTER_EXPORT SlideOutController
+    : public ui::EventHandler,
+      public ui::ImplicitAnimationObserver {
  public:
   class Delegate {
    public:
@@ -59,6 +60,6 @@ class SlideOutController : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(SlideOutController);
 };
 
-}  // namespace views
+}  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_VIEWS_SLIDE_OUT_CONTROLLER_H_
