@@ -61,6 +61,9 @@ source_set("unit_tests") {
   ]
 
   if (!is_ios) {
-    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
+    deps += [
+      "//components/safe_browsing:features",
+      "//components/safe_browsing/common:safe_browsing_prefs",
+    ]
   }
 }
