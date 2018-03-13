@@ -141,6 +141,28 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
+bool NGPaintFragment::FlippedLocalVisualRectFor(
+    const LayoutObject* layout_object,
+    LayoutRect* visual_rect) {
+  auto fragments = InlineFragmentsFor(layout_object);
+  if (!fragments.IsInLayoutNGInlineFormattingContext())
+    return false;
+
+  for (NGPaintFragment* fragment : fragments) {
+    NGPhysicalOffsetRect child_visual_rect =
+        fragment->PhysicalFragment().SelfVisualRect();
+    child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
+    visual_rect->Unite(child_visual_rect.ToLayoutRect());
+  }
+  if (!layout_object->HasFlippedBlocksWritingMode())
+    return true;
+
+  NGPaintFragment* container = GetForInlineContainer(layout_object);
+  DCHECK(container);
+  ToLayoutBox(container->GetLayoutObject())->FlipForWritingMode(*visual_rect);
+  return true;
+}
+
 void NGPaintFragment::UpdateVisualRectForNonLayoutObjectChildren() {
   // Scan direct children only beause line boxes are always direct children of
   // the inline formatting context.

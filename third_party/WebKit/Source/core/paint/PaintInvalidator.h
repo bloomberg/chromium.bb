@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class NGPaintFragment;
 class PrePaintTreeWalk;
 struct CORE_EXPORT PaintInvalidatorContext {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -158,10 +159,15 @@ class PaintInvalidator {
   static LayoutRect MapLocalRectToVisualRectInBacking(
       const LayoutObject&,
       const Rect&,
-      const PaintInvalidatorContext&);
+      const PaintInvalidatorContext&,
+      bool disable_flip = false);
 
   ALWAYS_INLINE LayoutRect
   ComputeVisualRectInBacking(const LayoutObject&,
+                             const PaintInvalidatorContext&);
+  ALWAYS_INLINE LayoutRect
+  ComputeVisualRectInBacking(const NGPaintFragment&,
+                             const LayoutObject&,
                              const PaintInvalidatorContext&);
   ALWAYS_INLINE LayoutPoint
   ComputeLocationInBacking(const LayoutObject&, const PaintInvalidatorContext&);

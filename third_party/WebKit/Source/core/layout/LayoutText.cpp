@@ -1908,9 +1908,9 @@ LayoutRect LayoutText::VisualOverflowRect() const {
 
 LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    NGPhysicalOffsetRect visual_rect;
-    if (LayoutNGBlockFlow::LocalVisualRectFor(this, &visual_rect))
-      return visual_rect.ToLayoutRect();
+    LayoutRect visual_rect;
+    if (NGPaintFragment::FlippedLocalVisualRectFor(this, &visual_rect))
+      return visual_rect;
   }
 
   return UnionRect(VisualOverflowRect(), LocalSelectionRect());
