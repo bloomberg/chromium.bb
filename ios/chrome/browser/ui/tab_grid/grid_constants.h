@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSTANTS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 // Accessibility identifier prefix of a grid cell. To reference a specific cell,
 // concatenate |kGridCellIdentifierPrefix| with the index of the cell. For
@@ -15,5 +15,13 @@ extern NSString* const kGridCellIdentifierPrefix;
 
 // Accessibility identifier for the close button in a grid cell.
 extern NSString* const kGridCellCloseButtonIdentifier;
+
+// All kxxxColor constants are RGB values stored in a Hex integer. These will be
+// converted into UIColors using the UIColorFromRGB() function, from
+// uikit_ui_util.h
+
+// GridCell styling.
+extern const CGFloat kGridLightThemeCellCloseButtonTintColor;
+extern const CGFloat kGridDarkThemeCellCloseButtonTintColor;
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSTANTS_H_

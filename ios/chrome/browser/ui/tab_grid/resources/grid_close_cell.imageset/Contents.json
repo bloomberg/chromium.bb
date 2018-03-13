@@ -1,0 +1,23 @@
+{
+    "images": [
+        {
+            "idiom": "universal",
+            "scale": "1x",
+            "filename": "grid_close_cell.png"
+        },
+        {
+            "idiom": "universal",
+            "scale": "2x",
+            "filename": "grid_close_cell@2x.png"
+        },
+        {
+            "idiom": "universal",
+            "scale": "3x",
+            "filename": "grid_close_cell@3x.png"
+        }
+    ],
+    "info": {
+        "version": 1,
+        "author": "xcode"
+    }
+}

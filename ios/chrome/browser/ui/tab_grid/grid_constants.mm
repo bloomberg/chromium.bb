@@ -14,3 +14,7 @@ NSString* const kGridCellIdentifierPrefix = @"GridCellIdentifierPrefix";
 // Accessibility identifier for the close button in a grid cell.
 NSString* const kGridCellCloseButtonIdentifier =
     @"GridCellCloseButtonIdentifier";
+
+// GridCell styling.
+const CGFloat kGridLightThemeCellCloseButtonTintColor = 0x3C4043;
+const CGFloat kGridDarkThemeCellCloseButtonTintColor = 0xFFFFFF;

@@ -67,9 +67,11 @@ source_set("tab_grid_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "resources:grid_close_cell",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/util:constraints_ui",
     "//ui/base",
