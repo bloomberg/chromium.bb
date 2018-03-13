@@ -766,13 +766,22 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Static helper functions.
   static bool IsARIAControl(AccessibilityRole);
   static bool IsARIAInput(AccessibilityRole);
-  // Is this a widget that requires container widget
+  // Is this a widget that requires container widget.
   static bool IsSubWidget(AccessibilityRole);
   static AccessibilityRole AriaRoleToWebCoreRole(const String&);
   static const AtomicString& RoleName(AccessibilityRole);
   static const AtomicString& InternalRoleName(AccessibilityRole);
   static void AccessibleNodeListToElementVector(const AccessibleNodeList&,
                                                 HeapVector<Member<Element>>&);
+
+  // Given two AX objects, returns the lowest common ancestor and the child
+  // indices in that ancestor corresponding to the branch under which each
+  // object is to be found. If the lowest common ancestor is the same as either
+  // of the objects, the corresponding index is set to -1 to indicate this.
+  static const AXObject* LowestCommonAncestor(const AXObject& first,
+                                              const AXObject& second,
+                                              int* index_in_ancestor1,
+                                              int* index_in_ancestor2);
 
  protected:
   AXID id_;
@@ -866,6 +875,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   DISALLOW_COPY_AND_ASSIGN(AXObject);
 };
 
+MODULES_EXPORT bool operator==(const AXObject& first, const AXObject& second);
+MODULES_EXPORT bool operator!=(const AXObject& first, const AXObject& second);
+MODULES_EXPORT bool operator<(const AXObject& first, const AXObject& second);
+MODULES_EXPORT bool operator<=(const AXObject& first, const AXObject& second);
+MODULES_EXPORT bool operator>(const AXObject& first, const AXObject& second);
+MODULES_EXPORT bool operator>=(const AXObject& first, const AXObject& second);
 MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXObject&);
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate)           \
