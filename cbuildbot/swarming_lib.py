@@ -90,6 +90,10 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
     swarming_cmd += ['--']
     swarming_cmd += cmd
 
+    # Ensure SWARMING_TASK_ID is unset in env. See crbug.com/821227.
+    kwargs.setdefault('env', os.environ.copy())
+    kwargs['env'].pop('SWARMING_TASK_ID', None)
+
     try:
       result = None
       while True:
