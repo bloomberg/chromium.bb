@@ -1161,6 +1161,10 @@ const char kPasswordSearchMobileName[] = "Password search";
 const char kPasswordSearchMobileDescription[] =
     "Search functionality in password settings.";
 
+const char kPdfIsolationName[] = "PDF Isolation";
+const char kPdfIsolationDescription[] =
+    "Render PDF files from different origins in different plugin processes.";
+
 const char kPermissionsBlacklistName[] = "Permissions Blacklist";
 const char kPermissionsBlacklistDescription[] =
     "Enables the Permissions Blacklist, which blocks permissions for "

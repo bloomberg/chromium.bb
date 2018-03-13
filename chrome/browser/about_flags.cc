@@ -3736,6 +3736,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVizHitTestDrawQuadDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableVizHitTestDrawQuad)},
 
+    {"pdf-isolation", flag_descriptions::kPdfIsolationName,
+     flag_descriptions::kPdfIsolationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPdfIsolation)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
