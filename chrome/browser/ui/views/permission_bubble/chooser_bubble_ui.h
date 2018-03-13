@@ -43,6 +43,9 @@ class ChooserBubbleUi : public BubbleUi, public views::WidgetObserver {
   // allow this bubble to be used in either.
   void CreateAndShow(views::BubbleDialogDelegateView* delegate);
 
+  // Create a ChooserBubbleUi attached specifically to a Cocoa browser window.
+  void CreateAndShowCocoa(views::BubbleDialogDelegateView* delegate);
+
   Browser* const browser_;  // Weak.
   // Weak. Owned by its parent view.
   ChooserBubbleUiViewDelegate* chooser_bubble_ui_view_delegate_;

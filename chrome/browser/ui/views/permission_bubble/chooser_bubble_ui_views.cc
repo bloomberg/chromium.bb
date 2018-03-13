@@ -6,10 +6,13 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -22,7 +25,12 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                                            std::move(chooser_controller_));
 }
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return ChooserBubbleUi::CreateAndShowCocoa(delegate);
+#endif
   // Set |parent_window_| because some valid anchors can become hidden.
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
@@ -31,3 +39,4 @@ void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
   delegate->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(delegate)->Show();
 }
+#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
