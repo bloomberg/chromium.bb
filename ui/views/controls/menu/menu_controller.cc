@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -164,7 +167,7 @@ View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-// Determines the correct cooridinates and window to repost |event| to, if it is
+// Determines the correct coordinates and window to repost |event| to, if it is
 // a mouse or touch event.
 static void RepostEventImpl(const ui::LocatedEvent* event,
                             const gfx::Point& screen_loc,
@@ -2011,7 +2014,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
                 state_.monitor_bounds.right())
               x -= pref.width();  // Move the menu to the left of the button.
             else
-              x += state_.initial_bounds.width(); // Move the menu right.
+              x += state_.initial_bounds.width();  // Move the menu right.
           } else {
             // The menu should end with the same x coordinate as the owning
             // button.
@@ -2019,7 +2022,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
                 state_.initial_bounds.x() - pref.width())
               x = state_.initial_bounds.right();  // Move right of the button.
             else
-              x = state_.initial_bounds.x() - pref.width(); // Move left.
+              x = state_.initial_bounds.x() - pref.width();  // Move left.
           }
         }
         item->set_actual_menu_position(orientation);
@@ -2316,7 +2319,7 @@ MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
 void MenuController::AcceptOrSelect(MenuItemView* parent,
                                     const SelectByCharDetails& details) {
   // This should only be invoked if there is a match.
-  DCHECK(details.first_match != -1);
+  DCHECK_NE(details.first_match, -1);
   DCHECK(parent->HasSubmenu());
   SubmenuView* submenu = parent->GetSubmenu();
   DCHECK(submenu);
