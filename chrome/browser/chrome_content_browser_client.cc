@@ -1301,18 +1301,19 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
   return true;
 }
 
-bool ChromeContentBrowserClient::ShouldBypassDocumentBlocking(
-    const url::Origin& initiator,
-    const GURL& url,
-    ResourceType resource_type) {
+const char*
+ChromeContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (ChromeContentBrowserClientExtensionsPart::ShouldBypassDocumentBlocking(
-          initiator)) {
-    return true;
-  }
+  // Don't block responses for extension processes or for content scripts.
+  // TODO(creis): When every extension fetch (including content scripts) has
+  // been made to go through an extension-specific URLLoaderFactory, this
+  // mechanism ought to work by enumerating the host permissions from the
+  // extension manifest, and forwarding them on to the network service while
+  // brokering the URLLoaderFactory.
+  return extensions::kExtensionScheme;
+#else
+  return nullptr;
 #endif
-
-  return false;
 }
 
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,

@@ -778,16 +778,20 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   if (initiator.scheme() == url::kFileScheme)
     return false;
 
+  // Give embedder a chance to skip document blocking for this response.
+  const char* initiator_scheme_exception =
+      GetContentClient()
+          ->browser()
+          ->GetInitatorSchemeBypassingDocumentBlocking();
+  if (initiator_scheme_exception &&
+      initiator.scheme() == initiator_scheme_exception) {
+    return false;
+  }
+
   // Only block if this is a request made from a renderer process.
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info || info->GetChildID() == -1)
     return false;
-
-  // Give embedder a chance to skip document blocking for this response.
-  if (GetContentClient()->browser()->ShouldBypassDocumentBlocking(
-          initiator, url, info->GetResourceType())) {
-    return false;
-  }
 
   // Allow the response through if it has valid CORS headers.
   std::string cors_header;
