@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
 

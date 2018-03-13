@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_supported_options.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 

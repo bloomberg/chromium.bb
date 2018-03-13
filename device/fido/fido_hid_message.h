@@ -17,7 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_hid_packet.h"
 
 namespace device {

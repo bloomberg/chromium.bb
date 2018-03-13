@@ -15,7 +15,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
 #include "device/fido/u2f_discovery.h"

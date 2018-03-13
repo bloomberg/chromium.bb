@@ -8,7 +8,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_writer.h"
-#include "device/fido/ctap_constants.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
