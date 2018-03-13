@@ -20,6 +20,7 @@
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
@@ -35,6 +36,11 @@
 namespace extensions {
 
 namespace {
+
+void RegisterCastManifestHandlers() {
+  DCHECK(!ManifestHandler::IsRegistrationFinalized());
+  (new ContentScriptsHandler)->Register();
+}
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share
 // code. For now, this implementation does nothing.
@@ -81,6 +87,7 @@ CastExtensionsClient::~CastExtensionsClient() {}
 
 void CastExtensionsClient::Initialize() {
   RegisterCommonManifestHandlers();
+  RegisterCastManifestHandlers();
   ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 
@@ -114,6 +121,14 @@ std::unique_ptr<FeatureProvider> CastExtensionsClient::CreateFeatureProvider(
     feature->set_channel(version_info::Channel::STABLE);
     feature->set_extension_types({extensions::Manifest::TYPE_PLATFORM_APP});
     provider->AddFeature("cast_url", feature);
+
+    feature = new extensions::ManifestFeature();
+    feature->set_name("content_scripts");
+    feature->set_channel(version_info::Channel::STABLE);
+    feature->set_extension_types(
+        {extensions::Manifest::TYPE_EXTENSION,
+         extensions::Manifest::TYPE_LEGACY_PACKAGED_APP});
+    provider->AddFeature("content_scripts", feature);
   } else if (name == "permission") {
     provider = std::make_unique<ShellPermissionFeatureProvider>();
   } else if (name == "behavior") {
