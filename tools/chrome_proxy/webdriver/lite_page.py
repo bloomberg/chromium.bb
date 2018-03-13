@@ -9,6 +9,7 @@ from common import IntegrationTest
 from decorators import AndroidOnly
 from decorators import ChromeVersionBeforeM
 from decorators import ChromeVersionEqualOrAfterM
+from urlparse import urlparse
 
 import time
 
@@ -276,7 +277,8 @@ class LitePage(IntegrationTest):
           if (self.checkLitePageResponse(response)):
              lite_page_responses = lite_page_responses + 1
         # Keep track of BTF responses.
-        if response.url.startswith("http://googleweblight.com/b"):
+        u = urlparse(response.url)
+        if u.path == "/b":
           btf_response = btf_response + 1
         # Keep track of image responses.
         if response.url.startswith("data:image"):
