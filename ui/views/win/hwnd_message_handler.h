@@ -264,6 +264,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                  bool* handled) override;
   void HandleParentChanged() override;
   void ApplyPinchZoomScale(float scale) override;
+  void ApplyPinchZoomBegin() override;
+  void ApplyPinchZoomEnd() override;
   void ApplyPanGestureScroll(int scroll_x, int scroll_y) override;
 
   // Returns the auto-hide edges of the appbar. See

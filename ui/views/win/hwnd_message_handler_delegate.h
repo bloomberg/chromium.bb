@@ -243,6 +243,10 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // handled by the delegate.
   virtual bool HandleScrollEvent(const ui::ScrollEvent& event) = 0;
 
+  // Called when a gesture event is received. Returns true if the event was
+  // handled by the delegate.
+  virtual bool HandleGestureEvent(ui::GestureEvent* event) = 0;
+
   // Called when the window size is about to change.
   virtual void HandleWindowSizeChanging() = 0;
 
