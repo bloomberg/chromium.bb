@@ -152,28 +152,33 @@ void EnableSync(Browser* browser,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // TODO(tangltom): Add a unit test for this function.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  DCHECK(!signin_manager->IsAuthenticated());
-
   // Fetch account ids for accounts that have a token.
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   std::vector<std::string> account_ids = token_service->GetAccounts();
-  // Fetch accounts in the Gaia cookies.
-  GaiaCookieManagerService* cookie_manager_service =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
-  std::vector<gaia::ListedAccount> cookie_accounts;
-  bool gaia_accounts_stale = !cookie_manager_service->ListAccounts(
-      &cookie_accounts, nullptr, "ProfileChooserView");
-  UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
-                        gaia_accounts_stale);
+
+  // Compute the default account.
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
+  std::string default_account_id;
+  if (signin_manager->IsAuthenticated()) {
+    default_account_id = signin_manager->GetAuthenticatedAccountId();
+  } else {
+    // Fetch accounts in the Gaia cookies.
+    GaiaCookieManagerService* cookie_manager_service =
+        GaiaCookieManagerServiceFactory::GetForProfile(profile);
+    std::vector<gaia::ListedAccount> cookie_accounts;
+    bool gaia_accounts_stale = !cookie_manager_service->ListAccounts(
+        &cookie_accounts, nullptr, "ProfileChooserView");
+    UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
+                          gaia_accounts_stale);
+    if (!cookie_accounts.empty())
+      default_account_id = cookie_accounts[0].id;
+  }
 
   // Fetch account information for each id and make sure that the first account
   // in the list matches the first account in the Gaia cookies (if available).
   AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile);
-  std::string gaia_default_account_id =
-      cookie_accounts.empty() ? "" : cookie_accounts[0].id;
   std::vector<AccountInfo> accounts;
   for (const std::string& account_id : account_ids) {
     DCHECK(!account_id.empty());
@@ -183,7 +188,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
         !signin_manager->IsAllowedUsername(account_info.email)) {
       continue;
     }
-    if (account_id == gaia_default_account_id)
+    if (account_id == default_account_id)
       accounts.insert(accounts.begin(), account_info);
     else
       accounts.push_back(account_info);
