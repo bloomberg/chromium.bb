@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "chrome/installer/setup/buildflags.h"
 #include "chrome/installer/util/lzma_util.h"
-#include "chrome/installer/zucchini/zucchini.h"
-#include "chrome/installer/zucchini/zucchini_integration.h"
+#include "components/zucchini/zucchini.h"
+#include "components/zucchini/zucchini_integration.h"
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"
 

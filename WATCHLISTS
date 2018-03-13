@@ -950,7 +950,8 @@
     },
     'installer_win': {
       'filepath': 'chrome/install_static/'\
-                  '|chrome/installer/(?!gcapi_mac/|linux/|mac/)',
+                  '|chrome/installer/(?!gcapi_mac/|linux/|mac/)'\
+                  '|components/zucchini/',
     },
     'instant': {
       'filepath': 'instant|searchbox|'\

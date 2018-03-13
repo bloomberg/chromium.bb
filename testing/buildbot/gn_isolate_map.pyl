@@ -1343,7 +1343,7 @@
     "type": "console_test_launcher",
   },
   "zucchini_unittests": {
-    "label": "//chrome/installer/zucchini:zucchini_unittests",
+    "label": "//components/zucchini:zucchini_unittests",
     "type": "console_test_launcher",
   },
 }
