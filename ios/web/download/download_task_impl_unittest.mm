@@ -50,6 +50,12 @@ const char kMimeType[] = "application/pdf";
 class MockDownloadTaskObserver : public DownloadTaskObserver {
  public:
   MOCK_METHOD1(OnDownloadUpdated, void(DownloadTask* task));
+  void OnDownloadDestroyed(DownloadTask* task) override {
+    // Removing observer here works as a test that
+    // DownloadTaskObserver::OnDownloadDestroyed is actually called.
+    // DownloadTask DCHECKs if it is destroyed without observer removal.
+    task->RemoveObserver(this);
+  }
 };
 
 // Allows waiting for DownloadTaskObserver::OnDownloadUpdated callback.
@@ -126,12 +132,6 @@ class DownloadTaskImplTest : public PlatformTest {
     browser_state_.SetOffTheRecord(true);
     web_state_.SetBrowserState(&browser_state_);
     task_->AddObserver(&task_observer_);
-  }
-
-  ~DownloadTaskImplTest() {
-    if (task_) {
-      task_->RemoveObserver(&task_observer_);
-    }
   }
 
   // Starts the download and return NSURLSessionDataTask fake for this task.
@@ -674,7 +674,6 @@ TEST_F(DownloadTaskImplTest, DownloadTaskDestruction) {
   ASSERT_TRUE(session_task);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
-  task_->RemoveObserver(&task_observer_);
   task_ = nullptr;  // Destruct DownloadTaskImpl.
   EXPECT_TRUE(session_task.state = NSURLSessionTaskStateCanceling);
 }
