@@ -133,7 +133,8 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
   EXPECT_TRUE(helper_.WaitForChildTestShutdown());
 }
 
-TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
+// TODO(https://crbug.com/821254): Fix this test and re-enable it.
+TEST_F(IPCMojoBootstrapTest, DISABLED_ReceiveEmptyMessage) {
   base::MessageLoop message_loop;
   Connection connection(
       IPC::MojoBootstrap::Create(
