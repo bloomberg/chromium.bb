@@ -285,34 +285,6 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
   return 0;
 }
 
-static INLINE int av1_is_compound_reference_allowed(const AV1_COMMON *cm) {
-  if (frame_is_intra_only(cm)) return 0;
-  // Check whether two different reference frames exist.
-  int ref, ref_offset0;
-  int is_comp_allowed = 0;
-
-  for (ref = 0; ref < INTER_REFS_PER_FRAME; ++ref) {
-    const int buf_idx = cm->frame_refs[ref].idx;
-    if (buf_idx == INVALID_IDX) continue;
-    ref_offset0 = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-    ref++;
-    break;
-  }
-
-  for (; ref < INTER_REFS_PER_FRAME; ++ref) {
-    const int buf_idx = cm->frame_refs[ref].idx;
-    if (buf_idx == INVALID_IDX) continue;
-    const int ref_offset =
-        cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-    if (ref_offset != ref_offset0) {
-      is_comp_allowed = 1;
-      break;
-    }
-  }
-
-  return is_comp_allowed;
-}
-
 static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
   assert(!frame_is_intra_only(cm));
 

@@ -4418,7 +4418,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   (void)num_planes;
 #endif
 
-  cpi->allow_comp_inter_inter = av1_is_compound_reference_allowed(cm);
+  cpi->allow_comp_inter_inter = !frame_is_intra_only(cm);
 
   if (cpi->sf.frame_parameter_update) {
     int i;

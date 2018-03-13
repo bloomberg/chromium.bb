@@ -89,10 +89,10 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (av1_is_compound_reference_allowed(cm)) {
-    return aom_rb_read_bit(rb) ? REFERENCE_MODE_SELECT : SINGLE_REFERENCE;
-  } else {
+  if (frame_is_intra_only(cm)) {
     return SINGLE_REFERENCE;
+  } else {
+    return aom_rb_read_bit(rb) ? REFERENCE_MODE_SELECT : SINGLE_REFERENCE;
   }
 }
 
