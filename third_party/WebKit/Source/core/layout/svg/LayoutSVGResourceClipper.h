@@ -62,6 +62,9 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
     in_clip_expansion_ = false;
   }
 
+ protected:
+  void WillBeDestroyed() override;
+
  private:
   void CalculateLocalClipBounds();
 

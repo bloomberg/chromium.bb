@@ -267,4 +267,9 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
   return transform.MapRect(local_clip_bounds_);
 }
 
+void LayoutSVGResourceClipper::WillBeDestroyed() {
+  MarkAllClientsForInvalidation(kBoundariesInvalidation | kPaintInvalidation);
+  LayoutSVGResourceContainer::WillBeDestroyed();
+}
+
 }  // namespace blink
