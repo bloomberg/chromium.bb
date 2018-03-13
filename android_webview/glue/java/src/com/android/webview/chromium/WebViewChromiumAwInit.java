@@ -30,13 +30,10 @@ import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
-import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.command_line.CommandLineUtil;
-import org.chromium.android_webview.services.AwVariationsSeedHandler;
 import org.chromium.base.BuildConfig;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
@@ -176,13 +173,6 @@ public class WebViewChromiumAwInit {
         mServiceWorkerController = awBrowserContext.getServiceWorkerController();
 
         mFactory.getRunQueue().drainQueue();
-
-        boolean enableVariations =
-                CommandLine.getInstance().hasSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
-        if (enableVariations) {
-            AwVariationsSeedHandler.bindToVariationsService(
-                    AwBrowserProcess.getWebViewPackageName());
-        }
     }
 
     private void setUpResources(PackageInfo webViewPackageInfo, Context context) {
