@@ -235,6 +235,8 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     token_service_->UpdateCredentials(account_id_, "enterprise_refresh_token");
   }
 
+  void UseInvalidAccount() { account_id_ = "invalid_account"; }
+
   void SetExpectationsForSyncStartupCompleted() {
     browser_sync::ProfileSyncServiceMock* sync_service_mock =
         GetProfileSyncServiceMock();
@@ -429,6 +431,15 @@ void TestDiceTurnSyncOnHelperDelegate::ShowSigninPageInNewProfile(
     Profile* new_profile,
     const std::string& username) {
   test_fixture_->OnShowSigninPageInNewProfile(new_profile, username);
+}
+
+// Check that the invalid account is supported.
+TEST_F(DiceTurnSyncOnHelperTest, InvalidAccount) {
+  UseInvalidAccount();
+  CreateDiceTurnOnSyncHelper(
+      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+  base::RunLoop().RunUntilIdle();
+  CheckDelegateCalls();
 }
 
 // Tests that the login error is displayed and that the account is kept.
