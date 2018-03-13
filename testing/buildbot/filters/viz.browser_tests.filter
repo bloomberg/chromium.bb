@@ -101,3 +101,10 @@
 # Unknown Flakes
 # Flaky timeouts. http://crbug.com/807773
 -PDFExtensionClipboardTest.*
+
+# Windows timeouts. https://crbug.com/821029
+-ManifestVerifierBrowserTest.*
+-PrefHashBrowserTest*
+-UserInitiatedRunsDisabled*
+-UserInitiatedRunsEnabled*
+-WithVaryingSeeds/ChromeCleanerPromptUserTest.*
