@@ -182,7 +182,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       context_(context),
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
-      canceled_by_devtools_(false),
+      devtools_status_(DevToolsStatus::kNotCanceled),
       previews_state_(previews_state),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context),
@@ -319,8 +319,9 @@ NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
   return navigation_ui_data_.get();
 }
 
-bool ResourceRequestInfoImpl::CanceledByDevTools() const {
-  return canceled_by_devtools_;
+ResourceRequestInfo::DevToolsStatus ResourceRequestInfoImpl::GetDevToolsStatus()
+    const {
+  return devtools_status_;
 }
 
 base::StringPiece ResourceRequestInfoImpl::GetCustomCancelReason() const {

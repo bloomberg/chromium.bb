@@ -175,8 +175,16 @@ class ResourceRequestInfo {
   // UI thread at the beginning of navigation.
   virtual NavigationUIData* GetNavigationUIData() const = 0;
 
-  // Whether this request was canceled by DevTools.
-  virtual bool CanceledByDevTools() const = 0;
+  enum class DevToolsStatus {
+    kCanceled,
+    // DevTools can internally handle a redirect, so the url request may
+    // appear never done. Mark these cases.
+    kCanceledAsRedirect,
+    kNotCanceled,
+  };
+
+  // If and why this request was canceled by DevTools.
+  virtual DevToolsStatus GetDevToolsStatus() const = 0;
 
   // When the client of a request decides to cancel it, it may optionally
   // provide an application-defined description of the canncellation reason.

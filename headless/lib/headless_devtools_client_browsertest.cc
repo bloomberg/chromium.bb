@@ -1469,10 +1469,10 @@ class UrlRequestFailedTest : public HeadlessAsyncDevTooledBrowserTest,
 
   void UrlRequestFailed(net::URLRequest* request,
                         int net_error,
-                        bool canceled_by_devtools) override {
+                        DevToolsStatus devtools_status) override {
     base::AutoLock lock(lock_);
     urls_that_failed_to_load_.push_back(request->url().ExtractFileName());
-    EXPECT_TRUE(canceled_by_devtools);
+    EXPECT_TRUE(devtools_status != DevToolsStatus::kNotCanceled);
   }
 
   virtual network::ErrorReason GetErrorReason() = 0;

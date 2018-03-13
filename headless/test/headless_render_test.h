@@ -90,7 +90,7 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   // HeadlessBrowserContext::Observer
   void UrlRequestFailed(net::URLRequest* request,
                         int net_error,
-                        bool canceled_by_devtools) override;
+                        DevToolsStatus devtools_status) override;
 
   // page::ExperimentalObserver implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;

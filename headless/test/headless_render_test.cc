@@ -161,8 +161,8 @@ void HeadlessRenderTest::OverrideWebPreferences(WebPreferences* preferences) {
 
 void HeadlessRenderTest::UrlRequestFailed(net::URLRequest* request,
                                           int net_error,
-                                          bool canceled_by_devtools) {
-  if (canceled_by_devtools)
+                                          DevToolsStatus devtools_status) {
+  if (devtools_status != DevToolsStatus::kNotCanceled)
     return;
   ADD_FAILURE() << "Network request failed: " << net_error << " for "
                 << request->url().spec();

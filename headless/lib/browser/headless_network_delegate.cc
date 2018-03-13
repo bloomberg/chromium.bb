@@ -87,10 +87,10 @@ void HeadlessNetworkDelegate::OnCompleted(net::URLRequest* request,
   if (!resource_request_info)
     return;
 
-  bool canceled_by_devtools = resource_request_info->CanceledByDevTools();
-  if (canceled_by_devtools || net_error != net::OK) {
+  DevToolsStatus devtools_status = resource_request_info->GetDevToolsStatus();
+  if (devtools_status != DevToolsStatus::kNotCanceled || net_error != net::OK) {
     headless_browser_context_->NotifyUrlRequestFailed(request, net_error,
-                                                      canceled_by_devtools);
+                                                      devtools_status);
   }
 }
 
