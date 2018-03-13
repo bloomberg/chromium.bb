@@ -101,11 +101,6 @@ const char kCollectionsUIRebootName[] = "Collections UI Reboot";
 const char kCollectionsUIRebootDescription[] =
     "When enabled, Collections will use the new UI Reboot stack.";
 
-const char kShareCanonicalURLName[] = "Share Canonical URL";
-const char kShareCanonicalURLDescription[] =
-    "When enabled, the current page's canonical URL is shared (if it exists) "
-    "instead of the visible URL.";
-
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "

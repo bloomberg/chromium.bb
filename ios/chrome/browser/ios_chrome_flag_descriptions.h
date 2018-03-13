@@ -90,11 +90,6 @@ extern const char kPhysicalWebDescription[];
 extern const char kCollectionsUIRebootName[];
 extern const char kCollectionsUIRebootDescription[];
 
-// Title and description for the flag to share the canonical URL of the
-// current page instead of the visible URL.
-extern const char kShareCanonicalURLName[];
-extern const char kShareCanonicalURLDescription[];
-
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];

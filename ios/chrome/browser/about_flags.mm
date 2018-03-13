@@ -43,7 +43,6 @@
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
-#include "ios/chrome/browser/ui/activity_services/canonical_url_feature.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
@@ -203,9 +202,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-file-download", flag_descriptions::kNewFileDownloadName,
      flag_descriptions::kNewFileDownloadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kNewFileDownload)},
-    {"ios-share-canonical-url", flag_descriptions::kShareCanonicalURLName,
-     flag_descriptions::kShareCanonicalURLDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(activity_services::kShareCanonicalURL)},
     {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
      flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
