@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -186,23 +187,16 @@ class ProfileChooserViewExtensionsTest
  protected:
   void OpenProfileChooserView(Browser* browser) {
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
-#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
-    // Show the avatar bubble via API on macOS until |mac_views_browser| is
-    // enabled.
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-        signin::ManageAccountsParams(),
-        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, true);
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+    if (views_mode_controller::IsViewsBrowserCocoa())
+      OpenProfileChooserCocoa(browser);
+    else
+      OpenProfileChooserViews(browser);
+#elif defined(OS_MACOSX)
+    OpenProfileChooserCocoa(browser);
 #else
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
-    if (!button)
-      NOTREACHED() << "NewAvatarButton not found.";
-
-    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    button->OnMousePressed(e);
-#endif  // defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
+    OpenProfileChooserViews(browser);
+#endif
 
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(ProfileChooserView::IsShowing());
@@ -212,6 +206,30 @@ class ProfileChooserViewExtensionsTest
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::Source<Browser>(browser)));
   }
+
+#if defined(OS_MACOSX)
+  void OpenProfileChooserCocoa(Browser* browser) {
+    // Show the avatar bubble via API on macOS until |mac_views_browser| is
+    // enabled.
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+        signin::ManageAccountsParams(),
+        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, true);
+  }
+#endif
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  void OpenProfileChooserViews(Browser* browser) {
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
+    if (!button)
+      NOTREACHED() << "NewAvatarButton not found.";
+
+    ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    button->OnMousePressed(e);
+  }
+#endif
 
   AvatarMenu* GetProfileChooserViewAvatarMenu() {
     return ProfileChooserView::profile_bubble_->avatar_menu_.get();
@@ -260,7 +278,7 @@ class ProfileChooserViewExtensionsTest
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#if !defined(OS_MACOSX)
 #define MAYBE_NoProfileChooserOnOutsideUserDataDirProfiles \
   NoProfileChooserOnOutsideUserDataDirProfiles
 #else
