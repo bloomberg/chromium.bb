@@ -1443,17 +1443,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                        mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
   }
 
-  if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) {
-    for (int ref = 0; ref < 1 + is_compound; ++ref) {
+  if (!is_compound && mbmi->mode != GLOBALMV) {
 #if CONFIG_AMVR
-      av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
-                            &nearestmv[ref], &nearmv[ref],
-                            cm->cur_frame_force_integer_mv);
+    av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[0]], &nearestmv[0],
+                          &nearmv[0], cm->cur_frame_force_integer_mv);
 #else
-      av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
-                            &nearestmv[ref], &nearmv[ref]);
+    av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[0]], &nearestmv[0],
+                          &nearmv[0]);
 #endif
-    }
   }
 
   if (is_compound && mbmi->mode != GLOBAL_GLOBALMV) {
@@ -1495,6 +1492,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
       ref_mv_idx = 1 + mbmi->ref_mv_idx;
 
+    // TODO(jingning, yunqing): Do we need a lower_mv_precision() call here?
     if (compound_ref0_mode(mbmi->mode) == NEWMV)
       ref_mv[0] = xd->ref_mv_stack[ref_frame][ref_mv_idx].this_mv;
 
