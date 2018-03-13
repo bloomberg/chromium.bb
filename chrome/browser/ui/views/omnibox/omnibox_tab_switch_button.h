@@ -14,13 +14,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton,
  public:
   explicit OmniboxTabSwitchButton(OmniboxResultView* result_view);
 
-  void SetPressed();
-  void ClearState();
-
   // views::View
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // views::ButtonListener
@@ -33,6 +27,8 @@ class OmniboxTabSwitchButton : public views::MdTextButton,
   SkColor GetBackgroundColor() const;
 
   OmniboxResultView* result_view_;
+
+  void SetPressed();
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };
