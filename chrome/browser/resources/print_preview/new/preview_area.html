@@ -11,6 +11,7 @@
 <link rel="import" href="../data/margins.html">
 <link rel="import" href="../data/printable_area.html">
 <link rel="import" href="../data/size.html">
+<link rel="import" href="margin_control_container.html">
 <link rel="import" href="model.html">
 <link rel="import" href="state.html">
 <link rel="import" href="settings_behavior.html">
@@ -112,7 +113,7 @@
 
     </style>
     <div class$="preview-area-overlay-layer [[getInvisible_(previewState_)]]"
-        aria-hidden$="[[previewLoaded(previewState_)]]">
+        aria-hidden$="[[previewLoaded_]]">
       <div class="preview-area-messages">
         <div class="preview-area-message">
           <div>
@@ -140,6 +141,10 @@
           type="application/x-google-chrome-pdf"
           data="chrome://print/dummy.pdf"></object>
     </div>
+    <print-preview-margin-control-container id="marginControlContainer"
+        page-size="[[documentInfo.pageSize]]" settings="{{settings}}"
+        preview-loaded="[[previewLoaded_]]">
+    </print-preview-margin-control-container>
   </template>
   <script src="preview_area.js"></script>
   <script
