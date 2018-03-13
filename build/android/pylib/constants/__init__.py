@@ -141,6 +141,7 @@ PYTHON_UNIT_TEST_SUITES = {
     'test_modules': [
       'java_cpp_enum_tests',
       'java_google_api_keys_tests',
+      'extract_unwind_tables_tests',
     ]
   },
 }

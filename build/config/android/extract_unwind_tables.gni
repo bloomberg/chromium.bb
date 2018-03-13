@@ -22,13 +22,18 @@ template("unwind_table_asset") {
           root_build_dir),
       "--output_path",
       rebase_path(_asset_path, root_build_dir),
+      "--dump_syms_path",
+      rebase_path("$root_out_dir/dump_syms", root_build_dir),
     ]
     deps = [
       ":${invoker.library_target}",
+      "//third_party/breakpad:dump_syms",
     ]
   }
   android_assets(target_name) {
-    testonly = invoker.testonly
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
     sources = [
       _asset_path,
     ]
