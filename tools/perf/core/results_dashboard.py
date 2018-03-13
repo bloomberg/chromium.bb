@@ -32,6 +32,21 @@ RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 CACHE_DIR = 'results_dashboard'
 CACHE_FILENAME = 'results_to_retry'
 
+ERROR_NO_OAUTH_TOKEN = (
+    'No oauth token provided, cannot upload HistogramSet. Discarding.')
+
+
+class SendResultException(Exception):
+  pass
+
+
+class SendResultsRetryException(SendResultException):
+  pass
+
+
+class SendResultsFatalException(SendResultException):
+  pass
+
 
 def SendResults(data, url, tmp_dir, json_url_file=None,
                 send_as_histograms=False, oauth_token=None):
@@ -73,8 +88,6 @@ def SendResults(data, url, tmp_dir, json_url_file=None,
   for error in errors:
     print error
   if fatal_error:
-    print 'Error uploading to dashboard.'
-    print '@@@STEP_EXCEPTION@@@'
     return False
   return True
 
@@ -134,25 +147,20 @@ def _SendResultsFromCache(cache_file_name, url, oauth_token):
       errors.append('Could not parse JSON: %s' % line)
       continue
 
-    if is_histogramset:
-      # TODO(eakuefner): Remove this discard logic once all bots use histograms.
-      if oauth_token is None:
-        print 'No oauth token provided, cannot upload HistogramSet. Discarding.'
-        fatal_error = True
-        break
-      error = _SendHistogramJson(url, json.dumps(data), oauth_token)
-    else:
-      error = _SendResultsJson(url, json.dumps(data))
+    data_type = ('histogram' if is_histogramset else 'chartjson')
 
-    # If the dashboard returned an error, we will re-try next time.
-    if error:
-      if 'HTTPError: 400' in error:
-        # If the remote app rejects the JSON, it's probably malformed,
-        # so we don't want to retry it.
-        print 'Discarding JSON, error:\n%s' % error
-        fatal_error = True
-        break
+    try:
+      if is_histogramset:
+        # TODO(eakuefner): Remove this discard logic once all bots use
+        # histograms.
+        if oauth_token is None:
+          raise SendResultsFatalException(ERROR_NO_OAUTH_TOKEN)
 
+        _SendHistogramJson(url, json.dumps(data), oauth_token)
+      else:
+        _SendResultsJson(url, json.dumps(data))
+    except SendResultsRetryException as e:
+      error = 'Error while uploading %s data: %s' % (data_type, str(e))
       if index != len(cache_lines) - 1:
         # The very last item in the cache_lines list is the new results line.
         # If this line is not the new results line, then this results line
@@ -162,6 +170,17 @@ def _SendResultsFromCache(cache_file_name, url, oauth_token):
       # The lines to retry are all lines starting from the current one.
       lines_to_retry = [l.strip() for l in cache_lines[index:] if l.strip()]
       errors.append(error)
+      break
+    except SendResultsFatalException as e:
+      error = 'Error uploading %s data: %s' % (data_type, str(e))
+      errors.append(error)
+      fatal_error = True
+      break
+    except Exception:
+      error = 'Unexpected error while uploading %s data: %s' % (
+          data_type, traceback.format_exc())
+      errors.append(error)
+      fatal_error = True
       break
 
   # Write any failing requests to the cache file.
@@ -471,8 +490,13 @@ def _SendResultsJson(url, results_json):
   try:
     urllib2.urlopen(req)
   except (urllib2.HTTPError, urllib2.URLError, httplib.HTTPException):
-    return traceback.format_exc()
-  return None
+    error = traceback.format_exc()
+
+    if 'HTTPError: 400' in error:
+      # If the remote app rejects the JSON, it's probably malformed,
+      # so we don't want to retry it.
+      raise SendResultsFatalException('Discarding JSON, error:\n%s' % error)
+    raise SendResultsRetryException()
 
 def _Httplib2Request(url, data, oauth_token):
   data = urllib.urlencode({'data': data})
@@ -498,14 +522,19 @@ def _SendHistogramJson(url, histogramset_json, oauth_token):
     None if successful, or an error string if there were errors.
   """
   try:
-    _, content = _Httplib2Request(url, histogramset_json, oauth_token)
-    result = json.loads(content) or {}
-    error = result.get('error')
-    if error is not None:
-      return 'HTTP error: %s\n' % error
-  except (httplib2.HttpLib2Error, ValueError):
-    return traceback.format_exc()
-  return None
+    response, _ = _Httplib2Request(url, histogramset_json, oauth_token)
+
+    # A 500 is presented on an exception on the dashboard side, timeout,
+    # exception, etc. The dashboard can also send back 400 and 403, we could
+    # recover from 403 (auth error), but 400 is generally malformed data.
+    if response.status == 403:
+      raise SendResultsRetryException(traceback.format_exc())
+
+    if response.status != 200:
+      raise SendResultsFatalException('HTTP Response %d: %s' % (
+          response.status, response.reason))
+  except httplib2.HttpLib2Error:
+    raise SendResultsRetryException(traceback.format_exc())
 
 def _DashboardUrl(url, data):
   """Returns link to the dashboard if possible.
