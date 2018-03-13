@@ -189,8 +189,6 @@ fun:*LocaleConvertCase*
 # third_party/boringssl/src/crypto/pem/pem_lib.c
 fun:*PEM_ASN1_write*
 
-src:*third_party/sqlite/*
-
 # PropertyCallbackArguments::Call methods cast function pointers
 src:*v8/src/api-arguments-inl.h
 
