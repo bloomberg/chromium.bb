@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 
-#import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
-#include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
@@ -208,7 +206,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)insertItem:(GridItem*)item
            atIndex:(NSUInteger)index
      selectedIndex:(NSUInteger)selectedIndex {
-  ProceduralBlock performDataSourceUpdates = ^{
+  auto performDataSourceUpdates = ^{
     [self.items insertObject:item atIndex:index];
     self.selectedIndex = selectedIndex;
   };
@@ -216,16 +214,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     performDataSourceUpdates();
     return;
   }
-  ProceduralBlock performAllUpdates = ^{
+  auto performAllUpdates = ^{
     performDataSourceUpdates();
     self.collectionView.backgroundView.hidden = YES;
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+  };
+  auto completion = ^(BOOL finished) {
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
-  };
-  ProceduralBlockWithBool completion = ^(BOOL finished) {
     if (self.items.count == 1) {
       [self.delegate firstItemWasAddedInGridViewController:self];
     }
@@ -236,7 +234,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)removeItemAtIndex:(NSUInteger)index
             selectedIndex:(NSUInteger)selectedIndex {
-  ProceduralBlock performDataSourceUpdates = ^{
+  auto performDataSourceUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedIndex = selectedIndex;
   };
@@ -244,18 +242,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     performDataSourceUpdates();
     return;
   }
-  ProceduralBlock performAllUpdates = ^{
+  auto performAllUpdates = ^{
     performDataSourceUpdates();
     [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+  };
+  auto completion = ^(BOOL finished) {
     if (self.items.count > 0) {
       [self.collectionView
           selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                        animated:YES
                  scrollPosition:UICollectionViewScrollPositionNone];
-    }
-  };
-  ProceduralBlockWithBool completion = ^(BOOL finished) {
-    if (self.items.count == 0) {
+    } else {
       self.collectionView.backgroundView.hidden = NO;
       [self.delegate lastItemWasClosedInGridViewController:self];
     }
@@ -284,7 +281,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)moveItemFromIndex:(NSUInteger)fromIndex
                   toIndex:(NSUInteger)toIndex
             selectedIndex:(NSUInteger)selectedIndex {
-  ProceduralBlock performDataSourceUpdates = ^{
+  auto performDataSourceUpdates = ^{
     GridItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];
     [self.items insertObject:item atIndex:toIndex];
@@ -294,16 +291,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     performDataSourceUpdates();
     return;
   }
-  ProceduralBlock performAllUpdates = ^{
+  auto performAllUpdates = ^{
     performDataSourceUpdates();
     [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
                                  toIndexPath:CreateIndexPath(toIndex)];
+  };
+  auto completion = ^(BOOL finished) {
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
   };
-  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
+  [self.collectionView performBatchUpdates:performAllUpdates
+                                completion:completion];
 }
 
 #pragma mark - Private
