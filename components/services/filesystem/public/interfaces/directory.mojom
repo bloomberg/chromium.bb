@@ -6,7 +6,7 @@ module filesystem.mojom;
 
 import "components/services/filesystem/public/interfaces/file.mojom";
 import "components/services/filesystem/public/interfaces/types.mojom";
-import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 
 struct FileOpenDetails {
@@ -17,7 +17,7 @@ struct FileOpenDetails {
 struct FileOpenResult {
   string path;
   mojo_base.mojom.FileError error;
-  mojo.common.mojom.File? file_handle;
+  mojo_base.mojom.File? file_handle;
 };
 
 // This interface provides access to a directory in a "file system", providing
@@ -50,7 +50,7 @@ interface Directory {
   [Sync]
   OpenFileHandle(string path, uint32 open_flags)
       => (mojo_base.mojom.FileError error,
-          mojo.common.mojom.File? file_handle);
+          mojo_base.mojom.File? file_handle);
 
   // Like OpenFileHandle, but opens multiple files.
   [Sync]

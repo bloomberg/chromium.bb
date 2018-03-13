@@ -4,9 +4,9 @@
 
 module prefs.mojom;
 
-import "mojo/common/file_path.mojom";
-import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom";
 
 const string kServiceName = "preferences";
@@ -176,8 +176,8 @@ struct PrefRegistration {
 // These parameters are passed to prefs::CreateTrackedPersistentPrefStore() in
 // services/preferences/persistent_pref_store_factory.cc.
 struct TrackedPersistentPrefStoreConfiguration {
-  mojo.common.mojom.FilePath unprotected_pref_filename;
-  mojo.common.mojom.FilePath protected_pref_filename;
+  mojo_base.mojom.FilePath unprotected_pref_filename;
+  mojo_base.mojom.FilePath protected_pref_filename;
   array<TrackedPreferenceMetadata> tracking_configuration;
   uint64 reporting_ids_count;
   string seed;

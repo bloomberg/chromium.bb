@@ -5,7 +5,7 @@
 module firefox_importer_unittest_utils_mac.mojom;
 
 import "components/autofill/content/common/autofill_types.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 // Used for tests only. Decrypts the firefox database in a child process.
@@ -13,11 +13,11 @@ import "mojo/public/mojom/base/string16.mojom";
 interface FirefoxDecryptor {
   // Should be called before Decrypt and ParseSignons. |dll_path| should point
   // to a directory where nss3 lib resides.
-  Init(mojo.common.mojom.FilePath dll_path, mojo.common.mojom.FilePath db_path)
+  Init(mojo_base.mojom.FilePath dll_path, mojo_base.mojom.FilePath db_path)
       => (bool result);
   Decrypt(string crypt) => (mojo_base.mojom.String16 decrypted);
   // Parses the Firefox sqlite passwords database and returns the list of
   // credentials.
-  ParseSignons(mojo.common.mojom.FilePath sqlite_file) =>
+  ParseSignons(mojo_base.mojom.FilePath sqlite_file) =>
       (array<autofill.mojom.PasswordForm> parsed_vector);
 };

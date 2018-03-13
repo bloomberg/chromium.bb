@@ -4,8 +4,8 @@
 
 module content.mojom;
 
-import "mojo/common/file.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 struct DWriteStringPair {
@@ -47,8 +47,8 @@ interface DWriteFontProxy {
   // contain font data for the font family at the specified index.
   [Sync]
   GetFontFiles(uint32 family_index)
-     => (array<mojo.common.mojom.FilePath> file_paths,
-         array<mojo.common.mojom.File> file_handles);
+     => (array<mojo_base.mojom.FilePath> file_paths,
+         array<mojo_base.mojom.File> file_handles);
 
   // Locates a font family that is able to render the specified text using the
   // specified style. If successful, the family_index and family_name will

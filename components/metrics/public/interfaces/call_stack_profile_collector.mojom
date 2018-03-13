@@ -4,15 +4,15 @@
 
 module metrics.mojom;
 
-import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 // These structs mirror the corresponding types in base::StackSamplingProfiler.
 
 struct CallStackModule {
   uint64 base_address;
   string id;
-  mojo.common.mojom.FilePath filename;
+  mojo_base.mojom.FilePath filename;
 };
 
 struct CallStackFrame {

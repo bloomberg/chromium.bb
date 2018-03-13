@@ -4,9 +4,9 @@
 
 module blink.mojom;
 
-import "mojo/common/file.mojom";
-import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "third_party/WebKit/public/mojom/blob/blob.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -66,14 +66,14 @@ interface BytesProvider {
   // If writing for whatever reason fails, the callback is called without a
   // modification time.
   RequestAsFile(uint64 source_offset, uint64 source_size,
-                mojo.common.mojom.File file, uint64 file_offset)
+                mojo_base.mojom.File file, uint64 file_offset)
       => (mojo.common.mojom.Time? time_file_modified);
 };
 
 // A reference to a slice of a file on disk.
 struct DataElementFile {
   // Path of the file.
-  mojo.common.mojom.FilePath path;
+  mojo_base.mojom.FilePath path;
   // Offset inside the file.
   uint64 offset;
   // Length of the slice. Can be uint64_max if the length is unknown. If this is

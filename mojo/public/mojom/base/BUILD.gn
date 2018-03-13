@@ -8,7 +8,10 @@ mojom_component("base") {
   sources = [
     "big_buffer.mojom",
     "big_string.mojom",
+    "file.mojom",
     "file_error.mojom",
+    "file_info.mojom",
+    "file_path.mojom",
     "ref_counted_memory.mojom",
     "string16.mojom",
   ]

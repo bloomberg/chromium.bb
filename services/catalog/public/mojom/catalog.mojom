@@ -4,7 +4,7 @@
 
 module catalog.mojom;
 
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 struct Entry {
   string name;

@@ -8,25 +8,25 @@
 
 module chrome.mojom;
 
-import "mojo/common/file.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 interface SafeArchiveAnalyzer {
   // Build flag FULL_SAFE_BROWSING: Analyze the |zip_file| for malicious
   // download protection, given a |temporary_file| used to extract files
   // from the |zip_file| archive.
-  AnalyzeZipFile(mojo.common.mojom.File zip_file,
-                 mojo.common.mojom.File temporary_file)
+  AnalyzeZipFile(mojo_base.mojom.File zip_file,
+                 mojo_base.mojom.File temporary_file)
       => (SafeArchiveAnalyzerResults results);
 
   // Build flag FULL_SAFE_BROWSING, on OS_MACOSX: Analyze the |dmg_file|
   // for malicious download protection.
-  AnalyzeDmgFile(mojo.common.mojom.File dmg_file)
+  AnalyzeDmgFile(mojo_base.mojom.File dmg_file)
       => (SafeArchiveAnalyzerResults results);
 
   // Build flag FULL_SAFE_BROWSING: Analyze the |rar_file| for malicious
   // download protection.
-  AnalyzeRarFile(mojo.common.mojom.FilePath rar_file)
+  AnalyzeRarFile(mojo_base.mojom.FilePath rar_file)
       => (SafeArchiveAnalyzerResults results);
 };
 

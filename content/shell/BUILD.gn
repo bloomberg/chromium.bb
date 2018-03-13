@@ -820,7 +820,7 @@ mojom("mojo_bindings") {
     "common/power_monitor_test.mojom",
   ]
   public_deps = [
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]

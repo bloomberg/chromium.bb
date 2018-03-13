@@ -6,8 +6,8 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
-import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
@@ -54,9 +54,9 @@ interface WallpaperController {
   // |is_device_wallpaper_policy_enforced|: Whether the device wallpaper policy
   //                                        is enforced on the device.
   Init(WallpaperControllerClient client,
-       mojo.common.mojom.FilePath user_data_path,
-       mojo.common.mojom.FilePath chromeos_wallpapers_path,
-       mojo.common.mojom.FilePath chromeos_custom_wallpapers_path,
+       mojo_base.mojom.FilePath user_data_path,
+       mojo_base.mojom.FilePath chromeos_wallpapers_path,
+       mojo_base.mojom.FilePath chromeos_custom_wallpapers_path,
        bool is_device_wallpaper_policy_enforced);
 
   // Sets wallpaper from a local file and updates the saved wallpaper info for
@@ -110,8 +110,8 @@ interface WallpaperController {
   // |customized_default_large_path|: The file path of the large-size customized
   //                                  default wallpaper, if any.
   SetCustomizedDefaultWallpaperPaths(
-      mojo.common.mojom.FilePath customized_default_small_path,
-      mojo.common.mojom.FilePath customized_default_large_path);
+      mojo_base.mojom.FilePath customized_default_small_path,
+      mojo_base.mojom.FilePath customized_default_large_path);
 
   // Sets wallpaper from policy. If the user has logged in, show the policy
   // wallpaper immediately, otherwise, the policy wallpaper will be shown the

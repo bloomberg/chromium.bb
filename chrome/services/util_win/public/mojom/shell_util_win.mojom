@@ -7,7 +7,7 @@
 
 module chrome.mojom;
 
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 interface ShellUtilWin {
@@ -27,10 +27,10 @@ interface ShellUtilWin {
   CallGetOpenFileName(uint32 owner,
                       uint32 flags,
                       FileExtensionFilters filters,
-                      mojo.common.mojom.FilePath initial_directory,
-                      mojo.common.mojom.FilePath initial_filename) =>
-      (mojo.common.mojom.FilePath directory,
-       array<mojo.common.mojom.FilePath> files);
+                      mojo_base.mojom.FilePath initial_directory,
+                      mojo_base.mojom.FilePath initial_filename) =>
+      (mojo_base.mojom.FilePath directory,
+       array<mojo_base.mojom.FilePath> files);
 
   // Calls OS_WIN ::GetSaveFileName() with parameters:
   // |owner| HWND to use as the parent of the modal dialog.
@@ -49,10 +49,10 @@ interface ShellUtilWin {
                       uint32 flags,
                       FileExtensionFilters filters,
                       uint32 one_based_filter_index,
-                      mojo.common.mojom.FilePath initial_directory,
-                      mojo.common.mojom.FilePath suggested_filename,
+                      mojo_base.mojom.FilePath initial_directory,
+                      mojo_base.mojom.FilePath suggested_filename,
                       mojo_base.mojom.String16 default_extension) =>
-      (mojo.common.mojom.FilePath path,
+      (mojo_base.mojom.FilePath path,
        uint32 filter_index);
 };
 

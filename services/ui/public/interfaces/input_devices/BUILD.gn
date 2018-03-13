@@ -19,7 +19,10 @@ mojom("input_devices") {
     public_deps += [ "//ui/events/devices/mojo" ]
     if (use_ozone) {
       sources += [ "input_device_controller.mojom" ]
-      public_deps += [ "//mojo/common:common_custom_types" ]
+      public_deps += [
+        "//mojo/common:common_custom_types",
+        "//mojo/public/mojom/base",
+      ]
     }
   }
 }

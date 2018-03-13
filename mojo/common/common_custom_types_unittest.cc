@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
@@ -62,21 +60,6 @@ base::Callback<void(typename PassTraits<T>::Type)> ExpectResponse(
     const base::Closure& closure) {
   return base::Bind(&DoExpectResponse<T>, expected_value, closure);
 }
-
-class TestFilePathImpl : public TestFilePath {
- public:
-  explicit TestFilePathImpl(TestFilePathRequest request)
-      : binding_(this, std::move(request)) {}
-
-  // TestFilePath implementation:
-  void BounceFilePath(const base::FilePath& in,
-                      BounceFilePathCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
- private:
-  mojo::Binding<TestFilePath> binding_;
-};
 
 class TestUnguessableTokenImpl : public TestUnguessableToken {
  public:
@@ -142,20 +125,6 @@ class TestValueImpl : public TestValue {
   mojo::Binding<TestValue> binding_;
 };
 
-class TestFileImpl : public TestFile {
- public:
-  explicit TestFileImpl(TestFileRequest request)
-      : binding_(this, std::move(request)) {}
-
-  // TestFile implementation:
-  void BounceFile(base::File in, BounceFileCallback callback) override {
-    std::move(callback).Run(std::move(in));
-  }
-
- private:
-  mojo::Binding<TestFile> binding_;
-};
-
 class TestTextDirectionImpl : public TestTextDirection {
  public:
   explicit TestTextDirectionImpl(TestTextDirectionRequest request)
@@ -183,20 +152,6 @@ class CommonCustomTypesTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST_F(CommonCustomTypesTest, FilePath) {
-  base::RunLoop run_loop;
-
-  TestFilePathPtr ptr;
-  TestFilePathImpl impl(MakeRequest(&ptr));
-
-  base::FilePath dir(FILE_PATH_LITERAL("hello"));
-  base::FilePath file = dir.Append(FILE_PATH_LITERAL("world"));
-
-  ptr->BounceFilePath(file, ExpectResponse(&file, run_loop.QuitClosure()));
-
-  run_loop.Run();
-}
 
 TEST_F(CommonCustomTypesTest, UnguessableToken) {
   base::RunLoop run_loop;
@@ -335,49 +290,6 @@ TEST_F(CommonCustomTypesTest, Value) {
   input = std::move(list);
   ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
   ASSERT_EQ(*input, *output);
-}
-
-TEST_F(CommonCustomTypesTest, File) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  TestFilePtr ptr;
-  TestFileImpl impl(MakeRequest(&ptr));
-
-  base::File file(
-      temp_dir.GetPath().AppendASCII("test_file.txt"),
-      base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_READ);
-  const base::StringPiece test_content =
-      "A test string to be stored in a test file";
-  file.WriteAtCurrentPos(
-      test_content.data(),
-      base::CheckedNumeric<int>(test_content.size()).ValueOrDie());
-
-  base::File file_out;
-  ASSERT_TRUE(ptr->BounceFile(std::move(file), &file_out));
-  std::vector<char> content(test_content.size());
-  ASSERT_TRUE(file_out.IsValid());
-  ASSERT_EQ(static_cast<int>(test_content.size()),
-            file_out.Read(
-                0, content.data(),
-                base::CheckedNumeric<int>(test_content.size()).ValueOrDie()));
-  EXPECT_EQ(test_content,
-            base::StringPiece(content.data(), test_content.size()));
-}
-
-TEST_F(CommonCustomTypesTest, InvalidFile) {
-  TestFilePtr ptr;
-  TestFileImpl impl(MakeRequest(&ptr));
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  // Test that |file_out| is set to an invalid file.
-  base::File file_out(
-      temp_dir.GetPath().AppendASCII("test_file.txt"),
-      base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_READ);
-
-  ASSERT_TRUE(ptr->BounceFile(base::File(), &file_out));
-  EXPECT_FALSE(file_out.IsValid());
 }
 
 TEST_F(CommonCustomTypesTest, TextDirection) {

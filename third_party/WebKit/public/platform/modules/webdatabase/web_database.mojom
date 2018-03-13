@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 
@@ -23,7 +23,7 @@ interface WebDatabaseHost {
   // Asks the browser process to open a DB file with the given name.
   [Sync]
   OpenFile(mojo_base.mojom.String16 vfs_file_name,
-           int32 desired_flags) => (mojo.common.mojom.File? file);
+           int32 desired_flags) => (mojo_base.mojom.File? file);
 
   // Asks the browser process to delete a DB file.
   [Sync]
