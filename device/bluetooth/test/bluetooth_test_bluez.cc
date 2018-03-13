@@ -122,8 +122,8 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
   std::string device_address = kTestDeviceAddress1;
   std::vector<std::string> service_uuids;
   BluetoothTransport device_type = BLUETOOTH_TRANSPORT_LE;
-  std::unordered_map<std::string, std::vector<uint8_t>> service_data;
-  std::unordered_map<uint16_t, std::vector<uint8_t>> manufacturer_data;
+  std::map<std::string, std::vector<uint8_t>> service_data;
+  std::map<uint16_t, std::vector<uint8_t>> manufacturer_data;
 
   switch (device_ordinal) {
     case 1:
@@ -180,8 +180,8 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateClassicDevice() {
   std::string device_name = kTestDeviceName;
   std::string device_address = kTestDeviceAddress3;
   std::vector<std::string> service_uuids;
-  std::unordered_map<std::string, std::vector<uint8_t>> service_data;
-  std::unordered_map<uint16_t, std::vector<uint8_t>> manufacturer_data;
+  std::map<std::string, std::vector<uint8_t>> service_data;
+  std::map<uint16_t, std::vector<uint8_t>> manufacturer_data;
 
   if (!adapter_->GetDevice(device_address)) {
     fake_bluetooth_device_client_->CreateTestDevice(

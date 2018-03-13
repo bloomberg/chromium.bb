@@ -1562,9 +1562,8 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
 void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
     const dbus::ObjectPath& object_path,
     const std::vector<std::string>& service_uuids,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
-    const std::unordered_map<uint16_t, std::vector<uint8_t>>&
-        manufacturer_data) {
+    const std::map<std::string, std::vector<uint8_t>>& service_data,
+    const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data) {
   PropertiesMap::const_iterator iter = properties_map_.find(object_path);
   if (iter == properties_map_.end()) {
     VLOG(2) << "Fake device does not exist: " << object_path.value();
@@ -1586,13 +1585,13 @@ void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
                       properties->uuids.value().end());
   properties->uuids.ReplaceValue(merged_uuids);
 
-  std::unordered_map<std::string, std::vector<uint8_t>> merged_service_data =
+  std::map<std::string, std::vector<uint8_t>> merged_service_data =
       service_data;
   merged_service_data.insert(properties->service_data.value().begin(),
                              properties->service_data.value().end());
   properties->service_data.ReplaceValue(merged_service_data);
 
-  std::unordered_map<uint16_t, std::vector<uint8_t>> merged_manufacturer_data =
+  std::map<uint16_t, std::vector<uint8_t>> merged_manufacturer_data =
       manufacturer_data;
   merged_manufacturer_data.insert(properties->manufacturer_data.value().begin(),
                                   properties->manufacturer_data.value().end());
@@ -1825,9 +1824,8 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
     const std::string device_address,
     const std::vector<std::string>& service_uuids,
     device::BluetoothTransport type,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
-    const std::unordered_map<uint16_t, std::vector<uint8_t>>&
-        manufacturer_data) {
+    const std::map<std::string, std::vector<uint8_t>>& service_data,
+    const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data) {
   // Create a random device path.
   dbus::ObjectPath device_path;
   std::string id;
