@@ -24,10 +24,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/console_message_level.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
@@ -140,9 +140,10 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
   if (previous_main_frame_url.is_empty())
     return false;
 
-  // Only cross origin navigations are considered tab-unders.
-  if (url::Origin::Create(previous_main_frame_url)
-          .IsSameOriginWith(url::Origin::Create(navigation_handle->GetURL()))) {
+  // Same-site navigations are exempt from tab-under protection.
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          previous_main_frame_url, navigation_handle->GetURL(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     return false;
   }
 

@@ -441,6 +441,15 @@ TEST_F(BlockTabUnderTest, SameOriginRedirect_NoBlocking) {
   ExpectUIShown(false);
 }
 
+TEST_F(BlockTabUnderTest, SameSiteRedirect_NoBlocking) {
+  EXPECT_TRUE(
+      NavigateAndCommitWithoutGesture(GURL("https://sub1.blah.co.uk/")));
+  SimulatePopup();
+  EXPECT_TRUE(
+      NavigateAndCommitWithoutGesture(GURL("https://sub2.blah.co.uk/path")));
+  ExpectUIShown(false);
+}
+
 TEST_F(BlockTabUnderTest, BrowserInitiatedNavigation_NoBlocking) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();

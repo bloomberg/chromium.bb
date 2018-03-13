@@ -28,7 +28,7 @@ constexpr char kBlockTabUnderFormatMessage[] =
 // 1. It is a navigation that is "suspicious"
 //    a. It has no user gesture.
 //    b. It is renderer-initiated.
-//    c. It is cross origin to the last committed URL in the tab.
+//    c. It is cross site to the last committed URL in the tab.
 // 2. The tab has opened a popup and hasn't received a user gesture since then.
 //    This information is tracked by the PopupOpenerTabHelper.
 class TabUnderNavigationThrottle : public content::NavigationThrottle {
