@@ -36,18 +36,14 @@ TEST_F(FinalizeDismissedUrlSuggestionTaskTest, StoreFailure) {
   PrefetchItem item = AddItem(PrefetchItemState::RECEIVED_BUNDLE);
   store_util()->SimulateInitializationError();
 
-  FinalizeDismissedUrlSuggestionTask task(store(), item.client_id);
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<FinalizeDismissedUrlSuggestionTask>(store(),
+                                                               item.client_id));
 }
 
 TEST_F(FinalizeDismissedUrlSuggestionTaskTest, NotFound) {
   PrefetchItem item = AddItem(PrefetchItemState::RECEIVED_BUNDLE);
-  FinalizeDismissedUrlSuggestionTask task(store(), ClientId("abc", "123"));
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<FinalizeDismissedUrlSuggestionTask>(
+      store(), ClientId("abc", "123")));
   EXPECT_EQ(1, store_util()->CountPrefetchItems());
 }
 
@@ -63,10 +59,8 @@ TEST_F(FinalizeDismissedUrlSuggestionTaskTest, Change) {
     want_items.insert(item);
   }
   for (const PrefetchItem& item : items) {
-    FinalizeDismissedUrlSuggestionTask task(store(), item.client_id);
-    ExpectTaskCompletes(&task);
-    task.Run();
-    RunUntilIdle();
+    RunTask(std::make_unique<FinalizeDismissedUrlSuggestionTask>(
+        store(), item.client_id));
   }
 
   std::set<PrefetchItem> final_items;
@@ -83,10 +77,8 @@ TEST_F(FinalizeDismissedUrlSuggestionTaskTest, NoChange) {
   }
 
   for (const PrefetchItem& item : items) {
-    FinalizeDismissedUrlSuggestionTask task(store(), item.client_id);
-    ExpectTaskCompletes(&task);
-    task.Run();
-    RunUntilIdle();
+    RunTask(std::make_unique<FinalizeDismissedUrlSuggestionTask>(
+        store(), item.client_id));
   }
 
   std::set<PrefetchItem> final_items;

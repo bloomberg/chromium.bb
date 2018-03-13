@@ -69,11 +69,9 @@ const int64_t kDownloadId = 42LL;
 
 }  // namespace
 
-class OfflinePageModelTaskifiedTest
-    : public testing::Test,
-      public OfflinePageModel::Observer,
-      public OfflinePageTestArchiver::Observer,
-      public base::SupportsWeakPtr<OfflinePageModelTaskifiedTest> {
+class OfflinePageModelTaskifiedTest : public testing::Test,
+                                      public OfflinePageModel::Observer,
+                                      public OfflinePageTestArchiver::Observer {
  public:
   OfflinePageModelTaskifiedTest();
   ~OfflinePageModelTaskifiedTest() override;

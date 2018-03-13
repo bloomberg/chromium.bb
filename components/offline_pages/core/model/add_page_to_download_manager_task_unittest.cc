@@ -6,13 +6,8 @@
 
 #include <memory>
 
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/system_download_manager_stub.h"
-#include "components/offline_pages/core/task.h"
-#include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,89 +24,31 @@ const long kDefaultDownloadId = 1;
 
 namespace offline_pages {
 
-class AddPageToDownloadManagerTaskTest : public testing::Test {
+class AddPageToDownloadManagerTaskTest : public ModelTaskTestBase {
  public:
   AddPageToDownloadManagerTaskTest();
   ~AddPageToDownloadManagerTaskTest() override;
-
-  void SetUp() override;
-  void TearDown() override;
-
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
-  }
-
-  OfflinePageItemGenerator* generator() { return &generator_; }
-
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner() {
-    return task_runner_.get();
-  }
 
   SystemDownloadManagerStub* download_manager() {
     return download_manager_.get();
   }
 
-  void AddTaskDone(Task* task) { add_task_done_ = true; }
-
-  bool add_task_done() { return add_task_done_; }
-
-  void PumpLoop();
-
-  void SetTaskCompletionCallbackForTesting(Task* task);
-
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  OfflinePageItemGenerator generator_;
   std::unique_ptr<SystemDownloadManagerStub> download_manager_;
-  bool add_task_done_;
 };
 
 AddPageToDownloadManagerTaskTest::AddPageToDownloadManagerTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      download_manager_(new SystemDownloadManagerStub(kTestDownloadId, true)),
-      add_task_done_(false) {}
+    : download_manager_(new SystemDownloadManagerStub(kTestDownloadId, true)) {}
 
 AddPageToDownloadManagerTaskTest::~AddPageToDownloadManagerTaskTest() {}
-
-void AddPageToDownloadManagerTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-}
-
-void AddPageToDownloadManagerTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-}
-
-void AddPageToDownloadManagerTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
-
-void AddPageToDownloadManagerTaskTest::SetTaskCompletionCallbackForTesting(
-    Task* task) {
-  task->SetTaskCompletionCallbackForTesting(
-      task_runner_.get(),
-      base::BindRepeating(&AddPageToDownloadManagerTaskTest::AddTaskDone,
-                          base::Unretained(this)));
-}
 
 TEST_F(AddPageToDownloadManagerTaskTest, AddSimpleId) {
   OfflinePageItem page = generator()->CreateItem();
   store_test_util()->InsertItem(page);
 
-  auto task = std::make_unique<AddPageToDownloadManagerTask>(
+  RunTask(std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
-      kTestLength, kUri, kReferer);
-  SetTaskCompletionCallbackForTesting(task.get());
-  task->Run();
-  PumpLoop();
-
-  // Check that task finished running.
-  ASSERT_TRUE(add_task_done());
+      kTestLength, kUri, kReferer));
 
   // Check the download ID got set in the offline page item in the database.
   auto offline_page = store_test_util()->GetPageByOfflineId(page.offline_id);
@@ -134,15 +71,9 @@ TEST_F(AddPageToDownloadManagerTaskTest, NoADM) {
   OfflinePageItem page = generator()->CreateItem();
   store_test_util()->InsertItem(page);
 
-  auto task = std::make_unique<AddPageToDownloadManagerTask>(
+  RunTask(std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
-      kTestLength, kUri, kReferer);
-  SetTaskCompletionCallbackForTesting(task.get());
-  task->Run();
-  PumpLoop();
-
-  // Check that task finished running.
-  ASSERT_TRUE(add_task_done());
+      kTestLength, kUri, kReferer));
 
   // Check the download ID did not get set in the offline page item in the
   // database.
@@ -158,15 +89,9 @@ TEST_F(AddPageToDownloadManagerTaskTest, AddDownloadFailed) {
   page.system_download_id = kDefaultDownloadId;
   store_test_util()->InsertItem(page);
 
-  auto task = std::make_unique<AddPageToDownloadManagerTask>(
+  RunTask(std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
-      kTestLength, kUri, kReferer);
-  SetTaskCompletionCallbackForTesting(task.get());
-  task->Run();
-  PumpLoop();
-
-  // Check that task finished running.
-  ASSERT_TRUE(add_task_done());
+      kTestLength, kUri, kReferer));
 
   // Check the download ID did not get set in the offline page item in the
   // database.

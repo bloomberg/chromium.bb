@@ -83,9 +83,7 @@ TEST_F(StaleEntryFinalizerTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
 }
 
 // Tests that the task works correctly with an empty database.
@@ -94,9 +92,7 @@ TEST_F(StaleEntryFinalizerTaskTest, EmptyRun) {
   EXPECT_EQ(0U, store_util()->GetAllItems(&no_items));
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::NO_MORE_WORK, stale_finalizer_task_->final_status());
   EXPECT_EQ(0U, store_util()->GetAllItems(&no_items));
 }
@@ -142,9 +138,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
   EXPECT_EQ(initial_items, all_inserted_items);
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Create the expected finished version of each stale item.
@@ -191,9 +185,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   EXPECT_EQ(11, store_util()->CountPrefetchItems());
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Checks item counts for states expected to still exist.
@@ -215,9 +207,7 @@ TEST_F(StaleEntryFinalizerTaskTest, NoWorkInQueue) {
   CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 0);
   CreateAndInsertItem(PrefetchItemState::ZOMBIE, 0);
 
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::NO_MORE_WORK, stale_finalizer_task_->final_status());
   EXPECT_EQ(0, dispatcher()->task_schedule_count);
 }
@@ -238,9 +228,7 @@ TEST_F(StaleEntryFinalizerTaskTest, WorkInQueue) {
         << "Failed inserting item with state " << static_cast<int>(state);
 
     StaleEntryFinalizerTask task(dispatcher(), store());
-    ExpectTaskCompletes(&task);
-    task.Run();
-    RunUntilIdle();
+    RunTask(&task);
     EXPECT_EQ(Result::MORE_WORK_NEEDED, task.final_status());
     EXPECT_EQ(1, dispatcher()->task_schedule_count);
   }
@@ -291,9 +279,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
   EXPECT_EQ(initial_items, all_inserted_items);
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Create the expected finished version of each stale item.
@@ -349,9 +335,7 @@ TEST_F(StaleEntryFinalizerTaskTest,
   EXPECT_EQ(11, store_util()->CountPrefetchItems());
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Checks item counts for states expected to still exist.
@@ -384,9 +368,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStuckItemsCorrectly) {
   EXPECT_EQ(initial_items, all_inserted_items);
 
   // Execute the expiration task.
-  ExpectTaskCompletes(stale_finalizer_task_.get());
-  stale_finalizer_task_->Run();
-  RunUntilIdle();
+  RunTask(stale_finalizer_task_.get());
   EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
 
   // Check that the proper UMA was reported for the stale item, but not the

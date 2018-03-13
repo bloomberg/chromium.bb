@@ -69,9 +69,7 @@ TEST_F(SentGetOperationCleanupTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
   SentGetOperationCleanupTask task(store(), prefetch_request_factory());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 }
 
 TEST_F(SentGetOperationCleanupTaskTest, Retry) {
@@ -82,9 +80,7 @@ TEST_F(SentGetOperationCleanupTaskTest, Retry) {
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item));
 
   SentGetOperationCleanupTask task(store(), prefetch_request_factory());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -105,9 +101,7 @@ TEST_F(SentGetOperationCleanupTaskTest, NoRetryForOngoingRequest) {
   request_factory->AddOngoingOperation(item.operation_name);
 
   SentGetOperationCleanupTask task(store(), request_factory.get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -123,9 +117,7 @@ TEST_F(SentGetOperationCleanupTaskTest, ErrorOnMaxAttempts) {
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item));
 
   SentGetOperationCleanupTask task(store(), prefetch_request_factory());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -148,9 +140,7 @@ TEST_F(SentGetOperationCleanupTaskTest, SkipForOngoingRequestWithMaxAttempts) {
   request_factory->AddOngoingOperation(item.operation_name);
 
   SentGetOperationCleanupTask task(store(), request_factory.get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -171,9 +161,7 @@ TEST_F(SentGetOperationCleanupTaskTest, NoUpdateForOtherStates) {
   }
 
   SentGetOperationCleanupTask task(store(), prefetch_request_factory());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   std::set<PrefetchItem> store_items;
   store_util()->GetAllItems(&store_items);

@@ -96,6 +96,8 @@ static_library("core") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "model/model_task_test_base.cc",
+    "model/model_task_test_base.h",
     "model/offline_page_item_generator.cc",
     "model/offline_page_item_generator.h",
     "model/offline_page_test_utils.cc",

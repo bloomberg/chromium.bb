@@ -23,6 +23,9 @@ class TestTaskRunner {
   // Runs task with expectation that it correctly completes.
   // Task is also cleaned up after completing.
   void RunTask(std::unique_ptr<Task> task);
+  // Runs task with expectation that it correctly completes.
+  // Task is not cleaned up after completing.
+  void RunTask(Task* task);
 
  private:
   // Certainly confusing, but internal task runner, is simply a test version of

@@ -14,7 +14,8 @@ namespace offline_pages {
 
 TaskTestBase::TaskTestBase()
     : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_) {}
+      task_runner_handle_(task_runner_),
+      test_task_runner_(task_runner_) {}
 
 TaskTestBase::~TaskTestBase() = default;
 
@@ -31,13 +32,12 @@ void TaskTestBase::RunUntilIdle() {
   task_runner_->RunUntilIdle();
 }
 
-void TaskTestBase::ExpectTaskCompletes(Task* task) {
-  completion_callbacks_.push_back(
-      std::make_unique<base::MockCallback<Task::TaskCompletionCallback>>());
-  EXPECT_CALL(*completion_callbacks_.back(), Run(_));
+void TaskTestBase::RunTask(std::unique_ptr<Task> task) {
+  test_task_runner_.RunTask(std::move(task));
+}
 
-  task->SetTaskCompletionCallbackForTesting(
-      task_runner_.get(), completion_callbacks_.back()->Get());
+void TaskTestBase::RunTask(Task* task) {
+  test_task_runner_.RunTask(task);
 }
 
 }  // namespace offline_pages

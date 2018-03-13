@@ -29,10 +29,8 @@ class ImportCompletedTaskTest : public PrefetchTaskTestBase {
 TEST_F(ImportCompletedTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
-  ImportCompletedTask task(dispatcher(), store(), importer(), 1, true);
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCompletedTask>(dispatcher(), store(),
+                                                importer(), 1, true));
 }
 
 TEST_F(ImportCompletedTaskTest, ImportSuccess) {
@@ -40,11 +38,9 @@ TEST_F(ImportCompletedTaskTest, ImportSuccess) {
       item_generator()->CreateItem(PrefetchItemState::IMPORTING);
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
 
-  ImportCompletedTask task(dispatcher(), store(), importer(), item.offline_id,
-                           /*success*/ true);
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCompletedTask>(dispatcher(), store(),
+                                                importer(), item.offline_id,
+                                                /*success*/ true));
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -62,11 +58,9 @@ TEST_F(ImportCompletedTaskTest, ImportError) {
       item_generator()->CreateItem(PrefetchItemState::IMPORTING);
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
 
-  ImportCompletedTask task(dispatcher(), store(), importer(), item.offline_id,
-                           /*success*/ false);
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCompletedTask>(dispatcher(), store(),
+                                                importer(), item.offline_id,
+                                                /*success*/ false));
 
   std::unique_ptr<PrefetchItem> store_item =
       store_util()->GetPrefetchItem(item.offline_id);
@@ -88,11 +82,9 @@ TEST_F(ImportCompletedTaskTest, NoUpdateOnMismatchedImport) {
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
 
   // Trigger an import sucecss task.
-  ImportCompletedTask task(dispatcher(), store(), importer(), item2.offline_id,
-                           /*success*/ true);
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCompletedTask>(dispatcher(), store(),
+                                                importer(), item2.offline_id,
+                                                /*success*/ true));
 
   // Item will only be updated when both guid and state match.
   std::unique_ptr<PrefetchItem> store_item =
@@ -110,11 +102,9 @@ TEST_F(ImportCompletedTaskTest, NoUpdateOnMismatchedImport) {
   EXPECT_EQ(item2.offline_id, importer()->latest_completed_offline_id.back());
 
   // Trigger an import error task.
-  ImportCompletedTask task2(dispatcher(), store(), importer(), item2.offline_id,
-                            /*success*/ false);
-  ExpectTaskCompletes(&task2);
-  task2.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<ImportCompletedTask>(dispatcher(), store(),
+                                                importer(), item2.offline_id,
+                                                /*success*/ false));
 
   // Item will only be updated when both guid and state match.
   store_item = store_util()->GetPrefetchItem(item.offline_id);

@@ -8,24 +8,15 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
-#include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
-#include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,16 +34,13 @@ const ClientId kTestClientIdNoMatch(kTestNamespace, "20170905");
 
 }  // namespace
 
-class DeletePageTaskTest : public testing::Test,
-                           public base::SupportsWeakPtr<DeletePageTaskTest> {
+class DeletePageTaskTest : public ModelTaskTestBase {
  public:
   DeletePageTaskTest();
   ~DeletePageTaskTest() override;
 
   void SetUp() override;
-  void TearDown() override;
 
-  void PumpLoop();
   void ResetResults();
 
   void OnDeletePageDone(DeletePageResult result,
@@ -60,15 +48,6 @@ class DeletePageTaskTest : public testing::Test,
   bool CheckPageDeleted(const OfflinePageItem& page);
   DeletePageTask::DeletePageTaskCallback delete_page_callback();
 
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
-  }
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-  ClientPolicyController* policy_controller() {
-    return policy_controller_.get();
-  }
-  OfflinePageItemGenerator* generator() { return &generator_; }
-  TestTaskRunner* runner() { return &runner_; }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
   DeletePageResult last_delete_page_result() {
     return last_delete_page_result_;
@@ -76,50 +55,22 @@ class DeletePageTaskTest : public testing::Test,
   const std::vector<DeletedPageInfo>& last_deleted_page_infos() {
     return last_deleted_page_infos_;
   }
-  const base::FilePath& temp_dir() { return temp_dir_.GetPath(); }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  std::unique_ptr<ClientPolicyController> policy_controller_;
-  OfflinePageItemGenerator generator_;
-  TestTaskRunner runner_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-  base::ScopedTempDir temp_dir_;
 
   DeletePageResult last_delete_page_result_;
   std::vector<DeletedPageInfo> last_deleted_page_infos_;
 };
 
 DeletePageTaskTest::DeletePageTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      runner_(task_runner_),
-      last_delete_page_result_(DeletePageResult::RESULT_COUNT) {}
+    : last_delete_page_result_(DeletePageResult::RESULT_COUNT) {}
 
 DeletePageTaskTest::~DeletePageTaskTest() {}
 
 void DeletePageTaskTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  store_test_util_.BuildStoreInMemory();
-  policy_controller_ = std::make_unique<ClientPolicyController>();
-  generator()->SetArchiveDirectory(temp_dir());
+  ModelTaskTestBase::SetUp();
   histogram_tester_ = std::make_unique<base::HistogramTester>();
-}
-
-void DeletePageTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  if (temp_dir_.IsValid()) {
-    if (!temp_dir_.Delete())
-      DLOG(ERROR) << "temp_dir_ not created";
-  }
-  PumpLoop();
-}
-
-void DeletePageTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
 }
 
 void DeletePageTaskTest::OnDeletePageDone(
@@ -131,7 +82,8 @@ void DeletePageTaskTest::OnDeletePageDone(
 
 DeletePageTask::DeletePageTaskCallback
 DeletePageTaskTest::delete_page_callback() {
-  return base::BindOnce(&DeletePageTaskTest::OnDeletePageDone, AsWeakPtr());
+  return base::BindOnce(&DeletePageTaskTest::OnDeletePageDone,
+                        base::AsWeakPtr(this));
 }
 
 bool DeletePageTaskTest::CheckPageDeleted(const OfflinePageItem& page) {
@@ -161,7 +113,7 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineId) {
   std::vector<int64_t> offline_ids({page1.offline_id, page3.offline_id});
   auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
       store(), delete_page_callback(), offline_ids);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(2UL, last_deleted_page_infos().size());
@@ -206,7 +158,7 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineIdNotFound) {
   std::vector<int64_t> offline_ids({kTestOfflineIdNoMatch});
   auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
       store(), delete_page_callback(), offline_ids);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
@@ -243,7 +195,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientId) {
   std::vector<ClientId> client_ids({page1.client_id, page3.client_id});
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
       store(), delete_page_callback(), client_ids);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(2UL, last_deleted_page_infos().size());
@@ -286,7 +238,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdNotFound) {
   std::vector<ClientId> client_ids({kTestClientIdNoMatch});
   auto task = DeletePageTask::CreateTaskMatchingClientIds(
       store(), delete_page_callback(), client_ids);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
@@ -320,7 +272,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdAndOrigin) {
   std::vector<ClientId> client_ids({page1.client_id, page2.client_id});
   auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
       store(), delete_page_callback(), client_ids, "abc.xyz");
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(2UL, last_deleted_page_infos().size());
@@ -357,7 +309,7 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdAndOriginNotFound) {
       {page1.client_id, page2.client_id, page3.client_id});
   auto task = DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
       store(), delete_page_callback(), client_ids, "abc.xyz");
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
@@ -398,7 +350,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
       store(), delete_page_callback(), policy_controller(), predicate);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(2UL, last_deleted_page_infos().size());
@@ -447,7 +399,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
       store(), delete_page_callback(), policy_controller(), predicate);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
@@ -489,7 +441,7 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
 
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
       store(), delete_page_callback(), policy_controller(), page);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(1UL, last_deleted_page_infos().size());
@@ -527,7 +479,7 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
 
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
       store(), delete_page_callback(), policy_controller(), page);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   // Since there's no limit for page per url of Download Namespace, the result
   // should be success with no page deleted.
@@ -542,10 +494,5 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
                                       "OfflinePages.AccessCount"),
       0);
 }
-
-// This test is disabled since it's lacking the ability of mocking store failure
-// in store_test_utils. https://crbug.com/781023
-// TODO(romax): reenable the test once the above issue is resolved.
-TEST_F(DeletePageTaskTest, DISABLED_DeletePageStoreFailureOnRemove) {}
 
 }  // namespace offline_pages

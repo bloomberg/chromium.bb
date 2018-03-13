@@ -74,10 +74,8 @@ int64_t DownloadArchivesTaskTest::InsertItemToDownload(int64_t archive_size) {
 
 TEST_F(DownloadArchivesTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
-  DownloadArchivesTask task(store(), prefetch_downloader());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 }
 
 TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
@@ -89,11 +87,9 @@ TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(10U, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(10U, store_util()->GetAllItems(&items_after_run));
@@ -111,11 +107,9 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveToDownload) {
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(2U, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(2U, store_util()->GetAllItems(&items_after_run));
@@ -161,11 +155,9 @@ TEST_F(DownloadArchivesTaskTest, MultipleArchivesToDownload) {
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_after_run));
@@ -214,11 +206,9 @@ TEST_F(DownloadArchivesTaskTest, MultipleLargeArchivesToDownload) {
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_after_run));
@@ -267,11 +257,9 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
   EXPECT_EQ(static_cast<size_t>(total_items),
             store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(static_cast<size_t>(total_items),
@@ -338,11 +326,9 @@ TEST_F(DownloadArchivesTaskTest,
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(total_items, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(total_items, store_util()->GetAllItems(&items_after_run));
@@ -392,11 +378,9 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(1U, store_util()->GetAllItems(&items_before_run));
 
-  DownloadArchivesTask task(store(), prefetch_downloader());
   base::HistogramTester histogram_tester;
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(
+      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(1U, store_util()->GetAllItems(&items_after_run));

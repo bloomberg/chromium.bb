@@ -4,13 +4,7 @@
 
 #include "components/offline_pages/core/model/clear_digest_task.h"
 
-#include <memory>
-
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
-#include "components/offline_pages/core/test_task_runner.h"
+#include "components/offline_pages/core/model/model_task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -19,44 +13,7 @@ namespace {
 const char kTestDigest[] = "ktesTDIgest==";
 }  // namespace
 
-class ClearDigestTaskTest : public testing::Test {
- public:
-  ClearDigestTaskTest();
-  ~ClearDigestTaskTest() override;
-
-  void SetUp() override;
-  void TearDown() override;
-
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
-  OfflinePageMetadataStoreTestUtil* store_test_util() {
-    return &store_test_util_;
-  }
-  OfflinePageItemGenerator* generator() { return &generator_; }
-  TestTaskRunner* runner() { return &runner_; }
-
- private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  OfflinePageMetadataStoreTestUtil store_test_util_;
-  OfflinePageItemGenerator generator_;
-  TestTaskRunner runner_;
-};
-
-ClearDigestTaskTest::ClearDigestTaskTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_),
-      runner_(task_runner_) {}
-
-ClearDigestTaskTest::~ClearDigestTaskTest() {}
-
-void ClearDigestTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-}
-
-void ClearDigestTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-}
+class ClearDigestTaskTest : public ModelTaskTestBase {};
 
 TEST_F(ClearDigestTaskTest, ClearDigest) {
   OfflinePageItem page = generator()->CreateItem();
@@ -64,7 +21,7 @@ TEST_F(ClearDigestTaskTest, ClearDigest) {
   store_test_util()->InsertItem(page);
 
   auto task = std::make_unique<ClearDigestTask>(store(), page.offline_id);
-  runner()->RunTask(std::move(task));
+  RunTask(std::move(task));
 
   // Check the digest of the page is cleared.
   auto offline_page = store_test_util()->GetPageByOfflineId(page.offline_id);

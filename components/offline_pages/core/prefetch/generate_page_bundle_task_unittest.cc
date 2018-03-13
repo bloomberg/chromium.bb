@@ -43,21 +43,14 @@ TEST_F(GeneratePageBundleTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
-  GeneratePageBundleTask task(store(), gcm_handler(),
-                              prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GeneratePageBundleTask>(
+      store(), gcm_handler(), prefetch_request_factory(), callback.Get()));
 }
 
 TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
-  GeneratePageBundleTask task(store(), gcm_handler(),
-                              prefetch_request_factory(), callback.Get());
-  ExpectTaskCompletes(&task);
-
-  task.Run();
-  RunUntilIdle();
+  RunTask(std::make_unique<GeneratePageBundleTask>(
+      store(), gcm_handler(), prefetch_request_factory(), callback.Get()));
 
   EXPECT_FALSE(prefetch_request_factory()->HasOutstandingRequests());
   auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
@@ -98,9 +91,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
                               prefetch_request_factory(),
                               request_callback.Get());
   task.SetClockForTesting(base::WrapUnique(clock));
-  ExpectTaskCompletes(&task);
-  task.Run();
-  RunUntilIdle();
+  RunTask(&task);
 
   auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
   EXPECT_THAT(*requested_urls, Contains(item1.url.spec()));
