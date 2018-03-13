@@ -339,11 +339,18 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
     mojom::AccessibilityEventData* event_data) {
   tree_map_.clear();
   parent_map_.clear();
+  cached_computed_bounds_.clear();
   root_id_ = -1;
 
   window_id_ = event_data->window_id;
   is_notification_ = event_data->notification_key.has_value();
 
+  // The following loops perform caching to prepare for AXTreeSerializer.
+  // First, we need to cache parent links, which are implied by a node's child
+  // ids.
+  // Next, we cache the nodes by id. During this process, we can detect the root
+  // node based upon the parent links we cached above.
+  // Finally, we cache each node's computed bounds, based on its descendants.
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     if (!event_data->node_data[i]->int_list_properties)
       continue;
@@ -357,16 +364,25 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
 
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     int32_t id = event_data->node_data[i]->id;
-    tree_map_[id] = event_data->node_data[i].get();
+    mojom::AccessibilityNodeInfoData* node = event_data->node_data[i].get();
+    tree_map_[id] = node;
     if (parent_map_.find(id) == parent_map_.end()) {
       CHECK_EQ(-1, root_id_) << "Duplicated root";
       root_id_ = id;
     }
 
-    if (GetBooleanProperty(event_data->node_data[i].get(),
+    if (GetBooleanProperty(node,
                            arc::mojom::AccessibilityBooleanProperty::FOCUSED)) {
       focused_node_id_ = id;
     }
+  }
+
+  // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
+  // avoid an O(n^2) amount of work as the computed bounds uses descendant
+  // bounds.
+  for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
+    mojom::AccessibilityNodeInfoData* node = event_data->node_data[i].get();
+    cached_computed_bounds_[node] = ComputeEnclosingBounds(node);
   }
 
   ExtensionMsg_AccessibilityEventParams params;
@@ -696,6 +712,12 @@ gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
 void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     mojom::AccessibilityNodeInfoData* node,
     gfx::Rect& computed_bounds) const {
+  auto cached_bounds = cached_computed_bounds_.find(node);
+  if (cached_bounds != cached_computed_bounds_.end()) {
+    computed_bounds.Union(cached_bounds->second);
+    return;
+  }
+
   // Only consider nodes that can possibly be accessibility focused. In Chrome,
   // this amounts to nodes with a non-generic container role.
   ui::AXNodeData data;
@@ -731,6 +753,7 @@ void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
 void AXTreeSourceArc::Reset() {
   tree_map_.clear();
   parent_map_.clear();
+  cached_computed_bounds_.clear();
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_ = -1;
   focused_node_id_ = -1;
