@@ -266,9 +266,6 @@ class EditorInternalCommand {
 static const bool kNotTextInsertion = false;
 static const bool kIsTextInsertion = true;
 
-static const bool kAllowExecutionWhenDisabled = true;
-static const bool kDoNotAllowExecutionWhenDisabled = false;
-
 // Related to Editor::selectionForCommand.
 // Certain operations continue to use the target control's selection even if the
 // event handler already moved the selection outside of the text control.
@@ -828,13 +825,6 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
                                     Event*,
                                     EditorCommandSource source,
                                     const String&) {
-  // To support |allowExecutionWhenDisabled|, we need to check clipboard
-  // accessibility here rather than |Editor::Command::execute()|.
-  // TODO(yosin) We should move checking |canWriteClipboard()| to
-  // |Editor::Command::execute()| with introducing appropriate predicate, e.g.
-  // |canExecute()|. See also "Cut", and "Paste" command.
-  if (!CanWriteClipboard(frame, source))
-    return false;
   if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::copy))
     return true;
   if (!frame.GetEditor().CanCopy())
@@ -899,13 +889,6 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
                                    Event*,
                                    EditorCommandSource source,
                                    const String&) {
-  // To support |allowExecutionWhenDisabled|, we need to check clipboard
-  // accessibility here rather than |Editor::Command::execute()|.
-  // TODO(yosin) We should move checking |canWriteClipboard()| to
-  // |Editor::Command::execute()| with introducing appropriate predicate, e.g.
-  // |canExecute()|. See also "Copy", and "Paste" command.
-  if (!CanWriteClipboard(frame, source))
-    return false;
   if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::cut))
     return true;
   if (!frame.GetEditor().CanCut())
@@ -2177,13 +2160,6 @@ bool ClipboardCommands::ExecutePaste(LocalFrame& frame,
                                      Event*,
                                      EditorCommandSource source,
                                      const String&) {
-  // To support |allowExecutionWhenDisabled|, we need to check clipboard
-  // accessibility here rather than |Editor::Command::execute()|.
-  // TODO(yosin) We should move checking |canReadClipboard()| to
-  // |Editor::Command::execute()| with introducing appropriate predicate, e.g.
-  // |canExecute()|. See also "Copy", and "Cut" command.
-  if (!CanReadClipboard(frame, source))
-    return false;
   Paste(frame, source);
   return true;
 }
@@ -2192,13 +2168,6 @@ bool ClipboardCommands::ExecutePasteGlobalSelection(LocalFrame& frame,
                                                     Event*,
                                                     EditorCommandSource source,
                                                     const String&) {
-  // To support |allowExecutionWhenDisabled|, we need to check clipboard
-  // accessibility here rather than |Editor::Command::execute()|.
-  // TODO(yosin) We should move checking |canReadClipboard()| to
-  // |Editor::Command::execute()| with introducing appropriate predicate, e.g.
-  // |canExecute()|. See also "Copy", and "Cut" command.
-  if (!CanReadClipboard(frame, source))
-    return false;
   if (!frame.GetEditor().Behavior().SupportsGlobalSelection())
     return false;
   DCHECK_EQ(source, EditorCommandSource::kMenuOrKeyBinding);
@@ -2997,11 +2966,7 @@ static String ValueFormatBlock(const EditorInternalCommand&,
 // CanExectue functions
 
 static bool CanNotExecuteWhenDisabled(LocalFrame&, EditorCommandSource) {
-  return kDoNotAllowExecutionWhenDisabled;
-}
-
-static bool CanExecuteWhenDisabled(LocalFrame&, EditorCommandSource) {
-  return kAllowExecutionWhenDisabled;
+  return false;
 }
 
 // Map of functions
@@ -3033,13 +2998,13 @@ static const EditorInternalCommand* InternalCommand(
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kCopy, ClipboardCommands::ExecuteCopy, Supported,
        ClipboardCommands::EnabledCopy, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanExecuteWhenDisabled},
+       kNotTextInsertion, ClipboardCommands::CanWriteClipboard},
       {WebEditingCommandType::kCreateLink, ExecuteCreateLink, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kCut, ClipboardCommands::ExecuteCut, Supported,
        ClipboardCommands::EnabledCut, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanExecuteWhenDisabled},
+       kNotTextInsertion, ClipboardCommands::CanWriteClipboard},
       {WebEditingCommandType::kDefaultParagraphSeparator,
        ExecuteDefaultParagraphSeparator, Supported, Enabled, StateNone,
        ValueDefaultParagraphSeparator, kNotTextInsertion,
@@ -3365,15 +3330,17 @@ static const EditorInternalCommand* InternalCommand(
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kPaste, ClipboardCommands::ExecutePaste,
        ClipboardCommands::PasteSupported, ClipboardCommands::EnabledPaste,
-       StateNone, ValueStateOrNull, kNotTextInsertion, CanExecuteWhenDisabled},
+       StateNone, ValueStateOrNull, kNotTextInsertion,
+       ClipboardCommands::CanReadClipboard},
       {WebEditingCommandType::kPasteAndMatchStyle,
        ClipboardCommands::ExecutePasteAndMatchStyle, Supported,
        ClipboardCommands::EnabledPaste, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanExecuteWhenDisabled},
+       kNotTextInsertion, ClipboardCommands::CanReadClipboard},
       {WebEditingCommandType::kPasteGlobalSelection,
        ClipboardCommands::ExecutePasteGlobalSelection,
        SupportedFromMenuOrKeyBinding, ClipboardCommands::EnabledPaste,
-       StateNone, ValueStateOrNull, kNotTextInsertion, CanExecuteWhenDisabled},
+       StateNone, ValueStateOrNull, kNotTextInsertion,
+       ClipboardCommands::CanReadClipboard},
       {WebEditingCommandType::kPrint, ExecutePrint, Supported, Enabled,
        StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
