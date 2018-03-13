@@ -31,7 +31,6 @@
 #   'main' - a boolean value
 #   'list' - a list of string values
 #   'dict' - a dictionary value, containing other values indexed by strings
-#     NOTE: This type is not supported yet. https://crbug.com/108992
 #   'external' - a policy that references external data.
 #     NOTE: This type is currently supported on Chrome OS only.
 #
@@ -175,11 +174,19 @@
 #   This setting applies to Chrome OS only. If the setting is missing, both
 #   types are assumed. The array must not be empty.
 #
-# Enterprise defaults:
+# Enterprise defaults for user policy:
 #   For managed users on Chrome OS (i.e. users receiving user policy from the
 #   cloud), if the optional key 'default_for_enterprise_users' is set, its value
 #   is applied as mandatory policy unless a different setting is received from
-#   the cloud.
+#   the cloud. This default value handling is automatically enforced by the
+#   policy stack when filling the PolicyMap (specifically, by the generated
+#   function SetEnterpriseUsersDefaults).
+#
+# Enterprise defaults for device policy:
+#   The optional key 'default_for_managed_devices_doc_only' can be used to
+#   document a differing default value for devices enrolled into enterprise
+#   management. This is for documentation only - the enrollment-dependent
+#   handling must be manually implemented.
 
   'risk_tag_definitions' : [
     # All following tags are ordered by severity of their impact.
@@ -8355,6 +8362,7 @@
         'dynamic_refresh': False,
       },
       'example_value': True,
+      'default_for_managed_devices_doc_only': False,
       'id': 219,
       'caption': '''Enable supervised users''',
       'tags': [],
@@ -11358,6 +11366,7 @@
         'dynamic_refresh': True,
       },
       'example_value': True,
+      'default_for_managed_devices_doc_only': False,
       'id': 421,
       'caption': '''Allow devices to run virtual machines on Chrome OS''',
       'tags': ['system-security'],
