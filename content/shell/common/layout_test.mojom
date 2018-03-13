@@ -4,19 +4,19 @@
 
 module content.mojom;
 
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
 struct ShellTestConfiguration {
   // The current working directory.
-  mojo.common.mojom.FilePath current_working_directory;
+  mojo_base.mojom.FilePath current_working_directory;
 
   // The temporary directory of the system.
-  mojo.common.mojom.FilePath temp_path;
+  mojo_base.mojom.FilePath temp_path;
 
   // The build directory.
-  mojo.common.mojom.FilePath build_directory;
+  mojo_base.mojom.FilePath build_directory;
 
   // The URL of the current layout test.
   url.mojom.Url test_url;

@@ -4,8 +4,8 @@
 
 module ui.mojom;
 
-import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "ui/events/devices/mojo/input_devices.mojom";
 
 struct KeyboardDeviceState {
@@ -49,8 +49,8 @@ interface InputDeviceController {
 
   // Touchscreen log settings.
   GetTouchDeviceStatus() => (string status);
-  GetTouchEventLog(mojo.common.mojom.FilePath out_dir) =>
-      (array<mojo.common.mojom.FilePath> results);
+  GetTouchEventLog(mojo_base.mojom.FilePath out_dir) =>
+      (array<mojo_base.mojom.FilePath> results);
 
   // Temporarily enable/disable Tap-to-click. Used to enhance the user
   // experience in some use cases (e.g., typing, watching video).

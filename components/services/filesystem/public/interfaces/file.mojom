@@ -10,7 +10,7 @@
 module filesystem.mojom;
 
 import "components/services/filesystem/public/interfaces/types.mojom";
-import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 
 // TODO(vtl): Write comments.
@@ -90,5 +90,5 @@ interface File {
   // Returns a handle to the file for raw access.
   [Sync]
   AsHandle() => (mojo_base.mojom.FileError error,
-                 mojo.common.mojom.File? file_handle);
+                 mojo_base.mojom.File? file_handle);
 };

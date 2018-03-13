@@ -5,8 +5,10 @@
 mojom = "//mojo/public/mojom/base/file.mojom"
 public_headers = [ "//base/files/file.h" ]
 traits_headers = [ "//mojo/public/cpp/base/file_mojom_traits.h" ]
-deps = [
-  "//mojo/public/mojom/base",
+sources = [
+  "//mojo/public/cpp/base/file_mojom_traits.cc",
+  "//mojo/public/cpp/base/file_mojom_traits.h",
 ]
+
 type_mappings =
     [ "mojo_base.mojom.File=base::File[move_only,nullable_is_same_type]" ]

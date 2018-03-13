@@ -5,14 +5,12 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
-#include "base/files/file.h"
 #include "base/i18n/rtl.h"
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
-#include "mojo/common/file.mojom-shared.h"
 #include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
@@ -66,16 +64,6 @@ struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {
     *process_id = static_cast<base::ProcessId>(data.pid());
     return true;
   }
-};
-
-template <>
-struct StructTraits<common::mojom::FileDataView, base::File> {
-  static bool IsNull(const base::File& file) { return !file.IsValid(); }
-
-  static void SetToNull(base::File* file) { *file = base::File(); }
-
-  static mojo::ScopedHandle fd(base::File& file);
-  static bool Read(common::mojom::FileDataView data, base::File* file);
 };
 
 template <>

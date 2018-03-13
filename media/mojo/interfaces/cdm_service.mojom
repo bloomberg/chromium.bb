@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/content_decryption_module.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 
 [EnableIf=is_mac]
@@ -24,7 +24,7 @@ interface CdmService {
   // |token_provider| can be used to get a sandbox seatbelt extension token
   // synchronously so that the CdmService instance can load the CDM and other
   // needed files within the Mac sandbox.
-  LoadCdm(mojo.common.mojom.FilePath cdm_path,
+  LoadCdm(mojo_base.mojom.FilePath cdm_path,
           [EnableIf=is_mac]
           SeatbeltExtensionTokenProvider? token_provider);
 

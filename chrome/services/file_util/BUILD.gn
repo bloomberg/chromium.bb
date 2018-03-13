@@ -19,6 +19,7 @@ source_set("lib") {
 
   public_deps = [
     "//chrome/services/file_util/public/mojom",
+    "//mojo/public/mojom/base",
     "//services/service_manager/public/cpp",
   ]
 

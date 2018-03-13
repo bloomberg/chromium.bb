@@ -4,18 +4,19 @@
 
 module network.mojom;
 
-import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
+import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
-import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
+import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -45,7 +46,7 @@ struct NetworkContextParams {
   proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
 
   // Points to the cookie file. An in-memory cookie store is used if it's empty.
-  mojo.common.mojom.FilePath? cookie_path;
+  mojo_base.mojom.FilePath? cookie_path;
 
   // If the cookie file is given, this controls whether previously written
   // session cookies are restored. Otherwise it should be false.
@@ -57,7 +58,7 @@ struct NetworkContextParams {
 
   // Points to the channel ID file. If a cookie file is specified, this must be
   // specifed as well. Otherwise an in-memory store is used.
-  mojo.common.mojom.FilePath? channel_id_path;
+  mojo_base.mojom.FilePath? channel_id_path;
 
   // True if an HTTP cache should be used.
   bool http_cache_enabled = true;
@@ -66,12 +67,12 @@ struct NetworkContextParams {
   int32 http_cache_max_size = 0;
   // Points to the HTTP cache directory. Ignored if the cache is disabled.
   // If null and the cache is enabled, an in-memory database is used.
-  mojo.common.mojom.FilePath? http_cache_path;
+  mojo_base.mojom.FilePath? http_cache_path;
 
   // The file to store cached server properties (Like HTTP2 and QUIC support).
   // This information is used as a performance optimization in connection
   // logic. If null, an in-memory cache will be used instead.
-  mojo.common.mojom.FilePath? http_server_properties_path;
+  mojo_base.mojom.FilePath? http_server_properties_path;
 
   // Enabled protocols. Note that these apply to all fetches, including those
   // used to fetch PAC scripts.

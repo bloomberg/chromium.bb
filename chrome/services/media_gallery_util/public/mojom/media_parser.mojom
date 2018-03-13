@@ -4,9 +4,9 @@
 
 module chrome.mojom;
 
-import "mojo/common/file.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/file.mojom";
 
 interface MediaParser {
   // Extracts metadata from a |mime_type| blob of data of |total_size| and
@@ -27,7 +27,7 @@ interface MediaParser {
   // Note: it is still not safe to decode the file in the calling process after
   // this check.
   CheckMediaFile(mojo.common.mojom.TimeDelta decode_time,
-                 mojo.common.mojom.File file)
+                 mojo_base.mojom.File file)
       => (bool success);
 };
 

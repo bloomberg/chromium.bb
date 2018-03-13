@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//mojo/common/file_path.mojom"
+mojom = "//mojo/public/mojom/base/file_path.mojom"
 public_headers = [ "//base/files/file_path.h" ]
 traits_headers = [ "//ipc/ipc_message_utils.h" ]
 public_deps = [
   "//ipc",
 ]
 
-type_mappings = [ "mojo.common.mojom.FilePath=base::FilePath" ]
+type_mappings = [ "mojo_base.mojom.FilePath=base::FilePath" ]

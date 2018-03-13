@@ -4,7 +4,7 @@
 
 module media.mojom;
 
-import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file.mojom";
 
 // Provides a way to organize persistent per-origin/per-cdm-type data
 // in the browser's file system.
@@ -29,7 +29,7 @@ interface CdmStorage {
   //   |status| == kFailure is returned.
   Open(string file_name)
     => (Status status,
-        mojo.common.mojom.File? file_for_reading,
+        mojo_base.mojom.File? file_for_reading,
         associated CdmFile? cdm_file);
 };
 
@@ -47,10 +47,10 @@ interface CdmFile {
   // Open a new file that can be written to. This file will be in the same
   // directory as the original file. If successful, returns |file_for_writing|
   // which can be written to.
-  OpenFileForWriting() => (mojo.common.mojom.File? file_for_writing);
+  OpenFileForWriting() => (mojo_base.mojom.File? file_for_writing);
 
   // Closes the file opened for writing and replaces the original file.
   // Returns a new file descriptor that should be used to read the original
   // file from now on.
-  CommitWrite() => (mojo.common.mojom.File? updated_file_for_reading);
+  CommitWrite() => (mojo_base.mojom.File? updated_file_for_reading);
 };

@@ -4,8 +4,8 @@
 
 module audio.mojom;
 
-import "mojo/common/file.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 enum DebugRecordingStreamType {
   kInput = 0,
@@ -22,7 +22,7 @@ enum DebugRecordingStreamType {
 interface DebugRecordingFileProvider {
   // Returns invalid file in case of failure.
   CreateWavFile(DebugRecordingStreamType stream_type, uint32 id)
-  => (mojo.common.mojom.File? file);
+  => (mojo_base.mojom.File? file);
 };
 
 // Controls audio debug recording. To enable, bind interface and call Enable

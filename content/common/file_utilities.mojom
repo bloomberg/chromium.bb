@@ -4,12 +4,12 @@
 
 module content.mojom;
 
-import "mojo/common/file_info.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_info.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 // File utilities messages sent from the renderer to the browser.
 interface FileUtilitiesHost {
   [Sync]
-  GetFileInfo(mojo.common.mojom.FilePath path) => (
-      mojo.common.mojom.FileInfo? result);
+  GetFileInfo(mojo_base.mojom.FilePath path) => (
+      mojo_base.mojom.FileInfo? result);
 };

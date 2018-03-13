@@ -5,7 +5,7 @@
 module chrome.mojom;
 
 import "content/public/common/webplugininfo.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -17,7 +17,7 @@ interface PluginHost {
   ShowFlashPermissionBubble();
 
   // Tells the browser that there was an error loading a plugin.
-  CouldNotLoadPlugin(mojo.common.mojom.FilePath file_path);
+  CouldNotLoadPlugin(mojo_base.mojom.FilePath file_path);
 
   // Notifies when a plugin couldn't be loaded because it's outdated.
   BlockedOutdatedPlugin(PluginRenderer plugin_renderer,

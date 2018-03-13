@@ -4,8 +4,8 @@
 
 module ui.ozone.mojom;
 
-import "mojo/common/file.mojom";
-import "mojo/common/file_path.mojom";
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "ui/display/mojo/display_constants.mojom";
 import "ui/display/mojo/display_mode.mojom";
 import "ui/display/mojo/display_snapshot.mojom";
@@ -46,11 +46,11 @@ interface DrmDevice {
       (array<display.mojom.DisplaySnapshot> display_snapshots);
 
   // Transfers ownership of a DRM device to the GPU process.
-  AddGraphicsDevice(mojo.common.mojom.FilePath path,
-                    mojo.common.mojom.File file);
+  AddGraphicsDevice(mojo_base.mojom.FilePath path,
+                    mojo_base.mojom.File file);
 
   // Instructs the GPU to abandon a DRM device.
-  RemoveGraphicsDevice(mojo.common.mojom.FilePath path);
+  RemoveGraphicsDevice(mojo_base.mojom.FilePath path);
 
   // Instructs the GPU to disable a DRM device.
   DisableNativeDisplay(int64 display_id) => (int64 display_id, bool success);

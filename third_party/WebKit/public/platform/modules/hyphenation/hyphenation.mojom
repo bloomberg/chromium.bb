@@ -4,12 +4,12 @@
 
 module blink.mojom;
 
-import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file.mojom";
 
 // Loads hyphenation dictionary.
 interface Hyphenation {
   // Returns a handle to the raw hyphneation dictionary.
   [Sync]
   OpenDictionary(string locale) => (
-      mojo.common.mojom.File? hyphenation_dictionary_handle);
+      mojo_base.mojom.File? hyphenation_dictionary_handle);
 };

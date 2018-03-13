@@ -46,6 +46,8 @@ source_set("tests") {
   sources = [
     "big_buffer_unittest.cc",
     "big_string_unittest.cc",
+    "file_path_unittest.cc",
+    "file_unittest.cc",
     "ref_counted_memory_unittest.cc",
     "string16_unittest.cc",
   ]
