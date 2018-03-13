@@ -493,6 +493,9 @@ extern const char kGoogleProfileInfoDescription[];
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
+extern const char kHideNonActiveAppsFromShelfName[];
+extern const char kHideNonActiveAppsFromShelfDescription[];
+
 extern const char kHistoryRequiresUserGestureName[];
 extern const char kHistoryRequiresUserGestureDescription[];
 extern const char kHyperlinkAuditingName[];
