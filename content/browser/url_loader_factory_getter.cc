@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace content {
@@ -18,7 +18,7 @@ base::LazyInstance<URLLoaderFactoryGetter::GetNetworkFactoryCallback>::Leaky
 }
 
 class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
-    : public SharedURLLoaderFactoryInfo {
+    : public network::SharedURLLoaderFactoryInfo {
  public:
   URLLoaderFactoryForIOThreadInfo() = default;
   explicit URLLoaderFactoryForIOThreadInfo(
@@ -32,7 +32,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
 
  protected:
   // SharedURLLoaderFactoryInfo implementation.
-  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
 
@@ -40,7 +40,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
 };
 
 class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
-    : public SharedURLLoaderFactory {
+    : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForIOThread(
       scoped_refptr<URLLoaderFactoryGetter> factory_getter)
@@ -72,7 +72,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   }
 
   // SharedURLLoaderFactory implementation:
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
     NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"
                     " on the UI thread, get it from StoragePartition.";
     return nullptr;
@@ -87,7 +87,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForIOThread);
 };
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo::CreateFactory() {
   auto other = std::make_unique<URLLoaderFactoryForIOThreadInfo>();
   other->factory_getter_ = std::move(factory_getter_);
@@ -122,14 +122,14 @@ void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
   partition_ = nullptr;
 }
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::MakeRefCounted<URLLoaderFactoryForIOThread>(
       base::WrapRefCounted(this));
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 URLLoaderFactoryGetter::GetNetworkFactoryInfo() {
   return std::make_unique<URLLoaderFactoryForIOThreadInfo>(
       base::WrapRefCounted(this));

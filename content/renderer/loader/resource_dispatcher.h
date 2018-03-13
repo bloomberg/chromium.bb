@@ -23,11 +23,11 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
@@ -88,7 +88,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
 
   // Call this method to initiate the request. If this method succeeds, then
@@ -108,7 +108,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure* continue_navigation_function);

@@ -26,6 +26,8 @@ component("cpp") {
     "net_adapters.h",
     "network_switches.cc",
     "network_switches.h",
+    "shared_url_loader_factory.cc",
+    "shared_url_loader_factory.h",
     "simple_url_loader.cc",
     "simple_url_loader.h",
     "simple_url_loader_stream_consumer.h",

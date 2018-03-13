@@ -3570,7 +3570,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   }
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  std::unique_ptr<SharedURLLoaderFactoryInfo>
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       direct_network_loader_factory_info;
   // Could be null in tests.
   if (render_thread) {
@@ -4097,7 +4097,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     return;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  scoped_refptr<SharedURLLoaderFactory> direct_network_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> direct_network_loader_factory;
   if (render_thread) {
     direct_network_loader_factory =
         base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
@@ -7318,7 +7318,8 @@ void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }
 
-scoped_refptr<SharedURLLoaderFactory> RenderFrameImpl::GetURLLoaderFactory() {
+scoped_refptr<network::SharedURLLoaderFactory>
+RenderFrameImpl::GetURLLoaderFactory() {
   return GetLoaderFactoryBundle();
 }
 

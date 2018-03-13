@@ -14,8 +14,8 @@
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "net/base/backoff_entry.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -163,7 +163,7 @@ class CaptivePortalService : public KeyedService {
 
   State state_;
 
-  scoped_refptr<content::SharedURLLoaderFactory> shared_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   // Detector for checking active network for a portal state.
   std::unique_ptr<captive_portal::CaptivePortalDetector>

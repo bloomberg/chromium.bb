@@ -377,11 +377,11 @@ void ResourceDispatcher::StartSync(
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> factory_info =
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
       url_loader_factory->Clone();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -415,7 +415,7 @@ int ResourceDispatcher::StartAsync(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     base::OnceClosure* continue_navigation_function) {

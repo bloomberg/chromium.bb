@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SHARED_URL_LOADER_FACTORY_H_
-#define CONTENT_PUBLIC_COMMON_SHARED_URL_LOADER_FACTORY_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_SHARED_URL_LOADER_FACTORY_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_SHARED_URL_LOADER_FACTORY_H_
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace content {
+namespace network {
 
 class SharedURLLoaderFactoryInfo;
 
@@ -25,7 +25,7 @@ class SharedURLLoaderFactoryInfo;
 // resulting SharedURLLoaderFactoryInfo instance to the target sequence. On the
 // target sequence, call SharedURLLoaderFactory::Create() to convert the info
 // instance to a new SharedURLLoaderFactory.
-class CONTENT_EXPORT SharedURLLoaderFactory
+class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
     : public base::RefCounted<SharedURLLoaderFactory>,
       public network::mojom::URLLoaderFactory {
  public:
@@ -46,7 +46,7 @@ class CONTENT_EXPORT SharedURLLoaderFactory
 // SharedURLLoaderFactory. It is not sequence safe but can be passed across
 // sequences. Please see the comments of SharedURLLoaderFactory for how this
 // class is used.
-class CONTENT_EXPORT SharedURLLoaderFactoryInfo {
+class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactoryInfo {
  public:
   SharedURLLoaderFactoryInfo();
   virtual ~SharedURLLoaderFactoryInfo();
@@ -63,6 +63,6 @@ class CONTENT_EXPORT SharedURLLoaderFactoryInfo {
   DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactoryInfo);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_PUBLIC_COMMON_SHARED_URL_LOADER_FACTORY_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_SHARED_URL_LOADER_FACTORY_H_

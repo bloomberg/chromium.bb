@@ -12,13 +12,13 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -149,7 +149,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     blink::WebLocalFrame* frame,
     bool content_initiated,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
-    scoped_refptr<SharedURLLoaderFactory> default_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   bool should_create_provider_for_window = false;
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;
@@ -266,7 +266,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int browser_provider_id,
     bool is_parent_frame_secure,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
-    scoped_refptr<SharedURLLoaderFactory> default_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory) {
   if (browser_provider_id == kInvalidServiceWorkerProviderId)
     return;
 

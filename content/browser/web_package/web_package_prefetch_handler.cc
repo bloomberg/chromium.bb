@@ -32,7 +32,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
-    scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     url::Origin request_initiator,
     URLLoaderThrottlesGetter loader_throttles_getter,
     ResourceContext* resource_context,
@@ -45,7 +45,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
           std::move(network_client_request));
   network::mojom::URLLoaderClientPtr client;
   loader_client_binding_.Bind(mojo::MakeRequest(&client));
-  scoped_refptr<SharedURLLoaderFactory> url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     url_loader_factory = base::MakeRefCounted<
         SignedExchangeURLLoaderFactoryForNonNetworkService>(

@@ -291,7 +291,7 @@ class StoragePartitionImpl::NetworkContextOwner {
 };
 
 class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
-    : public SharedURLLoaderFactory {
+    : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForBrowserProcess(
       StoragePartitionImpl* storage_partition)
@@ -316,7 +316,7 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   }
 
   // SharedURLLoaderFactory implementation:
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
     NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"
                     " on the IO thread, get it from URLLoaderFactoryGetter.";
     return nullptr;
@@ -729,7 +729,7 @@ network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   return network_context_.get();
 }
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   if (!shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_ =
@@ -738,7 +738,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   return shared_url_loader_factory_for_browser_process_;
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessIOThread() {
   return url_loader_factory_getter_->GetNetworkFactoryInfo();
 }

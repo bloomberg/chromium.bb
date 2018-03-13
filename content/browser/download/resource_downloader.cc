@@ -12,7 +12,7 @@
 #include "content/browser/download/download_utils.h"
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace network {
 struct ResourceResponseHead;
@@ -65,7 +65,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
@@ -124,7 +124,7 @@ ResourceDownloader::ResourceDownloader(
 ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
-    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();

@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_WEAK_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -14,7 +14,7 @@ namespace content {
 // A SharedURLLoaderFactory implementation that wraps a raw
 // mojom::URLLoaderFactory pointer.
 class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
-    : public SharedURLLoaderFactory {
+    : public network::SharedURLLoaderFactory {
  public:
   explicit WeakWrapperSharedURLLoaderFactory(
       network::mojom::URLLoaderFactory* factory_ptr);
@@ -33,7 +33,7 @@ class CONTENT_EXPORT WeakWrapperSharedURLLoaderFactory
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
  private:
   ~WeakWrapperSharedURLLoaderFactory() override;

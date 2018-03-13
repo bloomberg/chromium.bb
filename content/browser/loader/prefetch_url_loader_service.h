@@ -18,10 +18,13 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace content {
 
 class ResourceContext;
-class SharedURLLoaderFactory;
 class URLLoaderFactoryGetter;
 class URLLoaderThrottle;
 
@@ -59,7 +62,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       int frame_tree_node_id = -1);
 
   // Register a callback that is fired right before a prefetch load is started

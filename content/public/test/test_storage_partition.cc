@@ -26,12 +26,12 @@ network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
   return network_context_;
 }
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return nullptr;
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 TestStoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread() {
   return nullptr;
 }

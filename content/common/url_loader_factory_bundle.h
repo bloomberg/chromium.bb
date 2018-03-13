@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class GURL;
@@ -20,7 +20,7 @@ namespace content {
 // Holds the internal state of a URLLoaderFactoryBundle in a form that is safe
 // to pass across sequences.
 class CONTENT_EXPORT URLLoaderFactoryBundleInfo
-    : public SharedURLLoaderFactoryInfo {
+    : public network::SharedURLLoaderFactoryInfo {
  public:
   URLLoaderFactoryBundleInfo();
   URLLoaderFactoryBundleInfo(
@@ -40,7 +40,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
 
  protected:
   // SharedURLLoaderFactoryInfo implementation.
-  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info_;
   std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
@@ -51,7 +51,8 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
 
 // Encapsulates a collection of URLLoaderFactoryPtrs which can be usd to acquire
 // loaders for various types of resource requests.
-class CONTENT_EXPORT URLLoaderFactoryBundle : public SharedURLLoaderFactory {
+class CONTENT_EXPORT URLLoaderFactoryBundle
+    : public network::SharedURLLoaderFactory {
  public:
   URLLoaderFactoryBundle();
 
@@ -81,7 +82,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundle : public SharedURLLoaderFactory {
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   // The |info| contains replacement factories for a subset of the existing
   // bundle.

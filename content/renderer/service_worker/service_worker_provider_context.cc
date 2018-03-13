@@ -17,7 +17,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
@@ -26,6 +25,7 @@
 #include "content/renderer/worker_thread_registry.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -37,7 +37,7 @@ namespace content {
 // Holds state for service worker clients.
 struct ServiceWorkerProviderContext::ProviderStateForClient {
   explicit ProviderStateForClient(
-      scoped_refptr<SharedURLLoaderFactory> default_loader_factory)
+      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory)
       : default_loader_factory(std::move(default_loader_factory)) {}
   ~ProviderStateForClient() = default;
 
@@ -53,7 +53,7 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
 
   // S13nServiceWorker:
   // Used when we create |subresource_loader_factory|.
-  scoped_refptr<SharedURLLoaderFactory> default_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory;
 
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
@@ -100,7 +100,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     mojom::ServiceWorkerContainerAssociatedRequest request,
     mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
-    scoped_refptr<SharedURLLoaderFactory> default_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory)
     : provider_type_(provider_type),
       provider_id_(provider_id),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),

@@ -25,6 +25,10 @@ class WebLocalFrame;
 class WebServiceWorkerNetworkProvider;
 }  // namespace blink
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
 namespace mojom {
@@ -33,7 +37,6 @@ class URLLoaderFactory;
 
 struct RequestNavigationParams;
 class ServiceWorkerProviderContext;
-class SharedURLLoaderFactory;
 class ThreadSafeSender;
 
 // ServiceWorkerNetworkProvider enables the browser process to recognize
@@ -71,7 +74,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::WebLocalFrame* frame,
       bool content_initiated,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
@@ -120,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       int provider_id,
       bool is_parent_frame_secure,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
 
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(

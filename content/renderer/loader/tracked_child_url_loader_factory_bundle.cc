@@ -25,7 +25,7 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
 TrackedChildURLLoaderFactoryBundleInfo::
     ~TrackedChildURLLoaderFactoryBundleInfo() = default;
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
@@ -51,7 +51,7 @@ TrackedChildURLLoaderFactoryBundle::~TrackedChildURLLoaderFactoryBundle() {
   RemoveObserverOnMainThread();
 };
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 TrackedChildURLLoaderFactoryBundle::Clone() {
   auto info = base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
       ChildURLLoaderFactoryBundle::Clone().release()));
@@ -96,7 +96,7 @@ void TrackedChildURLLoaderFactoryBundle::RemoveObserverOnMainThread() {
 }
 
 void TrackedChildURLLoaderFactoryBundle::OnUpdate(
-    std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> info) {
   Update(base::WrapUnique(
              static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())),
          base::nullopt);
@@ -112,7 +112,7 @@ HostChildURLLoaderFactoryBundle::HostChildURLLoaderFactoryBundle()
 
 HostChildURLLoaderFactoryBundle::~HostChildURLLoaderFactoryBundle() = default;
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 HostChildURLLoaderFactoryBundle::Clone() {
   auto info = base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
       ChildURLLoaderFactoryBundle::Clone().release()));
@@ -168,7 +168,7 @@ void HostChildURLLoaderFactoryBundle::RemoveObserver(
 
 void HostChildURLLoaderFactoryBundle::NotifyUpdateOnMainOrWorkerThread(
     ObserverPtrAndTaskRunner* observer_bundle,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> update_info) {
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> update_info) {
   observer_bundle->second->PostTask(
       FROM_HERE,
       base::BindOnce(&TrackedChildURLLoaderFactoryBundle::OnUpdate,

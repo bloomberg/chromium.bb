@@ -18,7 +18,8 @@ namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const GURL& worker_script_url,
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     int service_worker_provider_id,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
     : worker_script_url_(worker_script_url),
@@ -31,8 +32,8 @@ ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
 
-  url_loader_factory_ =
-      SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
+  url_loader_factory_ = network::SharedURLLoaderFactory::Create(
+      std::move(url_loader_factory_info_));
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>

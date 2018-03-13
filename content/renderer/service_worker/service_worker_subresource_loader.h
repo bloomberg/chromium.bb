@@ -21,9 +21,12 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
-class SharedURLLoaderFactory;
 class ControllerServiceWorkerConnector;
 
 // S13nServiceWorker:
@@ -47,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<SharedURLLoaderFactory> network_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory);
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -134,7 +137,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   std::unique_ptr<StreamWaiter> stream_waiter_;
 
   // For network fallback.
-  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   enum class Status {
     kNotStarted,
@@ -163,7 +166,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // any custom URLLoader factories.
   ServiceWorkerSubresourceLoaderFactory(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<SharedURLLoaderFactory> network_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -183,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
   // A URLLoaderFactory that directly goes to network, used when a request
   // falls back to network.
-  scoped_refptr<SharedURLLoaderFactory> network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };

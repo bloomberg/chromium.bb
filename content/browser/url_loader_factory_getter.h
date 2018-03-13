@@ -12,10 +12,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace content {
-
+namespace network {
 class SharedURLLoaderFactoryInfo;
 class SharedURLLoaderFactory;
+}  // namespace network
+
+namespace content {
+
 class StoragePartitionImpl;
 
 // Holds on to URLLoaderFactory for a given StoragePartition and allows code
@@ -39,12 +42,13 @@ class URLLoaderFactoryGetter
   // Called on the IO thread to get a shared wrapper to this
   // URLLoaderFactoryGetter, which can be used to access the URLLoaderFactory
   // to the network service and supports auto-reconnect after crash.
-  CONTENT_EXPORT scoped_refptr<SharedURLLoaderFactory> GetNetworkFactory();
+  CONTENT_EXPORT scoped_refptr<network::SharedURLLoaderFactory>
+  GetNetworkFactory();
 
   // Called on the UI thread to get an info that holds a reference to this
   // URLLoaderFactoryGetter, which can be used to construct a similar
   // SharedURLLoaderFactory as returned from |GetNetworkFactory()| on IO thread.
-  CONTENT_EXPORT std::unique_ptr<SharedURLLoaderFactoryInfo>
+  CONTENT_EXPORT std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetNetworkFactoryInfo();
 
   // Called on the IO thread. Will clone the internal factory to the network

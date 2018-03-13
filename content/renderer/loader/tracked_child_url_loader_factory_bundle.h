@@ -36,7 +36,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
 
  protected:
   // ChildURLLoaderFactoryBundleInfo overrides.
-  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle_;
 
@@ -66,7 +66,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundle
 
   // ChildURLLoaderFactoryBundle overrides.
   // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
  private:
   friend class HostChildURLLoaderFactoryBundle;
@@ -83,7 +83,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundle
   void RemoveObserverOnMainThread();
 
   // Callback method to receive updates from the host bundle.
-  void OnUpdate(std::unique_ptr<SharedURLLoaderFactoryInfo> info);
+  void OnUpdate(std::unique_ptr<network::SharedURLLoaderFactoryInfo> info);
 
   // |WeakPtr| and |TaskRunner| of the host bundle. Can be copied and passed
   // across sequences.
@@ -111,7 +111,7 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
 
   // ChildURLLoaderFactoryBundle overrides.
   // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
   bool IsHostChildURLLoaderFactoryBundle() const override;
 
   // Update this bundle with |info|, and post cloned |info| to tracked bundles.
@@ -140,7 +140,7 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
   // tracked bundle has been destroyed.
   void NotifyUpdateOnMainOrWorkerThread(
       ObserverPtrAndTaskRunner* observer_bundle,
-      std::unique_ptr<SharedURLLoaderFactoryInfo> update_info);
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> update_info);
 
   // Contains |WeakPtr| and |TaskRunner| to tracked bundles.
   std::unique_ptr<ObserverList> observer_list_ = nullptr;

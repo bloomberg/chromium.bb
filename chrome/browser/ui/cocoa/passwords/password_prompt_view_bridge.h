@@ -36,7 +36,7 @@ class PasswordPromptViewBridge : public AccountChooserPrompt,
   // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
-  scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
  private:

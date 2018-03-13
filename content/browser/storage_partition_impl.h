@@ -91,9 +91,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   net::URLRequestContextGetter* GetURLRequestContext() override;
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
-  scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
-      override;
-  std::unique_ptr<SharedURLLoaderFactoryInfo>
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcess() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;

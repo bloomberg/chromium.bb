@@ -17,7 +17,7 @@ WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo(
 WrapperSharedURLLoaderFactoryInfo::~WrapperSharedURLLoaderFactoryInfo() =
     default;
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 WrapperSharedURLLoaderFactoryInfo::CreateFactory() {
   return base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
       std::move(factory_ptr_info_));

@@ -108,7 +108,7 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
 
 ChildURLLoaderFactoryBundleInfo::~ChildURLLoaderFactoryBundleInfo() = default;
 
-scoped_refptr<SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 ChildURLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<ChildURLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
@@ -186,7 +186,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
                                     traffic_annotation);
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 ChildURLLoaderFactoryBundle::Clone() {
   InitDefaultBlobFactoryIfNecessary();
   InitDirectNetworkFactoryIfNecessary();

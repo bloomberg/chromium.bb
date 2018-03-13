@@ -12,11 +12,11 @@
 #include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -79,7 +79,7 @@ WebPackageLoader::WebPackageLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     url::Origin request_initiator,
     uint32_t url_loader_options,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : original_response_timing_info_(

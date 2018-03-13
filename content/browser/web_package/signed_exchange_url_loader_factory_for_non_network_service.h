@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_URL_LOADER_FACTORY_FOR_NON_NETWORK_SERVICE_H_
 
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -19,7 +19,7 @@ class ResourceContext;
 // A URLLoaderFactory used for fetching certificate of signed HTTP exchange
 // when NetworkService is not enabled.
 class SignedExchangeURLLoaderFactoryForNonNetworkService
-    : public SharedURLLoaderFactory {
+    : public network::SharedURLLoaderFactory {
  public:
   SignedExchangeURLLoaderFactoryForNonNetworkService(
       ResourceContext* resource_context,
@@ -34,7 +34,7 @@ class SignedExchangeURLLoaderFactoryForNonNetworkService
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
  private:
   ~SignedExchangeURLLoaderFactoryForNonNetworkService() override;

@@ -12,7 +12,6 @@
 #include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -22,6 +21,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -451,7 +451,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   scoped_refptr<ControllerServiceWorkerConnector> connector_;
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;

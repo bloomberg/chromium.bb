@@ -11,13 +11,13 @@
 #include "base/optional.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/content_export.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -31,12 +31,12 @@ class X509Certificate;
 }  // namespace net
 
 namespace network {
+class SharedURLLoaderFactory;
 struct ResourceResponseHead;
-}
+}  // namespace network
 
 namespace content {
 
-class SharedURLLoaderFactory;
 class SignedExchangeCertFetcher;
 class URLLoaderThrottle;
 
@@ -70,7 +70,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
       url::Origin request_initiator,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~SignedExchangeHandler();
@@ -111,7 +111,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   // Used to create |cert_fetcher_|.
   url::Origin request_initiator_;
-  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // This getter is guaranteed to be valid at least until the headers callback
   // is run.
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
@@ -145,7 +145,7 @@ class SignedExchangeHandlerFactory {
       std::unique_ptr<net::SourceStream> body,
       SignedExchangeHandler::ExchangeHeadersCallback headers_callback,
       url::Origin request_initiator,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SignedExchangeHandler::URLLoaderThrottlesGetter
           url_loader_throttles_getter) = 0;
 };

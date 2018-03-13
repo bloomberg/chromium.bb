@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_BRIDGE_INTERFACE_H_
 #define CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORD_PROMPT_BRIDGE_INTERFACE_H_
 
-#include "content/public/common/shared_url_loader_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PasswordDialogController;
 
@@ -20,7 +20,7 @@ class PasswordPromptBridgeInterface {
   virtual PasswordDialogController* GetDialogController() = 0;
 
   // Returns the URL loader factory for fetching the avatars.
-  virtual scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const = 0;
 
  protected:

@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
@@ -56,8 +56,9 @@ struct CONTENT_EXPORT StreamOverrideParameters {
 class CONTENT_EXPORT WebURLLoaderFactoryImpl
     : public blink::WebURLLoaderFactory {
  public:
-  WebURLLoaderFactoryImpl(base::WeakPtr<ResourceDispatcher> resource_dispatcher,
-                          scoped_refptr<SharedURLLoaderFactory> loader_factory);
+  WebURLLoaderFactoryImpl(
+      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~WebURLLoaderFactoryImpl() override;
 
   // Creates a test-only factory which can be used only for data URLs.
@@ -69,21 +70,23 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
 
  private:
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
-  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryImpl);
 };
 
 class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   scoped_refptr<SharedURLLoaderFactory> url_loader_factory);
+  WebURLLoaderImpl(
+      ResourceDispatcher* resource_dispatcher,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   // When non-null |keep_alive_handle| is specified, this loader prolongs
   // this render process's lifetime.
-  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
-                   mojom::KeepAliveHandlePtr keep_alive_handle);
+  WebURLLoaderImpl(
+      ResourceDispatcher* resource_dispatcher,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      mojom::KeepAliveHandlePtr keep_alive_handle);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,

@@ -20,9 +20,12 @@ class SourceStream;
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
-class SharedURLLoaderFactory;
 class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class URLLoaderThrottle;
@@ -45,7 +48,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       url::Origin request_initiator,
       uint32_t url_loader_options,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~WebPackageLoader() override;
@@ -124,7 +127,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   url::Origin request_initiator_;
   const uint32_t url_loader_options_;
-  scoped_refptr<SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 

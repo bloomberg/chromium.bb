@@ -41,7 +41,7 @@ class AutoSigninPromptViewControllerTest : public PasswordPromptBridgeInterface,
   // PasswordPromptBridgeInterface:
   void PerformClose() override;
   PasswordDialogController* GetDialogController() override;
-  scoped_refptr<content::SharedURLLoaderFactory> GetURLLoaderFactory()
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
  private:
@@ -71,7 +71,7 @@ AutoSigninPromptViewControllerTest::GetDialogController() {
   return &dialog_controller_;
 }
 
-scoped_refptr<content::SharedURLLoaderFactory>
+scoped_refptr<network::SharedURLLoaderFactory>
 AutoSigninPromptViewControllerTest::GetURLLoaderFactory() const {
   NOTREACHED();
   return nullptr;

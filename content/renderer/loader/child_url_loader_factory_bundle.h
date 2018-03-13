@@ -38,7 +38,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
 
  protected:
   // URLLoaderFactoryBundleInfo overrides.
-  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info_;
 
@@ -81,7 +81,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
 

@@ -13,11 +13,14 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace content {
 
 class ResourceContext;
 class URLLoaderThrottle;
-class SharedURLLoaderFactory;
 class WebPackageLoader;
 
 // Attached to each PrefetchURLLoader if the prefetch is for a signed exchange.
@@ -37,7 +40,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,
-      scoped_refptr<SharedURLLoaderFactory> network_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       url::Origin request_initiator,
       URLLoaderThrottlesGetter loader_throttles_getter,
       ResourceContext* resource_context,

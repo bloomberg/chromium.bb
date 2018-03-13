@@ -76,7 +76,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) override {
     *response = sync_load_response_;
   }
@@ -89,7 +89,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
-      scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure* continue_navigation_function) override {

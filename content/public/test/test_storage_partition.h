@@ -56,10 +56,10 @@ class TestStoragePartition : public StoragePartition {
   }
   network::mojom::NetworkContext* GetNetworkContext() override;
 
-  scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
-      override;
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcess() override;
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo>
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
 
   void set_cookie_manager_for_browser_process(

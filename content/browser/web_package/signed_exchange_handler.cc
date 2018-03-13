@@ -11,7 +11,6 @@
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
@@ -25,6 +24,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -51,7 +51,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
     url::Origin request_initiator,
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : headers_callback_(std::move(headers_callback)),

@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/shared_url_loader_factory.h"
 #include "net/cookies/cookie_store.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class GURL;
 
@@ -84,9 +84,9 @@ class CONTENT_EXPORT StoragePartition {
   // use after StoragePartition has gone.
   // The returned SharedURLLoaderFactory can be held on and will work across
   // network process restarts.
-  virtual scoped_refptr<SharedURLLoaderFactory>
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() = 0;
-  virtual std::unique_ptr<SharedURLLoaderFactoryInfo>
+  virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() = 0;
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;
