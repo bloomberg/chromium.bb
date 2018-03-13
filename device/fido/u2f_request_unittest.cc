@@ -67,18 +67,18 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
   discovery->AddDevice(std::move(device0));
   discovery->AddDevice(std::move(device1));
 
-  // Move first device to current
+  // Move first device to current.
   request.IterateDevice();
   ASSERT_NE(nullptr, request.current_device_);
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
-  // Move second device to current, first to attempted
+  // Move second device to current, first to attempted.
   request.IterateDevice();
   ASSERT_NE(nullptr, request.current_device_);
   EXPECT_EQ(static_cast<size_t>(1), request.attempted_devices_.size());
 
   // Move second device from current to attempted, move attempted to devices as
-  // all devices have been attempted
+  // all devices have been attempted.
   request.IterateDevice();
 
   ASSERT_EQ(nullptr, request.current_device_);
@@ -325,14 +325,14 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
 TEST_F(U2fRequestTest, TestEncodeVersionRequest) {
   constexpr uint8_t kEncodedU2fVersionRequest[] = {0x00, 0x03, 0x00, 0x00,
                                                    0x00, 0x00, 0x00};
-  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(false)->GetEncodedCommand(),
+  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(),
               ::testing::ElementsAreArray(kEncodedU2fVersionRequest));
 
   // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
   // format.
   constexpr uint8_t kEncodedU2fLegacyVersionRequest[] = {
       0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true)->GetEncodedCommand(),
+  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true),
               ::testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
 }
 

@@ -49,17 +49,17 @@ U2fRegister::~U2fRegister() = default;
 
 void U2fRegister::TryDevice() {
   DCHECK(current_device_);
-  if (registered_keys_.size() > 0 && !CheckedForDuplicateRegistration()) {
+  if (!registered_keys_.empty() && !CheckedForDuplicateRegistration()) {
     auto it = registered_keys_.cbegin();
-    current_device_->Sign(application_parameter_, challenge_digest_, *it,
+    current_device_->Sign(GetU2fSignApduCommand(application_parameter_, *it,
+                                                true /* check_only */),
                           base::BindOnce(&U2fRegister::OnTryCheckRegistration,
-                                         weak_factory_.GetWeakPtr(), it),
-                          true);
+                                         weak_factory_.GetWeakPtr(), it));
   } else {
     current_device_->Register(
-        application_parameter_, challenge_digest_, individual_attestation_ok_,
+        GetU2fRegisterApduCommand(individual_attestation_ok_),
         base::BindOnce(&U2fRegister::OnTryDevice, weak_factory_.GetWeakPtr(),
-                       false));
+                       false /* is_duplicate_registration */));
   }
 }
 
@@ -73,11 +73,9 @@ void U2fRegister::OnTryCheckRegistration(
       // Duplicate registration found. Call bogus registration to check for
       // user presence (touch) and terminate the registration process.
       current_device_->Register(
-          U2fRequest::GetBogusApplicationParameter(),
-          U2fRequest::GetBogusChallenge(),
-          false /* no individual attestation */,
+          U2fRequest::GetBogusRegisterCommand(),
           base::BindOnce(&U2fRegister::OnTryDevice, weak_factory_.GetWeakPtr(),
-                         true));
+                         true /* is_duplicate_registration */));
       break;
 
     case U2fReturnCode::INVALID_PARAMS:
@@ -85,10 +83,10 @@ void U2fRegister::OnTryCheckRegistration(
       // list and check for already registered keys.
       if (++it != registered_keys_.end()) {
         current_device_->Sign(
-            application_parameter_, challenge_digest_, *it,
+            GetU2fSignApduCommand(application_parameter_, *it,
+                                  true /* check_only */),
             base::BindOnce(&U2fRegister::OnTryCheckRegistration,
-                           weak_factory_.GetWeakPtr(), it),
-            true);
+                           weak_factory_.GetWeakPtr(), it));
       } else {
         checked_device_id_list_.insert(current_device_->GetId());
         if (devices_.empty()) {

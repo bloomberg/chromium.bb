@@ -15,6 +15,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/ctap_constants.h"
 #include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
 #include "device/fido/u2f_discovery.h"
@@ -41,20 +42,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest : public U2fDiscovery::Observer {
 
   void Start();
 
-  // Returns bogus application parameter and challenge to be used to verify user
-  // presence.
-  static const std::vector<uint8_t>& GetBogusApplicationParameter();
-  static const std::vector<uint8_t>& GetBogusChallenge();
+  // Returns bogus register command to be used to verify user presence.
+  static std::vector<uint8_t> GetBogusRegisterCommand();
   // Returns APDU formatted U2F version request command. If |is_legacy_version|
   // is set to true, suffix {0x00, 0x00} is added at the end.
-  static std::unique_ptr<U2fApduCommand> GetU2fVersionApduCommand(
-      bool is_legacy_version);
-  // Returns APDU U2F request commands. Nullptr is returned for
+  static std::vector<uint8_t> GetU2fVersionApduCommand(
+      bool is_legacy_version = false);
+  // Returns APDU U2F request commands. Null optional is returned for
   // incorrectly formatted parameter.
-  std::unique_ptr<U2fApduCommand> GetU2fSignApduCommand(
+  base::Optional<std::vector<uint8_t>> GetU2fSignApduCommand(
+      const std::vector<uint8_t>& application_parameter,
       const std::vector<uint8_t>& key_handle,
       bool is_check_only_sign = false) const;
-  std::unique_ptr<U2fApduCommand> GetU2fRegisterApduCommand(
+  base::Optional<std::vector<uint8_t>> GetU2fRegisterApduCommand(
       bool is_individual_attestation) const;
 
  protected:

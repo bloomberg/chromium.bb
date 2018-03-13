@@ -12,7 +12,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> input(data, data + size);
   std::unique_ptr<device::U2fApduCommand> cmd =
-      device::U2fApduCommand::CreateFromMessage(input);
+      device::U2fApduCommand::CreateFromMessageForTesting(input);
   std::unique_ptr<device::U2fApduResponse> rsp =
       device::U2fApduResponse::CreateFromMessage(input);
   return 0;

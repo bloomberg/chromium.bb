@@ -162,7 +162,23 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorReset = 0x07,
 };
 
-enum class kCoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
+enum class CoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
+
+// APDU instruction code for U2F request encoding.
+// https://fidoalliance.org/specs/fido-u2f-v1.0-ps-20141009/fido-u2f-u2f.h-v1.0-ps-20141009.pdf
+enum class U2fApduInstruction : uint8_t {
+  kRegister = 0x01,
+  kSign = 0x02,
+  kVersion = 0x03,
+  kVendorFirst = 0x40,
+  kVenderLast = 0xBF,
+};
+
+// Parameters for fake U2F registration used to check for user presence.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const std::array<uint8_t, 32> kBogusAppParam;
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const std::array<uint8_t, 32> kBogusChallenge;
 
 // String key values for CTAP request optional parameters and
 // AuthenticatorGetInfo response.
@@ -179,9 +195,35 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxPacketSize;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketDataSize;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const size_t kHidContinuationPacketDataSize;
+
 COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kHidMaxLockSeconds;
+
 // Messages are limited to an initiation packet and 128 continuation packets.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxMessageSize;
+
+// U2F APDU encoding constants, as specified in
+// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#bib-U2FHeader
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fMaxResponseSize;
+
+// P1 instructions.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupRequired;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupConsumed;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupRequiredConsumed;
+
+// Control byte used for check-only setting. The check-only command is used to
+// determine if the provided key handle was originally created by this token
+// and whether it was created for the provided application parameter.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1CheckOnly;
+
+// Indicates that an individual attestation certificate is acceptable to
+// return with this registration.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1IndividualAttestation;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kMaxKeyHandleLength;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fParameterLength;
+
+// Suffix added to APDU encoded command for legacy version request.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const std::array<uint8_t, 2> kLegacyVersionSuffix;
 
 }  // namespace device
 

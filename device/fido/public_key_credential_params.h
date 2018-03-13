@@ -24,8 +24,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialParams {
  public:
   struct CredentialInfo {
     std::string type;
-    int algorithm =
-        base::strict_cast<int>(kCoseAlgorithmIdentifier::kCoseEs256);
+    int algorithm = base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
   };
 
   explicit PublicKeyCredentialParams(

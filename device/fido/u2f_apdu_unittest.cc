@@ -19,7 +19,7 @@ TEST_F(U2fApduTest, TestDeserializeBasic) {
   uint8_t p2 = 0xAD;
   std::vector<uint8_t> message = {cla, ins, p1, p2};
   std::unique_ptr<U2fApduCommand> cmd =
-      U2fApduCommand::CreateFromMessage(message);
+      U2fApduCommand::CreateFromMessageForTesting(message);
 
   EXPECT_EQ(static_cast<size_t>(0), cmd->response_length_);
   EXPECT_THAT(cmd->data_, ::testing::ContainerEq(std::vector<uint8_t>()));
@@ -30,7 +30,7 @@ TEST_F(U2fApduTest, TestDeserializeBasic) {
 
   // Invalid length
   message = {cla, ins, p1};
-  EXPECT_EQ(nullptr, U2fApduCommand::CreateFromMessage(message));
+  EXPECT_EQ(nullptr, U2fApduCommand::CreateFromMessageForTesting(message));
   message.push_back(p2);
   message.push_back(0);
   message.push_back(0xFF);
@@ -39,9 +39,9 @@ TEST_F(U2fApduTest, TestDeserializeBasic) {
   message.insert(message.end(), oversized.begin(), oversized.end());
   message.push_back(0);
   message.push_back(0);
-  EXPECT_NE(nullptr, U2fApduCommand::CreateFromMessage(message));
+  EXPECT_NE(nullptr, U2fApduCommand::CreateFromMessageForTesting(message));
   message.push_back(0);
-  EXPECT_EQ(nullptr, U2fApduCommand::CreateFromMessage(message));
+  EXPECT_EQ(nullptr, U2fApduCommand::CreateFromMessageForTesting(message));
 }
 
 TEST_F(U2fApduTest, TestDeserializeComplex) {
@@ -59,7 +59,7 @@ TEST_F(U2fApduTest, TestDeserializeComplex) {
 
   // Create a message with no response expected
   std::unique_ptr<U2fApduCommand> cmd_no_response =
-      U2fApduCommand::CreateFromMessage(message);
+      U2fApduCommand::CreateFromMessageForTesting(message);
   EXPECT_EQ(static_cast<size_t>(0), cmd_no_response->response_length_);
   EXPECT_THAT(data, ::testing::ContainerEq(cmd_no_response->data_));
   EXPECT_EQ(cmd_no_response->cla_, cla);
@@ -71,7 +71,7 @@ TEST_F(U2fApduTest, TestDeserializeComplex) {
   message.push_back(0xF1);
   message.push_back(0xD0);
   std::unique_ptr<U2fApduCommand> cmd =
-      U2fApduCommand::CreateFromMessage(message);
+      U2fApduCommand::CreateFromMessageForTesting(message);
   EXPECT_THAT(data, ::testing::ContainerEq(cmd->data_));
   EXPECT_EQ(cmd->cla_, cla);
   EXPECT_EQ(cmd->ins_, ins);
@@ -122,19 +122,19 @@ TEST_F(U2fApduTest, TestSerializeCommand) {
   // No data, no response expected
   std::vector<uint8_t> expected({0xA, 0xB, 0xC, 0xD});
   ASSERT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(
-      expected,
-      ::testing::ContainerEq(
-          U2fApduCommand::CreateFromMessage(expected)->GetEncodedCommand()));
+  EXPECT_THAT(expected,
+              ::testing::ContainerEq(
+                  U2fApduCommand::CreateFromMessageForTesting(expected)
+                      ->GetEncodedCommand()));
 
   // No data, response expected
   cmd->set_response_length(0xCAFE);
   expected = {0xA, 0xB, 0xC, 0xD, 0x0, 0xCA, 0xFE};
   EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(
-      expected,
-      ::testing::ContainerEq(
-          U2fApduCommand::CreateFromMessage(expected)->GetEncodedCommand()));
+  EXPECT_THAT(expected,
+              ::testing::ContainerEq(
+                  U2fApduCommand::CreateFromMessageForTesting(expected)
+                      ->GetEncodedCommand()));
 
   // Data exists, response expected
   std::vector<uint8_t> data({0x1, 0x2, 0x3, 0x4});
@@ -142,19 +142,19 @@ TEST_F(U2fApduTest, TestSerializeCommand) {
   expected = {0xA, 0xB, 0xC, 0xD, 0x0,  0x0, 0x4,
               0x1, 0x2, 0x3, 0x4, 0xCA, 0xFE};
   EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(
-      expected,
-      ::testing::ContainerEq(
-          U2fApduCommand::CreateFromMessage(expected)->GetEncodedCommand()));
+  EXPECT_THAT(expected,
+              ::testing::ContainerEq(
+                  U2fApduCommand::CreateFromMessageForTesting(expected)
+                      ->GetEncodedCommand()));
 
   // Data exists, no response expected
   cmd->set_response_length(0);
   expected = {0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x4, 0x1, 0x2, 0x3, 0x4};
   EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(
-      expected,
-      ::testing::ContainerEq(
-          U2fApduCommand::CreateFromMessage(expected)->GetEncodedCommand()));
+  EXPECT_THAT(expected,
+              ::testing::ContainerEq(
+                  U2fApduCommand::CreateFromMessageForTesting(expected)
+                      ->GetEncodedCommand()));
 }
 
 TEST_F(U2fApduTest, TestSerializeEdgeCases) {
@@ -169,105 +169,19 @@ TEST_F(U2fApduTest, TestSerializeEdgeCases) {
   cmd->set_response_length(U2fApduCommand::kApduMaxResponseLength);
   std::vector<uint8_t> expected = {0xA, 0xB, 0xC, 0xD, 0x0, 0x0, 0x0};
   EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(
-      expected,
-      ::testing::ContainerEq(
-          U2fApduCommand::CreateFromMessage(expected)->GetEncodedCommand()));
+  EXPECT_THAT(expected,
+              ::testing::ContainerEq(
+                  U2fApduCommand::CreateFromMessageForTesting(expected)
+                      ->GetEncodedCommand()));
 
   // Maximum data size
   std::vector<uint8_t> oversized(U2fApduCommand::kApduMaxDataLength);
   cmd->set_data(oversized);
-  EXPECT_THAT(cmd->GetEncodedCommand(),
-              ::testing::ContainerEq(
-                  U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
-                      ->GetEncodedCommand()));
+  EXPECT_THAT(
+      cmd->GetEncodedCommand(),
+      ::testing::ContainerEq(
+          U2fApduCommand::CreateFromMessageForTesting(cmd->GetEncodedCommand())
+              ->GetEncodedCommand()));
 }
 
-TEST_F(U2fApduTest, TestCreateSign) {
-  std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
-  std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
-  std::vector<uint8_t> key_handle(U2fApduCommand::kMaxKeyHandleLength);
-
-  std::unique_ptr<U2fApduCommand> cmd =
-      U2fApduCommand::CreateSign(appid, challenge, key_handle);
-  ASSERT_NE(nullptr, cmd);
-  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
-                  ->GetEncodedCommand(),
-              ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  // Expect null result with incorrectly sized key handle
-  key_handle.push_back(0x0f);
-  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
-  EXPECT_EQ(nullptr, cmd);
-  key_handle.pop_back();
-  // Expect null result with incorrectly sized appid
-  appid.pop_back();
-  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
-  EXPECT_EQ(nullptr, cmd);
-  appid.push_back(0xff);
-  // Expect null result with incorrectly sized challenge
-  challenge.push_back(0x0);
-  cmd = U2fApduCommand::CreateSign(appid, challenge, key_handle);
-  EXPECT_EQ(nullptr, cmd);
-}
-
-TEST_F(U2fApduTest, TestCreateRegister) {
-  constexpr bool kNoIndividualAttestation = false;
-  constexpr bool kIndividualAttestation = true;
-  std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
-  std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
-  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateRegister(
-      appid, challenge, kNoIndividualAttestation);
-  ASSERT_NE(nullptr, cmd);
-  std::vector<uint8_t> encoded = cmd->GetEncodedCommand();
-  ASSERT_LE(2u, encoded.size());
-  // Individual attestation bit should be cleared.
-  EXPECT_EQ(0, encoded[2] & 0x80);
-  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
-                  ->GetEncodedCommand(),
-              ::testing::ContainerEq(encoded));
-
-  cmd =
-      U2fApduCommand::CreateRegister(appid, challenge, kIndividualAttestation);
-  ASSERT_NE(nullptr, cmd);
-  encoded = cmd->GetEncodedCommand();
-  ASSERT_LE(2u, encoded.size());
-  // Individual attestation bit should be set.
-  EXPECT_EQ(0x80, encoded[2] & 0x80);
-
-  // Expect null result with incorrectly sized appid
-  appid.push_back(0xff);
-  cmd = U2fApduCommand::CreateRegister(appid, challenge,
-                                       kNoIndividualAttestation);
-  EXPECT_EQ(nullptr, cmd);
-  appid.pop_back();
-  // Expect null result with incorrectly sized challenge
-  challenge.push_back(0xff);
-  cmd = U2fApduCommand::CreateRegister(appid, challenge,
-                                       kNoIndividualAttestation);
-  EXPECT_EQ(nullptr, cmd);
-}
-
-TEST_F(U2fApduTest, TestCreateVersion) {
-  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateVersion();
-  std::vector<uint8_t> expected = {
-      0x0, U2fApduCommand::kInsU2fVersion, 0x0, 0x0, 0x0, 0x0, 0x0};
-
-  EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
-                  ->GetEncodedCommand(),
-              ::testing::ContainerEq(cmd->GetEncodedCommand()));
-}
-
-TEST_F(U2fApduTest, TestCreateLegacyVersion) {
-  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateLegacyVersion();
-  // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
-  // format
-  std::vector<uint8_t> expected = {
-      0x0, U2fApduCommand::kInsU2fVersion, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-
-  EXPECT_THAT(expected, ::testing::ContainerEq(cmd->GetEncodedCommand()));
-  EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
-                  ->GetEncodedCommand(),
-              ::testing::ContainerEq(cmd->GetEncodedCommand()));
-}
 }  // namespace device

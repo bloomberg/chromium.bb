@@ -13,6 +13,7 @@
 #include "device/fido/attestation_object.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/ctap_constants.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/fido_attestation_statement.h"
@@ -324,7 +325,12 @@ class U2fRegisterTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
+  std::vector<uint8_t> application_parameter_{std::begin(kAppIdDigest),
+                                              std::end(kAppIdDigest)};
+  std::vector<uint8_t> challenge_parameter_{std::begin(kChallengeDigest),
+                                            std::end(kChallengeDigest)};
+  std::vector<std::vector<uint8_t>> key_handles_;
+  base::flat_set<U2fTransportProtocol> protocols_;
   test::ScopedFakeU2fDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeU2fDiscovery* discovery_;
   TestRegisterCallback register_callback_receiver_;
@@ -355,28 +361,67 @@ TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
       0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
   };
 
-  U2fRegister register_request(
-      nullptr /* connector */, {} /* transports */,
-      std::vector<std::vector<uint8_t>>() /* registered_keys */,
-      std::vector<uint8_t>(std::begin(kChallengeDigest),
-                           std::end(kChallengeDigest)),
-      std::vector<uint8_t>(std::begin(kAppIdDigest), std::end(kAppIdDigest)),
-      kNoIndividualAttestation, register_callback_receiver().callback());
+  U2fRegister register_request(nullptr /* connector */, protocols_,
+                               key_handles_, challenge_parameter_,
+                               application_parameter_, kNoIndividualAttestation,
+                               register_callback_receiver().callback());
 
   const auto register_command_without_individual_attestation =
       register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
 
   ASSERT_TRUE(register_command_without_individual_attestation);
   EXPECT_THAT(
-      register_command_without_individual_attestation->GetEncodedCommand(),
+      *register_command_without_individual_attestation,
       ::testing::ElementsAreArray(kRegisterApduCommandWithoutAttestation));
 
   const auto register_command_with_individual_attestation =
       register_request.GetU2fRegisterApduCommand(kIndividualAttestation);
-
   ASSERT_TRUE(register_command_with_individual_attestation);
-  EXPECT_THAT(register_command_with_individual_attestation->GetEncodedCommand(),
+  EXPECT_THAT(*register_command_with_individual_attestation,
               ::testing::ElementsAreArray(kRegisterApduCommandWithAttestation));
+}
+
+TEST_F(U2fRegisterTest, TestCreateRegisterWithIncorrectParameters) {
+  std::vector<uint8_t> application_parameter(kU2fParameterLength, 0x01);
+  std::vector<uint8_t> challenge_parameter(kU2fParameterLength, 0xff);
+
+  U2fRegister register_request(nullptr, protocols_, key_handles_,
+                               challenge_parameter, application_parameter,
+                               kNoIndividualAttestation,
+                               register_callback_receiver().callback());
+  const auto register_without_individual_attestation =
+      register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
+
+  ASSERT_TRUE(register_without_individual_attestation);
+  ASSERT_LE(3u, register_without_individual_attestation->size());
+  // Individual attestation bit should be cleared.
+  EXPECT_EQ(0, (*register_without_individual_attestation)[2] & 0x80);
+
+  const auto register_request_with_individual_attestation =
+      register_request.GetU2fRegisterApduCommand(kIndividualAttestation);
+  ASSERT_TRUE(register_request_with_individual_attestation);
+  ASSERT_LE(3u, register_request_with_individual_attestation->size());
+  // Individual attestation bit should be set.
+  EXPECT_EQ(0x80, (*register_request_with_individual_attestation)[2] & 0x80);
+
+  // Expect null result with incorrectly sized application_parameter.
+  application_parameter.push_back(0xff);
+  auto incorrect_register_cmd =
+      U2fRegister(nullptr, protocols_, key_handles_, challenge_parameter,
+                  application_parameter, kNoIndividualAttestation,
+                  register_callback_receiver().callback())
+          .GetU2fRegisterApduCommand(kNoIndividualAttestation);
+  EXPECT_FALSE(incorrect_register_cmd);
+  application_parameter.pop_back();
+
+  // Expect null result with incorrectly sized challenge.
+  challenge_parameter.push_back(0xff);
+  incorrect_register_cmd =
+      U2fRegister(nullptr, protocols_, key_handles_, challenge_parameter,
+                  application_parameter, kNoIndividualAttestation,
+                  register_callback_receiver().callback())
+          .GetU2fRegisterApduCommand(kNoIndividualAttestation);
+  EXPECT_FALSE(incorrect_register_cmd);
 }
 
 TEST_F(U2fRegisterTest, TestRegisterSuccess) {
@@ -763,9 +808,7 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
         nullptr /* connector */,
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}) /* transports */,
-        std::vector<std::vector<uint8_t>>() /* registration_keys */,
-        std::vector<uint8_t>(32) /* challenge_digest */,
-        std::vector<uint8_t>(32) /* application_parameter */,
+        key_handles_, challenge_parameter_, application_parameter_,
         individual_attestation, cb.callback());
     request->Start();
     discovery()->WaitForCallToStartAndSimulateSuccess();

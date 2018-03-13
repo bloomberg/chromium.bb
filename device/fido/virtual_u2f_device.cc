@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "crypto/sha2.h"
+#include "device/fido/ctap_constants.h"
 #include "device/fido/u2f_apdu_command.h"
 
 namespace device {
@@ -128,17 +130,17 @@ void VirtualU2fDevice::AddRegistration(
 void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
                                       DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
-  auto parsed_command = U2fApduCommand::CreateFromMessage(command);
-  switch (parsed_command->ins_) {
-    case U2fApduCommand::kInsU2fVersion:
+  auto parsed_command = U2fApduCommand::CreateFromMessageForTesting(command);
+  switch (parsed_command->ins()) {
+    case base::strict_cast<uint8_t>(U2fApduInstruction::kVersion):
       break;
-    case U2fApduCommand::kInsU2fEnroll:
-      DoRegister(parsed_command->ins_, parsed_command->p1_, parsed_command->p2_,
-                 parsed_command->data_, std::move(cb));
+    case base::strict_cast<uint8_t>(U2fApduInstruction::kRegister):
+      DoRegister(parsed_command->ins(), parsed_command->p1(),
+                 parsed_command->p2(), parsed_command->data(), std::move(cb));
       break;
-    case U2fApduCommand::kInsU2fSign:
-      DoSign(parsed_command->ins_, parsed_command->p1_, parsed_command->p2_,
-             parsed_command->data_, std::move(cb));
+    case base::strict_cast<uint8_t>(U2fApduInstruction::kSign):
+      DoSign(parsed_command->ins(), parsed_command->p1(), parsed_command->p2(),
+             parsed_command->data(), std::move(cb));
       break;
     default:
       std::move(cb).Run(true,
@@ -230,9 +232,8 @@ void VirtualU2fDevice::DoSign(uint8_t ins,
                               uint8_t p2,
                               base::span<const uint8_t> data,
                               DeviceCallback cb) {
-  if (!(p1 == U2fApduCommand::kP1CheckOnly ||
-        p1 == U2fApduCommand::kP1TupRequiredConsumed ||
-        p1 == U2fApduCommand::kP1IndividualAttestation) ||
+  if (!(p1 == kP1CheckOnly || p1 == kP1TupRequiredConsumed ||
+        p1 == kP1IndividualAttestation) ||
       p2 != 0) {
     std::move(cb).Run(true, std::make_unique<U2fApduResponse>(
                                 std::vector<uint8_t>(),

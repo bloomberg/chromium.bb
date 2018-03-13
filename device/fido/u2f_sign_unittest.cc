@@ -145,12 +145,21 @@ class U2fSignTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::vector<uint8_t> application_parameter_{std::begin(kAppId),
+                                              std::end(kAppId)};
+  std::vector<uint8_t> challenge_parameter_{std::begin(kChallengeDigest),
+                                            std::end(kChallengeDigest)};
   test::ScopedFakeU2fDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeU2fDiscovery* discovery_;
   TestSignCallback sign_callback_receiver_;
+  std::vector<std::vector<uint8_t>> key_handles_;
+  base::flat_set<U2fTransportProtocol> protocols_;
 };
 
 TEST_F(U2fSignTest, TestCreateSignApduCommand) {
+  key_handles_.push_back(
+      std::vector<uint8_t>(std::begin(kKeyHandle), std::end(kKeyHandle)));
+
   constexpr uint8_t kSignApduEncoded[] = {
       // clang-format off
       0x00, 0x02, 0x03, 0x00,  // CLA, INS, P1, P2 APDU instruction parameters
@@ -172,6 +181,14 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
       0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01
       // clang-format on
   };
+
+  U2fSign u2f_sign(nullptr, protocols_, key_handles_, challenge_parameter_,
+                   application_parameter_, base::nullopt,
+                   sign_callback_receiver_.callback());
+  const auto encoded_sign =
+      u2f_sign.GetU2fSignApduCommand(application_parameter_, key_handles_[0]);
+  ASSERT_TRUE(encoded_sign);
+  EXPECT_THAT(*encoded_sign, ::testing::ElementsAreArray(kSignApduEncoded));
 
   constexpr uint8_t kSignApduEncodedCheckOnly[] = {
       // clang-format off
@@ -195,24 +212,10 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
       // clang-format on
   };
 
-  const std::vector<uint8_t> key_handle(std::begin(kKeyHandle),
-                                        std::end(kKeyHandle));
-  U2fSign u2f_sign(nullptr /* connector */, {} /* transports */,
-                   {key_handle} /* registered_keys */,
-                   std::vector<uint8_t>(std::begin(kChallengeDigest),
-                                        std::end(kChallengeDigest)),
-                   std::vector<uint8_t>(std::begin(kAppId), std::end(kAppId)),
-                   base::nullopt, sign_callback_receiver().callback());
-
-  const auto encoded_sign = u2f_sign.GetU2fSignApduCommand(key_handle);
-  ASSERT_TRUE(encoded_sign);
-  EXPECT_THAT(encoded_sign->GetEncodedCommand(),
-              ::testing::ElementsAreArray(kSignApduEncoded));
-
-  const auto encoded_sign_check_only =
-      u2f_sign.GetU2fSignApduCommand(key_handle, true);
+  const auto encoded_sign_check_only = u2f_sign.GetU2fSignApduCommand(
+      application_parameter_, key_handles_[0], true);
   ASSERT_TRUE(encoded_sign_check_only);
-  EXPECT_THAT(encoded_sign_check_only->GetEncodedCommand(),
+  EXPECT_THAT(*encoded_sign_check_only,
               ::testing::ElementsAreArray(kSignApduEncodedCheckOnly));
 }
 
@@ -295,11 +298,11 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
   sign_callback_receiver().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
-  // Correct key was sent so a sign response is expected
+  // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
             sign_callback_receiver().value()->signature());
 
-  // Verify that we get the key handle used for signing
+  // Verify that we get the key handle used for signing.
   EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
 }
 
@@ -521,7 +524,6 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
       std::vector<std::vector<uint8_t>>({signing_key_handle}),
       std::vector<uint8_t>(32), primary_app_param, alt_app_param,
       sign_callback_receiver_.callback());
-
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
