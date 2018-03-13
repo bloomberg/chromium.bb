@@ -287,6 +287,11 @@ void ArcBridgeHostImpl::OnVolumeMounterInstanceReady(
                   std::move(volume_mounter_ptr));
 }
 
+void ArcBridgeHostImpl::OnWakeLockInstanceReady(
+    mojom::WakeLockInstancePtr wakelock_ptr) {
+  OnInstanceReady(arc_bridge_service_->wake_lock(), std::move(wakelock_ptr));
+}
+
 void ArcBridgeHostImpl::OnWallpaperInstanceReady(
     mojom::WallpaperInstancePtr wallpaper_ptr) {
   OnInstanceReady(arc_bridge_service_->wallpaper(), std::move(wallpaper_ptr));

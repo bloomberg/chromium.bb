@@ -59,6 +59,7 @@
 #include "components/arc/timer/arc_timer_bridge.h"
 #include "components/arc/usb/usb_host_bridge.h"
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
+#include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
@@ -176,6 +177,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcVoiceInteractionArcHomeService::GetForBrowserContext(profile);
   ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile);
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
+  ArcWakeLockBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);
   GpuArcVideoServiceHost::GetForBrowserContext(profile);
 

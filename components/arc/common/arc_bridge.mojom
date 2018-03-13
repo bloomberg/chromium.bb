@@ -42,11 +42,12 @@ import "components/arc/common/video.mojom";
 import "components/arc/common/voice_interaction_arc_home.mojom";
 import "components/arc/common/voice_interaction_framework.mojom";
 import "components/arc/common/volume_mounter.mojom";
+import "components/arc/common/wake_lock.mojom";
 import "components/arc/common/wallpaper.mojom";
 
-// Next MinVersion: 37
+// Next MinVersion: 38
 // Deprecated method IDs: 101, 105
-// Next method ID: 142
+// Next method ID: 143
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -175,6 +176,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the VolumeMounter interface is ready.
   [MinVersion=25] OnVolumeMounterInstanceReady@131(VolumeMounterInstance instance_ptr);
+
+  // Notifies Chrome that the WakeLockInstance interface is ready.
+  [MinVersion=37] OnWakeLockInstanceReady@142(WakeLockInstance instance_ptr);
 
   // Notifies Chrome that the WallpaperInstance interface is ready.
   [MinVersion=18] OnWallpaperInstanceReady@124(WallpaperInstance instance_ptr);

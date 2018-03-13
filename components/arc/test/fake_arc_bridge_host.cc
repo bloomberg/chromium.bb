@@ -119,6 +119,9 @@ void FakeArcBridgeHost::OnVoiceInteractionFrameworkInstanceReady(
 void FakeArcBridgeHost::OnVolumeMounterInstanceReady(
     mojom::VolumeMounterInstancePtr volume_mounter_ptr) {}
 
+void FakeArcBridgeHost::OnWakeLockInstanceReady(
+    mojom::WakeLockInstancePtr wakelock_ptr) {}
+
 void FakeArcBridgeHost::OnWallpaperInstanceReady(
     mojom::WallpaperInstancePtr wallpaper_ptr) {}
 
