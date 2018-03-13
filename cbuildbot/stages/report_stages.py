@@ -686,7 +686,7 @@ class ReportStage(generic_stages.BuilderStage,
                                 archive_path, uploaded)
     commands.UploadArchivedFile(
         archive_path, [archive.upload_url], uploaded_json,
-        debug=self._run.debug, acl=self.acl)
+        debug=self._run.debug, update_list=True, acl=self.acl)
 
     if builder_run.config.internal:
       # Internal builds simply link to pantheon directories, which require
@@ -774,7 +774,7 @@ class ReportStage(generic_stages.BuilderStage,
     commands.GenerateHtmlTimeline(timeline, rows, title=title)
     commands.UploadArchivedFile(
         archive_path, [archive.upload_url], os.path.basename(timeline),
-        debug=self._run.debug, acl=self.acl)
+        debug=self._run.debug, update_list=True, acl=self.acl)
     return os.path.join(archive.download_url_file, timeline_file)
 
   def _UploadSlavesTimeline(self, builder_run, build_id, db):
@@ -823,7 +823,7 @@ class ReportStage(generic_stages.BuilderStage,
     commands.GenerateHtmlTimeline(timeline, rows, title=title)
     commands.UploadArchivedFile(
         archive_path, [archive.upload_url], os.path.basename(timeline),
-        debug=self._run.debug, acl=self.acl)
+        debug=self._run.debug, update_list=True, acl=self.acl)
     return os.path.join(archive.download_url_file, timeline_file)
 
   def GetReportMetadata(self, config=None, stage=None, final_status=None,

@@ -324,9 +324,9 @@ class ReportStageTest(AbstractReportStageTestCase):
     calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, 'timeline-stages.html',
-                        debug=False, acl=mock.ANY)]
+                        debug=False, update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, 'timeline-slaves.html',
-                        debug=False, acl=mock.ANY)]
+                        debug=False, update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, filename, False,
                         acl=mock.ANY) for filename in filenames]
 
@@ -355,7 +355,7 @@ class ReportStageTest(AbstractReportStageTestCase):
     calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, 'timeline-stages.html',
-                        debug=False, acl=mock.ANY)]
+                        debug=False, update_list=True, acl=mock.ANY)]
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
   def testAlertEmail(self):
