@@ -177,7 +177,11 @@ class LayerTreeHostImplTest : public testing::Test,
     animation_task_ = task;
     requested_animation_delay_ = delay;
   }
-  void DidActivateSyncTree() override {}
+  void DidActivateSyncTree() override {
+    // Make sure the active tree always has a valid LocalSurfaceId.
+    host_impl_->active_tree()->set_local_surface_id(
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+  }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {
@@ -237,6 +241,8 @@ class LayerTreeHostImplTest : public testing::Test,
     bool init = host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+    host_impl_->active_tree()->set_local_surface_id(
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
         BEGINFRAME_FROM_HERE, 0, 1,
@@ -3496,6 +3502,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
+    host_impl_->active_tree()->set_local_surface_id(
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
     DrawFrame();
 
     // SetScrollElementId will initialize the scrollbar which will cause it to
@@ -8796,7 +8804,10 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     VerifyLayerIsLargerThanViewport(last_on_draw_render_passes_);
   }
 
-  void DidActivateSyncTree() override { did_activate_pending_tree_ = true; }
+  void DidActivateSyncTree() override {
+    LayerTreeHostImplTest::DidActivateSyncTree();
+    did_activate_pending_tree_ = true;
+  }
 
   void set_gutter_quad_material(viz::DrawQuad::Material material) {
     gutter_quad_material_ = material;
@@ -8979,6 +8990,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   root->test_properties()->AddChild(std::move(child));
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
+  layer_tree_host_impl->active_tree()->set_local_surface_id(
+      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
 
   TestFrameData frame;
 

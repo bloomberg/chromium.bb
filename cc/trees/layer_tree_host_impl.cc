@@ -1962,8 +1962,14 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   compositor_frame.render_pass_list = std::move(frame->render_passes);
   // TODO(fsamuel): Once all clients get their viz::LocalSurfaceId from their
   // parent, the viz::LocalSurfaceId should hang off CompositorFrameMetadata.
-  if (settings_.enable_surface_synchronization &&
-      active_tree()->local_surface_id().is_valid()) {
+  if (settings_.enable_surface_synchronization) {
+    // If surface synchronization is on, we should always have a valid
+    // LocalSurfaceId in LayerTreeImpl unless we don't have a scheduler because
+    // without a scheduler commits are not deferred and LayerTrees without valid
+    // LocalSurfaceId might slip through, but single-thread-without-scheduler
+    // mode is only used in tests so it doesn't matter.
+    CHECK(!settings_.single_thread_proxy_scheduler ||
+          active_tree()->local_surface_id().is_valid());
     layer_tree_frame_sink_->SetLocalSurfaceId(
         active_tree()->local_surface_id());
     last_draw_local_surface_id_ = active_tree()->local_surface_id();
