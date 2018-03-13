@@ -231,7 +231,13 @@ public class ShortcutHelper {
                                             .setIcon(Icon.createWithBitmap(icon))
                                             .setIntent(shortcutIntent)
                                             .build();
-        sShortcutManager.requestPinShortcut(shortcutInfo, null);
+        try {
+            sShortcutManager.requestPinShortcut(shortcutInfo, null);
+        } catch (IllegalStateException e) {
+            Log.d(TAG,
+                    "Could not create pinned shortcut: device is locked, or "
+                            + "activity is backgrounded.");
+        }
     }
 
     /**
