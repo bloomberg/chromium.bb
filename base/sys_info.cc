@@ -44,6 +44,15 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
   return AmountOfAvailablePhysicalMemoryImpl();
 }
 
+bool SysInfo::IsLowEndDevice() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLowEndDeviceMode)) {
+    return true;
+  }
+
+  return IsLowEndDeviceImpl();
+}
+
 #if !defined(OS_ANDROID)
 
 bool DetectLowEndDevice() {
@@ -62,7 +71,7 @@ static LazyInstance<
   g_lazy_low_end_device = LAZY_INSTANCE_INITIALIZER;
 
 // static
-bool SysInfo::IsLowEndDevice() {
+bool SysInfo::IsLowEndDeviceImpl() {
   return g_lazy_low_end_device.Get().value();
 }
 #endif
