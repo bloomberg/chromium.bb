@@ -1,0 +1,20 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="margin_control.html">
+<link rel="import" href="settings_behavior.html">
+<link rel="import" href="../data/coordinate2d.html">
+<link rel="import" href="../data/margins.html">
+<link rel="import" href="../data/size.html">
+
+<dom-module id="print-preview-margin-control-container">
+  <template>
+    <template is="dom-repeat" items="[[marginSides_]]">
+      <print-preview-margin-control side="[[item]]" invisible="[[hidden_]]"
+          translate-transform="[[translateTransform_]]"
+          clip-size="[[clipSize_]]" scale-transform="[[scaleTransform_]]"
+          page-size="[[pageSize]]">
+      </print-preview-margin-control>
+    </template>
+  </template>
+  <script src="margin_control_container.js"></script>
+</dom-module>

@@ -70,6 +70,13 @@ Polymer({
       notify: true,
       value: PreviewAreaState_.LOADING,
     },
+
+    /** @private {boolean} */
+    previewLoaded_: {
+      type: Boolean,
+      notify: true,
+      computed: 'computePreviewLoaded_(previewState_)',
+    },
   },
 
   observers: [
@@ -119,9 +126,17 @@ Polymer({
     }
   },
 
+  /**
+   * @return {boolean} Whether the preview is loaded.
+   * @private
+   */
+  computePreviewLoaded_: function() {
+    return this.previewState_ == PreviewAreaState_.DISPLAY_PREVIEW;
+  },
+
   /** @return {boolean} Whether the preview is loaded. */
   previewLoaded: function() {
-    return this.previewState_ == PreviewAreaState_.DISPLAY_PREVIEW;
+    return this.previewLoaded_;
   },
 
   /** @private */
@@ -318,6 +333,27 @@ Polymer({
   },
 
   /**
+   * Called when the preview plugin's visual state has changed. This is a
+   * consequence of scrolling or zooming the plugin. Updates the custom
+   * margins component if shown.
+   * @param {number} pageX The horizontal offset for the page corner in pixels.
+   * @param {number} pageY The vertical offset for the page corner in pixels.
+   * @param {number} pageWidth The page width in pixels.
+   * @param {number} viewportWidth The viewport width in pixels.
+   * @param {number} viewportHeight The viewport height in pixels.
+   * @private
+   */
+  onPreviewVisualStateChange_: function(
+      pageX, pageY, pageWidth, viewportWidth, viewportHeight) {
+    this.$.marginControlContainer.updateTranslationTransform(
+        new print_preview.Coordinate2d(pageX, pageY));
+    this.$.marginControlContainer.updateScaleTransform(
+        pageWidth / this.documentInfo.pageSize.width);
+    this.$.marginControlContainer.updateClippingMask(
+        new print_preview.Size(viewportWidth, viewportHeight));
+  },
+
+  /**
    * Get the URL for the plugin.
    * @param {number} previewUid Unique identifier of preview.
    * @param {number} index Page index for plugin.
@@ -373,6 +409,8 @@ Polymer({
         .appendChild(/** @type {Node} */ (this.plugin_));
 
     this.plugin_.setLoadCallback(this.onPluginLoad_.bind(this));
+    this.plugin_.setViewportChangedCallback(
+        this.onPreviewVisualStateChange_.bind(this));
   },
 
   /**
