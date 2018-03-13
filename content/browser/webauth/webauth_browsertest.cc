@@ -16,6 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -193,6 +194,82 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
 
   AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
 
+  // Templates to be used with base::ReplaceStringPlaceholders. Can be
+  // modified to include up to 9 replacements.
+  base::StringPiece CREATE_PUBLIC_KEY_TEMPLATE =
+      "navigator.credentials.create({ publicKey: {"
+      "  challenge: new TextEncoder().encode('climb a mountain'),"
+      "  rp: { id: 'example.com', name: 'Acme' },"
+      "  user: { "
+      "    id: new TextEncoder().encode('1098237235409872'),"
+      "    name: 'avery.a.jones@example.com',"
+      "    displayName: 'Avery A. Jones', "
+      "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
+      "  pubKeyCredParams: [{ type: 'public-key', alg: '-7'}],"
+      "  timeout: 60000,"
+      "  excludeCredentials: [],"
+      "  authenticatorSelection : { "
+      "     requireResidentKey: $1, "
+      "     userVerification: '$2' }}"
+      "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+  base::StringPiece GET_PUBLIC_KEY_TEMPLATE =
+      "navigator.credentials.get({ publicKey: {"
+      "  challenge: new TextEncoder().encode('climb a mountain'),"
+      "  rp: 'example.com',"
+      "  timeout: 60000,"
+      "  userVerification: '$1',"
+      "  allowCredentials: [{ type: 'public-key',"
+      "     id: new TextEncoder().encode('allowedCredential'),"
+      "     transports: ['usb', 'nfc', 'ble']}] }"
+      "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+  void CreatePublicKeyCredentialWithUserVerificationAndExpectNotSupported(
+      content::WebContents* web_contents) {
+    std::string result;
+    std::vector<std::string> subst;
+    subst.push_back("false");
+    subst.push_back("required");
+    std::string script = base::ReplaceStringPlaceholders(
+        CREATE_PUBLIC_KEY_TEMPLATE, subst, nullptr);
+
+    ASSERT_TRUE(
+        content::ExecuteScriptAndExtractString(web_contents, script, &result));
+    ASSERT_EQ(
+        "NotSupportedError: Parameters for this operation are not supported.",
+        result);
+  }
+
+  void CreatePublicKeyCredentialWithResidentKeyRequiredAndExpectNotSupported(
+      content::WebContents* web_contents) {
+    std::string result;
+    std::vector<std::string> subst;
+    subst.push_back("true");
+    subst.push_back("preferred");
+    std::string script = base::ReplaceStringPlaceholders(
+        CREATE_PUBLIC_KEY_TEMPLATE, subst, nullptr);
+
+    ASSERT_TRUE(
+        content::ExecuteScriptAndExtractString(web_contents, script, &result));
+    ASSERT_EQ(
+        "NotSupportedError: Parameters for this operation are not supported.",
+        result);
+  }
+
+  void GetPublicKeyCredentialWithUserVerificationAndExpectNotSupported(
+      content::WebContents* web_contents) {
+    std::string result;
+    std::vector<std::string> subst;
+    subst.push_back("required");
+    std::string script = base::ReplaceStringPlaceholders(
+        GET_PUBLIC_KEY_TEMPLATE, subst, nullptr);
+    ASSERT_TRUE(
+        content::ExecuteScriptAndExtractString(web_contents, script, &result));
+    ASSERT_EQ(
+        "NotSupportedError: Parameters for this operation are not supported.",
+        result);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
@@ -249,6 +326,27 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialTwiceInARow) {
   authenticator()->GetAssertion(BuildBasicGetOptions(), callback_1.Get());
   authenticator()->GetAssertion(BuildBasicGetOptions(), callback_2.Get());
   authenticator().FlushForTesting();
+}
+
+// Tests that when navigator.credentials.create() is called with unsupported
+// authenticator selection criteria, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+                       CreatePublicKeyCredentialUnsupportedSelectionCriteria) {
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePublicKeyCredentialWithResidentKeyRequiredAndExpectNotSupported(
+          shell()->web_contents()));
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePublicKeyCredentialWithUserVerificationAndExpectNotSupported(
+          shell()->web_contents()));
+}
+
+// Tests that when navigator.credentials.get() is called with required
+// user verification, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+                       GetPublicKeyCredentialUserVerification) {
+  ASSERT_NO_FATAL_FAILURE(
+      GetPublicKeyCredentialWithUserVerificationAndExpectNotSupported(
+          shell()->web_contents()));
 }
 
 }  // namespace content

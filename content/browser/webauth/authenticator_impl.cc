@@ -144,7 +144,9 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   return false;
 }
 
-bool HasValidAlgorithm(
+// Check that at least one of the cryptographic parameters is supported.
+// Only ES256 is currently supported by U2F_V2 (CTAP 1.0).
+bool IsAlgorithmSupportedByU2fAuthenticators(
     const std::vector<webauth::mojom::PublicKeyCredentialParametersPtr>&
         parameters) {
   for (const auto& params : parameters) {
@@ -152,6 +154,21 @@ bool HasValidAlgorithm(
       return true;
   }
   return false;
+}
+
+// Verify that the request doesn't contain parameters that U2F authenticators
+// cannot fulfill.
+bool AreOptionsSupportedByU2fAuthenticators(
+    const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options) {
+  if (options->authenticator_selection) {
+    if (options->authenticator_selection->user_verification ==
+            webauth::mojom::UserVerificationRequirement::REQUIRED ||
+        options->authenticator_selection->require_resident_key)
+      return false;
+  }
+  if (!IsAlgorithmSupportedByU2fAuthenticators(options->public_key_parameters))
+    return false;
+  return true;
 }
 
 std::vector<std::vector<uint8_t>> FilterCredentialList(
@@ -361,9 +378,10 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  // Check that at least one of the cryptographic parameters is supported.
-  // Only ES256 is currently supported by U2F_V2.
-  if (!HasValidAlgorithm(options->public_key_parameters)) {
+  // Verify that the request doesn't contain parameters that U2F authenticators
+  // cannot fulfill.
+  // TODO(crbug.com/819256): Improve messages for "Not Supported" errors.
+  if (!AreOptionsSupportedByU2fAuthenticators(options)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
         webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
@@ -442,6 +460,15 @@ void AuthenticatorImpl::GetAssertion(
     InvokeCallbackAndCleanup(
         std::move(callback),
         webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+    return;
+  }
+
+  // To use U2F, the relying party must not require user verification.
+  if (options->user_verification ==
+      webauth::mojom::UserVerificationRequirement::REQUIRED) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
     return;
   }
 
