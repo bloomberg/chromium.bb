@@ -1605,6 +1605,7 @@ SUFFIXES = .1 .5 .7 .man
 	$(AM_V_GEN)$(SED) $(MAN_SUBSTS) < $< > $@
 
 EXTRA_DIST +=					\
+	doc/calibration-helper.bash		\
 	man/weston.man				\
 	man/weston-drm.man			\
 	man/weston-rdp.man			\
