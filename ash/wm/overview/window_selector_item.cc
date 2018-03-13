@@ -44,6 +44,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -279,6 +280,7 @@ WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
                     views::ImageButton::ALIGN_MIDDLE);
   const int length = IsNewOverviewUi() ? kHeaderHeightDp : kOldHeaderHeightDp;
   SetMinimumImageSize(gfx::Size(length, length));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 }
 
 WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() = default;
