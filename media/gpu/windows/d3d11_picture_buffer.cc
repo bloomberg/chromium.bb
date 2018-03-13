@@ -28,7 +28,7 @@ namespace media {
 namespace {
 
 static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
-  return stub && stub->decoder()->MakeCurrent();
+  return stub && stub->decoder_context()->MakeCurrent();
 }
 
 }  // namespace
@@ -100,8 +100,8 @@ bool D3D11PictureBuffer::GpuResources::Init(
   // TODO(liberato): see GpuVideoFrameFactory.
   // stub_->AddDestructionObserver(this);
 
-  auto decoder_helper = GLES2DecoderHelper::Create(stub->decoder());
-  gpu::gles2::ContextGroup* group = stub->decoder()->GetContextGroup();
+  auto decoder_helper = GLES2DecoderHelper::Create(stub->decoder_context());
+  gpu::gles2::ContextGroup* group = stub->decoder_context()->GetContextGroup();
   gpu::MailboxManager* mailbox_manager = group->mailbox_manager();
   gpu::gles2::TextureManager* texture_manager = group->texture_manager();
   RETURN_ON_FAILURE(!!texture_manager, "No texture manager", false);

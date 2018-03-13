@@ -33,11 +33,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   // VideoDecoder implementation:
   std::string GetDisplayName() const override;
-  void Initialize(const VideoDecoderConfig& config,
-                  bool low_delay,
-                  CdmContext* cdm_context,
-                  const InitCB& init_cb,
-                  const OutputCB& output_cb) override;
+  void Initialize(
+      const VideoDecoderConfig& config,
+      bool low_delay,
+      CdmContext* cdm_context,
+      const InitCB& init_cb,
+      const OutputCB& output_cb,
+      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
@@ -82,8 +84,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
   Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
 
-  std::unique_ptr<AcceleratedVideoDecoder> decoder_;
-  std::unique_ptr<D3D11H264Accelerator> h264_accelerator_;
+  std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
 
   GUID decoder_guid_;
 

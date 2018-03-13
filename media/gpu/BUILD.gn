@@ -16,7 +16,6 @@ buildflag_header("features") {
     "USE_VAAPI=$use_vaapi",
     "USE_V4L2_CODEC=$use_v4l2_codec",
     "USE_LIBV4L2=$use_v4lplugin",
-    "ENABLE_D3D11_VIDEO_DECODER=$enable_d3d11_video_decoder",
   ]
 }
 
@@ -249,6 +248,14 @@ component("gpu") {
 
   if (is_win) {
     sources += [
+      "windows/d3d11_h264_accelerator.cc",
+      "windows/d3d11_h264_accelerator.h",
+      "windows/d3d11_picture_buffer.cc",
+      "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_video_decoder.cc",
+      "windows/d3d11_video_decoder.h",
+      "windows/d3d11_video_decoder_impl.cc",
+      "windows/d3d11_video_decoder_impl.h",
       "windows/dxva_picture_buffer_win.cc",
       "windows/dxva_picture_buffer_win.h",
       "windows/dxva_video_decode_accelerator_win.cc",
@@ -284,18 +291,6 @@ component("gpu") {
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
     ]
-    if (enable_d3d11_video_decoder) {
-      sources += [
-        "windows/d3d11_h264_accelerator.cc",
-        "windows/d3d11_h264_accelerator.h",
-        "windows/d3d11_picture_buffer.cc",
-        "windows/d3d11_picture_buffer.h",
-        "windows/d3d11_video_decoder.cc",
-        "windows/d3d11_video_decoder.h",
-        "windows/d3d11_video_decoder_impl.cc",
-        "windows/d3d11_video_decoder_impl.h",
-      ]
-    }
     if (enable_library_cdms) {
       sources += [
         "windows/d3d11_cdm_proxy.cc",

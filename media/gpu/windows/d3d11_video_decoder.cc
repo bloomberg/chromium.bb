@@ -73,8 +73,8 @@ void D3D11VideoDecoder::Initialize(
     bool low_delay,
     CdmContext* cdm_context,
     const InitCB& init_cb,
-    const OutputCB& output_cb const
-        WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+    const OutputCB& output_cb,
+    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
   bool is_h264 = config.profile() >= H264PROFILE_MIN &&
                  config.profile() <= H264PROFILE_MAX;
   if (!is_h264) {
@@ -90,7 +90,9 @@ void D3D11VideoDecoder::Initialize(
       base::BindOnce(
           &VideoDecoder::Initialize, impl_weak_, config, low_delay, cdm_context,
           BindToCurrentThreadIfWeakPtr(weak_factory_.GetWeakPtr(), init_cb),
-          BindToCurrentThreadIfWeakPtr(weak_factory_.GetWeakPtr(), output_cb)));
+          BindToCurrentThreadIfWeakPtr(weak_factory_.GetWeakPtr(), output_cb),
+          BindToCurrentThreadIfWeakPtr(weak_factory_.GetWeakPtr(),
+                                       waiting_for_decryption_key_cb)));
 }
 
 void D3D11VideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
