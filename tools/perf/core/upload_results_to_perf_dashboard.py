@@ -137,7 +137,8 @@ def main(args):
   if dashboard_json:
     if options.output_json_file:
       with open(options.output_json_file, 'w') as output_file:
-        json.dump(dashboard_json, output_file)
+        json.dump(dashboard_json, output_file,
+            indent=4, separators=(',', ': '))
     if not results_dashboard.SendResults(
         dashboard_json,
         options.results_url,
