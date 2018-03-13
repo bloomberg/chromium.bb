@@ -28,15 +28,26 @@ class SmbTaskQueueTest : public testing::Test {
   ~SmbTaskQueueTest() override = default;
 
  protected:
-  // Creates and adds the task with |task_id| to task_queue_.
+  // Calls SmbTaskQueue::GetNextOperationId().
+  OperationId GetOperationId() { return task_queue_.GetNextOperationId(); }
+
+  // Creates and adds a task with |task_id| and a default operation
+  // id. |task_id| is used for testing to manually control when tasks finish.
   void CreateAndAddTask(uint32_t task_id) {
+    const OperationId operation_id = task_queue_.GetNextOperationId();
+    CreateAndAddTask(task_id, operation_id);
+  }
+
+  // Creates and adds a task with |task_id| for the corresponding
+  // |operation_id|.
+  void CreateAndAddTask(uint32_t task_id, OperationId operation_id) {
     base::OnceClosure reply =
         base::BindOnce(&SmbTaskQueueTest::OnReply, base::Unretained(this));
     SmbTask task =
         base::BindOnce(&SmbTaskQueueTest::Start, base::Unretained(this),
                        task_id, std::move(reply));
 
-    task_queue_.AddTask(std::move(task));
+    task_queue_.AddTask(std::move(task), operation_id);
   }
 
   // Checks whether the task |task_id| is pending.
@@ -54,6 +65,11 @@ class SmbTaskQueueTest : public testing::Test {
 
   // Returns the number of pending tasks.
   size_t PendingCount() const { return pending_.size(); }
+
+  // Calls AbortOperation with |operation_id| on task_queue_.
+  void Abort(OperationId operation_id) {
+    task_queue_.AbortOperation(operation_id);
+  }
 
  private:
   void OnReply() { task_queue_.TaskFinished(); }
@@ -129,6 +145,102 @@ TEST_F(SmbTaskQueueTest, TaskQueueDoesNotRunAdditionalTestsWhenFull) {
 
   // After completing a task, the fourth task should be able to run.
   EXPECT_TRUE(IsPending(task_id_4));
+}
+
+// AbortOperation removes all the tasks corresponding to an operation that has
+// not begin to run yet.
+TEST_F(SmbTaskQueueTest, AbortOperationRemovesAllTasksOfUnrunOperation) {
+  // Saturate the SmbTaskQueue with tasks.
+  const uint32_t filler_task_1 = 1;
+  const uint32_t filler_task_2 = 2;
+  const uint32_t filler_task_3 = 3;
+  CreateAndAddTask(filler_task_1);
+  CreateAndAddTask(filler_task_2);
+  CreateAndAddTask(filler_task_3);
+
+  // Create some tasks coresponding to a specific operation_id.
+  const OperationId operation_id = GetOperationId();
+  const uint32_t task_to_cancel_1 = 101;
+  const uint32_t task_to_cancel_2 = 102;
+  const uint32_t task_to_cancel_3 = 103;
+
+  CreateAndAddTask(task_to_cancel_1, operation_id);
+  CreateAndAddTask(task_to_cancel_2, operation_id);
+  CreateAndAddTask(task_to_cancel_3, operation_id);
+
+  // The filler tasks should be pending, the tasks to cancel should not be.
+  EXPECT_EQ(kTaskQueueCapacity, PendingCount());
+  EXPECT_TRUE(IsPending(filler_task_1));
+  EXPECT_TRUE(IsPending(filler_task_2));
+  EXPECT_TRUE(IsPending(filler_task_3));
+
+  EXPECT_FALSE(IsPending(task_to_cancel_1));
+  EXPECT_FALSE(IsPending(task_to_cancel_2));
+  EXPECT_FALSE(IsPending(task_to_cancel_3));
+
+  // Aborting operation_id and completeing the filler tasks should not run
+  // the task_to_cancel's.
+  Abort(operation_id);
+
+  EXPECT_EQ(kTaskQueueCapacity, PendingCount());
+
+  CompleteTask(filler_task_1);
+  EXPECT_EQ(2u, PendingCount());
+
+  CompleteTask(filler_task_2);
+  EXPECT_EQ(1u, PendingCount());
+
+  CompleteTask(filler_task_3);
+  EXPECT_EQ(0u, PendingCount());
+
+  EXPECT_FALSE(IsPending(task_to_cancel_1));
+  EXPECT_FALSE(IsPending(task_to_cancel_2));
+  EXPECT_FALSE(IsPending(task_to_cancel_3));
+}
+
+// AbortOperation aborts all the tasks correspoding to an operation that has
+// some running tasks.
+TEST_F(SmbTaskQueueTest, AbortOperationRemovesUnrunTasksOfRunningOperation) {
+  const uint32_t filler_task_1 = 1;
+  const uint32_t filler_task_2 = 2;
+  CreateAndAddTask(filler_task_1);
+  CreateAndAddTask(filler_task_2);
+
+  // Create some tasks coresponding to a specific operation_id.
+  const OperationId operation_id = GetOperationId();
+  const uint32_t task_to_cancel_1 = 101;
+  const uint32_t task_to_cancel_2 = 102;
+  const uint32_t task_to_cancel_3 = 103;
+
+  CreateAndAddTask(task_to_cancel_1, operation_id);
+  CreateAndAddTask(task_to_cancel_2, operation_id);
+  CreateAndAddTask(task_to_cancel_3, operation_id);
+
+  // The task queue should be running the maximum number of pending tasks,
+  // including the first task for operation_id. The remaining tasks for
+  // operation_id are not yet running.
+  EXPECT_EQ(kTaskQueueCapacity, PendingCount());
+  EXPECT_TRUE(IsPending(task_to_cancel_1));
+
+  EXPECT_FALSE(IsPending(task_to_cancel_2));
+  EXPECT_FALSE(IsPending(task_to_cancel_3));
+
+  // Aborting operation_id should not effect the status of task_to_cancel_1
+  // since it was already pending.
+  Abort(operation_id);
+
+  EXPECT_TRUE(IsPending(task_to_cancel_1));
+
+  // task_to_cancel_2 and task_to_cancel_3 should not run when the task queue
+  // has space capacity for them.
+  CompleteTask(filler_task_1);
+  CompleteTask(filler_task_2);
+  CompleteTask(task_to_cancel_1);
+
+  EXPECT_LT(PendingCount(), kTaskQueueCapacity);
+
+  EXPECT_FALSE(IsPending(task_to_cancel_2));
+  EXPECT_FALSE(IsPending(task_to_cancel_3));
 }
 
 }  // namespace smb_client

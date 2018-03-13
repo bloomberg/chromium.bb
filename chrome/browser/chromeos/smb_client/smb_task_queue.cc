@@ -13,8 +13,18 @@ namespace smb_client {
 SmbTaskQueue::SmbTaskQueue(size_t max_pending) : max_pending_(max_pending) {}
 SmbTaskQueue::~SmbTaskQueue() {}
 
-void SmbTaskQueue::AddTask(SmbTask task) {
-  operations_.push(std::move(task));
+OperationId SmbTaskQueue::GetNextOperationId() {
+  return next_operation_id++;
+}
+
+void SmbTaskQueue::AddTask(SmbTask task, OperationId operation_id) {
+  DCHECK(IsValidOperationId(operation_id));
+
+  if (!operation_map_.count(operation_id)) {
+    operations_.push(operation_id);
+  }
+  operation_map_[operation_id].push(std::move(task));
+
   RunTaskIfNeccessary();
 }
 
@@ -24,7 +34,14 @@ void SmbTaskQueue::TaskFinished() {
   RunTaskIfNeccessary();
 }
 
+void SmbTaskQueue::AbortOperation(OperationId operation_id) {
+  DCHECK(IsValidOperationId(operation_id));
+
+  operation_map_.erase(operation_id);
+}
+
 void SmbTaskQueue::RunTaskIfNeccessary() {
+  PruneOperationQueue();
   if (IsCapacityToRunTask() && IsTaskToRun()) {
     RunNextTask();
 
@@ -37,9 +54,19 @@ void SmbTaskQueue::RunTaskIfNeccessary() {
 
 SmbTask SmbTaskQueue::GetNextTask() {
   DCHECK(IsTaskToRun());
+  const OperationId operation_id = operations_.front();
 
-  SmbTask next_task = std::move(operations_.front());
-  operations_.pop();
+  DCHECK(operation_map_.count(operation_id));
+  auto& queue = operation_map_.find(operation_id)->second;
+
+  SmbTask next_task = std::move(queue.front());
+  queue.pop();
+
+  if (queue.empty()) {
+    operation_map_.erase(operation_id);
+    operations_.pop();
+  }
+
   return next_task;
 }
 
@@ -50,12 +77,27 @@ void SmbTaskQueue::RunNextTask() {
   GetNextTask().Run();
 }
 
+void SmbTaskQueue::PruneOperationQueue() {
+  while (!IsPruned()) {
+    operations_.pop();
+  }
+}
+
+bool SmbTaskQueue::IsPruned() const {
+  return (operations_.empty() || operation_map_.count(operations_.front()));
+}
+
 bool SmbTaskQueue::IsTaskToRun() const {
+  DCHECK(IsPruned());
   return !operations_.empty();
 }
 
 bool SmbTaskQueue::IsCapacityToRunTask() const {
   return num_pending_ < max_pending_;
+}
+
+bool SmbTaskQueue::IsValidOperationId(OperationId operation_id) const {
+  return operation_id < next_operation_id;
 }
 
 }  // namespace smb_client
