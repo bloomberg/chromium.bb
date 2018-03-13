@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>Inspectable pages</title>
+<meta name="referrer" content="no-referrer">
 <style>
 body {
   color: #222;
@@ -144,8 +145,7 @@ function appendItem(item_object) {
   title.className = 'title';
   title.textContent = item_object.description || item_object.title;
   if (item_object.faviconUrl) {
-    title.style.cssText = 'background-image:url(' +
-        item_object.faviconUrl + ')';
+    title.style.backgroundImage = 'url(' + item_object.faviconUrl + ')';
   }
   description.appendChild(title);
 
