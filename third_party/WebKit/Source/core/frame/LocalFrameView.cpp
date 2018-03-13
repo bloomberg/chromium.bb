@@ -862,16 +862,6 @@ void LocalFrameView::UpdateCountersAfterStyleChange() {
   layout_view->UpdateCounters();
 }
 
-bool LocalFrameView::UsesCompositedScrolling() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view)
-    return false;
-  if (frame_->GetSettings() &&
-      frame_->GetSettings()->GetPreferCompositingToLCDTextEnabled())
-    return layout_view->Compositor()->InCompositingMode();
-  return false;
-}
-
 bool LocalFrameView::ShouldScrollOnMainThread() const {
   if (GetMainThreadScrollingReasons())
     return true;

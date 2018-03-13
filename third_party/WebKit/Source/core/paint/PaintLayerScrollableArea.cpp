@@ -2140,14 +2140,6 @@ ScrollingCoordinator* PaintLayerScrollableArea::GetScrollingCoordinator()
   return page->GetScrollingCoordinator();
 }
 
-bool PaintLayerScrollableArea::UsesCompositedScrolling() const {
-  // See https://codereview.chromium.org/176633003/ for the tests that fail
-  // without this disabler.
-  DisableCompositingQueryAsserts disabler;
-  return Layer()->HasCompositedLayerMapping() &&
-         Layer()->GetCompositedLayerMapping()->ScrollingLayer();
-}
-
 bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   if (HasBeenDisposed())
     return true;

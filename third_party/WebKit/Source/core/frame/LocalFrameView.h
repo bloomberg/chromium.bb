@@ -481,7 +481,6 @@ class CORE_EXPORT LocalFrameView final
   IntRect ScrollableAreaBoundingBox() const override;
   CompositorElementId GetCompositorElementId() const override;
   bool ScrollAnimatorEnabled() const override;
-  bool UsesCompositedScrolling() const override;
   bool ShouldScrollOnMainThread() const override;
   PaintLayer* Layer() const override;
   GraphicsLayer* LayerForScrolling() const override;

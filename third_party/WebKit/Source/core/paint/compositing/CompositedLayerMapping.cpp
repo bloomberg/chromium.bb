@@ -2553,6 +2553,8 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       owning_layer_.GetScrollingCoordinator();
 
   auto* scrollable_area = owning_layer_.GetScrollableArea();
+  if (scrollable_area)
+    scrollable_area->SetUsesCompositedScrolling(needs_scrolling_layers);
 
   bool layer_changed = false;
   if (needs_scrolling_layers) {

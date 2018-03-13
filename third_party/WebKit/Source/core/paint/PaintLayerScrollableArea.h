@@ -265,7 +265,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   GraphicsLayer* LayerForVerticalScrollbar() const override;
   GraphicsLayer* LayerForScrollCorner() const override;
 
-  bool UsesCompositedScrolling() const override;
   bool ShouldScrollOnMainThread() const override;
   bool ShouldUseIntegerScrollOffset() const override;
   bool IsActive() const override;
