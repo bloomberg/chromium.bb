@@ -6,7 +6,9 @@
 
 namespace zucchini {
 
-DisassemblerNoOp::DisassemblerNoOp() = default;
+// |num_equivalence_iterations_| = 1 since no pointers are present.
+DisassemblerNoOp::DisassemblerNoOp() : Disassembler(1) {}
+
 DisassemblerNoOp::~DisassemblerNoOp() = default;
 
 ExecutableType DisassemblerNoOp::GetExeType() const {

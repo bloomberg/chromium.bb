@@ -25,9 +25,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-#endif
-
 /******** Command ********/
 
 // Specifications for a Zucchini command.

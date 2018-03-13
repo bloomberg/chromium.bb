@@ -4,19 +4,11 @@
 
 #include "components/zucchini/zucchini_apply.h"
 
-#include <vector>
-
 #include "components/zucchini/image_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
 
-namespace {
-
-using OffsetVector = std::vector<offset_t>;
-
-}  // namespace
-
-// TODO(huangs): Add more tests.
+// TODO(huangs): Add tests.
 
 }  // namespace zucchini

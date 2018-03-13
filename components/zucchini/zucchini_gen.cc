@@ -33,7 +33,6 @@ namespace {
 // Parameters for patch generation.
 constexpr double kMinEquivalenceSimilarity = 12.0;
 constexpr double kMinLabelAffinity = 64.0;
-constexpr size_t kNumIterations = 2;
 
 }  // namespace
 
@@ -46,21 +45,21 @@ std::vector<offset_t> FindExtraTargets(const TargetPool& projected_old_targets,
   return extra_targets;
 }
 
+// Label matching (between "old" and "new") can guide EquivalenceMap
+// construction; but EquivalenceMap induces Label matching. This apparent "chick
+// and egg" problem is solved by alternating 2 steps |num_iterations| times:
+// - Associate targets based on previous EquivalenceMap. Note on the first
+//   iteration, EquivalenceMap is empty, resulting in a no-op.
+// - Construct refined EquivalenceMap based on new targets associations.
 EquivalenceMap CreateEquivalenceMap(const ImageIndex& old_image_index,
-                                    const ImageIndex& new_image_index) {
-  // Label matching (between "old" and "new") can guide EquivalenceMap
-  // construction; but EquivalenceMap induces Label matching. This apparent
-  // "chick and egg" problem is solved by multiple iterations alternating 2
-  // steps:
-  // - Association of targets based on previous EquivalenceMap. Note that the
-  //   EquivalenceMap is empty on first iteration, so this is a no-op.
-  // - Construction of refined EquivalenceMap based on new targets associations.
+                                    const ImageIndex& new_image_index,
+                                    int num_iterations) {
   size_t pool_count = old_image_index.PoolCount();
   // |target_affinities| is outside the loop to reduce allocation.
   std::vector<TargetsAffinity> target_affinities(pool_count);
 
   EquivalenceMap equivalence_map;
-  for (size_t i = 0; i < kNumIterations; ++i) {
+  for (int i = 0; i < num_iterations; ++i) {
     EncodedView old_view(old_image_index);
     EncodedView new_view(new_image_index);
 
@@ -259,7 +258,8 @@ bool GenerateExecutableElement(ExecutableType exe_type,
   DCHECK_EQ(old_image_index.PoolCount(), new_image_index.PoolCount());
 
   EquivalenceMap equivalences =
-      CreateEquivalenceMap(old_image_index, new_image_index);
+      CreateEquivalenceMap(old_image_index, new_image_index,
+                           new_disasm->num_equivalence_iterations());
   OffsetMapper offset_mapper(equivalences);
 
   ReferenceDeltaSink reference_delta_sink;

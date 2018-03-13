@@ -86,8 +86,9 @@ bool DisassemblerWin32<Traits>::QuickDetect(ConstBufferView image) {
   return ReadWin32Header<Traits>(image, &source);
 }
 
+// |num_equivalence_iterations_| = 2 for reloc -> abs32.
 template <class Traits>
-DisassemblerWin32<Traits>::DisassemblerWin32() = default;
+DisassemblerWin32<Traits>::DisassemblerWin32() : Disassembler(2) {}
 
 template <class Traits>
 DisassemblerWin32<Traits>::~DisassemblerWin32() = default;
@@ -309,9 +310,6 @@ bool DisassemblerWin32<Traits>::ParseAndStoreRelocBlocks() {
                                               &reloc_block_offsets_);
 }
 
-// TODO(huangs): Print warning if too few abs32 references are found.
-// Empirically, file size / # relocs is < 100, so take 200 as the
-// threshold for warning.
 template <class Traits>
 bool DisassemblerWin32<Traits>::ParseAndStoreAbs32() {
   if (has_parsed_abs32_)

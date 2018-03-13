@@ -8,13 +8,16 @@
 
 namespace zucchini {
 
+// |num_equivalence_iterations_| = 2 to cover common case for testing.
 TestDisassembler::TestDisassembler(const ReferenceTypeTraits& traits1,
                                    const std::vector<Reference>& refs1,
                                    const ReferenceTypeTraits& traits2,
                                    const std::vector<Reference>& refs2,
                                    const ReferenceTypeTraits& traits3,
                                    const std::vector<Reference>& refs3)
-    : traits_{traits1, traits2, traits3}, refs_{refs1, refs2, refs3} {}
+    : Disassembler(2),
+      traits_{traits1, traits2, traits3},
+      refs_{refs1, refs2, refs3} {}
 
 TestDisassembler::~TestDisassembler() = default;
 
