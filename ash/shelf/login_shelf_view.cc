@@ -209,6 +209,8 @@ void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   int next_id =
       views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
+  node_data->role = ax::mojom::Role::kToolbar;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }
 
 void LoginShelfView::ButtonPressed(views::Button* sender,
