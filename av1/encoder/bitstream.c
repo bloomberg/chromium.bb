@@ -3818,7 +3818,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_OBU_SIZING
   uint32_t obu_header_size = 0;
 #endif  // CONFIG_OBU_SIZING
-  uint8_t *tile_data_start = dst + total_size;
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     TileInfo tile_info;
     const int is_last_row = (tile_row == tile_rows - 1);
@@ -3861,7 +3860,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
             AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
             n_log2_tiles, cm->num_tg > 1);
         total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
-        tile_data_start += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
         new_tg = 0;
         tile_count = 0;
       }
@@ -3915,25 +3913,15 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       } else {
       // write current tile group size
 #if CONFIG_OBU_SIZING
-        uint32_t obu_payload_size = curr_tg_data_size - obu_header_size;
-        const uint32_t move_length = obu_payload_size;
-        // Adjust the tile group obu size by the amount saved in remux_tiles
-        // when using fewer bytes for tile sizes.
-        if (num_tg_hdrs == 1) {
-          const int num_tile_sizes = tile_cols * tile_rows - 1;
-          obu_payload_size -=
-              num_tile_sizes * (4 - choose_size_bytes(*max_tile_size, 0));
-        }
-
+        const uint32_t obu_payload_size = curr_tg_data_size - obu_header_size;
         const size_t length_field_size =
-            obu_memmove(obu_header_size, move_length, data);
+            obu_memmove(obu_header_size, obu_payload_size, data);
         if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
             AOM_CODEC_OK) {
           assert(0);
         }
         curr_tg_data_size += (int)length_field_size;
         total_size += (uint32_t)length_field_size;
-        tile_data_start += length_field_size;
 #else
         mem_put_le32(data, curr_tg_data_size);
 #endif  // CONFIG_OBU_SIZING
@@ -3954,19 +3942,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       total_size += tile_size;
     }
-  }
-
-  if (have_tiles && num_tg_hdrs == 1) {
-    int tile_size_bytes = 4, unused;
-    const uint32_t tile_data_offset = (uint32_t)(tile_data_start - dst);
-    const uint32_t tile_data_size = total_size - tile_data_offset;
-
-    total_size =
-        remux_tiles(cm, tile_data_start, tile_data_size, *max_tile_size,
-                    *max_tile_col_size, &tile_size_bytes, &unused);
-    total_size += tile_data_offset;
-    assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
-    aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
   }
   return (uint32_t)total_size;
 }
