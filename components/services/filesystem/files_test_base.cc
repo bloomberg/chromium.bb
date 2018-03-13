@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/files_test_base.h"
+#include "components/services/filesystem/files_test_base.h"
 
 #include <utility>
 
-#include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "components/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace filesystem {
 
-FilesTestBase::FilesTestBase()
-    : ServiceTest("filesystem_service_unittests") {
-}
+FilesTestBase::FilesTestBase() : ServiceTest("filesystem_service_unittests") {}
 
-FilesTestBase::~FilesTestBase() {
-}
+FilesTestBase::~FilesTestBase() {}
 
 void FilesTestBase::SetUp() {
   ServiceTest::SetUp();

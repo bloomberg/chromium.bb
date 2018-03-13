@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "components/filesystem/files_test_base.h"
+#include "components/services/filesystem/files_test_base.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 

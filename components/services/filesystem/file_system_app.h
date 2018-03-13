@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_FILE_SYSTEM_APP_H_
-#define COMPONENTS_FILESYSTEM_FILE_SYSTEM_APP_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_FILE_SYSTEM_APP_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_FILE_SYSTEM_APP_H_
 
 #include "base/macros.h"
-#include "components/filesystem/directory_impl.h"
-#include "components/filesystem/file_system_impl.h"
-#include "components/filesystem/lock_table.h"
-#include "components/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/directory_impl.h"
+#include "components/services/filesystem/file_system_impl.h"
+#include "components/services/filesystem/lock_table.h"
+#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -44,4 +44,4 @@ class FileSystemApp : public service_manager::Service {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_FILE_SYSTEM_APP_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_FILE_SYSTEM_APP_H_

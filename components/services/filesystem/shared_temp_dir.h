@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_SHARED_TEMP_DIR_H_
-#define COMPONENTS_FILESYSTEM_SHARED_TEMP_DIR_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_SHARED_TEMP_DIR_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_SHARED_TEMP_DIR_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -30,4 +30,4 @@ class SharedTempDir : public base::RefCounted<SharedTempDir> {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_SHARED_TEMP_DIR_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_SHARED_TEMP_DIR_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_UTIL_H_
-#define COMPONENTS_FILESYSTEM_UTIL_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_UTIL_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_UTIL_H_
 
 #include <stdint.h>
 
 #include <string>
 
 #include "base/files/file.h"
-#include "components/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 
 namespace filesystem {
 
@@ -48,4 +48,4 @@ base::File::Error ValidatePath(const std::string& raw_path,
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_UTIL_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_UTIL_H_

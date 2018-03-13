@@ -11,7 +11,7 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem/public/interfaces",
     "//mojo/common:common_custom_types",
   ]
 }

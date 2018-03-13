@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_FILE_IMPL_H_
-#define COMPONENTS_FILESYSTEM_FILE_IMPL_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_FILE_IMPL_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_FILE_IMPL_H_
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace base {
@@ -83,4 +83,4 @@ class FileImpl : public mojom::File {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_FILE_IMPL_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_FILE_IMPL_H_

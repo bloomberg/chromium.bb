@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/filesystem/file_system_app.h"
+#include "components/services/filesystem/file_system_app.h"
 
 #include <memory>
 
@@ -34,7 +34,7 @@ namespace {
 
 const char kUserDataDir[] = "user-data-dir";
 
-}  // namespace filesystem
+}  // namespace
 
 FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {
   registry_.AddInterface<mojom::FileSystem>(
@@ -61,7 +61,7 @@ void FileSystemApp::Create(mojom::FileSystemRequest request,
       std::move(request));
 }
 
-//static
+// static
 base::FilePath FileSystemApp::GetUserDataDir() {
   base::FilePath path;
 
@@ -77,9 +77,8 @@ base::FilePath FileSystemApp::GetUserDataDir() {
     CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path));
 #elif defined(OS_LINUX)
     std::unique_ptr<base::Environment> env(base::Environment::Create());
-    path = base::nix::GetXDGDirectory(env.get(),
-                                      base::nix::kXdgConfigHomeEnvVar,
-                                      base::nix::kDotConfigDir);
+    path = base::nix::GetXDGDirectory(
+        env.get(), base::nix::kXdgConfigHomeEnvVar, base::nix::kDotConfigDir);
 #else
     NOTIMPLEMENTED();
 #endif

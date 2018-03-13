@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FILESYSTEM_LOCK_TABLE_H_
-#define COMPONENTS_FILESYSTEM_LOCK_TABLE_H_
+#ifndef COMPONENTS_SERVICES_FILESYSTEM_LOCK_TABLE_H_
+#define COMPONENTS_SERVICES_FILESYSTEM_LOCK_TABLE_H_
 
 #include <set>
 
@@ -45,4 +45,4 @@ class LockTable : public base::RefCounted<LockTable> {
 
 }  // namespace filesystem
 
-#endif  // COMPONENTS_FILESYSTEM_LOCK_TABLE_H_
+#endif  // COMPONENTS_SERVICES_FILESYSTEM_LOCK_TABLE_H_

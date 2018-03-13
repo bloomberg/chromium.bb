@@ -20,7 +20,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//components/filesystem/public/interfaces",
+    "//components/services/filesystem/public/interfaces",
     "//components/unzip_service/public/interfaces",
     "//services/service_manager/public/cpp",
   ]

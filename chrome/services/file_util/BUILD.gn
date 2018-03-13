@@ -28,7 +28,7 @@ source_set("lib") {
       "zip_file_creator.h",
     ]
 
-    deps += [ "//components/filesystem/public/interfaces" ]
+    deps += [ "//components/services/filesystem/public/interfaces" ]
   }
 
   if (safe_browsing_mode == 1) {

@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "components/filesystem/lock_table.h"
+#include "components/services/filesystem/lock_table.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/file/public/mojom/file_system.mojom.h"
