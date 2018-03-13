@@ -8,16 +8,17 @@ namespace net {
 
 namespace {
 
-// TODO(rhalavati): Update annotation.
 constexpr NetworkTrafficAnnotationTag kDirectProxyTrafficAnnotation =
     DefineNetworkTrafficAnnotation("proxy_config_direct", R"(
     semantics {
       sender: "Proxy Config"
       description:
-        "This settings create a direct proxy, which practically connects "
-        "directly to the target website without any intervention."
+        "Direct connections are being used instead of a proxy. This is a place "
+        "holder annotation that would include details about where the "
+        "configuration, which can trigger fetching a PAC file, came from."
       trigger:
-        "Direct proxy is the default mode of connection."
+        "Connecting directly to destination sites instead of using a proxy is "
+        "the default behavior."
       data:
         "None."
       destination: WEBSITE
@@ -25,7 +26,8 @@ constexpr NetworkTrafficAnnotationTag kDirectProxyTrafficAnnotation =
     policy {
       cookies_allowed: NO
       setting:
-        "Selecting a proxy in settings will prevent use of direct proxy."
+        "This isn't a real network request. A proxy can be selected in "
+        "settings."
       policy_exception_justification:
         "Using either of 'ProxyMode', 'ProxyServer', or 'ProxyPacUrl' policies "
         "can set Chrome to use a specific proxy settings and avoid directly "

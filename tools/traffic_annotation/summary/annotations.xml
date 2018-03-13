@@ -178,8 +178,9 @@ Refer to README.md for content description and update process.
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
  <item id="profile_avatar" hash_code="51164680" type="0" content_hash_code="113550845" os_list="linux,windows" file_path="chrome/browser/profiles/profile_avatar_downloader.cc"/>
  <item id="profile_resetter_upload" hash_code="105330607" type="0" content_hash_code="129329171" os_list="linux,windows" file_path="chrome/browser/profile_resetter/reset_report_uploader.cc"/>
- <item id="proxy_config_direct" hash_code="119015679" type="0" content_hash_code="131944978" os_list="linux,windows" file_path="net/proxy_resolution/proxy_config_with_annotation.cc"/>
- <item id="proxy_config_settings" hash_code="136468456" type="0" content_hash_code="136747792" os_list="linux,windows" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc"/>
+ <item id="proxy_config_direct" hash_code="119015679" type="0" content_hash_code="119931568" os_list="linux,windows" file_path="net/proxy_resolution/proxy_config_with_annotation.cc"/>
+ <item id="proxy_config_headless" hash_code="133221587" type="0" content_hash_code="77459277" os_list="linux,windows" file_path="headless/lib/browser/headless_url_request_context_getter.cc"/>
+ <item id="proxy_config_settings" hash_code="136468456" type="0" content_hash_code="19527377" os_list="linux,windows" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" content_hash_code="31866133" os_list="linux,windows" file_path="net/proxy_resolution/pac_file_fetcher_impl.cc"/>
  <item id="puch_client_channel" hash_code="34459548" type="0" content_hash_code="92475475" os_list="linux,windows" file_path="components/invalidation/impl/push_client_channel.cc"/>
  <item id="quic_chromium_incoming_session" hash_code="87635401" type="0" content_hash_code="78573093" os_list="linux,windows" file_path="net/quic/chromium/quic_chromium_client_session.cc"/>
