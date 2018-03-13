@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -45,6 +47,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   UILabel* _statusLabel;
   UIButton* _actionButton;
   UIButton* _installDriveButton;
+  UIImageView* _installDriveIcon;
+  UILabel* _installDriveLabel;
   RadialProgressView* _progressView;
 
   NSString* _fileName;
@@ -107,6 +111,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.downloadControlsRow addSubview:self.progressView];
   [self.downloadControlsRow addSubview:self.actionButton];
   [self.installDriveControlsRow addSubview:self.installDriveButton];
+  [self.installDriveControlsRow addSubview:self.installDriveIcon];
+  [self.installDriveControlsRow addSubview:self.installDriveLabel];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
 
   NamedGuide* actionButtonGuide =
@@ -223,6 +229,29 @@ NSString* GetSizeString(long long size_in_bytes) {
     [installDriveButton.trailingAnchor
         constraintEqualToAnchor:closeButton.leadingAnchor
                        constant:-kElementMargin],
+  ]];
+
+  // install google drive icon constraints.
+  UIImageView* installDriveIcon = self.installDriveIcon;
+  [NSLayoutConstraint activateConstraints:@[
+    [installDriveIcon.centerYAnchor
+        constraintEqualToAnchor:installDriveRow.centerYAnchor],
+    [installDriveIcon.leadingAnchor
+        constraintEqualToAnchor:installDriveRow.layoutMarginsGuide
+                                    .leadingAnchor],
+  ]];
+
+  // install google drive label constraints.
+  UILabel* installDriveLabel = self.installDriveLabel;
+  [NSLayoutConstraint activateConstraints:@[
+    [installDriveLabel.centerYAnchor
+        constraintEqualToAnchor:installDriveRow.centerYAnchor],
+    [installDriveLabel.leadingAnchor
+        constraintEqualToAnchor:installDriveIcon.trailingAnchor
+                       constant:kElementMargin],
+    [installDriveLabel.trailingAnchor
+        constraintLessThanOrEqualToAnchor:installDriveButton.leadingAnchor
+                                 constant:-kElementMargin],
   ]];
 
   // constraint line which separates download controls and install drive rows.
@@ -399,6 +428,29 @@ NSString* GetSizeString(long long size_in_bytes) {
         forState:UIControlStateNormal];
   }
   return _installDriveButton;
+}
+
+- (UIImageView*)installDriveIcon {
+  if (!_installDriveIcon) {
+    _installDriveIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _installDriveIcon.translatesAutoresizingMaskIntoConstraints = NO;
+    _installDriveIcon.image = ios::GetChromeBrowserProvider()
+                                  ->GetBrandedImageProvider()
+                                  ->GetDownloadGoogleDriveImage();
+  }
+  return _installDriveIcon;
+}
+
+- (UILabel*)installDriveLabel {
+  if (!_installDriveLabel) {
+    _installDriveLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _installDriveLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _installDriveLabel.font = [MDCTypography subheadFont];
+    _installDriveLabel.text =
+        l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_GOOGLE_DRIVE);
+    [_installDriveLabel sizeToFit];
+  }
+  return _installDriveLabel;
 }
 
 - (RadialProgressView*)progressView {
