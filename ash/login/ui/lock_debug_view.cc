@@ -5,9 +5,11 @@
 #include "ash/login/ui/lock_debug_view.h"
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 
+#include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
@@ -17,6 +19,7 @@
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/shell.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/values_struct_traits.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -31,6 +34,8 @@ constexpr const char* kDebugUserNames[] = {
     "Angelina Johnson", "Marcus Cohen", "Chris Wallace",
     "Debbie Craig",     "Stella Wong",  "Stephanie Wade",
 };
+
+constexpr const char* kDebugDetachableBases[] = {"Base A", "Base B", "Base C"};
 
 constexpr const char kDebugOsVersion[] =
     "Chromium 64.0.3279.0 (Platform 10146.0.0 dev-channel peppy test)";
@@ -49,6 +54,21 @@ struct UserMetadata {
 
   views::View* view = nullptr;
 };
+
+std::string DetachableBasePairingStatusToString(
+    DetachableBasePairingStatus pairing_status) {
+  switch (pairing_status) {
+    case DetachableBasePairingStatus::kNone:
+      return "No device";
+    case DetachableBasePairingStatus::kAuthenticated:
+      return "Authenticated";
+    case DetachableBasePairingStatus::kNotAuthenticated:
+      return "Not authenticated";
+    case DetachableBasePairingStatus::kInvalidDevice:
+      return "Invalid device";
+  }
+  return "Unknown";
+}
 
 }  // namespace
 
@@ -109,6 +129,12 @@ class LockDebugView::DebugDataDispatcherTransformer
       user.enable_pin = false;
 
     debug_dispatcher_.NotifyUsers(users);
+  }
+
+  const AccountId& GetAccountIdForUserIndex(size_t user_index) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    UserMetadata* debug_user = &debug_users_[user_index];
+    return debug_user->account_id;
   }
 
   // Activates or deactivates PIN for the user at |user_index|.
@@ -257,19 +283,144 @@ class LockDebugView::DebugDataDispatcherTransformer
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
 
-LockDebugView::LockDebugView(
-    mojom::TrayActionState initial_note_action_state,
-    LoginDataDispatcher* data_dispatcher,
-    std::unique_ptr<LoginDetachableBaseModel> detachable_base_model)
+// In-memory wrapper around LoginDetachableBaseModel used by lock UI.
+// It provides, methods to override the detachable base pairing state seen by
+// the UI.
+class LockDebugView::DebugLoginDetachableBaseModel
+    : public LoginDetachableBaseModel {
+ public:
+  static constexpr int kNullBaseId = -1;
+
+  explicit DebugLoginDetachableBaseModel(LoginDataDispatcher* data_dispatcher)
+      : data_dispatcher_(data_dispatcher) {}
+  ~DebugLoginDetachableBaseModel() override = default;
+
+  bool debugging_pairing_state() const { return pairing_status_.has_value(); }
+
+  // Calculates the pairing status to which the model should be changed when
+  // button for cycling detachable base pairing statuses is clicked.
+  DetachableBasePairingStatus NextPairingStatus() const {
+    if (!pairing_status_.has_value())
+      return DetachableBasePairingStatus::kNone;
+
+    switch (*pairing_status_) {
+      case DetachableBasePairingStatus::kNone:
+        return DetachableBasePairingStatus::kAuthenticated;
+      case DetachableBasePairingStatus::kAuthenticated:
+        return DetachableBasePairingStatus::kNotAuthenticated;
+      case DetachableBasePairingStatus::kNotAuthenticated:
+        return DetachableBasePairingStatus::kInvalidDevice;
+      case DetachableBasePairingStatus::kInvalidDevice:
+        return DetachableBasePairingStatus::kNone;
+    }
+
+    return DetachableBasePairingStatus::kNone;
+  }
+
+  // Calculates the debugging detachable base ID that should become the paired
+  // base in the model when the button for cycling paired bases is clicked.
+  int NextBaseId() const {
+    return (base_id_ + 1) % arraysize(kDebugDetachableBases);
+  }
+
+  // Gets the descripting text for currently paired base, if any.
+  std::string BaseButtonText() const {
+    if (base_id_ < 0)
+      return "No base";
+    return kDebugDetachableBases[base_id_];
+  }
+
+  // Sets the model's pairing state - base pairing status, and the currently
+  // paired base ID. ID should be an index in |kDebugDetachableBases| array, and
+  // it should be set if pairing status is kAuthenticated. The base ID is
+  // ignored if pairing state is different than kAuthenticated.
+  void SetPairingState(DetachableBasePairingStatus pairing_status,
+                       int base_id) {
+    pairing_status_ = pairing_status;
+    if (pairing_status == DetachableBasePairingStatus::kAuthenticated) {
+      CHECK_GE(base_id, 0);
+      CHECK_LT(base_id, static_cast<int>(arraysize(kDebugDetachableBases)));
+      base_id_ = base_id;
+    } else {
+      base_id_ = kNullBaseId;
+    }
+
+    data_dispatcher_->SetDetachableBasePairingStatus(pairing_status);
+  }
+
+  // Marks the paired base (as seen by the model) as the user's last used base.
+  // No-op if the current pairing status is different than kAuthenticated.
+  void SetBaseLastUsedForUser(const AccountId& account_id) {
+    if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
+      return;
+    DCHECK_GE(base_id_, 0);
+
+    last_used_bases_[account_id] = base_id_;
+    data_dispatcher_->SetDetachableBasePairingStatus(*pairing_status_);
+  }
+
+  // Clears all in-memory pairing state.
+  void ClearDebugPairingState() {
+    pairing_status_ = base::nullopt;
+    base_id_ = kNullBaseId;
+    last_used_bases_.clear();
+
+    data_dispatcher_->SetDetachableBasePairingStatus(
+        DetachableBasePairingStatus::kNone);
+  }
+
+  // LoginDetachableBaseModel:
+  DetachableBasePairingStatus GetPairingStatus() override {
+    if (!pairing_status_.has_value())
+      return DetachableBasePairingStatus::kNone;
+    return *pairing_status_;
+  }
+  bool PairedBaseMatchesLastUsedByUser(
+      const mojom::UserInfo& user_info) override {
+    if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
+      return false;
+
+    if (last_used_bases_.count(user_info.account_id) == 0)
+      return true;
+    return last_used_bases_[user_info.account_id] == base_id_;
+  }
+  bool SetPairedBaseAsLastUsedByUser(
+      const mojom::UserInfo& user_info) override {
+    if (GetPairingStatus() != DetachableBasePairingStatus::kAuthenticated)
+      return false;
+
+    last_used_bases_[user_info.account_id] = base_id_;
+    return true;
+  }
+
+ private:
+  LoginDataDispatcher* data_dispatcher_;
+
+  // In-memory detachable base pairing state.
+  base::Optional<DetachableBasePairingStatus> pairing_status_;
+  int base_id_ = kNullBaseId;
+  // Maps user account to the last used detachable base ID (base ID being the
+  // base's index in kDebugDetachableBases array).
+  std::map<AccountId, int> last_used_bases_;
+
+  DISALLOW_COPY_AND_ASSIGN(DebugLoginDetachableBaseModel);
+};
+
+LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
+                             LoginDataDispatcher* data_dispatcher)
     : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
           data_dispatcher)) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
 
+  auto debug_detachable_base_model =
+      std::make_unique<DebugLoginDetachableBaseModel>(data_dispatcher);
+  debug_detachable_base_model_ = debug_detachable_base_model.get();
+
   lock_ = new LockContentsView(initial_note_action_state,
                                debug_data_dispatcher_->debug_dispatcher(),
-                               std::move(detachable_base_model));
+                               std::move(debug_detachable_base_model));
   AddChildView(lock_);
 
   debug_row_ = new NonAccessibleView();
@@ -295,6 +446,7 @@ LockDebugView::LockDebugView(
   toggle_auth_ = AddButton("Auth (allowed)");
 
   RebuildDebugUserColumn();
+  BuildDetachableBaseColumn();
 }
 
 LockDebugView::~LockDebugView() {
@@ -400,6 +552,51 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
+  if (sender == toggle_debug_detachable_base_) {
+    if (debug_detachable_base_model_->debugging_pairing_state()) {
+      debug_detachable_base_model_->ClearDebugPairingState();
+      // In authenticated state, per user column has a button to mark the
+      // current base as last used for the user - ut should get removed when the
+      // detachable base debugging gets disabled.
+      RebuildDebugUserColumn();
+    } else {
+      debug_detachable_base_model_->SetPairingState(
+          DetachableBasePairingStatus::kNone,
+          DebugLoginDetachableBaseModel::kNullBaseId);
+    }
+    UpdateDetachableBaseColumn();
+    Layout();
+    return;
+  }
+
+  if (sender == cycle_detachable_base_status_) {
+    debug_detachable_base_model_->SetPairingState(
+        debug_detachable_base_model_->NextPairingStatus(),
+        debug_detachable_base_model_->NextBaseId());
+    RebuildDebugUserColumn();
+    UpdateDetachableBaseColumn();
+    Layout();
+    return;
+  }
+
+  if (sender == cycle_detachable_base_id_) {
+    debug_detachable_base_model_->SetPairingState(
+        DetachableBasePairingStatus::kAuthenticated,
+        debug_detachable_base_model_->NextBaseId());
+    UpdateDetachableBaseColumn();
+    Layout();
+    return;
+  }
+
+  for (size_t i = 0u; i < per_user_action_column_use_detachable_base_.size();
+       ++i) {
+    if (per_user_action_column_use_detachable_base_[i] == sender) {
+      debug_detachable_base_model_->SetBaseLastUsedForUser(
+          debug_data_dispatcher_->GetAccountIdForUserIndex(i));
+      return;
+    }
+  }
+
   // Enable or disable PIN.
   for (size_t i = 0u; i < per_user_action_column_toggle_pin_.size(); ++i) {
     if (per_user_action_column_toggle_pin_[i] == sender)
@@ -418,6 +615,7 @@ void LockDebugView::RebuildDebugUserColumn() {
   per_user_action_column_->RemoveAllChildViews(true /*delete_children*/);
   per_user_action_column_toggle_pin_.clear();
   per_user_action_column_cycle_easy_unlock_state_.clear();
+  per_user_action_column_use_detachable_base_.clear();
 
   for (size_t i = 0u; i < num_users_; ++i) {
     auto* row = new NonAccessibleView();
@@ -435,8 +633,57 @@ void LockDebugView::RebuildDebugUserColumn() {
         toggle_click_auth);
     row->AddChildView(toggle_click_auth);
 
+    if (debug_detachable_base_model_->debugging_pairing_state() &&
+        debug_detachable_base_model_->GetPairingStatus() ==
+            DetachableBasePairingStatus::kAuthenticated) {
+      views::View* use_detachable_base = AddButton("Set base used", false);
+      per_user_action_column_use_detachable_base_.push_back(
+          use_detachable_base);
+      row->AddChildView(use_detachable_base);
+    }
+
     per_user_action_column_->AddChildView(row);
   }
+}
+
+void LockDebugView::BuildDetachableBaseColumn() {
+  detachable_base_column_ = new NonAccessibleView();
+  detachable_base_column_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  debug_row_->AddChildView(detachable_base_column_);
+
+  UpdateDetachableBaseColumn();
+}
+
+void LockDebugView::UpdateDetachableBaseColumn() {
+  detachable_base_column_->RemoveAllChildViews(true /*delete_children*/);
+
+  toggle_debug_detachable_base_ = AddButton("Detachable base debugging", false);
+  detachable_base_column_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(
+          toggle_debug_detachable_base_));
+
+  if (!debug_detachable_base_model_->debugging_pairing_state())
+    return;
+
+  const std::string kPairingStatusText =
+      std::string("Pairing status : ") +
+      DetachableBasePairingStatusToString(
+          debug_detachable_base_model_->GetPairingStatus());
+  cycle_detachable_base_status_ = AddButton(kPairingStatusText, false);
+
+  detachable_base_column_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(
+          cycle_detachable_base_status_));
+
+  cycle_detachable_base_id_ =
+      AddButton(debug_detachable_base_model_->BaseButtonText(), false);
+  bool base_authenticated = debug_detachable_base_model_->GetPairingStatus() ==
+                            DetachableBasePairingStatus::kAuthenticated;
+  cycle_detachable_base_id_->SetEnabled(base_authenticated);
+
+  detachable_base_column_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(cycle_detachable_base_id_));
 }
 
 views::MdTextButton* LockDebugView::AddButton(const std::string& text,
