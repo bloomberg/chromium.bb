@@ -178,6 +178,23 @@ class AV1ExtTileTest
     }
   }
 
+  void TestRoundTrip() {
+    ::libaom_test::I420VideoSource video(
+        "hantro_collage_w352h288.yuv", kImgWidth, kImgHeight, 30, 1, 0, kLimit);
+    cfg_.rc_target_bitrate = 500;
+    cfg_.g_error_resilient = AOM_ERROR_RESILIENT_DEFAULT;
+    cfg_.large_scale_tile = 1;
+    cfg_.g_lag_in_frames = 0;
+    cfg_.g_threads = 1;
+
+    // Tile encoding
+    init_flags_ = AOM_CODEC_USE_PSNR;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+
+    // Compare to check if two vectors are equal.
+    ASSERT_EQ(md5_, tile_md5_);
+  }
+
   ::libaom_test::TestMode encoding_mode_;
   int set_cpu_used_;
   ::libaom_test::Decoder *decoder_;
@@ -186,25 +203,19 @@ class AV1ExtTileTest
   std::vector<std::string> tile_md5_;
 };
 
-TEST_P(AV1ExtTileTest, DecoderResultTest) {
-  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", kImgWidth,
-                                       kImgHeight, 30, 1, 0, kLimit);
-  cfg_.rc_target_bitrate = 500;
-  cfg_.g_error_resilient = AOM_ERROR_RESILIENT_DEFAULT;
-  cfg_.large_scale_tile = 1;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.g_threads = 1;
-
-  // Tile encoding
-  init_flags_ = AOM_CODEC_USE_PSNR;
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-
-  // Compare to check if two vectors are equal.
-  ASSERT_EQ(md5_, tile_md5_);
-}
+TEST_P(AV1ExtTileTest, DecoderResultTest) { TestRoundTrip(); }
 
 AV1_INSTANTIATE_TEST_CASE(
     // Now only test 2-pass mode.
     AV1ExtTileTest, ::testing::Values(::libaom_test::kTwoPassGood),
-    ::testing::Range(0, 4));
+    ::testing::Range(1, 4));
+
+class AV1ExtTileTestLarge : public AV1ExtTileTest {};
+
+TEST_P(AV1ExtTileTestLarge, DecoderResultTest) { TestRoundTrip(); }
+
+AV1_INSTANTIATE_TEST_CASE(
+    // Now only test 2-pass mode.
+    AV1ExtTileTestLarge, ::testing::Values(::libaom_test::kTwoPassGood),
+    ::testing::Range(0, 1));
 }  // namespace
