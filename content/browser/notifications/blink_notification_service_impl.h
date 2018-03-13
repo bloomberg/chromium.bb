@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -30,6 +31,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       PlatformNotificationContextImpl* notification_context,
       BrowserContext* browser_context,
       ResourceContext* resource_context,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       int render_process_id,
       const url::Origin& origin,
       mojo::InterfaceRequest<blink::mojom::NotificationService> request);
@@ -68,6 +70,14 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       bool success,
       const std::string& notification_id);
 
+  void DisplayPersistentNotificationWithIdForServiceWorker(
+      const std::string& notification_id,
+      const PlatformNotificationData& platform_notification_data,
+      const NotificationResources& notification_resources,
+      DisplayPersistentNotificationCallback callback,
+      content::ServiceWorkerStatusCode service_worker_status,
+      scoped_refptr<content::ServiceWorkerRegistration> registration);
+
   void CloseNonPersistentNotificationOnUIThread(
       const std::string& notification_id);
 
@@ -79,6 +89,8 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   BrowserContext* browser_context_;
 
   ResourceContext* resource_context_;
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   int render_process_id_;
 
