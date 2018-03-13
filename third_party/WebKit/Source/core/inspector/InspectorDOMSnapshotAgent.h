@@ -14,9 +14,11 @@
 
 namespace blink {
 
+class Document;
 class Element;
 class InspectedFrames;
 class Node;
+class PaintLayer;
 
 class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
@@ -32,7 +34,8 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
 
   protocol::Response getSnapshot(
       std::unique_ptr<protocol::Array<String>> style_whitelist,
-      protocol::Maybe<bool> get_dom_listeners,
+      protocol::Maybe<bool> include_event_listeners,
+      protocol::Maybe<bool> include_paint_order,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>>*
           dom_nodes,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>>*
@@ -65,12 +68,17 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // styles in |style_whitelist_|.
   int GetStyleIndexForNode(Node*);
 
+  // Traverses the PaintLayer tree in paint order to fill |paint_order_map_|.
+  void TraversePaintLayerTree(Document*);
+  void VisitPaintLayer(PaintLayer*);
+
   struct VectorStringHashTraits;
   using ComputedStylesMap = WTF::HashMap<Vector<String>,
                                          int,
                                          VectorStringHashTraits,
                                          VectorStringHashTraits>;
   using CSSPropertyWhitelist = Vector<std::pair<String, CSSPropertyID>>;
+  using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
 
   // State of current snapshot.
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DOMNode>> dom_nodes_;
@@ -83,6 +91,9 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   std::unique_ptr<ComputedStylesMap> computed_styles_map_;
   std::unique_ptr<Vector<std::pair<String, CSSPropertyID>>>
       css_property_whitelist_;
+  // Maps a PaintLayer to its paint order index.
+  std::unique_ptr<PaintOrderMap> paint_order_map_;
+  int next_paint_order_index_ = 0;
 
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
