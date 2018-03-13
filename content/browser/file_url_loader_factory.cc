@@ -630,6 +630,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK(!request.download_to_file);
   base::FilePath file_path;
   const bool is_file = net::FileURLToFilePath(request.url, &file_path);
   if (is_file && file_path.EndsWithSeparator() && file_path.IsAbsolute()) {

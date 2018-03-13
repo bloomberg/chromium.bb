@@ -29,6 +29,7 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     bindings_.ReportBadMessage("Invalid URL when attempting to fetch Blob");
     return;
   }
+  DCHECK(!request.download_to_file);
   BlobURLLoader::CreateAndStart(
       std::move(loader), request, std::move(client),
       handle_ ? std::make_unique<BlobDataHandle>(*handle_) : nullptr);

@@ -148,6 +148,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // If true, then the response body will be downloaded to a file and the path
   // to that file will be provided in ResponseInfo::download_file_path.
+  // Deprecated and not supported by the network service code.
+  // TODO(mek): Remove this flag once all usage of it is gone (XHR and PPAPI).
   bool download_to_file = false;
 
   // True if the request can work after the fetch group is terminated.

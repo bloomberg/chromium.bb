@@ -71,6 +71,7 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK(!request.download_to_file);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<storage::BlobDataHandle> blob_handle;
   if (blob_storage_context_) {

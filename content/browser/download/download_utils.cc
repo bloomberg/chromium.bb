@@ -142,7 +142,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->site_for_cookies = params->url();
   request->referrer = params->referrer();
   request->referrer_policy = params->referrer_policy();
-  request->download_to_file = true;
   request->allow_download = true;
   request->is_main_frame = true;
 

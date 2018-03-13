@@ -243,6 +243,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(!request.download_to_file);
 
     if (request.url.scheme() != scheme_) {
       DVLOG(1) << "Bad scheme: " << request.url.scheme();
