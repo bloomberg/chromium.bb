@@ -1621,8 +1621,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
+// Tests using PopulateForm() are flaky on CrOS; see https://crbug.com/516052.
+#if defined(OS_CHROMEOS)
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+  DISABLED_MultipleEmailFilledByOneUserGesture
+#else
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+  MultipleEmailFilledByOneUserGesture
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MultipleEmailFilledByOneUserGesture) {
+                       MAYBE_MultipleEmailFilledByOneUserGesture) {
   std::string email("bsmith@gmail.com");
 
   AutofillProfile profile;
