@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
@@ -72,19 +71,8 @@ class WebSocketStreamRequestImpl;
 
 class Delegate : public URLRequest::Delegate {
  public:
-  enum HandshakeResult {
-    INCOMPLETE,
-    CONNECTED,
-    FAILED,
-    NUM_HANDSHAKE_RESULT_TYPES,
-  };
-
-  explicit Delegate(WebSocketStreamRequestImpl* owner)
-      : owner_(owner), result_(INCOMPLETE) {}
-  ~Delegate() override {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.WebSocket.HandshakeResult", result_, NUM_HANDSHAKE_RESULT_TYPES);
-  }
+  explicit Delegate(WebSocketStreamRequestImpl* owner) : owner_(owner) {}
+  ~Delegate() override = default;
 
   // Implementation of URLRequest::Delegate methods.
   void OnReceivedRedirect(URLRequest* request,
@@ -107,7 +95,6 @@ class Delegate : public URLRequest::Delegate {
 
  private:
   WebSocketStreamRequestImpl* owner_;
-  HandshakeResult result_;
 };
 
 class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
@@ -334,37 +321,31 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
   if (request->response_info().connection_info ==
       HttpResponseInfo::CONNECTION_INFO_HTTP2) {
     if (response_code == HTTP_OK) {
-      result_ = CONNECTED;
       owner_->PerformUpgrade();
       return;
     }
 
-    result_ = FAILED;
     owner_->ReportFailure(net_error);
     return;
   }
 
   switch (response_code) {
     case HTTP_SWITCHING_PROTOCOLS:
-      result_ = CONNECTED;
       owner_->PerformUpgrade();
       return;
 
     case HTTP_UNAUTHORIZED:
-      result_ = FAILED;
       owner_->OnFinishOpeningHandshake();
       owner_->ReportFailureWithMessage(
           "HTTP Authentication failed; no valid credentials available");
       return;
 
     case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      result_ = FAILED;
       owner_->OnFinishOpeningHandshake();
       owner_->ReportFailureWithMessage("Proxy authentication failed");
       return;
 
     default:
-      result_ = FAILED;
       owner_->ReportFailure(net_error);
   }
 }

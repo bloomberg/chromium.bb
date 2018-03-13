@@ -124,6 +124,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
 
   void OnFailure(const std::string& message);
 
+  HandshakeResult result_;
+
   // The connection to open the Websocket stream on.
   base::WeakPtr<SpdySession> session_;
 

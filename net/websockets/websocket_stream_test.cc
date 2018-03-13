@@ -93,6 +93,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   WebSocketStreamCreateTest()
       : stream_type_(GetParam()),
         http2_response_status_("200"),
+        reset_websocket_http2_stream_(false),
         sequence_number_(0) {}
   ~WebSocketStreamCreateTest() override {
     // Permit any endpoint locks to be released.
@@ -121,6 +122,10 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
   void SetHttp2ResponseStatus(const char* const http2_response_status) {
     http2_response_status_ = http2_response_status;
+  }
+
+  void SetResetWebSocketHttp2Stream(bool reset_websocket_http2_stream) {
+    reset_websocket_http2_stream_ = reset_websocket_http2_stream;
   }
 
   // Set up mock data and start websockets request, either for WebSocket
@@ -221,34 +226,41 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
         3, std::move(request_headers), DEFAULT_PRIORITY, false));
     AddWrite(&frames_.back());
 
-    // Response to WebSocket request.
-    std::vector<std::string> extra_response_header_keys;
-    std::vector<const char*> extra_response_headers_vector;
-    for (const auto& extra_header : extra_response_headers) {
-      // Save a lowercase copy of the header key.
-      extra_response_header_keys.push_back(
-          base::ToLowerASCII(extra_header.first));
-      // Save a pointer to this lowercase copy.
-      extra_response_headers_vector.push_back(
-          extra_response_header_keys.back().c_str());
-      // Save a pointer to the original header value provided by the caller.
-      extra_response_headers_vector.push_back(extra_header.second.c_str());
-    }
-    frames_.push_back(spdy_util_.ConstructSpdyReplyError(
-        http2_response_status_, extra_response_headers_vector.data(),
-        extra_response_headers_vector.size() / 2, 3));
-    AddRead(&frames_.back());
-
-    // WebSocket data received.
-    if (!additional_data_.empty()) {
+    if (reset_websocket_http2_stream_) {
       frames_.push_back(
-          spdy_util_.ConstructSpdyDataFrame(3, additional_data_, true));
+          spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_CANCEL));
       AddRead(&frames_.back());
-    }
+    } else {
+      // Response to WebSocket request.
+      std::vector<std::string> extra_response_header_keys;
+      std::vector<const char*> extra_response_headers_vector;
+      for (const auto& extra_header : extra_response_headers) {
+        // Save a lowercase copy of the header key.
+        extra_response_header_keys.push_back(
+            base::ToLowerASCII(extra_header.first));
+        // Save a pointer to this lowercase copy.
+        extra_response_headers_vector.push_back(
+            extra_response_header_keys.back().c_str());
+        // Save a pointer to the original header value provided by the caller.
+        extra_response_headers_vector.push_back(extra_header.second.c_str());
+      }
+      frames_.push_back(spdy_util_.ConstructSpdyReplyError(
+          http2_response_status_, extra_response_headers_vector.data(),
+          extra_response_headers_vector.size() / 2, 3));
+      AddRead(&frames_.back());
 
-    // Client cancels HTTP/2 stream when request is destroyed.
-    frames_.push_back(spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_CANCEL));
-    AddWrite(&frames_.back());
+      // WebSocket data received.
+      if (!additional_data_.empty()) {
+        frames_.push_back(
+            spdy_util_.ConstructSpdyDataFrame(3, additional_data_, true));
+        AddRead(&frames_.back());
+      }
+
+      // Client cancels HTTP/2 stream when request is destroyed.
+      frames_.push_back(
+          spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_CANCEL));
+      AddWrite(&frames_.back());
+    }
 
     // EOF.
     reads_.push_back(MockRead(ASYNC, 0, sequence_number_++));
@@ -357,6 +369,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   std::unique_ptr<base::Timer> timer_;
   std::string additional_data_;
   const char* http2_response_status_;
+  bool reset_websocket_http2_stream_;
   SpdyTestUtil spdy_util_;
   NetLogWithSource log_;
 
@@ -537,23 +550,10 @@ const char WebSocketStreamCreateDigestAuthTest::kAuthorizedRequest[] =
     "client_max_window_bits\r\n"
     "\r\n";
 
-class WebSocketStreamCreateUMATest : public WebSocketStreamCreateTest {
- protected:
-  // This enum should match with the enum in Delegate in websocket_stream.cc.
-  enum HandshakeResult {
-    INCOMPLETE,
-    CONNECTED,
-    FAILED,
-    NUM_HANDSHAKE_RESULT_TYPES,
-  };
-};
-
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketStreamCreateUMATest,
-                        Values(BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM));
-
 // Confirm that the basic case works as expected.
 TEST_P(WebSocketMultiProtocolStreamCreateTest, SimpleSuccess) {
+  base::HistogramTester histogram_tester;
+
   AddSSLData();
   EXPECT_FALSE(url_request_);
   CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
@@ -568,6 +568,21 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, SimpleSuccess) {
   EXPECT_TRUE(response_info_);
   EXPECT_EQ(ERR_WS_UPGRADE,
             url_request_context_host_.network_delegate().last_error());
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    EXPECT_EQ(1,
+              samples->GetCount(static_cast<int>(
+                  WebSocketHandshakeStreamBase::HandshakeResult::CONNECTED)));
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
+    EXPECT_EQ(
+        1,
+        samples->GetCount(static_cast<int>(
+            WebSocketHandshakeStreamBase::HandshakeResult::HTTP2_CONNECTED)));
+  }
 }
 
 TEST_P(WebSocketStreamCreateTest, HandshakeInfo) {
@@ -693,6 +708,8 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, SubProtocolIsUsed) {
 
 // Unsolicited sub-protocols are rejected.
 TEST_P(WebSocketMultiProtocolStreamCreateTest, UnsolicitedSubProtocol) {
+  base::HistogramTester histogram_tester;
+
   AddSSLData();
   CreateAndConnectStandard(
       "wss://www.example.org/testing_path", "www.example.org", "/testing_path",
@@ -707,6 +724,23 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, UnsolicitedSubProtocol) {
             failure_message());
   EXPECT_EQ(ERR_INVALID_RESPONSE,
             url_request_context_host_.network_delegate().last_error());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    EXPECT_EQ(
+        1,
+        samples->GetCount(static_cast<int>(
+            WebSocketHandshakeStreamBase::HandshakeResult::FAILED_SUBPROTO)));
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
+    EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                     WebSocketHandshakeStreamBase::HandshakeResult::
+                         HTTP2_FAILED_SUBPROTO)));
+  }
 }
 
 // Missing sub-protocol response is rejected.
@@ -838,6 +872,8 @@ TEST_P(WebSocketStreamCreateExtensionTest, MalformedExtension) {
 
 // The permessage-deflate extension may only be specified once.
 TEST_P(WebSocketStreamCreateExtensionTest, OnlyOnePerMessageDeflateAllowed) {
+  base::HistogramTester histogram_tester;
+
   CreateAndConnectWithExtensions(
       "permessage-deflate, permessage-deflate; client_max_window_bits=10");
   EXPECT_FALSE(stream_);
@@ -846,6 +882,23 @@ TEST_P(WebSocketStreamCreateExtensionTest, OnlyOnePerMessageDeflateAllowed) {
       "Error during WebSocket handshake: "
       "Received duplicate permessage-deflate response",
       failure_message());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    EXPECT_EQ(
+        1,
+        samples->GetCount(static_cast<int>(
+            WebSocketHandshakeStreamBase::HandshakeResult::FAILED_EXTENSIONS)));
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
+    EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                     WebSocketHandshakeStreamBase::HandshakeResult::
+                         HTTP2_FAILED_EXTENSIONS)));
+  }
 }
 
 // client_max_window_bits must have an argument
@@ -886,6 +939,8 @@ TEST_P(WebSocketStreamCreateTest, DoubleAccept) {
 // requesting a WebSocket stream over HTTP/2, response code 101 is invalid and
 // must be rejected.  Response code 200 means success.
 TEST_P(WebSocketMultiProtocolStreamCreateTest, InvalidStatusCode) {
+  base::HistogramTester histogram_tester;
+
   AddSSLData();
   if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
     static const char kInvalidStatusCodeResponse[] =
@@ -897,19 +952,33 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, InvalidStatusCode) {
     CreateAndConnectCustomResponse("wss://www.example.org/", "www.example.org",
                                    "/", NoSubProtocols(), Origin(), Url(), {},
                                    {}, kInvalidStatusCodeResponse);
-    WaitUntilConnectDone();
-    EXPECT_TRUE(has_failed());
-    EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
-              failure_message());
   } else {
     DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
     SetHttp2ResponseStatus("101");
     CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
                              NoSubProtocols(), Origin(), Url(), {}, {}, {});
-    WaitUntilConnectDone();
-    EXPECT_TRUE(has_failed());
+  }
+
+  WaitUntilConnectDone();
+  stream_request_.reset();
+  EXPECT_TRUE(has_failed());
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 200",
+              failure_message());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               WebSocketHandshakeStreamBase::HandshakeResult::INVALID_STATUS)));
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
     EXPECT_EQ("Error during WebSocket handshake: Unexpected response code: 101",
               failure_message());
+    EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                     WebSocketHandshakeStreamBase::HandshakeResult::
+                         HTTP2_INVALID_STATUS)));
   }
 }
 
@@ -965,6 +1034,8 @@ TEST_P(WebSocketStreamCreateTest, MalformedResponse) {
 
 // Upgrade header must be present.
 TEST_P(WebSocketStreamCreateTest, MissingUpgradeHeader) {
+  base::HistogramTester histogram_tester;
+
   static const char kMissingUpgradeResponse[] =
       "HTTP/1.1 101 Switching Protocols\r\n"
       "Connection: Upgrade\r\n"
@@ -977,6 +1048,15 @@ TEST_P(WebSocketStreamCreateTest, MissingUpgradeHeader) {
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: 'Upgrade' header is missing",
             failure_message());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(
+      1, samples->GetCount(static_cast<int>(
+             WebSocketHandshakeStreamBase::HandshakeResult::FAILED_UPGRADE)));
 }
 
 // There must only be one upgrade header.
@@ -1011,6 +1091,8 @@ TEST_P(WebSocketStreamCreateTest, IncorrectUpgradeHeader) {
 
 // Connection header must be present.
 TEST_P(WebSocketStreamCreateTest, MissingConnectionHeader) {
+  base::HistogramTester histogram_tester;
+
   static const char kMissingConnectionResponse[] =
       "HTTP/1.1 101 Switching Protocols\r\n"
       "Upgrade: websocket\r\n"
@@ -1024,6 +1106,16 @@ TEST_P(WebSocketStreamCreateTest, MissingConnectionHeader) {
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Connection' header is missing",
             failure_message());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(
+      1,
+      samples->GetCount(static_cast<int>(
+          WebSocketHandshakeStreamBase::HandshakeResult::FAILED_CONNECTION)));
 }
 
 // Connection header must contain "Upgrade".
@@ -1062,6 +1154,8 @@ TEST_P(WebSocketStreamCreateTest, AdditionalTokenInConnectionHeader) {
 
 // Sec-WebSocket-Accept header must be present.
 TEST_P(WebSocketStreamCreateTest, MissingSecWebSocketAccept) {
+  base::HistogramTester histogram_tester;
+
   static const char kMissingAcceptResponse[] =
       "HTTP/1.1 101 Switching Protocols\r\n"
       "Upgrade: websocket\r\n"
@@ -1075,6 +1169,15 @@ TEST_P(WebSocketStreamCreateTest, MissingSecWebSocketAccept) {
   EXPECT_EQ("Error during WebSocket handshake: "
             "'Sec-WebSocket-Accept' header is missing",
             failure_message());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(1,
+            samples->GetCount(static_cast<int>(
+                WebSocketHandshakeStreamBase::HandshakeResult::FAILED_ACCEPT)));
 }
 
 // Sec-WebSocket-Accept header must match the key that was sent.
@@ -1259,6 +1362,8 @@ TEST_P(WebSocketStreamCreateTest, CancellationDuringRead) {
 // regression test for crbug.com/339456. It is based on the layout test
 // "cookie-flood.html".
 TEST_P(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
+  base::HistogramTester histogram_tester;
+
   std::string set_cookie_headers;
   set_cookie_headers.reserve(24 * 20000);
   for (int i = 0; i < 20000; ++i) {
@@ -1271,12 +1376,22 @@ TEST_P(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_FALSE(response_info_);
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                   WebSocketHandshakeStreamBase::HandshakeResult::FAILED)));
 }
 
 // If the remote host closes the connection without sending headers, we should
 // log the console message "Connection closed before receiving a handshake
 // response".
 TEST_P(WebSocketStreamCreateTest, NoResponse) {
+  base::HistogramTester histogram_tester;
+
   std::string request =
       WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
   MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
@@ -1293,6 +1408,15 @@ TEST_P(WebSocketStreamCreateTest, NoResponse) {
   EXPECT_FALSE(response_info_);
   EXPECT_EQ("Connection closed before receiving a handshake response",
             failure_message());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(
+      1, samples->GetCount(static_cast<int>(
+             WebSocketHandshakeStreamBase::HandshakeResult::EMPTY_RESPONSE)));
 }
 
 TEST_P(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
@@ -1389,71 +1513,72 @@ TEST_P(WebSocketStreamCreateDigestAuthTest, DigestPasswordInUrl) {
   EXPECT_EQ(101, response_info_->status_code);
 }
 
-TEST_P(WebSocketStreamCreateUMATest, Incomplete) {
+TEST_P(WebSocketMultiProtocolStreamCreateTest, Incomplete) {
   base::HistogramTester histogram_tester;
 
   AddSSLData();
-  CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
-                           NoSubProtocols(), Origin(), Url(), {}, {}, {});
-  stream_request_.reset();
-
-  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
-      "Net.WebSocket.HandshakeResult");
-  EXPECT_EQ(1, samples->GetCount(INCOMPLETE));
-  EXPECT_EQ(0, samples->GetCount(CONNECTED));
-  EXPECT_EQ(0, samples->GetCount(FAILED));
-}
-
-TEST_P(WebSocketStreamCreateUMATest, Connected) {
-  base::HistogramTester histogram_tester;
-
-  AddSSLData();
-  CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
-                           NoSubProtocols(), Origin(), Url(), {}, {}, {});
-  WaitUntilConnectDone();
-  stream_request_.reset();
-
-  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
-      "Net.WebSocket.HandshakeResult");
-  EXPECT_EQ(0, samples->GetCount(INCOMPLETE));
-  EXPECT_EQ(1, samples->GetCount(CONNECTED));
-  EXPECT_EQ(0, samples->GetCount(FAILED));
-}
-
-TEST_P(WebSocketStreamCreateUMATest, Failed) {
-  base::HistogramTester histogram_tester;
-
   if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
-    AddSSLData();
-    static const char kInvalidStatusCodeResponse[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Upgrade: websocket\r\n"
-        "Connection: Upgrade\r\n"
-        "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
-        "\r\n";
-    CreateAndConnectCustomResponse("wss://www.example.org/", "www.example.org",
-                                   "/", NoSubProtocols(), Origin(), Url(), {},
-                                   {}, kInvalidStatusCodeResponse);
-    WaitUntilConnectDone();
+    std::string request =
+        WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+    MockRead reads[] = {MockRead(ASYNC, ERR_IO_PENDING, 0)};
+    MockWrite writes[] = {MockWrite(ASYNC, 1, request.c_str())};
+    CreateAndConnectRawExpectations("wss://www.example.org/", NoSubProtocols(),
+                                    Origin(), Url(), "",
+                                    BuildSocketData(reads, writes));
+    base::RunLoop().RunUntilIdle();
     stream_request_.reset();
+
+    auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+        "Net.WebSocket.HandshakeResult2");
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(1,
+              samples->GetCount(static_cast<int>(
+                  WebSocketHandshakeStreamBase::HandshakeResult::INCOMPLETE)));
   } else {
     DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
-    AddSSLData();
-    SetHttp2ResponseStatus("404");
     CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
                              NoSubProtocols(), Origin(), Url(), {}, {}, {});
-    WaitUntilConnectDone();
     stream_request_.reset();
-  }
 
-  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
-      "Net.WebSocket.HandshakeResult");
-  EXPECT_EQ(1, samples->GetCount(INCOMPLETE));
-  EXPECT_EQ(0, samples->GetCount(CONNECTED));
-  EXPECT_EQ(0, samples->GetCount(FAILED));
+    auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+        "Net.WebSocket.HandshakeResult2");
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1,
+        samples->GetCount(static_cast<int>(
+            WebSocketHandshakeStreamBase::HandshakeResult::HTTP2_INCOMPLETE)));
+  }
+}
+
+TEST_P(WebSocketMultiProtocolStreamCreateTest, Http2StreamReset) {
+  AddSSLData();
+
+  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
+    // This is a dummy transaction to avoid crash in ~TestURLRequestContext().
+    CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
+                             NoSubProtocols(), Origin(), Url(), {}, {}, {});
+  } else {
+    DCHECK_EQ(stream_type_, HTTP2_HANDSHAKE_STREAM);
+    base::HistogramTester histogram_tester;
+
+    SetResetWebSocketHttp2Stream(true);
+    CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
+                             NoSubProtocols(), Origin(), Url(), {}, {}, {});
+    base::RunLoop().RunUntilIdle();
+    stream_request_.reset();
+
+    auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+        "Net.WebSocket.HandshakeResult2");
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               WebSocketHandshakeStreamBase::HandshakeResult::HTTP2_FAILED)));
+  }
 }
 
 TEST_P(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
+  base::HistogramTester histogram_tester;
+
   static const char kTruncatedResponse[] =
       "HTTP/1.1 101 Switching Protocols\r\n"
       "Upgrade: websocket\r\n"
@@ -1475,6 +1600,15 @@ TEST_P(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
                                   Origin(), Url(), "", std::move(socket_data));
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
+
+  stream_request_.reset();
+
+  auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
+      "Net.WebSocket.HandshakeResult2");
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                   WebSocketHandshakeStreamBase::HandshakeResult::
+                       FAILED_SWITCHING_PROTOCOLS)));
 }
 
 TEST_P(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
