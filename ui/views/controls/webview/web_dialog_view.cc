@@ -28,7 +28,7 @@ using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
-using ui::WebDialogUI;
+using ui::WebDialogUIBase;
 using ui::WebDialogWebContentsDelegate;
 
 namespace views {
@@ -365,7 +365,7 @@ void WebDialogView::InitDialog() {
 
   // Set the delegate. This must be done before loading the page. See
   // the comment above WebDialogUI in its header file for why.
-  WebDialogUI::SetDelegate(web_contents, this);
+  WebDialogUIBase::SetDelegate(web_contents, this);
 
   web_view_->LoadInitialURL(GetDialogContentURL());
 }

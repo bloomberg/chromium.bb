@@ -39,37 +39,31 @@ class WebDialogDelegateUserData : public base::SupportsUserData::Data {
 
 }  // namespace
 
-WebDialogUI::WebDialogUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
-}
-
-WebDialogUI::~WebDialogUI() {
-  // Don't unregister our user data. During the teardown of the WebContents,
-  // this will be deleted, but the WebContents will already be destroyed.
-  //
-  // This object is owned indirectly by the WebContents. WebUIs can change, so
-  // it's scary if this WebUI is changed out and replaced with something else,
-  // since the user data will still point to the old delegate. But the delegate
-  // is itself the owner of the WebContents for a dialog so will be in scope,
-  // and the HTML dialogs won't swap WebUIs anyway since they don't navigate.
-}
-
-void WebDialogUI::CloseDialog(const base::ListValue* args) {
-  OnDialogClosed(args);
-}
-
 // static
-void WebDialogUI::SetDelegate(content::WebContents* web_contents,
-                              WebDialogDelegate* delegate) {
+void WebDialogUIBase::SetDelegate(content::WebContents* web_contents,
+                                  WebDialogDelegate* delegate) {
   web_contents->SetUserData(
       &kWebDialogDelegateUserDataKey,
       std::make_unique<WebDialogDelegateUserData>(delegate));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Private:
+WebDialogUIBase::WebDialogUIBase(content::WebUI* web_ui) : web_ui_(web_ui) {}
 
-WebDialogDelegate* WebDialogUI::GetDelegate(
+// Don't unregister our user data. During the teardown of the WebContents, this
+// will be deleted, but the WebContents will already be destroyed.
+//
+// This object is owned indirectly by the WebContents. WebUIs can change, so
+// it's scary if this WebUI is changed out and replaced with something else,
+// since the user data will still point to the old delegate. But the delegate is
+// itself the owner of the WebContents for a dialog so will be in scope, and the
+// HTML dialogs won't swap WebUIs anyway since they don't navigate.
+WebDialogUIBase::~WebDialogUIBase() = default;
+
+void WebDialogUIBase::CloseDialog(const base::ListValue* args) {
+  OnDialogClosed(args);
+}
+
+WebDialogDelegate* WebDialogUIBase::GetDelegate(
     content::WebContents* web_contents) {
   WebDialogDelegateUserData* user_data =
       static_cast<WebDialogDelegateUserData*>(
@@ -78,17 +72,18 @@ WebDialogDelegate* WebDialogUI::GetDelegate(
   return user_data ? user_data->delegate() : NULL;
 }
 
-
-void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
+void WebDialogUIBase::HandleRenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
   // Hook up the javascript function calls, also known as chrome.send("foo")
   // calls in the HTML, to the actual C++ functions.
-  web_ui()->RegisterMessageCallback("dialogClose",
-      base::Bind(&WebDialogUI::OnDialogClosed, base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "dialogClose",
+      base::Bind(&WebDialogUIBase::OnDialogClosed, base::Unretained(this)));
 
   // Pass the arguments to the renderer supplied by the delegate.
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
-  WebDialogDelegate* delegate = GetDelegate(web_ui()->GetWebContents());
+  WebDialogDelegate* delegate = GetDelegate(web_ui_->GetWebContents());
   if (delegate) {
     dialog_args = delegate->GetDialogArgs();
     delegate->GetWebUIMessageHandlers(&handlers);
@@ -96,17 +91,17 @@ void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 
   content::RenderViewHost* render_view_host =
       render_frame_host->GetRenderViewHost();
-  if (0 != (web_ui()->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
+  if (0 != (web_ui_->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (WebUIMessageHandler* handler : handlers)
-    web_ui()->AddMessageHandler(base::WrapUnique(handler));
+    web_ui_->AddMessageHandler(base::WrapUnique(handler));
 
   if (delegate)
-    delegate->OnDialogShown(web_ui(), render_view_host);
+    delegate->OnDialogShown(web_ui_, render_view_host);
 }
 
-void WebDialogUI::OnDialogClosed(const base::ListValue* args) {
-  WebDialogDelegate* delegate = GetDelegate(web_ui()->GetWebContents());
+void WebDialogUIBase::OnDialogClosed(const base::ListValue* args) {
+  WebDialogDelegate* delegate = GetDelegate(web_ui_->GetWebContents());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))
@@ -114,6 +109,15 @@ void WebDialogUI::OnDialogClosed(const base::ListValue* args) {
 
     delegate->OnDialogCloseFromWebUI(json_retval);
   }
+}
+
+WebDialogUI::WebDialogUI(content::WebUI* web_ui)
+    : WebDialogUIBase(web_ui), content::WebUIController(web_ui) {}
+
+WebDialogUI::~WebDialogUI() = default;
+
+void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
+  HandleRenderFrameCreated(render_frame_host);
 }
 
 }  // namespace ui
