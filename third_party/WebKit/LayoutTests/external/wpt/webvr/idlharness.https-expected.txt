@@ -19,8 +19,6 @@ FAIL Navigator interface: attribute activeVRDisplays assert_true: The prototype 
 PASS Unscopable handled correctly for activeVRDisplays property on Navigator
 FAIL Navigator interface: attribute vrEnabled assert_true: The prototype object must have a property "vrEnabled" expected true got false
 PASS Unscopable handled correctly for vrEnabled property on Navigator
-FAIL HTMLIFrameElement interface: attribute allowvr assert_true: The prototype object must have a property "allowvr" expected true got false
-PASS Unscopable handled correctly for allowvr property on HTMLIFrameElement
 PASS Gamepad interface: attribute displayId
 PASS Unscopable handled correctly for displayId property on Gamepad
 PASS VRDisplay interface: existence and properties of interface object
