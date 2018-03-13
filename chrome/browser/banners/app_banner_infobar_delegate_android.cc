@@ -26,6 +26,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
 }
 
 AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
+  ui_delegate_.reset();
   Java_AppBannerInfoBarDelegateAndroid_destroy(
       base::android::AttachCurrentThread(), java_delegate_);
   java_delegate_.Reset();
