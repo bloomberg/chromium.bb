@@ -1743,7 +1743,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'isolated_scripts': 'linux_chromeos_rel_isolated_scripts',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'swarming': {
           'dimension_sets': [
