@@ -31,6 +31,8 @@
       <h1>$i18n{title}</h1>
     </header>
     <section class="reload-show-unset-section">
+      <h1 id="session-title">
+      </h1>
       <form id="session-choice">
         <input id="session-name-field" type="text" autocomplete="off"
             placeholder="$i18n{sessionNamePlaceholder}">
@@ -51,8 +53,15 @@
       </span>
     </section>
     <section id="sessions">
+      <dialog id="rename-dialog">
+        <input id="new-session-name-field" type="text">
+        <button id="cancel-rename-button">$i18n{cancelRename}</button>
+        <button id="confirm-rename-button">$i18n{confirmRename}</button>
+        <span id="session-rename-error" hidden></span>
+      </dialog>
       <div id="session-actions">
-        <button id="delete-session-button">-</button>
+        <button id="delete-session-button">$i18n{removeSession}</button>
+        <button id="rename-session-button">$i18n{renameSession}</button>
       </div>
       <select size="4" id="session-list">
       </select>

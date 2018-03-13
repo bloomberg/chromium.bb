@@ -12,6 +12,8 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 const base::FilePath::CharType PolicyToolUIHandler::kPolicyToolSessionsDir[] =
@@ -37,20 +39,29 @@ void PolicyToolUIHandler::RegisterMessages() {
       Profile::FromWebUI(web_ui())->GetPath().Append(kPolicyToolSessionsDir);
 
   web_ui()->RegisterMessageCallback(
-      "initialized", base::Bind(&PolicyToolUIHandler::HandleInitializedAdmin,
-                                base::Unretained(this)));
+      "initialized",
+      base::BindRepeating(&PolicyToolUIHandler::HandleInitializedAdmin,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "loadSession", base::Bind(&PolicyToolUIHandler::HandleLoadSession,
-                                base::Unretained(this)));
+      "loadSession",
+      base::BindRepeating(&PolicyToolUIHandler::HandleLoadSession,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "updateSession", base::Bind(&PolicyToolUIHandler::HandleUpdateSession,
-                                  base::Unretained(this)));
+      "renameSession",
+      base::BindRepeating(&PolicyToolUIHandler::HandleRenameSession,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "resetSession", base::Bind(&PolicyToolUIHandler::HandleResetSession,
-                                 base::Unretained(this)));
+      "updateSession",
+      base::BindRepeating(&PolicyToolUIHandler::HandleUpdateSession,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "deleteSession", base::Bind(&PolicyToolUIHandler::HandleDeleteSession,
-                                  base::Unretained(this)));
+      "resetSession",
+      base::BindRepeating(&PolicyToolUIHandler::HandleResetSession,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "deleteSession",
+      base::BindRepeating(&PolicyToolUIHandler::HandleDeleteSession,
+                          base::Unretained(this)));
 }
 
 void PolicyToolUIHandler::OnJavascriptDisallowed() {
@@ -165,6 +176,8 @@ void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
     // TODO(urusant): convert the policy values so that the types are
     // consistent with actual policy types.
     CallJavascriptFunction("policy.Page.setPolicyValues", *value);
+    CallJavascriptFunction("policy.Page.setSessionTitle",
+                           base::Value(session_name_));
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
@@ -213,6 +226,79 @@ void PolicyToolUIHandler::HandleLoadSession(const base::ListValue* args) {
   }
   session_name_ = new_session_name;
   ImportFile();
+}
+
+PolicyToolUIHandler::SessionErrors PolicyToolUIHandler::DoRenameSession(
+    const base::FilePath::StringType& old_session_name,
+    const base::FilePath::StringType& new_session_name) {
+  const base::FilePath old_session_path = GetSessionPath(old_session_name);
+  const base::FilePath new_session_path = GetSessionPath(new_session_name);
+
+  // Check if the session files exist. If |old_session_name| doesn't exist, it
+  // means that is not a valid session. If |new_session_name| exists, it means
+  // that we can't do the rename because that will cause a file overwrite.
+  if (!PathExists(old_session_path))
+    return SessionErrors::kSessionNameNotExist;
+  if (PathExists(new_session_path))
+    return SessionErrors::kSessionNameExist;
+  if (!base::Move(old_session_path, new_session_path))
+    return SessionErrors::kRenamedSessionError;
+  return SessionErrors::kNone;
+}
+
+void PolicyToolUIHandler::OnSessionRenamed(
+    PolicyToolUIHandler::SessionErrors result) {
+  if (result == SessionErrors::kNone) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
+                       base::Unretained(this)),
+        base::BindOnce(&PolicyToolUIHandler::OnSessionsListReceived,
+                       callback_weak_ptr_factory_.GetWeakPtr()));
+    CallJavascriptFunction("policy.Page.closeRenameSessionDialog");
+    return;
+  }
+  int error_message_id;
+  if (result == SessionErrors::kSessionNameNotExist) {
+    error_message_id = IDS_POLICY_TOOL_SESSION_NOT_EXIST;
+  } else if (result == SessionErrors::kSessionNameExist) {
+    error_message_id = IDS_POLICY_TOOL_SESSION_EXIST;
+  } else {
+    error_message_id = IDS_POLICY_TOOL_RENAME_FAILED;
+  }
+
+  CallJavascriptFunction(
+      "policy.Page.showRenameSessionError",
+      base::Value(l10n_util::GetStringUTF16(error_message_id)));
+}
+
+void PolicyToolUIHandler::HandleRenameSession(const base::ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
+  base::FilePath::StringType old_session_name, new_session_name;
+  old_session_name =
+      base::FilePath::FromUTF8Unsafe(args->GetList()[0].GetString()).value();
+  new_session_name =
+      base::FilePath::FromUTF8Unsafe(args->GetList()[1].GetString()).value();
+
+  if (!IsValidSessionName(new_session_name) ||
+      !IsValidSessionName(old_session_name)) {
+    CallJavascriptFunction("policy.Page.showRenameSessionError",
+                           base::Value(l10n_util::GetStringUTF16(
+                               IDS_POLICY_TOOL_INVALID_SESSION_NAME)));
+    return;
+  }
+
+  // This is important in case the user renames the current active session.
+  // If we don't clear the current session name, after the rename, a new file
+  // will be created with the old name and with an empty dictionary in it.
+  session_name_.clear();
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&PolicyToolUIHandler::DoRenameSession,
+                     base::Unretained(this), old_session_name,
+                     new_session_name),
+      base::BindOnce(&PolicyToolUIHandler::OnSessionRenamed,
+                     callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool PolicyToolUIHandler::DoUpdateSession(const std::string& contents) {

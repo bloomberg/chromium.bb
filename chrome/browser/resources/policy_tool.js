@@ -21,6 +21,10 @@ policy.Page.setSessionsList = function(sessions) {
   }
 };
 
+policy.Page.setSessionTitle = function(name) {
+  $('session-title').textContent = name;
+};
+
 // Override some methods of policy.Page.
 
 /**
@@ -28,6 +32,23 @@ policy.Page.setSessionsList = function(sessions) {
  */
 policy.Page.showInvalidSessionNameError = function() {
   $('invalid-session-name-error').hidden = false;
+};
+
+/**
+ * Shows error message of rename session.
+ */
+policy.Page.showRenameSessionError = function(errorMessage) {
+  $('session-rename-error').hidden = false;
+  $('session-rename-error').textContent = errorMessage;
+};
+
+/**
+ * Close dialog of rename session.
+ */
+policy.Page.closeRenameSessionDialog = function() {
+  $('session-rename-error').textContent = '';
+  $('session-rename-error').hidden = true;
+  $('rename-dialog').close();
 };
 
 /**
@@ -113,6 +134,29 @@ policy.Page.prototype.initialize = function() {
     var sessionName = $('session-list').value;
     if (sessionName) {
       chrome.send('deleteSession', [sessionName]);
+    }
+  };
+
+  $('rename-session-button').onclick = () => {
+    $('session-rename-error').hidden = true;
+    var sessionName = $('session-list').value;
+    if (sessionName) {
+      $('rename-dialog').showModal();
+      $('new-session-name-field').value = '';
+      $('new-session-name-field').select();
+    }
+  };
+
+  $('cancel-rename-button').onclick = () => {
+    $('rename-dialog').close();
+  };
+
+  $('confirm-rename-button').onclick = () => {
+    $('session-rename-error').textContent = '';
+    var sessionName = $('session-list').value;
+    var newSessionName = $('new-session-name-field').value;
+    if (sessionName && newSessionName) {
+      chrome.send('renameSession', [sessionName, newSessionName]);
     }
   };
 

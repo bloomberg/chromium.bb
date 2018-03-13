@@ -20,6 +20,14 @@ class PolicyToolUIHandler : public PolicyUIHandler {
  private:
   friend class PolicyToolUITest;
 
+  enum class SessionErrors {
+    kNone = 0,
+    kInvalidSessionName,
+    kSessionNameExist,
+    kSessionNameNotExist,
+    kRenamedSessionError,
+  };
+
   static const base::FilePath::CharType kPolicyToolSessionsDir[];
   static const base::FilePath::CharType kPolicyToolDefaultSessionName[];
   static const base::FilePath::CharType kPolicyToolSessionExtension[];
@@ -28,9 +36,16 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void ImportFile();
 
   void HandleInitializedAdmin(const base::ListValue* args);
+
   void HandleLoadSession(const base::ListValue* args);
+
+  // Rename a session if the new session name doesn't exist.
+  void HandleRenameSession(const base::ListValue* args);
+
   void HandleUpdateSession(const base::ListValue* args);
+
   void HandleResetSession(const base::ListValue* args);
+
   void HandleDeleteSession(const base::ListValue* args);
 
   void OnSessionDeleted(bool is_successful);
@@ -38,7 +53,14 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   std::string ReadOrCreateFileCallback();
   void OnFileRead(const std::string& contents);
 
+  SessionErrors DoRenameSession(
+      const base::FilePath::StringType& old_session_name,
+      const base::FilePath::StringType& new_session_name);
+
+  void OnSessionRenamed(SessionErrors result);
+
   bool DoUpdateSession(const std::string& contents);
+
   void OnSessionUpdated(bool is_successful);
 
   bool IsValidSessionName(const base::FilePath::StringType& name) const;

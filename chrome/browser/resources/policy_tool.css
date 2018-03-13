@@ -32,6 +32,13 @@ tbody.value-editing-on .value {
   display: block;
 }
 
+#session-rename-error {
+  display: block;
+  color: red;
+  margin: 20px;
+  text-align: center;
+}
+
 #session-list {
   background: white;
 }
@@ -42,4 +49,23 @@ tbody.value-editing-on .value {
 
 #session-actions {
   float: left;
+}
+
+#session-actions button {
+  display: block;
+  width: 80px;
+}
+
+#rename-dialog {
+  border: 3px black;
+  height: 130px;
+  outline: 2px solid DarkGrey;
+  text-align: center;
+  width: 300px;
+}
+
+#new-session-name-field {
+  display: block;
+  margin: 20px auto;
+  width: 250px
 }
