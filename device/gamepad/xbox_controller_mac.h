@@ -77,6 +77,12 @@ class XboxControllerMac {
     LED_NUM_PATTERNS
   };
 
+  enum OpenDeviceResult {
+    OPEN_SUCCEEDED = 0,
+    OPEN_FAILED,
+    OPEN_FAILED_EXCLUSIVE_ACCESS
+  };
+
   struct Data {
     bool buttons[15];
     float triggers[2];
@@ -95,7 +101,7 @@ class XboxControllerMac {
   explicit XboxControllerMac(Delegate* delegate);
   virtual ~XboxControllerMac();
 
-  bool OpenDevice(io_service_t service);
+  OpenDeviceResult OpenDevice(io_service_t service);
 
   void SetLEDPattern(LEDPattern pattern);
 
@@ -153,8 +159,8 @@ class XboxControllerMac {
   // The other interfaces (for the ChatPad and headset) are ignored.
   base::mac::ScopedIOPluginInterface<IOUSBInterfaceStruct300> interface_;
 
-  bool device_is_open_;
-  bool interface_is_open_;
+  bool device_is_open_ = false;
+  bool interface_is_open_ = false;
 
   base::ScopedCFTypeRef<CFRunLoopSourceRef> source_;
 
@@ -164,24 +170,24 @@ class XboxControllerMac {
   // aren't correctly framed. The 360 controller frames its packets with a 2
   // byte header (type, total length) so we can reframe the packet data
   // ourselves.
-  uint16_t read_buffer_size_;
+  uint16_t read_buffer_size_ = 0;
   std::unique_ptr<uint8_t[]> read_buffer_;
 
   // The pattern that the LEDs on the device are currently displaying, or
   // LED_NUM_PATTERNS if unknown.
-  LEDPattern led_pattern_;
+  LEDPattern led_pattern_ = LED_NUM_PATTERNS;
 
-  UInt32 location_id_;
+  UInt32 location_id_ = 0;
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
-  ControllerType controller_type_;
-  int read_endpoint_;
-  int control_endpoint_;
+  ControllerType controller_type_ = UNKNOWN_CONTROLLER;
+  int read_endpoint_ = 0;
+  int control_endpoint_ = 0;
 
-  uint8_t counter_;
+  uint8_t counter_ = 0;
 
-  int sequence_id_;
+  int sequence_id_ = 0;
   scoped_refptr<base::SequencedTaskRunner> playing_effect_task_runner_;
   mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback
       playing_effect_callback_;

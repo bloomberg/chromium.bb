@@ -34,7 +34,14 @@ void CopyToUString(UChar* dest, size_t dest_length, base::string16 src) {
 
 }  // namespace
 
-XboxDataFetcher::XboxDataFetcher() : listening_(false), source_(NULL) {}
+XboxDataFetcher::PendingController::PendingController(
+    XboxDataFetcher* fetcher,
+    std::unique_ptr<XboxControllerMac> controller)
+    : fetcher(fetcher), controller(std::move(controller)) {}
+
+XboxDataFetcher::PendingController::~PendingController() = default;
+
+XboxDataFetcher::XboxDataFetcher() = default;
 
 XboxDataFetcher::~XboxDataFetcher() {
   while (!controllers_.empty()) {
@@ -87,21 +94,18 @@ void XboxDataFetcher::OnAddedToProvider() {
   RegisterForNotifications();
 }
 
+// static
 void XboxDataFetcher::DeviceAdded(void* context, io_iterator_t iterator) {
   DCHECK(context);
   XboxDataFetcher* fetcher = static_cast<XboxDataFetcher*>(context);
   io_service_t ref;
   while ((ref = IOIteratorNext(iterator))) {
     base::mac::ScopedIOObject<io_service_t> scoped_ref(ref);
-    XboxControllerMac* controller = new XboxControllerMac(fetcher);
-    if (controller->OpenDevice(ref)) {
-      fetcher->AddController(controller);
-    } else {
-      delete controller;
-    }
+    fetcher->TryOpenDevice(ref);
   }
 }
 
+// static
 void XboxDataFetcher::DeviceRemoved(void* context, io_iterator_t iterator) {
   DCHECK(context);
   XboxDataFetcher* fetcher = static_cast<XboxDataFetcher*>(context);
@@ -118,10 +122,58 @@ void XboxDataFetcher::DeviceRemoved(void* context, io_iterator_t iterator) {
   }
 }
 
+// static
+void XboxDataFetcher::InterestCallback(void* context,
+                                       io_service_t service,
+                                       IOMessage message_type,
+                                       void* message_argument) {
+  if (message_type == kIOMessageServiceWasClosed) {
+    PendingController* pending = static_cast<PendingController*>(context);
+    pending->fetcher->PendingControllerBecameAvailable(service, pending);
+  }
+}
+
+void XboxDataFetcher::PendingControllerBecameAvailable(
+    io_service_t service,
+    PendingController* pending) {
+  // Destroying the PendingController object unregisters our interest
+  // notification.
+  for (auto it = pending_controllers_.begin(); it != pending_controllers_.end();
+       ++it) {
+    if (pending == it->get()) {
+      pending_controllers_.erase(it);
+      break;
+    }
+  }
+  TryOpenDevice(service);
+}
+
+bool XboxDataFetcher::TryOpenDevice(io_service_t service) {
+  auto pending = std::make_unique<PendingController>(
+      this, std::make_unique<XboxControllerMac>(this));
+  bool did_register_interest =
+      RegisterForInterestNotifications(service, pending.get());
+
+  auto* controller = pending->controller.get();
+  XboxControllerMac::OpenDeviceResult result = controller->OpenDevice(service);
+  if (result == XboxControllerMac::OpenDeviceResult::OPEN_SUCCEEDED) {
+    AddController(pending->controller.release());
+    return true;
+  }
+
+  if (did_register_interest &&
+      result ==
+          XboxControllerMac::OpenDeviceResult::OPEN_FAILED_EXCLUSIVE_ACCESS) {
+    pending_controllers_.insert(std::move(pending));
+  }
+  return false;
+}
+
 bool XboxDataFetcher::RegisterForNotifications() {
   if (listening_)
     return true;
-  port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
+  if (port_ == nullptr)
+    port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
   if (!port_.is_valid())
     return false;
   source_ = IONotificationPortGetRunLoopSource(port_.get());
@@ -209,6 +261,20 @@ bool XboxDataFetcher::RegisterForDeviceNotifications(
   return true;
 }
 
+bool XboxDataFetcher::RegisterForInterestNotifications(
+    io_service_t service,
+    PendingController* pending) {
+  if (port_ == nullptr)
+    port_.reset(IONotificationPortCreate(kIOMasterPortDefault));
+  if (!port_.is_valid())
+    return false;
+
+  kern_return_t kr = IOServiceAddInterestNotification(
+      port_.get(), service, kIOGeneralInterest, InterestCallback, pending,
+      pending->notify.InitializeInto());
+  return kr == KERN_SUCCESS;
+}
+
 void XboxDataFetcher::UnregisterFromNotifications() {
   if (!listening_)
     return;
@@ -216,6 +282,7 @@ void XboxDataFetcher::UnregisterFromNotifications() {
   if (source_)
     CFRunLoopSourceInvalidate(source_);
   port_.reset();
+  pending_controllers_.clear();
 }
 
 XboxControllerMac* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {
