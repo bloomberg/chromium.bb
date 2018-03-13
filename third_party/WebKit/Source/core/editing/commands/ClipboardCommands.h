@@ -81,9 +81,10 @@ class ClipboardCommands {
 
   static bool PasteSupported(LocalFrame*);
 
- private:
   static bool CanReadClipboard(LocalFrame&, EditorCommandSource);
   static bool CanWriteClipboard(LocalFrame&, EditorCommandSource);
+
+ private:
   static bool CanSmartReplaceWithPasteboard(LocalFrame&, Pasteboard*);
   static bool CanDeleteRange(const EphemeralRange&);
   static Element* FindEventTargetForClipboardEvent(LocalFrame&,
