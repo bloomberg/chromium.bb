@@ -1867,6 +1867,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const int is_inter = is_inter_block(mbmi);
   int64_t best_rd = INT64_MAX;
   uint16_t best_eob = 0;
+  TX_TYPE best_tx_type = DCT_DCT;
   av1_invalid_rd_stats(best_rd_stats);
 
   TXB_RD_INFO *intra_txb_rd_info = NULL;
@@ -1892,12 +1893,14 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
       x->plane[plane].txb_entropy_ctx[block] =
           intra_txb_rd_info->txb_entropy_ctx;
-      if (plane == 0) {
-        update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
-                         intra_txb_rd_info->tx_type);
-      }
       best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
       best_eob = intra_txb_rd_info->eob;
+      best_tx_type = intra_txb_rd_info->tx_type;
+      if (plane == 0) {
+        update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                         best_tx_type);
+      }
+
       goto RECON_INTRA;
     }
   }
@@ -1912,7 +1915,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan)
       if (plane == 0) txk_end = DCT_DCT;
 
-  TX_TYPE best_tx_type = txk_start;
   uint8_t best_txb_ctx = 0;
   const TxSetType tx_set_type = get_ext_tx_set_type(
       tx_size, plane_bsize, is_inter, cm->reduced_tx_set_used);
@@ -2048,6 +2050,15 @@ RECON_INTRA:
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                        x->plane[plane].eobs[block],
                                        cm->reduced_tx_set_used);
+
+    // This may happen because of hash collision. The eob stored in the hash
+    // table is non-zero, but the real eob is zero. We need to make sure tx_type
+    // is DCT_DCT in this case.
+    if (plane == 0 && x->plane[plane].eobs[block] == 0 &&
+        best_tx_type != DCT_DCT) {
+      update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                       DCT_DCT);
+    }
   }
 
   return best_rd;
