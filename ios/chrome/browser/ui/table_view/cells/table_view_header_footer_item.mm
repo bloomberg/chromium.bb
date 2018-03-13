@@ -19,7 +19,8 @@
   return self;
 }
 
-- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter {
+- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
+                       withStyler:(ChromeTableViewStyler*)styler {
   DCHECK([headerFooter class] == self.cellClass);
   headerFooter.accessibilityTraits = self.accessibilityTraits;
   headerFooter.accessibilityIdentifier = self.accessibilityIdentifier;

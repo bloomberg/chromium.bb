@@ -24,9 +24,10 @@
 
 @synthesize configureCellCalled = _configureCellCalled;
 
-- (void)configureCell:(UITableViewCell*)cell {
+- (void)configureCell:(UITableViewCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
   self.configureCellCalled = YES;
-  [super configureCell:cell];
+  [super configureCell:cell withStyler:styler];
 }
 
 @end
@@ -42,9 +43,10 @@
 
 @synthesize configureHeaderFooterViewCalled = _configureHeaderFooterViewCalled;
 
-- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter {
+- (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
+                       withStyler:(ChromeTableViewStyler*)styler {
   self.configureHeaderFooterViewCalled = YES;
-  [super configureHeaderFooterView:headerFooter];
+  [super configureHeaderFooterView:headerFooter withStyler:styler];
 }
 
 @end

@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/list_model/list_item.h"
 
+@class ChromeTableViewStyler;
+
 // TableViewItem holds the model data for a given table view item.
 @interface TableViewItem : ListItem
 
@@ -18,7 +20,8 @@
 // to specialize. At this level, only accessibility properties are ported from
 // the item to the cell.
 // The cell's class must match cellClass for the given instance.
-- (void)configureCell:(UITableViewCell*)cell NS_REQUIRES_SUPER;
+- (void)configureCell:(UITableViewCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler NS_REQUIRES_SUPER;
 
 @end
 

@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
+@class ChromeTableViewStyler;
 @class TableViewItem;
 
 // Chrome-specific TableViewController.
@@ -17,6 +18,17 @@
 // The model of this controller.
 @property(nonatomic, readonly, strong)
     TableViewModel<TableViewItem*>* tableViewModel;
+
+// The styler that controls how this table view and its cells are
+// displayed. Styler changes should be made before viewDidLoad is called; any
+// changes made afterwards are not guaranteed to take effect.
+@property(nonatomic, readonly, strong) ChromeTableViewStyler* styler;
+
+// Initializers.
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 // Initializes the collection view model. Must be called by subclasses if they
 // override this method in order to get a clean tableViewModel.

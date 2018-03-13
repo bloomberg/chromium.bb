@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,11 +29,13 @@ const CGFloat kMargin = 16;
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)tableCell {
-  [super configureCell:tableCell];
+- (void)configureCell:(UITableViewCell*)tableCell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:tableCell withStyler:styler];
   TableViewTextCell* cell =
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
   cell.textLabel.text = self.text;
+  cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
 }
 
 @end

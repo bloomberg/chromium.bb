@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,9 +14,17 @@
 #endif
 
 @implementation ChromeTableViewController
+@synthesize styler = _styler;
 @synthesize tableViewModel = _tableViewModel;
 
 #pragma mark - Public Interface
+
+- (instancetype)initWithStyle:(UITableViewStyle)style {
+  if ((self = [super initWithStyle:style])) {
+    _styler = [[ChromeTableViewStyler alloc] init];
+  }
+  return self;
+}
 
 - (void)loadModel {
   _tableViewModel = [[TableViewModel alloc] init];
@@ -25,7 +34,7 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  [self.tableView setBackgroundColor:[UIColor whiteColor]];
+  [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
   [self.tableView setSeparatorColor:[UIColor grayColor]];
   [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
 }
@@ -42,7 +51,7 @@
   UITableViewCell* cell =
       [self.tableView dequeueReusableCellWithIdentifier:reuseIdentifier
                                            forIndexPath:indexPath];
-  [item configureCell:cell];
+  [item configureCell:cell withStyler:self.styler];
 
   return cell;
 }
@@ -70,7 +79,7 @@
       forHeaderFooterViewReuseIdentifier:reuseIdentifier];
   UITableViewHeaderFooterView* view = [self.tableView
       dequeueReusableHeaderFooterViewWithIdentifier:reuseIdentifier];
-  [item configureHeaderFooterView:view];
+  [item configureHeaderFooterView:view withStyler:self.styler];
   return view;
 }
 
@@ -86,7 +95,7 @@
       forHeaderFooterViewReuseIdentifier:reuseIdentifier];
   UITableViewHeaderFooterView* view = [self.tableView
       dequeueReusableHeaderFooterViewWithIdentifier:reuseIdentifier];
-  [item configureHeaderFooterView:view];
+  [item configureHeaderFooterView:view withStyler:self.styler];
   return view;
 }
 

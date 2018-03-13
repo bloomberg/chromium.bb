@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/list_model/list_item.h"
 
+@class ChromeTableViewStyler;
+
 // TableViewHeaderFooterItem holds the model data for a given table view
 // header/footer item.
 @interface TableViewHeaderFooterItem : ListItem
@@ -18,6 +20,7 @@
 // ported from the item to the cell. The headerFooter's class must match
 // headerFooterClass for the given instance.
 - (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
+                       withStyler:(ChromeTableViewStyler*)styler
     NS_REQUIRES_SUPER;
 
 @end

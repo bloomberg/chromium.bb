@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -34,6 +35,23 @@ TEST_F(TableViewTextHeaderFooterItemTest, HeaderFooterTextLabels) {
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   EXPECT_FALSE(textHeaderFooter.textLabel.text);
 
-  [item configureHeaderFooterView:textHeaderFooter];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureHeaderFooterView:textHeaderFooter withStyler:styler];
   EXPECT_NSEQ(text, textHeaderFooter.textLabel.text);
+}
+
+TEST_F(TableViewTextHeaderFooterItemTest, Styler) {
+  TableViewTextHeaderFooterItem* item =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:0];
+  id headerFooter = [[[item cellClass] alloc] init];
+  ASSERT_TRUE(
+      [headerFooter isMemberOfClass:[TableViewTextHeaderFooterView class]]);
+  TableViewTextHeaderFooterView* textHeaderFooter =
+      base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
+
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  UIColor* testColor = [UIColor redColor];
+  styler.tableViewBackgroundColor = testColor;
+  [item configureHeaderFooterView:textHeaderFooter withStyler:styler];
+  EXPECT_NSEQ(testColor, textHeaderFooter.contentView.backgroundColor);
 }
