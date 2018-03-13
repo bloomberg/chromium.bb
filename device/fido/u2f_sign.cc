@@ -49,6 +49,20 @@ U2fSign::~U2fSign() = default;
 void U2fSign::TryDevice() {
   DCHECK(current_device_);
 
+  // There are two different descriptions of what should happen when
+  // "allowCredentials" is empty.
+  // a) WebAuthN 6.2.3 step 6[1] implies "NotAllowedError". The current
+  // implementation returns this in response to receiving
+  // CONDITIONS_NOT_SATISFIED from TrySign.
+  // b) CTAP step 7.2 step 2[2] says the device should error out with
+  // "CTAP2_ERR_OPTION_NOT_SUPPORTED". This also resolves to "NotAllowedError".
+  // The behavior in both cases is consistent with the current implementation.
+  // When CTAP2 authenticators are supported, this check should be enforced by
+  // handlers in fido/device on a per-device basis.
+
+  // [1] https://w3c.github.io/webauthn/#authenticatorgetassertion
+  // [2]
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
   if (registered_keys_.size() == 0) {
     // Send registration (Fake enroll) if no keys were provided
     current_device_->Register(

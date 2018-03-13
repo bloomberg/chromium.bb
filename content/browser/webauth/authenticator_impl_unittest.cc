@@ -29,6 +29,8 @@ namespace content {
 using ::testing::_;
 
 using webauth::mojom::AuthenticatorPtr;
+using webauth::mojom::AuthenticatorSelectionCriteria;
+using webauth::mojom::AuthenticatorSelectionCriteriaPtr;
 using webauth::mojom::AuthenticatorStatus;
 using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
@@ -191,6 +193,16 @@ GetTestPublicKeyCredentialParameters(int32_t algorithm_identifier) {
   return parameters;
 }
 
+AuthenticatorSelectionCriteriaPtr GetTestAuthenticatorSelectionCriteria() {
+  auto criteria = AuthenticatorSelectionCriteria::New();
+  criteria->authenticator_attachment =
+      webauth::mojom::AuthenticatorAttachment::NO_PREFERENCE;
+  criteria->require_resident_key = false;
+  criteria->user_verification =
+      webauth::mojom::UserVerificationRequirement::PREFERRED;
+  return criteria;
+}
+
 PublicKeyCredentialCreationOptionsPtr
 GetTestPublicKeyCredentialCreationOptions() {
   auto options = PublicKeyCredentialCreationOptions::New();
@@ -200,6 +212,7 @@ GetTestPublicKeyCredentialCreationOptions() {
       GetTestPublicKeyCredentialParameters(kCoseEs256);
   options->challenge.assign(32, 0x0A);
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  options->authenticator_selection = GetTestAuthenticatorSelectionCriteria();
   return options;
 }
 
@@ -209,6 +222,8 @@ GetTestPublicKeyCredentialRequestOptions() {
   options->relying_party_id = std::string(kTestRelyingPartyId);
   options->challenge.assign(32, 0x0A);
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  options->user_verification =
+      webauth::mojom::UserVerificationRequirement::PREFERRED;
   return options;
 }
 
@@ -374,7 +389,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   }
 }
 
-// Test that service returns NOT_IMPLEMENTED_ERROR if no parameters contain
+// Test that service returns NOT_SUPPORTED_ERROR if no parameters contain
 // a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -383,6 +398,58 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
   options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
+
+  TestMakeCredentialCallback cb;
+  authenticator->MakeCredential(std::move(options), cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
+            cb.GetResponseStatus());
+}
+
+// Test that service returns NOT_SUPPORTED_ERROR if user verification is
+// REQUIRED for get().
+TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->user_verification =
+      webauth::mojom::UserVerificationRequirement::REQUIRED;
+  TestGetAssertionCallback cb;
+  authenticator->GetAssertion(std::move(options), cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
+            cb.GetResponseStatus());
+}
+
+// Test that service returns NOT_SUPPORTED_ERROR if user verification is
+// REQUIRED for create().
+TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->authenticator_selection->user_verification =
+      webauth::mojom::UserVerificationRequirement::REQUIRED;
+
+  TestMakeCredentialCallback cb;
+  authenticator->MakeCredential(std::move(options), cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
+            cb.GetResponseStatus());
+}
+
+// Test that service returns NOT_SUPPORTED_ERROR if resident key is
+// requested for create().
+TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->authenticator_selection->require_resident_key = true;
 
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
