@@ -1173,9 +1173,11 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
 
 void av1_setup_frame_contexts(AV1_COMMON *cm) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  assert(frame_is_intra_only(cm) || cm->error_resilient_mode);
   // Store the frame context into a special slot (not associated with any
   // reference buffer), so that we can set up cm->pre_fc correctly later
+  // This function must ONLY be called when cm->fc has been initialized with
+  // default probs, either by av1_setup_past_independence or after manually
+  // initializing them
   cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
 #else
   if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
