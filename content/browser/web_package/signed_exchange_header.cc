@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
+#include "net/http/http_util.h"
 
 namespace content {
 
@@ -77,8 +78,16 @@ bool ParseResponseMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
     base::StringPiece name_str = it.first.GetBytestringAsString();
     if (name_str == kStatusKey)
       continue;
+    if (!net::HttpUtil::IsValidHeaderName(name_str)) {
+      DVLOG(1) << "Invalid header name";
+      return false;
+    }
 
     base::StringPiece value_str = it.second.GetBytestringAsString();
+    if (!net::HttpUtil::IsValidHeaderValue(value_str)) {
+      DVLOG(1) << "Invalid header value";
+      return false;
+    }
     out->AddResponseHeader(name_str, value_str);
   }
 
@@ -157,6 +166,25 @@ void SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
   name.CopyToString(&name_string);
   value.CopyToString(&value_string);
   response_headers_[name_string] = value_string;
+}
+
+scoped_refptr<net::HttpResponseHeaders>
+SignedExchangeHeader::BuildHttpResponseHeaders() const {
+  std::string fake_header_str("HTTP/1.1 ");
+  fake_header_str.append(base::NumberToString(response_code()));
+  fake_header_str.append(" ");
+  fake_header_str.append(net::GetHttpReasonPhrase(response_code()));
+  fake_header_str.append(" \r\n");
+  for (const auto& it : response_headers()) {
+    fake_header_str.append(it.first);
+    fake_header_str.append(": ");
+    fake_header_str.append(it.second);
+    fake_header_str.append("\r\n");
+  }
+  fake_header_str.append("\r\n");
+  return base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(fake_header_str.c_str(),
+                                        fake_header_str.size()));
 }
 
 }  // namespace content
