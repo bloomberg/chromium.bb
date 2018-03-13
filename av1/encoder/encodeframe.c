@@ -3926,7 +3926,11 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
           earliest_ref_frames[0] = ref_frame;
           earliest_buf_idxes[0] = buf_idx;
         } else {
+#if CONFIG_EXPLICIT_ORDER_HINT
+          if (get_relative_dist(cm, ref_offset, min_ref_offset) < 0) {
+#else
           if (ref_offset < min_ref_offset) {
+#endif
             second_min_ref_offset = min_ref_offset;
             earliest_ref_frames[1] = earliest_ref_frames[0];
             earliest_buf_idxes[1] = earliest_buf_idxes[0];
@@ -3934,7 +3938,13 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
             min_ref_offset = ref_offset;
             earliest_ref_frames[0] = ref_frame;
             earliest_buf_idxes[0] = buf_idx;
+#if CONFIG_EXPLICIT_ORDER_HINT
+          } else if (second_min_ref_offset == UINT_MAX ||
+                     get_relative_dist(cm, ref_offset, second_min_ref_offset) <
+                         0) {
+#else
           } else if (ref_offset < second_min_ref_offset) {
+#endif
             second_min_ref_offset = ref_offset;
             earliest_ref_frames[1] = ref_frame;
             earliest_buf_idxes[1] = buf_idx;
@@ -4010,8 +4020,13 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   const int cur_offset = (int)cm->frame_offset;
   int ref_offset[2];
   get_skip_mode_ref_offsets(cm, ref_offset);
+#if CONFIG_EXPLICIT_ORDER_HINT
+  const int cur_to_ref0 = get_relative_dist(cm, cur_offset, ref_offset[0]);
+  const int cur_to_ref1 = abs(get_relative_dist(cm, cur_offset, ref_offset[1]));
+#else
   const int cur_to_ref0 = cur_offset - ref_offset[0];
   const int cur_to_ref1 = abs(cur_offset - ref_offset[1]);
+#endif
   if (abs(cur_to_ref0 - cur_to_ref1) > 1) return 0;
 
   // High Latency: Turn off skip mode if all refs are fwd.

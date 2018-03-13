@@ -8865,24 +8865,52 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (sf->selective_ref_frame == 2 || x->cb_partition_scan) {
         if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
             mbmi->ref_frame[1] == ALTREF2_FRAME)
+#if CONFIG_EXPLICIT_ORDER_HINT
+          if (get_relative_dist(
+                  cm,
+                  cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
+                  cm->frame_offset) < 0)
+#else
           if (cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME] <
               cm->frame_offset)
+#endif
             continue;
         if (mbmi->ref_frame[0] == BWDREF_FRAME ||
             mbmi->ref_frame[1] == BWDREF_FRAME)
+#if CONFIG_EXPLICIT_ORDER_HINT
+          if (get_relative_dist(
+                  cm,
+                  cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME],
+                  cm->frame_offset) < 0)
+#else
           if (cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME] <
               cm->frame_offset)
+#endif
             continue;
       }
       if (mbmi->ref_frame[0] == LAST3_FRAME ||
           mbmi->ref_frame[1] == LAST3_FRAME)
+#if CONFIG_EXPLICIT_ORDER_HINT
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
+            0)
+#else
         if (cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME] <=
             cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME])
+#endif
           continue;
       if (mbmi->ref_frame[0] == LAST2_FRAME ||
           mbmi->ref_frame[1] == LAST2_FRAME)
+#if CONFIG_EXPLICIT_ORDER_HINT
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
+            0)
+#else
         if (cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME] <=
             cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME])
+#endif
           continue;
     }
 
@@ -8894,10 +8922,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         assert(buf_idx >= 0);
         ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
       }
+#if CONFIG_EXPLICIT_ORDER_HINT
+      if ((get_relative_dist(cm, ref_offsets[0], cm->frame_offset) <= 0 &&
+           get_relative_dist(cm, ref_offsets[1], cm->frame_offset) <= 0) ||
+          (get_relative_dist(cm, ref_offsets[0], cm->frame_offset) > 0 &&
+           get_relative_dist(cm, ref_offsets[1], cm->frame_offset) > 0))
+#else
       if ((ref_offsets[0] <= cm->frame_offset &&
            ref_offsets[1] <= cm->frame_offset) ||
           (ref_offsets[0] > cm->frame_offset &&
            ref_offsets[1] > cm->frame_offset))
+#endif
         continue;
     }
 
