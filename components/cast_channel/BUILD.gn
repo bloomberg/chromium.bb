@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 static_library("cast_channel") {
   sources = [
     "cast_auth_util.cc",
@@ -84,4 +86,21 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+fuzzer_test("cast_message_fuzzer") {
+  sources = [
+    "cast_message_fuzzer.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//components/cast_channel",
+    "//components/cast_channel/proto:cast_channel_proto",
+    "//net",
+  ]
+  seed_corpus = "fuzz_corpus"
+
+  # See MessageFramer::MessageHeader::max_message_size()
+  libfuzzer_options = [ "max_len=65535" ]
 }
