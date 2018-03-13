@@ -117,6 +117,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
     is_pushed_by_floats_ = true;
     return *this;
   }
+  bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
 #ifndef NDEBUG
   String ToString() const;

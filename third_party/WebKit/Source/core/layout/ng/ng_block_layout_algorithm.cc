@@ -926,6 +926,10 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     abort_when_bfc_resolved_ |= !layout_result->UnpositionedFloats().IsEmpty();
     if (child_space->FloatsBfcOffset())
       DCHECK(layout_result->UnpositionedFloats().IsEmpty());
+    // If our BFC offset is unknown, and the child got pushed down by floats, so
+    // will we.
+    if (layout_result->IsPushedByFloats())
+      container_builder_.SetIsPushedByFloats();
   }
 
   // A child may have aborted its layout if it resolved its BFC offset. If
@@ -1413,10 +1417,14 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     }
   }
 
-  if (!has_processed_first_child_ && !is_pushed_by_floats) {
+  if (!has_processed_first_child_ &&
+      (container_builder_.IsPushedByFloats() || !is_pushed_by_floats)) {
     // We're breaking before the first piece of in-flow content inside this
     // block, even if it's not a valid class C break point [1] in this case. We
-    // really don't want to break here, if we can find something better.
+    // really don't want to break here, if we can find something better. A class
+    // C break point occurs if a first child has been pushed by floats, but this
+    // only applies to the outermost block that gets pushed (in case this parent
+    // and the child have adjoining top margins).
     //
     // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
     container_builder_.SetHasLastResortBreak();
@@ -1608,16 +1616,23 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
 
   WritingMode writing_mode;
+  Optional<LayoutUnit> clearance_offset;
+  if (!constraint_space_.IsNewFormattingContext())
+    clearance_offset = ConstraintSpace().ClearanceOffset();
   if (child.IsInline()) {
-    space_builder.SetClearanceOffset(ConstraintSpace().ClearanceOffset());
     writing_mode = Style().GetWritingMode();
   } else {
     const ComputedStyle& child_style = child.Style();
-    space_builder
-        .SetClearanceOffset(
-            exclusion_space_->ClearanceOffset(child_style.Clear()))
-        .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
-        .SetTextDirection(child_style.Direction());
+    LayoutUnit child_clearance_offset =
+        exclusion_space_->ClearanceOffset(child_style.Clear());
+    if (clearance_offset) {
+      clearance_offset =
+          std::max(clearance_offset.value(), child_clearance_offset);
+    } else {
+      clearance_offset = child_clearance_offset;
+    }
+    space_builder.SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style));
+    space_builder.SetTextDirection(child_style.Direction());
     writing_mode = child_style.GetWritingMode();
 
     // PositionListMarker() requires a first line baseline.
@@ -1629,6 +1644,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
                : kIdeographicBaseline});
     }
   }
+  space_builder.SetClearanceOffset(clearance_offset);
 
   LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
