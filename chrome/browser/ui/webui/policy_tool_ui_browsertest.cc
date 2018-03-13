@@ -6,6 +6,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -40,10 +41,13 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
   void LoadSession(const std::string& session_name);
   void DeleteSession(const std::string& session_name);
+  void RenameSession(const std::string& session_name,
+                     const std::string& new_session_name);
 
   std::unique_ptr<base::DictionaryValue> ExtractPolicyValues(bool need_status);
 
   bool IsInvalidSessionNameErrorMessageDisplayed();
+  bool IsSessionRenameErrorMessageDisplayed();
 
   std::unique_ptr<base::ListValue> ExtractSessionsList();
 
@@ -114,6 +118,18 @@ void PolicyToolUITest::DeleteSession(const std::string& session_name) {
   content::RunAllTasksUntilIdle();
 }
 
+void PolicyToolUITest::RenameSession(const std::string& session_name,
+                                     const std::string& new_session_name) {
+  const std::string javascript =
+      base::StrCat({"$('session-list').value = '", session_name, "';",
+                    "$('rename-session-button').click();",
+                    "$('new-session-name-field').value = '", new_session_name,
+                    "';", "$('confirm-rename-button').click();"});
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), javascript));
+  content::RunAllTasksUntilIdle();
+}
+
 std::unique_ptr<base::DictionaryValue> PolicyToolUITest::ExtractPolicyValues(
     bool need_status) {
   std::string javascript =
@@ -167,6 +183,16 @@ bool PolicyToolUITest::IsInvalidSessionNameErrorMessageDisplayed() {
       browser()->tab_strip_model()->GetActiveWebContents();
   bool result = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(contents, javascript, &result));
+  return result;
+}
+
+bool PolicyToolUITest::IsSessionRenameErrorMessageDisplayed() {
+  constexpr char kJavascript[] =
+      "domAutomationController.send($('session-rename-error').hidden == false)";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  bool result = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(contents, kJavascript, &result));
   return result;
 }
 
@@ -427,5 +453,56 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DeleteSession) {
   // Check that a current when the current session is deleted,
   DeleteSession("2");
   expected.GetList().erase(expected.GetList().begin());
+  EXPECT_EQ(expected, *ExtractSessionsList());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSession) {
+  CreateMultipleSessionFiles(3);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
+
+  // Check that a non-current session is renamed correctly.
+  RenameSession("0", "4");
+  EXPECT_FALSE(IsSessionRenameErrorMessageDisplayed());
+  base::ListValue expected;
+  expected.GetList().push_back(base::Value("2"));
+  expected.GetList().push_back(base::Value("1"));
+  expected.GetList().push_back(base::Value("4"));
+  EXPECT_EQ(expected, *ExtractSessionsList());
+
+  // Check that the current session can be renamed properly.
+  RenameSession("2", "5");
+  EXPECT_FALSE(IsSessionRenameErrorMessageDisplayed());
+  expected.GetList()[0] = base::Value("5");
+  EXPECT_EQ(expected, *ExtractSessionsList());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionWithExistingSessionName) {
+  CreateMultipleSessionFiles(3);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
+
+  // Check that a session can not be renamed with a name of another existing
+  // session.
+  RenameSession("2", "1");
+  EXPECT_TRUE(IsSessionRenameErrorMessageDisplayed());
+  base::ListValue expected;
+  expected.GetList().push_back(base::Value("2"));
+  expected.GetList().push_back(base::Value("1"));
+  expected.GetList().push_back(base::Value("0"));
+  EXPECT_EQ(expected, *ExtractSessionsList());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, RenameSessionInvalidName) {
+  CreateMultipleSessionFiles(3);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
+
+  RenameSession("2", "../");
+  EXPECT_TRUE(IsSessionRenameErrorMessageDisplayed());
+  base::ListValue expected;
+  expected.GetList().push_back(base::Value("2"));
+  expected.GetList().push_back(base::Value("1"));
+  expected.GetList().push_back(base::Value("0"));
   EXPECT_EQ(expected, *ExtractSessionsList());
 }

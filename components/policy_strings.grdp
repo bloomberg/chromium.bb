@@ -228,6 +228,12 @@
   </message>
 
   <!-- chrome://policy-tool -->
+  <message name="IDS_POLICY_TOOL_CANCEL_RENAME" desc="Button to cancel the dialog that appears in rename session.">
+    Cancel
+  </message>
+  <message name="IDS_POLICY_TOOL_CONFIRM_RENAME" desc="Button that confirm a rename session.">
+    Confirm
+  </message>
   <message name="IDS_POLICY_TOOL_TITLE" desc="Admin page title and the title of the section that lists policies.">
     Policy management
   </message>
@@ -239,6 +245,12 @@
   </message>
   <message name="IDS_POLICY_TOOL_LOAD_SESSION" desc="Label for the button that loads specified session.">
     Load session
+  </message>
+  <message name="IDS_POLICY_TOOL_REMOVE_SESSION" desc="Label for the button that removes specified session.">
+    Remove
+  </message>
+  <message name="IDS_POLICY_TOOL_RENAME_SESSION" desc="Label for the button that renames specified session.">
+    Rename
   </message>
   <message name="IDS_POLICY_TOOL_SESSION_NAME_PLACEHOLDER" desc="Placeholder for the input field that lets the user change policy management sessions.">
     Session name
@@ -257,6 +269,18 @@
   </message>
   <message name="IDS_POLICY_TOOL_DELETE_FAILED" desc="A message that is shown to the user when deleting the session fails because the session name that is sent from Javascript is invalid.">
     The session with this name is not valid for deletion.
+  </message>
+  <message name="IDS_POLICY_TOOL_SESSION_NOT_EXIST" desc="A message that is shown to the user when
+    the selected session name does not exist.">
+    The selected session does not exist.
+  </message>
+  <message name="IDS_POLICY_TOOL_SESSION_EXIST" desc="A message that is show to the user when
+    there is another session with the same name in a renaming session.">
+    This session name already exists.
+  </message>
+  <message name="IDS_POLICY_TOOL_RENAME_FAILED" desc="A message that is shown to the user when
+    renaming the session fails because the function that rename the file failed.">
+    Failed to rename the session.
   </message>
   <!-- chrome://policy -->
   <message name="IDS_POLICY_TITLE" desc="Page title and the title of the section that lists policies.">
