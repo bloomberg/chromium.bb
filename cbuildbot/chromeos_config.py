@@ -538,6 +538,7 @@ _x86_internal_release_boards = frozenset([
     'banjo',
     'banon',
     'betty',
+    'betty-arcnext',
     'betty-arc64',
     'buddy',
     'candy',
@@ -655,6 +656,7 @@ _cheets_x86_boards = frozenset([
     'auron_yuna',
     'banon',
     'betty',
+    'betty-arcnext',
     'betty-arc64',
     'buddy',
     'cave',
@@ -777,6 +779,7 @@ _vmtest_boards = frozenset([
     # from betty & co.
     'amd64-generic', # Has kernel 4.4, used with public Chromium.
     'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
+    'betty-arcnext', # Like betty but with the next version of ARC++.
     'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
     'newbie',        # AOSP variant of betty.
     'novato',        # Like betty but with GMSCore but not the Play Store
@@ -2484,6 +2487,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
+      'betty-arcnext',
       'grunt',
       'nami',
       'octopus',
@@ -2533,6 +2537,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_smoke_vmtest_boards = frozenset([
       'betty',
       'betty-arc64',
+      'betty-arcnext',
   ])
 
   _paladin_default_vmtest_boards = frozenset([

@@ -7042,16 +7042,46 @@
             "chrome_internal"
         ]
     },
+    "betty-arcnext-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "betty-arcnext-chrome-pfq-tryjob": {
+        "_template": "chrome_pfq",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": null,
+        "important": false,
+        "manifest": "official.xml",
+        "uprev": true
+    },
     "betty-arcnext-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "betty-arcnext-chromium-pfq-tryjob": {
         "_template": "chromium_pfq",
@@ -7059,6 +7089,7 @@
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -7073,27 +7104,68 @@
         "uprev": true,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "betty-arcnext-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
             "betty-arcnext"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arcnext-factory": {
+        "_template": "factory",
+        "boards": [
+            "betty-arcnext"
+        ]
+    },
+    "betty-arcnext-factory-tryjob": {
+        "_template": "factory",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "push_image": false
+    },
+    "betty-arcnext-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "manifest": "official.xml"
+    },
+    "betty-arcnext-firmware-tryjob": {
+        "_template": "firmware",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "manifest": "official.xml",
+        "push_image": false
     },
     "betty-arcnext-full": {
         "_template": "full",
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests_override": null,
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "betty-arcnext-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -7132,16 +7204,41 @@
         "boards": [
             "betty-arcnext"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "betty-arcnext-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
+        "description": "Commit Queue (internal)",
         "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
+        "vm_tests_override": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ]
     },
     "betty-arcnext-paladin-tryjob": {
         "_template": "paladin",
@@ -7149,8 +7246,10 @@
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "chroot_replace": true,
         "debug": true,
+        "description": "Commit Queue (internal)",
         "display_label": "tryjob",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -7160,8 +7259,28 @@
         ],
         "hw_tests_override": null,
         "important": false,
-        "vm_tests": [],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"max_retries\": 5,\n    \"retry\": true,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"smoke\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests_override": null
+    },
+    "betty-arcnext-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "hw_tests_override": null
     },
     "betty-arcnext-pre-cq": {
         "_template": "pre_cq",
@@ -7169,7 +7288,13 @@
             "betty-arcnext"
         ],
         "hw_tests_override": null,
-        "vm_tests": []
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "betty-arcnext-release": {
         "_template": "release",
@@ -7177,7 +7302,112 @@
         "boards": [
             "betty-arcnext"
         ],
-        "vm_tests": [],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arcnext-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "betty-arcnext"
+                ],
+                "grouped": true,
+                "name": "betty-arcnext-release-afdo-generate"
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "betty-arcnext"
+                ],
+                "grouped": true,
+                "name": "betty-arcnext-release-afdo-use"
+            }
+        ]
+    },
+    "betty-arcnext-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arcnext-release-afdo-generate-tryjob": {
+        "_template": "release_afdo_generate",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
+        ],
+        "hw_tests_override": null,
+        "vm_tests_override": null
+    },
+    "betty-arcnext-release-afdo-tryjob": {
+        "_template": "release_afdo_generate",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "betty-arcnext"
+                ],
+                "grouped": true,
+                "name": "betty-arcnext-release-afdo-generate"
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "betty-arcnext"
+                ],
+                "grouped": true,
+                "name": "betty-arcnext-release-afdo-use"
+            }
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
+        ],
+        "hw_tests_override": null,
+        "vm_tests_override": null
+    },
+    "betty-arcnext-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arcnext-release-afdo-use-tryjob": {
+        "_template": "release_afdo_use",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": null,
         "vm_tests_override": null
     },
     "betty-arcnext-release-tryjob": {
@@ -7186,6 +7416,7 @@
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -7198,26 +7429,41 @@
         "hw_tests_override": null,
         "paygen": false,
         "push_image": false,
-        "vm_tests": [],
         "vm_tests_override": null
+    },
+    "betty-arcnext-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "betty-arcnext"
+        ],
+        "buildslave_type": "baremetal",
+        "hw_tests_override": null,
+        "manifest": "official.xml"
     },
     "betty-arcnext-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "betty-arcnext"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests_override": null,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "betty-arcnext-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
             "betty-arcnext"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "betty-asan": {
         "_template": "asan",
@@ -35493,6 +35739,7 @@
             "auron_yuna-paladin",
             "beaglebone-paladin",
             "betty-arc64-paladin",
+            "betty-arcnext-paladin",
             "betty-paladin",
             "bob-paladin",
             "capri-paladin",
@@ -35612,6 +35859,7 @@
             "auron_yuna-paladin",
             "beaglebone-paladin",
             "betty-arc64-paladin",
+            "betty-arcnext-paladin",
             "betty-paladin",
             "bob-paladin",
             "capri-paladin",
