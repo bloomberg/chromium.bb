@@ -29,6 +29,7 @@ constexpr gfx::Insets kTouchInkDropInsets{6};
 }  // namespace
 
 constexpr float kTouchToolbarInkDropVisibleOpacity = 0.06f;
+constexpr float kTouchToolbarHighlightVisibleOpacity = 0.08f;
 
 // The below utility functions are templated since we have two different types
 // of buttons on the toolbar (ToolbarButton and AppMenuButton) which don't share
@@ -87,7 +88,7 @@ std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
   auto highlight = std::make_unique<views::InkDropHighlight>(
       kTouchInkDropHighlightSize, kTouchInkDropCornerRadius,
       gfx::PointF(center_point), host_view->GetInkDropBaseColor());
-  highlight->set_visible_opacity(0.08f);
+  highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
   return highlight;
 }
 
