@@ -3582,6 +3582,8 @@ static void update_reference_frames(AV1_COMP *cpi) {
                cm->new_fb_idx);
     ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
                cm->new_fb_idx);
+    ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->ext_fb_idx],
+               cm->new_fb_idx);
   } else if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
     // new ARF frame. However, in the short term in function
