@@ -137,19 +137,21 @@ Value RunExecScript(Scope* scope,
     return Value();
 
   // Find the python script to run.
-  SourceFile script_source =
-      cur_dir.ResolveRelativeFile(args[0], err,
-          scope->settings()->build_settings()->root_path_utf8());
+  std::string script_source_path = cur_dir.ResolveRelativeAs(
+      true, args[0], err,
+      scope->settings()->build_settings()->root_path_utf8());
   if (err->has_error())
     return Value();
-  base::FilePath script_path = build_settings->GetFullPath(script_source);
+  base::FilePath script_path =
+      build_settings->GetFullPath(script_source_path, true);
   if (!build_settings->secondary_source_path().empty() &&
       !base::PathExists(script_path)) {
     // Fall back to secondary source root when the file doesn't exist.
-    script_path = build_settings->GetFullPathSecondary(script_source);
+    script_path =
+        build_settings->GetFullPathSecondary(script_source_path, true);
   }
 
-  ScopedTrace trace(TraceItem::TRACE_SCRIPT_EXECUTE, script_source.value());
+  ScopedTrace trace(TraceItem::TRACE_SCRIPT_EXECUTE, script_source_path);
   trace.SetToolchain(settings->toolchain_label());
 
   // Add all dependencies of this script, including the script itself, to the
@@ -163,10 +165,11 @@ Value RunExecScript(Scope* scope,
     for (const auto& dep : deps_value.list_value()) {
       if (!dep.VerifyTypeIs(Value::STRING, err))
         return Value();
-      g_scheduler->AddGenDependency(
-          build_settings->GetFullPath(cur_dir.ResolveRelativeFile(
-              dep, err,
-              scope->settings()->build_settings()->root_path_utf8())));
+      g_scheduler->AddGenDependency(build_settings->GetFullPath(
+          cur_dir.ResolveRelativeAs(
+              true, dep, err,
+              scope->settings()->build_settings()->root_path_utf8()),
+          true));
       if (err->has_error())
         return Value();
     }
@@ -236,10 +239,12 @@ Value RunExecScript(Scope* scope,
     }
   }
   if (g_scheduler->verbose_logging()) {
-    g_scheduler->Log("Pythoning", script_source.value() + " took " +
-        base::Int64ToString(
-            (base::TimeTicks::Now() - begin_exec).InMilliseconds()) +
-        "ms");
+    g_scheduler->Log(
+        "Pythoning",
+        script_source_path + " took " +
+            base::Int64ToString(
+                (base::TimeTicks::Now() - begin_exec).InMilliseconds()) +
+            "ms");
   }
 
   if (exit_code != 0) {

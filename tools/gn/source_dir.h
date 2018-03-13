@@ -37,28 +37,57 @@ class SourceDir {
   SourceDir(SwapIn, std::string* s);
   ~SourceDir();
 
-  // Resolves a file or dir name relative to this source directory. Will return
-  // an empty SourceDir/File on error and set the give *err pointer (required).
-  // Empty input is always an error.
+  // Resolves a file or dir name (based on as_file parameter) relative
+  // to this source directory. Will return an empty string on error
+  // and set the give *err pointer (required). Empty input is always an error.
+  //
+  // Passed non null v_value will be used to resolve path (in cases where
+  // a substring has been extracted from the value, as with label resolution).
+  // In this use case parameter v is used to generate proper error.
   //
   // If source_root is supplied, these functions will additionally handle the
   // case where the input is a system-absolute but still inside the source
   // tree. This is the case for some external tools.
+  std::string ResolveRelativeAs(
+      bool as_file,
+      const Value& v,
+      Err* err,
+      const base::StringPiece& source_root = base::StringPiece(),
+      const std::string* v_value = nullptr) const;
+
+  // Like ResolveRelativeAs above, but allows to produce result
+  // without overhead for string conversion (on input value).
+  template <typename StringType>
+  std::string ResolveRelativeAs(
+      bool as_file,
+      const Value& blame_input_value,
+      const StringType& input_value,
+      Err* err,
+      const base::StringPiece& source_root = base::StringPiece()) const;
+
+  // Wrapper for ResolveRelativeAs.
   SourceFile ResolveRelativeFile(
       const Value& p,
       Err* err,
       const base::StringPiece& source_root = base::StringPiece()) const;
-  SourceDir ResolveRelativeDir(
-      const Value& p,
-      Err* err,
-      const base::StringPiece& source_root = base::StringPiece()) const;
 
-  // Like ResolveRelativeDir but takes a separate value (which gets blamed)
-  // and string to use (in cases where a substring has been extracted from the
-  // value, as with label resolution).
+  // Wrapper for ResolveRelativeAs.
+  template <typename StringType>
   SourceDir ResolveRelativeDir(
-      const Value& blame_but_dont_use,
-      const base::StringPiece& p,
+      const Value& blame_input_value,
+      const StringType& input_value,
+      Err* err,
+      const base::StringPiece& source_root = base::StringPiece()) const {
+    SourceDir ret;
+    ret.value_ = ResolveRelativeAs<StringType>(false, blame_input_value,
+                                               input_value, err, source_root);
+    return ret;
+  }
+
+  // Wrapper for ResolveRelativeDir where input_value equals to
+  // v.string_value().
+  SourceDir ResolveRelativeDir(
+      const Value& v,
       Err* err,
       const base::StringPiece& source_root = base::StringPiece()) const;
 

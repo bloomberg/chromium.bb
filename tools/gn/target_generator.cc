@@ -222,24 +222,18 @@ bool TargetGenerator::FillData() {
     const Value& input = input_list[i];
     if (!input.VerifyTypeIs(Value::STRING, err_))
       return false;
-    const std::string& input_str = input.string_value();
+    const std::string input_str = input.string_value();
 
     // Treat each input as either a file or a directory, depending on the
     // last character.
-    if (!input_str.empty() && input_str[input_str.size() - 1] == '/') {
-      // Resolve as directory.
-      SourceDir resolved =
-          dir.ResolveRelativeDir(input, input_str, err_, root_path);
-      if (err_->has_error())
-        return false;
-      output_list.push_back(resolved.value());
-    } else {
-      // Resolve as file.
-      SourceFile resolved = dir.ResolveRelativeFile(input, err_, root_path);
-      if (err_->has_error())
-        return false;
-      output_list.push_back(resolved.value());
-    }
+    bool as_dir = !input_str.empty() && input_str[input_str.size() - 1] == '/';
+
+    std::string resolved =
+        dir.ResolveRelativeAs(!as_dir, input, err_, root_path, &input_str);
+    if (err_->has_error())
+      return false;
+
+    output_list.push_back(resolved);
   }
   return true;
 }

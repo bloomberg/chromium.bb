@@ -61,23 +61,5 @@ SourceDir SourceFile::GetDir() const {
 }
 
 base::FilePath SourceFile::Resolve(const base::FilePath& source_root) const {
-  if (is_null())
-    return base::FilePath();
-
-  std::string converted;
-  if (is_system_absolute()) {
-    if (value_.size() > 2 && value_[2] == ':') {
-      // Windows path, strip the leading slash.
-      converted.assign(&value_[1], value_.size() - 1);
-    } else {
-      converted.assign(value_);
-    }
-    return base::FilePath(UTF8ToFilePath(converted));
-  }
-
-  converted.assign(&value_[2], value_.size() - 2);
-  if (source_root.empty())
-    return UTF8ToFilePath(converted).NormalizePathSeparatorsTo('/');
-  return source_root.Append(UTF8ToFilePath(converted))
-      .NormalizePathSeparatorsTo('/');
+  return ResolvePath(value_, true, source_root);
 }
