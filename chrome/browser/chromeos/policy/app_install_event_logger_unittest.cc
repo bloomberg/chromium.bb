@@ -6,16 +6,25 @@
 
 #include <stdint.h>
 
+#include "base/json/json_writer.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +40,10 @@ namespace {
 
 constexpr char kStatefulMountPath[] = "/mnt/stateful_partition";
 constexpr char kPackageName[] = "com.example.app";
+constexpr char kPackageName2[] = "com.example.app2";
+constexpr char kPackageName3[] = "com.example.app3";
+constexpr char kPackageName4[] = "com.example.app4";
+constexpr char kPackageName5[] = "com.example.app5";
 const int kTimestamp = 123456;
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
@@ -73,6 +86,13 @@ class MockAppInstallEventLoggerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockAppInstallEventLoggerDelegate);
 };
 
+void SetPolicy(policy::PolicyMap* map,
+               const char* name,
+               std::unique_ptr<base::Value> value) {
+  map->Set(name, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+           policy::POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+}
+
 }  // namespace
 
 class AppInstallEventLoggerTest : public testing::Test {
@@ -83,6 +103,14 @@ class AppInstallEventLoggerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
 
   void SetUp() override {
+    RegisterLocalState(pref_service_.registry());
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
+
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        std::make_unique<chromeos::FakePowerManagerClient>());
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
+
     disk_mount_manager_ = new chromeos::disks::MockDiskMountManager;
     chromeos::disks::DiskMountManager::InitializeForTesting(
         disk_mount_manager_);
@@ -99,7 +127,10 @@ class AppInstallEventLoggerTest : public testing::Test {
   void TearDown() override {
     logger_.reset();
     scoped_task_environment_.RunUntilIdle();
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
     chromeos::disks::DiskMountManager::Shutdown();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
   // Runs |function|, verifies that the expected event is added to the logs for
@@ -135,6 +166,8 @@ class AppInstallEventLoggerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   TestingProfile profile_;
+  TestingPrefServiceSimple pref_service_;
+
   // Owned by chromeos::disks::DiskMountManager.
   chromeos::disks::MockDiskMountManager* disk_mount_manager_ = nullptr;
 
@@ -259,6 +292,66 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
 
   EXPECT_LE(before, timestamp);
   EXPECT_GE(after, timestamp);
+}
+
+TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
+  CreateLogger();
+
+  policy::PolicyMap new_policy_map;
+
+  base::DictionaryValue arc_policy;
+  auto list = std::make_unique<base::ListValue>();
+
+  // Test that REQUIRED, PREINSTALLED and FORCE_INSTALLED are markers to include
+  // app to the tracking. BLOCKED and AVAILABLE are excluded.
+  auto package1 = std::make_unique<base::DictionaryValue>();
+  package1->SetString("installType", "REQUIRED");
+  package1->SetString("packageName", kPackageName);
+  list->Append(std::move(package1));
+  auto package2 = std::make_unique<base::DictionaryValue>();
+  package2->SetString("installType", "PREINSTALLED");
+  package2->SetString("packageName", kPackageName2);
+  list->Append(std::move(package2));
+  auto package3 = std::make_unique<base::DictionaryValue>();
+  package3->SetString("installType", "FORCE_INSTALLED");
+  package3->SetString("packageName", kPackageName3);
+  list->Append(std::move(package3));
+  auto package4 = std::make_unique<base::DictionaryValue>();
+  package4->SetString("installType", "BLOCKED");
+  package4->SetString("packageName", kPackageName4);
+  list->Append(std::move(package4));
+  auto package5 = std::make_unique<base::DictionaryValue>();
+  package5->SetString("installType", "AVAILABLE");
+  package5->SetString("packageName", kPackageName5);
+  list->Append(std::move(package5));
+  arc_policy.SetList("applications", std::move(list));
+
+  std::string arc_policy_string;
+  base::JSONWriter::Write(arc_policy, &arc_policy_string);
+  SetPolicy(&new_policy_map, key::kArcEnabled,
+            std::make_unique<base::Value>(true));
+  SetPolicy(&new_policy_map, key::kArcPolicy,
+            std::make_unique<base::Value>(arc_policy_string));
+
+  // Expected CANCELED with empty package set
+  event_.set_event_type(em::AppInstallReportLogEvent::CANCELED);
+  EXPECT_CALL(delegate_,
+              Add(std::set<std::string>(), MatchEventExceptTimestamp(event_)));
+
+  logger_->OnPolicyUpdated(policy::PolicyNamespace(),
+                           policy::PolicyMap() /* previous */, new_policy_map);
+  Mock::VerifyAndClearExpectations(&delegate_);
+
+  // Expected new packages added with disk info.
+  event_.set_event_type(em::AppInstallReportLogEvent::SERVER_REQUEST);
+  EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName, kPackageName3},
+                             MatchEventExceptTimestamp(event_)));
+  EXPECT_CALL(*disk_mount_manager_, disks());
+  scoped_task_environment_.RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&delegate_);
+
+  // To avoid extra logging.
+  g_browser_process->local_state()->SetBoolean(prefs::kWasRestarted, true);
 }
 
 }  // namespace policy
