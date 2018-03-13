@@ -2030,6 +2030,9 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
       return true;
     }
     if (area == PDFiumPage::DOCLINK_AREA) {
+      if (!PageIndexInBounds(target.page))
+        return true;
+
       pp::Rect page_rect(GetPageScreenRect(target.page));
       int y = position_.y() + page_rect.y();
       if (target.y_in_pixels)
