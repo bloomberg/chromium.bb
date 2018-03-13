@@ -41,7 +41,8 @@ class RequestManager;
 // filesystems.
 // Smb is an application level protocol used by Windows and Samba fileservers.
 // Allows Files App to mount smb filesystems.
-class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
+class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
+                      public base::SupportsWeakPtr<SmbFileSystem> {
  public:
   using UnmountCallback = base::OnceCallback<base::File::Error(
       const ProviderId&,
@@ -236,7 +237,6 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
   UnmountCallback unmount_callback_;
   TempFileManager temp_file_manager_;
 
-  base::WeakPtrFactory<SmbFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SmbFileSystem);
 };
 
