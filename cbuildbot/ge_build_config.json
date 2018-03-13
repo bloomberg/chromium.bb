@@ -50,6 +50,18 @@
       ]
     },
     {
+      "name": "atlas",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "auron_paine",
       "configs": [
         {
@@ -139,6 +151,18 @@
         {
           "builder": "RELEASE",
           "experimental": false,
+          "leader_board": true,
+          "board_group": "vm builds",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "betty-arcnext",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
           "leader_board": true,
           "board_group": "vm builds",
           "arch": "X86_INTERNAL"
