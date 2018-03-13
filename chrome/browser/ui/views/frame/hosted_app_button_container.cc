@@ -18,9 +18,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -28,6 +32,9 @@ namespace {
 
 // Padding around content setting icons.
 constexpr int kContentSettingIconInteriorPadding = 4;
+
+constexpr base::TimeDelta kContentSettingsFadeInDuration =
+    base::TimeDelta::FromMilliseconds(500);
 
 class HostedAppToolbarActionsBar : public ToolbarActionsBar {
  public:
@@ -44,6 +51,99 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
 };
 
 }  // namespace
+
+class HostedAppButtonContainer::ContentSettingsContainer
+    : public views::View,
+      public ContentSettingImageView::Delegate {
+ public:
+  ContentSettingsContainer(BrowserView* browser_view, SkColor icon_color);
+  ~ContentSettingsContainer() override = default;
+
+  // Updates the visibility of each content setting.
+  void RefreshContentSettingViews() {
+    for (auto* v : content_setting_views_)
+      v->Update();
+  }
+
+  // Sets the color of the content setting icons.
+  void SetIconColor(SkColor icon_color) {
+    for (auto* v : content_setting_views_)
+      v->SetIconColor(icon_color);
+  }
+
+  void FadeIn() {
+    SetVisible(true);
+    DCHECK_EQ(layer()->opacity(), 0);
+    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    settings.SetTransitionDuration(kContentSettingsFadeInDuration);
+    layer()->SetOpacity(1);
+  }
+
+  const std::vector<ContentSettingImageView*>&
+  GetContentSettingViewsForTesting() const {
+    return content_setting_views_;
+  }
+
+ private:
+  // views::View:
+  void ChildVisibilityChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
+  // ContentSettingsImageView::Delegate:
+  content::WebContents* GetContentSettingWebContents() override {
+    return browser_view_->GetActiveWebContents();
+  }
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override {
+    return browser_view_->browser()->content_setting_bubble_model_delegate();
+  }
+  void OnContentSettingImageBubbleShown(
+      ContentSettingImageModel::ImageType type) const override {
+    UMA_HISTOGRAM_ENUMERATION(
+        "HostedAppFrame.ContentSettings.ImagePressed", type,
+        ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
+  }
+
+  // Owned by the views hierarchy.
+  std::vector<ContentSettingImageView*> content_setting_views_;
+
+  BrowserView* browser_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
+};
+
+const std::vector<ContentSettingImageView*>&
+HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
+  return content_settings_container_->GetContentSettingViewsForTesting();
+}
+
+HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
+    BrowserView* browser_view,
+    SkColor icon_color)
+    : browser_view_(browser_view) {
+  SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+
+  SetVisible(false);
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetOpacity(0);
+
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
+      ContentSettingImageModel::GenerateContentSettingImageModels();
+  for (auto& model : models) {
+    auto image_view = std::make_unique<ContentSettingImageView>(
+        std::move(model), this,
+        views::NativeWidgetAura::GetWindowTitleFontList());
+    image_view->SetIconColor(icon_color);
+    image_view->set_next_element_interior_padding(
+        kContentSettingIconInteriorPadding);
+    image_view->disable_animation();
+    content_setting_views_.push_back(image_view.get());
+    AddChildView(image_view.release());
+  }
+}
 
 HostedAppButtonContainer::AppMenuButton::AppMenuButton(
     BrowserView* browser_view)
@@ -81,6 +181,13 @@ void HostedAppButtonContainer::AppMenuButton::OnMenuButtonClicked(
   menu_->RunMenu(this);
 }
 
+void HostedAppButtonContainer::StartTitlebarAnimation(
+    base::TimeDelta origin_text_slide_duration) {
+  fade_in_content_setting_buttons_timer_.Start(
+      FROM_HERE, origin_text_slide_duration, content_settings_container_,
+      &ContentSettingsContainer::FadeIn);
+}
+
 HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
                                                    SkColor active_icon_color,
                                                    SkColor inactive_icon_color)
@@ -100,20 +207,10 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
 
-  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
-      ContentSettingImageModel::GenerateContentSettingImageModels();
-  for (auto& model : models) {
-    auto image_view = std::make_unique<ContentSettingImageView>(
-        std::move(model), this,
-        views::NativeWidgetAura::GetWindowTitleFontList());
-    image_view->SetIconColor(active_icon_color);
-    image_view->set_next_element_interior_padding(
-        kContentSettingIconInteriorPadding);
-    image_view->SetVisible(false);
-    image_view->disable_animation();
-    content_setting_views_.push_back(image_view.get());
-    AddChildView(image_view.release());
-  }
+  auto content_settings_container = std::make_unique<ContentSettingsContainer>(
+      browser_view, active_icon_color);
+  content_settings_container_ = content_settings_container.get();
+  AddChildView(content_settings_container.release());
 
   AddChildView(browser_actions_container_);
 
@@ -126,37 +223,22 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
 HostedAppButtonContainer::~HostedAppButtonContainer() {}
 
 void HostedAppButtonContainer::RefreshContentSettingViews() {
-  for (auto* v : content_setting_views_)
-    v->Update();
+  content_settings_container_->RefreshContentSettingViews();
 }
 
 void HostedAppButtonContainer::SetPaintAsActive(bool active) {
-  for (auto* v : content_setting_views_)
-    v->SetIconColor(active ? active_icon_color_ : inactive_icon_color_);
+  content_settings_container_->SetIconColor(active ? active_icon_color_
+                                                   : inactive_icon_color_);
 
   app_menu_button_->SetIconColor(active ? active_icon_color_
                                         : inactive_icon_color_);
 }
 
-content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
-  return browser_view_->GetActiveWebContents();
-}
-
-ContentSettingBubbleModelDelegate*
-HostedAppButtonContainer::GetContentSettingBubbleModelDelegate() {
-  return browser_view_->browser()->content_setting_bubble_model_delegate();
-}
-
-void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
-    ContentSettingImageModel::ImageType type) const {
-  UMA_HISTOGRAM_ENUMERATION(
-      "HostedAppFrame.ContentSettings.ImagePressed", type,
-      ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
-}
-
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
-  if (child != browser_actions_container_)
+  if (child != browser_actions_container_ &&
+      child != content_settings_container_) {
     return;
+  }
 
   PreferredSizeChanged();
 }

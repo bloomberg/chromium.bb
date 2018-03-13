@@ -568,8 +568,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
   EXPECT_EQ(expected_active_icon_color, button_container->active_icon_color_);
 
   // Show a content setting icon.
-  auto& content_setting_views =
-      frame_view->hosted_app_button_container_->content_setting_views_;
+  auto& content_setting_views = frame_view->hosted_app_button_container_
+                                    ->GetContentSettingViewsForTesting();
 
   for (auto* v : content_setting_views)
     EXPECT_FALSE(v->visible());

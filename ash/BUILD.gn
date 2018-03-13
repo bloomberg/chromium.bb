@@ -205,6 +205,8 @@ component("ash") {
     "frame/frame_border_hit_test.cc",
     "frame/frame_border_hit_test.h",
     "frame/frame_header.h",
+    "frame/frame_header_origin_text.cc",
+    "frame/frame_header_origin_text.h",
     "frame/frame_header_util.cc",
     "frame/frame_header_util.h",
     "frame/header_view.cc",

@@ -21,7 +21,6 @@ class BrowserView;
 
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::View,
-                                 public ContentSettingImageView::Delegate,
                                  public BrowserActionsContainer::Delegate,
                                  public BrowserViewButtonProvider {
  public:
@@ -32,14 +31,23 @@ class HostedAppButtonContainer : public views::View,
                            SkColor inactive_icon_color);
   ~HostedAppButtonContainer() override;
 
-  // Updates the visibility of each content setting view.
+  // Updates the visibility of each content setting.
   void RefreshContentSettingViews();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
+  // Animates the menu button and content setting icons. Intended to run in sync
+  // with a FrameHeaderOriginText slide animation.
+  void StartTitlebarAnimation(base::TimeDelta origin_text_slide_duration);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
+
+  class ContentSettingsContainer;
+
+  const std::vector<ContentSettingImageView*>&
+  GetContentSettingViewsForTesting() const;
 
   // The 'app menu' button for the hosted app.
   class AppMenuButton : public views::MenuButton,
@@ -71,12 +79,7 @@ class HostedAppButtonContainer : public views::View,
     DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
   };
 
-  // ContentSettingsImageView::Delegate:
-  content::WebContents* GetContentSettingWebContents() override;
-  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
-      override;
-  void OnContentSettingImageBubbleShown(
-      ContentSettingImageModel::ImageType type) const override;
+  void FadeInContentSettingButtons();
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -101,10 +104,14 @@ class HostedAppButtonContainer : public views::View,
   const SkColor active_icon_color_;
   const SkColor inactive_icon_color_;
 
+  base::OneShotTimer fade_in_content_setting_buttons_timer_;
+
   // Owned by the views hierarchy.
   AppMenuButton* app_menu_button_;
-  std::vector<ContentSettingImageView*> content_setting_views_;
+  ContentSettingsContainer* content_settings_container_;
   BrowserActionsContainer* browser_actions_container_;
+
+  base::OneShotTimer opening_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);
 };
