@@ -131,7 +131,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that a bookmark added on the client (before Sync is enabled) is
 // uploaded to the Sync server once Sync is turned on.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncUploadBookmarkOnFirstSync {
   [self addBookmark:GURL("https://www.foo.com") withTitle:@"foo"];
 
@@ -147,7 +148,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 }
 
 // Tests that a bookmark added on the client is uploaded to the Sync server.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncUploadBookmark {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
@@ -162,7 +164,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that a bookmark injected in the FakeServer is synced down to the
 // client.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncDownloadBookmark {
   [[self class] assertBookmarksWithTitle:@"hoo" expectedCount:0];
   chrome_test_util::InjectBookmarkOnFakeSyncServer("http://www.hoo.com", "hoo");
@@ -265,7 +268,7 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 }
 
 // Tests that autofill profile injected in FakeServer gets synced to client.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/821490): Reenable the device test.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testSyncDownloadAutofillProfile testSyncDownloadAutofillProfile
 #else
@@ -297,7 +300,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Test that update to autofill profile injected in FakeServer gets synced to
 // client.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncUpdateAutofillProfile {
   const std::string kGuid = "2340E83B-5BEE-4560-8F95-5914EF7F539E";
   const std::string kFullName = "Peter Pan";
@@ -342,7 +346,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Test that autofill profile deleted from FakeServer gets deleted from client
 // as well.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncDeleteAutofillProfile {
   const std::string kGuid = "2340E83B-5BEE-4560-8F95-5914EF7F539E";
   const std::string kFullName = "Peter Pan";
@@ -377,7 +382,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that tabs opened on this client are committed to the Sync server and
 // that the created sessions entities are correct.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncUploadOpenTabs {
   // Create map of canned responses and set up the test HTML server.
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://page1");
@@ -412,7 +418,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that a typed URL (after Sync is enabled) is uploaded to the Sync
 // server.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncTypedURLUpload {
   const GURL mockURL("http://not-a-real-site/");
 
@@ -452,7 +459,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 }
 
 // Tests that typed url is downloaded from sync server.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncTypedUrlDownload {
   const GURL mockURL("http://not-a-real-site/");
 
@@ -490,7 +498,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that when typed url is deleted on the client, sync the change gets
 // propagated to server.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncTypedURLDeleteFromClient {
   const GURL mockURL("http://not-a-real-site/");
 
@@ -539,7 +548,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Test that typed url is deleted from client after server sends tombstone for
 // that typed url.
-// TODO(crbug.com/814990): Reenable the test.
+// TODO(crbug.com/814990): Reenable the simulator test.
+// TODO(crbug.com/821490): Reenable the device test.
 - (void)FLAKY_testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
