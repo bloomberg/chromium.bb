@@ -205,6 +205,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   bool IsMarked() const;
   void Mark();
   void Unmark();
+  bool TryMark();
 
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
@@ -1100,6 +1101,14 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
   CheckHeader();
   DCHECK(IsMarked());
   encoded_ &= ~kHeaderMarkBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
+  CheckHeader();
+  if (encoded_ & kHeaderMarkBitMask)
+    return false;
+  encoded_ |= kHeaderMarkBitMask;
+  return true;
 }
 
 NO_SANITIZE_ADDRESS inline bool BasePage::IsValid() const {

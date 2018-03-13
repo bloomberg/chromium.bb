@@ -27,21 +27,20 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
 MarkingVisitor::~MarkingVisitor() = default;
 
 void MarkingVisitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
-  // TODO(mlippautz): Remove cast;
-  reinterpret_cast<MarkingVisitor*>(visitor)->MarkNoTracing(object);
+  reinterpret_cast<MarkingVisitor*>(visitor)->MarkHeaderNoTracing(
+      HeapObjectHeader::FromPayload(object));
 }
 
 void MarkingVisitor::RegisterWeakCallback(void* closure,
                                           WeakCallback callback) {
-  DCHECK(GetMarkingMode() != kWeakProcessing);
   // We don't want to run weak processings when taking a snapshot.
-  if (GetMarkingMode() == kSnapshotMarking)
+  if (marking_mode_ == kSnapshotMarking)
     return;
   Heap().PushWeakCallback(closure, callback);
 }
 
 void MarkingVisitor::RegisterBackingStoreReference(void* slot) {
-  if (GetMarkingMode() != kGlobalMarkingWithCompaction)
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   Heap().RegisterMovingObjectReference(
       reinterpret_cast<MovableReference*>(slot));
@@ -50,7 +49,7 @@ void MarkingVisitor::RegisterBackingStoreReference(void* slot) {
 void MarkingVisitor::RegisterBackingStoreCallback(void* backing_store,
                                                   MovingObjectCallback callback,
                                                   void* callback_data) {
-  if (GetMarkingMode() != kGlobalMarkingWithCompaction)
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
   Heap().RegisterMovingObjectCallback(
       reinterpret_cast<MovableReference>(backing_store), callback,
@@ -61,7 +60,6 @@ bool MarkingVisitor::RegisterWeakTable(
     const void* closure,
     EphemeronCallback iteration_callback,
     EphemeronCallback iteration_done_callback) {
-  DCHECK(GetMarkingMode() != kWeakProcessing);
   Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback,
                            iteration_done_callback);
   return true;

@@ -174,11 +174,6 @@ class PLATFORM_EXPORT HeapAllocator {
     return ThreadHeap::IsHeapObjectAlive(object);
   }
 
-  template <typename VisitorDispatcher>
-  static void MarkNoTracing(VisitorDispatcher visitor, const void* t) {
-    visitor->MarkNoTracing(t);
-  }
-
   template <typename VisitorDispatcher, typename T, typename Traits>
   static void Trace(VisitorDispatcher visitor, T& t) {
     TraceCollectionIfEnabled<Traits::kWeakHandlingFlag, T, Traits>::Trace(
