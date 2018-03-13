@@ -75,6 +75,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
       mojom::VoiceInteractionFrameworkInstancePtr framework_ptr) override;
   void OnVolumeMounterInstanceReady(
       mojom::VolumeMounterInstancePtr volume_mounter_ptr) override;
+  void OnWakeLockInstanceReady(
+      mojom::WakeLockInstancePtr wakelock_ptr) override;
   void OnWallpaperInstanceReady(
       mojom::WallpaperInstancePtr wallpaper_ptr) override;
 

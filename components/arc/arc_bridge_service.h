@@ -83,6 +83,8 @@ class VoiceInteractionFrameworkHost;
 class VoiceInteractionFrameworkInstance;
 class VolumeMounterHost;
 class VolumeMounterInstance;
+class WakeLockHost;
+class WakeLockInstance;
 class WallpaperHost;
 class WallpaperInstance;
 
@@ -218,6 +220,9 @@ class ArcBridgeService {
   volume_mounter() {
     return &volume_mounter_;
   }
+  ConnectionHolder<mojom::WakeLockInstance, mojom::WakeLockHost>* wake_lock() {
+    return &wake_lock_;
+  }
   ConnectionHolder<mojom::WallpaperInstance, mojom::WallpaperHost>*
   wallpaper() {
     return &wallpaper_;
@@ -278,6 +283,7 @@ class ArcBridgeService {
       voice_interaction_framework_;
   ConnectionHolder<mojom::VolumeMounterInstance, mojom::VolumeMounterHost>
       volume_mounter_;
+  ConnectionHolder<mojom::WakeLockInstance, mojom::WakeLockHost> wake_lock_;
   ConnectionHolder<mojom::WallpaperInstance, mojom::WallpaperHost> wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);

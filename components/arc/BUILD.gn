@@ -61,6 +61,8 @@ static_library("arc") {
     "usb/usb_host_ui_delegate.h",
     "volume_mounter/arc_volume_mounter_bridge.cc",
     "volume_mounter/arc_volume_mounter_bridge.h",
+    "wake_lock/arc_wake_lock_bridge.cc",
+    "wake_lock/arc_wake_lock_bridge.h",
   ]
 
   public_deps = [
@@ -202,6 +204,8 @@ static_library("arc_test_support") {
     "test/fake_timer_instance.h",
     "test/fake_voice_interaction_framework_instance.cc",
     "test/fake_voice_interaction_framework_instance.h",
+    "test/fake_wake_lock_instance.cc",
+    "test/fake_wake_lock_instance.h",
     "test/fake_wallpaper_instance.cc",
     "test/fake_wallpaper_instance.h",
     "test/test_browser_context.cc",
@@ -242,6 +246,7 @@ source_set("unit_tests") {
     "metrics/arc_metrics_service_unittest.cc",
     "power/arc_power_bridge_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
+    "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]
 
   deps = [
