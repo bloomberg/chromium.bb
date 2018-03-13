@@ -135,6 +135,7 @@ class TokenPreloadScanner::StartTagScanner {
         media_values_(media_values),
         referrer_policy_set_(false),
         referrer_policy_(kReferrerPolicyDefault),
+        integrity_attr_set_(false),
         integrity_features_(features),
         scanner_type_(scanner_type) {
     if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
@@ -291,7 +292,8 @@ class TokenPreloadScanner::StartTagScanner {
       SetDefer(FetchParameters::kLazyLoad);
     } else if (Match(attribute_name, deferAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
-    } else if (Match(attribute_name, integrityAttr)) {
+    } else if (!integrity_attr_set_ && Match(attribute_name, integrityAttr)) {
+      integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
           attribute_value, integrity_features_, integrity_metadata_);
     } else if (Match(attribute_name, typeAttr)) {
@@ -369,7 +371,8 @@ class TokenPreloadScanner::StartTagScanner {
       SecurityPolicy::ReferrerPolicyFromString(
           attribute_value, kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy_);
-    } else if (Match(attribute_name, integrityAttr)) {
+    } else if (!integrity_attr_set_ && Match(attribute_name, integrityAttr)) {
+      integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
           attribute_value, integrity_features_, integrity_metadata_);
     } else if (Match(attribute_name, srcsetAttr) &&
@@ -594,6 +597,7 @@ class TokenPreloadScanner::StartTagScanner {
   Member<MediaValuesCached> media_values_;
   bool referrer_policy_set_;
   ReferrerPolicy referrer_policy_;
+  bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   TokenPreloadScanner::ScannerType scanner_type_;

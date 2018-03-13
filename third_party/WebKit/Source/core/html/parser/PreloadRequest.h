@@ -106,6 +106,9 @@ class CORE_EXPORT PreloadRequest {
   void SetIntegrityMetadata(const IntegrityMetadataSet& metadata_set) {
     integrity_metadata_ = metadata_set;
   }
+  const IntegrityMetadataSet& IntegrityMetadataForTestingOnly() const {
+    return integrity_metadata_;
+  }
   void SetFromInsertionScanner(const bool from_insertion_scanner) {
     from_insertion_scanner_ = from_insertion_scanner;
   }
