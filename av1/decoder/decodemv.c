@@ -282,31 +282,13 @@ static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &ec_ctx->seg;
-  int prev_ul = -1; /* Top left segment_id */
-  int prev_l = -1;  /* Current left segment_id */
-  int prev_u = -1;  /* Current top segment_id */
-
-  if ((xd->up_available) && (xd->left_available))
-    prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                             mi_row - 1, mi_col - 1);
-
-  if (xd->up_available)
-    prev_u = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 1, mi_col - 0);
-
-  if (xd->left_available)
-    prev_l = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 0, mi_col - 1);
-
-  int cdf_num = pick_spatial_seg_cdf(prev_ul, prev_u, prev_l);
-  int pred = pick_spatial_seg_pred(prev_ul, prev_u, prev_l);
-
+  int cdf_num;
+  const int pred = av1_get_spatial_seg_pred(cm, xd, mi_row, mi_col, &cdf_num);
   if (skip) return pred;
 
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
-
-  int segment_id =
+  const int segment_id =
       av1_neg_deinterleave(coded_id, pred, seg->last_active_segid + 1);
 
   if (segment_id < 0 || segment_id > seg->last_active_segid) {

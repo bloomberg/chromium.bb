@@ -23,30 +23,6 @@
 extern "C" {
 #endif
 
-#if CONFIG_SPATIAL_SEGMENTATION
-/* Picks CDFs based on number of matching/out-of-bounds segment IDs */
-static INLINE int pick_spatial_seg_cdf(int prev_ul, int prev_u, int prev_l) {
-  if (prev_ul < 0 || prev_u < 0 || prev_l < 0) /* Edge case */
-    return 0;
-  if ((prev_ul == prev_u) && (prev_ul == prev_l))
-    return 2;
-  else if ((prev_ul == prev_u) || (prev_ul == prev_l) || (prev_u == prev_l))
-    return 1;
-  else
-    return 0;
-}
-
-/* If 2 or more are identical returns that as predictor, otherwise prev_l */
-static INLINE int pick_spatial_seg_pred(int prev_ul, int prev_u, int prev_l) {
-  if (prev_u == -1) /* Edge case */
-    return prev_l == -1 ? 0 : prev_l;
-  if (prev_l == -1) /* Edge case */
-    return prev_u;
-  return (prev_ul == prev_u) ? prev_u : prev_l;
-}
-
-#endif
-
 static INLINE int get_segment_id(const AV1_COMMON *const cm,
                                  const uint8_t *segment_ids, BLOCK_SIZE bsize,
                                  int mi_row, int mi_col) {
@@ -65,6 +41,43 @@ static INLINE int get_segment_id(const AV1_COMMON *const cm,
   assert(segment_id >= 0 && segment_id < MAX_SEGMENTS);
   return segment_id;
 }
+
+#if CONFIG_SPATIAL_SEGMENTATION
+static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
+                                           const MACROBLOCKD *const xd,
+                                           int mi_row, int mi_col,
+                                           int *cdf_index) {
+  int prev_ul = -1;  // top left segment_id
+  int prev_l = -1;   // left segment_id
+  int prev_u = -1;   // top segment_id
+  if ((xd->up_available) && (xd->left_available)) {
+    prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
+                             mi_row - 1, mi_col - 1);
+  }
+  if (xd->up_available) {
+    prev_u = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
+                            mi_row - 1, mi_col - 0);
+  }
+  if (xd->left_available) {
+    prev_l = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
+                            mi_row - 0, mi_col - 1);
+  }
+
+  // Pick CDF index based on number of matching/out-of-bounds segment IDs.
+  *cdf_index = 0;
+  if ((prev_ul == prev_u) && (prev_ul == prev_l))
+    *cdf_index = 2;
+  else if ((prev_ul == prev_u) || (prev_ul == prev_l) || (prev_u == prev_l))
+    *cdf_index = 1;
+
+  // If 2 or more are identical returns that as predictor, otherwise prev_l.
+  if (prev_u == -1)  // edge case
+    return prev_l == -1 ? 0 : prev_l;
+  if (prev_l == -1)  // edge case
+    return prev_u;
+  return (prev_ul == prev_u) ? prev_u : prev_l;
+}
+#endif  // CONFIG_SPATIAL_SEGMENTATION
 
 static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
   const MODE_INFO *const above_mi = xd->above_mi;

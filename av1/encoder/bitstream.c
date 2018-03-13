@@ -454,28 +454,12 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
                              aom_writer *w, const struct segmentation *seg,
                              struct segmentation_probs *segp, int mi_row,
                              int mi_col, int skip) {
-  AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  int prev_ul = -1; /* Top left segment_id */
-  int prev_l = -1;  /* Current left segment_id */
-  int prev_u = -1;  /* Current top segment_id */
-
   if (!seg->enabled || !seg->update_map) return;
 
-  if ((xd->up_available) && (xd->left_available))
-    prev_ul = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                             mi_row - 1, mi_col - 1);
-
-  if (xd->up_available)
-    prev_u = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 1, mi_col - 0);
-
-  if (xd->left_available)
-    prev_l = get_segment_id(cm, cm->current_frame_seg_map, BLOCK_4X4,
-                            mi_row - 0, mi_col - 1);
-
-  int cdf_num = pick_spatial_seg_cdf(prev_ul, prev_u, prev_l);
-  int pred = pick_spatial_seg_pred(prev_ul, prev_u, prev_l);
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+  int cdf_num;
+  const int pred = av1_get_spatial_seg_pred(cm, xd, mi_row, mi_col, &cdf_num);
 
   if (skip) {
     // Still need to transmit tx size for intra blocks even if skip is
@@ -492,12 +476,10 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
     return;
   }
 
-  int coded_id =
+  const int coded_id =
       av1_neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
-
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, 8);
-
   set_spatial_segment_id(cm, cm->current_frame_seg_map, mbmi->sb_type, mi_row,
                          mi_col, mbmi->segment_id);
 }
