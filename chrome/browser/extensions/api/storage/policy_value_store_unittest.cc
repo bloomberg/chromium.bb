@@ -114,8 +114,8 @@ class PolicyValueStoreTest : public testing::Test {
   void SetCurrentPolicy(const policy::PolicyMap& policies) {
     GetBackendTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&PolicyValueStoreTest::SetCurrentPolicyOnBackendSequence,
-                   base::Unretained(this), base::Passed(policies.DeepCopy())));
+        base::BindOnce(&PolicyValueStoreTest::SetCurrentPolicyOnBackendSequence,
+                       base::Unretained(this), policies.DeepCopy()));
     content::RunAllTasksUntilIdle();
   }
 

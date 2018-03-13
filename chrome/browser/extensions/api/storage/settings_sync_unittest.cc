@@ -258,7 +258,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
   void PostOnBackendSequenceAndWait(const base::Location& from_here,
                                     Func func) {
     GetBackendTaskRunner()->PostTask(
-        from_here, base::Bind(&ExtensionSettingsSyncTest::RunFunc<Func>, func));
+        from_here,
+        base::BindOnce(&ExtensionSettingsSyncTest::RunFunc<Func>, func));
     content::RunAllTasksUntilIdle();
   }
 

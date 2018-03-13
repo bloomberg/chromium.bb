@@ -21,7 +21,7 @@ namespace extensions {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        PromptToReEnableExtensionsOnNavigation) {
   NavigationObserver::SetAllowedRepeatedPromptingForTesting(true);
-  base::ScopedClosureRunner reset_repeated_prompting(base::Bind([]() {
+  base::ScopedClosureRunner reset_repeated_prompting(base::BindOnce([]() {
     NavigationObserver::SetAllowedRepeatedPromptingForTesting(false);
   }));
   scoped_refptr<const Extension> extension =

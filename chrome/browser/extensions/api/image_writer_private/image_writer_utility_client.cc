@@ -164,7 +164,7 @@ void ImageWriterUtilityClient::BindServiceIfNeeded() {
   connector_->BindInterface(chrome::mojom::kRemovableStorageWriterServiceName,
                             mojo::MakeRequest(&removable_storage_writer_));
   removable_storage_writer_.set_connection_error_handler(
-      base::Bind(&ImageWriterUtilityClient::OnConnectionError, this));
+      base::BindOnce(&ImageWriterUtilityClient::OnConnectionError, this));
 }
 
 void ImageWriterUtilityClient::OnConnectionError() {

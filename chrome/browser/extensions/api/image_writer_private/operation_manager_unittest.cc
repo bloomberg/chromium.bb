@@ -71,11 +71,10 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
   TestOperationManager manager(&test_profile_);
 
   manager.StartWriteFromFile(
-      kDummyExtensionId,
-      test_utils_.GetImagePath(),
+      kDummyExtensionId, test_utils_.GetImagePath(),
       test_utils_.GetDevicePath().AsUTF8Unsafe(),
-      base::Bind(&ImageWriterOperationManagerTest::StartCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ImageWriterOperationManagerTest::StartCallback,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(started_);
   EXPECT_TRUE(start_success_);
@@ -83,8 +82,8 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
 
   manager.CancelWrite(
       kDummyExtensionId,
-      base::Bind(&ImageWriterOperationManagerTest::CancelCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ImageWriterOperationManagerTest::CancelCallback,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(cancelled_);
   EXPECT_TRUE(cancel_success_);
@@ -97,10 +96,9 @@ TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
   TestOperationManager manager(&test_profile_);
 
   manager.DestroyPartitions(
-      kDummyExtensionId,
-      test_utils_.GetDevicePath().AsUTF8Unsafe(),
-      base::Bind(&ImageWriterOperationManagerTest::StartCallback,
-                 base::Unretained(this)));
+      kDummyExtensionId, test_utils_.GetDevicePath().AsUTF8Unsafe(),
+      base::BindOnce(&ImageWriterOperationManagerTest::StartCallback,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(started_);
   EXPECT_TRUE(start_success_);
@@ -108,8 +106,8 @@ TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
 
   manager.CancelWrite(
       kDummyExtensionId,
-      base::Bind(&ImageWriterOperationManagerTest::CancelCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&ImageWriterOperationManagerTest::CancelCallback,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(cancelled_);
   EXPECT_TRUE(cancel_success_);

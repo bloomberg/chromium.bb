@@ -226,8 +226,8 @@ void NativeMessageProcessHost::DoRead() {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result =
         read_stream_->Read(read_buffer_.get(), kReadBufferSize,
-                           base::Bind(&NativeMessageProcessHost::OnRead,
-                                      weak_factory_.GetWeakPtr()));
+                           base::BindOnce(&NativeMessageProcessHost::OnRead,
+                                          weak_factory_.GetWeakPtr()));
     HandleReadResult(result);
   }
 }
@@ -303,11 +303,10 @@ void NativeMessageProcessHost::DoWrite() {
       write_queue_.pop();
     }
 
-    int result =
-        write_stream_->Write(current_write_buffer_.get(),
-                             current_write_buffer_->BytesRemaining(),
-                             base::Bind(&NativeMessageProcessHost::OnWritten,
-                                        weak_factory_.GetWeakPtr()));
+    int result = write_stream_->Write(
+        current_write_buffer_.get(), current_write_buffer_->BytesRemaining(),
+        base::BindOnce(&NativeMessageProcessHost::OnWritten,
+                       weak_factory_.GetWeakPtr()));
     HandleWriteResult(result);
   }
 }

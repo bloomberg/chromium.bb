@@ -332,11 +332,11 @@ bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
   // The contents of the file at |path| may have changed since a previous
   // request, in which case the associated icon may also have changed.
   // Therefore, always call LoadIcon instead of attempting a LookupIcon.
-  im->LoadIcon(path,
-               icon_size,
-               base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
-                          base::Unretained(this), scale, callback),
-               &cancelable_task_tracker_);
+  im->LoadIcon(
+      path, icon_size,
+      base::BindOnce(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
+                     base::Unretained(this), scale, callback),
+      &cancelable_task_tracker_);
   return true;
 }
 
