@@ -134,21 +134,19 @@ static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
 }
 
 #if CONFIG_ENTROPY_STATS
-void av1_update_eob_context(int cdf_idx, int eob, int seg_eob, TX_SIZE tx_size,
+void av1_update_eob_context(int cdf_idx, int eob, TX_SIZE tx_size,
                             TX_TYPE tx_type, PLANE_TYPE plane,
                             FRAME_CONTEXT *ec_ctx, FRAME_COUNTS *counts,
                             uint8_t allow_update_cdf) {
 #else
-void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
-                            TX_TYPE tx_type, PLANE_TYPE plane,
-                            FRAME_CONTEXT *ec_ctx, uint8_t allow_update_cdf) {
+void av1_update_eob_context(int eob, TX_SIZE tx_size, TX_TYPE tx_type,
+                            PLANE_TYPE plane, FRAME_CONTEXT *ec_ctx,
+                            uint8_t allow_update_cdf) {
 #endif
-  int eob_extra, dummy;
+  int eob_extra;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
-  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
 
-  (void)max_eob_pt;
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
 
@@ -224,14 +222,11 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
   }
 }
 
-static int get_eob_cost(int eob, int seg_eob,
-                        const LV_MAP_EOB_COST *txb_eob_costs,
+static int get_eob_cost(int eob, const LV_MAP_EOB_COST *txb_eob_costs,
                         const LV_MAP_COEFF_COST *txb_costs, TX_TYPE tx_type) {
-  int eob_extra, dummy;
+  int eob_extra;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
-  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   int eob_cost = 0;
-  (void)max_eob_pt;
   const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
   eob_cost = txb_eob_costs->eob_cost[eob_multi_ctx][eob_pt - 1];
 
@@ -396,7 +391,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                                           tx_size, cm->reduced_tx_set_used);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int16_t *const scan = scan_order->scan;
-  const int seg_eob = av1_get_max_eob(tx_size);
   int c;
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
@@ -417,11 +411,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   av1_write_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, w);
 
-  int eob_extra, dummy;
+  int eob_extra;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
-  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
-
-  (void)max_eob_pt;
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
   switch (eob_multi_size) {
@@ -647,8 +638,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 
   cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
 
-  const int seg_eob = av1_get_max_eob(tx_size);
-  int eob_cost = get_eob_cost(eob, seg_eob, eob_costs, coeff_costs, tx_type);
+  int eob_cost = get_eob_cost(eob, eob_costs, coeff_costs, tx_type);
   cost += eob_cost;
 
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
@@ -757,9 +747,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   const int16_t *const scan = txb_info->scan_order->scan;
   // forward optimize the nz_map`
   const int init_eob = txb_info->eob;
-  const int seg_eob = txb_info->seg_eob;
-  const int eob_cost = get_eob_cost(init_eob, seg_eob, txb_eob_costs, txb_costs,
-                                    txb_info->tx_type);
+  const int eob_cost =
+      get_eob_cost(init_eob, txb_eob_costs, txb_costs, txb_info->tx_type);
 
   // backward optimize the level-k map
   int accu_rate = eob_cost;
@@ -800,8 +789,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
       LevelDownStats stats;
       get_dist_cost_stats_with_eob(&stats, si, txb_costs, txb_info);
       // check if it is better to make this the last significant coefficient
-      int cur_eob_rate = get_eob_cost(si + 1, seg_eob, txb_eob_costs, txb_costs,
-                                      txb_info->tx_type);
+      int cur_eob_rate =
+          get_eob_cost(si + 1, txb_eob_costs, txb_costs, txb_info->tx_type);
       cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
       prev_eob_rd_cost =
           RDCOST(txb_info->rdmult, accu_rate, accu_dist) + stats.nz_rd;
@@ -1360,10 +1349,10 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
                            tx_size, td->counts, allow_update_cdf);
 #if CONFIG_ENTROPY_STATS
-  av1_update_eob_context(cdf_idx, eob, seg_eob, tx_size, tx_type, plane_type,
-                         ec_ctx, td->counts, allow_update_cdf);
+  av1_update_eob_context(cdf_idx, eob, tx_size, tx_type, plane_type, ec_ctx,
+                         td->counts, allow_update_cdf);
 #else
-  av1_update_eob_context(eob, seg_eob, tx_size, tx_type, plane_type, ec_ctx,
+  av1_update_eob_context(eob, tx_size, tx_type, plane_type, ec_ctx,
                          allow_update_cdf);
 #endif
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
