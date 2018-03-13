@@ -9,13 +9,13 @@
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"
-#include "platform/heap/HeapFlags.h"
 #include "platform/heap/HeapTerminatedArray.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
+#include "platform/heap/heap_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)

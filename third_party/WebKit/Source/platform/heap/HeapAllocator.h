@@ -7,10 +7,10 @@
 
 #include "build/build_config.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/HeapFlags.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
+#include "platform/heap/heap_flags.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ConstructTraits.h"
