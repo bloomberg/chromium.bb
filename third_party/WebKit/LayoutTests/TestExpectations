@@ -1669,6 +1669,7 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/payment-request-abort-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-request-canmakepayment-method-manual.https.html [ Skip ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/payment-handler/can-make-payment-event-constructor.https.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-text/letter-spacing/letter-spacing-control-chars-001.html [ Failure ]
