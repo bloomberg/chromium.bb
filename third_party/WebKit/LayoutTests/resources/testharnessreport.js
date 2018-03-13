@@ -27,12 +27,21 @@
         testRunner.setCloseRemainingWindowsWhenComplete(true);
         testRunner.setDumpJavaScriptDialogs(false);
 
-        // fetch-event-referrer-policy.https.html intentionally loads mixed
-        // content in order to test the referrer policy, so
-        // WebKitAllowRunningInsecureContent must be set to true or else the
-        // load would be blocked.
-        if (document.URL.indexOf('service-workers/service-worker/fetch-event-referrer-policy.https.html') >= 0) {
+        // Some tests intentionally load mixed content in order to test the
+        // referrer policy, so WebKitAllowRunningInsecureContent must be set
+        // to true or else the load would be blocked.
+        const paths = [
+            'service-workers/service-worker/fetch-event-referrer-policy.https.html',
+            'beacon/headers/header-referrer-no-referrer-when-downgrade.https.html',
+            'beacon/headers/header-referrer-strict-origin-when-cross-origin.https.html',
+            'beacon/headers/header-referrer-strict-origin.https.html',
+            'beacon/headers/header-referrer-unsafe-url.https.html',
+        ];
+        for (const path of paths) {
+          if (document.URL.endsWith(path)) {
             testRunner.overridePreference('WebKitAllowRunningInsecureContent', true);
+            break;
+          }
         }
     }
 
