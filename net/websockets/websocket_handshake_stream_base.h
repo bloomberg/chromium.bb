@@ -34,6 +34,53 @@ class HttpResponseHeaders;
 // HttpStreamBase.
 class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
  public:
+  // These entries must match histogram Net.WebSocket.HandshakeResult2.
+  // Do not change or reuse values.
+  enum class HandshakeResult {
+    // Handshake not completed via Upgrade over HTTP/1 connection.
+    INCOMPLETE = 0,
+    // Server responded to Upgrade request with invalid status.
+    INVALID_STATUS = 1,
+    // Server responded to Upgrade request with empty response.
+    EMPTY_RESPONSE = 2,
+    // Server responded to Upgrade request with 101 status but there was some
+    // other network error.
+    FAILED_SWITCHING_PROTOCOLS = 3,
+    // Server responded to Upgrade request with invalid Upgrade header.
+    FAILED_UPGRADE = 4,
+    // Server responded to Upgrade request with invalid Sec-WebSocket-Accept
+    // header.
+    FAILED_ACCEPT = 5,
+    // Server responded to Upgrade request with invalid Connection header.
+    FAILED_CONNECTION = 6,
+    // Server responded to Upgrade request with invalid Sec-WebSocket-Protocol
+    // header.
+    FAILED_SUBPROTO = 7,
+    // Server responded to Upgrade request with invalid Sec-WebSocket-Extensions
+    // header.
+    FAILED_EXTENSIONS = 8,
+    // Upgrade request failed due to other network error.
+    FAILED = 9,
+    // Connected via Upgrade over HTTP/1 connection.
+    CONNECTED = 10,
+    // Handshake not completed over an HTTP/2 connection.
+    HTTP2_INCOMPLETE = 11,
+    // Server responded to WebSocket request over an HTTP/2 connection with
+    // invalid status code.
+    HTTP2_INVALID_STATUS = 12,
+    // Server responded to WebSocket request over an HTTP/2 connection with
+    // invalid sec-websocket-protocol header.
+    HTTP2_FAILED_SUBPROTO = 13,
+    // Server responded to WebSocket request over an HTTP/2 connection with
+    // invalid sec-websocket-extensions header.
+    HTTP2_FAILED_EXTENSIONS = 14,
+    // WebSocket request over an HTTP/2 connection failed with some other error.
+    HTTP2_FAILED = 15,
+    // Connected over an HTTP/2 connection.
+    HTTP2_CONNECTED = 16,
+    NUM_HANDSHAKE_RESULT_TYPES = 17
+  };
+
   WebSocketHandshakeStreamBase() = default;
   ~WebSocketHandshakeStreamBase() override = default;
 
@@ -92,6 +139,10 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
                                  std::string* accepted_extensions_descriptor,
                                  std::string* failure_message,
                                  WebSocketExtensionParams* params);
+
+  void RecordHandshakeResult(HandshakeResult result);
+  void RecordDeflateMode(
+      WebSocketDeflateParameters::ContextTakeOverMode deflate_mode);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamBase);

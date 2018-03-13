@@ -107,6 +107,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   HttpStreamParser* parser() const { return state_.parser(); }
 
+  HandshakeResult result_;
+
   // The request URL.
   GURL url_;
 

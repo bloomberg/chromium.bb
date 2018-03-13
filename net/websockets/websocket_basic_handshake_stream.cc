@@ -17,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -168,7 +167,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
     WebSocketStreamRequest* request)
-    : state_(std::move(connection),
+    : result_(HandshakeResult::INCOMPLETE),
+      state_(std::move(connection),
              using_proxy,
              false /* http_09_on_non_default_ports_enabled */),
       connect_delegate_(connect_delegate),
@@ -180,7 +180,9 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
   DCHECK(request);
 }
 
-WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() = default;
+WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() {
+  RecordHandshakeResult(result_);
+}
 
 int WebSocketBasicHandshakeStream::InitializeStream(
     const HttpRequestInfo* request_info,
@@ -364,10 +366,8 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
           state_.read_buf(), sub_protocol_, extensions_);
   DCHECK(extension_params_.get());
   if (extension_params_->deflate_enabled) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.WebSocket.DeflateMode",
-        extension_params_->deflate_parameters.client_context_take_over_mode(),
-        WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
+    RecordDeflateMode(
+        extension_params_->deflate_parameters.client_context_take_over_mode());
 
     return std::make_unique<WebSocketDeflateStream>(
         std::move(basic_stream), extension_params_->deflate_parameters,
@@ -430,11 +430,13 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
               headers->response_code()));
         }
         OnFinishOpeningHandshake();
+        result_ = HandshakeResult::INVALID_STATUS;
         return ERR_INVALID_RESPONSE;
     }
   } else {
     if (rv == ERR_EMPTY_RESPONSE) {
       OnFailure("Connection closed before receiving a handshake response");
+      result_ = HandshakeResult::EMPTY_RESPONSE;
       return rv;
     }
     OnFailure(std::string("Error during WebSocket handshake: ") +
@@ -449,7 +451,10 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
             HTTP_SWITCHING_PROTOCOLS) {
       http_response_info_->headers->ReplaceStatusLine(
           kConnectionErrorStatusLine);
+      result_ = HandshakeResult::FAILED_SWITCHING_PROTOCOLS;
+      return rv;
     }
+    result_ = HandshakeResult::FAILED;
     return rv;
   }
 }
@@ -458,18 +463,21 @@ int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
     const HttpResponseHeaders* headers) {
   extension_params_ = std::make_unique<WebSocketExtensionParams>();
   std::string failure_message;
-  if (ValidateUpgrade(headers, &failure_message) &&
-      ValidateSecWebSocketAccept(
-          headers, handshake_challenge_response_, &failure_message) &&
-      ValidateConnection(headers, &failure_message) &&
-      ValidateSubProtocol(headers,
-                          requested_sub_protocols_,
-                          &sub_protocol_,
-                          &failure_message) &&
-      ValidateExtensions(headers,
-                         &extensions_,
-                         &failure_message,
-                         extension_params_.get())) {
+  if (!ValidateUpgrade(headers, &failure_message)) {
+    result_ = HandshakeResult::FAILED_UPGRADE;
+  } else if (!ValidateSecWebSocketAccept(headers, handshake_challenge_response_,
+                                         &failure_message)) {
+    result_ = HandshakeResult::FAILED_ACCEPT;
+  } else if (!ValidateConnection(headers, &failure_message)) {
+    result_ = HandshakeResult::FAILED_CONNECTION;
+  } else if (!ValidateSubProtocol(headers, requested_sub_protocols_,
+                                  &sub_protocol_, &failure_message)) {
+    result_ = HandshakeResult::FAILED_SUBPROTO;
+  } else if (!ValidateExtensions(headers, &extensions_, &failure_message,
+                                 extension_params_.get())) {
+    result_ = HandshakeResult::FAILED_EXTENSIONS;
+  } else {
+    result_ = HandshakeResult::CONNECTED;
     return OK;
   }
   OnFailure("Error during WebSocket handshake: " + failure_message);

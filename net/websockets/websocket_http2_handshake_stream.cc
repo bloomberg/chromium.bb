@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
@@ -43,7 +42,8 @@ WebSocketHttp2HandshakeStream::WebSocketHttp2HandshakeStream(
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
     WebSocketStreamRequest* request)
-    : session_(session),
+    : result_(HandshakeResult::HTTP2_INCOMPLETE),
+      session_(session),
       connect_delegate_(connect_delegate),
       http_response_info_(nullptr),
       requested_sub_protocols_(requested_sub_protocols),
@@ -59,6 +59,7 @@ WebSocketHttp2HandshakeStream::WebSocketHttp2HandshakeStream(
 
 WebSocketHttp2HandshakeStream::~WebSocketHttp2HandshakeStream() {
   spdy_stream_request_.reset();
+  RecordHandshakeResult(result_);
 }
 
 int WebSocketHttp2HandshakeStream::InitializeStream(
@@ -249,10 +250,8 @@ std::unique_ptr<WebSocketStream> WebSocketHttp2HandshakeStream::Upgrade() {
   if (!extension_params_->deflate_enabled)
     return basic_stream;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.WebSocket.DeflateMode",
-      extension_params_->deflate_parameters.client_context_take_over_mode(),
-      WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
+  RecordDeflateMode(
+      extension_params_->deflate_parameters.client_context_take_over_mode());
 
   return std::make_unique<WebSocketDeflateStream>(
       std::move(basic_stream), extension_params_->deflate_parameters,
@@ -301,6 +300,11 @@ void WebSocketHttp2HandshakeStream::OnClose(int status) {
 
   stream_adapter_.reset();
 
+  // If response headers have already been received,
+  // then ValidateResponse() sets |result_|.
+  if (!response_headers_complete_)
+    result_ = HandshakeResult::HTTP2_FAILED;
+
   OnFailure(std::string("Stream closed with error: ") + ErrorToString(status));
 
   if (callback_)
@@ -346,6 +350,7 @@ int WebSocketHttp2HandshakeStream::ValidateResponse() {
           "Error during WebSocket handshake: Unexpected response code: %d",
           headers->response_code()));
       OnFinishOpeningHandshake();
+      result_ = HandshakeResult::HTTP2_INVALID_STATUS;
       return ERR_INVALID_RESPONSE;
   }
 }
@@ -354,11 +359,16 @@ int WebSocketHttp2HandshakeStream::ValidateUpgradeResponse(
     const HttpResponseHeaders* headers) {
   extension_params_ = std::make_unique<WebSocketExtensionParams>();
   std::string failure_message;
-  if (ValidateStatus(headers) &&
-      ValidateSubProtocol(headers, requested_sub_protocols_, &sub_protocol_,
-                          &failure_message) &&
-      ValidateExtensions(headers, &extensions_, &failure_message,
-                         extension_params_.get())) {
+  if (!ValidateStatus(headers)) {
+    result_ = HandshakeResult::HTTP2_INVALID_STATUS;
+  } else if (!ValidateSubProtocol(headers, requested_sub_protocols_,
+                                  &sub_protocol_, &failure_message)) {
+    result_ = HandshakeResult::HTTP2_FAILED_SUBPROTO;
+  } else if (!ValidateExtensions(headers, &extensions_, &failure_message,
+                                 extension_params_.get())) {
+    result_ = HandshakeResult::HTTP2_FAILED_EXTENSIONS;
+  } else {
+    result_ = HandshakeResult::HTTP2_CONNECTED;
     return OK;
   }
   OnFailure("Error during WebSocket handshake: " + failure_message);

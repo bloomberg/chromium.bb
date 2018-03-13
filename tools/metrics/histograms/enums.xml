@@ -45968,6 +45968,67 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Connected"/>
 </enum>
 
+<enum name="WebSocketHandshakeResult2">
+  <int value="0" label="INCOMPLETE">
+    Handshake not completed via Upgrade over HTTP/1 connection.
+  </int>
+  <int value="1" label="INVALID_STATUS">
+    Server responded to Upgrade request with invalid status.
+  </int>
+  <int value="2" label="EMPTY_RESPONSE">
+    Server responded to Upgrade request with empty response.
+  </int>
+  <int value="3" label="FAILED_SWITCHING_PROTOCOLS">
+    Server responded to Upgrade request with 101 status but there was some other
+    network error.
+  </int>
+  <int value="4" label="FAILED_UPGRADE">
+    Server responded to Upgrade request with invalid Upgrade header.
+  </int>
+  <int value="5" label="FAILED_ACCEPT">
+    Server responded to Upgrade request with invalid Sec-WebSocket-Accept
+    header.
+  </int>
+  <int value="6" label="FAILED_CONNECTION">
+    Server responded to Upgrade request with invalid Connection header.
+  </int>
+  <int value="7" label="FAILED_SUBPROTO">
+    Server responded to Upgrade request with invalid Sec-WebSocket-Protocol
+    header.
+  </int>
+  <int value="8" label="FAILED_EXTENSIONS">
+    Server responded to Upgrade request with invalid Sec-WebSocket-Extensions
+    header.
+  </int>
+  <int value="9" label="FAILED">
+    Upgrade request failed due to other network error.
+  </int>
+  <int value="10" label="CONNECTED">
+    Connected via Upgrade over HTTP/1 connection.
+  </int>
+  <int value="11" label="HTTP2_INCOMPLETE">
+    Handshake not completed over an HTTP/2 connection.
+  </int>
+  <int value="12" label="HTTP2_FAILED_STATUS">
+    Server responded to WebSocket request over an HTTP/2 connection with invalid
+    status code.
+  </int>
+  <int value="13" label="HTTP2_FAILED_SUBPROTO">
+    Server responded to WebSocket request over an HTTP/2 connection with invalid
+    sec-websocket-protocol header.
+  </int>
+  <int value="14" label="HTTP2_FAILED_EXTENSIONS">
+    Server responded to WebSocket request over an HTTP/2 connection with invalid
+    sec-websocket-extensions header.
+  </int>
+  <int value="15" label="HTTP2_FAILED">
+    WebSocket request over an HTTP/2 connection failed with some other error.
+  </int>
+  <int value="16" label="HTTP2_CONNECTED">
+    Connected over an HTTP/2 connection.
+  </int>
+</enum>
+
 <enum name="WebSocketNewHandshakeResult">
   <int value="0" label="INCOMPLETE">Incomplete</int>
   <int value="1" label="CONNECTED">Connected</int>

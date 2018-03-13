@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -136,6 +137,18 @@ bool WebSocketHandshakeStreamBase::ValidateExtensions(
   *accepted_extensions_descriptor = base::JoinString(header_values, ", ");
   params->deflate_enabled = seen_permessage_deflate;
   return true;
+}
+
+void WebSocketHandshakeStreamBase::RecordHandshakeResult(
+    HandshakeResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.WebSocket.HandshakeResult2", result,
+                            HandshakeResult::NUM_HANDSHAKE_RESULT_TYPES);
+}
+
+void WebSocketHandshakeStreamBase::RecordDeflateMode(
+    WebSocketDeflateParameters::ContextTakeOverMode deflate_mode) {
+  UMA_HISTOGRAM_ENUMERATION("Net.WebSocket.DeflateMode", deflate_mode,
+                            WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
 }
 
 }  // namespace net
