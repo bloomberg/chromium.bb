@@ -59,7 +59,11 @@ std::set<std::string> GetRequestedPackagesFromArcPolicy(
     }
     const base::Value* const install_type =
         package.FindKeyOfType("installType", base::Value::Type::STRING);
-    if (!install_type || install_type->GetString() != "REQUIRED") {
+    if (!install_type) {
+      continue;
+    }
+    if (install_type->GetString() != "REQUIRED" &&
+        install_type->GetString() != "FORCE_INSTALLED") {
       continue;
     }
     const base::Value* const package_name =
