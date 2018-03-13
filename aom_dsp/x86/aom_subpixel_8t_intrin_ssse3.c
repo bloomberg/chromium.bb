@@ -285,12 +285,6 @@ filter8_1dfunction aom_filter_block1d8_v8_ssse3;
 filter8_1dfunction aom_filter_block1d8_h8_ssse3;
 filter8_1dfunction aom_filter_block1d4_v8_ssse3;
 filter8_1dfunction aom_filter_block1d4_h8_ssse3;
-filter8_1dfunction aom_filter_block1d16_v8_avg_ssse3;
-filter8_1dfunction aom_filter_block1d16_h8_avg_ssse3;
-filter8_1dfunction aom_filter_block1d8_v8_avg_ssse3;
-filter8_1dfunction aom_filter_block1d8_h8_avg_ssse3;
-filter8_1dfunction aom_filter_block1d4_v8_avg_ssse3;
-filter8_1dfunction aom_filter_block1d4_h8_avg_ssse3;
 filter8_1dfunction aom_filter_block1d16_v8_add_src_ssse3;
 filter8_1dfunction aom_filter_block1d16_h8_add_src_ssse3;
 filter8_1dfunction aom_filter_block1d8_v8_add_src_ssse3;
@@ -304,12 +298,6 @@ filter8_1dfunction aom_filter_block1d8_v2_ssse3;
 filter8_1dfunction aom_filter_block1d8_h2_ssse3;
 filter8_1dfunction aom_filter_block1d4_v2_ssse3;
 filter8_1dfunction aom_filter_block1d4_h2_ssse3;
-filter8_1dfunction aom_filter_block1d16_v2_avg_ssse3;
-filter8_1dfunction aom_filter_block1d16_h2_avg_ssse3;
-filter8_1dfunction aom_filter_block1d8_v2_avg_ssse3;
-filter8_1dfunction aom_filter_block1d8_h2_avg_ssse3;
-filter8_1dfunction aom_filter_block1d4_v2_avg_ssse3;
-filter8_1dfunction aom_filter_block1d4_h2_avg_ssse3;
 
 // void aom_convolve8_horiz_ssse3(const uint8_t *src, ptrdiff_t src_stride,
 //                                uint8_t *dst, ptrdiff_t dst_stride,
@@ -321,21 +309,8 @@ filter8_1dfunction aom_filter_block1d4_h2_avg_ssse3;
 //                               const int16_t *filter_x, int x_step_q4,
 //                               const int16_t *filter_y, int y_step_q4,
 //                               int w, int h);
-// void aom_convolve8_avg_horiz_ssse3(const uint8_t *src, ptrdiff_t src_stride,
-//                                    uint8_t *dst, ptrdiff_t dst_stride,
-//                                    const int16_t *filter_x, int x_step_q4,
-//                                    const int16_t *filter_y, int y_step_q4,
-//                                    int w, int h);
-// void aom_convolve8_avg_vert_ssse3(const uint8_t *src, ptrdiff_t src_stride,
-//                                   uint8_t *dst, ptrdiff_t dst_stride,
-//                                   const int16_t *filter_x, int x_step_q4,
-//                                   const int16_t *filter_y, int y_step_q4,
-//                                   int w, int h);
 FUN_CONV_1D(horiz, x_step_q4, filter_x, h, src, , ssse3);
 FUN_CONV_1D(vert, y_step_q4, filter_y, v, src - src_stride * 3, , ssse3);
-FUN_CONV_1D(avg_horiz, x_step_q4, filter_x, h, src, avg_, ssse3);
-FUN_CONV_1D(avg_vert, y_step_q4, filter_y, v, src - src_stride * 3, avg_,
-            ssse3);
 
 FUN_CONV_1D_NO_BILINEAR(add_src_horiz, x_step_q4, filter_x, h, src, add_src_,
                         ssse3);
@@ -347,11 +322,5 @@ FUN_CONV_1D_NO_BILINEAR(add_src_vert, y_step_q4, filter_y, v,
 //                          const int16_t *filter_x, int x_step_q4,
 //                          const int16_t *filter_y, int y_step_q4,
 //                          int w, int h);
-// void aom_convolve8_avg_ssse3(const uint8_t *src, ptrdiff_t src_stride,
-//                              uint8_t *dst, ptrdiff_t dst_stride,
-//                              const int16_t *filter_x, int x_step_q4,
-//                              const int16_t *filter_y, int y_step_q4,
-//                              int w, int h);
 FUN_CONV_2D(, ssse3);
-FUN_CONV_2D(avg_, ssse3);
 FUN_CONV_2D_NO_BILINEAR(add_src_, add_src_, ssse3);

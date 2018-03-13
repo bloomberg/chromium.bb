@@ -119,13 +119,9 @@ endif ()
 set(AOM_DSP_COMMON_INTRIN_DSPR2
     "${AOM_ROOT}/aom_dsp/mips/common_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/common_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/convolve2_avg_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve2_avg_horiz_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve2_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve2_horiz_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve2_vert_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve8_avg_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve8_avg_horiz_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve8_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve8_horiz_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/convolve8_vert_dspr2.c"
@@ -136,9 +132,6 @@ set(AOM_DSP_COMMON_INTRIN_DSPR2
     "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h")
 
 set(AOM_DSP_COMMON_INTRIN_MSA
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_horiz_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_vert_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_horiz_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
