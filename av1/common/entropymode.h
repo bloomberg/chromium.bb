@@ -181,6 +181,10 @@ typedef struct FRAME_COUNTS {
   unsigned int uv_mode[CFL_ALLOWED_TYPES][INTRA_MODES][UV_INTRA_MODES];
   unsigned int cfl_sign[CFL_JOINT_SIGNS];
   unsigned int cfl_alpha[CFL_ALPHA_CONTEXTS][CFL_ALPHABET_SIZE];
+  unsigned int palette_y_mode[PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][2];
+  unsigned int palette_uv_mode[PALETTE_UV_MODE_CONTEXTS][2];
+  unsigned int palette_y_size[PALATTE_BSIZE_CTXS][PALETTE_SIZES];
+  unsigned int palette_uv_size[PALATTE_BSIZE_CTXS][PALETTE_SIZES];
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]

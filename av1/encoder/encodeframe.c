@@ -731,6 +731,59 @@ static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
   }
 }
 
+static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi,
+                               FRAME_COUNTS *counts, uint8_t allow_update_cdf) {
+  FRAME_CONTEXT *fc = xd->tile_ctx;
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  const int palette_bsize_ctx = av1_get_palette_bsize_ctx(bsize);
+
+  (void)counts;
+
+  if (mbmi->mode == DC_PRED) {
+    const int n = pmi->palette_size[0];
+    const int palette_mode_ctx = av1_get_palette_mode_ctx(xd);
+
+#if CONFIG_ENTROPY_STATS
+    ++counts->palette_y_mode[palette_bsize_ctx][palette_mode_ctx][n > 0];
+#endif
+    if (allow_update_cdf)
+      update_cdf(fc->palette_y_mode_cdf[palette_bsize_ctx][palette_mode_ctx],
+                 n > 0, 2);
+    if (n > 0) {
+#if CONFIG_ENTROPY_STATS
+      ++counts->palette_y_size[palette_bsize_ctx][n - PALETTE_MIN_SIZE];
+#endif
+      if (allow_update_cdf) {
+        update_cdf(fc->palette_y_size_cdf[palette_bsize_ctx],
+                   n - PALETTE_MIN_SIZE, PALETTE_SIZES);
+      }
+    }
+  }
+
+  if (mbmi->uv_mode == UV_DC_PRED) {
+    const int n = pmi->palette_size[1];
+    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+
+#if CONFIG_ENTROPY_STATS
+    ++counts->palette_uv_mode[palette_uv_mode_ctx][n > 0];
+#endif
+    if (allow_update_cdf)
+      update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
+
+    if (n > 0) {
+#if CONFIG_ENTROPY_STATS
+      ++counts->palette_uv_size[palette_bsize_ctx][n - PALETTE_MIN_SIZE];
+#endif
+      if (allow_update_cdf) {
+        update_cdf(fc->palette_uv_size_cdf[palette_bsize_ctx],
+                   n - PALETTE_MIN_SIZE, PALETTE_SIZES);
+      }
+    }
+  }
+}
+
 static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
                             MACROBLOCKD *xd, const MODE_INFO *mi,
                             const MODE_INFO *above_mi, const MODE_INFO *left_mi,
@@ -846,29 +899,8 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
                  2 * MAX_ANGLE_DELTA + 1);
     }
   }
-}
-
-// TODO(anybody) We can add stats accumulation here to train entropy models for
-// palette modes
-static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
-  FRAME_CONTEXT *fc = xd->tile_ctx;
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-
-  if (mbmi->mode == DC_PRED) {
-    const int n = pmi->palette_size[0];
-    const int palette_mode_ctx = av1_get_palette_mode_ctx(xd);
-    const int palette_bsize_ctx = av1_get_palette_bsize_ctx(bsize);
-    update_cdf(fc->palette_y_mode_cdf[palette_bsize_ctx][palette_mode_ctx],
-               n > 0, 2);
-  }
-
-  if (mbmi->uv_mode == UV_DC_PRED) {
-    const int n = pmi->palette_size[1];
-    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-    update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
-  }
+  if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
+    update_palette_cdf(xd, mi, counts, allow_update_cdf);
 }
 
 static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
@@ -953,9 +985,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     sum_intra_stats(cm, td->counts, xd, mi, xd->above_mi, xd->left_mi,
                     frame_is_intra_only(cm), mi_row, mi_col,
                     tile_data->allow_update_cdf);
-    if (av1_allow_palette(cm->allow_screen_content_tools, bsize) &&
-        allow_update_cdf)
-      update_palette_cdf(xd, mi);
   }
 
   if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
