@@ -11,27 +11,13 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/test_event_processor.h"
 
 namespace ui {
 
 namespace {
-
-// To test the handling of |EventRewriter|s through |EventSource|,
-// we rewrite and test event types.
-class TestEvent : public Event {
- public:
-  explicit TestEvent(EventType type)
-      : Event(type, base::TimeTicks(), 0), unique_id_(next_unique_id_++) {}
-  ~TestEvent() override {}
-  int unique_id() const { return unique_id_; }
-
- private:
-  static int next_unique_id_;
-  int unique_id_;
-};
-
-int TestEvent::next_unique_id_ = 0;
 
 // TestEventRewriteProcessor is set up with a sequence of event types,
 // and fails if the events received via OnEventFromSource() do not match
@@ -58,6 +44,28 @@ class TestEventRewriteProcessor : public test::TestEventProcessor {
   DISALLOW_COPY_AND_ASSIGN(TestEventRewriteProcessor);
 };
 
+std::unique_ptr<Event> CreateEventForType(EventType type) {
+  switch (type) {
+    case ET_CANCEL_MODE:
+      return std::make_unique<CancelModeEvent>();
+    case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_PRESSED:
+    case ET_MOUSE_RELEASED:
+      return std::make_unique<MouseEvent>(type, gfx::Point(), gfx::Point(),
+                                          base::TimeTicks::Now(), 0, 0);
+    case ET_KEY_PRESSED:
+    case ET_KEY_RELEASED:
+      return std::make_unique<KeyEvent>(type, ui::VKEY_TAB, DomCode::NONE, 0);
+    case ET_SCROLL_FLING_CANCEL:
+    case ET_SCROLL_FLING_START:
+      return std::make_unique<ScrollEvent>(
+          type, gfx::Point(), base::TimeTicks::Now(), 0, 0, 0, 0, 0, 0);
+    default:
+      NOTREACHED() << type;
+      return nullptr;
+  }
+}
+
 // Trivial EventSource that does nothing but send events.
 class TestEventRewriteSource : public EventSource {
  public:
@@ -65,7 +73,7 @@ class TestEventRewriteSource : public EventSource {
       : processor_(processor) {}
   EventProcessor* GetEventSink() override { return processor_; }
   void Send(EventType type) {
-    std::unique_ptr<Event> event(new TestEvent(type));
+    auto event = CreateEventForType(type);
     SendEventToSink(event.get());
   }
 
@@ -88,7 +96,7 @@ class TestConstantEventRewriter : public EventRewriter {
       const Event& event,
       std::unique_ptr<Event>* rewritten_event) override {
     if (status_ == EVENT_REWRITE_REWRITTEN)
-      rewritten_event->reset(new TestEvent(type_));
+      *rewritten_event = CreateEventForType(type_);
     return status_;
   }
   EventRewriteStatus NextDispatchEvent(
@@ -123,10 +131,10 @@ class TestStateMachineEventRewriter : public EventRewriter {
       return EVENT_REWRITE_CONTINUE;
     if ((find->second.status == EVENT_REWRITE_REWRITTEN) ||
         (find->second.status == EVENT_REWRITE_DISPATCH_ANOTHER)) {
-      last_rewritten_event_ = new TestEvent(find->second.type);
-      rewritten_event->reset(last_rewritten_event_);
+      *rewritten_event = CreateEventForType(find->second.type);
+      last_rewritten_event_ = rewritten_event->get();
     } else {
-      last_rewritten_event_ = 0;
+      last_rewritten_event_ = nullptr;
     }
     state_ = find->second.state;
     return find->second.status;
@@ -135,10 +143,8 @@ class TestStateMachineEventRewriter : public EventRewriter {
       const Event& last_event,
       std::unique_ptr<Event>* new_event) override {
     EXPECT_TRUE(last_rewritten_event_);
-    const TestEvent* arg_last = static_cast<const TestEvent*>(&last_event);
-    EXPECT_EQ(last_rewritten_event_->unique_id(), arg_last->unique_id());
-    const TestEvent* arg_new = static_cast<const TestEvent*>(new_event->get());
-    EXPECT_FALSE(arg_new && arg_last->unique_id() == arg_new->unique_id());
+    EXPECT_EQ(last_rewritten_event_, &last_event);
+    EXPECT_FALSE(new_event->get() && new_event->get() == &last_event);
     return RewriteEvent(last_event, new_event);
   }
 
@@ -151,7 +157,7 @@ class TestStateMachineEventRewriter : public EventRewriter {
   };
   typedef std::map<RewriteCase, RewriteResult> RewriteRules;
   RewriteRules rules_;
-  TestEvent* last_rewritten_event_;
+  Event* last_rewritten_event_;
   int state_;
 };
 

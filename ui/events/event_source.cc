@@ -11,6 +11,17 @@
 #include "ui/events/event_sink.h"
 
 namespace ui {
+namespace {
+
+bool IsLocatedEventWithDifferentLocations(const Event& event) {
+  if (!event.IsLocatedEvent())
+    return false;
+  const LocatedEvent* located_event = event.AsLocatedEvent();
+  return located_event->target() &&
+         located_event->location_f() != located_event->root_location_f();
+}
+
+}  // namespace
 
 EventSource::EventSource() {}
 
@@ -30,12 +41,23 @@ void EventSource::RemoveEventRewriter(EventRewriter* rewriter) {
 }
 
 EventDispatchDetails EventSource::SendEventToSink(Event* event) {
+  std::unique_ptr<ui::Event> event_for_rewriting_ptr;
+  Event* event_for_rewriting = event;
+  if (!rewriter_list_.empty() && IsLocatedEventWithDifferentLocations(*event)) {
+    // EventRewriters don't expect an event with differing location and
+    // root-location (because they don't honor the target). Provide such an
+    // event for rewriters.
+    event_for_rewriting_ptr = ui::Event::Clone(*event);
+    event_for_rewriting_ptr->AsLocatedEvent()->set_location_f(
+        event_for_rewriting_ptr->AsLocatedEvent()->root_location_f());
+    event_for_rewriting = event_for_rewriting_ptr.get();
+  }
   std::unique_ptr<Event> rewritten_event;
   EventRewriteStatus status = EVENT_REWRITE_CONTINUE;
   EventRewriterList::const_iterator it = rewriter_list_.begin(),
                                     end = rewriter_list_.end();
   for (; it != end; ++it) {
-    status = (*it)->RewriteEvent(*event, &rewritten_event);
+    status = (*it)->RewriteEvent(*event_for_rewriting, &rewritten_event);
     if (status == EVENT_REWRITE_DISCARD) {
       CHECK(!rewritten_event);
       return EventDispatchDetails();
