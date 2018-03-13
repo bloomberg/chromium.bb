@@ -119,6 +119,9 @@ public class EmulatedVrController {
         float startX, startY, endX, endY;
         // We need to perform the scroll over a shorter area of the touchpad in order for flinging
         // to work properly.
+        // There's technically nothing that prevents fling scrolling if fling is set to false, but
+        // we have yet to find any combination of steps and speed that results in a fling with the
+        // larger scroll area that setting fling to false uses.
         // TODO(https://crbug.com/820281): Figure out why this is the case - not fling scrolling
         // because we're using more of the touchpad doesn't make sense.
         float offset = fling ? 0.5f : 0.1f;
@@ -144,11 +147,6 @@ public class EmulatedVrController {
                 Assert.fail("Unknown scroll direction enum given");
         }
         performLinearTouchpadMovement(startX, startY, endX, endY, steps, speed);
-        // There's technically nothing that prevents fling scrolling if fling is set to false, but
-        // we have yet to find any combination of steps and speed that results in a fling with the
-        // larger scroll area that setting fling to false uses. As an added precaution, assume that
-        // a fling occurred and cancel it immediately if we're not supposed to be flinging.
-        if (!fling) cancelFlingScroll();
     }
 
     /**

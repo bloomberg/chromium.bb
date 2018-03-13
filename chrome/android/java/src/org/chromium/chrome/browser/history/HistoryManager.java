@@ -485,4 +485,9 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     TextView getEmptyViewForTests() {
         return mEmptyView;
     }
+
+    @VisibleForTesting
+    public RecyclerView getRecyclerViewForTests() {
+        return mRecyclerView;
+    }
 }
