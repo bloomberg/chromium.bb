@@ -35,7 +35,7 @@ if (current_cpu == "") {
 
 if (current_os == "win") {
   set_default_toolchain(
-      "//third_party/mini_chromium/mini_chromium/build:msvc_toolchain")
+      "//third_party/mini_chromium/mini_chromium/build:msvc_toolchain_$current_cpu")
 } else {
   set_default_toolchain(
       "//third_party/mini_chromium/mini_chromium/build:gcc_like_toolchain")
@@ -54,8 +54,10 @@ _default_configs = [
 ]
 
 _default_executable_configs =
-    _default_configs +
-    [ "//third_party/mini_chromium/mini_chromium/build:executable" ]
+    _default_configs + [
+      "//third_party/mini_chromium/mini_chromium/build:executable",
+      "//third_party/mini_chromium/mini_chromium/build:win_console",
+    ]
 
 set_defaults("source_set") {
   configs = _default_configs

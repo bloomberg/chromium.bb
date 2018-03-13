@@ -157,6 +157,8 @@ FileHandle LoggingOpenFileForReadAndWrite(const base::FilePath& path,
   return fd;
 }
 
+#if !defined(OS_FUCHSIA)
+
 bool LoggingLockFile(FileHandle file, FileLocking locking) {
   int operation = (locking == FileLocking::kShared) ? LOCK_SH : LOCK_EX;
   int rv = HANDLE_EINTR(flock(file, operation));
@@ -169,6 +171,8 @@ bool LoggingUnlockFile(FileHandle file) {
   PLOG_IF(ERROR, rv != 0) << "flock";
   return rv == 0;
 }
+
+#endif  // !OS_FUCHSIA
 
 FileOffset LoggingSeekFile(FileHandle file, FileOffset offset, int whence) {
   off_t rv = lseek(file, offset, whence);

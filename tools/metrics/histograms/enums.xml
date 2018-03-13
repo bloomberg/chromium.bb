@@ -7414,6 +7414,8 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="kPrepareNewCrashReportFailed"/>
   <int value="6" label="kMinidumpWriteFailed"/>
   <int value="7" label="kFinishWritingCrashReportFailed"/>
+  <int value="8" label="kDirectPtraceFailed"/>
+  <int value="9" label="kBrokeredPtraceFailed"/>
 </enum>
 
 <enum name="CrashpadExceptionProcessingState">

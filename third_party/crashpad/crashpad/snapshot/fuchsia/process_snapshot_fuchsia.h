@@ -17,10 +17,18 @@
 
 #include <zircon/types.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "snapshot/crashpad_info_client_options.h"
+#include "snapshot/elf/elf_image_reader.h"
+#include "snapshot/elf/module_snapshot_elf.h"
+#include "snapshot/fuchsia/process_reader_fuchsia.h"
+#include "snapshot/fuchsia/thread_snapshot_fuchsia.h"
 #include "snapshot/process_snapshot.h"
 #include "snapshot/unloaded_module_snapshot.h"
+#include "util/misc/initialization_state_dcheck.h"
 
 namespace crashpad {
 
@@ -66,7 +74,17 @@ class ProcessSnapshotFuchsia : public ProcessSnapshot {
   std::vector<const MemorySnapshot*> ExtraMemory() const override;
 
  private:
+  // Initializes threads_ on behalf of Initialize().
+  void InitializeThreads();
+
+  // Initializes modules_ on behalf of Initialize().
+  void InitializeModules();
+
+  std::vector<std::unique_ptr<internal::ThreadSnapshotFuchsia>> threads_;
+  std::vector<std::unique_ptr<internal::ModuleSnapshotElf>> modules_;
+  ProcessReaderFuchsia process_reader_;
   std::map<std::string, std::string> annotations_simple_map_;
+  InitializationStateDcheck initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSnapshotFuchsia);
 };
