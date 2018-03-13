@@ -43,9 +43,17 @@ const uint32_t kObuForbiddenBitMask = 0x1;
 const uint32_t kObuForbiddenBitShift = 7;
 const uint32_t kObuTypeBitsMask = 0xF;
 const uint32_t kObuTypeBitsShift = 3;
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+const uint32_t kObuReservedBitsMask = 0x1;
+const uint32_t kObuReservedBitsShift = 0;
+const uint32_t kObuExtensionFlagBitMask = 0x1;
+const uint32_t kObuExtensionFlagBitShift = 2;
+#else
 const uint32_t kObuReservedBitsMask = 0x3;
 const uint32_t kObuReservedBitsShift = 1;
 const uint32_t kObuExtensionFlagBitMask = 0x1;
+const uint32_t kObuExtensionFlagBitShift = 0;
+#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
 // When extension bit is set:
 // 8 bits: extension header
@@ -98,7 +106,8 @@ bool ParseObuHeader(uint8_t obu_header_byte, ObuHeader *obu_header) {
     return false;
   }
 
-  obu_header->has_extension = obu_header_byte & kObuExtensionFlagBitMask;
+  obu_header->has_extension =
+      (obu_header_byte >> kObuExtensionFlagBitShift) & kObuExtensionFlagBitMask;
   return true;
 }
 
@@ -166,7 +175,11 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
       return false;
     }
 
-#if CONFIG_OBU_SIZING
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+    size_t length_field_size = 0;
+    int current_obu_length = 0;
+    int obu_header_size = 0;
+#elif CONFIG_OBU_SIZING
     uint64_t obu_size = 0;
     size_t length_field_size;
     aom_uleb_decode(data + consumed, remaining, &obu_size, &length_field_size);
@@ -175,7 +188,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     const int current_obu_length = mem_get_le32(data + consumed);
     const int kObuLengthFieldSizeBytes = 4;
     const size_t length_field_size = kObuLengthFieldSizeBytes;
-#endif  // CONFIG_OBU_SIZING
+#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
     obu_overhead += (int)length_field_size;
 
@@ -196,6 +209,9 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     }
 
     ++obu_overhead;
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+    ++obu_header_size;
+#endif
 
     if (obu_header.has_extension) {
       const uint8_t obu_ext_header_byte =
@@ -208,9 +224,20 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
       }
 
       ++obu_overhead;
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+      ++obu_header_size;
+#endif
     }
 
     PrintObuHeader(&obu_header);
+
+#if CONFIG_OBU_SIZE_AFTER_HEADER
+    uint64_t obu_size = 0;
+    aom_uleb_decode(data + consumed + obu_header_size, remaining, &obu_size,
+                    &length_field_size);
+    current_obu_length = static_cast<int>(obu_size);
+    consumed += obu_header_size + length_field_size;
+#endif
 
     // TODO(tomfinegan): Parse OBU payload. For now just consume it.
     consumed += current_obu_length;
