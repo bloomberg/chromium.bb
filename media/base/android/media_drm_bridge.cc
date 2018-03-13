@@ -585,9 +585,9 @@ void MediaDrmBridge::DeleteOnCorrectThread() const {
   }
 }
 
-MediaDrmBridgeCdmContext* MediaDrmBridge::GetMediaDrmBridgeCdmContext() {
+MediaCryptoContext* MediaDrmBridge::GetMediaCryptoContext() {
   DVLOG(2) << __func__;
-  return &media_drm_bridge_cdm_context_;
+  return &media_crypto_context_;
 }
 
 int MediaDrmBridge::RegisterPlayer(const base::Closure& new_key_cb,
@@ -871,7 +871,7 @@ MediaDrmBridge::MediaDrmBridge(
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      media_drm_bridge_cdm_context_(this),
+      media_crypto_context_(this),
       weak_factory_(this) {
   DVLOG(1) << __func__;
 

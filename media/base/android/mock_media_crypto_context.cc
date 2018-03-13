@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/android/mock_media_drm_bridge_cdm_context.h"
+#include "media/base/android/mock_media_crypto_context.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,7 +17,7 @@ using ::testing::_;
 
 namespace media {
 
-MockMediaDrmBridgeCdmContext::MockMediaDrmBridgeCdmContext() {
+MockMediaCryptoContext::MockMediaCryptoContext() {
   // Provide some sane defaults.
   ON_CALL(*this, RegisterPlayer(_, _))
       .WillByDefault(DoAll(SaveArg<0>(&new_key_cb), SaveArg<1>(&cdm_unset_cb),
@@ -30,10 +30,9 @@ MockMediaDrmBridgeCdmContext::MockMediaDrmBridgeCdmContext() {
   EXPECT_CALL(*this, UnregisterPlayer(Not(kRegistrationId))).Times(0);
 }
 
-MockMediaDrmBridgeCdmContext::~MockMediaDrmBridgeCdmContext() {}
+MockMediaCryptoContext::~MockMediaCryptoContext() {}
 
-MediaDrmBridgeCdmContext*
-MockMediaDrmBridgeCdmContext::GetMediaDrmBridgeCdmContext() {
+MediaCryptoContext* MockMediaCryptoContext::GetMediaCryptoContext() {
   return this;
 }
 

@@ -19,8 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "media/base/android/android_util.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
-#include "media/base/android/media_drm_bridge_cdm_context_impl.h"
+#include "media/base/android/media_crypto_context.h"
+#include "media/base/android/media_crypto_context_impl.h"
 #include "media/base/android/media_drm_storage.h"
 #include "media/base/android/media_drm_storage_bridge.h"
 #include "media/base/cdm_context.h"
@@ -59,7 +59,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   };
 
   using ResetCredentialsCB = base::Callback<void(bool)>;
-  using MediaCryptoReadyCB = MediaDrmBridgeCdmContext::MediaCryptoReadyCB;
+  using MediaCryptoReadyCB = MediaCryptoContext::MediaCryptoReadyCB;
   using CreatedCB = base::OnceCallback<void(scoped_refptr<MediaDrmBridge>)>;
 
   // Checks whether MediaDRM is available and usable, including for decoding.
@@ -132,7 +132,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   void DeleteOnCorrectThread() const override;
 
   // CdmContext implementation.
-  MediaDrmBridgeCdmContext* GetMediaDrmBridgeCdmContext() override;
+  MediaCryptoContext* GetMediaCryptoContext() override;
 
   // Unprovision the origin bound with |this|. This will remove the cert for
   // current origin and leave the offline licenses in invalid state (offline
@@ -340,7 +340,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // Default task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  MediaDrmBridgeCdmContextImpl media_drm_bridge_cdm_context_;
+  MediaCryptoContextImpl media_crypto_context_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaDrmBridge> weak_factory_;

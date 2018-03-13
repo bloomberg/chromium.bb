@@ -25,7 +25,7 @@ CdmProxyContext* CdmContext::GetCdmProxyContext() {
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_ANDROID)
-MediaDrmBridgeCdmContext* CdmContext::GetMediaDrmBridgeCdmContext() {
+MediaCryptoContext* CdmContext::GetMediaCryptoContext() {
   return nullptr;
 }
 #endif

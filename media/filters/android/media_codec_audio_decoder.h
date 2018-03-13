@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_loop.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
@@ -192,9 +192,8 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
 
   // CDM related stuff.
 
-  // CDM context that knowns about MediaCrypto. Owned by CDM which is external
-  // to this decoder.
-  MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_;
+  // Owned by CDM which is external to this decoder.
+  MediaCryptoContext* media_crypto_context_;
 
   // MediaDrmBridge requires registration/unregistration of the player, this
   // registration id is used for this.

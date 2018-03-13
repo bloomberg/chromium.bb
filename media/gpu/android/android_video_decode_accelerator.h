@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_codec_bridge_impl.h"
-#include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/content_decryption_module.h"
 #include "media/gpu/android/avda_codec_allocator.h"
@@ -334,7 +334,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Holds a ref-count to the CDM to avoid using the CDM after it's destroyed.
   scoped_refptr<ContentDecryptionModule> cdm_for_reference_holding_only_;
 
-  MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_;
+  // Owned by CDM which is external to this decoder.
+  MediaCryptoContext* media_crypto_context_;
 
   // MediaDrmBridge requires registration/unregistration of the player, this
   // registration id is used for this.

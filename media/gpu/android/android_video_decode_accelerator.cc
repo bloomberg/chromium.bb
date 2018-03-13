@@ -242,7 +242,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(BEFORE_OVERLAY_INIT),
       picturebuffers_requested_(false),
       picture_buffer_manager_(this),
-      media_drm_bridge_cdm_context_(nullptr),
+      media_crypto_context_(nullptr),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
       during_initialize_(false),
@@ -265,16 +265,16 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   codec_allocator_->StopThread(this);
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  if (!media_drm_bridge_cdm_context_)
+  if (!media_crypto_context_)
     return;
 
   DCHECK(cdm_registration_id_);
 
   // Cancel previously registered callback (if any).
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
-      MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+  media_crypto_context_->SetMediaCryptoReadyCB(
+      MediaCryptoContext::MediaCryptoReadyCB());
 
-  media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
+  media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
@@ -1459,10 +1459,10 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   DCHECK(cdm_for_reference_holding_only_);
 
   auto* cdm_context = cdm_for_reference_holding_only_->GetCdmContext();
-  media_drm_bridge_cdm_context_ =
-      cdm_context ? cdm_context->GetMediaDrmBridgeCdmContext() : nullptr;
-  if (!media_drm_bridge_cdm_context_) {
-    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaDrmBridgeCdmContext not available.");
+  media_crypto_context_ =
+      cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
+  if (!media_crypto_context_) {
+    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCryptoContext not available.");
     return;
   }
 
@@ -1474,13 +1474,13 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   // destructed as well. So the |cdm_unset_cb| will never have a chance to be
   // called.
   // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
+  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
       BindToCurrentLoop(base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
                                    weak_this_factory_.GetWeakPtr())),
       base::DoNothing());
 
   // Deferred initialization will continue in OnMediaCryptoReady().
-  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(BindToCurrentLoop(
+  media_crypto_context_->SetMediaCryptoReadyCB(BindToCurrentLoop(
       base::Bind(&AndroidVideoDecodeAccelerator::OnMediaCryptoReady,
                  weak_this_factory_.GetWeakPtr())));
 #endif  // !BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
@@ -1496,7 +1496,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   if (media_crypto->is_null()) {
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
     cdm_for_reference_holding_only_ = nullptr;
-    media_drm_bridge_cdm_context_ = nullptr;
+    media_crypto_context_ = nullptr;
     NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCrypto is not available");
     return;
   }

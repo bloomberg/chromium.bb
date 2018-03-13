@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
-#define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
+#ifndef MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_H_
+#define MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ namespace media {
 // the correct thread.
 //
 // TODO(xhwang): Remove PlayerTracker interface.
-class MEDIA_EXPORT MediaDrmBridgeCdmContext : public PlayerTracker {
+class MEDIA_EXPORT MediaCryptoContext : public PlayerTracker {
  public:
   // Notification called when MediaCrypto object is ready.
   // Parameters:
@@ -37,15 +37,15 @@ class MEDIA_EXPORT MediaDrmBridgeCdmContext : public PlayerTracker {
       base::Callback<void(JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec)>;
 
-  MediaDrmBridgeCdmContext() {}
-  ~MediaDrmBridgeCdmContext() override {}
+  MediaCryptoContext() {}
+  ~MediaCryptoContext() override {}
 
   virtual void SetMediaCryptoReadyCB(
       const MediaCryptoReadyCB& media_crypto_ready_cb) = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDrmBridgeCdmContext);
+  DISALLOW_COPY_AND_ASSIGN(MediaCryptoContext);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
+#endif  // MEDIA_BASE_ANDROID_MEDIA_CRYPTO_CONTEXT_H_
