@@ -46,7 +46,6 @@ CHROME_REQUIRED_FILES = {
         'default_apps/',
         'icudtl.dat',
         'libclearkeycdm.so',
-        'libclearkeycdmadapter.so',
         'libwidevinecdm.so',
         'libwidevinecdmadapter.so',
         'locales/',
