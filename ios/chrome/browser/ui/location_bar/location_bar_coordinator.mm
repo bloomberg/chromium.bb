@@ -142,16 +142,6 @@ const int kLocationAuthorizationStatusCount = 4;
   return self.omniboxPopupCoordinator.hasResults;
 }
 
-#pragma mark - LocationBarConsumer
-
-- (void)updateOmniboxState {
-  if (!_locationBarController)
-    return;
-  _locationBarController->SetShouldShowHintText(
-      [self.delegate shouldDisplayHintText]);
-  _locationBarController->OnToolbarUpdated();
-}
-
 - (BOOL)showingOmniboxPopup {
   OmniboxViewIOS* omniboxViewIOS = static_cast<OmniboxViewIOS*>(
       _locationBarController.get()->GetLocationEntry());
@@ -176,6 +166,20 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
   [self.locationBarView addContractOmniboxAnimations:animator];
+}
+
+#pragma mark - LocationBarConsumer
+
+- (void)updateOmniboxState {
+  if (!_locationBarController)
+    return;
+  _locationBarController->SetShouldShowHintText(
+      [self.delegate shouldDisplayHintText]);
+  _locationBarController->OnToolbarUpdated();
+}
+
+- (void)defocusOmnibox {
+  [self cancelOmniboxEdit];
 }
 
 #pragma mark - VoiceSearchControllerDelegate
