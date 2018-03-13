@@ -12,12 +12,11 @@ static_library("router") {
   ]
 
   sources = [
+    # media_sink_internal needs to be included with Android due to typemapping.
+    # Ideally, Android shouldn't be the case since it does not use Mojo for
+    # Media Router.
     "discovery/media_sink_internal.cc",
     "discovery/media_sink_internal.h",
-    "discovery/media_sink_service_base.cc",
-    "discovery/media_sink_service_base.h",
-    "discovery/media_sink_service_util.cc",
-    "discovery/media_sink_service_util.h",
     "issue.cc",
     "issue.h",
     "media_route.cc",
@@ -40,6 +39,10 @@ static_library("router") {
 
   if (!is_android) {
     sources += [
+      "discovery/media_sink_service_base.cc",
+      "discovery/media_sink_service_base.h",
+      "discovery/media_sink_service_util.cc",
+      "discovery/media_sink_service_util.h",
       "providers/cast/cast_media_source.cc",
       "providers/cast/cast_media_source.h",
     ]

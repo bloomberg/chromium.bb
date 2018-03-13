@@ -22,6 +22,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::_;
+using cast_channel::CastDeviceCapability;
 
 namespace {
 
@@ -32,7 +33,7 @@ net::IPEndPoint CreateIPEndPoint(int num) {
   return net::IPEndPoint(ip_address, 8009 + num);
 }
 
-media_router::DnsSdService CreateDnsService(int num) {
+media_router::DnsSdService CreateDnsService(int num, int capabilities) {
   net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
   media_router::DnsSdService service;
   service.service_name =
@@ -44,6 +45,7 @@ media_router::DnsSdService CreateDnsService(int num) {
   service.service_data.push_back(
       base::StringPrintf("fn=friendly name %d", num));
   service.service_data.push_back(base::StringPrintf("md=model name %d", num));
+  service.service_data.push_back(base::StringPrintf("ca=%d", capabilities));
 
   return service;
 }
@@ -165,11 +167,14 @@ TEST_F(CastMediaSinkServiceTest, OnUserGesture) {
 }
 
 TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
-  DnsSdService service1 = CreateDnsService(1);
-  DnsSdService service2 = CreateDnsService(2);
+  DnsSdService service1 = CreateDnsService(
+      1, CastDeviceCapability::VIDEO_OUT | CastDeviceCapability::AUDIO_OUT);
+  DnsSdService service2 =
+      CreateDnsService(2, CastDeviceCapability::MULTIZONE_GROUP);
+  DnsSdService service3 = CreateDnsService(3, CastDeviceCapability::NONE);
 
   // Add dns services.
-  DnsSdRegistry::DnsSdServiceList service_list{service1, service2};
+  DnsSdRegistry::DnsSdServiceList service_list{service1, service2, service3};
 
   // Invoke CastSocketService::OpenSocket on the IO thread.
   media_sink_service_->OnDnsSdEvent(CastMediaSinkService::kCastServiceType,
@@ -181,7 +186,10 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
   // Invoke OpenChannels on |task_runner_|.
   task_runner_->RunUntilIdle();
   // Verify sink content
-  EXPECT_EQ(2u, sinks.size());
+  ASSERT_EQ(3u, sinks.size());
+  EXPECT_EQ(SinkIconType::CAST, sinks[0].sink().icon_type());
+  EXPECT_EQ(SinkIconType::CAST_AUDIO_GROUP, sinks[1].sink().icon_type());
+  EXPECT_EQ(SinkIconType::CAST_AUDIO, sinks[2].sink().icon_type());
 }
 
 }  // namespace media_router

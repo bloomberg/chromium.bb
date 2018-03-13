@@ -32,6 +32,9 @@ MediaSinkInternal CreateCastSinkFromDialSink(
 
   // Replace the "dial:" prefix with "cast:".
   std::string sink_id = "cast:" + dial_sink_id.substr(5);
+
+  // Note that the real sink icon will be determined later using information
+  // from the opened cast channel.
   MediaSink sink(sink_id, friendly_name, SinkIconType::CAST,
                  MediaRouteProviderId::CAST);
 
@@ -161,6 +164,17 @@ bool IsNetworkIdUnknownOrDisconnected(const std::string& network_id) {
 
 // static
 constexpr int CastMediaSinkServiceImpl::kMaxDialSinkFailureCount;
+
+// static
+SinkIconType CastMediaSinkServiceImpl::GetCastSinkIconType(
+    uint8_t capabilities) {
+  if (capabilities & cast_channel::CastDeviceCapability::VIDEO_OUT)
+    return SinkIconType::CAST;
+
+  return capabilities & cast_channel::CastDeviceCapability::MULTIZONE_GROUP
+             ? SinkIconType::CAST_AUDIO_GROUP
+             : SinkIconType::CAST_AUDIO;
+}
 
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
@@ -532,7 +546,12 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
     extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT;
     if (!socket->audio_only())
       extra_data.capabilities |= cast_channel::CastDeviceCapability::VIDEO_OUT;
+
+    // We can now set the proper icon type now that capabilities is determined.
+    cast_sink.sink().set_icon_type(
+        GetCastSinkIconType(extra_data.capabilities));
   }
+
   extra_data.cast_channel_id = socket->id();
   cast_sink.set_cast_data(extra_data);
 
