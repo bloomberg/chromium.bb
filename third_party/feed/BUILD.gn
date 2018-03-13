@@ -6,42 +6,21 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-java_group("feed_java") {
-  deps = [
-    "//third_party/feed:basicstream_java",
-    "//third_party/feed:feed_all_java",
-  ]
-}
-
 android_resources("piet_resources") {
   resource_dirs =
       [ "src/src/main/java/com/google/android/libraries/feed/piet/res" ]
   custom_package = "com.google.android.libraries.feed.piet"
 }
 
-android_library("basicstream_java") {
-  chromium_code = false
-  java_files = [
-    "src/src/main/java/com/google/android/libraries/feed/basicstream/BasicStream.java",
-    "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/StreamRecyclerViewAdapter.java",
-  ]
-  deps = [
-    ":feed_all_java",
-    ":piet_proto_java",
-    "//third_party/android_tools:android_support_cardview_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
-    "//third_party/android_tools:android_support_v7_recyclerview_java",
-    "//third_party/protobuf:protobuf_lite_javalib",
-  ]
-}
-
-android_library("feed_all_java") {
+android_library("feed_java") {
   chromium_code = false
   java_files = [
     "src/src/main/java/com/google/android/libraries/feed/api/actionhandler/FeedActionHandler.java",
     "src/src/main/java/com/google/android/libraries/feed/api/actionhandler/FeedActionHandlerImpl.java",
     "src/src/main/java/com/google/android/libraries/feed/api/common/ConfigManager.java",
     "src/src/main/java/com/google/android/libraries/feed/api/common/InternalProtocolUtils.java",
+    "src/src/main/java/com/google/android/libraries/feed/api/common/PayloadWithId.java",
+    "src/src/main/java/com/google/android/libraries/feed/api/common/StreamSession.java",
     "src/src/main/java/com/google/android/libraries/feed/api/common/ThreadUtils.java",
     "src/src/main/java/com/google/android/libraries/feed/api/common/UiRunnableHandler.java",
     "src/src/main/java/com/google/android/libraries/feed/api/modelprovider/FeatureChange.java",
@@ -70,7 +49,12 @@ android_library("feed_all_java") {
     "src/src/main/java/com/google/android/libraries/feed/api/store/SessionMutation.java",
     "src/src/main/java/com/google/android/libraries/feed/api/store/Store.java",
     "src/src/main/java/com/google/android/libraries/feed/api/stream/CardConfiguration.java",
+    "src/src/main/java/com/google/android/libraries/feed/api/stream/ContentChangedListener.java",
+    "src/src/main/java/com/google/android/libraries/feed/api/stream/ScrollListener.java",
     "src/src/main/java/com/google/android/libraries/feed/api/stream/Stream.java",
+    "src/src/main/java/com/google/android/libraries/feed/basicstream/BasicStream.java",
+    "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/StreamActionApiImpl.java",
+    "src/src/main/java/com/google/android/libraries/feed/basicstream/internal/StreamRecyclerViewAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/common/Consumer.java",
     "src/src/main/java/com/google/android/libraries/feed/common/DateUtils.java",
     "src/src/main/java/com/google/android/libraries/feed/common/Dumpable.java",
@@ -130,6 +114,7 @@ android_library("feed_all_java") {
     "src/src/main/java/com/google/android/libraries/feed/piet/CustomElementAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/ElementAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/ElementAdapterFactory.java",
+    "src/src/main/java/com/google/android/libraries/feed/piet/ElementContainerAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/ElementListAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/ErrorViewUtils.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/FrameAdapter.java",
@@ -148,7 +133,6 @@ android_library("feed_all_java") {
     "src/src/main/java/com/google/android/libraries/feed/piet/StyleProvider.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/TemplateInvocationAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/TextElementAdapter.java",
-    "src/src/main/java/com/google/android/libraries/feed/piet/ViewGroupBoundViewAdapter.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/ViewUtils.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/host/ActionHandler.java",
     "src/src/main/java/com/google/android/libraries/feed/piet/host/AssetProvider.java",
@@ -162,7 +146,9 @@ android_library("feed_all_java") {
     ":piet_proto_java",
     ":piet_resources",
     "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_tools:android_support_cardview_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/protobuf:protobuf_lite_javalib",
   ]
@@ -172,37 +158,37 @@ proto_java_library("piet_proto_java") {
   proto_path = "src"
   generate_lite = true
   sources = [
-    "$proto_path/src/main/proto/com/google/android/libraries/feed/api/proto/stream_data.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/action/feed_action.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/action/piet_extensions.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/accessibility.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/actions.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/binding_refs.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/elements.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/gradients.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/images.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/piet.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/piet_android_support.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/piet_web_support.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/rounded_corners.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/shadows.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/styles.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/piet/text.proto",
-    "$proto_path/src/main/proto/search/now/proto/ui/stream/stream_structure.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/client_info.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/content_id.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/data_operation.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feature.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feed_card.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feed_query.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feed_request.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feed_response.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/feed_stream.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/mockserver/mock_server.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/payload_metadata.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/piet_shared_state_item.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/request.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/response.proto",
-    "$proto_path/src/main/proto/search/now/proto/wire/feed/version.proto",
+    "src/src/main/proto/com/google/android/libraries/feed/api/proto/stream_data.proto",
+    "src/src/main/proto/search/now/proto/ui/action/feed_action.proto",
+    "src/src/main/proto/search/now/proto/ui/action/piet_extensions.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/accessibility.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/actions.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/binding_refs.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/elements.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/gradients.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/images.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/piet.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/piet_android_support.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/piet_web_support.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/rounded_corners.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/shadows.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/styles.proto",
+    "src/src/main/proto/search/now/proto/ui/piet/text.proto",
+    "src/src/main/proto/search/now/proto/ui/stream/stream_structure.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/client_info.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/content_id.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/data_operation.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feature.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feed_card.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feed_query.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feed_request.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feed_response.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/feed_stream.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/mockserver/mock_server.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/payload_metadata.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/piet_shared_state_item.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/request.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/response.proto",
+    "src/src/main/proto/search/now/proto/wire/feed/version.proto",
   ]
 }
