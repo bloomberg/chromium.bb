@@ -1260,7 +1260,7 @@ hooks = [
                 '--no_auth',
                 '--num_threads=4',
                 '--bucket', 'chromium-binary-patching',
-                '-d', 'src/chrome/installer/zucchini/testdata',
+                '-d', 'src/components/zucchini/testdata',
     ],
   },
 

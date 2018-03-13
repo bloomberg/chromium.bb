@@ -1324,7 +1324,6 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
-                 r"^chrome[\\\/]installer[\\\/]zucchini[\\\/].*",
                  r"chrome[\\\/]browser[\\\/]diagnostics[\\\/]" +
                      r"diagnostics_writer\.cc$",
                  r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
@@ -1334,6 +1333,7 @@ def _CheckSpamLogging(input_api, output_api):
                      r"dump_stability_report_main_win.cc$",
                  r"^components[\\\/]html_viewer[\\\/]"
                      r"web_test_delegate_impl\.cc$",
+                 r"^components[\\\/]zucchini[\\\/].*",
                  # TODO(peter): Remove this exception. https://crbug.com/534537
                  r"^content[\\\/]browser[\\\/]notifications[\\\/]"
                      r"notification_event_dispatcher_impl\.cc$",

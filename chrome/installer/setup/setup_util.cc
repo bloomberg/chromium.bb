@@ -53,8 +53,8 @@
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/zucchini/zucchini.h"
-#include "chrome/installer/zucchini/zucchini_integration.h"
+#include "components/zucchini/zucchini.h"
+#include "components/zucchini/zucchini_integration.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 

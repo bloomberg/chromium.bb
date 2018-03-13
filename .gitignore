@@ -120,7 +120,6 @@ vs-chromium-project.txt
 /chrome/installer/mini_installer/support
 /chrome/installer/mini_installer_syzygy.xml
 /chrome/installer/mini_installer_tests_run.xml
-/chrome/installer/zucchini/testdata/*.exe
 /chrome/installer_util_strings.xml
 /chrome/interactive_ui_tests_run.xml
 /chrome/setup.xml
@@ -170,6 +169,7 @@ vs-chromium-project.txt
 /components/search_engines/prepopulated_engines.xml
 /components/suggestions.xml
 /components/variations.xml
+/components/zucchini/testdata/*.exe
 /content/browser/service_worker/proto.xml
 /content/content_browsertests_run.xml
 /content/content_common_mojo_bindings.xml
