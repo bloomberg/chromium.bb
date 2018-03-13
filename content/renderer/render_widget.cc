@@ -2617,6 +2617,7 @@ void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::RegisterBrowserPlugin(BrowserPlugin* browser_plugin) {
   browser_plugins_.AddObserver(browser_plugin);
+  browser_plugin->ScreenInfoChanged(GetOriginalScreenInfo());
 }
 
 void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
@@ -2788,6 +2789,10 @@ PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
 gfx::Rect RenderWidget::ViewportVisibleRect() {
   return for_oopif_ ? compositor_visible_rect_
                     : gfx::Rect(compositor_viewport_pixel_size_);
+}
+
+base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace content

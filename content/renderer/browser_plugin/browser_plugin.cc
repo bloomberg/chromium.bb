@@ -389,7 +389,7 @@ gfx::Rect BrowserPlugin::FrameRectInPixels() const {
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
-  return embedding_render_widget_->GetOriginalScreenInfo().device_scale_factor;
+  return pending_resize_params_.screen_info.device_scale_factor;
 }
 
 void BrowserPlugin::UpdateInternalInstanceId() {
@@ -460,9 +460,8 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
 
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
-          ->GetRenderWidget();
-  pending_resize_params_.screen_info =
-      embedding_render_widget_->GetOriginalScreenInfo();
+          ->GetRenderWidget()
+          ->AsWeakPtr();
   embedding_render_widget_->RegisterBrowserPlugin(this);
 
   return true;
@@ -525,6 +524,12 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
                                    const WebRect& clip_rect,
                                    const WebRect& unobscured_rect,
                                    bool is_visible) {
+  // Ignore this call during teardown. If the embedding RenderWidget is gone,
+  // don't bother sending new geometry to the child because it's not being shown
+  // anymore.
+  if (!embedding_render_widget_)
+    return;
+
   // Convert the plugin_rect_in_viewport to window coordinates, which is css.
   WebRect rect_in_css(plugin_rect_in_viewport);
 
@@ -541,8 +546,6 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
   }
 
   pending_resize_params_.frame_rect = frame_rect;
-  pending_resize_params_.screen_info =
-      embedding_render_widget_->GetOriginalScreenInfo();
   if (guest_crashed_) {
     // Update the sad page to match the current ScreenInfo.
     compositing_helper_->ChildFrameGone(frame_rect.size(),
