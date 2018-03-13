@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate_ukm.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_impl.h"
 
 #include <memory>
 #include <vector>
 
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_logger.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +20,9 @@ namespace ml {
 using ukm::builders::UserActivity;
 using ukm::builders::UserActivityId;
 
-class UserActivityLoggerDelegateUkmTest : public testing::Test {
+class UserActivityUkmLoggerTest : public testing::Test {
  public:
-  UserActivityLoggerDelegateUkmTest() {
+  UserActivityUkmLoggerTest() {
     // These values are arbitrary but must correspond with the values
     // in CheckUserActivityValues.
     UserActivityEvent::Event* event = user_activity_event_.mutable_event();
@@ -107,35 +107,35 @@ class UserActivityLoggerDelegateUkmTest : public testing::Test {
   ukm::TestUkmRecorder recorder_;
 
  private:
-  UserActivityLoggerDelegateUkm user_activity_logger_delegate_ukm_;
-  DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerDelegateUkmTest);
+  UserActivityUkmLoggerImpl user_activity_logger_delegate_ukm_;
+  DISALLOW_COPY_AND_ASSIGN(UserActivityUkmLoggerTest);
 };
 
-TEST_F(UserActivityLoggerDelegateUkmTest, BucketEveryFivePercents) {
+TEST_F(UserActivityUkmLoggerTest, BucketEveryFivePercents) {
   const std::vector<int> original_values = {0, 14, 15, 100};
   const std::vector<int> results = {0, 10, 15, 100};
-  constexpr UserActivityLoggerDelegateUkm::Bucket buckets[] = {{100, 5}};
+  constexpr UserActivityUkmLoggerImpl::Bucket buckets[] = {{100, 5}};
 
   for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(results[i], UserActivityLoggerDelegateUkm::Bucketize(
+    EXPECT_EQ(results[i], UserActivityUkmLoggerImpl::Bucketize(
                               original_values[i], buckets, arraysize(buckets)));
   }
 }
 
-TEST_F(UserActivityLoggerDelegateUkmTest, Bucketize) {
+TEST_F(UserActivityUkmLoggerTest, Bucketize) {
   const std::vector<int> original_values = {0,   18,  59,  60,  62,  69,  72,
                                             299, 300, 306, 316, 599, 600, 602};
-  constexpr UserActivityLoggerDelegateUkm::Bucket buckets[] = {
+  constexpr UserActivityUkmLoggerImpl::Bucket buckets[] = {
       {60, 1}, {300, 10}, {600, 20}};
   const std::vector<int> results = {0,   18,  59,  60,  60,  60,  70,
                                     290, 300, 300, 300, 580, 600, 600};
   for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(results[i], UserActivityLoggerDelegateUkm::Bucketize(
+    EXPECT_EQ(results[i], UserActivityUkmLoggerImpl::Bucketize(
                               original_values[i], buckets, arraysize(buckets)));
   }
 }
 
-TEST_F(UserActivityLoggerDelegateUkmTest, BasicLogging) {
+TEST_F(UserActivityUkmLoggerTest, BasicLogging) {
   TabProperty properties[2];
 
   properties[0].is_active = true;
@@ -202,7 +202,7 @@ TEST_F(UserActivityLoggerDelegateUkmTest, BasicLogging) {
 }
 
 // Tests what would be logged in Incognito: when source IDs are not provided.
-TEST_F(UserActivityLoggerDelegateUkmTest, EmptySources) {
+TEST_F(UserActivityUkmLoggerTest, EmptySources) {
   std::map<ukm::SourceId, TabProperty> empty_source_properties;
   LogActivity(user_activity_event_, empty_source_properties);
 
@@ -216,7 +216,7 @@ TEST_F(UserActivityLoggerDelegateUkmTest, EmptySources) {
   EXPECT_EQ(0u, recorder_.GetEntriesByName(UserActivityId::kEntryName).size());
 }
 
-TEST_F(UserActivityLoggerDelegateUkmTest, TwoUserActivityEvents) {
+TEST_F(UserActivityUkmLoggerTest, TwoUserActivityEvents) {
   // A second event will be logged. Values correspond with the checks below.
   UserActivityEvent user_activity_event2;
   UserActivityEvent::Event* event = user_activity_event2.mutable_event();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/ml/user_activity_logger.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_manager.h"
 
 #include <cmath>
 
@@ -22,8 +22,8 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
-UserActivityLogger::UserActivityLogger(
-    UserActivityLoggerDelegate* delegate,
+UserActivityManager::UserActivityManager(
+    UserActivityUkmLogger* ukm_logger,
     IdleEventNotifier* idle_event_notifier,
     ui::UserActivityDetector* detector,
     chromeos::PowerManagerClient* power_manager_client,
@@ -31,7 +31,7 @@ UserActivityLogger::UserActivityLogger(
     viz::mojom::VideoDetectorObserverRequest request,
     const chromeos::ChromeUserManager* user_manager)
     : boot_clock_(std::make_unique<RealBootClock>()),
-      logger_delegate_(delegate),
+      ukm_logger_(ukm_logger),
       idle_event_observer_(this),
       user_activity_observer_(this),
       power_manager_client_observer_(this),
@@ -40,7 +40,7 @@ UserActivityLogger::UserActivityLogger(
       binding_(this, std::move(request)),
       user_manager_(user_manager),
       weak_ptr_factory_(this) {
-  DCHECK(logger_delegate_);
+  DCHECK(ukm_logger_);
   DCHECK(idle_event_notifier);
   idle_event_observer_.Add(idle_event_notifier);
 
@@ -51,10 +51,10 @@ UserActivityLogger::UserActivityLogger(
   power_manager_client_observer_.Add(power_manager_client);
   power_manager_client->RequestStatusUpdate();
   power_manager_client->GetSwitchStates(
-      base::BindOnce(&UserActivityLogger::OnReceiveSwitchStates,
+      base::BindOnce(&UserActivityManager::OnReceiveSwitchStates,
                      weak_ptr_factory_.GetWeakPtr()));
   power_manager_client->GetInactivityDelays(
-      base::BindOnce(&UserActivityLogger::OnReceiveInactivityDelays,
+      base::BindOnce(&UserActivityManager::OnReceiveInactivityDelays,
                      weak_ptr_factory_.GetWeakPtr()));
 
   DCHECK(session_manager);
@@ -67,20 +67,20 @@ UserActivityLogger::UserActivityLogger(
   }
 }
 
-UserActivityLogger::~UserActivityLogger() = default;
+UserActivityManager::~UserActivityManager() = default;
 
-void UserActivityLogger::OnUserActivity(const ui::Event* /* event */) {
+void UserActivityManager::OnUserActivity(const ui::Event* /* event */) {
   MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
                 UserActivityEvent::Event::USER_ACTIVITY);
 }
 
-void UserActivityLogger::LidEventReceived(
+void UserActivityManager::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& /* timestamp */) {
   lid_state_ = state;
 }
 
-void UserActivityLogger::PowerChanged(
+void UserActivityManager::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   if (external_power_.has_value()) {
     bool power_source_changed = (*external_power_ != proto.external_power());
@@ -98,29 +98,29 @@ void UserActivityLogger::PowerChanged(
   }
 }
 
-void UserActivityLogger::TabletModeEventReceived(
+void UserActivityManager::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& /* timestamp */) {
   tablet_mode_ = mode;
 }
 
-void UserActivityLogger::ScreenIdleStateChanged(
+void UserActivityManager::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& proto) {
   if (proto.off()) {
     screen_idle_timer_.Start(
         FROM_HERE, kIdleDelay,
-        base::Bind(&UserActivityLogger::MaybeLogEvent, base::Unretained(this),
+        base::Bind(&UserActivityManager::MaybeLogEvent, base::Unretained(this),
                    UserActivityEvent::Event::TIMEOUT,
                    UserActivityEvent::Event::SCREEN_OFF));
   }
 }
 
-void UserActivityLogger::SuspendImminent(
+void UserActivityManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
   suspend_reason_ = reason;
 }
 
-void UserActivityLogger::SuspendDone(const base::TimeDelta& sleep_duration) {
+void UserActivityManager::SuspendDone(const base::TimeDelta& sleep_duration) {
   if (!suspend_reason_)
     return;
 
@@ -161,23 +161,23 @@ void UserActivityLogger::SuspendDone(const base::TimeDelta& sleep_duration) {
   suspend_reason_ = base::nullopt;
 }
 
-void UserActivityLogger::InactivityDelaysChanged(
+void UserActivityManager::InactivityDelaysChanged(
     const power_manager::PowerManagementPolicy::Delays& delays) {
   OnReceiveInactivityDelays(delays);
 }
 
-void UserActivityLogger::OnVideoActivityStarted() {
+void UserActivityManager::OnVideoActivityStarted() {
   MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
                 UserActivityEvent::Event::VIDEO_ACTIVITY);
 }
 
-void UserActivityLogger::OnIdleEventObserved(
+void UserActivityManager::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
   idle_event_start_since_boot_ = boot_clock_->GetTimeSinceBoot();
   ExtractFeatures(activity_data);
 }
 
-void UserActivityLogger::OnSessionStateChanged() {
+void UserActivityManager::OnSessionStateChanged() {
   DCHECK(session_manager_);
   const bool was_locked = screen_is_locked_;
   screen_is_locked_ = session_manager_->IsScreenLocked();
@@ -188,12 +188,12 @@ void UserActivityLogger::OnSessionStateChanged() {
 }
 
 // static
-constexpr base::TimeDelta UserActivityLogger::kIdleDelay;
+constexpr base::TimeDelta UserActivityManager::kIdleDelay;
 
 // static
-constexpr base::TimeDelta UserActivityLogger::kMinSuspendDuration;
+constexpr base::TimeDelta UserActivityManager::kMinSuspendDuration;
 
-void UserActivityLogger::OnReceiveSwitchStates(
+void UserActivityManager::OnReceiveSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
   if (switch_states.has_value()) {
     lid_state_ = switch_states->lid_state;
@@ -201,7 +201,7 @@ void UserActivityLogger::OnReceiveSwitchStates(
   }
 }
 
-void UserActivityLogger::OnReceiveInactivityDelays(
+void UserActivityManager::OnReceiveInactivityDelays(
     base::Optional<power_manager::PowerManagementPolicy::Delays> delays) {
   if (delays.has_value()) {
     screen_dim_delay_ =
@@ -211,7 +211,7 @@ void UserActivityLogger::OnReceiveInactivityDelays(
   }
 }
 
-void UserActivityLogger::ExtractFeatures(
+void UserActivityManager::ExtractFeatures(
     const IdleEventNotifier::ActivityData& activity_data) {
   features_.Clear();
 
@@ -302,7 +302,7 @@ void UserActivityLogger::ExtractFeatures(
   UpdateOpenTabsURLs();
 }
 
-void UserActivityLogger::UpdateOpenTabsURLs() {
+void UserActivityManager::UpdateOpenTabsURLs() {
   open_tabs_.clear();
   bool topmost_browser_found = false;
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -356,7 +356,7 @@ void UserActivityLogger::UpdateOpenTabsURLs() {
   }
 }
 
-void UserActivityLogger::MaybeLogEvent(
+void UserActivityManager::MaybeLogEvent(
     UserActivityEvent::Event::Type type,
     UserActivityEvent::Event::Reason reason) {
   if (!idle_event_start_since_boot_)
@@ -374,11 +374,11 @@ void UserActivityLogger::MaybeLogEvent(
   *activity_event.mutable_features() = features_;
 
   // Log to metrics.
-  logger_delegate_->LogActivity(activity_event, open_tabs_);
+  ukm_logger_->LogActivity(activity_event, open_tabs_);
   idle_event_start_since_boot_ = base::nullopt;
 }
 
-void UserActivityLogger::SetTaskRunnerForTesting(
+void UserActivityManager::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<BootClock> test_boot_clock) {
   screen_idle_timer_.SetTaskRunner(task_runner);
