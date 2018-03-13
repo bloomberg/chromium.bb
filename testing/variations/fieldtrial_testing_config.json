@@ -3693,15 +3693,9 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "EffectiveConnectionType1": "Slow-2G",
-                        "EffectiveConnectionType2": "2G",
-                        "EffectiveConnectionType3": "3G",
-                        "MaxDelayableRequests1": "8",
-                        "MaxDelayableRequests2": "8",
-                        "MaxDelayableRequests3": "14",
-                        "NonDelayableWeight1": "2.0",
-                        "NonDelayableWeight2": "2.0",
-                        "NonDelayableWeight3": "2.0"
+                        "EffectiveConnectionType1": "3G",
+                        "MaxDelayableRequests1": "14",
+                        "NonDelayableWeight1": "2.0"
                     },
                     "enable_features": [
                         "ThrottleDelayable"
