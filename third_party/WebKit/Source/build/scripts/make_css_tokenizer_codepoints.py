@@ -73,7 +73,7 @@ class MakeCSSTokenizerCodePointsWriter(in_generator.Writer):
         super(MakeCSSTokenizerCodePointsWriter, self).__init__(in_file_path)
 
         self._outputs = {
-            ('CSSTokenizerCodepoints.cpp'): self.generate,
+            ('css_tokenizer_codepoints.cc'): self.generate,
         }
 
     def generate(self):

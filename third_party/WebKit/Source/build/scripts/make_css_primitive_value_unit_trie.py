@@ -17,10 +17,10 @@ class UnitTrieWriter(json5_generator.Writer):
         self._units = {entry['name']: entry['unit_type'] for entry in self.json5_file.name_dictionaries}
 
         self._outputs = {
-            'CSSPrimitiveValueUnitTrie.cpp': self.generate_implementation
+            'css_primitive_value_unit_trie.cc': self.generate_implementation
         }
 
-    @template_expander.use_jinja('templates/CSSPrimitiveValueUnitTrie.cpp.tmpl')
+    @template_expander.use_jinja('templates/css_primitive_value_unit_trie.cc.tmpl')
     def generate_implementation(self):
         return {
             'input_files': self._input_files,
