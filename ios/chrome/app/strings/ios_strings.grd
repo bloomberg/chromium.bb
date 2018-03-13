@@ -630,6 +630,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE" desc="Button for uploading a downloaded file to Google Drive. It's displayed on the dialog presented when no app on the device can open the file. [Length: 25em] [iOS only]">
         Upload to Google Drive
       </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_GOOGLE_DRIVE" desc="Button for installing Google Drive app. Google Drive is a product name and should use the correct localized version of the product name. [Length: 25em] [iOS only]">
+        Google Drive
+      </message>
       <message name="IDS_IOS_FACETIME_BUTTON" desc="Text in the confirmation dialog button that will initiate a FaceTime call for the presented number. [Length: 10em] [iOS only]">
         FaceTime
       </message>

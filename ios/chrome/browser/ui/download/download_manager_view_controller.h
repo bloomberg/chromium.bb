@@ -68,6 +68,14 @@ extern NSString* const kDownloadManagerFailedImage;
 // setInstallGoogleDriveButtonVisible:animated: was called with YES.
 @property(nonatomic, readonly) UIButton* installDriveButton;
 
+// Install Google Drive app icon. Only visible if
+// setInstallGoogleDriveButtonVisible:animated: was called with YES.
+@property(nonatomic, readonly) UIImageView* installDriveIcon;
+
+// Install Google Drive label. Only visible if
+// setInstallGoogleDriveButtonVisible:animated: was called with YES.
+@property(nonatomic, readonly) UILabel* installDriveLabel;
+
 // View that represents download progress.
 @property(nonatomic, readonly) RadialProgressView* progressView;
 
