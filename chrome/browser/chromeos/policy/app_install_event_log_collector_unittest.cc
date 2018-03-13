@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/policy/app_install_event_log_collector.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -35,6 +38,7 @@ constexpr char kEthernetServicePath[] = "/service/eth1";
 constexpr char kWifiServicePath[] = "/service/wifi1";
 
 constexpr char kPackageName[] = "com.example.app";
+constexpr char kPackageName2[] = "com.example.app2";
 
 class FakeAppInstallEventLogCollectorDelegate
     : public AppInstallEventLogCollector::Delegate {
@@ -42,33 +46,58 @@ class FakeAppInstallEventLogCollectorDelegate
   FakeAppInstallEventLogCollectorDelegate() = default;
   ~FakeAppInstallEventLogCollectorDelegate() override = default;
 
+  struct Request {
+    Request(bool for_all,
+            bool add_disk_space_info,
+            const std::string& package_name,
+            const em::AppInstallReportLogEvent& event)
+        : for_all(for_all),
+          add_disk_space_info(add_disk_space_info),
+          package_name(package_name),
+          event(event) {}
+    const bool for_all;
+    const bool add_disk_space_info;
+    const std::string package_name;
+    const em::AppInstallReportLogEvent event;
+  };
+
   // AppInstallEventLogCollector::Delegate:
   void AddForAllPackages(
       std::unique_ptr<em::AppInstallReportLogEvent> event) override {
     ++add_for_all_count_;
-    last_event_ = *event;
+    requests_.emplace_back(true /* for_all */, false /* add_disk_space_info */,
+                           std::string() /* package_name */, *event);
   }
 
-  void Add(const std::string& package,
+  void Add(const std::string& package_name,
            bool add_disk_space_info,
            std::unique_ptr<em::AppInstallReportLogEvent> event) override {
     ++add_count_;
-    last_event_ = *event;
+    requests_.emplace_back(false /* for_all */, add_disk_space_info,
+                           package_name, *event);
   }
 
   int add_for_all_count() const { return add_for_all_count_; }
 
   int add_count() const { return add_count_; }
 
-  const em::AppInstallReportLogEvent& last_event() const { return last_event_; }
+  const em::AppInstallReportLogEvent& last_event() const {
+    return last_request().event;
+  }
+  const Request& last_request() const { return requests_.back(); }
+  const std::vector<Request>& requests() const { return requests_; }
 
  private:
   int add_for_all_count_ = 0;
   int add_count_ = 0;
-  em::AppInstallReportLogEvent last_event_;
+  std::vector<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppInstallEventLogCollectorDelegate);
 };
+
+int64_t TimeToTimestamp(base::Time time) {
+  return (time - base::Time::UnixEpoch()).InMicroseconds();
+}
 
 }  // namespace
 
@@ -305,6 +334,55 @@ TEST_F(AppInstallEventLogCollectorTest, ConnectivityChanges) {
 
   EXPECT_EQ(3, delegate()->add_for_all_count());
   EXPECT_EQ(0, delegate()->add_count());
+}
+
+// Validates sequence of CloudDPS events.
+TEST_F(AppInstallEventLogCollectorTest, CloudDPSEvent) {
+  std::unique_ptr<AppInstallEventLogCollector> collector =
+      std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
+                                                    packages_);
+
+  base::Time time = base::Time::Now();
+  collector->OnCloudDpsRequested(time, {kPackageName, kPackageName2});
+  ASSERT_EQ(2, delegate()->add_count());
+  ASSERT_EQ(0, delegate()->add_for_all_count());
+  EXPECT_EQ(TimeToTimestamp(time), delegate()->requests()[0].event.timestamp());
+  EXPECT_EQ(kPackageName, delegate()->requests()[0].package_name);
+  EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPS_REQUEST,
+            delegate()->requests()[0].event.event_type());
+  EXPECT_FALSE(delegate()->requests()[0].event.has_clouddps_response());
+  EXPECT_EQ(TimeToTimestamp(time), delegate()->requests()[1].event.timestamp());
+  EXPECT_EQ(kPackageName2, delegate()->requests()[1].package_name);
+  EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPS_REQUEST,
+            delegate()->requests()[1].event.event_type());
+  EXPECT_EQ(0, delegate()->requests()[1].event.clouddps_response());
+
+  // One package succeeded.
+  time += base::TimeDelta::FromSeconds(1);
+  collector->OnCloudDpsSucceeded(time, {kPackageName});
+  ASSERT_EQ(3, delegate()->add_count());
+  ASSERT_EQ(0, delegate()->add_for_all_count());
+  EXPECT_EQ(TimeToTimestamp(time),
+            delegate()->last_request().event.timestamp());
+  EXPECT_EQ(kPackageName, delegate()->last_request().package_name);
+  EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPS_RESPONSE,
+            delegate()->last_request().event.event_type());
+  EXPECT_FALSE(delegate()->requests()[0].event.has_clouddps_response());
+
+  // One package failed.
+  time += base::TimeDelta::FromSeconds(1);
+  collector->OnCloudDpsFailed(time, kPackageName2,
+                              arc::mojom::InstallErrorReason::TIMEOUT);
+  ASSERT_EQ(4, delegate()->add_count());
+  ASSERT_EQ(0, delegate()->add_for_all_count());
+  EXPECT_EQ(TimeToTimestamp(time),
+            delegate()->last_request().event.timestamp());
+  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
+  EXPECT_EQ(em::AppInstallReportLogEvent::CLOUDDPS_RESPONSE,
+            delegate()->last_request().event.event_type());
+  EXPECT_TRUE(delegate()->last_request().event.has_clouddps_response());
+  EXPECT_EQ(static_cast<int>(arc::mojom::InstallErrorReason::TIMEOUT),
+            delegate()->last_request().event.clouddps_response());
 }
 
 }  // namespace policy

@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_POLICY_ARC_POLICY_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_POLICY_ARC_POLICY_BRIDGE_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -51,11 +55,29 @@ class ArcPolicyBridge : public KeyedService,
   class Observer {
    public:
     // Called when policy is sent to CloudDPC.
-    virtual void OnPolicySent(const std::string& policy) = 0;
+    virtual void OnPolicySent(const std::string& policy) {}
 
     // Called when a compliance report is received from CloudDPC.
     virtual void OnComplianceReportReceived(
-        const base::Value* compliance_report) = 0;
+        const base::Value* compliance_report) {}
+
+    // Called when a request to install set of packages was sent to CloudDPS.
+    virtual void OnCloudDpsRequested(
+        base::Time time,
+        const std::set<std::string>& package_names) {}
+
+    // Called when CloudDPS successfully processed request for install for a
+    // set of packages. Note |package_names| may not match to what was
+    // requested.
+    virtual void OnCloudDpsSucceeded(
+        base::Time time,
+        const std::set<std::string>& package_names) {}
+
+    // Called when CloudDPS returned an error for the package installation
+    // request. |reason| defines the failure reason.
+    virtual void OnCloudDpsFailed(base::Time time,
+                                  const std::string& package_name,
+                                  mojom::InstallErrorReason reason) {}
 
    protected:
     Observer() = default;
@@ -91,6 +113,15 @@ class ArcPolicyBridge : public KeyedService,
   void GetPolicies(GetPoliciesCallback callback) override;
   void ReportCompliance(const std::string& request,
                         ReportComplianceCallback callback) override;
+  void ReportCloudDpsRequested(
+      base::Time time,
+      const std::vector<std::string>& package_names) override;
+  void ReportCloudDpsSucceeded(
+      base::Time time,
+      const std::vector<std::string>& package_names) override;
+  void ReportCloudDpsFailed(base::Time time,
+                            const std::string& package_name,
+                            mojom::InstallErrorReason reason) override;
 
   // PolicyService::Observer overrides.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,

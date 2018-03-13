@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_APP_INSTALL_EVENT_LOG_COLLECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_APP_INSTALL_EVENT_LOG_COLLECTOR_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/arc/common/policy.mojom.h"
 #include "net/base/network_change_notifier.h"
 
 class Profile;
@@ -25,6 +29,7 @@ namespace policy {
 // Listens for and logs events related to app push-installs.
 class AppInstallEventLogCollector
     : public chromeos::PowerManagerClient::Observer,
+      public arc::ArcPolicyBridge::Observer,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
@@ -73,6 +78,15 @@ class AppInstallEventLogCollector
   // net::NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // arc::ArcPolicyBridge::Observer:
+  void OnCloudDpsRequested(base::Time time,
+                           const std::set<std::string>& package_names) override;
+  void OnCloudDpsSucceeded(base::Time time,
+                           const std::set<std::string>& package_names) override;
+  void OnCloudDpsFailed(base::Time time,
+                        const std::string& package_name,
+                        arc::mojom::InstallErrorReason reason) override;
 
  private:
   Delegate* const delegate_;
