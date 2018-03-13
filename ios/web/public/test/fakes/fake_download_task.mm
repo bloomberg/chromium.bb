@@ -17,7 +17,10 @@ FakeDownloadTask::FakeDownloadTask(const GURL& original_url,
                                    const std::string& mime_type)
     : original_url_(original_url), mime_type_(mime_type), identifier_(@"") {}
 
-FakeDownloadTask::~FakeDownloadTask() = default;
+FakeDownloadTask::~FakeDownloadTask() {
+  for (auto& observer : observers_)
+    observer.OnDownloadDestroyed(this);
+}
 
 DownloadTask::State FakeDownloadTask::GetState() const {
   return state_;

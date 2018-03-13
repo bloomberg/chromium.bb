@@ -182,6 +182,9 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
 
 DownloadTaskImpl::~DownloadTaskImpl() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  for (auto& observer : observers_)
+    observer.OnDownloadDestroyed(this);
+
   if (delegate_) {
     delegate_->OnTaskDestroyed(this);
   }

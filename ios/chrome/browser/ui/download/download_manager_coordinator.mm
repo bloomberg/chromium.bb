@@ -69,7 +69,6 @@
   }
   [_confirmationDialog dismissViewControllerAnimated:YES completion:nil];
   _confirmationDialog = nil;
-  _mediator.SetDownloadTask(nullptr);
   _downloadTask = nullptr;
 
   [_storeKitCoordinator stop];
@@ -108,14 +107,9 @@
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION);
   NSString* message = l10n_util::GetNSString(
       IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE);
-  __weak DownloadManagerCoordinator* weakSelf = self;
   [self runConfirmationDialogWithTitle:title
                                message:message
                      completionHandler:^(BOOL confirmed) {
-                       DownloadManagerCoordinator* strongSelf = weakSelf;
-                       if (strongSelf) {
-                         strongSelf->_mediator.SetDownloadTask(nullptr);
-                       }
                        handler(confirmed ? kNewDownloadPolicyReplace
                                          : kNewDownloadPolicyDiscard);
                      }];

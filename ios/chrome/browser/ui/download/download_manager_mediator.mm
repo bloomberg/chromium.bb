@@ -20,7 +20,9 @@
 #endif
 
 DownloadManagerMediator::DownloadManagerMediator() : weak_ptr_factory_(this) {}
-DownloadManagerMediator::~DownloadManagerMediator() {}
+DownloadManagerMediator::~DownloadManagerMediator() {
+  SetDownloadTask(nullptr);
+}
 
 void DownloadManagerMediator::SetConsumer(
     id<DownloadManagerConsumer> consumer) {
@@ -88,6 +90,10 @@ void DownloadManagerMediator::DownloadWithWriter(
 
 void DownloadManagerMediator::OnDownloadUpdated(web::DownloadTask* task) {
   UpdateConsumer();
+}
+
+void DownloadManagerMediator::OnDownloadDestroyed(web::DownloadTask* task) {
+  SetDownloadTask(nullptr);
 }
 
 void DownloadManagerMediator::UpdateConsumer() {

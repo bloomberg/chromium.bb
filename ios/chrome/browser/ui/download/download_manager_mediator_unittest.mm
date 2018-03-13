@@ -82,8 +82,6 @@ TEST_F(DownloadManagerMediatorTest, Start) {
   base::FilePath download_dir;
   ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
   EXPECT_TRUE(download_dir.IsParent(file));
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests starting and failing the download. Simulates download failure from
@@ -100,8 +98,6 @@ TEST_F(DownloadManagerMediatorTest, StartFailure) {
     return consumer_.state == kDownloadManagerStateFailed;
   }));
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests that consumer is updated right after it's set.
@@ -124,8 +120,6 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInstantUpdate) {
   EXPECT_EQ(kTestTotalBytes, consumer_.countOfBytesExpectedToReceive);
   EXPECT_EQ(kTestReceivedBytes, consumer_.countOfBytesReceived);
   EXPECT_FLOAT_EQ(0.8f, consumer_.progress);
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests that consumer changes the state to kDownloadManagerStateFailed if task
@@ -138,8 +132,6 @@ TEST_F(DownloadManagerMediatorTest, ConsumerFailedStateUpdate) {
   task()->SetDone(true);
   EXPECT_EQ(kDownloadManagerStateFailed, consumer_.state);
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests that consumer changes the state to kDownloadManagerStateSucceeded if
@@ -153,8 +145,6 @@ TEST_F(DownloadManagerMediatorTest, ConsumerSuceededStateUpdate) {
   task()->SetDone(true);
   EXPECT_EQ(kDownloadManagerStateSucceeded, consumer_.state);
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests that consumer changes the state to kDownloadManagerStateSucceeded if
@@ -169,8 +159,6 @@ TEST_F(DownloadManagerMediatorTest,
   task()->SetDone(true);
   EXPECT_EQ(kDownloadManagerStateSucceeded, consumer_.state);
   EXPECT_TRUE(consumer_.installDriveButtonVisible);
-
-  mediator_.SetDownloadTask(nullptr);
 }
 
 // Tests that consumer changes the state to kDownloadManagerStateInProgress if
@@ -183,6 +171,4 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInProgressStateUpdate) {
   EXPECT_EQ(kDownloadManagerStateInProgress, consumer_.state);
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
   EXPECT_EQ(0.0, consumer_.progress);
-
-  mediator_.SetDownloadTask(nullptr);
 }

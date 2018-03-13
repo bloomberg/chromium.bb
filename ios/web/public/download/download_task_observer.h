@@ -23,6 +23,10 @@ class DownloadTaskObserver {
   // downloaded data.
   virtual void OnDownloadUpdated(DownloadTask* task) {}
 
+  // Called when the download task is about to be destructed. After this
+  // callback all references to provided DownloadTask should be cleared.
+  virtual void OnDownloadDestroyed(DownloadTask* task) {}
+
   DownloadTaskObserver() = default;
   virtual ~DownloadTaskObserver() = default;
 

@@ -62,6 +62,7 @@ class DownloadManagerMediator : public web::DownloadTaskObserver {
 
   // web::DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override;
+  void OnDownloadDestroyed(web::DownloadTask* task) override;
 
   web::DownloadTask* task_ = nullptr;
   __weak id<DownloadManagerConsumer> consumer_ = nil;
