@@ -13,17 +13,14 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_buildflags.h"
 #include "components/crash/core/common/crash_export.h"
 
 // The crash key interface exposed by this file is the same as the Crashpad
 // Annotation interface. Because not all platforms use Crashpad yet, a
 // source-compatible interface is provided on top of the older Breakpad
 // storage mechanism.
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-#define USE_CRASHPAD_ANNOTATION 1
-#endif
-
-#if defined(USE_CRASHPAD_ANNOTATION)
+#if BUILDFLAG(USE_CRASHPAD_ANNOTATION)
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #endif
 
@@ -61,7 +58,7 @@ class CrashKeyBreakpadTest;
 //      g_operation_id.Clear()
 //    }
 // \endcode
-#if defined(USE_CRASHPAD_ANNOTATION)
+#if BUILDFLAG(USE_CRASHPAD_ANNOTATION)
 
 template <crashpad::Annotation::ValueSizeType MaxLength>
 using CrashKeyString = crashpad::StringAnnotation<MaxLength>;
@@ -175,7 +172,7 @@ class CrashKeyString : public internal::CrashKeyStringImpl {
 //    }
 class ScopedCrashKeyString {
  public:
-#if defined(USE_CRASHPAD_ANNOTATION)
+#if BUILDFLAG(USE_CRASHPAD_ANNOTATION)
   using CrashKeyType = crashpad::Annotation;
 #else
   using CrashKeyType = internal::CrashKeyStringImpl;
@@ -228,7 +225,5 @@ CRASH_KEY_EXPORT void ResetCrashKeysForTesting();
 #endif
 
 }  // namespace crash_reporter
-
-#undef USE_CRASHPAD_ANNOTATION
 
 #endif  // COMPONENTS_CRASH_CORE_COMMON_CRASH_KEY_H_

@@ -8,8 +8,8 @@
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 
-#if !defined(OS_FUCHSIA)
-#error "This file is only for OS_FUCHSIA."
+#if !BUILDFLAG(USE_CRASH_KEY_STUBS)
+#error "This file should only be compiled when using stubs."
 #endif
 
 namespace crash_reporter {
