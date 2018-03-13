@@ -119,6 +119,8 @@ class AXTreeSourceArc
   const Delegate* const delegate_;
   std::unique_ptr<FocusStealer> focus_stealer_;
   std::string package_name_;
+  std::map<mojom::AccessibilityNodeInfoData*, gfx::Rect>
+      cached_computed_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArc);
 };
