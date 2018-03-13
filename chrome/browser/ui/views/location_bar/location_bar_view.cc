@@ -142,6 +142,16 @@ OmniboxTint GetTintForProfile(Profile* profile) {
   return OmniboxTint::LIGHT;
 }
 
+// Returns the color of the security chip if the security level is secure.
+SkColor SecurityChipSecureColor(bool in_dark_mode) {
+  return in_dark_mode ? SK_ColorWHITE : gfx::kGoogleGreen700;
+}
+
+// Returns the color of the security chip if the security level is dangerous.
+SkColor SecurityChipDangerousColor(bool in_dark_mode) {
+  return in_dark_mode ? SK_ColorWHITE : gfx::kGoogleRed700;
+}
+
 }  // namespace
 
 // LocationBarView -----------------------------------------------------------
@@ -326,7 +336,7 @@ SkColor LocationBarView::GetColor(
       return color_utils::AlphaBlend(GetColor(TEXT), GetColor(BACKGROUND), 128);
 
     case SECURITY_CHIP_TEXT:
-      return GetSecureTextColor(GetToolbarModel()->GetSecurityLevel(false));
+      return GetSecurityChipColor(GetToolbarModel()->GetSecurityLevel(false));
   }
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -338,22 +348,22 @@ SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
                             ThemeProperties::COLOR_TOOLBAR, incognito));
 }
 
-SkColor LocationBarView::GetSecureTextColor(
+SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
+  // Only used in ChromeOS.
+  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
     return GetColor(DEEMPHASIZED_TEXT);
+
+  SkColor chip_color = color_utils::DeriveDefaultIconColor(GetColor(TEXT));
+  bool is_dark = color_utils::IsDark(GetColor(BACKGROUND));
+  if (security_level == security_state::EV_SECURE ||
+      security_level == security_state::SECURE) {
+    chip_color = SecurityChipSecureColor(is_dark);
+  } else if (security_level == security_state::DANGEROUS) {
+    chip_color = SecurityChipDangerousColor(is_dark);
   }
 
-  SkColor text_color = GetColor(TEXT);
-  if (!color_utils::IsDark(GetColor(BACKGROUND))) {
-    if ((security_level == security_state::EV_SECURE) ||
-        (security_level == security_state::SECURE)) {
-      text_color = gfx::kGoogleGreen700;
-    } else if (security_level == security_state::DANGEROUS) {
-      text_color = gfx::kGoogleRed700;
-    }
-  }
-  return color_utils::GetReadableColor(text_color, GetColor(BACKGROUND));
+  return color_utils::GetReadableColor(chip_color, GetColor(BACKGROUND));
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -767,13 +777,9 @@ void LocationBarView::RefreshLocationIcon() {
 
   security_state::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
-  SkColor icon_color = (security_level == security_state::NONE ||
-                        security_level == security_state::HTTP_SHOW_WARNING)
-                           ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
-                           : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
       omnibox_view_->GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      icon_color));
+      GetSecurityChipColor(security_level)));
   location_icon_view_->Update();
 }
 
