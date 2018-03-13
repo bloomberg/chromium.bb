@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
 #include "content/common/content_export.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -54,6 +55,7 @@ class CONTENT_EXPORT SignedExchangeHeader {
   ~SignedExchangeHeader();
 
   void AddResponseHeader(base::StringPiece name, base::StringPiece value);
+  scoped_refptr<net::HttpResponseHeaders> BuildHttpResponseHeaders() const;
 
   const GURL& request_url() const { return request_url_; };
   void set_request_url(GURL url) { request_url_ = std::move(url); }

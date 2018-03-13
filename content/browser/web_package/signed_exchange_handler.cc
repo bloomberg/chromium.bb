@@ -5,7 +5,6 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/feature_list.h"
-#include "base/strings/string_number_conversions.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
@@ -20,8 +19,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/filter/source_stream.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
@@ -169,44 +166,6 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
     return false;
   }
 
-  // TODO(https://crbug.com/803774): implement the following logic in
-  // SignedExchangeHeaderParser.
-  std::string fake_header_str("HTTP/1.1 ");
-  fake_header_str.append(base::NumberToString(header_->response_code()));
-  fake_header_str.append(" ");
-  fake_header_str.append(net::GetHttpReasonPhrase(header_->response_code()));
-  fake_header_str.append(" \r\n");
-  for (const auto& it : header_->response_headers()) {
-    if (!net::HttpUtil::IsValidHeaderName(it.first)) {
-      DVLOG(1) << "Invalid header name";
-      return false;
-    }
-    if (!net::HttpUtil::IsValidHeaderValue(it.second)) {
-      DVLOG(1) << "Invalid header value";
-      return false;
-    }
-    fake_header_str.append(it.first);
-    fake_header_str.append(": ");
-    fake_header_str.append(it.second);
-    fake_header_str.append("\r\n");
-  }
-  fake_header_str.append("\r\n");
-  response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(fake_header_str.c_str(),
-                                        fake_header_str.size()));
-  // TODO(https://crbug.com/803774): |mime_type| should be derived from
-  // "Content-Type" header.
-  response_head_.mime_type = "text/html";
-
-  std::string mi_header_value;
-  if (!response_head_.headers->EnumerateHeader(nullptr, kMiHeader,
-                                               &mi_header_value)) {
-    DVLOG(1) << "Signed exchange has no MI: header";
-    return false;
-  }
-  mi_stream_ = std::make_unique<MerkleIntegritySourceStream>(
-      mi_header_value, std::move(source_));
-
   const GURL cert_url = header_->signature().cert_url;
   // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
   // may be empty.
@@ -287,6 +246,22 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
     return;
   }
 
+  network::ResourceResponseHead response_head;
+  response_head.headers = header_->BuildHttpResponseHeaders();
+  // TODO(https://crbug.com/803774): |mime_type| should be derived from
+  // "Content-Type" header.
+  response_head.mime_type = "text/html";
+
+  std::string mi_header_value;
+  if (!response_head.headers->EnumerateHeader(nullptr, kMiHeader,
+                                              &mi_header_value)) {
+    DVLOG(1) << "Signed exchange has no MI: header";
+    RunErrorCallback(net::ERR_FAILED);
+    return;
+  }
+  auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
+      mi_header_value, std::move(source_));
+
   net::SSLInfo ssl_info;
   ssl_info.cert = cert_verify_result_.verified_cert;
   ssl_info.unverified_cert = unverified_cert_;
@@ -301,7 +276,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.
   std::move(headers_callback_)
       .Run(net::OK, header_->request_url(), header_->request_method(),
-           response_head_, std::move(mi_stream_), ssl_info);
+           response_head, std::move(mi_stream), ssl_info);
   state_ = State::kHeadersCallbackCalled;
 }
 

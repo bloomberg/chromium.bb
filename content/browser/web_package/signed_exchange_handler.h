@@ -18,7 +18,6 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -31,12 +30,15 @@ class URLRequestContextGetter;
 class X509Certificate;
 }  // namespace net
 
+namespace network {
+struct ResourceResponseHead;
+}
+
 namespace content {
 
 class SharedURLLoaderFactory;
 class SignedExchangeCertFetcher;
 class URLLoaderThrottle;
-class MerkleIntegritySourceStream;
 
 // IMPORTANT: Currenly SignedExchangeHandler partially implements the verifying
 // logic.
@@ -95,9 +97,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
       scoped_refptr<net::X509Certificate> cert);
   void OnCertVerifyComplete(int result);
 
-  // Signed exchange contents.
-  network::ResourceResponseHead response_head_;
-
   ExchangeHeadersCallback headers_callback_;
   std::unique_ptr<net::SourceStream> source_;
 
@@ -109,7 +108,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
   size_t headers_length_ = 0;
 
   base::Optional<SignedExchangeHeader> header_;
-  std::unique_ptr<MerkleIntegritySourceStream> mi_stream_;
 
   // Used to create |cert_fetcher_|.
   url::Origin request_initiator_;
