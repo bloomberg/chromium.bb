@@ -148,6 +148,11 @@ SmbProviderClient* SmbFileSystem::GetSmbProviderClient() const {
   return chromeos::DBusThreadManager::Get()->GetSmbProviderClient();
 }
 
+base::WeakPtr<SmbProviderClient> SmbFileSystem::GetWeakSmbProviderClient()
+    const {
+  return GetSmbProviderClient()->AsWeakPtr();
+}
+
 void SmbFileSystem::Abort() {
   // TODO(zentaro): To implement Abort() fully will require storing a
   // request id unique to each method call and also passing it to the daemon.

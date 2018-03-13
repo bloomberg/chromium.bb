@@ -228,6 +228,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   int32_t GetMountId() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
+  base::WeakPtr<SmbProviderClient> GetWeakSmbProviderClient() const;
 
   file_system_provider::ProvidedFileSystemInfo file_system_info_;
   file_system_provider::OpenedFiles opened_files_;
