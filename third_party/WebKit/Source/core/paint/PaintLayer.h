@@ -695,31 +695,19 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
            CompositingReason::kComboAllDirectStyleDeterminedReasons;
   }
 
-  class AncestorDependentCompositingInputs {
+  struct AncestorDependentCompositingInputs {
    public:
-    AncestorDependentCompositingInputs()
-        : opacity_ancestor(nullptr),
-          transform_ancestor(nullptr),
-          filter_ancestor(nullptr),
-          clip_path_ancestor(nullptr),
-          mask_ancestor(nullptr),
-          ancestor_scrolling_layer(nullptr),
-          nearest_fixed_position_layer(nullptr),
-          scroll_parent(nullptr),
-          clip_parent(nullptr),
-          clipping_container(nullptr) {}
-
-    const PaintLayer* opacity_ancestor;
-    const PaintLayer* transform_ancestor;
-    const PaintLayer* filter_ancestor;
-    const PaintLayer* clip_path_ancestor;
-    const PaintLayer* mask_ancestor;
+    const PaintLayer* opacity_ancestor = nullptr;
+    const PaintLayer* transform_ancestor = nullptr;
+    const PaintLayer* filter_ancestor = nullptr;
+    const PaintLayer* clip_path_ancestor = nullptr;
+    const PaintLayer* mask_ancestor = nullptr;
 
     // The fist ancestor which can scroll. This is a subset of the
     // ancestorOverflowLayer chain where the scrolling layer is visible and
     // has a larger scroll content than its bounds.
-    const PaintLayer* ancestor_scrolling_layer;
-    const PaintLayer* nearest_fixed_position_layer;
+    const PaintLayer* ancestor_scrolling_layer = nullptr;
+    const PaintLayer* nearest_fixed_position_layer = nullptr;
 
     // A scroll parent is a compositor concept. It's only needed in blink
     // because we need to use it as a promotion trigger. A layer has a
@@ -727,18 +715,18 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     // other layer scrolled by this ancestor, is a stacking ancestor of this
     // layer. Layers with scroll parents must be scrolled with the main
     // scrolling layer by the compositor.
-    const PaintLayer* scroll_parent;
+    const PaintLayer* scroll_parent = nullptr;
 
     // A clip parent is another compositor concept that has leaked into
     // blink so that it may be used as a promotion trigger. Layers with clip
     // parents escape the clip of a stacking tree ancestor. The compositor
     // needs to know about clip parents in order to circumvent its normal
     // clipping logic.
-    const PaintLayer* clip_parent;
+    const PaintLayer* clip_parent = nullptr;
 
     IntRect clipped_absolute_bounding_box;
     IntRect unclipped_absolute_bounding_box;
-    const LayoutBoxModelObject* clipping_container;
+    const LayoutBoxModelObject* clipping_container = nullptr;
   };
 
   void SetNeedsCompositingInputsUpdate();
@@ -756,82 +744,54 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const AncestorDependentCompositingInputs&);
   void DidUpdateCompositingInputs();
 
-  const IntRect& ClippedAbsoluteBoundingBox() const {
+  const AncestorDependentCompositingInputs&
+  GetAncestorDependentCompositingInputs() const {
     DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-        ->clipped_absolute_bounding_box;
+    return ancestor_dependent_compositing_inputs_;
+  }
+  const IntRect& ClippedAbsoluteBoundingBox() const {
+    return GetAncestorDependentCompositingInputs()
+        .clipped_absolute_bounding_box;
   }
   const IntRect& UnclippedAbsoluteBoundingBox() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-        ->unclipped_absolute_bounding_box;
+    return GetAncestorDependentCompositingInputs()
+        .unclipped_absolute_bounding_box;
   }
   const PaintLayer* OpacityAncestor() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->opacity_ancestor
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().opacity_ancestor;
   }
   const PaintLayer* TransformAncestor() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->transform_ancestor
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().transform_ancestor;
   }
   const PaintLayer& TransformAncestorOrRoot() const;
   const PaintLayer* FilterAncestor() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->filter_ancestor
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().filter_ancestor;
   }
   const LayoutBoxModelObject* ClippingContainer() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_->clipping_container;
+    return GetAncestorDependentCompositingInputs().clipping_container;
   }
   const PaintLayer* AncestorOverflowLayer() const {
     return ancestor_overflow_layer_;
   }
   const PaintLayer* AncestorScrollingLayer() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_
-                     ->ancestor_scrolling_layer
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().ancestor_scrolling_layer;
   }
   const PaintLayer* NearestFixedPositionLayer() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_
-                     ->nearest_fixed_position_layer
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().nearest_fixed_position_layer;
   }
   const PaintLayer* ScrollParent() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->scroll_parent
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().scroll_parent;
   }
   const PaintLayer* ClipParent() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->clip_parent
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().clip_parent;
   }
   const PaintLayer* ClipPathAncestor() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->clip_path_ancestor
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().clip_path_ancestor;
   }
   const PaintLayer* MaskAncestor() const {
-    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_
-               ? ancestor_dependent_compositing_inputs_->mask_ancestor
-               : nullptr;
+    return GetAncestorDependentCompositingInputs().mask_ancestor;
   }
   bool HasDescendantWithClipPath() const {
-    DCHECK(!needs_descendant_dependent_flags_update_);
     return has_descendant_with_clip_path_;
   }
 
@@ -1290,8 +1250,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // The first ancestor having a non visible overflow.
   const PaintLayer* ancestor_overflow_layer_;
 
-  std::unique_ptr<AncestorDependentCompositingInputs>
-      ancestor_dependent_compositing_inputs_;
+  AncestorDependentCompositingInputs ancestor_dependent_compositing_inputs_;
 
   Persistent<PaintLayerScrollableArea> scrollable_area_;
 
