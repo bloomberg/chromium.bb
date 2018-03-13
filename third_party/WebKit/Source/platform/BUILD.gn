@@ -229,7 +229,7 @@ declare_args() {
 }
 
 buildflag_header("rcs_count_everything") {
-  header = "RuntimeCallStatsCountEverything.h"
+  header = "runtime_call_stats_count_everything.h"
 
   header_dir = "blink/platform/bindings"
 

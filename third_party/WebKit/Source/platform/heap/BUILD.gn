@@ -16,7 +16,7 @@ declare_args() {
 }
 
 buildflag_header("blink_heap_flags") {
-  header = "HeapFlags.h"
+  header = "heap_flags.h"
   header_dir = "blink/platform/heap"
 
   flags = [
