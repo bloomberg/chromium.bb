@@ -58,7 +58,7 @@ ScopedJavaLocalRef<jstring>
 JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
-  // TODO(ntfschr): limit this to only the UI thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
   std::string locale =
