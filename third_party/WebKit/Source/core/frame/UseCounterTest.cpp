@@ -15,7 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kFeaturesHistogramName[] = "Blink.UseCounter.Features";
+// The legacy features histogram will be removed in crbug.com/811948.
+// The browser side use counter (renamed to "Blink.UseCounter.Features") is
+// responsinle for recording the metrics instead.
+const char kLegacyFeaturesHistogramName[] = "Blink.UseCounter.Features_Legacy";
 const char kCSSHistogramName[] = "Blink.UseCounter.CSSProperties";
 const char kAnimatedCSSHistogramName[] =
     "Blink.UseCounter.AnimatedCSSProperties";
@@ -28,9 +31,9 @@ const char kSVGAnimatedCSSHistogramName[] =
     "Blink.UseCounter.SVGImage.AnimatedCSSProperties";
 
 const char* kHistogramList[] = {
-    kFeaturesHistogramName,      kCSSHistogramName,
-    kAnimatedCSSHistogramName,   kExtensionFeaturesHistogramName,
-    kSVGCSSHistogramName,        kSVGCSSHistogramName,
+    kLegacyFeaturesHistogramName, kCSSHistogramName,
+    kAnimatedCSSHistogramName,    kExtensionFeaturesHistogramName,
+    kSVGCSSHistogramName,         kSVGCSSHistogramName,
     kSVGAnimatedCSSHistogramName};
 
 // In practice, SVGs always appear to be loaded with an about:blank URL
@@ -147,7 +150,8 @@ void UseCounterTest::HistogramBasicTest(
 TEST_F(UseCounterTest, RecordingFeatures) {
   UseCounter use_counter;
   HistogramBasicTest<WebFeature>(
-      kFeaturesHistogramName, WebFeature::kFetch, WebFeature::kFetchBodyStream,
+      kLegacyFeaturesHistogramName, WebFeature::kFetch,
+      WebFeature::kFetchBodyStream,
       [&](WebFeature feature) -> bool {
         return use_counter.HasRecordedMeasurement(feature);
       },
@@ -249,6 +253,8 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
+// TODO(lunalu): When removing the legacy use counter and its tests, find
+// another way to test muting behavior.
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   UseCounter use_counter;
 
@@ -264,7 +270,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
   use_counter.Count(parser_mode, property);
   EXPECT_FALSE(use_counter.IsCounted(property));
-  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
 
   use_counter.MuteForInspector();
@@ -272,7 +278,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
   use_counter.Count(parser_mode, property);
   EXPECT_FALSE(use_counter.IsCounted(property));
-  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
 
   use_counter.UnmuteForInspector();
@@ -280,7 +286,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
   use_counter.Count(parser_mode, property);
   EXPECT_FALSE(use_counter.IsCounted(property));
-  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
 
   use_counter.UnmuteForInspector();
@@ -288,7 +294,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
   use_counter.Count(parser_mode, property);
   EXPECT_TRUE(use_counter.IsCounted(property));
-  histogram_tester_.ExpectUniqueSample(kFeaturesHistogramName,
+  histogram_tester_.ExpectUniqueSample(kLegacyFeaturesHistogramName,
                                        static_cast<int>(feature), 1);
   histogram_tester_.ExpectUniqueSample(
       kCSSHistogramName,
@@ -355,12 +361,12 @@ TEST_F(UseCounterTest, DropMeasurementOnViewSourcePages) {
 
   WebFeature feature = WebFeature::kFetch;
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
-  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   use_counter.RecordMeasurement(feature, *GetFrame());
   // The feature will be marked as seen.
   EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
   // But the feature is not recorded to UMA.
-  histogram_tester_.ExpectTotalCount(kFeaturesHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
 }
 
 void ExpectHistograms(const HistogramTester& histogram_tester,
@@ -369,12 +375,12 @@ void ExpectHistograms(const HistogramTester& histogram_tester,
                       int feature_count,
                       CSSPropertyID property,
                       int property_count) {
-  histogram_tester.ExpectBucketCount(kFeaturesHistogramName,
+  histogram_tester.ExpectBucketCount(kLegacyFeaturesHistogramName,
                                      static_cast<int>(WebFeature::kPageVisits),
                                      visits_count);
-  histogram_tester.ExpectBucketCount(kFeaturesHistogramName,
+  histogram_tester.ExpectBucketCount(kLegacyFeaturesHistogramName,
                                      static_cast<int>(feature), feature_count);
-  histogram_tester.ExpectTotalCount(kFeaturesHistogramName,
+  histogram_tester.ExpectTotalCount(kLegacyFeaturesHistogramName,
                                     visits_count + feature_count);
   histogram_tester.ExpectBucketCount(kCSSHistogramName, 1, visits_count);
   histogram_tester.ExpectBucketCount(

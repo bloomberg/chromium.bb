@@ -467,9 +467,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
 }
 
 // Tests that blink::UseCounter do not track feature usage for NTP activities.
+// TODO(lunalu): remove this test when blink side use counter is removed
+// (crbug.com/811948).
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, ShouldNotTrackBlinkUseCounterForNTP) {
   base::HistogramTester histogram_tester;
-  const char kFeaturesHistogramName[] = "Blink.UseCounter.Features";
+  const char kFeaturesHistogramName[] = "Blink.UseCounter.Features_Legacy";
 
   // Set up a test server, so we have some arbitrary non-NTP URL to navigate to.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
