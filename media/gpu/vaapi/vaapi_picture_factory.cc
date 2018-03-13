@@ -7,10 +7,14 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gl/gl_bindings.h"
 
-#include "media/gpu/vaapi/vaapi_drm_picture.h"
-
 #if defined(USE_X11)
-#include "media/gpu/vaapi/vaapi_tfp_picture.h"
+#include "media/gpu/vaapi/vaapi_picture_tfp.h"
+#endif
+#if defined(USE_OZONE)
+#include "media/gpu/vaapi/vaapi_picture_native_pixmap_ozone.h"
+#endif
+#if defined(USE_EGL)
+#include "media/gpu/vaapi/vaapi_picture_native_pixmap_egl.h"
 #endif
 
 namespace media {
@@ -51,10 +55,17 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
   // Select DRM(egl) / TFP(glx) at runtime with --use-gl=egl / --use-gl=desktop
   switch (GetVaapiImplementation(gl::GetGLImplementation())) {
     case kVaapiImplementationDrm:
-      picture.reset(new VaapiDrmPicture(vaapi_wrapper, make_context_current_cb,
-                                        bind_image_cb, picture_buffer_id, size,
-                                        texture_id, client_texture_id,
-                                        texture_target));
+#if defined(USE_OZONE)
+      picture.reset(new VaapiPictureNativePixmapOzone(
+          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          picture_buffer_id, size, texture_id, client_texture_id,
+          texture_target));
+#elif defined(USE_EGL)
+      picture.reset(new VaapiPictureNativePixmapEgl(
+          vaapi_wrapper, make_context_current_cb, bind_image_cb,
+          picture_buffer_id, size, texture_id, client_texture_id,
+          texture_target));
+#endif
       break;
 
 #if defined(USE_X11)
