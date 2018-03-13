@@ -26,10 +26,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ class CORE_EXPORT TextResourceDecoder {
 
   static std::unique_ptr<TextResourceDecoder> Create(
       const TextResourceDecoderOptions& options) {
-    return WTF::WrapUnique(new TextResourceDecoder(options));
+    return base::WrapUnique(new TextResourceDecoder(options));
   }
 
   ~TextResourceDecoder();

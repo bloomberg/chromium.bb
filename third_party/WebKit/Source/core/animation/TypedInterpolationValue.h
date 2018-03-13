@@ -6,8 +6,10 @@
 #define TypedInterpolationValue_h
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/InterpolationValue.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -21,7 +23,7 @@ class TypedInterpolationValue {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> interpolable_value,
       scoped_refptr<NonInterpolableValue> non_interpolable_value = nullptr) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new TypedInterpolationValue(type, std::move(interpolable_value),
                                     std::move(non_interpolable_value)));
   }

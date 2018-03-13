@@ -4,6 +4,10 @@
 
 #include "core/animation/CSSSizeListInterpolationType.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/SizeInterpolationFunctions.h"
 #include "core/animation/SizeListPropertyFunctions.h"
@@ -20,7 +24,7 @@ class UnderlyingSizeListChecker
 
   static std::unique_ptr<UnderlyingSizeListChecker> Create(
       const NonInterpolableList& underlying_list) {
-    return WTF::WrapUnique(new UnderlyingSizeListChecker(underlying_list));
+    return base::WrapUnique(new UnderlyingSizeListChecker(underlying_list));
   }
 
  private:
@@ -55,7 +59,7 @@ class InheritedSizeListChecker
   static std::unique_ptr<InheritedSizeListChecker> Create(
       const CSSProperty& property,
       const SizeList& inherited_size_list) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedSizeListChecker(property, inherited_size_list));
   }
 

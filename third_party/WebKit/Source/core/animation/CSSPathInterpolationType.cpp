@@ -5,11 +5,13 @@
 #include "core/animation/CSSPathInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/PathInterpolationFunctions.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -95,7 +97,7 @@ class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
   static std::unique_ptr<InheritedPathChecker> Create(
       const CSSProperty& property,
       scoped_refptr<StylePath> style_path) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedPathChecker(property, std::move(style_path)));
   }
 

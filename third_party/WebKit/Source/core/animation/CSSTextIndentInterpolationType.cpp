@@ -5,13 +5,15 @@
 #include "core/animation/CSSTextIndentInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -75,7 +77,7 @@ class UnderlyingIndentModeChecker
  public:
   static std::unique_ptr<UnderlyingIndentModeChecker> Create(
       const IndentMode& mode) {
-    return WTF::WrapUnique(new UnderlyingIndentModeChecker(mode));
+    return base::WrapUnique(new UnderlyingIndentModeChecker(mode));
   }
 
   bool IsValid(const StyleResolverState&,
@@ -97,7 +99,7 @@ class InheritedIndentChecker
   static std::unique_ptr<InheritedIndentChecker> Create(
       const Length& length,
       const IndentMode& mode) {
-    return WTF::WrapUnique(new InheritedIndentChecker(length, mode));
+    return base::WrapUnique(new InheritedIndentChecker(length, mode));
   }
 
   bool IsValid(const StyleResolverState& state,

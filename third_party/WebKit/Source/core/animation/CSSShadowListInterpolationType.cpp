@@ -5,6 +5,9 @@
 #include "core/animation/CSSShadowListInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/ShadowInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -14,7 +17,6 @@
 #include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -68,7 +70,7 @@ class InheritedShadowListChecker
   static std::unique_ptr<InheritedShadowListChecker> Create(
       const CSSProperty& property,
       scoped_refptr<ShadowList> shadow_list) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedShadowListChecker(property, std::move(shadow_list)));
   }
 

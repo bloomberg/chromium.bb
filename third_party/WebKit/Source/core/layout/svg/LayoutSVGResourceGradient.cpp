@@ -23,7 +23,6 @@
 #include "core/layout/svg/LayoutSVGResourceGradient.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -72,7 +71,7 @@ SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
   std::unique_ptr<GradientData>& gradient_data =
       gradient_map_.insert(&object, nullptr).stored_value->value;
   if (!gradient_data)
-    gradient_data = WTF::WrapUnique(new GradientData);
+    gradient_data = std::make_unique<GradientData>();
 
   // Create gradient object
   if (!gradient_data->gradient) {

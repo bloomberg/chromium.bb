@@ -29,9 +29,10 @@
 
 #include "core/layout/shapes/RasterShape.h"
 
+#include <algorithm>
 #include <memory>
+
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -78,8 +79,8 @@ RasterShapeIntervals::ComputeShapeMarginIntervals(int shape_margin) const {
                                   ? size()
                                   : size() - Offset() * 2 + shape_margin * 2;
   std::unique_ptr<RasterShapeIntervals> result =
-      WTF::WrapUnique(new RasterShapeIntervals(
-          margin_intervals_size, std::max(shape_margin, Offset())));
+      std::make_unique<RasterShapeIntervals>(margin_intervals_size,
+                                             std::max(shape_margin, Offset()));
   MarginIntervalGenerator margin_interval_generator(shape_margin);
 
   for (int y = Bounds().Y(); y < Bounds().MaxY(); ++y) {

@@ -6,21 +6,22 @@
 #define CSSAnimationData_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/Timing.h"
 #include "core/animation/css/CSSTimingData.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 class CSSAnimationData final : public CSSTimingData {
  public:
   static std::unique_ptr<CSSAnimationData> Create() {
-    return WTF::WrapUnique(new CSSAnimationData);
+    return base::WrapUnique(new CSSAnimationData);
   }
 
   std::unique_ptr<CSSAnimationData> Clone() const {
-    return WTF::WrapUnique(new CSSAnimationData(*this));
+    return base::WrapUnique(new CSSAnimationData(*this));
   }
 
   bool AnimationsMatchForStyleRecalc(const CSSAnimationData& other) const;

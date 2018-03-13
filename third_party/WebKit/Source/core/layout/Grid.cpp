@@ -4,6 +4,10 @@
 
 #include "core/layout/Grid.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "core/layout/LayoutGrid.h"
 
 namespace blink {
@@ -228,11 +232,11 @@ std::unique_ptr<GridArea> GridIterator::NextEmptyGridArea(
   for (; varying_track_index < end_of_varying_track_index;
        ++varying_track_index) {
     if (CheckEmptyCells(row_span, column_span)) {
-      std::unique_ptr<GridArea> result = WTF::WrapUnique(
-          new GridArea(GridSpan::TranslatedDefiniteGridSpan(
-                           row_index_, row_index_ + row_span),
-                       GridSpan::TranslatedDefiniteGridSpan(
-                           column_index_, column_index_ + column_span)));
+      std::unique_ptr<GridArea> result = std::make_unique<GridArea>(
+          GridSpan::TranslatedDefiniteGridSpan(row_index_,
+                                               row_index_ + row_span),
+          GridSpan::TranslatedDefiniteGridSpan(column_index_,
+                                               column_index_ + column_span));
       // Advance the iterator to avoid an infinite loop where we would return
       // the same grid area over and over.
       ++varying_track_index;

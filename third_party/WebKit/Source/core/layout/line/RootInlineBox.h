@@ -22,11 +22,11 @@
 #define RootInlineBox_h
 
 #include <memory>
+
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -162,7 +162,7 @@ class RootInlineBox : public InlineFlowBox {
     if (floats_)
       floats_->push_back(floating_box);
     else
-      floats_ = WTF::WrapUnique(new Vector<LayoutBox*>(1, floating_box));
+      floats_ = std::make_unique<Vector<LayoutBox*>>(1, floating_box);
   }
 
   Vector<LayoutBox*>* FloatsPtr() {

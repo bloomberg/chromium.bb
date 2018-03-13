@@ -5,11 +5,12 @@
 #include "core/animation/CSSNumberInterpolationType.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/NumberPropertyFunctions.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -19,7 +20,7 @@ class InheritedNumberChecker
   static std::unique_ptr<InheritedNumberChecker> Create(
       const CSSProperty& property,
       Optional<double> number) {
-    return WTF::WrapUnique(new InheritedNumberChecker(property, number));
+    return base::WrapUnique(new InheritedNumberChecker(property, number));
   }
 
  private:

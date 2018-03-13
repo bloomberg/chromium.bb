@@ -5,6 +5,9 @@
 #include "core/animation/CSSInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -20,7 +23,6 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style_property_shorthand.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -31,7 +33,7 @@ class ResolvedVariableChecker
       CSSPropertyID property,
       const CSSValue* variable_reference,
       const CSSValue* resolved_value) {
-    return WTF::WrapUnique(new ResolvedVariableChecker(
+    return base::WrapUnique(new ResolvedVariableChecker(
         property, variable_reference, resolved_value));
   }
 
@@ -67,7 +69,7 @@ class InheritedCustomPropertyChecker
       bool is_inherited_property,
       const CSSValue* inherited_value,
       const CSSValue* initial_value) {
-    return WTF::WrapUnique(new InheritedCustomPropertyChecker(
+    return base::WrapUnique(new InheritedCustomPropertyChecker(
         property, is_inherited_property, inherited_value, initial_value));
   }
 
@@ -104,7 +106,7 @@ class ResolvedRegisteredCustomPropertyChecker
   static std::unique_ptr<ResolvedRegisteredCustomPropertyChecker> Create(
       const CSSCustomPropertyDeclaration& declaration,
       scoped_refptr<CSSVariableData> resolved_tokens) {
-    return WTF::WrapUnique(new ResolvedRegisteredCustomPropertyChecker(
+    return base::WrapUnique(new ResolvedRegisteredCustomPropertyChecker(
         declaration, std::move(resolved_tokens)));
   }
 

@@ -29,7 +29,10 @@
 
 #include "core/layout/shapes/Shape.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "core/css/BasicShapeFunctions.h"
 #include "core/layout/shapes/BoxShape.h"
 #include "core/layout/shapes/PolygonShape.h"
@@ -46,7 +49,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -62,26 +64,26 @@ static std::unique_ptr<Shape> CreateInsetShape(const FloatRoundedRect& bounds) {
 static std::unique_ptr<Shape> CreateCircleShape(const FloatPoint& center,
                                                 float radius) {
   DCHECK_GE(radius, 0);
-  return WTF::WrapUnique(
-      new RectangleShape(FloatRect(center.X() - radius, center.Y() - radius,
-                                   radius * 2, radius * 2),
-                         FloatSize(radius, radius)));
+  return std::make_unique<RectangleShape>(
+      FloatRect(center.X() - radius, center.Y() - radius, radius * 2,
+                radius * 2),
+      FloatSize(radius, radius));
 }
 
 static std::unique_ptr<Shape> CreateEllipseShape(const FloatPoint& center,
                                                  const FloatSize& radii) {
   DCHECK_GE(radii.Width(), 0);
   DCHECK_GE(radii.Height(), 0);
-  return WTF::WrapUnique(new RectangleShape(
+  return std::make_unique<RectangleShape>(
       FloatRect(center.X() - radii.Width(), center.Y() - radii.Height(),
                 radii.Width() * 2, radii.Height() * 2),
-      radii));
+      radii);
 }
 
 static std::unique_ptr<Shape> CreatePolygonShape(
     std::unique_ptr<Vector<FloatPoint>> vertices,
     WindRule fill_rule) {
-  return WTF::WrapUnique(new PolygonShape(std::move(vertices), fill_rule));
+  return std::make_unique<PolygonShape>(std::move(vertices), fill_rule);
 }
 
 static inline FloatRect PhysicalRectToLogical(const FloatRect& rect,
@@ -164,7 +166,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
       size_t values_size = values.size();
       DCHECK(!(values_size % 2));
       std::unique_ptr<Vector<FloatPoint>> vertices =
-          WTF::WrapUnique(new Vector<FloatPoint>(values_size / 2));
+          std::make_unique<Vector<FloatPoint>>(values_size / 2);
       for (unsigned i = 0; i < values_size; i += 2) {
         FloatPoint vertex(FloatValueForLength(values.at(i), box_width),
                           FloatValueForLength(values.at(i + 1), box_height));
@@ -225,7 +227,7 @@ std::unique_ptr<Shape> Shape::CreateEmptyRasterShape(WritingMode writing_mode,
   std::unique_ptr<RasterShapeIntervals> intervals =
       std::make_unique<RasterShapeIntervals>(0, 0);
   std::unique_ptr<RasterShape> raster_shape =
-      WTF::WrapUnique(new RasterShape(std::move(intervals), IntSize()));
+      std::make_unique<RasterShape>(std::move(intervals), IntSize());
   raster_shape->writing_mode_ = writing_mode;
   raster_shape->margin_ = margin;
   return std::move(raster_shape);
@@ -288,8 +290,9 @@ static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
   int max_buffer_y =
       std::min(image_rect.Height(), margin_rect.MaxY() - image_rect.Y());
 
-  std::unique_ptr<RasterShapeIntervals> intervals = WTF::WrapUnique(
-      new RasterShapeIntervals(margin_rect.Height(), -margin_rect.Y()));
+  std::unique_ptr<RasterShapeIntervals> intervals =
+      std::make_unique<RasterShapeIntervals>(margin_rect.Height(),
+                                             -margin_rect.Y());
 
   for (int y = min_buffer_y; y < max_buffer_y; ++y) {
     int start_x = -1;
@@ -343,8 +346,8 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
   std::unique_ptr<RasterShapeIntervals> intervals =
       ExtractIntervalsFromImageData(contents, threshold, image_rect,
                                     margin_rect);
-  std::unique_ptr<RasterShape> raster_shape = WTF::WrapUnique(
-      new RasterShape(std::move(intervals), margin_rect.Size()));
+  std::unique_ptr<RasterShape> raster_shape =
+      std::make_unique<RasterShape>(std::move(intervals), margin_rect.Size());
   raster_shape->writing_mode_ = writing_mode;
   raster_shape->margin_ = margin;
   return std::move(raster_shape);

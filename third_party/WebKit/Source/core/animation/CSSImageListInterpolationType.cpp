@@ -5,13 +5,15 @@
 #include "core/animation/CSSImageListInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/ImageListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -22,7 +24,7 @@ class UnderlyingImageListChecker
 
   static std::unique_ptr<UnderlyingImageListChecker> Create(
       const InterpolationValue& underlying) {
-    return WTF::WrapUnique(new UnderlyingImageListChecker(underlying));
+    return base::WrapUnique(new UnderlyingImageListChecker(underlying));
   }
 
  private:
@@ -75,7 +77,7 @@ class InheritedImageListChecker
   static std::unique_ptr<InheritedImageListChecker> Create(
       const CSSProperty& property,
       const StyleImageList& inherited_image_list) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedImageListChecker(property, inherited_image_list));
   }
 

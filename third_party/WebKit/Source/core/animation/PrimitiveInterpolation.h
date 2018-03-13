@@ -6,13 +6,15 @@
 #define PrimitiveInterpolation_h
 
 #include <cmath>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/animation/TypedInterpolationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -49,7 +51,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
       scoped_refptr<NonInterpolableValue> non_interpolable_value) {
-    return WTF::WrapUnique(new PairwisePrimitiveInterpolation(
+    return base::WrapUnique(new PairwisePrimitiveInterpolation(
         type, std::move(start), std::move(end),
         std::move(non_interpolable_value)));
   }
@@ -106,7 +108,7 @@ class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
   static std::unique_ptr<FlipPrimitiveInterpolation> Create(
       std::unique_ptr<TypedInterpolationValue> start,
       std::unique_ptr<TypedInterpolationValue> end) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new FlipPrimitiveInterpolation(std::move(start), std::move(end)));
   }
 

@@ -30,12 +30,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ class CORE_EXPORT HTMLTokenizer {
  public:
   static std::unique_ptr<HTMLTokenizer> Create(
       const HTMLParserOptions& options) {
-    return WTF::WrapUnique(new HTMLTokenizer(options));
+    return base::WrapUnique(new HTMLTokenizer(options));
   }
   ~HTMLTokenizer();
 

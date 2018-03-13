@@ -5,6 +5,9 @@
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/SideIndex.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -12,7 +15,6 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -169,7 +171,7 @@ class UnderlyingSideTypesChecker
  public:
   static std::unique_ptr<UnderlyingSideTypesChecker> Create(
       const SideTypes& underlying_side_types) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new UnderlyingSideTypesChecker(underlying_side_types));
   }
 
@@ -198,7 +200,7 @@ class InheritedSideTypesChecker
   static std::unique_ptr<InheritedSideTypesChecker> Create(
       const CSSProperty& property,
       const SideTypes& inherited_side_types) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedSideTypesChecker(property, inherited_side_types));
   }
 

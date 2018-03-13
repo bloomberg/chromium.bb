@@ -5,12 +5,14 @@
 #include "core/animation/CSSClipInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -58,7 +60,7 @@ class InheritedClipChecker : public CSSInterpolationType::CSSConversionChecker {
       const ComputedStyle& parent_style) {
     Vector<Length> inherited_length_list;
     GetClipLengthList(parent_style, inherited_length_list);
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedClipChecker(std::move(inherited_length_list)));
   }
 
@@ -118,7 +120,7 @@ class UnderlyingAutosChecker
 
   static std::unique_ptr<UnderlyingAutosChecker> Create(
       const ClipAutos& underlying_autos) {
-    return WTF::WrapUnique(new UnderlyingAutosChecker(underlying_autos));
+    return base::WrapUnique(new UnderlyingAutosChecker(underlying_autos));
   }
 
   static ClipAutos GetUnderlyingAutos(const InterpolationValue& underlying) {

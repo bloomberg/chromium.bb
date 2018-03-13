@@ -5,6 +5,9 @@
 #include "core/animation/CSSTransformInterpolationType.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/LengthUnitsChecker.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -14,7 +17,6 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -136,7 +138,7 @@ class InheritedTransformChecker
  public:
   static std::unique_ptr<InheritedTransformChecker> Create(
       const TransformOperations& inherited_transform) {
-    return WTF::WrapUnique(new InheritedTransformChecker(inherited_transform));
+    return base::WrapUnique(new InheritedTransformChecker(inherited_transform));
   }
 
   bool IsValid(const StyleResolverState& state,

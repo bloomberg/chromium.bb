@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -34,7 +35,6 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -119,7 +119,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
     }
   }
 
-  std::unique_ptr<PatternData> pattern_data = WTF::WrapUnique(new PatternData);
+  std::unique_ptr<PatternData> pattern_data = base::WrapUnique(new PatternData);
   pattern_data->pattern = Pattern::CreatePaintRecordPattern(
       AsPaintRecord(tile_bounds.Size(), tile_transform),
       FloatRect(FloatPoint(), tile_bounds.Size()));

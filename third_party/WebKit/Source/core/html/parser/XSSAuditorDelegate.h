@@ -29,9 +29,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
@@ -48,8 +48,8 @@ class XSSInfo {
   static std::unique_ptr<XSSInfo> Create(const String& original_url,
                                          bool did_block_entire_page,
                                          bool did_send_xss_protection_header) {
-    return WTF::WrapUnique(new XSSInfo(original_url, did_block_entire_page,
-                                       did_send_xss_protection_header));
+    return base::WrapUnique(new XSSInfo(original_url, did_block_entire_page,
+                                        did_send_xss_protection_header));
   }
 
   String BuildConsoleError() const;

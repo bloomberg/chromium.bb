@@ -21,8 +21,10 @@
 #include "core/html/forms/FormController.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/html/forms/FileChooser.h"
 #include "core/html/forms/HTMLFormControlElementWithState.h"
@@ -30,7 +32,6 @@
 #include "core/html/forms/HTMLInputElement.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -209,7 +210,7 @@ class SavedFormState {
 };
 
 std::unique_ptr<SavedFormState> SavedFormState::Create() {
-  return WTF::WrapUnique(new SavedFormState);
+  return base::WrapUnique(new SavedFormState);
 }
 
 static bool IsNotFormControlTypeCharacter(UChar ch) {
@@ -226,7 +227,7 @@ std::unique_ptr<SavedFormState> SavedFormState::Deserialize(
   if (!item_count)
     return nullptr;
   std::unique_ptr<SavedFormState> saved_form_state =
-      WTF::WrapUnique(new SavedFormState);
+      base::WrapUnique(new SavedFormState);
   while (item_count--) {
     if (index + 1 >= state_vector.size())
       return nullptr;
@@ -432,7 +433,7 @@ static String FormStateSignature() {
 Vector<String> DocumentState::ToStateVector() {
   FormKeyGenerator* key_generator = FormKeyGenerator::Create();
   std::unique_ptr<SavedFormStateMap> state_map =
-      WTF::WrapUnique(new SavedFormStateMap);
+      base::WrapUnique(new SavedFormStateMap);
   for (HTMLFormControlElementWithState* control = form_controls_.Head();
        control; control = control->Next()) {
     DCHECK(control->isConnected());

@@ -5,13 +5,14 @@
 #include "core/animation/CSSImageInterpolationType.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css_property_names.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleImage.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -162,7 +163,7 @@ class UnderlyingImageChecker
 
   static std::unique_ptr<UnderlyingImageChecker> Create(
       const InterpolationValue& underlying) {
-    return WTF::WrapUnique(new UnderlyingImageChecker(underlying));
+    return base::WrapUnique(new UnderlyingImageChecker(underlying));
   }
 
  private:
@@ -206,7 +207,7 @@ class InheritedImageChecker
   static std::unique_ptr<InheritedImageChecker> Create(
       const CSSProperty& property,
       StyleImage* inherited_image) {
-    return WTF::WrapUnique(
+    return base::WrapUnique(
         new InheritedImageChecker(property, inherited_image));
   }
 

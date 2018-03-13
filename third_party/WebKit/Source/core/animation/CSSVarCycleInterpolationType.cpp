@@ -4,6 +4,10 @@
 
 #include "core/animation/CSSVarCycleInterpolationType.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -19,7 +23,7 @@ class CycleChecker : public InterpolationType::ConversionChecker {
   static std::unique_ptr<CycleChecker> Create(
       const CSSCustomPropertyDeclaration& declaration,
       bool cycle_detected) {
-    return WTF::WrapUnique(new CycleChecker(declaration, cycle_detected));
+    return base::WrapUnique(new CycleChecker(declaration, cycle_detected));
   }
 
  private:

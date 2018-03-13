@@ -5,10 +5,11 @@
 #include "core/animation/CSSVisibilityInterpolationType.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -57,7 +58,7 @@ class UnderlyingVisibilityChecker
 
   static std::unique_ptr<UnderlyingVisibilityChecker> Create(
       EVisibility visibility) {
-    return WTF::WrapUnique(new UnderlyingVisibilityChecker(visibility));
+    return base::WrapUnique(new UnderlyingVisibilityChecker(visibility));
   }
 
  private:
@@ -82,7 +83,7 @@ class InheritedVisibilityChecker
  public:
   static std::unique_ptr<InheritedVisibilityChecker> Create(
       EVisibility visibility) {
-    return WTF::WrapUnique(new InheritedVisibilityChecker(visibility));
+    return base::WrapUnique(new InheritedVisibilityChecker(visibility));
   }
 
  private:
