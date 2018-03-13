@@ -3,13 +3,39 @@
 // found in the LICENSE file.
 
 #include "ui/app_list/app_list_metrics.h"
+
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "ui/compositor/compositor.h"
 
 namespace app_list {
+
+namespace {
+
+int CalculateAnimationSmoothness(int actual_frames,
+                                 int ideal_duration_ms,
+                                 float refresh_rate) {
+  int smoothness = 100;
+  const int ideal_frames =
+      refresh_rate * ideal_duration_ms / base::Time::kMillisecondsPerSecond;
+  if (ideal_frames > actual_frames)
+    smoothness = 100 * actual_frames / ideal_frames;
+  return smoothness;
+}
+
+}  // namespace
+
+// The UMA histogram that logs smoothness of folder show/hide animation.
+constexpr char kFolderShowHideAnimationSmoothness[] =
+    "Apps.AppListFolder.ShowHide.AnimationSmoothness";
+
+// The UMA histogram that logs smoothness of pagination animation.
+constexpr char kPaginationTransitionAnimationSmoothness[] =
+    "Apps.PaginationTransition.AnimationSmoothness";
 
 // The UMA histogram that logs which state search results are opened from.
 constexpr char kAppListSearchResultOpenSourceHistogram[] =
@@ -24,6 +50,23 @@ enum class ApplistSearchResultOpenedSource {
   kFullscreenTablet = 2,
   kMaxApplistSearchResultOpenedSource = 3,
 };
+
+void RecordFolderShowHideAnimationSmoothness(int actual_frames,
+                                             int ideal_duration_ms,
+                                             float refresh_rate) {
+  const int smoothness = CalculateAnimationSmoothness(
+      actual_frames, ideal_duration_ms, refresh_rate);
+  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, smoothness);
+}
+
+void RecordPaginationAnimationSmoothness(int actual_frames,
+                                         int ideal_duration_ms,
+                                         float refresh_rate) {
+  const int smoothness = CalculateAnimationSmoothness(
+      actual_frames, ideal_duration_ms, refresh_rate);
+  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
+                           smoothness);
+}
 
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,

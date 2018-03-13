@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -40,7 +41,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -243,41 +243,8 @@ bool IsOEMFolderItem(AppListItem* item) {
              AppListFolderItem::FOLDER_TYPE_OEM;
 }
 
-class PaginationAnimationMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  PaginationAnimationMetricsReporter() = default;
-  ~PaginationAnimationMetricsReporter() override = default;
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Apps.PaginationTransition.AnimationSmoothness",
-                             value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaginationAnimationMetricsReporter);
-};
-
-int GetCompositorActivatedFrameCount(ui::Layer* layer) {
-  const ui::Compositor* compositor = layer->GetCompositor();
+int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
   return compositor ? compositor->activated_frame_count() : 0;
-}
-
-float GetCompositorRefreshRate(ui::Layer* layer) {
-  const ui::Compositor* compositor = layer->GetCompositor();
-  return compositor ? compositor->refresh_rate() : 60.0f;
-}
-
-int CalculateAnimationSmoothness(int actual_frames,
-                                 base::TimeDelta ideal_duration,
-                                 ui::Layer* layer) {
-  int smoothness = 100;
-  const int ideal_frames = ideal_duration.InMillisecondsF() /
-                           base::Time::kMillisecondsPerSecond *
-                           GetCompositorRefreshRate(layer);
-  if (ideal_frames > actual_frames)
-    smoothness = 100 * actual_frames / ideal_frames;
-  return smoothness;
 }
 
 }  // namespace
@@ -335,8 +302,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       contents_view_(contents_view),
       bounds_animator_(this),
       page_flip_delay_in_ms_(kPageFlipDelayInMsFullscreen),
-      pagination_animation_metrics_reporter_(
-          std::make_unique<PaginationAnimationMetricsReporter>()),
       pagination_animation_start_frame_number_(0) {
   DCHECK(contents_view_);
   SetPaintToLayer();
@@ -2297,7 +2262,7 @@ void AppsGridView::TransitionStarted() {
   contents_view_->app_list_view()->SetIsIgnoringScrollEvents(true);
   CancelContextMenusOnCurrentPage();
   pagination_animation_start_frame_number_ =
-      GetCompositorActivatedFrameCount(layer());
+      GetCompositorActivatedFrameCount(layer()->GetCompositor());
 }
 
 void AppsGridView::TransitionChanged() {
@@ -2313,12 +2278,18 @@ void AppsGridView::TransitionEnded() {
   contents_view_->app_list_view()->SetIsIgnoringScrollEvents(false);
   const base::TimeDelta duration =
       pagination_model_.GetTransitionAnimationSlideDuration();
-  const int end_frame_number = GetCompositorActivatedFrameCount(layer());
+
+  ui::Compositor* compositor = layer()->GetCompositor();
+  // Do not record animation smoothness if |compositor| is nullptr.
+  if (!compositor)
+    return;
+
+  const int end_frame_number = GetCompositorActivatedFrameCount(compositor);
   if (end_frame_number > pagination_animation_start_frame_number_ &&
       !duration.is_zero()) {
-    pagination_animation_metrics_reporter_->Report(CalculateAnimationSmoothness(
-        end_frame_number - pagination_animation_start_frame_number_, duration,
-        layer()));
+    RecordPaginationAnimationSmoothness(
+        end_frame_number - pagination_animation_start_frame_number_,
+        duration.InMilliseconds(), compositor->refresh_rate());
   }
 }
 
