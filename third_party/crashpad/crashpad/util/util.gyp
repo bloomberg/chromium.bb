@@ -73,6 +73,8 @@
         'linux/ptrace_connection.h',
         'linux/ptracer.cc',
         'linux/ptracer.h',
+        'linux/scoped_pr_set_ptracer.cc',
+        'linux/scoped_pr_set_ptracer.h',
         'linux/scoped_ptrace_attach.cc',
         'linux/scoped_ptrace_attach.h',
         'linux/thread_info.cc',
@@ -125,10 +127,15 @@
         'misc/address_types.h',
         'misc/arraysize_unsafe.h',
         'misc/as_underlying_type.h',
+        'misc/capture_context.h',
+        'misc/capture_context_linux.S',
+        'misc/capture_context_mac.S',
+        'misc/capture_context_win.asm',
         'misc/clock.h',
         'misc/clock_mac.cc',
         'misc/clock_posix.cc',
         'misc/clock_win.cc',
+        'misc/elf_note_types.h',
         'misc/from_pointer_cast.h',
         'misc/implicit_cast.h',
         'misc/initialization_state.h',
@@ -223,6 +230,7 @@
         'synchronization/semaphore_posix.cc',
         'synchronization/semaphore_win.cc',
         'synchronization/semaphore.h',
+        'thread/stoppable.h',
         'thread/thread.cc',
         'thread/thread.h',
         'thread/thread_log_messages.cc',
@@ -232,8 +240,6 @@
         'thread/worker_thread.cc',
         'thread/worker_thread.h',
         'win/address_types.h',
-        'win/capture_context.asm',
-        'win/capture_context.h',
         'win/checked_win_address_range.h',
         'win/command_line.cc',
         'win/command_line.h',
@@ -340,6 +346,8 @@
               '$(SDKROOT)/usr/lib/libbsm.dylib',
             ],
           },
+        }, { # else: OS!=mac
+          'sources!': [ 'misc/capture_context_mac.S' ],
         }],
         ['OS=="win"', {
           'link_settings': {
@@ -369,7 +377,7 @@
           ],
         }, {  # else: OS!="win"
           'sources!': [
-            'win/capture_context.asm',
+            'misc/capture_context_win.asm',
             'win/safe_terminate_process.asm',
           ],
         }],
@@ -381,6 +389,7 @@
           },
         }, {  # else: OS!="linux"
           'sources!': [
+            'misc/capture_context_linux.S',
             'net/http_transport_libcurl.cc',
           ],
         }],
@@ -394,6 +403,7 @@
         ['OS=="android"', {
           'sources/': [
             ['include', '^linux/'],
+            ['include', '^misc/capture_context_linux\\.S$'],
             ['include', '^misc/paths_linux\\.cc$'],
             ['include', '^posix/process_info_linux\\.cc$'],
             ['include', '^process/process_memory_linux\\.cc$'],

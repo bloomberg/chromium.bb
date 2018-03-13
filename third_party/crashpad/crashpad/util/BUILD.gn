@@ -14,6 +14,13 @@
 
 import("../build/crashpad_buildconfig.gni")
 
+declare_args() {
+  if (crashpad_is_linux) {
+    # Whether the libcurl-based HTTPTransport implementation should be built.
+    enable_http_transport_libcurl = true
+  }
+}
+
 if (crashpad_is_mac) {
   if (crashpad_is_in_chromium) {
     import("//build/config/sysroot.gni")
@@ -83,7 +90,9 @@ static_library("util") {
     "misc/address_types.h",
     "misc/arraysize_unsafe.h",
     "misc/as_underlying_type.h",
+    "misc/capture_context.h",
     "misc/clock.h",
+    "misc/elf_note_types.h",
     "misc/from_pointer_cast.h",
     "misc/implicit_cast.h",
     "misc/initialization_state.h",
@@ -142,6 +151,7 @@ static_library("util") {
     "string/split_string.cc",
     "string/split_string.h",
     "synchronization/semaphore.h",
+    "thread/stoppable.h",
     "thread/thread.cc",
     "thread/thread.h",
     "thread/thread_log_messages.cc",
@@ -231,6 +241,7 @@ static_library("util") {
       "mach/task_for_pid.h",
       "mach/task_memory.cc",
       "mach/task_memory.h",
+      "misc/capture_context_mac.S",
       "misc/clock_mac.cc",
       "misc/paths_mac.cc",
       "net/http_transport_mac.mm",
@@ -241,7 +252,11 @@ static_library("util") {
   }
 
   if (crashpad_is_linux) {
-    sources += [ "net/http_transport_libcurl.cc" ]
+    if (enable_http_transport_libcurl) {
+      sources += [ "net/http_transport_libcurl.cc" ]
+    } else {
+      sources += [ "net/http_transport_none.cc" ]
+    }
   }
 
   if (crashpad_is_linux || crashpad_is_android) {
@@ -267,11 +282,14 @@ static_library("util") {
       "linux/ptrace_connection.h",
       "linux/ptracer.cc",
       "linux/ptracer.h",
+      "linux/scoped_pr_set_ptracer.cc",
+      "linux/scoped_pr_set_ptracer.h",
       "linux/scoped_ptrace_attach.cc",
       "linux/scoped_ptrace_attach.h",
       "linux/thread_info.cc",
       "linux/thread_info.h",
       "linux/traits.h",
+      "misc/capture_context_linux.S",
       "misc/paths_linux.cc",
       "posix/process_info_linux.cc",
       "process/process_memory_linux.cc",
@@ -303,7 +321,6 @@ static_library("util") {
       "synchronization/semaphore_win.cc",
       "thread/thread_win.cc",
       "win/address_types.h",
-      "win/capture_context.h",
       "win/checked_win_address_range.h",
       "win/command_line.cc",
       "win/command_line.h",
@@ -357,12 +374,12 @@ static_library("util") {
     # https://crbug.com/762167.
     if (host_os == "win") {
       sources += [
-        "win/capture_context.asm",
+        "misc/capture_context_win.asm",
         "win/safe_terminate_process.asm",
       ]
     } else {
       sources += [
-        "win/capture_context_broken.cc",
+        "misc/capture_context_broken.cc",
         "win/safe_terminate_process_broken.cc",
       ]
     }
@@ -371,7 +388,7 @@ static_library("util") {
   if (crashpad_is_fuchsia) {
     sources += [
       "misc/paths_fuchsia.cc",
-      "net/http_transport_fuchsia.cc",
+      "net/http_transport_none.cc",
       "process/process_memory_fuchsia.cc",
       "process/process_memory_fuchsia.h",
     ]
@@ -402,16 +419,22 @@ static_library("util") {
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
-  if (crashpad_is_linux) {
+  if (crashpad_is_linux && enable_http_transport_libcurl) {
     libs = [ "curl" ]
   }
 
   if (crashpad_is_win) {
-    cflags = [
-      "/wd4201",  # nonstandard extension used : nameless struct/union.
-      "/wd4577",  # 'noexcept' used with no exception handling mode specified.
+    libs = [
+      "user32.lib",
+
+      # TODO(jperaza): version.lib is needed for Windows 7 compatibility.
+      # mincore.lib may be linked against instead when targeting Windows 8+.
+      "version.lib",
+
+      "winhttp.lib",
     ]
-    libs = [ "winhttp.lib" ]
+
+    cflags = [ "/wd4201" ]  # nonstandard extension used: nameless struct/union.
 
     if (current_cpu == "x86") {
       asmflags = [ "/safeseh" ]
@@ -430,6 +453,7 @@ source_set("util_test") {
     "file/filesystem_test.cc",
     "file/string_file_test.cc",
     "misc/arraysize_unsafe_test.cc",
+    "misc/capture_context_test_util.h",
     "misc/clock_test.cc",
     "misc/from_pointer_cast_test.cc",
     "misc/initialization_state_dcheck_test.cc",
@@ -463,7 +487,16 @@ source_set("util_test") {
     "thread/worker_thread_test.cc",
   ]
 
-  if (!crashpad_is_android && !crashpad_is_fuchsia) {
+  if (!crashpad_is_fuchsia) {
+    sources += [
+      # No NativeCPUContext defined for Fuchsia yet.
+      # https://crashpad.chromium.org/bug/196.
+      "misc/capture_context_test.cc",
+    ]
+  }
+
+  if (!crashpad_is_android && !crashpad_is_fuchsia &&
+      (!crashpad_is_linux || enable_http_transport_libcurl)) {
     # Android and Fuchsia will each require an HTTPTransport implementation
     # (libcurl isn’t in either’s SDK) and a solution to
     # http_transport_test_server.py, because Python isn’t available on either.
@@ -471,8 +504,10 @@ source_set("util_test") {
     # the build host with a method to forward requests from the device to the
     # host.
     #
-    # TODO(scottmg): Fuchsia will also require an implementation of
-    # MultiprocessExec for testing.
+    # Linux optionally compiles in a libcurl-based HTTPTransport, but since curl
+    # isn't in a base Debian sysroot (which is what Chromium builds against),
+    # maintain an option to exclude that, for now.
+    # https://crashpad.chromium.org/bug/220.
     sources += [ "net/http_transport_test.cc" ]
   }
 
@@ -508,6 +543,7 @@ source_set("util_test") {
       "mach/scoped_task_suspend_test.cc",
       "mach/symbolic_constants_mach_test.cc",
       "mach/task_memory_test.cc",
+      "misc/capture_context_test_util_mac.cc",
     ]
   }
 
@@ -519,6 +555,7 @@ source_set("util_test") {
       "linux/ptrace_broker_test.cc",
       "linux/ptracer_test.cc",
       "linux/scoped_ptrace_attach_test.cc",
+      "misc/capture_context_test_util_linux.cc",
     ]
   }
 
@@ -532,7 +569,7 @@ source_set("util_test") {
 
   if (crashpad_is_win) {
     sources += [
-      "win/capture_context_test.cc",
+      "misc/capture_context_test_util_win.cc",
       "win/command_line_test.cc",
       "win/critical_section_with_debug_info_test.cc",
       "win/exception_handler_server_test.cc",
@@ -568,7 +605,10 @@ source_set("util_test") {
   }
 
   if (crashpad_is_win) {
-    libs = [ "rpcrt4.lib" ]
+    libs = [
+      "rpcrt4.lib",
+      "dbghelp.lib",
+    ]
     data_deps = [
       ":crashpad_util_test_process_info_test_child",
       ":crashpad_util_test_safe_terminate_process_test_child",

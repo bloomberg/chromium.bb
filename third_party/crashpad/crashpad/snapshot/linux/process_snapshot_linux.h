@@ -25,9 +25,9 @@
 
 #include "base/macros.h"
 #include "snapshot/crashpad_info_client_options.h"
+#include "snapshot/elf/module_snapshot_elf.h"
 #include "snapshot/linux/exception_snapshot_linux.h"
-#include "snapshot/linux/module_snapshot_linux.h"
-#include "snapshot/linux/process_reader.h"
+#include "snapshot/linux/process_reader_linux.h"
 #include "snapshot/linux/system_snapshot_linux.h"
 #include "snapshot/linux/thread_snapshot_linux.h"
 #include "snapshot/memory_map_region_snapshot.h"
@@ -124,10 +124,10 @@ class ProcessSnapshotLinux final : public ProcessSnapshot {
   UUID report_id_;
   UUID client_id_;
   std::vector<std::unique_ptr<internal::ThreadSnapshotLinux>> threads_;
-  std::vector<std::unique_ptr<internal::ModuleSnapshotLinux>> modules_;
+  std::vector<std::unique_ptr<internal::ModuleSnapshotElf>> modules_;
   std::unique_ptr<internal::ExceptionSnapshotLinux> exception_;
   internal::SystemSnapshotLinux system_;
-  ProcessReader process_reader_;
+  ProcessReaderLinux process_reader_;
   InitializationStateDcheck initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSnapshotLinux);
