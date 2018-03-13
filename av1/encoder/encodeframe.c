@@ -1467,7 +1467,20 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-  if (!dry_run && ctx >= 0) td->counts->partition[ctx][partition]++;
+  if (!dry_run && ctx >= 0) {
+    const int has_rows = (mi_row + hbs) < cm->mi_rows;
+    const int has_cols = (mi_col + hbs) < cm->mi_cols;
+
+    if (has_rows && has_cols) {
+      td->counts->partition[ctx][partition]++;
+
+      if (tile_data->allow_update_cdf) {
+        FRAME_CONTEXT *fc = xd->tile_ctx;
+        update_cdf(fc->partition_cdf[ctx], partition,
+                   partition_cdf_length(bsize));
+      }
+    }
+  }
 
   switch (partition) {
     case PARTITION_NONE:
