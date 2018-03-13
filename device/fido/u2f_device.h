@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_return_code.h"
 
@@ -45,16 +46,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
   // U2fDevice to U2fRequest.
   // Raw messages parameters are defined by the specification at
   // https://fidoalliance.org/specs/fido-u2f-v1.0-nfc-bt-amendment-20150514/fido-u2f-raw-message-formats.html
-  void Register(const std::vector<uint8_t>& appid_digest,
-                const std::vector<uint8_t>& challenge_digest,
-                bool individual_attestation_ok,
+  void Register(base::Optional<std::vector<uint8_t>> register_cmd,
                 MessageCallback callback);
+  void Sign(base::Optional<std::vector<uint8_t>> sign_cmd,
+            MessageCallback callback);
   void Version(VersionCallback callback);
-  void Sign(const std::vector<uint8_t>& appid_digest,
-            const std::vector<uint8_t>& challenge_digest,
-            const std::vector<uint8_t>& key_handle,
-            MessageCallback callback,
-            bool check_only = false);
 
   virtual void TryWink(WinkCallback callback) = 0;
   virtual std::string GetId() const = 0;

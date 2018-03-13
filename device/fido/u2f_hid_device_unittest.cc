@@ -17,6 +17,7 @@
 #include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_command_type.h"
 #include "device/fido/u2f_hid_device.h"
+#include "device/fido/u2f_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
@@ -171,7 +172,7 @@ TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
   for (auto& device : receiver.TakeReturnedDevicesFiltered()) {
     TestVersionCallbackReceiver vc;
     TestVersionCallbackReceiver vc2;
-    // Call version twice to check message queueing
+    // Call version twice to check message queueing.
     device->Version(vc.callback());
     device->Version(vc2.callback());
     vc.WaitForCallback();
@@ -182,7 +183,7 @@ TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
 }
 
 TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
-  // Setup and enumerate mock device
+  // Setup and enumerate mock device.
   U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   auto hid_device = TestHidDevice();
   fake_hid_manager_->AddDevice(std::move(hid_device));
@@ -194,24 +195,21 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
 
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
-
-  // Put device in IDLE state
+  // Put device in IDLE state.
   device->state_ = U2fHidDevice::State::IDLE;
 
-  // Manually delete connection
+  // Manually delete connection.
   device->connection_ = nullptr;
 
   // Add pending transactions manually and ensure they are processed
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      receiver_1.callback());
+  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+                                        receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      receiver_2.callback());
+  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+                                        receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
-  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
+  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_3.callback());
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
   EXPECT_EQ(nullptr, receiver_1.value());
@@ -220,8 +218,9 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
 }
 
 TEST_F(U2fHidDeviceTest, TestDeviceError) {
-  // Setup and enumerate mock device
+  // Setup and enumerate mock device.
   U2fDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+
   auto hid_device = TestHidDevice();
   fake_hid_manager_->AddDevice(std::move(hid_device));
   hid_manager_->GetDevices(receiver.callback());
@@ -233,28 +232,26 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   ASSERT_EQ(static_cast<size_t>(1), u2f_devices.size());
   auto& device = u2f_devices.front();
 
-  // Mock connection where writes always fail
+  // Mock connection where writes always fail.
   FakeHidConnection::mock_connection_error_ = true;
   device->state_ = U2fHidDevice::State::IDLE;
   TestDeviceCallbackReceiver receiver_0;
   std::unique_ptr<U2fApduResponse> response_0(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
+  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_0.callback());
   EXPECT_EQ(nullptr, receiver_0.value());
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
 
-  // Add pending transactions manually and ensure they are processed
+  // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      receiver_1.callback());
+  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+                                        receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-      receiver_2.callback());
+  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+                                        receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
-  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
+  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;
 

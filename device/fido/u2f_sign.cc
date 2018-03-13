@@ -64,21 +64,20 @@ void U2fSign::TryDevice() {
   // [2]
   // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
   if (registered_keys_.size() == 0) {
-    // Send registration (Fake enroll) if no keys were provided
+    // Send registration (Fake enroll) if no keys were provided.
     current_device_->Register(
-        U2fRequest::GetBogusApplicationParameter(),
-        U2fRequest::GetBogusChallenge(), false /* no individual attestation */,
+        U2fRequest::GetBogusRegisterCommand(),
         base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                        registered_keys_.cend(),
                        ApplicationParameterType::kPrimary));
     return;
   }
-  // Try signing current device with the first registered key
+  // Try signing current device with the first registered key.
   auto it = registered_keys_.cbegin();
   current_device_->Sign(
-      application_parameter_, challenge_digest_, *it,
-      base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
-                     ApplicationParameterType::kPrimary));
+      GetU2fSignApduCommand(application_parameter_, *it),
+      base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
+                 ApplicationParameterType::kPrimary));
 }
 
 void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
@@ -122,22 +121,20 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
         // |application_parameter_| failed, but there is also
         // |alt_application_parameter_| to try.
         current_device_->Sign(
-            *alt_application_parameter_, challenge_digest_, *it,
-            base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
-                           it, ApplicationParameterType::kAlternative));
+            GetU2fSignApduCommand(*alt_application_parameter_, *it),
+            base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
+                       ApplicationParameterType::kAlternative));
       } else if (++it != registered_keys_.end()) {
         // Key is not for this device. Try signing with the next key.
         current_device_->Sign(
-            application_parameter_, challenge_digest_, *it,
+            GetU2fSignApduCommand(application_parameter_, *it),
             base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                            it, ApplicationParameterType::kPrimary));
       } else {
         // No provided key was accepted by this device. Send registration
         // (Fake enroll) request to device.
         current_device_->Register(
-            U2fRequest::GetBogusApplicationParameter(),
-            U2fRequest::GetBogusChallenge(),
-            false /* no individual attestation */,
+            GetBogusRegisterCommand(),
             base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                            registered_keys_.cend(),
                            ApplicationParameterType::kPrimary));
