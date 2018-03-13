@@ -765,6 +765,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!request.download_to_file);
     const content::RenderProcessHost* process_host = frame_host_->GetProcess();
     BrowserContext* browser_context = process_host->GetBrowserContext();
 

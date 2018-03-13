@@ -41,6 +41,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK(!url_request.download_to_file);
   bool report_raw_headers = false;
   if (url_request.report_raw_headers) {
     const NetworkService* service = context_->network_service();
