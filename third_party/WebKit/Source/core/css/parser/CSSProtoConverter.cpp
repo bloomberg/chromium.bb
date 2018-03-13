@@ -1408,7 +1408,6 @@ const std::string Converter::kPropertyLookupTable[] = {
     "column-rule-style",
     "display",
     "-webkit-column-rule-width",
-    "-webkit-box-lines",
     "border-color",
     "-webkit-flex-basis",
     "stroke-dashoffset",

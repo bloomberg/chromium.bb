@@ -363,7 +363,6 @@ webkitBoxDecorationBreak
 webkitBoxDirection
 webkitBoxFlex
 webkitBoxFlexGroup
-webkitBoxLines
 webkitBoxOrdinalGroup
 webkitBoxOrient
 webkitBoxPack

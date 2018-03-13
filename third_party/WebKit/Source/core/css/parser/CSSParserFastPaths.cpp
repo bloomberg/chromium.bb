@@ -774,8 +774,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueClone || value_id == CSSValueSlice;
     case CSSPropertyWebkitBoxDirection:
       return value_id == CSSValueNormal || value_id == CSSValueReverse;
-    case CSSPropertyWebkitBoxLines:
-      return value_id == CSSValueSingle || value_id == CSSValueMultiple;
     case CSSPropertyWebkitBoxOrient:
       return value_id == CSSValueHorizontal || value_id == CSSValueVertical ||
              value_id == CSSValueInlineAxis || value_id == CSSValueBlockAxis;
@@ -975,7 +973,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWebkitBoxAlign:
     case CSSPropertyWebkitBoxDecorationBreak:
     case CSSPropertyWebkitBoxDirection:
-    case CSSPropertyWebkitBoxLines:
     case CSSPropertyWebkitBoxOrient:
     case CSSPropertyWebkitBoxPack:
     case CSSPropertyColumnFill:

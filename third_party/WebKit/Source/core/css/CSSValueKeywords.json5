@@ -517,10 +517,6 @@
     // center
     // justify
 
-    // box-lines
-    "single",
-    "multiple",
-
     // align-content
     // start
     // end

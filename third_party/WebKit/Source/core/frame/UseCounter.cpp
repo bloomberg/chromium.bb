@@ -439,8 +439,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 205;
     case CSSPropertyWebkitBoxFlexGroup:
       return 206;
-    case CSSPropertyWebkitBoxLines:
-      return 207;
+    // CSSPropertyWebkitBoxLines was 207
     case CSSPropertyWebkitBoxOrdinalGroup:
       return 208;
     case CSSPropertyWebkitBoxOrient:

@@ -55,9 +55,6 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
 
   LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
 
-  bool HasMultipleLines() const {
-    return Style()->BoxLines() == EBoxLines::kMultiple;
-  }
   bool IsVertical() const {
     return Style()->BoxOrient() == EBoxOrient::kVertical;
   }

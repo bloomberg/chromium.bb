@@ -3029,14 +3029,6 @@
       type_name: "unsigned",
     },
     {
-      name: "-webkit-box-lines",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "keyword",
-      keywords: ["single", "multiple"],
-      default_value: "single",
-    },
-    {
       name: "-webkit-box-ordinal-group",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
