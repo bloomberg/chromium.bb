@@ -13,6 +13,14 @@ class AppListModel;
 class SearchModel;
 class SearchResult;
 
+void RecordFolderShowHideAnimationSmoothness(int actual_frames,
+                                             int ideal_duration_ms,
+                                             float refresh_rate);
+
+void RecordPaginationAnimationSmoothness(int actual_frames,
+                                         int ideal_duration_ms,
+                                         float refresh_rate);
+
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,
     const AppListModel* model,
