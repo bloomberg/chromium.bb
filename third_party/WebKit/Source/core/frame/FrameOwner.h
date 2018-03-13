@@ -45,8 +45,8 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool CanRenderFallbackContent() const = 0;
   virtual void RenderFallbackContent() = 0;
 
-  // The intrinsic dimensions of the embedded object changed. This is relevant
-  // for SVG documents that are embedded via <object> or <embed>.
+  // The intrinsic dimensions of the embedded object changed. This is only
+  // relevant for SVG documents that are embedded via <object> or <embed>.
   virtual void IntrinsicSizingInfoChanged() = 0;
 
   // Returns the 'name' content attribute value of the browsing context

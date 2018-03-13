@@ -283,9 +283,8 @@ void LayoutSVGRoot::IntrinsicSizingInfoChanged() const {
   // document, or not embedded in a way that supports/allows size negotiation.
   if (!IsEmbeddedThroughFrameContainingSVGDocument())
     return;
-  IntrinsicSizingInfo sizing_info;
-  ComputeIntrinsicSizingInfo(sizing_info);
-  GetFrame()->IntrinsicSizingInfoChanged(sizing_info);
+  DCHECK(GetFrame()->Owner());
+  GetFrame()->Owner()->IntrinsicSizingInfoChanged();
 }
 
 void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
@@ -297,10 +296,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
     has_box_decoration_background_ = StyleRef().HasBoxDecorationBackground();
   }
 
-  // If we previously didn't have any computed style, we wouldn't have been
-  // able to determine our intrinsic dimensions, so in that case always
-  // initiate a size negotiation.
-  if (!old_style || StyleChangeAffectsIntrinsicSize(*old_style))
+  if (old_style && StyleChangeAffectsIntrinsicSize(*old_style))
     IntrinsicSizingInfoChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
