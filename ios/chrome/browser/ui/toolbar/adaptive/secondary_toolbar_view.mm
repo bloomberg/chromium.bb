@@ -85,9 +85,6 @@
 
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
   self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  self.blur.contentView.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.blurEffectBackgroundColor;
-
   [self addSubview:self.blur];
   self.blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.blur, self);

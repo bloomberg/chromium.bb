@@ -35,16 +35,6 @@
   }
 }
 
-- (UIColor*)blurEffectBackgroundColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent
-                               alpha:kBlurBackgroundAlpha];
-    case INCOGNITO:
-      return nil;
-  }
-}
-
 - (UIColor*)NTPBackgroundColor {
   switch (self.style) {
     case NORMAL:
