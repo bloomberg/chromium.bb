@@ -887,10 +887,6 @@ public class ChromeTabbedActivity
         int accessibilityStringId = R.string.iph_download_home_accessibility_text;
         if (FeatureUtilities.isChromeHomeEnabled()) {
             accessibilityStringId = R.string.iph_download_home_accessibility_text_chrome_home;
-            if (getBottomSheet().isUsingExpandButton()) {
-                accessibilityStringId =
-                        R.string.iph_download_home_accessibility_text_chrome_home_expand;
-            }
         }
 
         View anchorView = getToolbarAnchorViewForDownloadHomeTextBubble();
@@ -905,21 +901,15 @@ public class ChromeTabbedActivity
 
         turnOnHighlightForDownloadHomeTextBubble();
 
-        boolean isChromeHomeExpandButtonEnabled =
-                FeatureUtilities.isChromeHomeEnabled() && getBottomSheet().isUsingExpandButton();
-
         int yInsetPx =
                 getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, isChromeHomeExpandButtonEnabled ? yInsetPx : 0, 0,
-                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
         textBubble.show();
     }
 
     private View getToolbarAnchorViewForDownloadHomeTextBubble() {
         if (FeatureUtilities.isChromeHomeEnabled()) {
-            return getBottomSheet().isUsingExpandButton()
-                    ? mControlContainer.findViewById(R.id.expand_sheet_button)
-                    : mControlContainer.findViewById(R.id.toolbar_handle);
+            return mControlContainer.findViewById(R.id.toolbar_handle);
         } else {
             return getToolbarManager().getMenuButton();
         }

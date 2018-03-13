@@ -3174,9 +3174,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_IPH_DOWNLOAD_HOME_ACCESSIBILITY_TEXT_CHROME_HOME" desc="The in-product-help accessibility text to open download home after a restart in chrome home mode.">
         Pull up the toolbar to find your files and pages in downloads
       </message>
-      <message name="IDS_IPH_DOWNLOAD_HOME_ACCESSIBILITY_TEXT_CHROME_HOME_EXPAND" desc="The in-product-help accessibility text to open download home after a restart in chrome home mode with expand button enabled.">
-        Double tap the expand button to find your files and pages in downloads
-      </message>
       <message name="IDS_IPH_DATA_SAVER_PREVIEW_TEXT" desc="In-product help for when a data saver preview page and infobar are shown.">
           Chrome is using less data to show you this page
       </message>
