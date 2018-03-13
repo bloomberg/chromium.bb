@@ -832,9 +832,6 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
     const std::string& pref_name) const {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1))
-    return PHISHING_REUSE;
-
   const PrefService::Preference* warning_trigger =
       profile_->GetPrefs()->FindPreference(pref_name);
   bool is_policy_managed =
