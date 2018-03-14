@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -27,6 +28,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -39,12 +41,84 @@
 
 namespace chrome {
 
-void ShowBadFlagsPrompt(Browser* browser) {
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return;
+namespace {
 
+// Unsupported flags for which to display a warning that "stability and security
+// will suffer".
+static const char* kBadFlags[] = {
+    network::switches::kIgnoreCertificateErrorsSPKIList,
+    // These flags disable sandbox-related security.
+    service_manager::switches::kDisableGpuSandbox,
+    service_manager::switches::kDisableSeccompFilterSandbox,
+    service_manager::switches::kDisableSetuidSandbox,
+#if defined(OS_WIN)
+    service_manager::switches::kAllowThirdPartyModules,
+#endif
+    switches::kDisableWebSecurity,
+#if BUILDFLAG(ENABLE_NACL)
+    switches::kNaClDangerousNoSandboxNonSfi,
+#endif
+    switches::kNoSandbox, switches::kSingleProcess,
+
+    // These flags disable or undermine the Same Origin Policy.
+    translate::switches::kTranslateSecurityOrigin,
+
+    // These flags undermine HTTPS / connection security.
+#if BUILDFLAG(ENABLE_WEBRTC)
+    switches::kDisableWebRtcEncryption,
+#endif
+    switches::kIgnoreCertificateErrors,
+    invalidation::switches::kSyncAllowInsecureXmppConnection,
+
+    // These flags change the URLs that handle PII.
+    switches::kGaiaUrl, translate::switches::kTranslateScriptURL,
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // This flag gives extensions more powers.
+    extensions::switches::kExtensionsOnChromeURLs,
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // Speech dispatcher is buggy, it can crash and it can make Chrome freeze.
+    // http://crbug.com/327295
+    switches::kEnableSpeechDispatcher,
+#endif
+
+    // These flags control Blink feature state, which is not supported and is
+    // intended only for use by Chromium developers.
+    switches::kDisableBlinkFeatures, switches::kEnableBlinkFeatures,
+
+    // This flag allows people to whitelist certain origins as secure, even
+    // if they are not.
+    switches::kUnsafelyTreatInsecureOriginAsSecure,
+
+    // This flag allows sites to access the camera and microphone without
+    // getting the user's permission.
+    switches::kUseFakeUIForMediaStream,
+
+    // This flag allows sites to access protected media identifiers without
+    // getting the user's permission.
+    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain};
+
+// Unsupported feature flags for which to display a warning that "stability
+// and security will suffer".
+static const base::Feature* kBadFeatureFlags[] = {
+    &features::kSignedHTTPExchange,
+};
+
+void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
+                                int message_id,
+                                const base::Feature* feature) {
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents),
+      infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, nullptr,
+      l10n_util::GetStringFUTF16(message_id, base::UTF8ToUTF16(feature->name)),
+      false);
+}
+
+}  // namespace
+
+void ShowBadFlagsPrompt(content::WebContents* web_contents) {
   // Flags only available in specific builds, for which to display a warning
   // "the flag is not implemented in this build", if necessary.
   struct {
@@ -64,68 +138,17 @@ void ShowBadFlagsPrompt(Browser* browser) {
     }
   }
 
-  // Unsupported flags for which to display a warning that "stability and
-  // security will suffer".
-  static const char* kBadFlags[] = {
-    network::switches::kIgnoreCertificateErrorsSPKIList,
-    // These flags disable sandbox-related security.
-    service_manager::switches::kDisableGpuSandbox,
-    service_manager::switches::kDisableSeccompFilterSandbox,
-    service_manager::switches::kDisableSetuidSandbox,
-#if defined(OS_WIN)
-    service_manager::switches::kAllowThirdPartyModules,
-#endif
-    switches::kDisableWebSecurity,
-#if BUILDFLAG(ENABLE_NACL)
-    switches::kNaClDangerousNoSandboxNonSfi,
-#endif
-    switches::kNoSandbox,
-    switches::kSingleProcess,
-
-    // These flags disable or undermine the Same Origin Policy.
-    translate::switches::kTranslateSecurityOrigin,
-
-    // These flags undermine HTTPS / connection security.
-#if BUILDFLAG(ENABLE_WEBRTC)
-    switches::kDisableWebRtcEncryption,
-#endif
-    switches::kIgnoreCertificateErrors,
-    invalidation::switches::kSyncAllowInsecureXmppConnection,
-
-    // These flags change the URLs that handle PII.
-    switches::kGaiaUrl,
-    translate::switches::kTranslateScriptURL,
-
-    // This flag gives extensions more powers.
-    extensions::switches::kExtensionsOnChromeURLs,
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    // Speech dispatcher is buggy, it can crash and it can make Chrome freeze.
-    // http://crbug.com/327295
-    switches::kEnableSpeechDispatcher,
-#endif
-
-    // These flags control Blink feature state, which is not supported and is
-    // intended only for use by Chromium developers.
-    switches::kDisableBlinkFeatures,
-    switches::kEnableBlinkFeatures,
-
-    // This flag allows people to whitelist certain origins as secure, even
-    // if they are not.
-    switches::kUnsafelyTreatInsecureOriginAsSecure,
-
-    // This flag allows sites to access the camera and microphone without
-    // getting the user's permission.
-    switches::kUseFakeUIForMediaStream,
-
-    // This flag allows sites to access protected media identifiers without
-    // getting the user's permission.
-    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain
-  };
-
   for (const char* flag : kBadFlags) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(flag)) {
       ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
+      return;
+    }
+  }
+
+  for (const base::Feature* feature : kBadFeatureFlags) {
+    if (base::FeatureList::IsEnabled(*feature)) {
+      ShowBadFeatureFlagsInfoBar(web_contents, IDS_BAD_FEATURES_WARNING_MESSAGE,
+                                 feature);
       return;
     }
   }

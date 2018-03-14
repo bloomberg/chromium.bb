@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -430,6 +431,8 @@ void TabAndroid::InitWebContents(
                                                                GetProfile());
   }
   content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
+
+  chrome::ShowBadFlagsPrompt(web_contents());
 }
 
 void TabAndroid::UpdateDelegates(

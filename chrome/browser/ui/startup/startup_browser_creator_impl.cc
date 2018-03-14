@@ -896,9 +896,12 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP &&
       !command_line_.HasSwitch(switches::kTestType) &&
       !command_line_.HasSwitch(switches::kEnableAutomation)) {
-    chrome::ShowBadFlagsPrompt(browser);
-    InfoBarService* infobar_service = InfoBarService::FromWebContents(
-        browser->tab_strip_model()->GetActiveWebContents());
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    DCHECK(web_contents);
+    chrome::ShowBadFlagsPrompt(web_contents);
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
     if (!google_apis::HasKeysConfigured())
       GoogleApiKeysInfoBarDelegate::Create(infobar_service);
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {

@@ -4906,6 +4906,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
+      <!-- Bad Feature Flags Infobar-->
+      <message name="IDS_BAD_FEATURES_WARNING_MESSAGE" desc="Message shown when an unsupported feature flag is used. [Keep it short so it fits in the infobar.]">
+        You are using an unsupported feature flag: <ph name="BAD_FLAG">$1<ex>SignedHTTPExchange</ex></ph>. Stability and security will suffer.
+      </message>
+
       <!-- Pepper Broker Infobar -->
       <if expr="is_android">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Mobile: Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
