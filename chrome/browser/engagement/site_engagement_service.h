@@ -172,6 +172,9 @@ class SiteEngagementService : public KeyedService,
   double GetScore(const GURL& url) const override;
   double GetTotalEngagementPoints() const override;
 
+  // Just forwards calls AddPoints.
+  void AddPointsForTesting(const GURL& url, double points);
+
  private:
   friend class SiteEngagementObserver;
   friend class SiteEngagementServiceAndroid;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 
+#include <cmath>
 #include <string>
 #include <utility>
 
@@ -16,6 +17,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -80,6 +83,7 @@ void OnListItemClicked(bool off_the_record,
 
 void LogTabUnderAttempt(content::NavigationHandle* handle,
                         base::Optional<ukm::SourceId> opener_source_id,
+                        double engagement_score,
                         bool off_the_record) {
   LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder, off_the_record);
 
@@ -92,6 +96,9 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
         .SetDidTabUnder(true)
         .Record(ukm_recorder);
   }
+  DCHECK_EQ(100, SiteEngagementService::GetMaxPoints());
+  UMA_HISTOGRAM_COUNTS_100("Tab.TabUnder.EngagementScore",
+                           std::ceil(engagement_score));
 }
 
 }  // namespace
@@ -163,13 +170,17 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
   DCHECK(popup_opener);
   popup_opener->OnDidTabUnder();
 
+  auto* site_engagement_service = SiteEngagementService::Get(
+      Profile::FromBrowserContext(contents->GetBrowserContext()));
+  const GURL& url = navigation_handle()->GetURL();
+  double engagement_score = site_engagement_service->GetScore(url);
   LogTabUnderAttempt(navigation_handle(),
-                     popup_opener->last_committed_source_id(), off_the_record_);
+                     popup_opener->last_committed_source_id(), engagement_score,
+                     off_the_record_);
 
   if (block_) {
     const std::string error =
-        base::StringPrintf(kBlockTabUnderFormatMessage,
-                           navigation_handle()->GetURL().spec().c_str());
+        base::StringPrintf(kBlockTabUnderFormatMessage, url.spec().c_str());
     contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, error.c_str());
     LogAction(Action::kBlocked, off_the_record_);
