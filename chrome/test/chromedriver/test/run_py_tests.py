@@ -82,12 +82,15 @@ _NEGATIVE_FILTER = [
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = []
 
-_VERSION_SPECIFIC_FILTER['66'] = []
+_VERSION_SPECIFIC_FILTER['66'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2304
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
+]
 
 _VERSION_SPECIFIC_FILTER['65'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
     'ChromeDriverTest.testGoBackAndGoForward',
-    'ChromeDriverTest.testAlertHandlingOnPageUnload'
+    'ChromeDriverTest.testAlertHandlingOnPageUnload',
 ]
 
 _VERSION_SPECIFIC_FILTER['64'] = [
