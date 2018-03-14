@@ -317,3 +317,15 @@ class TestGettingSheriffEmails(cros_test_lib.MockTestCase):
     raw_line = "document.write('None (channel is sheriff)')"
     self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
     self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'), [])
+
+
+class TestUrlConstruction(cros_test_lib.TestCase):
+  """Tests functions that create URLs."""
+
+  def testConstructLegolandBuildURL(self):
+    """Tests generating Legoland build URLs."""
+    output = tree_status.ConstructLegolandBuildURL('bbid')
+    expected = ('http://cros-goldeneye/chromeos/healthmonitoring/'
+                'buildDetails?buildbucketId=bbid')
+
+    self.assertEqual(output, expected)

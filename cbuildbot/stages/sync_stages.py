@@ -1474,7 +1474,7 @@ class PreCQLauncherStage(SyncStage):
       result = cros_build_lib.RunCommand(
           cmd, cwd=self._build_root, capture_output=True)
       if result and result.output:
-        logging.info('cbuildbot output: %s' % result.output)
+        logging.info('output: %s' % result.output)
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
             result.output)
 
@@ -2033,8 +2033,7 @@ class PreCQLauncherStage(SyncStage):
         build_dicts = db.GetBuildStatuses(build_ids)
         lines = []
         for b in build_dicts:
-          url = tree_status.ConstructDashboardURL(
-              b['waterfall'], b['builder_name'], b['build_number'])
+          url = tree_status.ConstructLegolandBuildURL(b['buildbucket_id'])
           lines.append('(%s) : %s ' % (b['build_config'], url))
 
         # Send notifications.

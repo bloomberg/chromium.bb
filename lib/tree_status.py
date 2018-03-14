@@ -32,6 +32,8 @@ _USER_NAME = 'buildbot@chromium.org'
 _PASSWORD_PATH = '/home/chrome-bot/.status_password_chromiumos'
 
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
+_LEGOLAND_BUILD_URL = ('http://cros-goldeneye/chromeos/healthmonitoring/'
+                       'buildDetails?buildbucketId=%(buildbucket_id)s')
 
 # The tree status json file contains the following keywords.
 TREE_STATUS_STATE = 'general_state'
@@ -447,6 +449,18 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                      server=server,
                      message=body,
                      extra_fields=extra_fields)
+
+
+def ConstructLegolandBuildURL(buildbucket_id):
+  """Return a Legoland build URL.
+
+  Args:
+    buildbucket_id: Buildbucket id of the build to link.
+
+  Returns:
+    The fully formed URL.
+  """
+  return _LEGOLAND_BUILD_URL % {'buildbucket_id': buildbucket_id}
 
 
 def ConstructDashboardURL(buildbot_master_name, builder_name, build_number):
