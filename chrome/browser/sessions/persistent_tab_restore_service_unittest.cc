@@ -303,6 +303,33 @@ TEST_F(PersistentTabRestoreServiceTest, Restore) {
             tab->timestamp.ToInternalValue());
 }
 
+// Tests restoring a tab with more than gMaxPersistNavigationCount entries.
+TEST_F(PersistentTabRestoreServiceTest, RestoreManyNavigations) {
+  AddThreeNavigations();
+  AddThreeNavigations();
+  AddThreeNavigations();
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(live_tab(), -1);
+
+  // Recreate the service and have it load the tabs.
+  RecreateService();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  Entry* entry = service_->entries().front().get();
+  ASSERT_EQ(sessions::TabRestoreService::TAB, entry->type);
+  Tab* tab = static_cast<Tab*>(entry);
+  // Only gMaxPersistNavigationCount + 1 (current navigation) are persisted.
+  ASSERT_EQ(7U, tab->navigations.size());
+  // Check that they are created with correct indices.
+  EXPECT_EQ(0, tab->navigations[0].index());
+  EXPECT_EQ(6, tab->navigations[6].index());
+  EXPECT_EQ(6, tab->current_navigation_index);
+}
+
 // Tests restoring a single pinned tab.
 TEST_F(PersistentTabRestoreServiceTest, RestorePinnedAndApp) {
   AddThreeNavigations();

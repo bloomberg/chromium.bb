@@ -144,6 +144,10 @@ void TabRestoreServiceHelper::ClearEntries() {
 
 bool TabRestoreServiceHelper::DeleteFromTab(const DeletionPredicate& predicate,
                                             Tab* tab) {
+  // TODO(dullweber): Change to DCHECK() when this is tested to be true.
+  CHECK(ValidateTab(*tab));
+  CHECK_EQ(tab->current_navigation_index,
+           tab->navigations[tab->current_navigation_index].index());
   std::vector<SerializedNavigationEntry> new_navigations;
   int deleted_navigations = 0;
   for (auto& navigation : tab->navigations) {
@@ -161,7 +165,8 @@ bool TabRestoreServiceHelper::DeleteFromTab(const DeletionPredicate& predicate,
     }
   }
   tab->navigations = std::move(new_navigations);
-  DCHECK(tab->navigations.empty() || ValidateTab(*tab));
+  // TODO(dullweber): Change to DCHECK() when this is tested to be true.
+  CHECK(tab->navigations.empty() || ValidateTab(*tab));
   return tab->navigations.empty();
 }
 

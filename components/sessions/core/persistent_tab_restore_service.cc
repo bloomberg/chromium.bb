@@ -914,6 +914,10 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
                                                &tab_id)) {
           return;
         }
+        // When navigations are serialized, only gMaxPersistNavigationCount
+        // navigations are written. This leads to inconsistent indices.
+        current_tab->navigations.back().set_index(
+            current_tab->navigations.size() - 1);
         break;
       }
 
