@@ -42,7 +42,7 @@ class VariationsCrashKeys final : public base::FieldTrialList::Observer {
   ~VariationsCrashKeys() override;
 
   // base::FieldTrialList::Observer:
-  void OnFieldTrialGroupFinalized(const std::string& field_trial_name,
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override;
 
   // Notifies the object that the list of synthetic field trial groups has
@@ -51,6 +51,11 @@ class VariationsCrashKeys final : public base::FieldTrialList::Observer {
   void OnSyntheticTrialsChanged(const std::vector<SyntheticTrialGroup>& groups);
 
  private:
+  // Adds an entry for the specified field trial to internal state, without
+  // updating crash keys.
+  void AppendFieldTrial(const std::string& trial_name,
+                        const std::string& group_name);
+
   // Updates crash keys based on internal state.
   void UpdateCrashKeys();
 
@@ -72,15 +77,12 @@ class VariationsCrashKeys final : public base::FieldTrialList::Observer {
 };
 
 VariationsCrashKeys::VariationsCrashKeys() {
-  // Note: We are calling OnFieldTrialGroupFinalized(), which is virtual, in
-  // the constructor. Since this class is marked final, this is safe to do, but
-  // if this is changed and a subclass is introduced that wants to override the
-  // method, this work should be moved to a dedicated Init() method.
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
   for (const auto& entry : active_groups) {
-    OnFieldTrialGroupFinalized(entry.trial_name, entry.group_name);
+    AppendFieldTrial(entry.trial_name, entry.group_name);
   }
+  UpdateCrashKeys();
 
   bool success = base::FieldTrialList::AddObserver(this);
   // Ensure the observer was actually registered.
@@ -98,13 +100,19 @@ void VariationsCrashKeys::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  AppendFieldTrial(trial_name, group_name);
+  UpdateCrashKeys();
+}
+
+void VariationsCrashKeys::AppendFieldTrial(const std::string& trial_name,
+                                           const std::string& group_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto active_group_id = MakeActiveGroupId(trial_name, group_name);
   auto variation = ActiveGroupToString(active_group_id);
 
   variations_string_ += variation;
   ++num_variations_;
-
-  UpdateCrashKeys();
 }
 
 void VariationsCrashKeys::UpdateCrashKeys() {
