@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -484,6 +485,8 @@ void WebApkInstaller::OnGotSpaceStatus(
     const base::android::JavaParamRef<jobject>& obj,
     jint status) {
   SpaceStatus space_status = static_cast<SpaceStatus>(status);
+  UMA_HISTOGRAM_ENUMERATION("WebApk.Install.SpaceStatus", status,
+                            static_cast<int>(SpaceStatus::COUNT));
 
   if (space_status == SpaceStatus::NOT_ENOUGH_SPACE) {
     OnResult(WebApkInstallResult::FAILURE);
