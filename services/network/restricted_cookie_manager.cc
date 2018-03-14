@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -21,15 +22,100 @@
 
 namespace network {
 
+namespace {
+
+// TODO(pwnall): De-duplicate from cookie_manager.cc
+network::mojom::CookieChangeCause ToCookieChangeCause(
+    net::CookieChangeCause net_cause) {
+  switch (net_cause) {
+    case net::CookieChangeCause::INSERTED:
+      return network::mojom::CookieChangeCause::INSERTED;
+    case net::CookieChangeCause::EXPLICIT:
+      return network::mojom::CookieChangeCause::EXPLICIT;
+    case net::CookieChangeCause::UNKNOWN_DELETION:
+      return network::mojom::CookieChangeCause::UNKNOWN_DELETION;
+    case net::CookieChangeCause::OVERWRITE:
+      return network::mojom::CookieChangeCause::OVERWRITE;
+    case net::CookieChangeCause::EXPIRED:
+      return network::mojom::CookieChangeCause::EXPIRED;
+    case net::CookieChangeCause::EVICTED:
+      return network::mojom::CookieChangeCause::EVICTED;
+    case net::CookieChangeCause::EXPIRED_OVERWRITE:
+      return network::mojom::CookieChangeCause::EXPIRED_OVERWRITE;
+  }
+  NOTREACHED();
+  return network::mojom::CookieChangeCause::EXPLICIT;
+}
+
+}  // anonymous namespace
+
+class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
+ public:
+  Listener(net::CookieStore* cookie_store,
+           const GURL& url,
+           net::CookieOptions options,
+           network::mojom::CookieChangeListenerPtr mojo_listener)
+      : url_(url), options_(options), mojo_listener_(std::move(mojo_listener)) {
+    // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
+    cookie_store_subscription_ =
+        cookie_store->GetChangeDispatcher().AddCallbackForUrl(
+            url,
+            base::BindRepeating(
+                &Listener::OnCookieChange,
+                // Safe because net::CookieChangeDispatcher guarantees that the
+                // callback will stop being called immediately after we remove
+                // the subscription, and the cookie store lives on the same
+                // thread as we do.
+                base::Unretained(this)));
+  }
+
+  ~Listener() = default;
+
+  network::mojom::CookieChangeListenerPtr& mojo_listener() {
+    return mojo_listener_;
+  }
+
+ private:
+  // net::CookieChangeDispatcher callback.
+  void OnCookieChange(const net::CanonicalCookie& cookie,
+                      net::CookieChangeCause cause) {
+    if (!cookie.IncludeForRequestURL(url_, options_))
+      return;
+    mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
+  }
+
+  // The CookieChangeDispatcher subscription used by this listener.
+  std::unique_ptr<net::CookieChangeSubscription> cookie_store_subscription_;
+
+  // The URL whose cookies this listener is interested in.
+  const GURL url_;
+  // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
+  const net::CookieOptions options_;
+
+  network::mojom::CookieChangeListenerPtr mojo_listener_;
+
+  DISALLOW_COPY_AND_ASSIGN(Listener);
+};
+
 RestrictedCookieManager::RestrictedCookieManager(net::CookieStore* cookie_store,
                                                  int render_process_id,
                                                  int render_frame_id)
     : cookie_store_(cookie_store),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(cookie_store);
+}
 
-RestrictedCookieManager::~RestrictedCookieManager() = default;
+RestrictedCookieManager::~RestrictedCookieManager() {
+  base::LinkNode<Listener>* node = listeners_.head();
+  while (node != listeners_.end()) {
+    Listener* listener_reference = node->value();
+    node = node->next();
+    // The entire list is going away, no need to remove nodes from it.
+    delete listener_reference;
+  }
+}
 
 void RestrictedCookieManager::GetAllForUrl(
     const GURL& url,
@@ -126,6 +212,47 @@ void RestrictedCookieManager::SetCanonicalCookie(
   cookie_store_->SetCanonicalCookieAsync(std::move(sanitized_cookie),
                                          secure_source, modify_http_only,
                                          std::move(callback));
+}
+
+void RestrictedCookieManager::AddChangeListener(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    network::mojom::CookieChangeListenerPtr mojo_listener) {
+  // TODO(pwnall): Replicate the call to
+  //               ChildProcessSecurityPolicy::CanAccessDataForOrigin() in
+  //               RenderFrameMessageFilter::GetCookies.
+
+  net::CookieOptions net_options;
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          url, site_for_cookies,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // TODO(mkwst): This check ought to further distinguish between frames
+    // initiated in a strict or lax same-site context.
+    net_options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  } else {
+    net_options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  }
+
+  auto listener = std::make_unique<Listener>(cookie_store_, url, net_options,
+                                             std::move(mojo_listener));
+
+  listener->mojo_listener().set_connection_error_handler(
+      base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     // Safe because this owns the listener, so the listener is
+                     // guaranteed to be alive for as long as the weak pointer
+                     // above resolves.
+                     base::Unretained(listener.get())));
+
+  // The linked list takes over the Listener ownership.
+  listeners_.Append(listener.release());
+}
+
+void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
+  listener->RemoveFromList();
+  delete listener;
 }
 
 }  // namespace network

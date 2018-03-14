@@ -29,4 +29,10 @@ interface RestrictedCookieManager {
   SetCanonicalCookie(CanonicalCookie cookie,
                      url.mojom.Url url,
                      url.mojom.Url site_for_cookies) => (bool success);
+
+  // Subscribes to changes in the cookies sent with a request to an URL.
+  //
+  // The subscription is canceled by closing the pipe.
+  AddChangeListener(url.mojom.Url url, url.mojom.Url site_for_cookies,
+                    CookieChangeListener listener);
 };

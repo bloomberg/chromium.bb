@@ -10,6 +10,9 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/EventModules.h"
+#include "modules/EventTargetModules.h"
+#include "modules/cookie_store/CookieChangeEvent.h"
 #include "modules/cookie_store/CookieListItem.h"
 #include "modules/cookie_store/CookieStoreGetOptions.h"
 #include "modules/cookie_store/CookieStoreSetOptions.h"
@@ -168,35 +171,46 @@ network::mojom::blink::CanonicalCookiePtr ToCanonicalCookie(
   return canonical_cookie;
 }
 
-// Computes the cookie origin and site URLs for a ScriptState.
-void ExtractCookieURLs(ScriptState* script_state,
-                       KURL& cookie_url,
-                       KURL& site_for_cookies) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+void ToCookieListItem(
+    const network::mojom::blink::CanonicalCookiePtr& canonical_cookie,
+    bool is_deleted,  // True for the information from a cookie deletion event.
+    CookieListItem& cookie) {
+  cookie.setName(canonical_cookie->name);
+  if (!is_deleted)
+    cookie.setValue(canonical_cookie->value);
+}
+
+const KURL& DefaultCookieURL(ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+
   if (execution_context->IsDocument()) {
     Document* document = ToDocument(execution_context);
-    cookie_url = document->CookieURL();
-    site_for_cookies = document->SiteForCookies();
-  } else if (execution_context->IsServiceWorkerGlobalScope()) {
-    ServiceWorkerGlobalScope* scope =
-        ToServiceWorkerGlobalScope(execution_context);
-    // TODO(crbug.com/729800): Correct values?
-    cookie_url = scope->Url();
-    site_for_cookies = scope->Url();
-  } else {
-    NOTIMPLEMENTED();
+    return document->CookieURL();
   }
+
+  DCHECK(execution_context->IsServiceWorkerGlobalScope());
+  ServiceWorkerGlobalScope* scope =
+      ToServiceWorkerGlobalScope(execution_context);
+  return scope->Url();
+}
+
+const KURL DefaultSiteForCookies(ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+
+  if (execution_context->IsDocument()) {
+    Document* document = ToDocument(execution_context);
+    return document->SiteForCookies();
+  }
+
+  DCHECK(execution_context->IsServiceWorkerGlobalScope());
+  ServiceWorkerGlobalScope* scope =
+      ToServiceWorkerGlobalScope(execution_context);
+  return scope->Url();
 }
 
 }  // anonymous namespace
 
 CookieStore::~CookieStore() = default;
-
-CookieStore* CookieStore::Create(
-    ExecutionContext* execution_context,
-    network::mojom::blink::RestrictedCookieManagerPtr backend) {
-  return new CookieStore(execution_context, std::move(backend));
-}
 
 ScriptPromise CookieStore::getAll(ScriptState* script_state,
                                   const CookieStoreGetOptions& options,
@@ -271,14 +285,85 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
 }
 
 void CookieStore::ContextDestroyed(ExecutionContext* execution_context) {
+  StopObserving();
   backend_.reset();
+}
+
+const AtomicString& CookieStore::InterfaceName() const {
+  return EventTargetNames::CookieStore;
+}
+
+ExecutionContext* CookieStore::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
+}
+
+void CookieStore::RemoveAllEventListeners() {
+  EventTargetWithInlineData::RemoveAllEventListeners();
+  DCHECK(!HasEventListeners());
+  StopObserving();
+}
+
+void CookieStore::OnCookieChange(
+    network::mojom::blink::CanonicalCookiePtr backend_cookie,
+    network::mojom::blink::CookieChangeCause change_cause) {
+  HeapVector<CookieListItem> changed, deleted;
+
+  switch (change_cause) {
+    case ::network::mojom::blink::CookieChangeCause::INSERTED:
+    case ::network::mojom::blink::CookieChangeCause::EXPLICIT: {
+      CookieListItem& cookie = changed.emplace_back();
+      ToCookieListItem(backend_cookie, false /* is_deleted */, cookie);
+      break;
+    }
+    case ::network::mojom::blink::CookieChangeCause::UNKNOWN_DELETION:
+    case ::network::mojom::blink::CookieChangeCause::EXPIRED:
+    case ::network::mojom::blink::CookieChangeCause::EVICTED:
+    case ::network::mojom::blink::CookieChangeCause::EXPIRED_OVERWRITE: {
+      CookieListItem& cookie = deleted.emplace_back();
+      ToCookieListItem(backend_cookie, true /* is_deleted */, cookie);
+      break;
+    }
+
+    case ::network::mojom::blink::CookieChangeCause::OVERWRITE:
+      // A cookie overwrite causes an OVERWRITE (meaning the old cookie was
+      // deleted) and an INSERTED.
+      break;
+  }
+
+  if (changed.IsEmpty() && deleted.IsEmpty()) {
+    // The backend only reported OVERWRITE events, which are dropped.
+    return;
+  }
+
+  DispatchEvent(CookieChangeEvent::Create(
+      EventTypeNames::change, std::move(changed), std::move(deleted)));
+}
+
+void CookieStore::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  StartObserving();
+}
+
+void CookieStore::RemovedEventListener(
+    const AtomicString& event_type,
+    const RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::RemovedEventListener(event_type,
+                                                  registered_listener);
+  if (!HasEventListeners())
+    StopObserving();
 }
 
 CookieStore::CookieStore(
     ExecutionContext* execution_context,
     network::mojom::blink::RestrictedCookieManagerPtr backend)
     : ContextLifecycleObserver(execution_context),
-      backend_(std::move(backend)) {
+      backend_(std::move(backend)),
+      change_listener_binding_(this),
+      default_cookie_url_(DefaultCookieURL(execution_context)),
+      default_site_for_cookies_(DefaultSiteForCookies(execution_context)) {
   DCHECK(backend_);
 }
 
@@ -288,10 +373,6 @@ ScriptPromise CookieStore::DoRead(
     const CookieStoreGetOptions& options,
     DoReadBackendResultConverter backend_result_converter,
     ExceptionState& exception_state) {
-  KURL cookie_url;
-  KURL site_for_cookies;
-  ExtractCookieURLs(script_state, cookie_url, site_for_cookies);
-
   network::mojom::blink::CookieManagerGetOptionsPtr backend_options =
       ToBackendOptions(name, options, exception_state);
   if (backend_options.is_null())
@@ -305,7 +386,8 @@ ScriptPromise CookieStore::DoRead(
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   backend_->GetAllForUrl(
-      cookie_url, site_for_cookies, std::move(backend_options),
+      default_cookie_url_, default_site_for_cookies_,
+      std::move(backend_options),
       WTF::Bind(backend_result_converter, WrapPersistent(resolver)));
   return resolver->Promise();
 }
@@ -322,11 +404,10 @@ void CookieStore::GetAllForUrlToGetAllResult(
   cookies.ReserveInitialCapacity(backend_cookies.size());
   for (const auto& canonical_cookie : backend_cookies) {
     CookieListItem& cookie = cookies.emplace_back();
-    cookie.setName(canonical_cookie->name);
-    cookie.setValue(canonical_cookie->value);
+    ToCookieListItem(canonical_cookie, false /* is_deleted */, cookie);
   }
 
-  resolver->Resolve(cookies);
+  resolver->Resolve(std::move(cookies));
 }
 
 // static
@@ -344,8 +425,7 @@ void CookieStore::GetAllForUrlToGetResult(
 
   const auto& canonical_cookie = backend_cookies.front();
   CookieListItem cookie;
-  cookie.setName(canonical_cookie->name);
-  cookie.setValue(canonical_cookie->value);
+  ToCookieListItem(canonical_cookie, false /* is_deleted */, cookie);
   resolver->Resolve(cookie);
 }
 
@@ -366,12 +446,8 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
                                    const CookieStoreSetOptions& options,
                                    bool is_deletion,
                                    ExceptionState& exception_state) {
-  KURL cookie_url;
-  KURL site_for_cookies;
-  ExtractCookieURLs(script_state, cookie_url, site_for_cookies);
-
   network::mojom::blink::CanonicalCookiePtr canonical_cookie =
-      ToCanonicalCookie(cookie_url, name, value, is_deletion, options,
+      ToCanonicalCookie(default_cookie_url_, name, value, is_deletion, options,
                         exception_state);
   if (canonical_cookie.is_null())
     return ScriptPromise();  // ToCanonicalCookie has thrown an exception.
@@ -384,7 +460,8 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   backend_->SetCanonicalCookie(
-      std::move(canonical_cookie), cookie_url, site_for_cookies,
+      std::move(canonical_cookie), default_cookie_url_,
+      default_site_for_cookies_,
       WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
                 WrapPersistent(resolver)));
   return resolver->Promise();
@@ -403,6 +480,22 @@ void CookieStore::OnSetCanonicalCookieResult(ScriptPromiseResolver* resolver,
     return;
   }
   resolver->Resolve();
+}
+
+void CookieStore::StartObserving() {
+  if (change_listener_binding_ || !backend_)
+    return;
+
+  network::mojom::blink::CookieChangeListenerPtr change_listener;
+  change_listener_binding_.Bind(mojo::MakeRequest(&change_listener));
+  backend_->AddChangeListener(default_cookie_url_, default_site_for_cookies_,
+                              std::move(change_listener));
+}
+
+void CookieStore::StopObserving() {
+  if (!change_listener_binding_.is_bound())
+    return;
+  change_listener_binding_.Close();
 }
 
 }  // namespace blink

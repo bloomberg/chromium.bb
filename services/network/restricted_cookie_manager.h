@@ -8,12 +8,14 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/linked_list.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -50,7 +52,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                           const GURL& site_for_cookies,
                           SetCanonicalCookieCallback callback) override;
 
+  void AddChangeListener(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      network::mojom::CookieChangeListenerPtr listener) override;
+
  private:
+  // The state associated with a CookieChangeListener.
+  class Listener;
+
   // Feeds a net::CookieList to a GetAllForUrl() callback.
   void CookieListToGetAllForUrlCallback(
       const GURL& url,
@@ -59,9 +69,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       GetAllForUrlCallback callback,
       const net::CookieList& cookie_list);
 
-  net::CookieStore* cookie_store_;
+  // Called when the Mojo pipe associated with a listener is closed.
+  void RemoveChangeListener(Listener* listener);
+
+  net::CookieStore* const cookie_store_;
   const int render_process_id_;
   const int render_frame_id_;
+
+  base::LinkedList<Listener> listeners_;
 
   base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_;
 

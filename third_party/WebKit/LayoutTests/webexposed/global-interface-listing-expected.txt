@@ -1113,14 +1113,21 @@ interface ConvolverNode : AudioNode
     method constructor
     setter buffer
     setter normalize
-interface CookieStore
+interface CookieChangeEvent : Event
     attribute @@toStringTag
+    getter changed
+    getter deleted
+    method constructor
+interface CookieStore : EventTarget
+    attribute @@toStringTag
+    getter onchange
     method constructor
     method delete
     method get
     method getAll
     method has
     method set
+    setter onchange
 interface CountQueuingStrategy
     method constructor
     method size
