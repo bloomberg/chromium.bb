@@ -112,6 +112,7 @@ extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnablePushApiBackgroundMode[];
 extern const char kEnableSiteSettings[];
 extern const char kEnableTabAudioMuting[];
+extern const char kEnableUiDevTools[];
 extern const char kExtensionContentVerification[];
 extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforce[];

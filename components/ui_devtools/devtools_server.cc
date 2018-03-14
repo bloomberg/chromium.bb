@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/ui_devtools/switches.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/server/http_server_request_info.h"
