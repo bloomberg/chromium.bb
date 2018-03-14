@@ -11,11 +11,11 @@
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
-#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -129,8 +129,8 @@ ChromeProximityAuthClient::GetCryptAuthDeviceManager() {
 }
 
 cryptauth::CryptAuthService* ChromeProximityAuthClient::GetCryptAuthService() {
-  return ChromeCryptAuthServiceFactory::GetInstance()->GetForBrowserContext(
-      profile_);
+  return chromeos::ChromeCryptAuthServiceFactory::GetInstance()
+      ->GetForBrowserContext(profile_);
 }
 
 std::string ChromeProximityAuthClient::GetLocalDevicePublicKey() {

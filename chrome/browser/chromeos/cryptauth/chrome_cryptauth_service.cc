@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cryptauth/chrome_cryptauth_service.h"
+#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service.h"
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
@@ -42,6 +42,8 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/rect.h"
 #endif
+
+namespace chromeos {
 
 namespace {
 
@@ -359,3 +361,5 @@ void ChromeCryptAuthService::OnPrefsChanged() {
   // off.
   PerformEnrollmentAndDeviceSyncIfPossible();
 }
+
+}  // namespace chromeos
