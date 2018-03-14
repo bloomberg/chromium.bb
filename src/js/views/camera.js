@@ -354,8 +354,8 @@ camera.views.Camera = function(context, router) {
       });
 
   /**
-   * Whether a picture is being taken. Used to decrease video quality of
-   * previews for smoother response.
+   * Whether a picture is being taken. Used for smoother effect previews and
+   * updating toolbar UI.
    * @type {boolean}
    * @private
    */
@@ -683,13 +683,11 @@ camera.views.Camera.prototype.initialize = function(callback) {
       this.effectCanvas_ = fx.canvas();
     }
     catch (e) {
+      // Initialization failed due to lack of webgl.
       // TODO(mtomasz): Replace with a better icon.
       this.context_.onError('no-camera',
           chrome.i18n.getMessage('errorMsgNoWebGL'),
           chrome.i18n.getMessage('errorMsgNoWebGLHint'));
-
-      // Initialization failed due to lack of webgl.
-      document.body.classList.remove('initializing');
     }
 
     if (this.mainCanvas_ && this.mainPreviewCanvas_ && this.mainFastCanvas_) {
@@ -732,6 +730,12 @@ camera.views.Camera.prototype.initialize = function(callback) {
       for (var index = 0; index < effects.length; index++) {
         this.addEffect_(new effects[index]());
       }
+
+      // Disable effects for both photo-taking and video-recording.
+      // TODO(yuli): Remove effects completely.
+      this.mainProcessor_.effectDisabled = true;
+      this.mainPreviewProcessor_.effectDisabled = true;
+      this.mainFastProcessor_.effectDisabled = true;
 
       // Select the default effect and state of the timer toggle button.
       // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
@@ -1031,16 +1035,8 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   takePictureButton.setAttribute('i18n-label', label);
   takePictureButton.setAttribute('aria-label', chrome.i18n.getMessage(label));
 
-  // Disable effects for both photo-taking and video-recording.
-  // TODO(yuli): Remove effects completely.
-  this.mainProcessor_.effectDisabled = true;
-  this.mainPreviewProcessor_.effectDisabled = true;
-  this.mainFastProcessor_.effectDisabled = true;
-
   document.querySelector('#toggle-multi').hidden = this.is_recording_mode_;
   document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
-  this.showToastMessage_(chrome.i18n.getMessage(this.is_recording_mode_ ?
-      'recordVideoActiveMessage' : 'takePictureActiveMessage'));
 
   this.stop_();
 };
@@ -1139,11 +1135,37 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
 };
 
 /**
- * Updates the album-button UI for enabled/disabled state.
+ * Updates the album-button enabled/disabled UI for model changes.
  * @private
  */
 camera.views.Camera.prototype.updateAlbumButton_ = function() {
-  document.querySelector('#album-enter').disabled = this.model_.length == 0;
+  // Album-button would be disabled for initializing.
+  document.querySelector('#album-enter').disabled =
+      !this.model_ || this.model_.length == 0 ||
+      document.body.classList.contains('initializing');
+};
+
+/**
+ * Updates the toolbar enabled/disabled UI for doing initializing or
+ * taking-picture operations.
+ * @private
+ */
+camera.views.Camera.prototype.updateToolbar_ = function() {
+  if (this.context_.hasError) {
+    // No need to update the toolbar as it's being blocked from the error layer.
+    return;
+  }
+
+  var initializing = document.body.classList.contains('initializing');
+  var disabled = initializing || this.taking_;
+  document.querySelector('#toggle-timer').disabled = disabled;
+  document.querySelector('#toggle-multi').disabled = disabled;
+  document.querySelector('#toggle-mirror').disabled = disabled;
+  document.querySelector('#toggle-camera').disabled = disabled;
+  document.querySelector('#toggle-record').disabled = disabled;
+  document.querySelector('#take-picture').disabled = disabled;
+
+  this.updateAlbumButton_();
 };
 
 /**
@@ -1649,14 +1671,11 @@ camera.views.Camera.prototype.takePicture_ = function() {
     return;
   }
 
+  this.taking_ = true;
+  this.updateToolbar_();
+
   var toggleTimer = document.querySelector('#toggle-timer');
   var toggleMulti = document.querySelector('#toggle-multi');
-
-  toggleTimer.disabled = true;
-  toggleMulti.disabled = true;
-  document.querySelector('#toggle-camera').disabled = true;
-  document.querySelector('#toggle-record').disabled = true;
-  document.querySelector('#take-picture').disabled = true;
 
   var tickCounter = (!toggleTimer.hidden && toggleTimer.checked) ? 6 : 1;
   var onTimerTick = function() {
@@ -1719,13 +1738,10 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
   if (this.mediaRecorderRecording_()) {
     this.mediaRecorder_.stop();
   }
-  var toggleTimer = document.querySelector('#toggle-timer');
-  toggleTimer.classList.remove('animate');
-  toggleTimer.disabled = false;
-  document.querySelector('#take-picture').disabled = false;
-  document.querySelector('#toggle-multi').disabled = false;
-  document.querySelector('#toggle-camera').disabled = false;
-  document.querySelector('#toggle-record').disabled = false;
+  document.querySelector('#toggle-timer').classList.remove('animate');
+
+  this.taking_ = false;
+  this.updateToolbar_();
 };
 
 /**
@@ -1740,9 +1756,6 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
   if (!this.running_) {
     return;
   }
-
-  // Lock refreshing for smoother experience.
-  this.taking_ = true;
 
   setTimeout(function() {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
@@ -2150,6 +2163,7 @@ camera.views.Camera.prototype.collectVideoDevices_ = function() {
 camera.views.Camera.prototype.stop_ = function() {
   // Add the initialization layer (if it's not there yet).
   document.body.classList.add('initializing');
+  this.updateToolbar_();
 
   // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
   if (this.stream_)
@@ -2192,9 +2206,6 @@ camera.views.Camera.prototype.start_ = function() {
 
     this.lastVideoAspectRatio_ = this.video_.width / this.video_.height;
 
-    // Remove the initialization layer.
-    document.body.classList.remove('initializing');
-
     // Set the ribbon in the initialization mode for 500 ms. This forces repaint
     // of the ribbon, even if it is hidden, or animations are in progress.
     setTimeout(function() {
@@ -2205,11 +2216,16 @@ camera.views.Camera.prototype.start_ = function() {
       clearTimeout(this.retryStartTimer_);
       this.retryStartTimer_ = null;
     }
+    // Remove the error or initialization layer if any.
     this.context_.onErrorRecovered('no-camera');
+    document.body.classList.remove('initializing');
+    this.updateToolbar_();
+
+    this.showToastMessage_(chrome.i18n.getMessage(this.is_recording_mode_ ?
+        'recordVideoActiveMessage' : 'takePictureActiveMessage'));
   }.bind(this);
 
   var onFailure = function() {
-    document.body.classList.remove('initializing');
     this.context_.onError(
         'no-camera',
         chrome.i18n.getMessage('errorMsgNoCamera'),
@@ -2227,12 +2243,18 @@ camera.views.Camera.prototype.start_ = function() {
     if (index >= constraintsCandidates.length) {
       if (this.is_recording_mode_) {
         // The recording mode can't be started because none of the
-        // constraints is supported. Fall back to photo mode.
-        // TODO(shenghao): show a toast message for unable to start video
+        // constraints is supported. Force to fall back to photo mode
+        // without showing an error and hiding the toolbar.
+        // TODO(yuli): Revise the toast message for unable to start video
         // recording before switching back to photo mode.
-        this.onToggleRecordClicked_();
+        this.showToastMessage_(chrome.i18n.getMessage('errorMsgNoCamera'));
+        setTimeout(function() {
+          this.onToggleRecordClicked_();
+          scheduleRetry();
+        }.bind(this), 250);
+      } else {
+        onFailure();
       }
-      onFailure();
       return;
     }
     this.startWithConstraints_(

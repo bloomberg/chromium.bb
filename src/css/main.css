@@ -1025,7 +1025,6 @@ html[dir='rtl'] #dialog #dialog-close-button {
   position: absolute;
   right: 0;
   top: 0;
-  z-index: 1;
 }
 
 body:not(.initializing) #initializing {
