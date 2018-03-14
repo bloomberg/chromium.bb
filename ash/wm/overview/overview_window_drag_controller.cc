@@ -12,7 +12,7 @@
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/splitview/split_view_overview_overlay.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
@@ -40,7 +40,7 @@ void OverviewWindowDragController::InitiateDrag(
           ? base::nullopt
           : base::make_optional(location_in_screen);
 
-  window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       split_view_controller_->CanSnap(item->GetWindow())
           ? IndicatorState::kDragArea
           : IndicatorState::kCannotSnap,
@@ -66,15 +66,15 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
 
-  UpdateOverlayAndWindowGrid(location_in_screen);
+  UpdateDragIndicatorsAndWindowGrid(location_in_screen);
 }
 
 void OverviewWindowDragController::CompleteDrag(
     const gfx::Point& location_in_screen) {
   // Update window grid bounds and |snap_position_| in case the screen
   // orientation was changed.
-  UpdateOverlayAndWindowGrid(location_in_screen);
-  window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+  UpdateDragIndicatorsAndWindowGrid(location_in_screen);
+  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       IndicatorState::kNone, gfx::Point());
 
   if (!did_move_) {
@@ -83,7 +83,7 @@ void OverviewWindowDragController::CompleteDrag(
     did_move_ = false;
     // If the window was dragged around but should not be snapped, move it back
     // to overview window grid.
-    if (!ShouldUpdateOverlayOrSnap(location_in_screen) ||
+    if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
         snap_position_ == SplitViewController::NONE) {
       window_selector_->PositionWindows(/*animate=*/true);
     } else {
@@ -115,7 +115,7 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
 
 void OverviewWindowDragController::ResetGesture() {
   window_selector_->PositionWindows(/*animate=*/true);
-  window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       IndicatorState::kNone, gfx::Point());
 }
 
@@ -123,13 +123,13 @@ void OverviewWindowDragController::ResetWindowSelector() {
   window_selector_ = nullptr;
 }
 
-void OverviewWindowDragController::UpdateOverlayAndWindowGrid(
+void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
     const gfx::Point& location_in_screen) {
-  if (!ShouldUpdateOverlayOrSnap(location_in_screen))
+  if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
     return;
 
-  // Attempt to update the overlay and move the window grid only if the window
-  // is snappable.
+  // Attempt to update the drag indicators and move the window grid only if the
+  // window is snappable.
   if (!split_view_controller_->CanSnap(item_->GetWindow())) {
     snap_position_ = SplitViewController::NONE;
     return;
@@ -146,7 +146,7 @@ void OverviewWindowDragController::UpdateOverlayAndWindowGrid(
       (snap_position_ == SplitViewController::RIGHT &&
        snapped_state == SplitViewController::RIGHT_SNAPPED)) {
     snap_position_ = SplitViewController::NONE;
-    window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
         IndicatorState::kNone, gfx::Point());
     return;
   }
@@ -160,10 +160,10 @@ void OverviewWindowDragController::UpdateOverlayAndWindowGrid(
         GetGridBounds(snap_position_), item_);
   }
 
-  // Show the cannot snap ui on the split view overview overlay if the window
+  // Show the cannot snap ui on the split view drag indicators if the window
   // cannot be snapped, otherwise show the drag ui.
   if (snap_position_ == SplitViewController::NONE) {
-    window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
         split_view_controller_->CanSnap(item_->GetWindow())
             ? IndicatorState::kDragArea
             : IndicatorState::kCannotSnap,
@@ -171,16 +171,16 @@ void OverviewWindowDragController::UpdateOverlayAndWindowGrid(
     return;
   }
 
-  // Display the phantom window on the split view overview overlay. The split
-  // view overview overlay will calculate the phantom window bounds.
-  window_selector_->SetSplitViewOverviewOverlayIndicatorState(
+  // Display the preview area on the split view drag indicators. The split
+  // view drag indicators will calculate the preview area bounds.
+  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
       snap_position_ == SplitViewController::LEFT
-          ? IndicatorState::kPhantomLeft
-          : IndicatorState::kPhantomRight,
+          ? IndicatorState::kPreviewAreaLeft
+          : IndicatorState::kPreviewAreaRight,
       gfx::Point());
 }
 
-bool OverviewWindowDragController::ShouldUpdateOverlayOrSnap(
+bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::Point& event_location) {
   if (initial_event_location_ == base::nullopt)
     return true;
@@ -189,13 +189,13 @@ bool OverviewWindowDragController::ShouldUpdateOverlayOrSnap(
   if (snap_position == SplitViewController::NONE) {
     // If the event started in a snap region, but has since moved out set
     // |initial_event_location_| to |event_location| which is guarenteed to not
-    // be in a snap region so that the overlay is shown correctly and the snap
-    // mechanism works normally for the rest of the drag.
+    // be in a snap region so that the drag indicators are shown correctly and
+    // the snap mechanism works normally for the rest of the drag.
     initial_event_location_ = base::nullopt;
     return true;
   }
 
-  // The overlay can update or the item can snap even if the drag events
+  // The drag indicators can update or the item can snap even if the drag events
   // are in the snap region, if the event has travelled past the threshold in
   // the direction of the attempted snap region.
   const gfx::Vector2d distance = event_location - *initial_event_location_;
@@ -234,7 +234,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     case blink::kWebScreenOrientationLockLandscapeSecondary: {
       // The window can be snapped if it reaches close enough to the screen
       // edge of the screen (on primary axis). The edge insets are a fixed ratio
-      // of the screen plus some padding. This matches the overlay ui.
+      // of the screen plus some padding. This matches the drag indicators ui.
       const int screen_edge_inset_for_drag =
           area.width() * kHighlightScreenPrimaryAxisRatio +
           kHighlightScreenEdgePaddingDp;

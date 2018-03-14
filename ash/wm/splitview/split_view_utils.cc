@@ -25,7 +25,7 @@ constexpr base::TimeDelta kOtherFadeOutDelayMs =
     base::TimeDelta::FromMilliseconds(117);
 
 constexpr float kHighlightOpacity = 0.3f;
-constexpr float kPhantomHighlightOpacity = 0.18f;
+constexpr float kPREVIEW_AREAHighlightOpacity = 0.18f;
 
 // Gets the duration, tween type and delay before animation based on |type|.
 void GetAnimationValuesForType(SplitviewAnimationType type,
@@ -35,13 +35,13 @@ void GetAnimationValuesForType(SplitviewAnimationType type,
   switch (type) {
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT:
-    case SPLITVIEW_ANIMATION_PHANTOM_FADE_IN:
-    case SPLITVIEW_ANIMATION_PHANTOM_FADE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
-    case SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
       *out_duration = kHighlightsFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       return;
@@ -92,10 +92,10 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
       break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
-    case SPLITVIEW_ANIMATION_PHANTOM_FADE_IN:
-      target_opacity = kPhantomHighlightOpacity;
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
+      target_opacity = kPREVIEW_AREAHighlightOpacity;
       break;
-    case SPLITVIEW_ANIMATION_PHANTOM_FADE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
       target_opacity = kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_SELECTOR_ITEM_FADE_IN:
@@ -129,7 +129,7 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
     return;
 
   switch (type) {
-    case SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
       break;
