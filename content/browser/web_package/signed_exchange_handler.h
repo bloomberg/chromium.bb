@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -60,6 +61,9 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // TODO(https://crbug.com/817187): Find a more sophisticated way to use a
   // MockCertVerifier in browser tests instead of using the static method.
   static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
+
+  static void SetVerificationTimeForTesting(
+      base::Optional<base::Time> verification_time_for_testing);
 
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read

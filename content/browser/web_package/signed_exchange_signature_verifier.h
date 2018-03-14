@@ -14,6 +14,10 @@
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace content {
 
 class SignedExchangeHeader;
@@ -37,11 +41,13 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrCertificateSHA256Mismatch,
     kErrInvalidSignatureFormat,
     kErrSignatureVerificationFailed,
-    kErrInvalidSignatureIntegrity
+    kErrInvalidSignatureIntegrity,
+    kErrInvalidTimestamp
   };
 
   static Result Verify(const SignedExchangeHeader& header,
-                       scoped_refptr<net::X509Certificate> certificate);
+                       scoped_refptr<net::X509Certificate> certificate,
+                       const base::Time& verification_time);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
       const SignedExchangeHeader& header);
