@@ -1131,9 +1131,9 @@ code_generator("make_core_generated_atrule_names") {
 code_generator("make_core_generated_media_features") {
   script = "../build/scripts/core/css/make_media_features.py"
   json_inputs = [ "css/media_feature_names.json5" ]
-  templates = [ "../build/scripts/core/css/templates/MediaFeatures.h.tmpl" ]
+  templates = [ "../build/scripts/core/css/templates/media_features.h.tmpl" ]
   outputs = [
-    "$blink_core_output_dir/css/MediaFeatures.h",
+    "$blink_core_output_dir/css/media_features.h",
   ]
 }
 
