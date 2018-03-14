@@ -123,6 +123,10 @@ class ASH_EXPORT DetachableBaseHandler
   // Notifies observers that the detachable base pairing state has changed.
   void NotifyPairingStatusChanged();
 
+  // Notifies observers about whether the detachable base requires a firmware
+  // update.
+  void NotifyBaseRequiresFirmwareUpdate(bool requires_update);
+
   PrefService* local_state_ = nullptr;
 
   // The shell that owns |this| - used to listen for local state initialization.

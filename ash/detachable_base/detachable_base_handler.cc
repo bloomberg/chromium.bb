@@ -147,11 +147,15 @@ void DetachableBaseHandler::OnLocalStatePrefServiceInitialized(
     NotifyPairingStatusChanged();
 }
 
-void DetachableBaseHandler::BaseFirmwareUpdateNeeded() {}
+void DetachableBaseHandler::BaseFirmwareUpdateNeeded() {
+  NotifyBaseRequiresFirmwareUpdate(true /*requires_update*/);
+}
 
 void DetachableBaseHandler::BaseFirmwareUpdateStarted() {}
 
-void DetachableBaseHandler::BaseFirmwareUpdateSucceeded() {}
+void DetachableBaseHandler::BaseFirmwareUpdateSucceeded() {
+  NotifyBaseRequiresFirmwareUpdate(false /*requires_update*/);
+}
 
 void DetachableBaseHandler::BaseFirmwareUpdateFailed() {}
 
@@ -211,6 +215,7 @@ void DetachableBaseHandler::UpdateTabletMode(
   if (*tablet_mode_ == chromeos::PowerManagerClient::TabletMode::ON) {
     authenticated_base_id_.clear();
     pairing_status_ = DetachableBasePairingStatus::kNone;
+    NotifyBaseRequiresFirmwareUpdate(false /*requires_update*/);
   }
 
   if (GetPairingStatus() != old_pairing_status)
@@ -243,6 +248,12 @@ DetachableBaseHandler::GetLastUsedDeviceForUser(
 void DetachableBaseHandler::NotifyPairingStatusChanged() {
   for (auto& observer : observers_)
     observer.OnDetachableBasePairingStatusChanged(GetPairingStatus());
+}
+
+void DetachableBaseHandler::NotifyBaseRequiresFirmwareUpdate(
+    bool requires_update) {
+  for (auto& observer : observers_)
+    observer.OnDetachableBaseRequiresUpdateChanged(requires_update);
 }
 
 }  // namespace ash

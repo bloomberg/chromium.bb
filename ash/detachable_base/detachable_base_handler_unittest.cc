@@ -22,7 +22,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ash::DetachableBasePairingStatus;
+namespace ash {
 
 namespace {
 
@@ -31,36 +31,49 @@ enum class UserType {
   kEphemeral,
 };
 
-ash::mojom::UserInfoPtr CreateUser(const std::string& email,
-                                   const std::string& gaia_id,
-                                   UserType user_type) {
-  ash::mojom::UserInfoPtr user = ash::mojom::UserInfo::New();
+mojom::UserInfoPtr CreateUser(const std::string& email,
+                              const std::string& gaia_id,
+                              UserType user_type) {
+  mojom::UserInfoPtr user = mojom::UserInfo::New();
   user->account_id = AccountId::FromUserEmailGaiaId(email, gaia_id);
   user->is_ephemeral = user_type == UserType::kEphemeral;
   return user;
 }
 
-class TestBaseObserver : public ash::DetachableBaseObserver {
+class TestBaseObserver : public DetachableBaseObserver {
  public:
   TestBaseObserver() = default;
   ~TestBaseObserver() override = default;
 
-  int pairing_status_changed_count() { return pairing_status_changed_count_; }
+  int pairing_status_changed_count() const {
+    return pairing_status_changed_count_;
+  }
 
   void reset_pairing_status_changed_count() {
     pairing_status_changed_count_ = 0;
   }
 
-  // ash::DetachableBaseObserver:
+  int update_required_changed_count() const {
+    return update_required_changed_count_;
+  }
+
+  bool requires_update() const { return requires_update_; }
+
+  // DetachableBaseObserver:
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus status) override {
     pairing_status_changed_count_++;
   }
 
- private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  void OnDetachableBaseRequiresUpdateChanged(bool requires_update) override {
+    update_required_changed_count_++;
+    requires_update_ = requires_update;
+  }
 
+ private:
   int pairing_status_changed_count_ = 0;
+  int update_required_changed_count_ = 0;
+  bool requires_update_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestBaseObserver);
 };
@@ -94,8 +107,8 @@ class DetachableBaseHandlerTest : public testing::Test {
 
     default_user_ = CreateUser("user_1@foo.bar", "111111", UserType::kNormal);
 
-    ash::DetachableBaseHandler::RegisterPrefs(local_state_.registry());
-    handler_ = std::make_unique<ash::DetachableBaseHandler>(nullptr);
+    DetachableBaseHandler::RegisterPrefs(local_state_.registry());
+    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
     handler_->OnLocalStatePrefServiceInitialized(&local_state_);
     handler_->AddObserver(&detachable_base_observer_);
   }
@@ -122,14 +135,14 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   void RestartHandler() {
     handler_->RemoveObserver(&detachable_base_observer_);
-    handler_ = std::make_unique<ash::DetachableBaseHandler>(nullptr);
+    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
     handler_->OnLocalStatePrefServiceInitialized(&local_state_);
     handler_->AddObserver(&detachable_base_observer_);
   }
 
   void ResetHandlerWithNoLocalState() {
     handler_->RemoveObserver(&detachable_base_observer_);
-    handler_ = std::make_unique<ash::DetachableBaseHandler>(nullptr);
+    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
     handler_->AddObserver(&detachable_base_observer_);
   }
 
@@ -144,11 +157,13 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   TestBaseObserver detachable_base_observer_;
 
-  std::unique_ptr<ash::DetachableBaseHandler> handler_;
+  std::unique_ptr<DetachableBaseHandler> handler_;
 
-  ash::mojom::UserInfoPtr default_user_;
+  mojom::UserInfoPtr default_user_;
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+
   TestingPrefServiceSimple local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachableBaseHandlerTest);
@@ -407,7 +422,7 @@ TEST_F(DetachableBaseHandlerTest, MultiUser) {
   RestartHandler();
   base::RunLoop().RunUntilIdle();
 
-  const ash::mojom::UserInfoPtr second_user =
+  const mojom::UserInfoPtr second_user =
       CreateUser("user_2@foo.bar", "222222", UserType::kNormal);
 
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
@@ -476,7 +491,7 @@ TEST_F(DetachableBaseHandlerTest, SwitchToNonAuthenticatedBase) {
 
   hammerd_client_->FirePairChallengeFailedSignal();
 
-  const ash::mojom::UserInfoPtr second_user =
+  const mojom::UserInfoPtr second_user =
       CreateUser("user_2@foo.bar", "222222", UserType::kNormal);
 
   EXPECT_EQ(DetachableBasePairingStatus::kNotAuthenticated,
@@ -505,7 +520,7 @@ TEST_F(DetachableBaseHandlerTest, SwitchToInvalidBase) {
 
   hammerd_client_->FireInvalidBaseConnectedSignal();
 
-  const ash::mojom::UserInfoPtr second_user =
+  const mojom::UserInfoPtr second_user =
       CreateUser("user_2@foo.bar", "222222", UserType::kNormal);
 
   EXPECT_EQ(DetachableBasePairingStatus::kInvalidDevice,
@@ -517,7 +532,7 @@ TEST_F(DetachableBaseHandlerTest, SwitchToInvalidBase) {
 }
 
 TEST_F(DetachableBaseHandlerTest, RemoveUserData) {
-  const ash::mojom::UserInfoPtr second_user =
+  const mojom::UserInfoPtr second_user =
       CreateUser("user_2@foo.bar", "222222", UserType::kNormal);
 
   // Assume the user_1 has a last used base.
@@ -600,7 +615,7 @@ TEST_F(DetachableBaseHandlerTest, NoLocalState) {
 TEST_F(DetachableBaseHandlerTest, EphemeralUser) {
   base::RunLoop().RunUntilIdle();
 
-  const ash::mojom::UserInfoPtr ephemeral_user =
+  const mojom::UserInfoPtr ephemeral_user =
       CreateUser("user_3@foo.bar", "333333", UserType::kEphemeral);
   hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
   handler_->SetPairedBaseAsLastUsedByUser(*ephemeral_user);
@@ -635,3 +650,26 @@ TEST_F(DetachableBaseHandlerTest, EphemeralUser) {
   EXPECT_TRUE(handler_->PairedBaseMatchesLastUsedByUser(*ephemeral_user));
   detachable_base_observer_.reset_pairing_status_changed_count();
 }
+
+TEST_F(DetachableBaseHandlerTest, NotifyObserversWhenBaseUpdateRequired) {
+  hammerd_client_->FireBaseFirmwareNeedUpdateSignal();
+  EXPECT_EQ(1, detachable_base_observer_.update_required_changed_count());
+  EXPECT_TRUE(detachable_base_observer_.requires_update());
+
+  hammerd_client_->FireBaseFirmwareUpdateSucceededSignal();
+  EXPECT_EQ(2, detachable_base_observer_.update_required_changed_count());
+  EXPECT_FALSE(detachable_base_observer_.requires_update());
+}
+
+TEST_F(DetachableBaseHandlerTest, NotifyNoUpdateRequiredOnBaseDetach) {
+  hammerd_client_->FireBaseFirmwareNeedUpdateSignal();
+  EXPECT_EQ(1, detachable_base_observer_.update_required_changed_count());
+  EXPECT_TRUE(detachable_base_observer_.requires_update());
+
+  power_manager_client_->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
+  EXPECT_EQ(2, detachable_base_observer_.update_required_changed_count());
+  EXPECT_FALSE(detachable_base_observer_.requires_update());
+}
+
+}  // namespace ash

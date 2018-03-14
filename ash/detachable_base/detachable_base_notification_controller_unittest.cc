@@ -55,6 +55,12 @@ class DetachableBaseNotificationControllerTest : public NoSessionAshTestBase {
         DetachableBaseNotificationController::kBaseChangedNotificationId);
   }
 
+  bool IsBaseRequiresUpdateNotificationVisible() {
+    return message_center::MessageCenter::Get()->FindVisibleNotificationById(
+        DetachableBaseNotificationController::
+            kBaseRequiresUpdateNotificationId);
+  }
+
   void CloseBaseChangedNotification() {
     message_center::MessageCenter::Get()->RemoveNotification(
         DetachableBaseNotificationController::kBaseChangedNotificationId,
@@ -229,6 +235,50 @@ TEST_F(DetachableBaseNotificationControllerTest,
 
   UnblockUserSession();
   EXPECT_TRUE(IsBaseChangedNotificationVisible());
+}
+
+TEST_F(DetachableBaseNotificationControllerTest, NotificationOnUpdateRequired) {
+  CreateUserSessions(1);
+
+  detachable_base_handler()->BaseFirmwareUpdateNeeded();
+  EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
+
+  // The notification should be removed when the base gets detached.
+  GetPowerManagerClient()->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
+  EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
+}
+
+TEST_F(DetachableBaseNotificationControllerTest,
+       NotificationOnUpdateRequiredBeforeLogin) {
+  // Update requirement detected before login - expect the update required
+  // notification to be shown.
+  detachable_base_handler()->BaseFirmwareUpdateNeeded();
+  EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
+
+  // Login, expect the notification to still be there.
+  CreateUserSessions(1);
+  EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
+
+  // The notification should be removed when the base gets detached.
+  GetPowerManagerClient()->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
+  EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
+}
+
+TEST_F(DetachableBaseNotificationControllerTest,
+       NotificationOnUpdateRequiredOnLockScreen) {
+  // Update requirement detected while the session is blocked by the lock
+  // screen - expect the update required notification to be shown.
+  BlockUserSession(UserSessionBlockReason::BLOCKED_BY_LOCK_SCREEN);
+
+  detachable_base_handler()->BaseFirmwareUpdateNeeded();
+  EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
+
+  // The notification should be removed when the base gets detached.
+  GetPowerManagerClient()->SetTabletMode(
+      chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
+  EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
 }
 
 }  // namespace ash

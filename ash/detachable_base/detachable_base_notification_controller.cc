@@ -30,6 +30,10 @@ constexpr char kDetachableBaseNotifierId[] = "ash.system.detachable_base";
 const char DetachableBaseNotificationController::kBaseChangedNotificationId[] =
     "chrome://settings/detachable_base/detachable_base_changed";
 
+const char
+    DetachableBaseNotificationController::kBaseRequiresUpdateNotificationId[] =
+        "chrome://settings/detachable_base/detachable_base_requires_update";
+
 DetachableBaseNotificationController::DetachableBaseNotificationController(
     DetachableBaseHandler* detachable_base_handler)
     : detachable_base_handler_(detachable_base_handler),
@@ -45,6 +49,37 @@ DetachableBaseNotificationController::~DetachableBaseNotificationController() =
 void DetachableBaseNotificationController::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus status) {
   ShowPairingNotificationIfNeeded();
+}
+
+void DetachableBaseNotificationController::
+    OnDetachableBaseRequiresUpdateChanged(bool requires_update) {
+  if (!requires_update) {
+    RemoveUpdateRequiredNotification();
+    return;
+  }
+
+  base::string16 title = l10n_util::GetStringUTF16(
+      IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_TITLE);
+  base::string16 message = l10n_util::GetStringUTF16(
+      IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_MESSAGE);
+
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          kBaseRequiresUpdateNotificationId, title, message, gfx::Image(),
+          base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              kDetachableBaseNotifierId),
+          message_center::RichNotificationData(), nullptr,
+          kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+  // Set system priority so the notification gets shown when the user session is
+  // blocked.
+  notification->SetSystemPriority();
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 void DetachableBaseNotificationController::OnActiveUserSessionChanged(
@@ -126,6 +161,11 @@ void DetachableBaseNotificationController::ShowPairingNotificationIfNeeded() {
 void DetachableBaseNotificationController::RemovePairingNotification() {
   message_center::MessageCenter::Get()->RemoveNotification(
       kBaseChangedNotificationId, false);
+}
+
+void DetachableBaseNotificationController::RemoveUpdateRequiredNotification() {
+  message_center::MessageCenter::Get()->RemoveNotification(
+      kBaseRequiresUpdateNotificationId, false);
 }
 
 }  // namespace ash
