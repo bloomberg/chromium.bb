@@ -9,12 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "base/win/windows_types.h"
 
 class MsiUtil;
 
@@ -49,8 +47,6 @@ class MsiUtil;
 //        - The uninstall entry has no display name.
 //        - The uninstall entry has no UninstallString.
 //
-// This class is not thread safe and should be only accessed on the same
-// sequence.
 class InstalledPrograms {
  public:
   struct ProgramInfo {
@@ -62,73 +58,53 @@ class InstalledPrograms {
     REGSAM registry_wow64_access;
   };
 
-  // The guts of the class, this structure is populated on a background sequence
-  // and moved back to this instance after initialization.
-  struct ProgramsData {
-    ProgramsData();
-    ~ProgramsData();
-
-    // Programs are stored in this vector because multiple entries in
-    // |installed_files| could point to the same one. This is to avoid
-    // duplicating them.
-    std::vector<ProgramInfo> programs;
-
-    // Contains all the files from programs installed via Microsoft Installer.
-    // The second part of the pair is the index into |programs|.
-    std::vector<std::pair<base::FilePath, size_t>> installed_files;
-
-    // For some programs, the best information available is the directory of the
-    // installation. The compare functor treats file paths where one is the
-    // parent of the other as equal.
-    // The second part of the pair is the index into |programs|.
-    std::vector<std::pair<base::FilePath, size_t>> install_directories;
-  };
-
+  // Initializes this instance with the list of installed programs. While the
+  // constructor must be called in a sequence that allows blocking, its public
+  // method can be used without such restrictions.
   InstalledPrograms();
+
   virtual ~InstalledPrograms();
 
-  // Initializes this class on a background sequence.
-  void Initialize(base::OnceClosure on_initialized_callback);
-
   // Given a |file|, checks if it matches an installed program on the user's
-  // machine and appends all the matching programs to |programs|. Do not call
-  // this before initialization completes.
+  // machine and appends all the matching programs to |programs|.
   // Virtual to allow mocking.
   virtual bool GetInstalledPrograms(const base::FilePath& file,
                                     std::vector<ProgramInfo>* programs) const;
 
-  // Returns true if this instance is initialized and GetInstalledPrograms() can
-  // be called.
-  bool initialized() const { return initialized_; }
-
  protected:
   // Protected so that tests can subclass InstalledPrograms and access it.
-  void Initialize(base::OnceClosure on_initialized_callback,
-                  std::unique_ptr<MsiUtil> msi_util);
+  explicit InstalledPrograms(std::unique_ptr<MsiUtil> msi_util);
 
  private:
+  // If the registry key references a valid installed program, this function
+  // adds an entry to |programs_| with its list of files or installation
+  // directory to their associated vector.
+  void CheckRegistryKeyForInstalledProgram(HKEY hkey,
+                                           const base::string16& key_path,
+                                           REGSAM wow64access,
+                                           const base::string16& key_name,
+                                           const MsiUtil& msi_util);
+
   bool GetProgramsFromInstalledFiles(const base::FilePath& file,
                                      std::vector<ProgramInfo>* programs) const;
   bool GetProgramsFromInstallDirectories(
       const base::FilePath& file,
       std::vector<ProgramInfo>* programs) const;
 
-  // Takes the result from the initialization and moves it to this instance,
-  // then calls |on_initialized_callback| to indicate that the initialization
-  // is done.
-  void OnInitializationDone(base::OnceClosure on_initialized_callback,
-                            std::unique_ptr<ProgramsData> programs_data);
+  // Programs are stored in this vector because multiple entries in
+  // |installed_files| could point to the same one. This is to avoid
+  // duplicating them.
+  std::vector<ProgramInfo> programs_;
 
-  // Used to assert that initialization was completed before calling
-  // GetInstalledPrograms().
-  bool initialized_;
+  // Contains all the files from programs installed via Microsoft Installer.
+  // The second part of the pair is the index into |programs|.
+  std::vector<std::pair<base::FilePath, size_t>> installed_files_;
 
-  std::unique_ptr<ProgramsData> programs_data_;
-
-  // Make sure this class isn't accessed via multiple sequences.
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  base::WeakPtrFactory<InstalledPrograms> weak_ptr_factory_;
+  // For some programs, the best information available is the directory of the
+  // installation. The compare functor treats file paths where one is the
+  // parent of the other as equal.
+  // The second part of the pair is the index into |programs|.
+  std::vector<std::pair<base::FilePath, size_t>> install_directories_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledPrograms);
 };
