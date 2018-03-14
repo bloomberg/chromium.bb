@@ -27,7 +27,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int error_code, error_line, error_column;
   std::string error_message;
 
-  const std::string input_string(reinterpret_cast<const char*>(data), size - 1);
+  // Create a copy of input buffer, as otherwise we don't catch
+  // overflow that touches the last byte (which is used in options).
+  std::unique_ptr<char[]> input(new char[size - 1]);
+  memcpy(input.get(), data, size - 1);
+
+  base::StringPiece input_string(input.get(), size - 1);
+
   const int options = data[size - 1];
   auto parsed_value = base::JSONReader::ReadAndReturnError(
       input_string, options, &error_code, &error_message, &error_line,
