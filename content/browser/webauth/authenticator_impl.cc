@@ -522,6 +522,10 @@ void AuthenticatorImpl::GetAssertion(
 void AuthenticatorImpl::OnRegisterResponse(
     device::U2fReturnCode status_code,
     base::Optional<device::RegisterResponseData> response_data) {
+  // If callback is called immediately, this code will call |Cleanup| before
+  // |u2f_request_| has been assigned – violating invariants.
+  DCHECK(u2f_request_) << "unsupported callback hairpin";
+
   switch (status_code) {
     case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // Duplicate registration: the new credential would be created on an
@@ -590,6 +594,10 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 void AuthenticatorImpl::OnSignResponse(
     device::U2fReturnCode status_code,
     base::Optional<device::SignResponseData> response_data) {
+  // If callback is called immediately, this code will call |Cleanup| before
+  // |u2f_request_| has been assigned – violating invariants.
+  DCHECK(u2f_request_) << "unsupported callback hairpin";
+
   switch (status_code) {
     case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // No authenticators contained the credential.
