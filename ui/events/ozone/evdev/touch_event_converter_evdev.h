@@ -90,7 +90,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
-  void ReleaseButtons();
   void CancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
   // Normalize pressure value to [0, 1].
