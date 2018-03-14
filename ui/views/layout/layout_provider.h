@@ -32,6 +32,8 @@ enum InsetsMetric {
   // The margins around the icon/title of a dialog. The bottom margin is implied
   // by the content insets and the other margins overlap with INSETS_DIALOG.
   INSETS_DIALOG_TITLE,
+  // The margins around the edges of a tooltip bubble.
+  INSETS_TOOLTIP_BUBBLE,
   // Padding to add to vector image buttons to increase their click and touch
   // target size.
   INSETS_VECTOR_IMAGE_BUTTON,

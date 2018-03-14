@@ -58,6 +58,8 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
       return gfx::Insets(dialog_insets.top(), dialog_insets.left(), 0,
                          dialog_insets.right());
     }
+    case InsetsMetric::INSETS_TOOLTIP_BUBBLE:
+      return gfx::Insets(8);
     case InsetsMetric::INSETS_CHECKBOX_RADIO_BUTTON:
       return gfx::Insets(5, 6);
     case InsetsMetric::INSETS_VECTOR_IMAGE_BUTTON:
