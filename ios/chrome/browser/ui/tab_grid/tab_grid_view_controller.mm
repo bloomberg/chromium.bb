@@ -452,15 +452,13 @@ NSString* const kTabGridDoneButtonAccessibilityID =
 - (void)setupFloatingButton {
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  // TODO(crbug.com/818198) : Replace with assets.
-  button.backgroundColor = [UIColor whiteColor];
-  button.layer.cornerRadius = 22.0f;
-  button.layer.masksToBounds = YES;
+  [button
+      setImage:[[UIImage imageNamed:@"tab_grid_new_tab_fab"]
+                   imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+      forState:UIControlStateNormal];
   [self.view addSubview:button];
   self.floatingButton = button;
   NSArray* constraints = @[
-    [button.widthAnchor constraintEqualToConstant:44.0f],
-    [button.heightAnchor constraintEqualToConstant:44.0f],
     [button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
                                           constant:-10.0f],
     [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
