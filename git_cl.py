@@ -5079,219 +5079,28 @@ def CMDland(parser, args):
 
   cl = Changelist(auth_config=auth_config)
 
-  # TODO(tandrii): refactor this into _RietveldChangelistImpl method.
-  if cl.IsGerrit():
-    if options.message:
-      # This could be implemented, but it requires sending a new patch to
-      # Gerrit, as Gerrit unlike Rietveld versions messages with patchsets.
-      # Besides, Gerrit has the ability to change the commit message on submit
-      # automatically, thus there is no need to support this option (so far?).
-      parser.error('-m MESSAGE option is not supported for Gerrit.')
-    if options.contributor:
-      parser.error(
-          '-c CONTRIBUTOR option is not supported for Gerrit.\n'
-          'Before uploading a commit to Gerrit, ensure it\'s author field is '
-          'the contributor\'s "name <email>". If you can\'t upload such a '
-          'commit for review, contact your repository admin and request'
-          '"Forge-Author" permission.')
-    if not cl.GetIssue():
-      DieWithError('You must upload the change first to Gerrit.\n'
-                   '  If you would rather have `git cl land` upload '
-                   'automatically for you, see http://crbug.com/642759')
-    return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
-                                       options.verbose)
+  if not cl.IsGerrit():
+    parser.error('rietveld is not supported')
 
-  current = cl.GetBranch()
-  remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
-  if remote == '.':
-    print()
-    print('Attempting to push branch %r into another local branch!' % current)
-    print()
-    print('Either reparent this branch on top of origin/master:')
-    print('  git reparent-branch --root')
-    print()
-    print('OR run `git rebase-update` if you think the parent branch is ')
-    print('already committed.')
-    print()
-    print('  Current parent: %r' % upstream_branch)
-    return 1
-
-  if not args:
-    # Default to merging against our best guess of the upstream branch.
-    args = [cl.GetUpstreamBranch()]
-
+  if options.message:
+    # This could be implemented, but it requires sending a new patch to
+    # Gerrit, as Gerrit unlike Rietveld versions messages with patchsets.
+    # Besides, Gerrit has the ability to change the commit message on submit
+    # automatically, thus there is no need to support this option (so far?).
+    parser.error('-m MESSAGE option is not supported for Gerrit.')
   if options.contributor:
-    if not re.match('^.*\s<\S+@\S+>$', options.contributor):
-      print("Please provide contributor as 'First Last <email@example.com>'")
-      return 1
-
-  base_branch = args[0]
-
-  if git_common.is_dirty_git_tree('land'):
-    return 1
-
-  # This rev-list syntax means "show all commits not in my branch that
-  # are in base_branch".
-  upstream_commits = RunGit(['rev-list', '^' + cl.GetBranchRef(),
-                             base_branch]).splitlines()
-  if upstream_commits:
-    print('Base branch "%s" has %d commits '
-          'not in this branch.' % (base_branch, len(upstream_commits)))
-    print('Run "git merge %s" before attempting to land.' % base_branch)
-    return 1
-
-  merge_base = RunGit(['merge-base', base_branch, 'HEAD']).strip()
-  if not options.bypass_hooks:
-    author = None
-    if options.contributor:
-      author = re.search(r'\<(.*)\>', options.contributor).group(1)
-    hook_results = cl.RunHook(
-        committing=True,
-        may_prompt=not options.force,
-        verbose=options.verbose,
-        change=cl.GetChange(merge_base, author))
-    if not hook_results.should_continue():
-      return 1
-
-    # Check the tree status if the tree status URL is set.
-    status = GetTreeStatus()
-    if 'closed' == status:
-      print('The tree is closed.  Please wait for it to reopen. Use '
-            '"git cl land --bypass-hooks" to commit on a closed tree.')
-      return 1
-    elif 'unknown' == status:
-      print('Unable to determine tree status.  Please verify manually and '
-            'use "git cl land --bypass-hooks" to commit on a closed tree.')
-      return 1
-
-  change_desc = ChangeDescription(options.message)
-  if not change_desc.description and cl.GetIssue():
-    change_desc = ChangeDescription(cl.GetDescription())
-
-  if not change_desc.description:
-    if not cl.GetIssue() and options.bypass_hooks:
-      change_desc = ChangeDescription(CreateDescriptionFromLog([merge_base]))
-    else:
-      print('No description set.')
-      print('Visit %s/edit to set it.' % (cl.GetIssueURL()))
-      return 1
-
-  # Keep a separate copy for the commit message, because the commit message
-  # contains the link to the Rietveld issue, while the Rietveld message contains
-  # the commit viewvc url.
-  if cl.GetIssue():
-    change_desc.update_reviewers(
-        get_approving_reviewers(cl.GetIssueProperties()), [])
-
-  commit_desc = ChangeDescription(change_desc.description)
-  if cl.GetIssue():
-    # Xcode won't linkify this URL unless there is a non-whitespace character
-    # after it. Add a period on a new line to circumvent this. Also add a space
-    # before the period to make sure that Gitiles continues to correctly resolve
-    # the URL.
-    commit_desc.append_footer('Review-Url: %s .' % cl.GetIssueURL())
-  if options.contributor:
-    commit_desc.append_footer('Patch from %s.' % options.contributor)
-
-  print('Description:')
-  print(commit_desc.description)
-
-  branches = [merge_base, cl.GetBranchRef()]
-  if not options.force:
-    print_stats(branches)
-
-  # We want to squash all this branch's commits into one commit with the proper
-  # description. We do this by doing a "reset --soft" to the base branch (which
-  # keeps the working copy the same), then landing that.
-  # Delete the special branches if they exist.
-  for branch in [MERGE_BRANCH, CHERRY_PICK_BRANCH]:
-    showref_cmd = ['show-ref', '--quiet', '--verify', 'refs/heads/%s' % branch]
-    result = RunGitWithCode(showref_cmd)
-    if result[0] == 0:
-      RunGit(['branch', '-D', branch])
-
-  # We might be in a directory that's present in this branch but not in the
-  # trunk.  Move up to the top of the tree so that git commands that expect a
-  # valid CWD won't fail after we check out the merge branch.
-  rel_base_path = settings.GetRelativeRoot()
-  if rel_base_path:
-    os.chdir(rel_base_path)
-
-  # Stuff our change into the merge branch.
-  # We wrap in a try...finally block so if anything goes wrong,
-  # we clean up the branches.
-  retcode = -1
-  revision = None
-  try:
-    RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
-    RunGit(['reset', '--soft', merge_base])
-    if options.contributor:
-      RunGit(
-          [
-            'commit', '--author', options.contributor,
-            '-m', commit_desc.description,
-          ])
-    else:
-      RunGit(['commit', '-m', commit_desc.description])
-
-    remote, branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    mirror = settings.GetGitMirror(remote)
-    if mirror:
-      pushurl = mirror.url
-      git_numberer_enabled = _is_git_numberer_enabled(pushurl, branch)
-    else:
-      pushurl = remote  # Usually, this is 'origin'.
-      git_numberer_enabled = _is_git_numberer_enabled(
-          RunGit(['config', 'remote.%s.url' % remote]).strip(), branch)
-
-    retcode = PushToGitWithAutoRebase(
-        pushurl, branch, commit_desc.description, git_numberer_enabled)
-    if retcode == 0:
-      revision = RunGit(['rev-parse', 'HEAD']).strip()
-      if git_numberer_enabled:
-        change_desc = ChangeDescription(
-            RunGit(['show', '-s', '--format=%B', 'HEAD']).strip())
-  except:  # pylint: disable=bare-except
-    if _IS_BEING_TESTED:
-      logging.exception('this is likely your ACTUAL cause of test failure.\n'
-                        + '-' * 30 + '8<' + '-' * 30)
-      logging.error('\n' + '-' * 30 + '8<' + '-' * 30 + '\n\n\n')
-    raise
-  finally:
-    # And then swap back to the original branch and clean up.
-    RunGit(['checkout', '-q', cl.GetBranch()])
-    RunGit(['branch', '-D', MERGE_BRANCH])
-    RunGit(['branch', '-D', CHERRY_PICK_BRANCH], error_ok=True)
-
-  if not revision:
-    print('Failed to push. If this persists, please file a bug.')
-    return 1
-
-  if cl.GetIssue():
-    viewvc_url = settings.GetViewVCUrl()
-    if viewvc_url and revision:
-      change_desc.append_footer(
-          'Committed: %s%s' % (viewvc_url, revision))
-    elif revision:
-      change_desc.append_footer('Committed: %s' % (revision,))
-    print('Closing issue '
-          '(you may be prompted for your codereview password)...')
-    cl.UpdateDescription(change_desc.description)
-    cl.CloseIssue()
-    props = cl.GetIssueProperties()
-    patch_num = len(props['patchsets'])
-    comment = "Committed patchset #%d (id:%d) manually as %s" % (
-        patch_num, props['patchsets'][-1], revision)
-    if options.bypass_hooks:
-      comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
-    else:
-      comment += ' (presubmit successful).'
-    cl.RpcServer().add_comment(cl.GetIssue(), comment)
-
-  if os.path.isfile(POSTUPSTREAM_HOOK):
-    RunCommand([POSTUPSTREAM_HOOK, merge_base], error_ok=True)
-
-  return 0
+    parser.error(
+        '-c CONTRIBUTOR option is not supported for Gerrit.\n'
+        'Before uploading a commit to Gerrit, ensure it\'s author field is '
+        'the contributor\'s "name <email>". If you can\'t upload such a '
+        'commit for review, contact your repository admin and request'
+        '"Forge-Author" permission.')
+  if not cl.GetIssue():
+    DieWithError('You must upload the change first to Gerrit.\n'
+                 '  If you would rather have `git cl land` upload '
+                 'automatically for you, see http://crbug.com/642759')
+  return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
+                                     options.verbose)
 
 
 def PushToGitWithAutoRebase(remote, branch, original_description,
