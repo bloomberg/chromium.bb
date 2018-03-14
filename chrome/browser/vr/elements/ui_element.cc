@@ -674,6 +674,16 @@ bool UiElement::IsAnimatingProperty(TargetProperty property) const {
   return animation_.IsAnimatingProperty(static_cast<int>(property));
 }
 
+bool UiElement::SizeAndLayOut() {
+  bool changed = false;
+  for (auto& child : children_) {
+    changed |= child->SizeAndLayOut();
+  }
+  changed |= PrepareToDraw();
+  DoLayOutChildren();
+  return changed;
+}
+
 void UiElement::DoLayOutChildren() {
   LayOutChildren();
   if (!bounds_contain_children_) {

@@ -23,19 +23,34 @@ float GetExtent(const UiElement& element, bool horizontal) {
 LinearLayout::LinearLayout(Direction direction) : direction_(direction) {}
 LinearLayout::~LinearLayout() {}
 
-void LinearLayout::LayOutChildren() {
-  bool horizontal =
-      direction_ == LinearLayout::kLeft || direction_ == LinearLayout::kRight;
-  float total_extent = -margin_;
-  float minor_extent = 0;
+bool LinearLayout::SizeAndLayOut() {
+  bool changed = false;
 
-  for (auto& child : children()) {
-    if (child->requires_layout()) {
-      total_extent += GetExtent(*child, horizontal) + margin_;
-      minor_extent = std::max(minor_extent, GetExtent(*child, !horizontal));
+  if (layout_length > 0.0f) {
+    UiElement* element_to_resize = nullptr;
+    for (auto& child : children()) {
+      if (child->resizable_by_layout()) {
+        DCHECK_EQ(nullptr, element_to_resize);
+        element_to_resize = child.get();
+      } else {
+        changed |= child->SizeAndLayOut();
+      }
+    }
+    DCHECK_NE(element_to_resize, nullptr);
+    changed |= AdjustResizableElement(element_to_resize);
+    changed |= element_to_resize->SizeAndLayOut();
+  } else {
+    for (auto& child : children()) {
+      changed |= child->SizeAndLayOut();
     }
   }
 
+  changed |= PrepareToDraw();
+  DoLayOutChildren();
+  return changed;
+}
+
+void LinearLayout::LayOutChildren() {
   float x_factor = 0.f;
   float y_factor = 0.f;
   switch (direction_) {
@@ -53,6 +68,11 @@ void LinearLayout::LayOutChildren() {
       break;
   }
 
+  float total_extent;
+  float minor_extent;
+  GetTotalExtent(nullptr, &total_extent, &minor_extent);
+
+  bool horizontal = Horizontal();
   float cumulative_offset = -0.5 * total_extent;
   for (auto& child : children()) {
     if (!child->requires_layout())
@@ -65,6 +85,49 @@ void LinearLayout::LayOutChildren() {
 
   SetSize(horizontal ? total_extent : minor_extent,
           !horizontal ? total_extent : minor_extent);
+}
+
+bool LinearLayout::Horizontal() const {
+  return direction_ == LinearLayout::kLeft ||
+         direction_ == LinearLayout::kRight;
+}
+
+void LinearLayout::GetTotalExtent(const UiElement* element_to_exclude,
+                                  float* major_extent,
+                                  float* minor_extent) const {
+  *major_extent = -margin_;
+  *minor_extent = 0.f;
+  bool horizontal = Horizontal();
+  for (auto& child : children()) {
+    if (child->requires_layout()) {
+      *major_extent += margin_;
+      if (child.get() != element_to_exclude) {
+        *major_extent += GetExtent(*child, horizontal);
+        *minor_extent = std::max(*minor_extent, GetExtent(*child, !horizontal));
+      }
+    }
+  }
+}
+
+bool LinearLayout::AdjustResizableElement(UiElement* element_to_resize) {
+  // Figure out how much space is available for the variable element.
+  float minimum_total = 0;
+  float minor = 0;
+  GetTotalExtent(element_to_resize, &minimum_total, &minor);
+
+  float extent = layout_length - minimum_total;
+  extent = std::max(extent, 0.f);
+
+  auto new_size = element_to_resize->size();
+  if (Horizontal())
+    new_size.set_width(extent);
+  else
+    new_size.set_height(extent);
+  if (element_to_resize->size() == new_size)
+    return false;
+
+  element_to_resize->SetSize(new_size.width(), new_size.height());
+  return true;
 }
 
 }  // namespace vr

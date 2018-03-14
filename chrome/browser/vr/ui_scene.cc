@@ -95,9 +95,8 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   }
 
   {
-    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateTexturesAndSizes");
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
 
-    // Update textures and sizes.
     // TODO(mthiesse): We should really only be updating the sizes here, and not
     // actually redrawing the textures because we draw all of the textures as a
     // second phase after OnBeginFrame, once we've processed input. For now this
@@ -106,9 +105,12 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // with their current state, and changing anything other than texture
     // synchronously in response to input should be prohibited.
     for (auto& element : *root_element_) {
-      if (element.PrepareToDraw())
-        scene_dirty = true;
       element.set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+    }
+    if (root_element_->SizeAndLayOut())
+      scene_dirty = true;
+    for (auto& element : *root_element_) {
+      element.set_update_phase(UiElement::kUpdatedLayout);
     }
   }
 
@@ -119,19 +121,6 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
       element.set_update_phase(UiElement::kUpdatedWorldSpaceTransform);
     }
     return false;
-  }
-
-  {
-    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
-
-    // Update layout, which depends on size. Note that the layout phase changes
-    // the size of layout-type elements, as they adjust to fit the cumulative
-    // size of their children. This must be done in reverse order, such that
-    // children are correctly sized when laid out by their parent.
-    for (auto& element : base::Reversed(*root_element_)) {
-      element.DoLayOutChildren();
-      element.set_update_phase(UiElement::kUpdatedLayout);
-    }
   }
 
   {

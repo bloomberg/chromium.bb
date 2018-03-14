@@ -378,6 +378,10 @@ class UiElement : public cc::AnimationTarget {
   void RemoveKeyframeModel(int keyframe_model_id);
   bool IsAnimatingProperty(TargetProperty property) const;
 
+  // Recursive method that sizes and lays out element subtrees. This method may
+  // be overridden by elements that have custom layout requirements.
+  virtual bool SizeAndLayOut();
+
   void DoLayOutChildren();
 
   // Handles positioning adjustments for children. This will be overridden by
@@ -453,6 +457,11 @@ class UiElement : public cc::AnimationTarget {
   // Set the sounds that play when an applicable handler is executed.  Elements
   // that override element hover and click methods must manage their own sounds.
   void SetSounds(SoundId hover, SoundId click, AudioDelegate* delegate);
+
+  bool resizable_by_layout() { return resizable_by_layout_; }
+  void set_resizable_by_layout(bool resizable) {
+    resizable_by_layout_ = resizable;
+  }
 
  protected:
   Animation& animation() { return animation_; }
@@ -582,6 +591,9 @@ class UiElement : public cc::AnimationTarget {
   AudioDelegate* audio_delegate_ = nullptr;
   SoundId hover_sound_id_ = kSoundNone;
   SoundId click_sound_id_ = kSoundNone;
+
+  // Indicates that this element may be resized by parent layout elements.
+  bool resizable_by_layout_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };
