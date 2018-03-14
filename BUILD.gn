@@ -374,7 +374,6 @@ group("gn_all") {
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/services:chromeos_services_unittests",
-      "//components/proximity_auth:proximity_auth_unittests",
       "//components/session_manager/core",
       "//ui/app_list:app_list_demo",
       "//ui/app_list:app_list_unittests",
@@ -624,6 +623,10 @@ group("gn_all") {
 
   if (!is_android && !is_ios && !is_fuchsia) {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
+  }
+
+  if (!is_android && !is_ios && !is_chromeos && !is_fuchsia) {
+    deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
 
   if (is_win || is_linux) {
