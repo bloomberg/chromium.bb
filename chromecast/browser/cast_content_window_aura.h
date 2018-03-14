@@ -15,6 +15,8 @@ class WebContents;
 namespace chromecast {
 namespace shell {
 
+class TouchBlocker;
+
 class CastContentWindowAura : public CastContentWindow {
  public:
   ~CastContentWindowAura() override;
@@ -28,7 +30,10 @@ class CastContentWindowAura : public CastContentWindow {
   friend class CastContentWindow;
 
   // This class should only be instantiated by CastContentWindow::Create.
-  CastContentWindowAura();
+  CastContentWindowAura(bool is_touch_enabled);
+
+  const bool is_touch_enabled_;
+  std::unique_ptr<TouchBlocker> touch_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAura);
 };
