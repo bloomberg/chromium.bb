@@ -2816,7 +2816,7 @@
         "type": "win",
         "version": {
           "op": "=",
-          "value": "7.0"
+          "value": "6.1"
         }
       },
       "vendor_id": "0xffff",
