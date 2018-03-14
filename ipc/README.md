@@ -191,8 +191,8 @@ DataDecoderService::DataDecoderService() {
 ```
 
 and finally you need to update the usage of the old IPC by probably deleting
-lots of ugly code which sets up a `UtilityProcessHostImpl` and replacing it
-with something like:
+lots of ugly code which sets up a `UtilityProcessHost` and replacing it with
+something like:
 
 ``` cpp
 void OnDecodedPng(const std::vector<uint8_t>& rgba_data) { /* ... */ }

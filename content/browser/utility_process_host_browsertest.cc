@@ -5,16 +5,18 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "content/browser/utility_process_host.h"
+#include "content/browser/utility_process_host_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
 
 namespace content {
 
-class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
+class UtilityProcessHostBrowserTest : public ContentBrowserTest {
  public:
   void RunUtilityProcess(bool elevated) {
     base::RunLoop run_loop;
@@ -22,14 +24,16 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &UtilityProcessHostImplBrowserTest::RunUtilityProcessOnIOThread,
+            &UtilityProcessHostBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this), elevated));
     run_loop.Run();
   }
 
  protected:
   void RunUtilityProcessOnIOThread(bool elevated) {
-    UtilityProcessHost* host = UtilityProcessHost::Create(nullptr, nullptr);
+    UtilityProcessHost* host =
+        new UtilityProcessHost(/*client=*/nullptr,
+                               /*client_task_runner=*/nullptr);
     host->SetName(base::ASCIIToUTF16("TestProcess"));
 #if defined(OS_WIN)
     if (elevated)
@@ -39,9 +43,8 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(host->Start());
 
     BindInterface(host, &service_);
-    service_->DoSomething(
-        base::BindOnce(&UtilityProcessHostImplBrowserTest::OnSomething,
-                       base::Unretained(this)));
+    service_->DoSomething(base::BindOnce(
+        &UtilityProcessHostBrowserTest::OnSomething, base::Unretained(this)));
   }
 
   void OnSomething() {
@@ -53,13 +56,12 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
   base::Closure done_closure_;
 };
 
-IN_PROC_BROWSER_TEST_F(UtilityProcessHostImplBrowserTest, LaunchProcess) {
+IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchProcess) {
   RunUtilityProcess(false);
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(UtilityProcessHostImplBrowserTest,
-                       LaunchElevatedProcess) {
+IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchElevatedProcess) {
   RunUtilityProcess(true);
 }
 #endif

@@ -453,7 +453,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   // Add a couple of apps. Use "fake_app_x" that do not have data on the test
   // server to avoid pending data loads that could be lingering on tear down and
-  // cause DCHECK failure in utility_process_host_impl.cc.
+  // cause DCHECK failure in utility_process_host.cc.
   manager()->AddApp("fake_app_1", owner_settings_service_.get());
   manager()->AddApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1,fake_app_2", GetAppIds());

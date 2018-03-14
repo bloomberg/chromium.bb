@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/utility_process_host_impl.h"
+#include "content/browser/utility_process_host.h"
 
 #include <utility>
 
@@ -18,13 +18,13 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/browser/utility_process_host_client.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -86,9 +86,7 @@ class UtilitySandboxedProcessLauncherDelegate
            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
   }
 
-  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-      return true;
-  }
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override { return true; }
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -118,18 +116,12 @@ class UtilitySandboxedProcessLauncherDelegate
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
 
-UtilityProcessHost* UtilityProcessHost::Create(
-    const scoped_refptr<UtilityProcessHostClient>& client,
-    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner) {
-  return new UtilityProcessHostImpl(client, client_task_runner);
-}
-
-void UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
+void UtilityProcessHost::RegisterUtilityMainThreadFactory(
     UtilityMainThreadFactoryFunction create) {
   g_utility_main_thread_factory = create;
 }
 
-UtilityProcessHostImpl::UtilityProcessHostImpl(
+UtilityProcessHost::UtilityProcessHost(
     const scoped_refptr<UtilityProcessHostClient>& client,
     const scoped_refptr<base::SequencedTaskRunner>& client_task_runner)
     : client_(client),
@@ -143,72 +135,72 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
       started_(false),
       name_(base::ASCIIToUTF16("utility process")),
       weak_ptr_factory_(this) {
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_UTILITY, this, mojom::kUtilityServiceName));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this,
+                                                 mojom::kUtilityServiceName));
 }
 
-UtilityProcessHostImpl::~UtilityProcessHostImpl() {
+UtilityProcessHost::~UtilityProcessHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-base::WeakPtr<UtilityProcessHost> UtilityProcessHostImpl::AsWeakPtr() {
+base::WeakPtr<UtilityProcessHost> UtilityProcessHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool UtilityProcessHostImpl::Send(IPC::Message* message) {
+bool UtilityProcessHost::Send(IPC::Message* message) {
   if (!StartProcess())
     return false;
 
   return process_->Send(message);
 }
 
-void UtilityProcessHostImpl::SetSandboxType(
+void UtilityProcessHost::SetSandboxType(
     service_manager::SandboxType sandbox_type) {
   DCHECK(sandbox_type != service_manager::SANDBOX_TYPE_INVALID);
   sandbox_type_ = sandbox_type;
 }
 
-const ChildProcessData& UtilityProcessHostImpl::GetData() {
+const ChildProcessData& UtilityProcessHost::GetData() {
   return process_->GetData();
 }
 
 #if defined(OS_POSIX)
-void UtilityProcessHostImpl::SetEnv(const base::EnvironmentMap& env) {
+void UtilityProcessHost::SetEnv(const base::EnvironmentMap& env) {
   env_ = env;
 }
 #endif
 
-bool UtilityProcessHostImpl::Start() {
+bool UtilityProcessHost::Start() {
   return StartProcess();
 }
 
-void UtilityProcessHostImpl::BindInterface(
+void UtilityProcessHost::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   process_->child_connection()->BindInterface(interface_name,
                                               std::move(interface_pipe));
 }
 
-void UtilityProcessHostImpl::SetName(const base::string16& name) {
+void UtilityProcessHost::SetName(const base::string16& name) {
   name_ = name;
 }
 
-void UtilityProcessHostImpl::SetServiceIdentity(
+void UtilityProcessHost::SetServiceIdentity(
     const service_manager::Identity& identity) {
   service_identity_ = identity;
 }
 
-void UtilityProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
+void UtilityProcessHost::AddFilter(BrowserMessageFilter* filter) {
   process_->AddFilter(filter);
 }
 
-void UtilityProcessHostImpl::SetLaunchCallback(
+void UtilityProcessHost::SetLaunchCallback(
     base::OnceCallback<void(base::ProcessId)> callback) {
   DCHECK(!launched_);
   launch_callback_ = std::move(callback);
 }
 
-bool UtilityProcessHostImpl::StartProcess() {
+bool UtilityProcessHost::StartProcess() {
   if (started_)
     return true;
 
@@ -230,35 +222,35 @@ bool UtilityProcessHostImpl::StartProcess() {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
 
-    bool has_cmd_prefix = browser_command_line.HasSwitch(
-        switches::kUtilityCmdPrefix);
+    bool has_cmd_prefix =
+        browser_command_line.HasSwitch(switches::kUtilityCmdPrefix);
 
-    #if defined(OS_ANDROID)
-      // readlink("/prof/self/exe") sometimes fails on Android at startup.
-      // As a workaround skip calling it here, since the executable name is
-      // not needed on Android anyway. See crbug.com/500854.
+#if defined(OS_ANDROID)
+    // readlink("/prof/self/exe") sometimes fails on Android at startup.
+    // As a workaround skip calling it here, since the executable name is
+    // not needed on Android anyway. See crbug.com/500854.
     std::unique_ptr<base::CommandLine> cmd_line =
         std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
-    #else
-      int child_flags = child_flags_;
+#else
+    int child_flags = child_flags_;
 
-      // When running under gdb, forking /proc/self/exe ends up forking the gdb
-      // executable instead of Chromium. It is almost safe to assume that no
-      // updates will happen while a developer is running with
-      // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
-      // a similar case with Valgrind.
-      if (has_cmd_prefix)
-        child_flags = ChildProcessHost::CHILD_NORMAL;
+    // When running under gdb, forking /proc/self/exe ends up forking the gdb
+    // executable instead of Chromium. It is almost safe to assume that no
+    // updates will happen while a developer is running with
+    // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
+    // a similar case with Valgrind.
+    if (has_cmd_prefix)
+      child_flags = ChildProcessHost::CHILD_NORMAL;
 
-      base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
-      if (exe_path.empty()) {
-        NOTREACHED() << "Unable to get utility process binary name.";
-        return false;
-      }
+    base::FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
+    if (exe_path.empty()) {
+      NOTREACHED() << "Unable to get utility process binary name.";
+      return false;
+    }
 
-      std::unique_ptr<base::CommandLine> cmd_line =
-          std::make_unique<base::CommandLine>(exe_path);
-    #endif
+    std::unique_ptr<base::CommandLine> cmd_line =
+        std::make_unique<base::CommandLine>(exe_path);
+#endif
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
@@ -322,7 +314,7 @@ bool UtilityProcessHostImpl::StartProcess() {
   return true;
 }
 
-bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
+bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (!client_.get())
     return true;
 
@@ -335,13 +327,13 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void UtilityProcessHostImpl::OnProcessLaunched() {
+void UtilityProcessHost::OnProcessLaunched() {
   launched_ = true;
   if (launch_callback_)
     std::move(launch_callback_).Run(process_->GetProcess().Pid());
 }
 
-void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {
+void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
   if (!client_.get())
     return;
 
@@ -351,7 +343,7 @@ void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {
                      error_code));
 }
 
-void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
+void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   if (!client_.get())
     return;
 
@@ -360,16 +352,16 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
                                 client_, exit_code));
 }
 
-void UtilityProcessHostImpl::NotifyAndDelete(int error_code) {
+void UtilityProcessHost::NotifyAndDelete(int error_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&UtilityProcessHostImpl::NotifyLaunchFailedAndDelete,
+      base::BindOnce(&UtilityProcessHost::NotifyLaunchFailedAndDelete,
                      weak_ptr_factory_.GetWeakPtr(), error_code));
 }
 
 // static
-void UtilityProcessHostImpl::NotifyLaunchFailedAndDelete(
-    base::WeakPtr<UtilityProcessHostImpl> host,
+void UtilityProcessHost::NotifyLaunchFailedAndDelete(
+    base::WeakPtr<UtilityProcessHost> host,
     int error_code) {
   if (!host)
     return;

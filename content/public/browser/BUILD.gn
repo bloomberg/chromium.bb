@@ -267,8 +267,6 @@ jumbo_source_set("browser_sources") {
     "tracing_delegate.h",
     "url_data_source.cc",
     "url_data_source.h",
-    "utility_process_host.h",
-    "utility_process_host_client.h",
     "video_capture_device_launcher.h",
     "visibility.h",
     "vpn_service_proxy.h",
