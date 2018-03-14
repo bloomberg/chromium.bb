@@ -544,6 +544,11 @@ Background.prototype = {
           AutomationPredicate.linkOrControl(node);
     };
 
+    // Always try to give nodes selection.
+    if (start.defaultActionVerb == chrome.automation.DefaultActionVerb.SELECT) {
+      start.doDefault();
+    }
+
     // Next, try to focus the start or end node.
     if (!AutomationPredicate.structuralContainer(start) &&
         start.state[StateType.FOCUSABLE]) {

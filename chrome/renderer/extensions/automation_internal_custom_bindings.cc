@@ -868,6 +868,18 @@ void AutomationInternalCustomBindings::AddRoutes() {
           result.Set(v8::String::NewFromUtf8(isolate, restriction_str.c_str()));
         }
       });
+  RouteNodeIDFunction(
+      "GetDefaultActionVerb",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ax::mojom::DefaultActionVerb default_action_verb =
+            static_cast<ax::mojom::DefaultActionVerb>(
+                node->data().GetIntAttribute(
+                    ax::mojom::IntAttribute::kDefaultActionVerb));
+        std::string default_action_verb_str = ui::ToString(default_action_verb);
+        result.Set(
+            v8::String::NewFromUtf8(isolate, default_action_verb_str.c_str()));
+      });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {

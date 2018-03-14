@@ -279,6 +279,19 @@
     readOnly
   };
 
+  // Describes possible actions when performing a do default action.
+  enum DefaultActionVerb {
+    activate,
+    check,
+    click,
+    clickAncestor,
+    jump,
+    open,
+    press,
+    select,
+    uncheck
+};
+
   dictionary Rect {
     long left;
     long top;
@@ -493,6 +506,9 @@
 
     // An array of custom actions.
     CustomAction[]? customActions;
+
+    // The action taken by calling <code>doDefault</code>.
+    DefaultActionVerb? defaultActionVerb;
 
     //
     // Link attributes.
