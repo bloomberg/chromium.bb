@@ -132,7 +132,7 @@ TEST_F(RTCRtpSenderTest, CreateSenderWithNullTrack) {
 #else
 #define MAYBE_ReplaceTrackSetsTrack ReplaceTrackSetsTrack
 #endif
-TEST_F(RTCRtpSenderTest, ReplaceTrackSetsTrack) {
+TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackSetsTrack) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
