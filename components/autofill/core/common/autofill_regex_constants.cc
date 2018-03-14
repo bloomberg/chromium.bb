@@ -314,10 +314,13 @@ const char kPhoneExtensionRe[] =
 /////////////////////////////////////////////////////////////////////////////
 const char kUPIVirtualPaymentAddressRe[] =
     "^\\w+@("
+    "airtel|"       // My Airtel-Recharge, Bill, Bank
     "allbank|"      // Allahabad Bank UPI
     "andb|"         // Andhra Bank ONE
     "axisbank|"     // Axis Pay
+    "axisgo|"       // Ola
     "barodampay|"   // Baroda MPay
+    "boi|"          // BHIM BOI UPI
     "centralbank|"  // Cent UPI
     "cnrb|"         // Canara Bank UPI - Empower
     "csbpay|"       // CSB UPI
@@ -334,6 +337,8 @@ const char kUPIVirtualPaymentAddressRe[] =
     "indianbank|"   // Indian Bank UPI
     "indus|"        // Indus Pay
     "iob|"          // IOB UPI
+    "jkb|"          // BHIM JK Bank UPI
+    "jsb|"          // JetPay UPI
     "kaypay|"       // KayPay
     "kbl|"          // KBL Smartz
     "kotak|"        // kotak Mahindra Bank
@@ -341,6 +346,10 @@ const char kUPIVirtualPaymentAddressRe[] =
     "lvb|"          // LVB UPay
     "mahb|"         // MAHAUPI
     "obc|"          // Oriental BHIM UPI
+    "okicici|"      // Tez
+    "okhdfcbank|"   // Tez
+    "okaxis|"       // Tez
+    "paytm|"        // Paytm
     "pingpay|"      // Samsung Pay
     "pnb|"          // PNB UPI
     "pockets|"      // Pockets- ICICI Bank
@@ -350,7 +359,7 @@ const char kUPIVirtualPaymentAddressRe[] =
     "scb|"          // Standard Chartered
     "sib|"          // SIB M-Pay (UPI Pay)
     "syndicate|"    // Synd UPI
-    "tjsp|"         // TranZapp
+    "tjsb|"         // TranZapp
     "ubi|"          // United UPI
     "uboi|"         // Union Bank UPI
     "uco|"          // UCO UPI
