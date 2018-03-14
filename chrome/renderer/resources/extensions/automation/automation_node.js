@@ -314,6 +314,13 @@ var GetLineThrough = natives.GetLineThrough;
  */
 var GetCustomActions = natives.GetCustomActions;
 
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {automation.NameFromType} The source of the node's name.
+ */
+var GetDefaultActionVerb = natives.GetDefaultActionVerb;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -484,6 +491,10 @@ AutomationNodeImpl.prototype = {
 
   get customActions() {
     return GetCustomActions(this.treeID, this.id);
+  },
+
+  get defaultActionVerb() {
+    return GetDefaultActionVerb(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -1360,6 +1371,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'isRootNode',
       'role',
       'checked',
+      'defaultActionVerb',
       'restriction',
       'state',
       'location',

@@ -275,6 +275,22 @@ chrome.automation.Restriction = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-DefaultActionVerb
+ */
+chrome.automation.DefaultActionVerb = {
+  ACTIVATE: 'activate',
+  CHECK: 'check',
+  CLICK: 'click',
+  CLICK_ANCESTOR: 'clickAncestor',
+  JUMP: 'jump',
+  OPEN: 'open',
+  PRESS: 'press',
+  SELECT: 'select',
+  UNCHECK: 'uncheck',
+};
+
+/**
  * @typedef {{
  *   left: number,
  *   top: number,
@@ -617,6 +633,13 @@ chrome.automation.AutomationNode.prototype.labelFor;
  * @see https://developer.chrome.com/extensions/automation#type-customActions
  */
 chrome.automation.AutomationNode.prototype.customActions;
+
+/**
+ * The action taken by calling <code>doDefault</code>.
+ * @type {(!chrome.automation.DefaultActionVerb|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-defaultActionVerb
+ */
+chrome.automation.AutomationNode.prototype.defaultActionVerb;
 
 /**
  * The URL that this link will navigate to.

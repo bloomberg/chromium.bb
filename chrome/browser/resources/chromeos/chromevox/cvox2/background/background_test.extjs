@@ -1521,3 +1521,20 @@ TEST_F('BackgroundTest', 'NavigationEscapesEdit', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'NavigationSyncsSelect', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <select>
+      <option>apple</option>
+      <option>grape</option>
+    </select>
+  */}, function(root) {
+    var select = root.find({role: RoleType.POP_UP_BUTTON});
+    mockFeedback.call(select.doDefault.bind(select))
+        .expectSpeech('apple', 'Selected')
+        .call(doCmd('nextObject'))
+        .expectSpeech('grape', 'Selected')
+        .replay();
+  });
+});
