@@ -11,6 +11,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -19,10 +20,6 @@ namespace {
 
 // The visible width of bubble borders (differs from the actual width) in px.
 const int kBubbleBorderVisibleWidth = 1;
-
-// The margin between the content of the error bubble and its border.
-const int kInfoBubbleHorizontalMargin = 14;
-const int kInfoBubbleVerticalMargin = 12;
 
 }  // namespace
 
@@ -52,8 +49,8 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
   DCHECK(anchor_);
   SetAnchorView(anchor_);
 
-  set_margins(
-      gfx::Insets(kInfoBubbleVerticalMargin, kInfoBubbleHorizontalMargin));
+  set_margins(LayoutProvider::Get()->GetInsetsMetric(
+      InsetsMetric::INSETS_TOOLTIP_BUBBLE));
   set_can_activate(false);
 
   SetLayoutManager(std::make_unique<FillLayout>());
