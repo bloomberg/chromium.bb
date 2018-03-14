@@ -355,11 +355,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
   auto* in_memory_url_index = InMemoryURLIndexFactory::GetForProfile(profile());
+  auto* autocomplete_controller = GetAutocompleteController();
 
   const std::vector<std::string> expected_names{
-      base::StringPrintf("omnibox/in_memory_url_index_0x%" PRIXPTR,
+      base::StringPrintf("omnibox/in_memory_url_index/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(in_memory_url_index)),
-      "omnibox/autocomplete_controller"};
+      base::StringPrintf("omnibox/autocomplete_controller/0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(autocomplete_controller))};
 
   auto OnMemoryDumpDone =
       [](const std::vector<std::string>& expected_names, base::OnceClosure quit,
@@ -377,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
   base::RunLoop run_loop;
   base::trace_event::MemoryDumpRequestArgs args{
       1 /* dump_guid*/, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
 
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
       args, base::BindRepeating(OnMemoryDumpDone, expected_names,

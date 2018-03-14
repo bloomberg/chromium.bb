@@ -225,7 +225,7 @@ bool InMemoryURLIndex::OnMemoryDump(
   res += sizeof(URLIndexPrivateData) + private_data_->EstimateMemoryUsage();
 
   const std::string dump_name =
-      base::StringPrintf("omnibox/in_memory_url_index_0x%" PRIXPTR,
+      base::StringPrintf("omnibox/in_memory_url_index/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this));
   auto* dump = process_memory_dump->CreateAllocatorDump(dump_name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
