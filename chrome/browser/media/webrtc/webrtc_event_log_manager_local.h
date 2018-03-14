@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBRTC_WEBRTC_LOCAL_EVENT_LOG_MANAGER_H_
-#define CONTENT_BROWSER_WEBRTC_WEBRTC_LOCAL_EVENT_LOG_MANAGER_H_
+#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_LOCAL_H_
+#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_LOCAL_H_
 
 #include <map>
 #include <set>
@@ -13,9 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
-#include "content/browser/webrtc/webrtc_event_log_manager_common.h"
-
-namespace content {
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
 class WebRtcLocalEventLogManager final : public LogFileWriter {
  public:
@@ -87,6 +85,4 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalEventLogManager);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_WEBRTC_WEBRTC_LOCAL_EVENT_LOG_MANAGER_H_
+#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_LOCAL_H_

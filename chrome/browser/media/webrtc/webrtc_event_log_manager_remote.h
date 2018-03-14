@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBRTC_WEBRTC_REMOTE_EVENT_LOG_MANAGER_H_
-#define CONTENT_BROWSER_WEBRTC_WEBRTC_REMOTE_EVENT_LOG_MANAGER_H_
+#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_REMOTE_H_
+#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_REMOTE_H_
 
 #include <map>
 #include <set>
@@ -11,16 +11,13 @@
 
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "content/browser/webrtc/webrtc_event_log_manager_common.h"
-#include "content/browser/webrtc/webrtc_event_log_uploader.h"
-#include "content/common/content_export.h"
-
-namespace content {
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_uploader.h"
 
 // TODO(eladalon): Prevent uploading of logs when Chrome shutdown imminent.
 // https://crbug.com/775415
 
-class CONTENT_EXPORT WebRtcRemoteEventLogManager final
+class WebRtcRemoteEventLogManager final
     : public LogFileWriter,
       public WebRtcEventLogUploaderObserver {
  public:
@@ -233,6 +230,4 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
   DISALLOW_COPY_AND_ASSIGN(WebRtcRemoteEventLogManager);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_WEBRTC_WEBRTC_REMOTE_EVENT_LOG_MANAGER_H_
+#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_REMOTE_H_

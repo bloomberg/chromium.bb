@@ -197,6 +197,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       bool incoming,
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
+  void SetWebRtcEventLogOutput(int lid, bool enabled) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void BindInterface(const std::string& interface_name,

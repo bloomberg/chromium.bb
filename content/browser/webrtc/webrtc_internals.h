@@ -16,7 +16,6 @@
 #include "base/process/process.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
-#include "content/browser/webrtc/webrtc_event_log_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "media/media_features.h"
@@ -39,13 +38,16 @@ class WebRTCInternalsUIObserver;
 class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                                        public ui::SelectFileDialog::Listener {
  public:
-  // Ensures that no previous instantiation of the class was performed, then
-  // instantiates the class and returns the object. Subsequent calls to
-  // GetInstance() will return this object.
+  // * CreateSingletonInstance() ensures that no previous instantiation of the
+  //   class was performed, then instantiates the class and returns the object.
+  // * GetInstance() returns the object previously constructed using
+  //   CreateSingletonInstance(). It may return null in tests.
+  // * Creation is separated from access because WebRTCInternals may only be
+  //   created from a context that allows blocking. If GetInstance were allowed
+  //   to instantiate, as with a lazily constructed singleton, it would be
+  //   difficult to guarantee that its construction is always first attempted
+  //   from a context that allows it.
   static WebRTCInternals* CreateSingletonInstance();
-
-  // Returns the object previously constructed using CreateSingletonInstance().
-  // Can be null in tests.
   static WebRTCInternals* GetInstance();
 
   ~WebRTCInternals() override;

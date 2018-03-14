@@ -138,6 +138,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
@@ -3193,6 +3194,15 @@ RenderProcessHostImpl::StartRtpDump(
                    p2p_socket_dispatcher_host_);
   }
   return stop_rtp_dump_callback_;
+}
+
+void RenderProcessHostImpl::SetWebRtcEventLogOutput(int lid, bool enabled) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (enabled) {
+    Send(new PeerConnectionTracker_StartEventLogOutput(lid));
+  } else {
+    Send(new PeerConnectionTracker_StopEventLog(lid));
+  }
 }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 

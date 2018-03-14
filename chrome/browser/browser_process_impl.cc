@@ -174,6 +174,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #endif
 
@@ -1164,6 +1165,18 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
         base::WrapUnique(new base::DefaultTickClock()), local_state(),
         system_request_context());
   }
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // WebRtcEventLogManager is instaniated before anything that needs it, then
+  // lives "forever"; it and its sub-objects are allowed to leak when Chrome
+  // shuts down. This allows us to be confident that messages posted to
+  // WebRtcEventLogManager's internal task queue with base::Unretained(this),
+  // are never referencing a dangling pointer, and that sub-objects are
+  // similarly always alive.
+  WebRtcEventLogManager* const webrtc_event_log_manager =
+      WebRtcEventLogManager::CreateSingletonInstance();
+  content::WebRtcEventLogger::Set(webrtc_event_log_manager);
+#endif
 }
 
 void BrowserProcessImpl::CreateIconManager() {

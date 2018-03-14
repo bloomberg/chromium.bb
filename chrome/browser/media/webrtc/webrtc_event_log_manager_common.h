@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBRTC_WEBRTC_RTC_EVENT_LOG_MANAGER_COMMON_H_
-#define CONTENT_BROWSER_WEBRTC_WEBRTC_RTC_EVENT_LOG_MANAGER_COMMON_H_
+#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_
+#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_
 
 #include <map>
 #include <string>
@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 
 // This file is intended for:
 // 1. Code shared between WebRtcEventLogManager, WebRtcLocalEventLogManager
@@ -21,20 +20,18 @@
 // 2. Code specific to either of the above classes, but which also needs
 //    to be seen by unit tests (such as constants).
 
-namespace content {
+extern const size_t kWebRtcEventLogManagerUnlimitedFileSize;
 
-CONTENT_EXPORT extern const size_t kWebRtcEventLogManagerUnlimitedFileSize;
+extern const size_t kDefaultMaxLocalLogFileSizeBytes;
+extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
 
-CONTENT_EXPORT extern const size_t kDefaultMaxLocalLogFileSizeBytes;
-CONTENT_EXPORT extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
-
-CONTENT_EXPORT extern const size_t kMaxRemoteLogFileMetadataSizeBytes;
-CONTENT_EXPORT extern const size_t kMaxRemoteLogFileSizeBytes;
+extern const size_t kMaxRemoteLogFileMetadataSizeBytes;
+extern const size_t kMaxRemoteLogFileSizeBytes;
 
 // Limit over the number of concurrently active (currently being written to
 // disk) remote-bound log files. This limits IO operations, and so it is
 // applied globally (all browser contexts are limited together).
-CONTENT_EXPORT extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
+extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
 
 // Limit over the number of pending logs (logs stored on disk and awaiting to
 // be uploaded to a remote server). This limit avoids excessive storage. If a
@@ -42,28 +39,27 @@ CONTENT_EXPORT extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
 // system, it is assumed that the user has enough storage to accommodate
 // the increased storage consumption that comes with it. Therefore, this
 // limit is applied per browser context.
-CONTENT_EXPORT extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
+extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
 
 // The file extension to be associated with remote-bound logs while they are
 // kept on local disk.
-CONTENT_EXPORT extern const base::FilePath::CharType kRemoteBoundLogExtension[];
+extern const base::FilePath::CharType kRemoteBoundLogExtension[];
 
 // Version of the remote-bound log. Refers to the version of the event logs'
 // encoding, method for separation of metadata from the WebRTC event log, etc.
-CONTENT_EXPORT extern const uint8_t kRemoteBoundWebRtcEventLogFileVersion;
+extern const uint8_t kRemoteBoundWebRtcEventLogFileVersion;
 
 // Remote-bound log headers are composed of:
 // * One byte for the version (for the encoding, metadata format, etc.)
 // * Three bytes encoding the length of the metadata, in bytes.
 // The metadata, which immediately follows the header, is not counted as part
 // of the header size.
-CONTENT_EXPORT extern const size_t kRemoteBoundLogFileHeaderSizeBytes;
+extern const size_t kRemoteBoundLogFileHeaderSizeBytes;
 
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
 // Such expired files will be purged from disk when examined.
-CONTENT_EXPORT extern const base::TimeDelta
-    kRemoteBoundWebRtcEventLogsMaxRetention;
+extern const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention;
 
 // For a given Chrome session, this is a unique key for PeerConnections.
 // It's not, however, unique between sessions (after Chrome is restarted).
@@ -180,6 +176,4 @@ class LogFileWriter {
   virtual LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) = 0;
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_WEBRTC_WEBRTC_RTC_EVENT_LOG_MANAGER_COMMON_H_
+#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_

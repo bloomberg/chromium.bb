@@ -417,6 +417,9 @@ MockRenderProcessHost::StartRtpDump(
     const WebRtcRtpPacketCallback& packet_callback) {
   return WebRtcStopRtpDumpCallback();
 }
+
+void MockRenderProcessHost::SetWebRtcEventLogOutput(int lid, bool enabled) {}
+
 #endif
 
 void MockRenderProcessHost::ResumeDeferredNavigation(

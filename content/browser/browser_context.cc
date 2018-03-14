@@ -39,6 +39,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -58,9 +59,6 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/browser/webrtc/webrtc_event_log_manager.h"
-#endif
 
 using base::UserDataAdapter;
 
@@ -531,9 +529,9 @@ void BrowserContext::Initialize(
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   if (!browser_context->IsOffTheRecord()) {
-    auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-    if (webrtc_event_log_manager) {
-      webrtc_event_log_manager->EnableForBrowserContext(browser_context);
+    WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+    if (logger) {
+      logger->EnableForBrowserContext(browser_context);
     }
   }
 #endif
@@ -588,10 +586,9 @@ BrowserContext::~BrowserContext() {
       << "StoragePartitionMap is not shut down properly";
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-  if (webrtc_event_log_manager) {
-    const auto id = WebRtcEventLogManager::GetBrowserContextId(this);
-    webrtc_event_log_manager->DisableForBrowserContext(id);
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->DisableForBrowserContext(this);
   }
 #endif
 

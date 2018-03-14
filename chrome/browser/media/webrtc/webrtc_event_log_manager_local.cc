@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webrtc/webrtc_local_event_log_manager.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_local.h"
 
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,8 +15,6 @@
 #else
 #define IntToStringType base::IntToString
 #endif
-
-namespace content {
 
 #if defined(OS_ANDROID)
 const size_t kDefaultMaxLocalLogFileSizeBytes = 10000000;
@@ -31,12 +29,12 @@ WebRtcLocalEventLogManager::WebRtcLocalEventLogManager(
     : observer_(observer),
       clock_for_testing_(nullptr),
       max_log_file_size_bytes_(kDefaultMaxLocalLogFileSizeBytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
 }
 
 WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 bool WebRtcLocalEventLogManager::PeerConnectionAdded(
@@ -245,5 +243,3 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
       .InsertBeforeExtensionASCII(base::StringPiece(stamp))
       .AddExtension(FILE_PATH_LITERAL("log"));
 }
-
-}  // namespace content

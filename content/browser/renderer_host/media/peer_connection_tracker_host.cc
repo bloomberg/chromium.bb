@@ -6,9 +6,9 @@
 
 #include "base/power_monitor/power_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/webrtc/webrtc_event_log_manager.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
+#include "content/public/browser/webrtc_event_logger.h"
 
 namespace content {
 
@@ -68,8 +68,10 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
         render_process_id_, peer_pid(), info.lid, info.url,
         info.rtc_configuration, info.constraints);
   }
-  WebRtcEventLogManager::GetInstance()->PeerConnectionAdded(render_process_id_,
-                                                            info.lid);
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->PeerConnectionAdded(render_process_id_, info.lid);
+  }
 }
 
 void PeerConnectionTrackerHost::RemovePeerConnection(int lid) {
@@ -84,8 +86,10 @@ void PeerConnectionTrackerHost::RemovePeerConnection(int lid) {
   if (webrtc_internals) {
     webrtc_internals->OnRemovePeerConnection(peer_pid(), lid);
   }
-  WebRtcEventLogManager::GetInstance()->PeerConnectionRemoved(
-      render_process_id_, lid);
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->PeerConnectionRemoved(render_process_id_, lid);
+  }
 }
 
 void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
@@ -100,8 +104,10 @@ void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
   }
   // TODO(eladalon): Get rid of magic value. https://crbug.com/810383
   if (type == "stop") {
-    auto* manager = WebRtcEventLogManager::GetInstance();
-    manager->PeerConnectionStopped(render_process_id_, lid);
+    WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+    if (logger) {
+      logger->PeerConnectionStopped(render_process_id_, lid);
+    }
   }
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
@@ -148,8 +154,10 @@ void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
                        lid, output));
     return;
   }
-  auto* manager = WebRtcEventLogManager::GetInstance();
-  manager->OnWebRtcEventLogWrite(render_process_id_, lid, output);
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->OnWebRtcEventLogWrite(render_process_id_, lid, output);
+  }
 }
 
 void PeerConnectionTrackerHost::OnSuspend() {
