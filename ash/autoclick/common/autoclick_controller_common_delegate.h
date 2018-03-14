@@ -5,8 +5,6 @@
 #ifndef ASH_AUTOCLICK_COMMON_AUTOCLICK_CONTROLLER_COMMON_DELEGATE_H
 #define ASH_AUTOCLICK_COMMON_AUTOCLICK_CONTROLLER_COMMON_DELEGATE_H
 
-#include "base/macros.h"
-
 namespace views {
 class Widget;
 }
@@ -19,27 +17,25 @@ namespace ash {
 
 class AutoclickControllerCommonDelegate {
  public:
-  AutoclickControllerCommonDelegate() {}
-  virtual ~AutoclickControllerCommonDelegate() {}
-
-  // Creates a ring widget at |event_location|.
+  // Creates a ring widget at |point_in_screen|.
   // AutoclickControllerCommonDelegate still has ownership of the widget they
   // created.
   virtual views::Widget* CreateAutoclickRingWidget(
-      const gfx::Point& event_location) = 0;
+      const gfx::Point& point_in_screen) = 0;
 
-  // Moves |widget| to |event_location|.
+  // Moves |widget| to |point_in_screen|. The point may be on a different
+  // display.
   virtual void UpdateAutoclickRingWidget(views::Widget* widget,
-                                         const gfx::Point& event_location) = 0;
+                                         const gfx::Point& point_in_screen) = 0;
 
-  // Generates a click with |mouse_event_flags| at |event_location|.
-  virtual void DoAutoclick(const gfx::Point& event_location,
+  // Generates a click with |mouse_event_flags| at |point_in_screen|.
+  virtual void DoAutoclick(const gfx::Point& point_in_screen,
                            const int mouse_event_flags) = 0;
 
   virtual void OnAutoclickCanceled() = 0;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoclickControllerCommonDelegate);
+ protected:
+  virtual ~AutoclickControllerCommonDelegate() {}
 };
 
 }  // namespace ash
