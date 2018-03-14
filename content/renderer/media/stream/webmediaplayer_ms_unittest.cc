@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
@@ -1090,6 +1091,67 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
   EXPECT_CALL(*this, DoSetWebLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
+
+// Hidden and closed trigger different events on Android and this test doesn't
+// cover that, see HiddenPlayerTests for specifics.
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+// Tests that GpuMemoryBufferVideoFramePool is not called when page is hidden.
+TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
+  SetGpuMemoryBufferVideoForTesting();
+
+  const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
+  static int tokens[] = {0, kTestBrake};
+  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  provider->QueueFrames(timestamps);
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStartRendering());
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+  frame_ready_cbs_.clear();
+
+  // Hidden should stop passing frames to GpuMemoryBufferVideoFramePool.
+  player_->OnFrameHidden();
+  provider->QueueFrames(timestamps, false);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_EQ(0u, frame_ready_cbs_.size());
+
+  // Shown should resume passing frames to GpuMemoryBufferVideoFramePool.
+  player_->OnFrameShown();
+  provider->QueueFrames(timestamps, false);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+  frame_ready_cbs_.clear();
+
+  // Hidden should stop passing frames to GpuMemoryBufferVideoFramePool.
+  player_->OnFrameClosed();
+  provider->QueueFrames(timestamps, false);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_EQ(0u, frame_ready_cbs_.size());
+
+  // Shown should resume passing frames to GpuMemoryBufferVideoFramePool.
+  player_->OnFrameShown();
+  provider->QueueFrames(timestamps, false);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoStopRendering());
+}
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
