@@ -57,6 +57,8 @@ class CloudExternalDataPolicyObserver
     virtual ~Delegate();
   };
 
+  // |device_local_account_policy_service| may be nullptr if unavailable (e.g.
+  // Active Directory management mode).
   CloudExternalDataPolicyObserver(
       chromeos::CrosSettings* cros_settings,
       DeviceLocalAccountPolicyService* device_local_account_policy_service,
@@ -98,7 +100,7 @@ class CloudExternalDataPolicyObserver
 
   // A map from each logged-in user to the helper that observes |policy_| in the
   // user's PolicyService.
-  typedef std::map<std::string, linked_ptr<PolicyServiceObserver> >
+  typedef std::map<std::string, linked_ptr<PolicyServiceObserver>>
       LoggedInUserObserverMap;
   LoggedInUserObserverMap logged_in_user_observers_;
 
@@ -117,9 +119,8 @@ class CloudExternalDataPolicyObserver
   // A map from user ID to a base::WeakPtr for each external data fetch
   // currently in progress. This allows fetches to be effectively be canceled by
   // invalidating the pointers.
-  typedef base::WeakPtrFactory<CloudExternalDataPolicyObserver>
-      WeakPtrFactory;
-  typedef std::map<std::string, linked_ptr<WeakPtrFactory> > FetchWeakPtrMap;
+  using WeakPtrFactory = base::WeakPtrFactory<CloudExternalDataPolicyObserver>;
+  using FetchWeakPtrMap = std::map<std::string, linked_ptr<WeakPtrFactory>>;
   FetchWeakPtrMap fetch_weak_ptrs_;
 
   base::WeakPtrFactory<CloudExternalDataPolicyObserver> weak_factory_;

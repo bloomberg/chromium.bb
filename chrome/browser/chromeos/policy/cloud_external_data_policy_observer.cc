@@ -192,7 +192,7 @@ void CloudExternalDataPolicyObserver::OnPolicyUpdated(
   }
 
   if (!device_local_account_policy_service_) {
-    NOTREACHED();
+    // May happen in tests.
     return;
   }
   DeviceLocalAccountPolicyBroker* broker =

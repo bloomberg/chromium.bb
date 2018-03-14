@@ -9,11 +9,14 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -37,9 +40,9 @@ std::unique_ptr<ActiveDirectoryPolicyManager>
 ActiveDirectoryPolicyManager::CreateForDevicePolicy(
     std::unique_ptr<CloudPolicyStore> store) {
   // Can't use MakeUnique<> because the constructor is private.
-  return base::WrapUnique(
-      new ActiveDirectoryPolicyManager(EmptyAccountId(), base::TimeDelta(),
-                                       base::OnceClosure(), std::move(store)));
+  return base::WrapUnique(new ActiveDirectoryPolicyManager(
+      EmptyAccountId(), base::TimeDelta(), base::OnceClosure(),
+      std::move(store), nullptr /* external_data_manager */));
 }
 
 // static
@@ -48,11 +51,12 @@ ActiveDirectoryPolicyManager::CreateForUserPolicy(
     const AccountId& account_id,
     base::TimeDelta initial_policy_fetch_timeout,
     base::OnceClosure exit_session,
-    std::unique_ptr<CloudPolicyStore> store) {
+    std::unique_ptr<CloudPolicyStore> store,
+    std::unique_ptr<CloudExternalDataManager> external_data_manager) {
   // Can't use MakeUnique<> because the constructor is private.
   return base::WrapUnique(new ActiveDirectoryPolicyManager(
       account_id, initial_policy_fetch_timeout, std::move(exit_session),
-      std::move(store)));
+      std::move(store), std::move(external_data_manager)));
 }
 
 void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
@@ -72,9 +76,20 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
       base::BindRepeating(&ActiveDirectoryPolicyManager::OnPolicyFetched,
                           weak_ptr_factory_.GetWeakPtr()),
       kFetchInterval);
+
+  if (external_data_manager_) {
+    // Use the system request context here instead of a context derived from the
+    // Profile because Connect() is called before the profile is fully
+    // initialized (required so we can perform the initial policy load).
+    // Note: The request context can be null for tests and for device policy.
+    external_data_manager_->Connect(
+        g_browser_process->system_request_context());
+  }
 }
 
 void ActiveDirectoryPolicyManager::Shutdown() {
+  if (external_data_manager_)
+    external_data_manager_->Disconnect();
   store_->RemoveObserver(this);
   ConfigurationPolicyProvider::Shutdown();
 }
@@ -130,13 +145,15 @@ ActiveDirectoryPolicyManager::ActiveDirectoryPolicyManager(
     const AccountId& account_id,
     base::TimeDelta initial_policy_fetch_timeout,
     base::OnceClosure exit_session,
-    std::unique_ptr<CloudPolicyStore> store)
+    std::unique_ptr<CloudPolicyStore> store,
+    std::unique_ptr<CloudExternalDataManager> external_data_manager)
     : account_id_(account_id),
       waiting_for_initial_policy_fetch_(
           !initial_policy_fetch_timeout.is_zero()),
       initial_policy_fetch_may_fail_(!initial_policy_fetch_timeout.is_max()),
       exit_session_(std::move(exit_session)),
-      store_(std::move(store)) {
+      store_(std::move(store)),
+      external_data_manager_(std::move(external_data_manager)) {
   // Delaying initialization complete is intended for user policy only.
   DCHECK(account_id != EmptyAccountId() || !waiting_for_initial_policy_fetch_);
   if (waiting_for_initial_policy_fetch_ && initial_policy_fetch_may_fail_) {
