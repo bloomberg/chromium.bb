@@ -23,6 +23,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -222,23 +223,22 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
     int render_process_id,
     PluginServiceImpl* plugin_service,
     BrowserContext* browser_context,
-    net::URLRequestContextGetter* request_context,
+    StoragePartition* storage_partition,
     RenderWidgetHelper* render_widget_helper)
     : BrowserMessageFilter(FrameMsgStart),
       BrowserAssociatedInterface<mojom::RenderFrameMessageFilter>(this, this),
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_service_(plugin_service),
-      profile_data_directory_(browser_context->GetPath()),
+      profile_data_directory_(storage_partition->GetPath()),
 #endif  // ENABLE_PLUGINS
-      request_context_(request_context),
+      request_context_(storage_partition->GetURLRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
       render_process_id_(render_process_id) {
   network::mojom::CookieManagerPtr cookie_manager;
-  BrowserContext::GetDefaultStoragePartition(browser_context)
-      ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  storage_partition->GetNetworkContext()->GetCookieManager(
+      mojo::MakeRequest(&cookie_manager));
 
   // The PostTask below could finish before the constructor returns which would
   // lead to this object being destructed prematurely.
@@ -477,16 +477,18 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
           render_frame_id, options))
     return;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(jam): modify GetRequestContextForURL to work with network service.
-    // Merge this with code path below for non-network service.
+  net::URLRequestContext* context = GetRequestContextForURL(url);
+  // If the embedder overrides the URLRequestContext then always use it, even if
+  // the network service is enabled, instead of the CookieManager associated
+  // this process' StoragePartition.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      context == request_context_->GetURLRequestContext()) {
     cookie_manager_->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
                                         !options.exclude_httponly(),
                                         net::CookieStore::SetCookiesCallback());
     return;
   }
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
   // Pass a null callback since we don't care about when the 'set' completes.
   context->cookie_store()->SetCanonicalCookieAsync(
       std::move(cookie), url.SchemeIsCryptographic(),
@@ -519,7 +521,12 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
         net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
   }
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  net::URLRequestContext* context = GetRequestContextForURL(url);
+  // If the embedder overrides the URLRequestContext then always use it, even if
+  // the network service is enabled, instead of the CookieManager associated
+  // this process' StoragePartition.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      context == request_context_->GetURLRequestContext()) {
     // TODO(jam): modify GetRequestContextForURL to work with network service.
     // Merge this with code path below for non-network service.
     cookie_manager_->GetCookieList(
@@ -534,7 +541,6 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   // http://crbug.com/99242
   DEBUG_ALIAS_FOR_GURL(url_buf, url);
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->GetCookieListWithOptionsAsync(
       url, options,
       base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,

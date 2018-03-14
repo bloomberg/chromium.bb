@@ -1706,9 +1706,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #else
       nullptr,
 #endif
-      GetBrowserContext(),
-      request_context.get(),
-      widget_helper_.get());
+      GetBrowserContext(), storage_partition_impl_, widget_helper_.get());
   AddFilter(render_frame_message_filter_.get());
 
   BrowserContext* browser_context = GetBrowserContext();

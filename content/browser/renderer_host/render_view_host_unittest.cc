@@ -256,8 +256,7 @@ class TestSaveImageFromDataURL : public RenderFrameMessageFilter {
             0,
             nullptr,
             context,
-            BrowserContext::GetDefaultStoragePartition(context)
-                ->GetURLRequestContext(),
+            BrowserContext::GetDefaultStoragePartition(context),
             nullptr) {
     Reset();
   }
