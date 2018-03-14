@@ -7,6 +7,7 @@
 #import <StoreKit/StoreKit.h>
 #import <UIKit/UIKit.h>
 
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,6 +15,7 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/test/fakes/fake_contained_presenter.h"
+#import "ios/chrome/test/fakes/fake_document_interaction_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
@@ -22,6 +24,7 @@
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,17 +68,23 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
   DownloadManagerCoordinatorTest()
       : presenter_([[FakeContainedPresenter alloc] init]),
         base_view_controller_([[UIViewController alloc] init]),
+        document_interaction_controller_class_(
+            OCMClassMock([UIDocumentInteractionController class])),
         tab_helper_(&web_state_),
         coordinator_([[DownloadManagerCoordinator alloc]
             initWithBaseViewController:base_view_controller_]) {
     [scoped_key_window_.Get() setRootViewController:base_view_controller_];
     coordinator_.presenter = presenter_;
   }
+  ~DownloadManagerCoordinatorTest() override {
+    [document_interaction_controller_class_ stopMocking];
+  }
 
   FakeContainedPresenter* presenter_;
   UIViewController* base_view_controller_;
   ScopedKeyWindow scoped_key_window_;
   web::TestWebState web_state_;
+  id document_interaction_controller_class_;
   StubTabHelper tab_helper_;
   DownloadManagerCoordinator* coordinator_;
 };
@@ -312,6 +321,49 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
 
   // Stop to avoid holding a dangling pointer to destroyed task.
   [coordinator_ stop];
+}
+
+// Tests presenting Open In... menu.
+TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
+  web::TestWebThreadBundle thread_bundle;
+
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start and complete the download.
+  base::FilePath path;
+  ASSERT_TRUE(base::GetTempDir(&path));
+  task.Start(std::make_unique<net::URLFetcherFileWriter>(
+      base::ThreadTaskRunnerHandle::Get(), path));
+  task.SetDone(true);
+
+  // Stub UIDocumentInteractionController.
+  FakeDocumentInteractionController* document_interaction_controller =
+      [[FakeDocumentInteractionController alloc] init];
+  NSURL* url = [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
+  OCMStub(
+      [document_interaction_controller_class_ interactionControllerWithURL:url])
+      .andReturn(document_interaction_controller);
+
+  // Present Open In... menu.
+  UILayoutGuide* guide = [[UILayoutGuide alloc] init];
+  UIView* view = [[UIView alloc] init];
+  [view addLayoutGuide:guide];
+  ASSERT_FALSE(document_interaction_controller.presentedOpenInMenu);
+  [viewController.delegate downloadManagerViewController:viewController
+                        presentOpenInMenuWithLayoutGuide:guide];
+  ASSERT_TRUE(document_interaction_controller.presentedOpenInMenu);
+  ASSERT_TRUE(CGRectEqualToRect(
+      CGRectZero, document_interaction_controller.presentedOpenInMenu.rect));
+  ASSERT_EQ(view, document_interaction_controller.presentedOpenInMenu.view);
+  ASSERT_TRUE(document_interaction_controller.presentedOpenInMenu.animated);
 }
 
 // Tests closing view controller while the download is in progress. Coordinator
