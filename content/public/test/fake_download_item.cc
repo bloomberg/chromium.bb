@@ -348,6 +348,10 @@ void FakeDownloadItem::DeleteFile(const base::Callback<void(bool)>& callback) {
   callback.Run(false);
 }
 
+download::DownloadFile* FakeDownloadItem::GetDownloadFile() {
+  return nullptr;
+}
+
 bool FakeDownloadItem::IsDangerous() const {
   NOTREACHED();
   return false;

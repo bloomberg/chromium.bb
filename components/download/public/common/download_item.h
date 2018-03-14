@@ -46,6 +46,7 @@ class HttpResponseHeaders;
 }
 
 namespace download {
+class DownloadFile;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download.
@@ -357,6 +358,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Why |safety_state_| is not SAFE.
   virtual DownloadDangerType GetDangerType() const = 0;
+
+  // Gets the pointer to the DownloadFile owned by this object.
+  virtual DownloadFile* GetDownloadFile() = 0;
 
   //    Progress State accessors -----------------------------------------------
 

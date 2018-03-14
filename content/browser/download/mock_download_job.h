@@ -8,20 +8,22 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/browser/download/download_job.h"
+#include "components/download/public/common/download_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace download {
+class DownloadItem;
+}
+
 namespace content {
 
-class DownloadItemImpl;
-
-class MockDownloadJob : public DownloadJob {
+class MockDownloadJob : public download::DownloadJob {
  public:
-  explicit MockDownloadJob(DownloadItemImpl* download_item);
+  explicit MockDownloadJob(download::DownloadItem* download_item);
   ~MockDownloadJob() override;
 
-  DownloadItemImpl* download_item() { return download_item_; }
+  download::DownloadItem* download_item() { return download_item_; }
 
   // DownloadJob implementation.
   MOCK_METHOD2(Start,

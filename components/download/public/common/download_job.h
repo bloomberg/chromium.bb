@@ -2,37 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_JOB_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_JOB_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace download {
 
-class DownloadItemImpl;
+class DownloadItem;
 
 // DownloadJob lives on UI thread and subclasses implement actual download logic
-// and interact with DownloadItemImpl.
-// The base class is a friend class of DownloadItemImpl.
-class CONTENT_EXPORT DownloadJob {
+// and interact with DownloadItem.
+// The base class is a friend class of DownloadItem.
+class COMPONENTS_DOWNLOAD_EXPORT DownloadJob {
  public:
-  DownloadJob(
-      DownloadItemImpl* download_item,
-      std::unique_ptr<download::DownloadRequestHandleInterface> request_handle);
+  DownloadJob(DownloadItem* download_item,
+              std::unique_ptr<DownloadRequestHandleInterface> request_handle);
   virtual ~DownloadJob();
 
   // Download operations.
   // TODO(qinmin): Remove the |callback| and |download_file_| parameter if
   // DownloadJob owns download file.
-  void Start(download::DownloadFile* download_file_,
-             download::DownloadFile::InitializeCallback callback,
-             const download::DownloadItem::ReceivedSlices& received_slices);
+  void Start(DownloadFile* download_file_,
+             DownloadFile::InitializeCallback callback,
+             const DownloadItem::ReceivedSlices& received_slices);
 
   virtual void Cancel(bool user_cancel);
   virtual void Pause();
@@ -55,21 +54,21 @@ class CONTENT_EXPORT DownloadJob {
  protected:
   // Callback from file thread when we initialize the DownloadFile.
   virtual void OnDownloadFileInitialized(
-      download::DownloadFile::InitializeCallback callback,
-      download::DownloadInterruptReason result,
+      DownloadFile::InitializeCallback callback,
+      DownloadInterruptReason result,
       int64_t bytes_wasted);
 
   // Add an input stream to the download sink. Return false if we start to
   // destroy download file.
-  bool AddInputStream(std::unique_ptr<download::InputStream> stream,
+  bool AddInputStream(std::unique_ptr<InputStream> stream,
                       int64_t offset,
                       int64_t length);
 
-  DownloadItemImpl* download_item_;
+  DownloadItem* download_item_;
 
   // Used to perform operations on network request.
   // Can be null on interrupted download.
-  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle_;
+  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
  private:
   // If the download progress is paused by the user.
@@ -80,6 +79,6 @@ class CONTENT_EXPORT DownloadJob {
   DISALLOW_COPY_AND_ASSIGN(DownloadJob);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_JOB_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_JOB_H_

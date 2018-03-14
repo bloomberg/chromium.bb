@@ -86,6 +86,7 @@ class MockDownloadItem : public download::DownloadItem {
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_METHOD1(DeleteFile, void(const base::Callback<void(bool)>&));
+  MOCK_METHOD0(GetDownloadFile, download::DownloadFile*());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_CONST_METHOD0(GetDangerType, download::DownloadDangerType());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));

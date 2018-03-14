@@ -11,19 +11,18 @@
 #include "components/download/public/common/download_create_info.h"
 
 namespace download {
+class DownloadItem;
+class DownloadJob;
 class DownloadRequestHandleInterface;
 }
 
 namespace content {
 
-class DownloadItemImpl;
-class DownloadJob;
-
 // Factory class to create different kinds of DownloadJob.
 class DownloadJobFactory {
  public:
-  static std::unique_ptr<DownloadJob> CreateJob(
-      DownloadItemImpl* download_item,
+  static std::unique_ptr<download::DownloadJob> CreateJob(
+      download::DownloadItem* download_item,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
       const download::DownloadCreateInfo& create_info,
       bool is_save_package_download);
