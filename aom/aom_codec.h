@@ -480,7 +480,6 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 
 #endif
 
-/* Based on R19 High Level Syntax */
 /*!\brief OBU types. */
 typedef enum ATTRIBUTE_PACKED {
   OBU_SEQUENCE_HEADER = 1,
@@ -500,6 +499,12 @@ typedef enum {
   OBU_METADATA_TYPE_HDR_MDCV = 2,
   OBU_METADATA_TYPE_SCALABILITY = 3,
 } OBU_METADATA_TYPE;
+
+/*!\brief Returns string representation of OBU_TYPE.
+ *
+ * \param[in]     type            The OBU_TYPE to convert to string.
+ */
+const char *aom_obu_type_to_string(OBU_TYPE type);
 
 /*!\brief Config Options
  *

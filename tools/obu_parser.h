@@ -16,28 +16,6 @@
 
 namespace aom_tools {
 
-// TODO(tomfinegan): The OBU and OBU metadata types are currently defined in
-// av1/common/enums.h, which is not part of the libaom's public API. They are
-// duped here until that's dealt with.
-
-enum ObuType {
-  OBU_SEQUENCE_HEADER = 1,
-  OBU_TEMPORAL_DELIMITER = 2,
-  OBU_FRAME_HEADER = 3,
-  OBU_TILE_GROUP = 4,
-  OBU_METADATA = 5,
-#if CONFIG_OBU_FRAME
-  OBU_FRAME = 6,
-#endif
-  OBU_PADDING = 15,
-};
-
-enum ObuMetadataType {
-  OBU_METADATA_TYPE_PRIVATE_DATA = 0,
-  OBU_METADATA_TYPE_HDR_CLL = 1,
-  OBU_METADATA_TYPE_HDR_MDCV = 2,
-};
-
 struct ObuExtensionHeader {
   int temporal_id;
   int spatial_id;

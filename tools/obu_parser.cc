@@ -17,6 +17,7 @@
 // OBUs.
 #include "./aom_config.h"
 
+#include "aom/aom_codec.h"
 #include "aom/aom_integer.h"
 #include "aom_ports/mem_ops.h"
 #include "tools/obu_parser.h"
@@ -79,9 +80,12 @@ bool ValidObuType(int obu_type) {
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
     case OBU_TILE_GROUP:
+#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
+    case OBU_REDUNDANT_FRAME_HEADER:
+#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
 #if CONFIG_OBU_FRAME
     case OBU_FRAME:
-#endif
+#endif  // CONFIG_OBU_FRAME
     case OBU_METADATA:
     case OBU_PADDING: return true;
   }
@@ -132,26 +136,11 @@ bool ParseObuExtensionHeader(uint8_t ext_header_byte,
   return true;
 }
 
-std::string ObuTypeToString(int obu_type) {
-  switch (obu_type) {
-    case OBU_SEQUENCE_HEADER: return "OBU_SEQUENCE_HEADER";
-    case OBU_TEMPORAL_DELIMITER: return "OBU_TEMPORAL_DELIMITER";
-    case OBU_FRAME_HEADER: return "OBU_FRAME_HEADER";
-    case OBU_TILE_GROUP: return "OBU_TILE_GROUP";
-#if CONFIG_OBU_FRAME
-    case OBU_FRAME: return "OBU_FRAME";
-#endif
-    case OBU_METADATA: return "OBU_METADATA";
-    case OBU_PADDING: return "OBU_PADDING";
-  }
-  return "";
-}
-
 void PrintObuHeader(const ObuHeader *header) {
   printf(
       "  OBU type:        %s\n"
       "      extension:   %s\n",
-      ObuTypeToString(header->type).c_str(),
+      aom_obu_type_to_string(static_cast<OBU_TYPE>(header->type)),
       header->has_extension ? "yes" : "no");
   if (header->has_extension) {
     printf(
