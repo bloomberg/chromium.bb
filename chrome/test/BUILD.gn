@@ -1326,7 +1326,7 @@ test("browser_tests") {
 
       deps += [
         "//chrome/common/extensions/api",
-        "//chrome/test/media_router:media_router_browsertests",
+        "//chrome/test/media_router:browser_tests",
         "//components/guest_view/browser:test_support",
         "//components/keep_alive_registry",
 
