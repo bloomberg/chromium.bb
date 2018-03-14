@@ -7,8 +7,8 @@
 
 #include "components/download/public/common/download_response_handler.h"
 #include "content/browser/download/url_download_handler.h"
-#include "content/public/browser/ssl_status.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -32,7 +32,8 @@ class ResourceDownloader : public UrlDownloadHandler,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       uint32_t download_id,
-      bool is_parallel_request);
+      bool is_parallel_request,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Create a ResourceDownloader from a navigation that turns to be a download.
   // No URLLoader is created, but the URLLoaderClient implementation is
@@ -46,16 +47,19 @@ class ResourceDownloader : public UrlDownloadHandler,
       const base::Optional<std::string>& suggested_filename,
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  ResourceDownloader(base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-                     std::unique_ptr<network::ResourceRequest> resource_request,
-                     int render_process_id,
-                     int render_frame_id,
-                     const GURL& site_url,
-                     const GURL& tab_url,
-                     const GURL& tab_referrer_url,
-                     uint32_t download_id);
+  ResourceDownloader(
+      base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
+      std::unique_ptr<network::ResourceRequest> resource_request,
+      int render_process_id,
+      int render_frame_id,
+      const GURL& site_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
+      uint32_t download_id,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~ResourceDownloader() override;
 
   // download::DownloadResponseHandler::Delegate
@@ -119,6 +123,9 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // URLLoader status when intercepting the navigation request.
   base::Optional<network::URLLoaderCompletionStatus> url_loader_status_;
+
+  // TaskRunner to post callbacks to the |delegate_|
+  scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 

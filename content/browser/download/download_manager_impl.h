@@ -257,7 +257,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::Optional<std::string>& suggested_filename,
       scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Factory for creation of downloads items.
   std::unique_ptr<DownloadItemFactory> item_factory_;

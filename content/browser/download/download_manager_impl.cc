@@ -202,7 +202,8 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     base::WeakPtr<DownloadManagerImpl> download_manager,
     const GURL& site_url,
     const GURL& tab_url,
-    const GURL& tab_referrer_url) {
+    const GURL& tab_referrer_url,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check if the renderer is permitted to request the requested URL.
@@ -235,7 +236,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
           std::move(shared_url_loader_factory), site_url, tab_url,
-          tab_referrer_url, download_id, false)
+          tab_referrer_url, download_id, false, task_runner)
           .release());
 }
 
@@ -1159,7 +1160,8 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
                      render_process_id, render_frame_id, std::move(url_chain),
                      suggested_filename, std::move(response),
                      std::move(cert_status),
-                     std::move(url_loader_client_endpoints)));
+                     std::move(url_loader_client_endpoints),
+                     base::MessageLoop::current()->task_runner()));
 }
 
 // static
@@ -1172,7 +1174,8 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     const base::Optional<std::string>& suggested_filename,
     scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<ResourceDownloader> resource_downloader =
@@ -1180,7 +1183,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
           download_manager, std::move(resource_request), render_process_id,
           render_frame_id, std::move(url_chain), suggested_filename,
           std::move(response), std::move(cert_status),
-          std::move(url_loader_client_endpoints));
+          std::move(url_loader_client_endpoints), task_runner);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -1220,7 +1223,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
                        std::move(request), std::move(blob_data_handle),
                        storage_partition->url_loader_factory_getter(), id,
                        weak_factory_.GetWeakPtr(), site_url, tab_url,
-                       tab_referrer_url),
+                       tab_referrer_url,
+                       base::MessageLoop::current()->task_runner()),
         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                        weak_factory_.GetWeakPtr()));
   } else {
