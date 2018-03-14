@@ -108,8 +108,6 @@ INSTANTIATE_TEST_CASE_P(All,
 
 #define CHECK_SOURCE_TO_DESTINATION_PROJECTION()                  \
   do {                                                            \
-    if (ancestor_state.Transform() == local_state.Transform())    \
-      break;                                                      \
     SCOPED_TRACE("Check SourceToDestinationProjection");          \
     const auto& actual_transform_to_ancestor =                    \
         GeometryMapper::SourceToDestinationProjection(            \
@@ -117,16 +115,22 @@ INSTANTIATE_TEST_CASE_P(All,
     EXPECT_EQ(expected_transform, actual_transform_to_ancestor);  \
   } while (false)
 
-#define CHECK_CACHED_CLIP()                                \
-  do {                                                     \
-    if (ancestor_state.Clip() == local_state.Clip() ||     \
-        ancestor_state.Effect() != local_state.Effect())   \
-      break;                                               \
-    SCOPED_TRACE("Check cached clip");                     \
-    const auto* cached_clip =                              \
-        GetCachedClip(local_state.Clip(), ancestor_state); \
-    DCHECK(cached_clip);                                   \
-    EXPECT_CLIP_RECT_EQ(expected_clip, *cached_clip);      \
+#define CHECK_CACHED_CLIP()                                       \
+  do {                                                            \
+    if (ancestor_state.Effect() != local_state.Effect())          \
+      break;                                                      \
+    SCOPED_TRACE("Check cached clip");                            \
+    const auto* cached_clip =                                     \
+        GetCachedClip(local_state.Clip(), ancestor_state);        \
+    if (ancestor_state.Clip() == local_state.Clip() ||            \
+        (ancestor_state.Clip() == local_state.Clip()->Parent() && \
+         ancestor_state.Transform() ==                            \
+             local_state.Clip()->LocalTransformSpace())) {        \
+      EXPECT_EQ(nullptr, cached_clip);                            \
+      break;                                                      \
+    }                                                             \
+    ASSERT_NE(nullptr, cached_clip);                              \
+    EXPECT_CLIP_RECT_EQ(expected_clip, *cached_clip);             \
   } while (false)
 
 // See the data fields of GeometryMapperTest for variables that will be used in

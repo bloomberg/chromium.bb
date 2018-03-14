@@ -258,18 +258,32 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   return result;
 }
 
+static const FloatRoundedRect& GetClipRect(
+    const ClipPaintPropertyNode* clip_node,
+    OverlayScrollbarClipBehavior clip_behavior) {
+  return UNLIKELY(clip_behavior == kExcludeOverlayScrollbarSizeForHitTesting)
+             ? clip_node->ClipRectExcludingOverlayScrollbars()
+             : clip_node->ClipRect();
+}
+
 FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     const ClipPaintPropertyNode* descendant,
     const ClipPaintPropertyNode* ancestor_clip,
     const TransformPaintPropertyNode* ancestor_transform,
     OverlayScrollbarClipBehavior clip_behavior,
     bool& success) {
-  FloatClipRect clip;
   if (descendant == ancestor_clip) {
     success = true;
     return FloatClipRect();
   }
 
+  if (descendant->Parent() == ancestor_clip &&
+      descendant->LocalTransformSpace() == ancestor_transform) {
+    success = true;
+    return FloatClipRect(GetClipRect(descendant, clip_behavior));
+  }
+
+  FloatClipRect clip;
   const ClipPaintPropertyNode* clip_node = descendant;
   Vector<const ClipPaintPropertyNode*> intermediate_nodes;
 
@@ -317,10 +331,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
 
     // This is where we generate the roundedness and tightness of clip rect
     // from clip and transform properties, and propagate them to |clip|.
-    FloatClipRect mapped_rect(clip_behavior ==
-                                      kExcludeOverlayScrollbarSizeForHitTesting
-                                  ? (*it)->ClipRectExcludingOverlayScrollbars()
-                                  : (*it)->ClipRect());
+    FloatClipRect mapped_rect(GetClipRect((*it), clip_behavior));
     mapped_rect.Map(transform_matrix);
     clip.Intersect(mapped_rect);
 
