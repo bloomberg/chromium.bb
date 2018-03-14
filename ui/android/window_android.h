@@ -88,9 +88,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   // Return whether the specified Android permission can be requested by Chrome.
   bool CanRequestPermission(const std::string& permission);
 
-  float mouse_wheel_tick_multiplier() const {
-    return mouse_wheel_tick_multiplier_;
-  }
+  float mouse_wheel_scroll_factor() const { return mouse_wheel_scroll_factor_; }
 
   static WindowAndroid* CreateForTesting();
 
@@ -120,7 +118,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   std::unique_ptr<WindowBeginFrameSource> begin_frame_source_;
   bool needs_begin_frames_;
   std::list<base::Closure> vsync_complete_callbacks_;
-  float mouse_wheel_tick_multiplier_;
+  float mouse_wheel_scroll_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

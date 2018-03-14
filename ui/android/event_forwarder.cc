@@ -143,8 +143,9 @@ void EventForwarder::OnMouseWheelEvent(JNIEnv* env,
       0, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */, 0.0f, 0.0f, 0);
 
   auto* window = view_->GetWindowAndroid();
-  float pixels_per_tick = window ? window->mouse_wheel_tick_multiplier()
-                                 : kDefaultMouseWheelTickMultiplier;
+  float pixels_per_tick =
+      window ? window->mouse_wheel_scroll_factor()
+             : kDefaultMouseWheelTickMultiplier * view_->GetDipScale();
   ui::MotionEventAndroid event(
       env, nullptr, 1.f / view_->GetDipScale(), ticks_x, ticks_y,
       pixels_per_tick, time_ms, 0 /* action */, 1 /* pointer_count */,
