@@ -25,12 +25,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
@@ -290,7 +290,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
 }
 
 class MockDownloadFileFactory
-    : public DownloadFileFactory,
+    : public download::DownloadFileFactory,
       public base::SupportsWeakPtr<MockDownloadFileFactory> {
  public:
   MockDownloadFileFactory() {}
@@ -301,7 +301,7 @@ class MockDownloadFileFactory
                MockDownloadFile*(const download::DownloadSaveInfo&,
                                  download::InputStream*));
 
-  DownloadFile* CreateFile(
+  download::DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<download::InputStream> stream,
@@ -424,7 +424,7 @@ class DownloadManagerTest : public testing::Test {
         std::unique_ptr<DownloadItemFactory>(
             mock_download_item_factory_.get()));
     download_manager_->SetDownloadFileFactoryForTesting(
-        std::unique_ptr<DownloadFileFactory>(
+        std::unique_ptr<download::DownloadFileFactory>(
             mock_download_file_factory_.get()));
     observer_.reset(new MockDownloadManagerObserver());
     download_manager_->AddObserver(observer_.get());
@@ -468,7 +468,8 @@ class DownloadManagerTest : public testing::Test {
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle;
-    item.Start(std::unique_ptr<DownloadFile>(), std::move(req_handle), info);
+    item.Start(std::unique_ptr<download::DownloadFile>(), std::move(req_handle),
+               info);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 

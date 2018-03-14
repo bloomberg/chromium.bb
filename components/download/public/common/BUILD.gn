@@ -23,6 +23,9 @@ component("public") {
     "download_destination_observer.h",
     "download_features.cc",
     "download_features.h",
+    "download_file.h",
+    "download_file_factory.h",
+    "download_file_impl.h",
     "download_interrupt_reason_values.h",
     "download_interrupt_reasons.h",
     "download_interrupt_reasons_utils.h",
@@ -40,6 +43,7 @@ component("public") {
     "download_utils.h",
     "input_stream.cc",
     "input_stream.h",
+    "parallel_download_utils.h",
     "rate_estimator.h",
     "resume_mode.h",
     "stream_handle_input_stream.h",
@@ -95,4 +99,19 @@ mojom("interfaces") {
   export_class_attribute = "COMPONENTS_DOWNLOAD_EXPORT"
   export_define = "COMPONENTS_DOWNLOAD_IMPLEMENTATION=1"
   export_header = "components/download/public/common/download_export.h"
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_input_stream.cc",
+    "mock_input_stream.h",
+  ]
+
+  public_deps = [
+    ":public",
+    "//base",
+    "//testing/gmock",
+  ]
 }

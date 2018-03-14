@@ -26,9 +26,12 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
+namespace download {
+class DownloadFile;
+}  // namespace download
+
 namespace content {
 class BrowserContext;
-class DownloadFile;
 class DownloadItemImplDelegate;
 class DownloadJob;
 class WebContents;
@@ -293,7 +296,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // the download::DownloadItem if Start() is being called in response for a
   // download resumption request.
   virtual void Start(
-      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<download::DownloadFile> download_file,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
       const download::DownloadCreateInfo& new_create_info);
 
@@ -726,7 +729,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // pointer may only be used or destroyed on the download sequence.
   // This pointer will be non-null only while the download::DownloadItem is in
   // the IN_PROGRESS state.
-  std::unique_ptr<DownloadFile> download_file_;
+  std::unique_ptr<download::DownloadFile> download_file_;
 
   // Information about |download_file_|.
   DestinationInfo destination_info_;

@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_request_handle_interface.h"
-#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -50,14 +50,15 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   }
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   void Start(
-      std::unique_ptr<DownloadFile> download_file,
+      std::unique_ptr<download::DownloadFile> download_file,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
       const download::DownloadCreateInfo& create_info) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
   MOCK_METHOD2(MockStart,
-               void(DownloadFile*, download::DownloadRequestHandleInterface*));
+               void(download::DownloadFile*,
+                    download::DownloadRequestHandleInterface*));
 
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));

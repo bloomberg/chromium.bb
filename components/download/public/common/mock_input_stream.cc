@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/mock_input_stream.h"
+#include "components/download/public/common/mock_input_stream.h"
 
-namespace content {
+namespace download {
 
 MockInputStream::MockInputStream() = default;
 
 MockInputStream::~MockInputStream() = default;
 
-}  // namespace content
+}  // namespace download

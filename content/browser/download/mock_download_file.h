@@ -14,16 +14,16 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "components/download/public/common/download_file.h"
 #include "components/download/public/common/input_stream.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_file.h"
 #include "content/public/browser/download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class MockDownloadFile : public DownloadFile {
+class MockDownloadFile : public download::DownloadFile {
  public:
   MockDownloadFile();
   virtual ~MockDownloadFile();

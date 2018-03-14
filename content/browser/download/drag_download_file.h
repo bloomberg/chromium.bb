@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/download/public/common/download_item.h"
-#include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/referrer.h"

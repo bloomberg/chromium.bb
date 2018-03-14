@@ -33,11 +33,11 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace download {
+class DownloadFileFactory;
 class DownloadRequestHandleInterface;
 }
 
 namespace content {
-class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
 class ResourceContext;
@@ -139,8 +139,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void SetDownloadItemFactoryForTesting(
       std::unique_ptr<DownloadItemFactory> item_factory);
   void SetDownloadFileFactoryForTesting(
-      std::unique_ptr<DownloadFileFactory> file_factory);
-  virtual DownloadFileFactory* GetDownloadFileFactoryForTesting();
+      std::unique_ptr<download::DownloadFileFactory> file_factory);
+  virtual download::DownloadFileFactory* GetDownloadFileFactoryForTesting();
 
   // Helper function to initiate a download request. This function initiates
   // the download using functionality provided by the
@@ -264,7 +264,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   std::unique_ptr<DownloadItemFactory> item_factory_;
 
   // Factory for the creation of download files.
-  std::unique_ptr<DownloadFileFactory> file_factory_;
+  std::unique_ptr<download::DownloadFileFactory> file_factory_;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in

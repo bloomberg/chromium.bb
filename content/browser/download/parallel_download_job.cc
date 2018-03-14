@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_stats.h"
+#include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/storage_partition_impl.h"
@@ -41,7 +42,7 @@ ParallelDownloadJob::ParallelDownloadJob(
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
 void ParallelDownloadJob::OnDownloadFileInitialized(
-    DownloadFile::InitializeCallback callback,
+    download::DownloadFile::InitializeCallback callback,
     download::DownloadInterruptReason result,
     int64_t bytes_wasted) {
   DownloadJobImpl::OnDownloadFileInitialized(std::move(callback), result,
@@ -156,7 +157,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
   const download::DownloadItem::ReceivedSlices& received_slices =
       download_item_->GetReceivedSlices();
   download::DownloadItem::ReceivedSlices slices_to_download =
-      FindSlicesToDownload(received_slices);
+      download::FindSlicesToDownload(received_slices);
 
   DCHECK(!slices_to_download.empty());
   int64_t first_slice_offset = slices_to_download[0].offset;
@@ -220,7 +221,7 @@ void ParallelDownloadJob::ForkSubRequests(
   // request for this hole.
   bool skip_first_slice = true;
   download::DownloadItem::ReceivedSlices initial_slices_to_download =
-      FindSlicesToDownload(initial_received_slices_);
+      download::FindSlicesToDownload(initial_received_slices_);
   if (initial_slices_to_download.size() > 1) {
     DCHECK_EQ(initial_request_offset_, initial_slices_to_download[0].offset);
     int64_t first_hole_max = initial_slices_to_download[0].offset +

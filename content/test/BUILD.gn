@@ -50,8 +50,6 @@ jumbo_static_library("test_support") {
     "../browser/download/mock_download_item_impl.h",
     "../browser/download/mock_download_job.cc",
     "../browser/download/mock_download_job.h",
-    "../browser/download/mock_input_stream.cc",
-    "../browser/download/mock_input_stream.h",
     "../browser/media/session/mock_media_session_observer.cc",
     "../browser/media/session/mock_media_session_observer.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",
@@ -281,6 +279,7 @@ jumbo_static_library("test_support") {
   ]
 
   public_deps = [
+    "//components/download/public/common:test_support",
     "//components/variations:test_support",
     "//content/public/app:both",
     "//content/public/browser",
@@ -298,7 +297,6 @@ jumbo_static_library("test_support") {
     "//cc:test_support",
     "//cc/blink",
     "//cc/ipc",
-    "//components/download/public/common:public",
     "//components/services/leveldb/public/interfaces",
     "//components/viz/host",
     "//components/viz/service",
@@ -1262,7 +1260,6 @@ test("content_unittests") {
     "../browser/dom_storage/dom_storage_database_unittest.cc",
     "../browser/dom_storage/local_storage_context_mojo_unittest.cc",
     "../browser/dom_storage/session_storage_database_unittest.cc",
-    "../browser/download/download_file_unittest.cc",
     "../browser/download/download_item_impl_unittest.cc",
     "../browser/download/download_job_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",

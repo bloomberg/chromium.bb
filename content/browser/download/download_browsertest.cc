@@ -33,9 +33,9 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_features.h"
+#include "components/download/public/common/download_file_factory.h"
+#include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "content/browser/download/download_file_factory.h"
-#include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -165,7 +165,7 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
           shell->web_contents()->GetBrowserContext()));
 }
 
-class DownloadFileWithDelay : public DownloadFileImpl {
+class DownloadFileWithDelay : public download::DownloadFileImpl {
  public:
   DownloadFileWithDelay(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
@@ -206,13 +206,13 @@ class DownloadFileWithDelay : public DownloadFileImpl {
 };
 
 // All routines on this class must be called on the UI thread.
-class DownloadFileWithDelayFactory : public DownloadFileFactory {
+class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
  public:
   DownloadFileWithDelayFactory();
   ~DownloadFileWithDelayFactory() override;
 
   // DownloadFileFactory interface.
-  DownloadFile* CreateFile(
+  download::DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<download::InputStream> stream,
@@ -240,11 +240,11 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     uint32_t download_id,
     base::WeakPtr<download::DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
-    : DownloadFileImpl(std::move(save_info),
-                       default_download_directory,
-                       std::move(stream),
-                       download_id,
-                       observer),
+    : download::DownloadFileImpl(std::move(save_info),
+                                 default_download_directory,
+                                 std::move(stream),
+                                 download_id,
+                                 observer),
       owner_(owner) {}
 
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
@@ -253,7 +253,7 @@ void DownloadFileWithDelay::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-  DownloadFileImpl::RenameAndUniquify(
+  download::DownloadFileImpl::RenameAndUniquify(
       full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
                             owner_, callback));
 }
@@ -265,13 +265,10 @@ void DownloadFileWithDelay::RenameAndAnnotate(
     const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-  DownloadFileImpl::RenameAndAnnotate(
-      full_path,
-      client_guid,
-      source_url,
-      referrer_url,
-      base::Bind(
-          DownloadFileWithDelay::RenameCallbackWrapper, owner_, callback));
+  download::DownloadFileImpl::RenameAndAnnotate(
+      full_path, client_guid, source_url, referrer_url,
+      base::Bind(DownloadFileWithDelay::RenameCallbackWrapper, owner_,
+                 callback));
 }
 
 // static
@@ -292,7 +289,7 @@ DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
 
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
-DownloadFile* DownloadFileWithDelayFactory::CreateFile(
+download::DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<download::DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<download::InputStream> stream,
@@ -326,7 +323,7 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
   }
 }
 
-class CountingDownloadFile : public DownloadFileImpl {
+class CountingDownloadFile : public download::DownloadFileImpl {
  public:
   CountingDownloadFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
@@ -334,11 +331,11 @@ class CountingDownloadFile : public DownloadFileImpl {
       std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
       base::WeakPtr<download::DownloadDestinationObserver> observer)
-      : DownloadFileImpl(std::move(save_info),
-                         default_downloads_directory,
-                         std::move(stream),
-                         download_id,
-                         observer) {}
+      : download::DownloadFileImpl(std::move(save_info),
+                                   default_downloads_directory,
+                                   std::move(stream),
+                                   download_id,
+                                   observer) {}
 
   ~CountingDownloadFile() override {
     DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
@@ -351,8 +348,8 @@ class CountingDownloadFile : public DownloadFileImpl {
                   bool is_parallelizable) override {
     DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
-    DownloadFileImpl::Initialize(callback, cancel_request_callback,
-                                 received_slices, is_parallelizable);
+    download::DownloadFileImpl::Initialize(callback, cancel_request_callback,
+                                           received_slices, is_parallelizable);
   }
 
   static void GetNumberActiveFiles(int* result) {
@@ -379,13 +376,13 @@ class CountingDownloadFile : public DownloadFileImpl {
 
 int CountingDownloadFile::active_files_ = 0;
 
-class CountingDownloadFileFactory : public DownloadFileFactory {
+class CountingDownloadFileFactory : public download::DownloadFileFactory {
  public:
   CountingDownloadFileFactory() {}
   ~CountingDownloadFileFactory() override {}
 
   // DownloadFileFactory interface.
-  DownloadFile* CreateFile(
+  download::DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<download::InputStream> stream,
@@ -397,7 +394,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   }
 };
 
-class ErrorInjectionDownloadFile : public DownloadFileImpl {
+class ErrorInjectionDownloadFile : public download::DownloadFileImpl {
  public:
   ErrorInjectionDownloadFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
@@ -407,11 +404,11 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       int64_t error_stream_offset,
       int64_t error_stream_length)
-      : DownloadFileImpl(std::move(save_info),
-                         default_downloads_directory,
-                         std::move(stream),
-                         download_id,
-                         observer),
+      : download::DownloadFileImpl(std::move(save_info),
+                                   default_downloads_directory,
+                                   std::move(stream),
+                                   download_id,
+                                   observer),
         error_stream_offset_(error_stream_offset),
         error_stream_length_(error_stream_length) {}
 
@@ -429,7 +426,8 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
         source_stream->bytes_written() >= error_stream_length_) {
       return download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
     }
-    return DownloadFileImpl::HandleStreamCompletionStatus(source_stream);
+    return download::DownloadFileImpl::HandleStreamCompletionStatus(
+        source_stream);
   }
 
  private:
@@ -439,14 +437,14 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
 
 // Factory for creating download files that allow error injection. All routines
 // on this class must be called on the UI thread.
-class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
+class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
  public:
   ErrorInjectionDownloadFileFactory()
       : download_file_(nullptr), weak_ptr_factory_(this) {}
   ~ErrorInjectionDownloadFileFactory() override = default;
 
   // DownloadFileFactory interface.
-  DownloadFile* CreateFile(
+  download::DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<download::InputStream> stream,
@@ -788,7 +786,7 @@ class DownloadContentTest : public ContentBrowserTest {
   // Note: Cannot be used with other alternative DownloadFileFactorys
   void SetupEnsureNoPendingDownloads() {
     DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
-        std::unique_ptr<DownloadFileFactory>(
+        std::unique_ptr<download::DownloadFileFactory>(
             new CountingDownloadFileFactory()));
   }
 
@@ -1149,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
       new DownloadFileWithDelayFactory();
   DownloadManagerImpl* download_manager(DownloadManagerForShell(shell()));
   download_manager->SetDownloadFileFactoryForTesting(
-      std::unique_ptr<DownloadFileFactory>(file_factory));
+      std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),
@@ -1198,7 +1196,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   download_manager->SetDownloadFileFactoryForTesting(
-      std::unique_ptr<DownloadFileFactory>(file_factory));
+      std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),
@@ -1306,7 +1304,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   download_manager->SetDownloadFileFactoryForTesting(
-      std::unique_ptr<DownloadFileFactory>(file_factory));
+      std::unique_ptr<download::DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),

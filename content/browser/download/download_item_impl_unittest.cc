@@ -25,11 +25,11 @@
 #include "base/threading/thread.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
+#include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/browser_thread.h"
@@ -304,7 +304,7 @@ class DownloadItemTest : public testing::Test {
   MockDownloadFile* CallDownloadItemStart(DownloadItemImpl* item,
                                           DownloadTargetCallback* callback) {
     MockDownloadFile* mock_download_file = nullptr;
-    std::unique_ptr<DownloadFile> download_file;
+    std::unique_ptr<download::DownloadFile> download_file;
     EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
         .WillOnce(SaveArg<1>(callback));
 
@@ -610,7 +610,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   DownloadItemImpl* item = CreateDownloadItem();
   TestDownloadItemObserver observer(item);
   MockDownloadFile* mock_download_file(new MockDownloadFile);
-  std::unique_ptr<DownloadFile> download_file(mock_download_file);
+  std::unique_ptr<download::DownloadFile> download_file(mock_download_file);
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
 
@@ -1161,7 +1161,7 @@ TEST_F(DownloadItemTest, DisplayName) {
 // Test to make sure that Start method calls DF initialize properly.
 TEST_F(DownloadItemTest, Start) {
   MockDownloadFile* mock_download_file(new MockDownloadFile);
-  std::unique_ptr<DownloadFile> download_file(mock_download_file);
+  std::unique_ptr<download::DownloadFile> download_file(mock_download_file);
   DownloadItemImpl* item = CreateDownloadItem();
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
@@ -1225,7 +1225,7 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
 
   // DownloadFile and DownloadRequestHandleInterface objects aren't created for
   // failed downloads.
-  std::unique_ptr<DownloadFile> null_download_file;
+  std::unique_ptr<download::DownloadFile> null_download_file;
   std::unique_ptr<download::DownloadRequestHandleInterface> null_request_handle;
   DownloadTargetCallback download_target_callback;
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
@@ -2295,7 +2295,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   EXPECT_CALL(*file_, Cancel());
   EXPECT_CALL(*request_handle_, CancelRequest(_));
 
-  DownloadFile::InitializeCallback initialize_callback;
+  download::DownloadFile::InitializeCallback initialize_callback;
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
   item_->Start(std::move(file_), std::move(request_handle_), *create_info());
@@ -2337,11 +2337,11 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   // Intermediate rename loop is not used immediately, but let's set up the
   // DownloadFile expectations since we are about to transfer its ownership to
   // the download::DownloadItem.
-  DownloadFile::RenameCompletionCallback intermediate_rename_callback;
+  download::DownloadFile::RenameCompletionCallback intermediate_rename_callback;
   EXPECT_CALL(*file_, RenameAndUniquify(_, _))
       .WillOnce(SaveArg<1>(&intermediate_rename_callback));
 
-  DownloadFile::InitializeCallback initialize_callback;
+  download::DownloadFile::InitializeCallback initialize_callback;
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
 
@@ -2401,11 +2401,11 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   // Intermediate rename loop is not used immediately, but let's set up the
   // DownloadFile expectations since we are about to transfer its ownership to
   // the download::DownloadItem.
-  DownloadFile::RenameCompletionCallback intermediate_rename_callback;
+  download::DownloadFile::RenameCompletionCallback intermediate_rename_callback;
   EXPECT_CALL(*file_, RenameAndUniquify(_, _))
       .WillOnce(SaveArg<1>(&intermediate_rename_callback));
 
-  DownloadFile::InitializeCallback initialize_callback;
+  download::DownloadFile::InitializeCallback initialize_callback;
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
 
