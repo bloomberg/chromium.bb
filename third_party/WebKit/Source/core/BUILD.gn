@@ -888,7 +888,6 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/webkit_box_direction.h",
     "$blink_core_output_dir/css/properties/longhands/webkit_box_flex.h",
     "$blink_core_output_dir/css/properties/longhands/webkit_box_flex_group.h",
-    "$blink_core_output_dir/css/properties/longhands/webkit_box_lines.h",
     "$blink_core_output_dir/css/properties/longhands/webkit_box_ordinal_group.h",
     "$blink_core_output_dir/css/properties/longhands/webkit_box_orient.h",
     "$blink_core_output_dir/css/properties/longhands/webkit_box_pack.h",
