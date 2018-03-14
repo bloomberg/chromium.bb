@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
 #include "media/base/video_decoder.h"
@@ -49,7 +51,8 @@ class MEDIA_EXPORT GpuMemoryBufferDecoderWrapper : public VideoDecoder {
   int GetMaxDecodeRequests() const override;  // Returns |decoder_| value.
 
  private:
-  void OnDecodedEOS(const DecodeCB& decode_cb, DecodeStatus status);
+  void MaybeStartNextDecode();
+  void OnDecodeComplete(DecodeStatus status);
   void OnOutputReady(const OutputCB& output_cb,
                      const scoped_refptr<VideoFrame>& frame);
   void OnFrameCopied(const OutputCB& output_cb,
@@ -67,11 +70,28 @@ class MEDIA_EXPORT GpuMemoryBufferDecoderWrapper : public VideoDecoder {
   // seeking performance.
   bool abort_copies_ = false;
 
-  // These two variables are used to track and trigger the final end of stream
-  // notification once all copies are complete. Cleared by Reset(), set by
-  // Decode() when an end of stream buffer is received.
+  // Count of outstanding copies; used to moderate resource usage and trigger
+  // the final end of stream notification once all copies are complete. Cleared
+  // by Reset(), set by OnOutputReady() when a frame is received.
   uint32_t pending_copies_ = 0u;
-  base::OnceClosure eos_decode_cb_;
+
+  // Cached status of the last OnDecodeComplete call. Used by OnFrameCopied when
+  // all pending copies have been completed.
+  base::Optional<DecodeStatus> eos_status_;
+
+  // Ensures that we don't exceed GetMaxDecodeRequests() in copies and decodes
+  // outstanding. Avoids supersaturating |decoder_| if copies slow down. The
+  // |pending_decodes_| deque is unscheduled Decode() calls, while the
+  // |active_decodes_| deque is scheduled but unreturned Decode() calls.
+  struct PendingDecode {
+    PendingDecode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
+    PendingDecode(PendingDecode&& pending_decode);
+    ~PendingDecode();
+    scoped_refptr<DecoderBuffer> buffer;
+    DecodeCB decode_cb;
+  };
+  base::circular_deque<PendingDecode> pending_decodes_;
+  base::circular_deque<PendingDecode> active_decodes_;
 
   base::WeakPtrFactory<GpuMemoryBufferDecoderWrapper> weak_factory_;
 

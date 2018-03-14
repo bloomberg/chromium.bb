@@ -6,10 +6,24 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 
 namespace media {
+
+GpuMemoryBufferDecoderWrapper::PendingDecode::PendingDecode(
+    scoped_refptr<DecoderBuffer> buffer,
+    DecodeCB decode_cb)
+    : buffer(std::move(buffer)), decode_cb(std::move(decode_cb)) {}
+
+GpuMemoryBufferDecoderWrapper::PendingDecode::PendingDecode(
+    PendingDecode&& pending_decode) = default;
+
+GpuMemoryBufferDecoderWrapper::PendingDecode::~PendingDecode() {
+  if (decode_cb)
+    decode_cb.Run(DecodeStatus::ABORTED);
+}
 
 GpuMemoryBufferDecoderWrapper::GpuMemoryBufferDecoderWrapper(
     std::unique_ptr<GpuMemoryBufferVideoFramePool> gmb_pool,
@@ -40,8 +54,9 @@ void GpuMemoryBufferDecoderWrapper::Initialize(
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(eos_decode_cb_.is_null());
   DCHECK_EQ(pending_copies_, 0u);
+  DCHECK(pending_decodes_.empty());
+  DCHECK(!eos_status_);
 
   // Follow the standard Initialize() path, but replace the OutputCB provided
   // with our own which handles coping to the GpuMemoryBuffer.
@@ -56,21 +71,14 @@ void GpuMemoryBufferDecoderWrapper::Decode(
     const scoped_refptr<DecoderBuffer>& buffer,
     const DecodeCB& decode_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(eos_decode_cb_.is_null());
+  DCHECK(!eos_status_);
 
   // It's now okay to start copying outputs again if Reset() disabled them.
   abort_copies_ = false;
 
-  // End of stream is a special case where we need to intercept the DecodeCB and
-  // wait until all copies are done before triggering it.
-  if (buffer->end_of_stream()) {
-    decoder_->Decode(buffer, base::BindRepeating(
-                                 &GpuMemoryBufferDecoderWrapper::OnDecodedEOS,
-                                 weak_factory_.GetWeakPtr(), decode_cb));
-    return;
-  }
-
-  decoder_->Decode(buffer, decode_cb);
+  // Don't start too many decodes if copies are taking too long...
+  pending_decodes_.emplace_back(buffer, decode_cb);
+  MaybeStartNextDecode();
 }
 
 void GpuMemoryBufferDecoderWrapper::Reset(const base::Closure& reset_cb) {
@@ -82,15 +90,12 @@ void GpuMemoryBufferDecoderWrapper::Reset(const base::Closure& reset_cb) {
   abort_copies_ = true;
   pending_copies_ = 0u;
   copy_factory_.InvalidateWeakPtrs();
+  eos_status_.reset();
 
-  // In case OnDecodedEOS() was called, but we have pending copies, we need to
-  // issue the |eos_decode_cb_| here since we're aborting any subsequent copies
-  // or OnOutputReady calls.
-  //
-  // Technically the status here should be ABORTED, but it doesn't matter and
-  // avoids adding yet another state variable to this already completed process.
-  if (!eos_decode_cb_.is_null())
-    std::move(eos_decode_cb_).Run();
+  // Abort any outstanding decodes. The order here is important so that we
+  // return them in the scheduled order.
+  active_decodes_.clear();
+  pending_decodes_.clear();
 
   decoder_->Reset(reset_cb);
 }
@@ -100,45 +105,92 @@ int GpuMemoryBufferDecoderWrapper::GetMaxDecodeRequests() const {
   return decoder_->GetMaxDecodeRequests();
 }
 
-void GpuMemoryBufferDecoderWrapper::OnDecodedEOS(const DecodeCB& decode_cb,
-                                                 DecodeStatus status) {
+void GpuMemoryBufferDecoderWrapper::MaybeStartNextDecode() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(eos_decode_cb_.is_null());
+
+  if (pending_decodes_.empty())
+    return;
+
+  // Never allow more decodes than the decoder specifies. Callers are required
+  // to guarantee that they never exceed GetMaxDecodeRequests().
+  const size_t max_decodes = GetMaxDecodeRequests();
+  DCHECK_LE(active_decodes_.size(), max_decodes);
+  if (active_decodes_.size() == max_decodes)
+    return;
+
+  // Defer decoding if the number of pending copies exceeds the maximum number
+  // of decodes; this ensures that if the decoder is fast but copies are slow,
+  // we don't accumulate massive amounts of uncopied frames.
+  //
+  // E.g., when GetMaxDecodeRequests() == 1, this allows another decode if there
+  // is at most 1 copy outstanding. When GMDR() == 2, this allows another decode
+  // if there are at most 2 copies outstanding.
+  if (pending_copies_ > max_decodes)
+    return;
+
+  active_decodes_.emplace_back(std::move(pending_decodes_.front()));
+  pending_decodes_.pop_front();
+
+  decoder_->Decode(
+      active_decodes_.back().buffer,
+      base::BindRepeating(&GpuMemoryBufferDecoderWrapper::OnDecodeComplete,
+                          weak_factory_.GetWeakPtr()));
+}
+
+void GpuMemoryBufferDecoderWrapper::OnDecodeComplete(DecodeStatus status) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!eos_status_);
 
   // If Reset() was called after Decode() but before this callback, we should
-  // return ABORTED for the decode callback. Any pending outputs or copies will
-  // have been aborted by Reset().
+  // do nothing. Our DecodeCB already returned ABORTED during Reset().
   if (abort_copies_) {
     DCHECK_EQ(pending_copies_, 0u);
-    decode_cb.Run(DecodeStatus::ABORTED);
+    DCHECK(pending_decodes_.empty());
+    DCHECK(active_decodes_.empty());
     return;
   }
+
+  DCHECK(!active_decodes_.empty());
+
+  // If this isn't an end of stream, return the decode status and try to
+  // schedule another decode.
+  if (!active_decodes_.front().buffer->end_of_stream()) {
+    // Move the PendingDecode operation into a stack variable and start the next
+    // decode before invoking the DecodeCB since that call may invoke other
+    // operations on this class.
+    PendingDecode pd(std::move(active_decodes_.front()));
+    active_decodes_.pop_front();
+    MaybeStartNextDecode();
+
+    base::ResetAndReturn(&pd.decode_cb).Run(status);
+    return;
+  }
+
+  // We must now be handling an end of stream.
+  DCHECK(pending_decodes_.empty());
+  DCHECK_EQ(active_decodes_.size(), 1u);
 
   // If all copies have finished we can return the status immediately. The
   // VideoDecoder API guarantees that this function won't be called until
   // _after_ all outputs have been sent to OnOutputReady().
   if (!pending_copies_) {
-    decode_cb.Run(status);
+    // Move the PendingDecode operation into a stack variable since the call to
+    // the DecodeCB may invoke other operations on this class.
+    PendingDecode pd(std::move(active_decodes_.front()));
+    active_decodes_.clear();
+    base::ResetAndReturn(&pd.decode_cb).Run(status);
     return;
   }
 
   // Normal case, we have copies to wait for before issuing the DecodeCB. We
-  // must ensure this callback is not fired until copies complete.
-  //
-  // It's crucial we set |eos_decode_cb_| only after signaled by the underlying
-  // decoder and not during Decode() itself, otherwise it's possible that
-  // |pending_copies_| will reach zero for previously started copies and notify
-  // the end of stream before we actually vend all frames.
-  eos_decode_cb_ = base::BindOnce(decode_cb, status);
+  // must ensure the callback is not fired until copies complete.
+  eos_status_ = status;
 }
 
 void GpuMemoryBufferDecoderWrapper::OnOutputReady(
     const OutputCB& output_cb,
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // This should not be set until after all outputs have been queued.
-  DCHECK(eos_decode_cb_.is_null());
 
   // If Reset() has been called, we shouldn't waste cycles on useless copies.
   if (abort_copies_)
@@ -159,9 +211,27 @@ void GpuMemoryBufferDecoderWrapper::OnFrameCopied(
 
   output_cb.Run(frame);
 
-  // We've finished all pending copies and should now notify the caller.
-  if (!pending_copies_ && !eos_decode_cb_.is_null())
-    std::move(eos_decode_cb_).Run();
+  // If this is an end of stream, we've finished all pending copies and should
+  // now notify the caller. Note: We must check |eos_status_| here because if
+  // the DecodeCB hasn't returned, it's not safe to destroy the DecoderBuffer
+  // it was given (since they are passed by const&...).
+  if (!pending_copies_ && eos_status_) {
+    DCHECK_EQ(active_decodes_.size(), 1u);
+    DCHECK(active_decodes_.front().buffer->end_of_stream());
+
+    // Move the PendingDecode operation and |eos_status_| values into stack
+    // variables since the call to the DecodeCB may invoke other operations on
+    // this class.
+    PendingDecode pd(std::move(active_decodes_.front()));
+    active_decodes_.clear();
+    DecodeStatus status = *eos_status_;
+    eos_status_.reset();
+
+    base::ResetAndReturn(&pd.decode_cb).Run(status);
+    return;
+  }
+
+  MaybeStartNextDecode();
 }
 
 }  // namespace media

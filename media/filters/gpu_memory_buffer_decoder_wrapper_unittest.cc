@@ -66,7 +66,7 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
     // Verify the OutputCB has been replaced with a custom one.
     ASSERT_FALSE(replaced_output_cb->Equals(output_cb));
 
-    ASSERT_FALSE(unused_cb.is_null());
+    ASSERT_TRUE(unused_cb);
   }
 
   // Verifies EOS waits for all pending copies and returns the correct final
@@ -74,6 +74,9 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
   void TestDecodeEOSPendingCopies(DecodeStatus final_status) {
     VideoDecoder::OutputCB output_cb;
     Initialize(&output_cb);
+
+    // The tests below queue multiple decodes.
+    EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(2));
 
     scoped_refptr<VideoFrame> frame_1 =
         VideoFrame::CreateBlackFrame(config_.coded_size());
@@ -135,6 +138,11 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
     std::move(frame_ready_cbs_[2]).Run();
   }
 
+  MOCK_METHOD1(OnInitDone, void(bool));
+  MOCK_METHOD1(OnDecodeDone, void(DecodeStatus));
+  MOCK_METHOD1(OnOutputReady, void(const scoped_refptr<VideoFrame>&));
+  MOCK_METHOD0(OnResetDone, void(void));
+
   const VideoDecoderConfig config_;
 
   base::TestMessageLoop message_loop_;
@@ -145,11 +153,6 @@ class GpuMemoryBufferDecoderWrapperTest : public testing::Test {
   // Owned by |gmb_decoder_|.
   testing::StrictMock<MockVideoDecoder>* decoder_;
   MockGpuMemoryBufferVideoFramePool* mock_pool_;
-
-  MOCK_METHOD1(OnInitDone, void(bool));
-  MOCK_METHOD1(OnDecodeDone, void(DecodeStatus));
-  MOCK_METHOD1(OnOutputReady, void(const scoped_refptr<VideoFrame>&));
-  MOCK_METHOD0(OnResetDone, void(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferDecoderWrapperTest);
@@ -168,7 +171,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, StaticMethods) {
 TEST_F(GpuMemoryBufferDecoderWrapperTest, InitializeReset) {
   VideoDecoder::OutputCB output_cb;
   Initialize(&output_cb);
-  EXPECT_FALSE(output_cb.is_null());
+  EXPECT_TRUE(output_cb);
 
   EXPECT_CALL(*this, OnResetDone());
   EXPECT_CALL(*decoder_, Reset(_)).WillOnce(RunCallback<0>());
@@ -178,7 +181,60 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, InitializeReset) {
 
   // Initialize should be okay to call again after Reset().
   Initialize(&output_cb);
-  EXPECT_FALSE(output_cb.is_null());
+  EXPECT_TRUE(output_cb);
+}
+
+// Verifies Initialize() can be called after EOS and Decode() works after.
+TEST_F(GpuMemoryBufferDecoderWrapperTest, InitializeAfterEOS) {
+  VideoDecoder::OutputCB output_cb;
+  Initialize(&output_cb);
+  EXPECT_TRUE(output_cb);
+
+  scoped_refptr<VideoFrame> frame =
+      VideoFrame::CreateBlackFrame(config_.coded_size());
+
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
+    EXPECT_CALL(*decoder_, Decode(_, _))
+        .WillOnce(DoAll(RunClosure(base::BindRepeating(output_cb, frame)),
+                        RunCallback<1>(DecodeStatus::OK),
+                        RunClosure(loop.QuitClosure())));
+    gmb_decoder_->Decode(
+        DecoderBuffer::CreateEOSBuffer(),
+        base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
+                            base::Unretained(this)));
+    loop.Run();
+    ASSERT_EQ(1u, frame_ready_cbs_.size());
+  }
+
+  // Verify the pool returns the frame correctly and notifies EOS.
+  EXPECT_CALL(*this, OnOutputReady(frame));
+  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK));
+  std::move(frame_ready_cbs_.front()).Run();
+  frame_ready_cbs_.clear();
+
+  // Now we should be able to intialize and decode again.
+  Initialize(&output_cb);
+
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK))
+        .WillOnce(RunClosure(loop.QuitClosure()));
+    EXPECT_CALL(*decoder_, Decode(_, _))
+        .WillOnce(DoAll(RunClosure(base::BindRepeating(output_cb, frame)),
+                        RunCallback<1>(DecodeStatus::OK)));
+    gmb_decoder_->Decode(
+        base::MakeRefCounted<DecoderBuffer>(0),
+        base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
+                            base::Unretained(this)));
+    loop.Run();
+    ASSERT_EQ(1u, frame_ready_cbs_.size());
+  }
+
+  // Verify the pool returns the frame correctly back to us.
+  EXPECT_CALL(*this, OnOutputReady(frame));
+  std::move(frame_ready_cbs_.front()).Run();
 }
 
 // Verify Decode() and OutputCB function as expected.
@@ -191,6 +247,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, Decode) {
   scoped_refptr<VideoFrame> frame =
       VideoFrame::CreateBlackFrame(config_.coded_size());
 
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
   EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK))
       .WillOnce(RunClosure(loop.QuitClosure()));
   EXPECT_CALL(*decoder_, Decode(_, _))
@@ -208,11 +265,55 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, Decode) {
   std::move(frame_ready_cbs_.front()).Run();
 }
 
+// Verify Decode() is limited by number of outstanding copies.
+TEST_F(GpuMemoryBufferDecoderWrapperTest, DecodeIsLimitedByCopies) {
+  VideoDecoder::OutputCB output_cb;
+  Initialize(&output_cb);
+
+  base::RunLoop loop;
+
+  scoped_refptr<VideoFrame> frame =
+      VideoFrame::CreateBlackFrame(config_.coded_size());
+
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
+  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK))
+      .WillOnce(RunClosure(loop.QuitClosure()));
+  EXPECT_CALL(*decoder_, Decode(_, _))
+      .WillOnce(DoAll(RunClosure(base::BindRepeating(output_cb, frame)),
+                      RunClosure(base::BindRepeating(output_cb, frame)),
+                      RunCallback<1>(DecodeStatus::OK)));
+  gmb_decoder_->Decode(
+      base::MakeRefCounted<DecoderBuffer>(0),
+      base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
+                          base::Unretained(this)));
+  loop.Run();
+  ASSERT_EQ(2u, frame_ready_cbs_.size());
+
+  // This decode should not run since there are 2 pending copies.
+  gmb_decoder_->Decode(
+      base::MakeRefCounted<DecoderBuffer>(0),
+      base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
+                          base::Unretained(this)));
+
+  // Verify the pool returns the frame correctly back to us. This should also
+  // start the next Decode().
+  EXPECT_CALL(*this, OnOutputReady(frame));
+  EXPECT_CALL(*decoder_, Decode(_, _));
+  std::move(frame_ready_cbs_.front()).Run();
+
+  // Reset to ensure we don't leave callbacks uncalled during destruction.
+  EXPECT_CALL(*mock_pool_, Abort());
+  EXPECT_CALL(*decoder_, Reset(_));
+  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::ABORTED));
+  gmb_decoder_->Reset(base::DoNothing());
+}
+
 // Verify Reset() aborts copies.
 TEST_F(GpuMemoryBufferDecoderWrapperTest, ResetAbortsCopies) {
   VideoDecoder::OutputCB output_cb;
   Initialize(&output_cb);
   EXPECT_CALL(*this, OnOutputReady(_)).Times(0);
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
 
   {
     base::RunLoop loop;
@@ -280,6 +381,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
   VideoDecoder::OutputCB output_cb;
   Initialize(&output_cb);
   EXPECT_CALL(*this, OnOutputReady(_)).Times(0);
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
 
   scoped_refptr<VideoFrame> frame_1 =
       VideoFrame::CreateBlackFrame(config_.coded_size());
@@ -305,16 +407,14 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
   testing::InSequence verify_order;
 
   base::RunLoop loop;
-  EXPECT_CALL(*decoder_, Decode(_, _))
-      .WillOnce(RunCallback<1>(DecodeStatus::OK));
+  EXPECT_CALL(*decoder_, Decode(_, _));
   gmb_decoder_->Decode(
       DecoderBuffer::CreateEOSBuffer(),
       base::BindRepeating(&GpuMemoryBufferDecoderWrapperTest::OnDecodeDone,
                           base::Unretained(this)));
 
-  // Technically the status here should be ABORTED, but it doesn't matter.
   EXPECT_CALL(*mock_pool_, Abort());
-  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK));
+  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::ABORTED));
   EXPECT_CALL(*decoder_, Reset(_)).WillOnce(RunCallback<0>());
   EXPECT_CALL(*this, OnResetDone()).WillOnce(RunClosure(loop.QuitClosure()));
 
@@ -336,6 +436,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
   VideoDecoder::OutputCB output_cb;
   Initialize(&output_cb);
   EXPECT_CALL(*this, OnOutputReady(_)).Times(0);
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(2));
 
   scoped_refptr<VideoFrame> frame_1 =
       VideoFrame::CreateBlackFrame(config_.coded_size());
@@ -368,11 +469,11 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest,
                           base::Unretained(this)));
 
   EXPECT_CALL(*mock_pool_, Abort());
+  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::ABORTED));
   EXPECT_CALL(*decoder_, Reset(_))
       .WillOnce(
           DoAll(RunClosure(base::BindRepeating(decode_cb, DecodeStatus::OK)),
                 RunCallback<0>()));
-  EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::ABORTED));
   EXPECT_CALL(*this, OnResetDone()).WillOnce(RunClosure(loop.QuitClosure()));
 
   // Issue Reset() before that decode can complete.
@@ -392,6 +493,7 @@ TEST_F(GpuMemoryBufferDecoderWrapperTest, DecodeEOSNoPendingCopies) {
   Initialize(&output_cb);
 
   base::RunLoop loop;
+  EXPECT_CALL(*decoder_, GetMaxDecodeRequests()).WillRepeatedly(Return(1));
   EXPECT_CALL(*this, OnDecodeDone(DecodeStatus::OK))
       .WillOnce(RunClosure(loop.QuitClosure()));
   EXPECT_CALL(*decoder_, Decode(_, _))
