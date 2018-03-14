@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -509,6 +510,16 @@ void InputDeviceFactoryEvdev::EnablePalmSuppression(bool enabled) {
     return;
   palm_suppression_enabled_ = enabled;
 
+  // This function can be called while disabling pen devices, so don't disable
+  // inline here.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&InputDeviceFactoryEvdev::EnableDevices,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InputDeviceFactoryEvdev::EnableDevices() {
+  // TODO(spang): Fix the UI to not dismiss menus when we use
+  // ApplyInputDeviceSettings() instead of this function.
   for (const auto& it : converters_)
     it.second->SetEnabled(IsDeviceEnabled(it.second.get()));
 }

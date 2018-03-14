@@ -58,12 +58,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   float tilt_y = 0;
   ui::EventPointerType reported_tool_type =
       ui::EventPointerType::POINTER_TYPE_TOUCH;
-
-  struct ButtonState {
-    bool down = false;
-    bool changed = false;
-  };
-  ButtonState btn_stylus;
+  bool stylus_button = false;
 };
 
 }  // namespace ui
