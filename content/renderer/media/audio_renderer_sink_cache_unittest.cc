@@ -27,6 +27,7 @@ const char* const kDefaultDeviceId =
     media::AudioDeviceDescription::kDefaultDeviceId;
 const char kAnotherDeviceId[] = "another-device-id";
 const char kUnhealthyDeviceId[] = "i-am-sick";
+const int kNonZeroSessionId = 1;
 const int kRenderFrameId = 124;
 const int kDeleteTimeoutMs = 500;
 }  // namespace
@@ -36,8 +37,8 @@ class AudioRendererSinkCacheTest : public testing::Test {
   AudioRendererSinkCacheTest()
       : cache_(new AudioRendererSinkCacheImpl(
             message_loop_.task_runner(),
-            base::Bind(&AudioRendererSinkCacheTest::CreateSink,
-                       base::Unretained(this)),
+            base::BindRepeating(&AudioRendererSinkCacheTest::CreateSink,
+                                base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs))) {}
 
   void GetSink(int render_frame_id,
@@ -94,18 +95,18 @@ class AudioRendererSinkCacheTest : public testing::Test {
 
   // Posts the task to the specified thread and runs current message loop until
   // the task is completed.
-  void PostAndRunUntilDone(const base::Thread& thread,
-                           const base::Closure& task) {
+  void PostAndRunUntilDone(const base::Thread& thread, base::OnceClosure task) {
     media::WaitableMessageLoopEvent event;
-    thread.task_runner()->PostTaskAndReply(FROM_HERE, task, event.GetClosure());
+    thread.task_runner()->PostTaskAndReply(FROM_HERE, std::move(task),
+                                           event.GetClosure());
     // Runs the loop and waits for the thread to call event's closure.
     event.RunAndWait();
   }
 
   void WaitOnAnotherThread(const base::Thread& thread, int timeout_ms) {
     PostAndRunUntilDone(
-        thread, base::Bind(base::IgnoreResult(&base::PlatformThread::Sleep),
-                           base::TimeDelta::FromMilliseconds(timeout_ms)));
+        thread, base::BindOnce(base::IgnoreResult(&base::PlatformThread::Sleep),
+                               base::TimeDelta::FromMilliseconds(timeout_ms)));
   }
 
   base::MessageLoop message_loop_;
@@ -268,7 +269,63 @@ TEST_F(AudioRendererSinkCacheTest, UnhealthySinkIsNotCached) {
   EXPECT_EQ(0, sink_count());
 }
 
-// Verify that cache works fine if a sink scheduled for delettion is aquired and
+// Verify that a sink created with GetSinkInfo() is stopped even if it's
+// unhealthy.
+TEST_F(AudioRendererSinkCacheTest, UnhealthySinkIsStopped) {
+  scoped_refptr<media::MockAudioRendererSink> sink =
+      new media::MockAudioRendererSink(
+          kUnhealthyDeviceId, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+
+  cache_ = std::make_unique<AudioRendererSinkCacheImpl>(
+      message_loop_.task_runner(),
+      base::BindRepeating(
+          [](scoped_refptr<media::AudioRendererSink> sink, int render_frame_id,
+             int session_id, const std::string& device_id,
+             const url::Origin& security_origin) {
+            EXPECT_EQ(kRenderFrameId, render_frame_id);
+            EXPECT_EQ(0, session_id);
+            EXPECT_EQ(kUnhealthyDeviceId, device_id);
+            EXPECT_TRUE(security_origin.unique());
+            return sink;
+          },
+          sink),
+      base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs));
+
+  EXPECT_CALL(*sink, Stop());
+
+  media::OutputDeviceInfo device_info =
+      cache_->GetSinkInfo(kRenderFrameId, 0, kUnhealthyDeviceId, url::Origin());
+}
+
+// Verify that a sink created with GetSinkInfo() is stopped even if it's
+// unhealthy.
+TEST_F(AudioRendererSinkCacheTest, UnhealthySinkUsingSessionIdIsStopped) {
+  scoped_refptr<media::MockAudioRendererSink> sink =
+      new media::MockAudioRendererSink(
+          kUnhealthyDeviceId, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+
+  cache_ = std::make_unique<AudioRendererSinkCacheImpl>(
+      message_loop_.task_runner(),
+      base::BindRepeating(
+          [](scoped_refptr<media::AudioRendererSink> sink, int render_frame_id,
+             int session_id, const std::string& device_id,
+             const url::Origin& security_origin) {
+            EXPECT_EQ(kRenderFrameId, render_frame_id);
+            EXPECT_EQ(kNonZeroSessionId, session_id);
+            EXPECT_TRUE(device_id.empty());
+            EXPECT_TRUE(security_origin.unique());
+            return sink;
+          },
+          sink),
+      base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs));
+
+  EXPECT_CALL(*sink, Stop());
+
+  media::OutputDeviceInfo device_info = cache_->GetSinkInfo(
+      kRenderFrameId, kNonZeroSessionId, std::string(), url::Origin());
+}
+
+// Verify that cache works fine if a sink scheduled for deletion is acquired and
 // released before deletion timeout elapses.
 // The test produces one "Uninteresting mock" warning for
 // MockAudioRendererSink::Stop().
@@ -316,36 +373,37 @@ TEST_F(AudioRendererSinkCacheTest, MultithreadedAccess) {
 
   // Request device information on the first thread.
   PostAndRunUntilDone(
-      thread1,
-      base::Bind(base::IgnoreResult(&AudioRendererSinkCacheImpl::GetSinkInfo),
-                 base::Unretained(cache_.get()), kRenderFrameId, 0,
-                 kDefaultDeviceId, url::Origin()));
+      thread1, base::BindOnce(
+                   base::IgnoreResult(&AudioRendererSinkCacheImpl::GetSinkInfo),
+                   base::Unretained(cache_.get()), kRenderFrameId, 0,
+                   kDefaultDeviceId, url::Origin()));
 
   EXPECT_EQ(1, sink_count());
 
   // Request the sink on the second thread.
   media::AudioRendererSink* sink;
 
-  PostAndRunUntilDone(
-      thread2,
-      base::Bind(&AudioRendererSinkCacheTest::GetSink, base::Unretained(this),
-                 kRenderFrameId, kDefaultDeviceId, url::Origin(), &sink));
+  PostAndRunUntilDone(thread2,
+                      base::BindOnce(&AudioRendererSinkCacheTest::GetSink,
+                                     base::Unretained(this), kRenderFrameId,
+                                     kDefaultDeviceId, url::Origin(), &sink));
 
   EXPECT_EQ(kDefaultDeviceId, sink->GetOutputDeviceInfo().device_id());
   EXPECT_EQ(1, sink_count());
 
   // Request device information on the first thread again.
   PostAndRunUntilDone(
-      thread1,
-      base::Bind(base::IgnoreResult(&AudioRendererSinkCacheImpl::GetSinkInfo),
-                 base::Unretained(cache_.get()), kRenderFrameId, 0,
-                 kDefaultDeviceId, url::Origin()));
+      thread1, base::BindOnce(
+                   base::IgnoreResult(&AudioRendererSinkCacheImpl::GetSinkInfo),
+                   base::Unretained(cache_.get()), kRenderFrameId, 0,
+                   kDefaultDeviceId, url::Origin()));
   EXPECT_EQ(1, sink_count());
 
   // Release the sink on the second thread.
-  PostAndRunUntilDone(thread2, base::Bind(&AudioRendererSinkCache::ReleaseSink,
-                                          base::Unretained(cache_.get()),
-                                          base::RetainedRef(sink)));
+  PostAndRunUntilDone(
+      thread2,
+      base::BindOnce(&AudioRendererSinkCache::ReleaseSink,
+                     base::Unretained(cache_.get()), base::RetainedRef(sink)));
 
   EXPECT_EQ(0, sink_count());
 }
