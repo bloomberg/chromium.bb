@@ -155,9 +155,10 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       GetVectorIconColor()));
   keyword_icon_view_->SizeToPreferredSize();
 
-  tab_switch_button_ = new OmniboxTabSwitchButton(this);
-  AddChildView(tab_switch_button_);
-  tab_switch_button_->SetVisible(false);
+  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
+    tab_switch_button_.reset(new OmniboxTabSwitchButton(this));
+    tab_switch_button_->set_owned_by_client();
+  }
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -186,10 +187,17 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   image_view_->SetVisible(false);  // Until SetAnswerImage is called.
 
   keyword_icon_view_->SetVisible(match_.associated_keyword.get());
-  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
-    tab_switch_button_->SetVisible(match.type ==
-                                   AutocompleteMatchType::TAB_SEARCH);
+  if (tab_switch_button_) {
+    if (match.type == AutocompleteMatchType::TAB_SEARCH &&
+        !keyword_icon_view_->visible()) {
+      if (!tab_switch_button_->parent()) {
+        AddChildView(tab_switch_button_.get());
+      }
+    } else if (tab_switch_button_->parent()) {
+      RemoveChildView(tab_switch_button_.get());
+    }
   }
+
   Invalidate();
   if (GetWidget())
     Layout();
@@ -300,12 +308,12 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     if (event.IsOnlyLeftMouseButton()) {
       if (GetState() != SELECTED)
         model_->SetSelectedLine(model_index_);
-      if (tab_switch_button_->visible()) {
+      if (tab_switch_button_ && tab_switch_button_->parent()) {
         gfx::Point point_in_child_coords(event.location());
-        View::ConvertPointToTarget(this, tab_switch_button_,
+        View::ConvertPointToTarget(this, tab_switch_button_.get(),
                                    &point_in_child_coords);
         if (tab_switch_button_->HitTestPoint(point_in_child_coords)) {
-          SetMouseHandler(tab_switch_button_);
+          SetMouseHandler(tab_switch_button_.get());
           return false;
         }
       }
@@ -520,8 +528,7 @@ void OmniboxResultView::Layout() {
     }
   }
 
-  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() &&
-      match_.type == AutocompleteMatchType::TAB_SEARCH) {
+  if (tab_switch_button_ && match_.type == AutocompleteMatchType::TAB_SEARCH) {
     const int ts_button_width = tab_switch_button_->GetPreferredSize().width();
     const int ts_button_height = height();
     tab_switch_button_->SetSize(gfx::Size(ts_button_width, ts_button_height));
