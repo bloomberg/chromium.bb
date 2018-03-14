@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -42,11 +41,6 @@ public class TestContentViewCore implements ContentViewCore {
     public WindowAndroid getWindowAndroid() {
         return null;
     }
-
-    @Override
-    public void initialize(ViewAndroidDelegate viewDelegate,
-            InternalAccessDelegate internalDispatcher, WebContents webContents,
-            WindowAndroid windowAndroid) {}
 
     @Override
     public void updateWindowAndroid(WindowAndroid windowAndroid) {}

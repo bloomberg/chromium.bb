@@ -880,10 +880,11 @@ public class AwContents implements SmartClipProvider {
         onContainerViewChanged();
     }
 
-    private void initializeContentViewCore(ContentViewCore contentViewCore, Context context,
-            ViewAndroidDelegate viewDelegate, InternalAccessDelegate internalDispatcher,
-            WebContents webContents, WindowAndroid windowAndroid) {
-        contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
+    private void createContentViewCore(Context context, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WebContents webContents,
+            WindowAndroid windowAndroid) {
+        mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION, webContents,
+                viewDelegate, internalDispatcher, windowAndroid);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(
                 new AwActionModeCallback(mContext, this, controller.getActionModeCallbackHelper()));
@@ -1150,12 +1151,10 @@ public class AwContents implements SmartClipProvider {
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
-
-        mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
-        initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
-                mInternalAccessAdapter, webContents, mWindowAndroid.getWindowAndroid());
+        createContentViewCore(mContext, mViewAndroidDelegate, mInternalAccessAdapter, webContents,
+                mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
         mWebContents = mContentViewCore.getWebContents();

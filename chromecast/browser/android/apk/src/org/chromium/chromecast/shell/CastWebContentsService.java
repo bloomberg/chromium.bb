@@ -98,11 +98,10 @@ public class CastWebContentsService extends Service {
         Notification notification = new Notification.Builder(this).build();
         startForeground(CAST_NOTIFICATION_ID, notification);
 
+        mContentView = ContentView.createContentView(this, webContents);
         // TODO(derekjchow): productVersion
-        mContentViewCore = ContentViewCore.create(this, "");
-        mContentView = ContentView.createContentView(this, mContentViewCore);
-        mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(mContentView),
-                mContentView, webContents, mWindow);
+        mContentViewCore = ContentViewCore.create(this, "", webContents,
+                ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow);
         // Enable display of current webContents.
         mContentViewCore.onShow();
     }

@@ -16,14 +16,12 @@ import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.text.TextUtils;
-import android.view.ViewGroup;
 
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.components.content_view.ContentView;
 import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.Criteria;
@@ -275,24 +273,6 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
                         return coord.getPageScaleFactor();
                     }
                 }));
-    }
-
-    /**
-     * Replaces the {@link ContentViewCore#mContainerView} with a newly created
-     * {@link ContentView}.
-     */
-    public void replaceContainerView() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ContentView cv = ContentView.createContentView(getActivity(), getContentViewCore());
-                ((ViewGroup) getContentViewCore().getContainerView().getParent()).addView(cv);
-                getContentViewCore().setContainerView(cv);
-                getContentViewCore().setContainerViewInternals(cv);
-                cv.requestFocus();
-            }
-        });
-
     }
 
     /**

@@ -32,6 +32,8 @@ import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
@@ -137,8 +139,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         }
     }
 
-    private final Context mContext;
-    private final String mProductVersion;
+    private Context mContext;
     private final ObserverList<WindowEventObserver> mWindowEventObservers = new ObserverList<>();
 
     private ViewGroup mContainerView;
@@ -158,7 +159,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     // Notifies the ContentViewCore when platform closed caption settings have changed
     // if they are supported. Otherwise does nothing.
-    private final SystemCaptioningBridge mSystemCaptioningBridge;
+    private SystemCaptioningBridge mSystemCaptioningBridge;
 
     /**
      * PID used to indicate an invalid render process.
@@ -176,7 +177,15 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private Boolean mHasViewFocus;
 
     // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
-    private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers;
+    private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers =
+            new ObserverList<>();
+
+    private boolean mInitialized;
+
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<ContentViewCoreImpl> INSTANCE =
+                ContentViewCoreImpl::new;
+    }
 
     /**
      * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
@@ -184,21 +193,16 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
      *                    {@code null} if none exists.
      */
     public static ContentViewCoreImpl fromWebContents(WebContents webContents) {
-        return nativeFromWebContentsAndroid(webContents);
+        return WebContentsUserData.fromWebContents(webContents, ContentViewCoreImpl.class, null);
     }
 
     /**
-     * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
-     * a ContentViewCore and before using it.
+     * Constructs a new ContentViewCore.
      *
-     * @param context The context used to create this.
+     * @param webContents {@link WebContents} to be associated with this object.
      */
-    public ContentViewCoreImpl(Context context, String productVersion) {
-        mContext = context;
-        mProductVersion = productVersion;
-        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
-
-        mWindowAndroidChangedObservers = new ObserverList<WindowAndroidChangedObserver>();
+    public ContentViewCoreImpl(WebContents webContents) {
+        mWebContents = (WebContentsImpl) webContents;
     }
 
     @Override
@@ -222,11 +226,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return nativeGetJavaWindowAndroid(mNativeContentViewCore);
     }
 
-    @VisibleForTesting
-    void setWebContentsForTesting(WebContentsImpl webContents) {
-        mWebContents = webContents;
-    }
-
     /**
      * Add {@link WindowAndroidChangeObserver} object.
      * @param observer Observer instance to add.
@@ -243,29 +242,33 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mWindowAndroidChangedObservers.removeObserver(observer);
     }
 
-    // Perform important post-construction set up of the ContentViewCore.
-    // We do not require the containing view in the constructor to allow embedders to create a
-    // ContentViewCore without having fully created its containing view. The containing view
-    // is a vital component of the ContentViewCore, so embedders must exercise caution in what
-    // they do with the ContentViewCore before calling initialize().
-    // We supply the nativeWebContents pointer here rather than in the constructor to allow us
-    // to set the private browsing mode at a later point for the WebView implementation.
-    // Note that the caller remains the owner of the nativeWebContents and is responsible for
-    // deleting it after destroying the ContentViewCore.
-    @Override
-    public void initialize(ViewAndroidDelegate viewDelegate,
-            InternalAccessDelegate internalDispatcher, WebContents webContents,
+    public static ContentViewCoreImpl create(Context context, String productVersion,
+            WebContents webContents, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WindowAndroid windowAndroid) {
+        ContentViewCoreImpl core = WebContentsUserData.fromWebContents(
+                webContents, ContentViewCoreImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert core != null;
+        assert !core.initialized();
+        core.initialize(context, productVersion, viewDelegate, internalDispatcher, windowAndroid);
+        return core;
+    }
+
+    private void initialize(Context context, String productVersion,
+            ViewAndroidDelegate viewDelegate, InternalAccessDelegate internalDispatcher,
             WindowAndroid windowAndroid) {
+        mContext = context;
+        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
+
         mViewAndroidDelegate = viewDelegate;
 
         final float dipScale = windowAndroid.getDisplay().getDipScale();
 
         mNativeContentViewCore =
-                nativeInit(webContents, mViewAndroidDelegate, windowAndroid, dipScale);
+                nativeInit(mWebContents, mViewAndroidDelegate, windowAndroid, dipScale);
         mWebContents = (WebContentsImpl) nativeGetWebContentsAndroid(mNativeContentViewCore);
         ViewGroup containerView = viewDelegate.getContainerView();
         SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
-                mContext, windowAndroid, webContents, containerView);
+                mContext, windowAndroid, mWebContents, containerView);
         controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         addWindowAndroidChangedObserver(controller);
 
@@ -273,7 +276,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mRenderCoordinates = mWebContents.getRenderCoordinates();
         mRenderCoordinates.setDeviceScaleFactor(dipScale);
         WebContentsAccessibilityImpl wcax = WebContentsAccessibilityImpl.create(
-                mContext, containerView, webContents, mProductVersion);
+                mContext, containerView, mWebContents, productVersion);
         setContainerViewInternals(internalDispatcher);
 
         ImeAdapterImpl imeAdapter = ImeAdapterImpl.create(mWebContents, mContainerView,
@@ -298,6 +301,11 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mWindowEventObservers.addObserver(textSuggestionHost);
         mWindowEventObservers.addObserver(imeAdapter);
         mWindowEventObservers.addObserver(wcax);
+        mInitialized = true;
+    }
+
+    public boolean initialized() {
+        return mInitialized;
     }
 
     @Override
@@ -895,7 +903,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             WindowAndroid window, float dipScale);
-    private static native ContentViewCoreImpl nativeFromWebContentsAndroid(WebContents webContents);
     private native void nativeUpdateWindowAndroid(long nativeContentViewCore, WindowAndroid window);
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCore);
     private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCore);

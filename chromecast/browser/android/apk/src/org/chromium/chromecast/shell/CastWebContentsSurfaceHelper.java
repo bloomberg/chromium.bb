@@ -5,6 +5,7 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -188,12 +189,11 @@ class CastWebContentsSurfaceHelper {
                 new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
 
+        Context context = getActivity().getApplicationContext();
+        mContentView = ContentView.createContentView(context, webContents);
         // TODO(derekjchow): productVersion
-        mContentViewCore = ContentViewCore.create(getActivity().getApplicationContext(), "");
-        mContentView = ContentView.createContentView(
-                getActivity().getApplicationContext(), mContentViewCore);
-        mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(mContentView),
-                mContentView, webContents, mWindow);
+        mContentViewCore = ContentViewCore.create(context, "", webContents,
+                ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow);
         // Enable display of current webContents.
         mContentViewCore.onShow();
         mCastWebContentsLayout.addView(mContentView,

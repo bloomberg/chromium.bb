@@ -257,15 +257,6 @@ public class OverlayPanelContent {
     }
 
     /**
-     * Creates a ContentViewCore. This method will be overridden by tests.
-     * @param activity The ChromeActivity.
-     * @return The newly created ContentViewCore.
-     */
-    protected ContentViewCore createContentViewCore(ChromeActivity activity) {
-        return ContentViewCore.create(activity, ChromeVersionInfo.getProductVersion());
-    }
-
-    /**
      * Create a new ContentViewCore that will be managed by this panel.
      */
     private void createNewContentView() {
@@ -277,9 +268,10 @@ public class OverlayPanelContent {
             destroyContentView();
         }
 
-        mContentViewCore = createContentViewCore(mActivity);
+        // Creates an initially hidden WebContents which gets shown when the panel is opened.
+        WebContents panelWebContents = WebContentsFactory.createWebContents(false, true);
 
-        ContentView cv = ContentView.createContentView(mActivity, mContentViewCore);
+        ContentView cv = ContentView.createContentView(mActivity, panelWebContents);
         if (mContentViewWidth != 0 || mContentViewHeight != 0) {
             int width = mContentViewWidth == 0 ? ContentView.DEFAULT_MEASURE_SPEC
                     : MeasureSpec.makeMeasureSpec(mContentViewWidth, MeasureSpec.EXACTLY);
@@ -287,9 +279,6 @@ public class OverlayPanelContent {
                     : MeasureSpec.makeMeasureSpec(mContentViewHeight, MeasureSpec.EXACTLY);
             cv.setDesiredMeasureSpec(width, height);
         }
-
-        // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        WebContents panelWebContents = WebContentsFactory.createWebContents(false, true);
 
         // Dummny ViewAndroidDelegate since the container view for overlay panel is
         // never added to the view hierarchy.
@@ -319,7 +308,8 @@ public class OverlayPanelContent {
                         return mContainerView;
                     }
                 }.init(cv);
-        mContentViewCore.initialize(delegate, cv, panelWebContents, mActivity.getWindowAndroid());
+        mContentViewCore = ContentViewCore.create(mActivity, ChromeVersionInfo.getProductVersion(),
+                panelWebContents, delegate, cv, mActivity.getWindowAndroid());
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
         nativeSetWebContents(mNativeOverlayPanelContentPtr, panelWebContents, mWebContentsDelegate);

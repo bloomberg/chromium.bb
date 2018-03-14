@@ -299,10 +299,10 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(WebContents webContents) {
         Context context = getContext();
-        mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(context, "");
-        ContentView cv = ContentView.createContentView(context, mContentViewCore);
+        ContentView cv = ContentView.createContentView(context, webContents);
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
-        mContentViewCore.initialize(mViewAndroidDelegate, cv, webContents, mWindow);
+        mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(
+                context, "", webContents, mViewAndroidDelegate, cv, mWindow);
         mWebContents = mContentViewCore.getWebContents();
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(defaultActionCallback());

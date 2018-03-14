@@ -25,8 +25,21 @@ import org.chromium.ui.base.WindowAndroid;
  * See https://crbug.com/598880.
  */
 public interface ContentViewCore {
-    public static ContentViewCore create(Context context, String productVersion) {
-        return new ContentViewCoreImpl(context, productVersion);
+    /**
+     * Create {@link ContentViewCore} object.
+     * @param context The context used to create this object.
+     * @param productVersion Product version for accessibility.
+     * @param viewDelegate Delegate to add/remove anchor views.
+     * @param internalDispatcher Handles dispatching all hidden or super methods to the
+     *                           containerView.
+     * @param webContents A WebContents instance to connect to.
+     * @param windowAndroid An instance of the WindowAndroid.
+     */
+    public static ContentViewCore create(Context context, String productVersion,
+            WebContents webContents, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WindowAndroid windowAndroid) {
+        return ContentViewCoreImpl.create(context, productVersion, webContents, viewDelegate,
+                internalDispatcher, windowAndroid);
     }
 
     public static ContentViewCore fromWebContents(WebContents webContents) {
@@ -93,17 +106,6 @@ public interface ContentViewCore {
      * @return The WindowAndroid associated with this ContentViewCore.
      */
     WindowAndroid getWindowAndroid();
-
-    /**
-     * Initialize {@link ContentViewCore} object.
-     * @param viewDelegate Delegate to add/remove anchor views.
-     * @param internalDispatcher Handles dispatching all hidden or super methods to the
-     *                           containerView.
-     * @param webContents A WebContents instance to connect to.
-     * @param windowAndroid An instance of the WindowAndroid.
-     */
-    void initialize(ViewAndroidDelegate viewDelegate, InternalAccessDelegate internalDispatcher,
-            WebContents webContents, WindowAndroid windowAndroid);
 
     /**
      * Updates the native {@link ContentViewCore} with a new window. This moves the NativeView and

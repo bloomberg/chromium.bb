@@ -1790,11 +1790,11 @@ public class Tab
     }
 
     private ContentViewCore createContentViewCore(WebContents webContents) {
-        ContentViewCore cvc = ContentViewCore.create(mThemedApplicationContext, PRODUCT_VERSION);
-        ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
+        ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        cvc.initialize(new TabViewAndroidDelegate(this, cv), cv, webContents, getWindowAndroid());
+        ContentViewCore cvc = ContentViewCore.create(mThemedApplicationContext, PRODUCT_VERSION,
+                webContents, new TabViewAndroidDelegate(this, cv), cv, getWindowAndroid());
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         ChromeActionModeCallback actionModeCallback =
                 new ChromeActionModeCallback(this, controller.getActionModeCallbackHelper());

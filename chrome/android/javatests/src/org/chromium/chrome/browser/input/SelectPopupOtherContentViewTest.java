@@ -95,15 +95,12 @@ public class SelectPopupOtherContentViewTest {
             @Override
             public void run() {
                 WebContents webContents = WebContentsFactory.createWebContents(false, false);
-                WindowAndroid windowAndroid =
-                        new ActivityWindowAndroid(mActivityTestRule.getActivity());
+                ChromeActivity activity = mActivityTestRule.getActivity();
+                WindowAndroid windowAndroid = new ActivityWindowAndroid(activity);
 
-                ContentViewCore contentViewCore =
-                        ContentViewCore.create(mActivityTestRule.getActivity(), "");
-                ContentView cv = ContentView.createContentView(
-                        mActivityTestRule.getActivity(), contentViewCore);
-                contentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
-                        webContents, windowAndroid);
+                ContentView cv = ContentView.createContentView(activity, webContents);
+                ContentViewCore contentViewCore = ContentViewCore.create(activity, "", webContents,
+                        ViewAndroidDelegate.createBasicDelegate(cv), cv, windowAndroid);
                 contentViewCore.destroy();
             }
         });
