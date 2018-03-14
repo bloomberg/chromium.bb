@@ -273,6 +273,16 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
     return popup;
   }
 
+  content::WebContents* OpenPopupNoOpener(content::RenderFrameHost* opener,
+                                          const GURL& url) {
+    content::WebContentsAddedObserver popup_observer;
+    EXPECT_TRUE(ExecuteScript(
+        opener, "window.open('" + url.spec() + "', '', 'noopener')"));
+    content::WebContents* popup = popup_observer.GetWebContents();
+    WaitForLoadStop(popup);
+    return popup;
+  }
+
  private:
   guest_view::TestGuestViewManagerFactory factory_;
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
@@ -1073,7 +1083,56 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 // blob/filesystem extension URL.  See https://crbug.com/656752.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                        NestedURLNavigationsViaProxyBlocked) {
-  base::HistogramTester uma;
+  // Create a simple extension without a background page.
+  const Extension* extension = CreateExtension("Extension", false);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to an empty web page.  There should be no extension
+  // frames yet.
+  NavigateToURL(embedded_test_server()->GetURL("/empty.html"));
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+
+  // Have the web page navigate the popup to each nested URL with extension
+  // origin via the window reference it obtained earlier from window.open.
+  const GURL extension_url(extension->url().Resolve("empty.html"));
+  for (auto create_function : {&CreateBlobURL, &CreateFileSystemURL}) {
+    // Setup the test by navigating popup to an extension page. This is allowed
+    // because it's web accessible.
+    content::WebContents* popup = OpenPopup(main_frame, extension_url);
+
+    // This frame should now be in an extension process.
+    EXPECT_EQ(1u, pm->GetAllFrames().size());
+    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+    // Create a valid blob or filesystem URL in the extension's origin.
+    GURL nested_url = (*create_function)(popup->GetMainFrame(), "foo");
+
+    // Navigate via the proxy to |nested_url|. This should be blocked by
+    // FilterURL.
+    EXPECT_TRUE(ExecuteScript(
+        tab, "window.popup.location.href = '" + nested_url.spec() + "';"));
+    WaitForLoadStop(popup);
+
+    // Because the navigation was blocked, it should be an empty page.
+    EXPECT_NE(nested_url, popup->GetLastCommittedURL());
+    EXPECT_EQ("about:blank", popup->GetLastCommittedURL().spec());
+    EXPECT_NE("foo", GetTextContent(popup->GetMainFrame()));
+
+    // This should no longer be an extension process.
+    EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+    EXPECT_EQ(0u, pm->GetAllFrames().size());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       NestedURLNavigationsViaNoOpenerPopupBlocked) {
   // Create a simple extension without a background page.
   const Extension* extension = CreateExtension("Extension", false);
   embedded_test_server()->ServeFilesFromDirectory(extension->path());
@@ -1116,32 +1175,24 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   GURL filesystem_url(CreateFileSystemURL(extension_frame, "foo"));
   EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
 
-  // Have the web page navigate the popup to each nested URL with extension
-  // origin via the window reference it obtained earlier from window.open.
+  // Attempt opening the nested urls using window.open(url, '', 'noopener').
+  // This should not be allowed.
   GURL nested_urls[] = {blob_url, filesystem_url};
   for (size_t i = 0; i < arraysize(nested_urls); i++) {
-    EXPECT_TRUE(ExecuteScript(
-        tab, "window.popup.location.href = '" + nested_urls[i].spec() + "';"));
-    WaitForLoadStop(popup);
+    content::WebContents* new_popup =
+        OpenPopupNoOpener(tab->GetMainFrame(), nested_urls[i]);
 
-    // This is a top-level navigation that should be blocked since it
-    // originates from a non-extension process.  Ensure that the popup stays at
-    // the original page and doesn't navigate to the nested URL.
-    EXPECT_NE(nested_urls[i], popup->GetLastCommittedURL());
-    EXPECT_NE("foo", GetTextContent(popup->GetMainFrame()));
+    // This is a top-level navigation to a local resource, that should be
+    // blocked by FilterURL, since it originates from a non-extension process.
+    EXPECT_NE(nested_urls[i], new_popup->GetLastCommittedURL());
+    EXPECT_EQ("about:blank", new_popup->GetLastCommittedURL().spec());
+    EXPECT_NE("foo", GetTextContent(new_popup->GetMainFrame()));
 
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
     EXPECT_EQ(1u, pm->GetAllFrames().size());
-  }
 
-  // Verify that the blocking was recorded correctly in UMA.
-  uma.ExpectTotalCount("Extensions.ShouldAllowOpenURL.Failure", 2);
-  uma.ExpectBucketCount("Extensions.ShouldAllowOpenURL.Failure",
-                        0 /* FAILURE_FILE_SYSTEM_URL */, 1);
-  uma.ExpectBucketCount("Extensions.ShouldAllowOpenURL.Failure",
-                        1 /* FAILURE_BLOB_URL */, 1);
-  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure.Scheme",
-                         2 /* SCHEME_HTTP */, 2);
+    new_popup->Close();
+  }
 }
 
 // Verify that a web popup created via window.open from an extension page can
