@@ -21,7 +21,6 @@ TEST(LayoutRectTest, ToString) {
   EXPECT_EQ("1.59375,2.6875 3.79688x4.89063", granular_rect.ToString());
 }
 
-#ifndef NDEBUG
 TEST(LayoutRectTest, InclusiveIntersect) {
   LayoutRect rect(11, 12, 0, 0);
   EXPECT_TRUE(rect.InclusiveIntersect(LayoutRect(11, 12, 13, 14)));
@@ -39,7 +38,50 @@ TEST(LayoutRectTest, InclusiveIntersect) {
   EXPECT_FALSE(rect.InclusiveIntersect(LayoutRect(12, 13, 15, 16)));
   EXPECT_EQ(rect, LayoutRect());
 }
-#endif
+
+TEST(LayoutRectTest, IntersectsInclusively) {
+  LayoutRect a(11, 12, 0, 0);
+  LayoutRect b(11, 12, 13, 14);
+  // An empty rect can have inclusive intersection.
+  EXPECT_TRUE(a.IntersectsInclusively(b));
+  EXPECT_TRUE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(11, 12, 13, 14);
+  b = LayoutRect(24, 8, 0, 7);
+  // Intersecting left side is sufficient for inclusive intersection.
+  EXPECT_TRUE(a.IntersectsInclusively(b));
+  EXPECT_TRUE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(11, 12, 13, 14);
+  b = LayoutRect(0, 26, 13, 8);
+  // Intersecting bottom side is sufficient for inclusive intersection.
+  EXPECT_TRUE(a.IntersectsInclusively(b));
+  EXPECT_TRUE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(11, 12, 0, 0);
+  b = LayoutRect(11, 12, 0, 0);
+  // Two empty rects can intersect inclusively.
+  EXPECT_TRUE(a.IntersectsInclusively(b));
+  EXPECT_TRUE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(10, 10, 10, 10);
+  b = LayoutRect(20, 20, 10, 10);
+  // Two rects can intersect inclusively at a single point.
+  EXPECT_TRUE(a.IntersectsInclusively(b));
+  EXPECT_TRUE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(11, 12, 0, 0);
+  b = LayoutRect(20, 21, 0, 0);
+  // Two empty rects that do not touch do not intersect.
+  EXPECT_FALSE(a.IntersectsInclusively(b));
+  EXPECT_FALSE(b.IntersectsInclusively(a));
+
+  a = LayoutRect(11, 12, 5, 5);
+  b = LayoutRect(20, 21, 0, 0);
+  // A rect that does not touch a point does not intersect.
+  EXPECT_FALSE(a.IntersectsInclusively(b));
+  EXPECT_FALSE(b.IntersectsInclusively(a));
+}
 
 TEST(LayoutRectTest, EnclosingIntRect) {
   LayoutUnit small;

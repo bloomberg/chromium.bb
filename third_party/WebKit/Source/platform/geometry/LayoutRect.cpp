@@ -88,6 +88,12 @@ bool LayoutRect::InclusiveIntersect(const LayoutRect& other) {
   return true;
 }
 
+bool LayoutRect::IntersectsInclusively(const LayoutRect& other) {
+  // TODO(pdr): How should negative widths or heights be handled?
+  return X() <= other.MaxX() && other.X() <= MaxX() && Y() <= other.MaxY() &&
+         other.Y() <= MaxY();
+}
+
 void LayoutRect::Unite(const LayoutRect& other) {
   // Handle empty special cases first.
   if (other.IsEmpty())

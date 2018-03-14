@@ -207,6 +207,11 @@ class PLATFORM_EXPORT LayoutRect {
   // the result for isEmpty() is not conclusive.
   bool InclusiveIntersect(const LayoutRect&);
 
+  // Similar to |Intersects| but inclusive (see also: |InclusiveIntersect|).
+  // For example, (0,0 10x10) would inclusively intersect (10,10 0x0) even
+  // though the intersection has zero area and |Intersects| would be false.
+  bool IntersectsInclusively(const LayoutRect&);
+
   // Besides non-empty rects, this method also unites empty rects (as points or
   // line segments).  For example, union of (100, 100, 0x0) and (200, 200, 50x0)
   // is (100, 100, 150x100).
