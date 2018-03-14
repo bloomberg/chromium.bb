@@ -436,11 +436,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
     }
 
-    @CalledByNative
-    private void requestDisallowInterceptTouchEvent() {
-        mContainerView.requestDisallowInterceptTouchEvent(true);
-    }
-
     @Override
     public boolean isScrollInProgress() {
         return getSelectionPopupController().getScrollInProgress()

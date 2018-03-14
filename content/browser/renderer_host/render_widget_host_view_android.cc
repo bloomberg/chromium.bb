@@ -31,7 +31,6 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
-#include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
@@ -39,6 +38,7 @@
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/android/tap_disambiguator.h"
 #include "content/browser/android/text_suggestion_host_android.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -101,9 +101,9 @@ static const float kClickCountRadiusSquaredDIP = 25;
 
 std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
     ui::TouchSelectionControllerClient* client,
-    ContentViewCore* content_view_core) {
+    bool has_view_tree) {
   DCHECK(client);
-  DCHECK(content_view_core);
+  DCHECK(has_view_tree);
   ui::TouchSelectionController::Config config;
   config.max_tap_duration = base::TimeDelta::FromMilliseconds(
       gfx::ViewConfiguration::GetLongPressTimeoutInMs());
@@ -164,7 +164,7 @@ void RenderWidgetHostViewAndroid::OnContextLost() {
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
-    ContentViewCore* content_view_core)
+    gfx::NativeView parent_native_view)
     : host_(widget_host),
       begin_frame_source_(nullptr),
       outstanding_begin_frame_requests_(0),
@@ -172,7 +172,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_window_visible_(true),
       is_window_activity_started_(true),
       is_in_vr_(false),
-      content_view_core_(nullptr),
       ime_adapter_android_(nullptr),
       tap_disambiguator_(nullptr),
       selection_popup_controller_(nullptr),
@@ -216,7 +215,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   host_->SetView(this);
   touch_selection_controller_client_manager_ =
       std::make_unique<TouchSelectionControllerClientManagerAndroid>(this);
-  SetContentViewCore(content_view_core);
+  UpdateNativeViewTree(parent_native_view);
 
   CreateOverscrollControllerIfPossible();
 
@@ -225,7 +224,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
-  SetContentViewCore(NULL);
+  UpdateNativeViewTree(nullptr);
   DCHECK(!ime_adapter_android_);
   DCHECK(ack_callbacks_.empty());
   DCHECK(!delegated_frame_host_);
@@ -257,7 +256,7 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
 
 bool RenderWidgetHostViewAndroid::SyncCompositorOnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(!content_view_core_ || sync_compositor_) << !!content_view_core_;
+  DCHECK(!view_.parent() || sync_compositor_) << !!view_.parent();
   return sync_compositor_ && sync_compositor_->OnMessageReceived(message);
 }
 
@@ -292,7 +291,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
-  if (!content_view_core_)
+  if (!view_.parent())
     return false;
 
   if (current_surface_size_.IsEmpty())
@@ -374,10 +373,9 @@ void RenderWidgetHostViewAndroid::Hide() {
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
-  // ContentViewCore represents the native side of the Java
-  // ContentViewCore.  It being NULL means that it is not attached
+  // |view_.parent()| being NULL means that it is not attached
   // to the View system yet, so we treat this RWHVA as hidden.
-  return is_showing_ && content_view_core_;
+  return is_showing_ && view_.parent();
 }
 
 void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
@@ -390,7 +388,7 @@ void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
-  if (!content_view_core_)
+  if (!view_.parent())
     return default_bounds_;
 
   gfx::Size size(view_.GetSize());
@@ -403,14 +401,14 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
-  if (!content_view_core_)
+  if (!view_.parent())
     return default_bounds_.size();
 
   return view_.GetSize();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
-  if (!content_view_core_) {
+  if (!view_.parent()) {
     if (default_bounds_.IsEmpty()) return gfx::Size();
 
     float scale_factor = view_.GetDipScale();
@@ -766,7 +764,7 @@ void RenderWidgetHostViewAndroid::RenderProcessGone(
 
 void RenderWidgetHostViewAndroid::Destroy() {
   host_->ViewDestroyed();
-  SetContentViewCore(NULL);
+  UpdateNativeViewTree(nullptr);
   delegated_frame_host_.reset();
 
   // The RenderWidgetHost's destruction led here, so don't call it.
@@ -1017,7 +1015,7 @@ void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     viz::CompositorFrameMetadata frame_metadata) {
-  if (!content_view_core_)
+  if (!view_.parent())
     return;
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
@@ -1115,7 +1113,7 @@ void RenderWidgetHostViewAndroid::SetSelectionControllerClientForTesting(
   touch_selection_controller_client_for_test_.swap(client);
 
   touch_selection_controller_ = CreateSelectionController(
-      touch_selection_controller_client_for_test_.get(), content_view_core_);
+      touch_selection_controller_client_for_test_.get(), !!view_.parent());
 }
 
 std::unique_ptr<ui::TouchHandleDrawable>
@@ -1296,7 +1294,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   host_->WasShown(ui::LatencyInfo());
 
-  if (content_view_core_ && view_.GetWindowAndroid()) {
+  if (view_.parent() && view_.GetWindowAndroid()) {
     StartObservingRootWindow();
     AddBeginFrameRequest(BEGIN_FRAME);
   }
@@ -1375,7 +1373,7 @@ void RenderWidgetHostViewAndroid::ClearBeginFrameRequest(
 }
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
-  DCHECK(content_view_core_);
+  DCHECK(view_.parent());
   DCHECK(view_.GetWindowAndroid());
   DCHECK(is_showing_);
   if (observing_root_window_)
@@ -1439,8 +1437,8 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
   if (overscroll_controller_ && !is_in_vr_) {
-    needs_animate |= overscroll_controller_->Animate(
-        frame_time, content_view_core_->GetViewAndroid()->GetLayer());
+    needs_animate |=
+        overscroll_controller_->Animate(frame_time, view_.parent()->GetLayer());
   }
   // TODO(wjmaclean): Investigate how animation here does or doesn't affect
   // an OOPIF client.
@@ -1450,8 +1448,8 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
 }
 
 void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
-  if (content_view_core_)
-    content_view_core_->RequestDisallowInterceptTouchEvent();
+  if (view_.parent())
+    view_.RequestDisallowInterceptTouchEvent();
 }
 
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
@@ -1785,9 +1783,9 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   // TODO(crbug.com/779126): support touch selection handles in VR.
   if (is_in_vr) {
     touch_selection_controller_.reset();
-  } else if (content_view_core_) {
+  } else if (view_.parent()) {
     touch_selection_controller_ = CreateSelectionController(
-        touch_selection_controller_client_manager_.get(), content_view_core_);
+        touch_selection_controller_client_manager_.get(), view_.parent());
   }
 }
 
@@ -1800,7 +1798,7 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (sync_compositor_)
     sync_compositor_->DidOverscroll(params);
 
-  if (!content_view_core_ || !is_showing_)
+  if (!view_.parent() || !is_showing_)
     return;
 
   if (overscroll_controller_)
@@ -1825,38 +1823,43 @@ viz::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
   return delegated_frame_host_->GetFrameSinkId();
 }
 
-void RenderWidgetHostViewAndroid::SetContentViewCore(
-    ContentViewCore* content_view_core) {
-  DCHECK(!content_view_core || !content_view_core_ ||
-         (content_view_core_ == content_view_core));
+void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
+    gfx::NativeView parent_native_view) {
+  bool will_build_tree = parent_native_view != nullptr;
+  bool has_view_tree = view_.parent() != nullptr;
+
+  // Allows same parent view to be set again.
+  DCHECK(!will_build_tree || !has_view_tree ||
+         parent_native_view == view_.parent());
+
   StopObservingRootWindow();
 
   bool resize = false;
-  if (content_view_core != content_view_core_) {
+  if (will_build_tree != has_view_tree) {
     touch_selection_controller_.reset();
     RunAckCallbacks();
-    if (content_view_core_) {
+    if (has_view_tree) {
       view_.RemoveObserver(this);
       view_.RemoveFromParent();
       view_.GetLayer()->RemoveFromParent();
     }
-    if (content_view_core) {
+    if (will_build_tree) {
       view_.AddObserver(this);
-      ui::ViewAndroid* parent_view = content_view_core->GetViewAndroid();
-      parent_view->AddChild(&view_);
-      parent_view->GetLayer()->AddChild(view_.GetLayer());
+      parent_native_view->AddChild(&view_);
+      parent_native_view->GetLayer()->AddChild(view_.GetLayer());
     }
+
     // TODO(yusufo) : Get rid of the below conditions and have a better handling
     // for resizing after crbug.com/628302 is handled.
-    bool is_size_initialized = !content_view_core ||
+    bool is_size_initialized = !will_build_tree ||
                                view_.GetSize().width() != 0 ||
                                view_.GetSize().height() != 0;
-    if (content_view_core_ || is_size_initialized)
+    if (has_view_tree || is_size_initialized)
       resize = true;
-    content_view_core_ = content_view_core;
+    has_view_tree = will_build_tree;
   }
 
-  if (!content_view_core_) {
+  if (!has_view_tree) {
     sync_compositor_.reset();
     return;
   }
@@ -1873,12 +1876,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     if (touch_selection_controller_client_for_test_)
       client = touch_selection_controller_client_for_test_.get();
 
-    touch_selection_controller_ =
-        CreateSelectionController(client, content_view_core_);
+    touch_selection_controller_ = CreateSelectionController(client, true);
   }
 
-  if (content_view_core_)
-    CreateOverscrollControllerIfPossible();
+  CreateOverscrollControllerIfPossible();
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1945,7 +1946,7 @@ void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
 }
 
 void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
-  SetContentViewCore(NULL);
+  UpdateNativeViewTree(nullptr);
   overscroll_controller_.reset();
 }
 
@@ -1966,7 +1967,7 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
 }
 
 void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
-  if (!content_view_core_)
+  if (!view_.parent())
     return;
 
   if (is_showing_)
@@ -1982,7 +1983,7 @@ void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
 }
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
-  DCHECK(content_view_core_);
+  DCHECK(view_.parent());
   CreateOverscrollControllerIfPossible();
   if (observing_root_window_) {
     ui::WindowAndroidCompositor* compositor =
@@ -1992,7 +1993,7 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
-  DCHECK(content_view_core_);
+  DCHECK(view_.parent());
   DCHECK(using_browser_compositor_);
   RunAckCallbacks();
   overscroll_controller_.reset();
@@ -2154,7 +2155,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
   if (!overscroll_refresh_handler)
     return;
 
-  if (!content_view_core_)
+  if (!view_.parent())
     return;
 
   // If window_android is null here, this is bad because we don't listen for it
@@ -2162,8 +2163,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
   // proper time.
   // TODO(rlanday): once we get WindowAndroid from ViewAndroid instead of
   // ContentViewCore, listen for WindowAndroid being set and create the
-  // OverscrollController.
-  ui::WindowAndroid* window_android = content_view_core_->GetWindowAndroid();
+  ui::WindowAndroid* window_android = view_.GetWindowAndroid();
   if (!window_android)
     return;
 
