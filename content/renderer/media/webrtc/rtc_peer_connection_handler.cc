@@ -32,6 +32,7 @@
 #include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "content/renderer/media/webrtc/rtc_data_channel_handler.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
+#include "content/renderer/media/webrtc/rtc_error.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
@@ -167,55 +168,6 @@ CreateWebKitSessionDescription(
   }
 
   return CreateWebKitSessionDescription(sdp, native_desc->type());
-}
-
-blink::WebRTCError ConvertToWebKitRTCError(
-    const webrtc::RTCError& webrtc_error) {
-  blink::WebString message = blink::WebString::FromUTF8(
-      webrtc_error.message(), strlen(webrtc_error.message()));
-  switch (webrtc_error.type()) {
-    case webrtc::RTCErrorType::NONE:
-      return blink::WebRTCError(blink::WebRTCErrorType::kNone, message);
-      break;
-    case webrtc::RTCErrorType::UNSUPPORTED_PARAMETER:
-      return blink::WebRTCError(blink::WebRTCErrorType::kUnsupportedParameter,
-                                message);
-      break;
-    case webrtc::RTCErrorType::INVALID_PARAMETER:
-      return blink::WebRTCError(blink::WebRTCErrorType::kInvalidParameter,
-                                message);
-      break;
-    case webrtc::RTCErrorType::INVALID_RANGE:
-      return blink::WebRTCError(blink::WebRTCErrorType::kInvalidRange, message);
-      break;
-    case webrtc::RTCErrorType::SYNTAX_ERROR:
-      return blink::WebRTCError(blink::WebRTCErrorType::kSyntaxError, message);
-      break;
-    case webrtc::RTCErrorType::INVALID_STATE:
-      return blink::WebRTCError(blink::WebRTCErrorType::kInvalidState, message);
-      break;
-    case webrtc::RTCErrorType::INVALID_MODIFICATION:
-      return blink::WebRTCError(blink::WebRTCErrorType::kInvalidModification,
-                                message);
-      break;
-    case webrtc::RTCErrorType::NETWORK_ERROR:
-      return blink::WebRTCError(blink::WebRTCErrorType::kNetworkError, message);
-      break;
-    case webrtc::RTCErrorType::INTERNAL_ERROR:
-      return blink::WebRTCError(blink::WebRTCErrorType::kInternalError,
-                                message);
-      break;
-    default:
-      // If adding a new error type, need 3 CLs: One to add the enum to webrtc,
-      // one to update this mapping code, and one to start using the enum in
-      // webrtc.
-      NOTREACHED() << "webrtc::RTCErrorType " << webrtc_error.type()
-                   << " not covered by switch statement.";
-      break;
-  }
-  NOTREACHED();
-  return blink::WebRTCError(blink::WebRTCErrorType::kInternalError,
-                            "Impossible code path executed");
 }
 
 void RunClosureWithTrace(const base::Closure& closure,
