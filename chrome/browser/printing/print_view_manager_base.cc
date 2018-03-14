@@ -267,11 +267,9 @@ void PrintViewManagerBase::StartLocalPrintJob(
   gfx::Size page_size = settings.page_setup_device_units().physical_size();
   gfx::Rect content_area =
       gfx::Rect(0, 0, page_size.width(), page_size.height());
-  gfx::Point offsets =
-      gfx::Point(settings.page_setup_device_units().content_area().x(),
-                 settings.page_setup_device_units().content_area().y());
 
-  PrintDocument(document, print_data, page_size, content_area, offsets);
+  PrintDocument(document, print_data, page_size, content_area,
+                settings.page_setup_device_units().printable_area().origin());
   std::move(callback).Run(base::Value());
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
