@@ -30,8 +30,8 @@ NetworkContextManager::NetworkContextManager(
   // be initialized for subsequent calls to BindRequestOnIOThread().
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&NetworkContextManager::InitializeOnIoThread,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NetworkContextManager::InitializeOnIoThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 NetworkContextManager::~NetworkContextManager() {

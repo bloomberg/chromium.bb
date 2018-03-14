@@ -206,7 +206,8 @@ class CastAudioOutputStream::Backend
     delay = std::max(delay, base::TimeDelta());
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&Backend::PushBuffer, weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&Backend::PushBuffer, weak_factory_.GetWeakPtr()),
         delay);
     push_in_progress_ = true;
   }

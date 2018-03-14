@@ -127,8 +127,9 @@ void BalancedMediaTaskRunnerTest::SetupTest(
 
 void BalancedMediaTaskRunnerTest::ProcessAllTasks() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::OnTestTimeout,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&BalancedMediaTaskRunnerTest::OnTestTimeout,
+                     base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
   ScheduleTask();
 }
@@ -156,8 +157,8 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
       context.is_pending_task) {
     pattern_index_ = next_pattern_index;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&BalancedMediaTaskRunnerTest::ScheduleTask,
+                                  base::Unretained(this)));
     return;
   }
 
@@ -183,8 +184,8 @@ void BalancedMediaTaskRunnerTest::ScheduleTask() {
   context.task_index++;
   pattern_index_ = next_pattern_index;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::ScheduleTask,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BalancedMediaTaskRunnerTest::ScheduleTask,
+                                base::Unretained(this)));
 }
 
 void BalancedMediaTaskRunnerTest::Task(

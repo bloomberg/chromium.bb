@@ -100,7 +100,7 @@ bool AvPipelineImpl::StartPlayingFrom(
   pushed_buffer_ = nullptr;
   enable_feeding_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBuffer, weak_this_));
+      FROM_HERE, base::BindOnce(&AvPipelineImpl::FetchBuffer, weak_this_));
 
   set_state(kPlaying);
   return true;

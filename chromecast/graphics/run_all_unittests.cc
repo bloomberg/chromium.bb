@@ -49,6 +49,6 @@ int main(int argc, char** argv) {
   mojo::edk::Init();
 
   return base::LaunchUnitTests(argc, argv,
-                               base::Bind(&ChromecastGraphicsTestSuite::Run,
-                                          base::Unretained(&test_suite)));
+                               base::BindOnce(&ChromecastGraphicsTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

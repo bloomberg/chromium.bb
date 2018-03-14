@@ -47,8 +47,8 @@ ACTION_P2(PushBuffer, delegate, buffer_pts) {
   if (arg0->end_of_stream()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&MediaPipelineBackend::Decoder::Delegate::OnEndOfStream,
-                   base::Unretained(*delegate)));
+        base::BindOnce(&MediaPipelineBackend::Decoder::Delegate::OnEndOfStream,
+                       base::Unretained(*delegate)));
   } else {
     *buffer_pts = arg0->timestamp();
   }
@@ -293,8 +293,8 @@ TEST_P(AudioVideoPipelineImplTest, Play) {
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineHelper::Start,
-                 base::Unretained(pipeline_helper_.get()), verify_task));
+      base::BindOnce(&PipelineHelper::Start,
+                     base::Unretained(pipeline_helper_.get()), verify_task));
   base::RunLoop().Run();
 }
 
@@ -316,13 +316,13 @@ TEST_P(AudioVideoPipelineImplTest, Flush) {
   base::Closure verify_task =
       base::Bind(&VerifyFlush, base::Unretained(pipeline_helper_.get()));
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::Start,
-                            base::Unretained(pipeline_helper_.get()),
-                            base::Bind(&VerifyNotReached)));
+      FROM_HERE, base::BindOnce(&PipelineHelper::Start,
+                                base::Unretained(pipeline_helper_.get()),
+                                base::Bind(&VerifyNotReached)));
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineHelper::Flush,
-                 base::Unretained(pipeline_helper_.get()), verify_task));
+      base::BindOnce(&PipelineHelper::Flush,
+                     base::Unretained(pipeline_helper_.get()), verify_task));
 
   base::RunLoop().Run();
 }
@@ -335,8 +335,9 @@ TEST_P(AudioVideoPipelineImplTest, FullCycle) {
                  base::Unretained(pipeline_helper_.get()), stop_task);
 
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::Start,
-                            base::Unretained(pipeline_helper_.get()), eos_cb));
+      FROM_HERE,
+      base::BindOnce(&PipelineHelper::Start,
+                     base::Unretained(pipeline_helper_.get()), eos_cb));
   base::RunLoop().Run();
 };
 
@@ -371,15 +372,15 @@ TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseBeforeStart) {
   base::Closure verify_task =
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdm,
+                                base::Unretained(pipeline_helper_.get())));
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdmLicenseInstalled,
+                                base::Unretained(pipeline_helper_.get())));
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineHelper::Start,
-                 base::Unretained(pipeline_helper_.get()), verify_task));
+      base::BindOnce(&PipelineHelper::Start,
+                     base::Unretained(pipeline_helper_.get()), verify_task));
   base::RunLoop().Run();
 }
 
@@ -389,16 +390,16 @@ TEST_F(EncryptedAVPipelineImplTest, SetCdmWithLicenseAfterStart) {
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineHelper::Start,
-                 base::Unretained(pipeline_helper_.get()), verify_task));
+      base::BindOnce(&PipelineHelper::Start,
+                     base::Unretained(pipeline_helper_.get()), verify_task));
 
   base::RunLoop().RunUntilIdle();
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdmLicenseInstalled,
+                                base::Unretained(pipeline_helper_.get())));
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdm,
+                                base::Unretained(pipeline_helper_.get())));
   base::RunLoop().Run();
 }
 
@@ -408,16 +409,16 @@ TEST_F(EncryptedAVPipelineImplTest, SetCdmAndInstallLicenseAfterStart) {
       base::Bind(&VerifyPlay, base::Unretained(pipeline_helper_.get()));
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PipelineHelper::Start,
-                 base::Unretained(pipeline_helper_.get()), verify_task));
+      base::BindOnce(&PipelineHelper::Start,
+                     base::Unretained(pipeline_helper_.get()), verify_task));
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdm,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdm,
+                                base::Unretained(pipeline_helper_.get())));
 
   base::RunLoop().RunUntilIdle();
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&PipelineHelper::SetCdmLicenseInstalled,
-                            base::Unretained(pipeline_helper_.get())));
+      FROM_HERE, base::BindOnce(&PipelineHelper::SetCdmLicenseInstalled,
+                                base::Unretained(pipeline_helper_.get())));
   base::RunLoop().Run();
 }
 

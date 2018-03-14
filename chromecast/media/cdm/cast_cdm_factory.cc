@@ -65,11 +65,11 @@ void CastCdmFactory::Create(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CastCdm::Initialize, base::Unretained(cast_cdm.get()),
-                 ::media::BindToCurrentLoop(session_message_cb),
-                 ::media::BindToCurrentLoop(session_closed_cb),
-                 ::media::BindToCurrentLoop(session_keys_change_cb),
-                 ::media::BindToCurrentLoop(session_expiration_update_cb)));
+      base::BindOnce(&CastCdm::Initialize, base::Unretained(cast_cdm.get()),
+                     ::media::BindToCurrentLoop(session_message_cb),
+                     ::media::BindToCurrentLoop(session_closed_cb),
+                     ::media::BindToCurrentLoop(session_keys_change_cb),
+                     ::media::BindToCurrentLoop(session_expiration_update_cb)));
   bound_cdm_created_cb.Run(cast_cdm, "");
 }
 

@@ -593,15 +593,16 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   if (network_delegate->IsWhitelisted(requesting_url, session_id,
                                       render_process_id, false)) {
     original_runner->PostTask(
-        FROM_HERE, base::Bind(continue_callback, DeviceCert(), DeviceKey()));
+        FROM_HERE,
+        base::BindOnce(continue_callback, DeviceCert(), DeviceKey()));
     return;
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
                << requesting_url.host()
                << " with render_process_id: " << render_process_id;
   }
-  original_runner->PostTask(FROM_HERE,
-                            base::Bind(continue_callback, nullptr, nullptr));
+  original_runner->PostTask(
+      FROM_HERE, base::BindOnce(continue_callback, nullptr, nullptr));
 }
 
 bool CastContentBrowserClient::CanCreateWindow(

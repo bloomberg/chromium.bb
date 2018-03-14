@@ -44,7 +44,7 @@ void MockFrameConsumer::Start(const base::Closure& done_cb) {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&MockFrameConsumer::ReadFrame, base::Unretained(this)));
+      base::BindOnce(&MockFrameConsumer::ReadFrame, base::Unretained(this)));
 }
 
 void MockFrameConsumer::ReadFrame() {
@@ -97,12 +97,12 @@ void MockFrameConsumer::OnNewFrame(
   if (delayed) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MockFrameConsumer::ReadFrame, base::Unretained(this)),
+        base::BindOnce(&MockFrameConsumer::ReadFrame, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(1));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&MockFrameConsumer::ReadFrame, base::Unretained(this)));
+        base::BindOnce(&MockFrameConsumer::ReadFrame, base::Unretained(this)));
   }
 }
 

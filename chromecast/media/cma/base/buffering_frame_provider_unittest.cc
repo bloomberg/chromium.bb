@@ -131,8 +131,8 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
+                                base::Unretained(this)));
   base::RunLoop().Run();
 }
 
@@ -152,8 +152,8 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
+                                base::Unretained(this)));
   base::RunLoop().Run();
 }
 
@@ -180,8 +180,8 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
+                                base::Unretained(this)));
   base::RunLoop().Run();
 }
 

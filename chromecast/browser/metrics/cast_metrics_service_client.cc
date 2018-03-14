@@ -259,8 +259,9 @@ bool CastMetricsServiceClient::IsConsentGiven() const {
 void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&CastMetricsServiceClient::EnableMetricsService,
-                              base::Unretained(this), enabled));
+        FROM_HERE,
+        base::BindOnce(&CastMetricsServiceClient::EnableMetricsService,
+                       base::Unretained(this), enabled));
     return;
   }
 

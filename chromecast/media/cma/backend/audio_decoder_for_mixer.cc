@@ -223,9 +223,9 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
     DCHECK(!decoder_);
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AudioDecoderForMixer::OnBufferDecoded,
-                   weak_factory_.GetWeakPtr(), input_bytes,
-                   CastAudioDecoder::Status::kDecodeOk, buffer_base));
+        base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
+                       weak_factory_.GetWeakPtr(), input_bytes,
+                       CastAudioDecoder::Status::kDecodeOk, buffer_base));
     return MediaPipelineBackend::kBufferPending;
   }
 
@@ -566,8 +566,8 @@ void AudioDecoderForMixer::OnWritePcmCompletion(RenderingDelay delay) {
   last_mixer_delay_ = delay;
 
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&AudioDecoderForMixer::PushMorePcm,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&AudioDecoderForMixer::PushMorePcm,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void AudioDecoderForMixer::PushMorePcm() {
