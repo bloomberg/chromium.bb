@@ -453,6 +453,7 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
 bool InspectorHighlight::GetBoxModel(
     Node* node,
     std::unique_ptr<protocol::DOM::BoxModel>* model) {
+  node->GetDocument().EnsurePaintLocationDataValidForNode(node);
   LayoutObject* layout_object = node->GetLayoutObject();
   LocalFrameView* view = node->GetDocument().View();
   if (!layout_object || !view)
