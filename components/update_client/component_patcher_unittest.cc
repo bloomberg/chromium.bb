@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "components/patch_service/patch_service.h"
+#include "components/services/patch/patch_service.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/test_installer.h"

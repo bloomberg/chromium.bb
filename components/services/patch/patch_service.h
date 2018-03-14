@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PATCH_SERVICE_PATCH_SERVICE_H_
-#define COMPONENTS_PATCH_SERVICE_PATCH_SERVICE_H_
+#ifndef COMPONENTS_SERVICES_PATCH_PATCH_SERVICE_H_
+#define COMPONENTS_SERVICES_PATCH_PATCH_SERVICE_H_
 
 #include <memory>
 
@@ -37,4 +37,4 @@ class PatchService : public service_manager::Service {
 
 }  // namespace patch
 
-#endif  // COMPONENTS_PATCH_SERVICE_PATCH_SERVICE_H_
+#endif  // COMPONENTS_SERVICES_PATCH_PATCH_SERVICE_H_

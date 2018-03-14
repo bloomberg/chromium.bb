@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/patch_service/file_patcher_impl.h"
+#include "components/services/patch/file_patcher_impl.h"
 
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"

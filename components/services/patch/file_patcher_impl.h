@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PATCH_SERVICE_FILE_PATCHER_IMPL_H_
-#define COMPONENTS_PATCH_SERVICE_FILE_PATCHER_IMPL_H_
+#ifndef COMPONENTS_SERVICES_PATCH_FILE_PATCHER_IMPL_H_
+#define COMPONENTS_SERVICES_PATCH_FILE_PATCHER_IMPL_H_
 
 #include <memory>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "components/patch_service/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace patch {
@@ -38,4 +38,4 @@ class FilePatcherImpl : public mojom::FilePatcher {
 
 }  // namespace patch
 
-#endif  // COMPONENTS_PATCH_SERVICE_FILE_PATCHER_IMPL_H_
+#endif  // COMPONENTS_SERVICES_PATCH_FILE_PATCHER_IMPL_H_

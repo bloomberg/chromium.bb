@@ -11,7 +11,7 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    "//components/patch_service/public/interfaces",
+    "//components/services/patch/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

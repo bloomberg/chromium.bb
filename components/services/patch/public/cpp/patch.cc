@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/patch_service/public/cpp/patch.h"
+#include "components/services/patch/public/cpp/patch.h"
 
 #include <utility>
 
@@ -15,8 +15,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/patch_service/public/interfaces/constants.mojom.h"
-#include "components/patch_service/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
 #include "components/update_client/component_patcher_operation.h"  // nogncheck
 #include "services/service_manager/public/cpp/connector.h"
 
