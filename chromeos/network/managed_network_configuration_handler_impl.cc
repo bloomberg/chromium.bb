@@ -93,13 +93,8 @@ std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
   return v ? v->GetString() : std::string();
 }
 
-bool MatchesUnconfiguredNetworkState(const base::DictionaryValue& properties,
-                                     const NetworkState* network_state) {
-  if (!network_state->profile_path().empty()) {
-    NET_LOG(ERROR) << "Network already configured: " << network_state->guid()
-                   << " Profile: " << network_state->profile_path();
-    return false;
-  }
+bool MatchesExistingNetworkState(const base::DictionaryValue& properties,
+                                 const NetworkState* network_state) {
   std::string type =
       GetStringFromDictionary(properties, ::onc::network_config::kType);
   if (network_util::TranslateONCTypeToShill(type) != network_state->type()) {
@@ -112,9 +107,11 @@ bool MatchesUnconfiguredNetworkState(const base::DictionaryValue& properties,
     return true;
 
   const base::Value* wifi = properties.FindKey(::onc::network_config::kWiFi);
-  if (!wifi)
+  if (!wifi) {
+    NET_LOG(ERROR) << "WiFi network configuration missing is WiFi properties: "
+                   << network_state->guid();
     return false;
-
+  }
   // For WiFi networks ensure that Security and SSID match.
   std::string security = GetStringFromDictionary(*wifi, ::onc::wifi::kSecurity);
   if (network_util::TranslateONCSecurityToShill(security) !=
@@ -472,13 +469,20 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   if (!guid.empty()) {
     const NetworkState* network_state =
         network_state_handler_->GetNetworkStateFromGuid(guid);
-    if (!network_state) {
-      guid = base::GenerateGUID();  // Ignore provided GUID
-    } else if (!MatchesUnconfiguredNetworkState(*validated_properties,
-                                                network_state)) {
-      InvokeErrorCallback(network_state->path(), error_callback,
-                          kNetworkAlreadyConfigured);
-      return;
+    // |network_state| can by null if a network went out of range or was
+    // forgotten while the UI is open. Configuration should succeed and the GUID
+    // can be reused.
+    if (network_state) {
+      if (!MatchesExistingNetworkState(*validated_properties, network_state)) {
+        InvokeErrorCallback(network_state->path(), error_callback,
+                            kNetworkAlreadyConfigured);
+        return;
+      } else if (!network_state->profile_path().empty()) {
+        // Can occur after an invalid password or with multiple config UIs open.
+        // Configuration should succeed, so just log an event.
+        NET_LOG(EVENT) << "Reconfiguring network: " << guid
+                       << " Profile: " << network_state->profile_path();
+      }
     }
   } else {
     guid = base::GenerateGUID();
