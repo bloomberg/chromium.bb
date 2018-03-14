@@ -8,7 +8,7 @@
   "offline_enabled": true,
   "incognito": "split",
   "permissions": [
-    "<all_urls>",
+    "chrome://resources/",
     "metricsPrivate",
     "resourcesPrivate"
   ],
