@@ -14,6 +14,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -151,7 +152,7 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlBlankFilter) {
       GURL("http://example.com/test/"), GURL("http://example.com"),
       std::move(options));
 
-  ASSERT_EQ(2u, cookies.size());
+  ASSERT_THAT(cookies, testing::SizeIs(2));
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
   EXPECT_EQ("cookie-name", cookies[0].Name());
@@ -171,8 +172,7 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlEmptyFilter) {
       GURL("http://example.com/test/"), GURL("http://example.com"),
       std::move(options));
 
-  ASSERT_EQ(0u, cookies.size());
-  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
+  ASSERT_THAT(cookies, testing::SizeIs(0));
 }
 
 TEST_F(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch) {
@@ -186,7 +186,7 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch) {
       GURL("http://example.com/test/"), GURL("http://example.com"),
       std::move(options));
 
-  ASSERT_EQ(1u, cookies.size());
+  ASSERT_THAT(cookies, testing::SizeIs(1));
 
   EXPECT_EQ("cookie-name", cookies[0].Name());
   EXPECT_EQ("cookie-value", cookies[0].Value());
@@ -205,7 +205,7 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlStartsWithMatch) {
       GURL("http://example.com/test/"), GURL("http://example.com"),
       std::move(options));
 
-  ASSERT_EQ(2u, cookies.size());
+  ASSERT_THAT(cookies, testing::SizeIs(2));
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
   EXPECT_EQ("cookie-name-2", cookies[0].Name());
@@ -231,10 +231,82 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
       GURL("http://example.com/test/"), GURL("http://example.com"),
       std::move(options));
 
-  ASSERT_EQ(1u, cookies.size());
+  ASSERT_THAT(cookies, testing::SizeIs(1));
 
   EXPECT_EQ("new-name", cookies[0].Name());
   EXPECT_EQ("new-value", cookies[0].Value());
+}
+
+namespace {
+
+// Stashes the cookie changes it receives, for testing.
+class TestCookieChangeListener : public network::mojom::CookieChangeListener {
+ public:
+  // Records a cookie change received from RestrictedCookieManager.
+  struct Change {
+    Change(const net::CanonicalCookie& cookie,
+           network::mojom::CookieChangeCause change_cause)
+        : cookie(cookie), change_cause(change_cause) {}
+
+    net::CanonicalCookie cookie;
+    network::mojom::CookieChangeCause change_cause;
+  };
+
+  TestCookieChangeListener(network::mojom::CookieChangeListenerRequest request)
+      : binding_(this, std::move(request)) {}
+  ~TestCookieChangeListener() override = default;
+
+  // Spin in a run loop until a change is received.
+  void WaitForChange() {
+    base::RunLoop loop;
+    run_loop_ = &loop;
+    loop.Run();
+    run_loop_ = nullptr;
+  }
+
+  // Changes received by this listener.
+  const std::vector<Change>& observed_changes() const {
+    return observed_changes_;
+  }
+
+  // network::mojom::CookieChangeListener
+  void OnCookieChange(const net::CanonicalCookie& cookie,
+                      network::mojom::CookieChangeCause change_cause) override {
+    observed_changes_.emplace_back(cookie, change_cause);
+
+    if (run_loop_)  // Set in WaitForChange().
+      run_loop_->Quit();
+  }
+
+ private:
+  std::vector<Change> observed_changes_;
+  mojo::Binding<network::mojom::CookieChangeListener> binding_;
+
+  // If not null, will be stopped when a cookie change notification is received.
+  base::RunLoop* run_loop_ = nullptr;
+};
+
+}  // anonymous namespace
+
+TEST_F(RestrictedCookieManagerTest, ChangeDispatch) {
+  network::mojom::CookieChangeListenerPtr listener_ptr;
+  network::mojom::CookieChangeListenerRequest request(
+      mojo::MakeRequest(&listener_ptr));
+  service_->AddChangeListener(GURL("http://example.com/test/"),
+                              GURL("http://example.com"),
+                              std::move(listener_ptr));
+  TestCookieChangeListener listener(std::move(request));
+
+  ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
+
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  listener.WaitForChange();
+
+  ASSERT_THAT(listener.observed_changes(), testing::SizeIs(1));
+  EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
+            listener.observed_changes()[0].change_cause);
+  EXPECT_EQ("cookie-name", listener.observed_changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value", listener.observed_changes()[0].cookie.Value());
 }
 
 }  // namespace network

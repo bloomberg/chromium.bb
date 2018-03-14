@@ -9,6 +9,7 @@
     "modules/battery/BatteryManager",
     "modules/bluetooth/BluetoothDevice",
     "modules/bluetooth/BluetoothRemoteGATTCharacteristic",
+    "modules/cookiestore/CookieStore",
     "modules/encryptedmedia/MediaKeySession",
     "modules/filesystem/FileWriter",
     "modules/imagecapture/ImageCapture",

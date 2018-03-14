@@ -1,0 +1,14 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
+
+[
+  Exposed=(ServiceWorker,Window),
+  RuntimeEnabled=AsyncCookies,
+  Constructor(DOMString type, optional CookieChangeEventInit eventInitDict)
+] interface CookieChangeEvent : Event {
+  readonly attribute CookieList changed;
+  readonly attribute CookieList deleted;
+};

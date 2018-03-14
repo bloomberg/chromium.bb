@@ -7,7 +7,7 @@
 [
   Exposed=(ServiceWorker,Window),
   RuntimeEnabled=AsyncCookies
-] interface CookieStore {
+] interface CookieStore : EventTarget {
   // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md#reading
   [CallWith=ScriptState, RaisesException] Promise<CookieList?> getAll(
       USVString name, optional CookieStoreGetOptions options);
@@ -32,4 +32,6 @@
       USVString name, optional CookieStoreSetOptions options);
   [CallWith=ScriptState, ImplementedAs=Delete, RaisesException] Promise<void> delete(
       CookieStoreSetOptions options);
+
+  attribute EventHandler onchange;
 };

@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/events/EventTarget.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -21,8 +23,9 @@ class CookieStoreSetOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class CookieStore final : public ScriptWrappable,
-                          public ContextLifecycleObserver {
+class CookieStore final : public EventTargetWithInlineData,
+                          public ContextLifecycleObserver,
+                          public network::mojom::blink::CookieChangeListener {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
 
@@ -31,8 +34,10 @@ class CookieStore final : public ScriptWrappable,
   ~CookieStore();
 
   static CookieStore* Create(
-      ExecutionContext*,
-      network::mojom::blink::RestrictedCookieManagerPtr backend);
+      ExecutionContext* execution_context,
+      network::mojom::blink::RestrictedCookieManagerPtr backend) {
+    return new CookieStore(execution_context, std::move(backend));
+  }
 
   ScriptPromise getAll(ScriptState*,
                        const CookieStoreGetOptions&,
@@ -72,13 +77,31 @@ class CookieStore final : public ScriptWrappable,
                        const CookieStoreSetOptions&,
                        ExceptionState&);
 
+  // GarbageCollected
   void Trace(blink::Visitor* visitor) override {
-    ScriptWrappable::Trace(visitor);
+    EventTargetWithInlineData::Trace(visitor);
     ContextLifecycleObserver::Trace(visitor);
   }
 
   // ActiveScriptWrappable
   void ContextDestroyed(ExecutionContext*) override;
+
+  // EventTargetWithInlineData
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  void RemoveAllEventListeners() override;
+
+  // RestrictedCookieChangeListener
+  void OnCookieChange(network::mojom::blink::CanonicalCookiePtr,
+                      network::mojom::blink::CookieChangeCause) override;
+
+ protected:
+  // EventTarget overrides.
+  void AddedEventListener(const AtomicString& event_type,
+                          RegisteredEventListener&) final;
+  void RemovedEventListener(const AtomicString& event_type,
+                            const RegisteredEventListener&) final;
 
  private:
   using DoReadBackendResultConverter =
@@ -129,7 +152,34 @@ class CookieStore final : public ScriptWrappable,
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,
                                          bool backend_result);
 
+  // Called when a change event listener is added.
+  //
+  // This is idempotent during the time intervals between StopObserving() calls.
+  void StartObserving();
+
+  // Called when all the change event listeners have been removed.
+  void StopObserving();
+
+  // Wraps an always-on Mojo pipe for sending requests to the Network Service.
   network::mojom::blink::RestrictedCookieManagerPtr backend_;
+
+  // Wraps a Mojo pipe used to receive cookie change notifications.
+  //
+  // This binding is set up on-demand, when the cookie store has at least one
+  // change event listener. If all the listeners are unregistered, the binding
+  // is torn down.
+  mojo::Binding<network::mojom::blink::CookieChangeListener>
+      change_listener_binding_;
+
+  // Default for cookie_url in CookieStoreGetOptions.
+  //
+  // This is the current document's URL. API calls coming from a document
+  // context are not allowed to specify a different cookie_url, whereas Service
+  // Workers may specify any URL that falls under their registration.
+  const KURL default_cookie_url_;
+
+  // The RFC 6265bis "site for cookies" for this store's ExecutionContext.
+  const KURL default_site_for_cookies_;
 };
 
 }  // namespace blink
