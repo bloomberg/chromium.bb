@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/web_ui.h"
+#include "net/base/filename_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // static
@@ -85,9 +86,11 @@ void JavaScriptBrowserTest::BuildJavascriptLibraries(
        user_libraries_iterator != user_libraries_.end();
        ++user_libraries_iterator) {
     std::string library_content;
+    base::FilePath library_absolute_path;
     if (user_libraries_iterator->IsAbsolute()) {
+      library_absolute_path = *user_libraries_iterator;
       ASSERT_TRUE(
-          base::ReadFileToString(*user_libraries_iterator, &library_content))
+          base::ReadFileToString(library_absolute_path, &library_content))
           << user_libraries_iterator->value();
     } else {
       bool ok = false;
@@ -95,10 +98,9 @@ void JavaScriptBrowserTest::BuildJavascriptLibraries(
       for (library_search_path_iterator = library_search_paths_.begin();
            library_search_path_iterator != library_search_paths_.end();
            ++library_search_path_iterator) {
-        ok = base::ReadFileToString(
-            base::MakeAbsoluteFilePath(
-                library_search_path_iterator->Append(*user_libraries_iterator)),
-            &library_content);
+        library_absolute_path = base::MakeAbsoluteFilePath(
+            library_search_path_iterator->Append(*user_libraries_iterator));
+        ok = base::ReadFileToString(library_absolute_path, &library_content);
         if (ok)
           break;
       }
@@ -109,7 +111,8 @@ void JavaScriptBrowserTest::BuildJavascriptLibraries(
 
     // This magic code puts filenames in stack traces.
     library_content.append("//# sourceURL=");
-    library_content.append(user_libraries_iterator->BaseName().AsUTF8Unsafe());
+    library_content.append(
+        net::FilePathToFileURL(library_absolute_path).spec());
     library_content.append("\n");
     libraries->push_back(base::UTF8ToUTF16(library_content));
   }
