@@ -54,6 +54,10 @@
         "input_device_controller": [
           "ui::mojom::InputDeviceController"
         ],
+        "privileged": [
+          // Injecting events is security-sensitive.
+          "ui::mojom::RemoteEventDispatcher"
+        ],
         "window_manager": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "display::mojom::DisplayController",

@@ -7,14 +7,20 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
@@ -166,8 +172,36 @@ void AutoclickApplication::UpdateAutoclickRingWidget(
 
 void AutoclickApplication::DoAutoclick(const gfx::Point& point_in_screen,
                                        const int mouse_event_flags) {
-  // TODO(riajiang): Currently not working. Need to know how to generate events
-  // in mus world. https://crbug.com/628665
+  // The window service expects display pixel coordinates for events.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point_in_screen);
+  gfx::Point point_in_root(point_in_screen);
+  point_in_root -= display.bounds().OffsetFromOrigin();
+  gfx::Point point_in_pixels =
+      gfx::ScaleToFlooredPoint(point_in_root, display.device_scale_factor());
+
+  // Connect to the window service event generation interface.
+  ui::mojom::RemoteEventDispatcherPtr remote_event_dispatcher;
+  context()->connector()->BindInterface(ui::mojom::kServiceName,
+                                        &remote_event_dispatcher);
+
+  // Inject a synthetic click.
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, point_in_pixels,
+                             point_in_pixels, ui::EventTimeForNow(),
+                             mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, point_in_pixels,
+                               point_in_pixels, ui::EventTimeForNow(),
+                               mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+  remote_event_dispatcher->DispatchEvent(
+      display.id(), std::make_unique<ui::PointerEvent>(press_event),
+      base::BindOnce([](bool result) { DCHECK(result); }));
+  // Don't check the next dispatch result because it's possible the first event
+  // will initiate shutdown.
+  remote_event_dispatcher->DispatchEvent(
+      display.id(), std::make_unique<ui::PointerEvent>(release_event),
+      base::DoNothing());
 }
 
 void AutoclickApplication::OnAutoclickCanceled() {

@@ -24,6 +24,9 @@ class Widget;
 
 namespace autoclick {
 
+// AutoclickApplication is a mojo mini-app that implements the accessibility
+// autoclick feature. The feature watches for the mouse to stop moving then
+// generates a click after a short delay.
 class AutoclickApplication : public service_manager::Service,
                              public mash::mojom::Launchable,
                              public mojom::AutoclickController,

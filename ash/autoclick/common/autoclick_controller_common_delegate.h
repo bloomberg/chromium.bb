@@ -28,7 +28,8 @@ class AutoclickControllerCommonDelegate {
   virtual void UpdateAutoclickRingWidget(views::Widget* widget,
                                          const gfx::Point& point_in_screen) = 0;
 
-  // Generates a click with |mouse_event_flags| at |point_in_screen|.
+  // Generates a click at |point_in_screen|. |mouse_event_flags| may contain key
+  // modifiers (e.g. shift, control) for the click.
   virtual void DoAutoclick(const gfx::Point& point_in_screen,
                            const int mouse_event_flags) = 0;
 
