@@ -130,12 +130,12 @@ bool SurfacelessSkiaRenderer::BufferWrapper::Initialize(
   GrGLTextureInfo texture_info;
   texture_info.fTarget = GL_TEXTURE_2D;
   texture_info.fID = gl_tex_;
-  texture_info.fFormat = GL_RGBA;
+  texture_info.fFormat = GL_BGRA8_EXT;
   GrBackendTexture backend_texture(size_.width(), size_.height(),
-                                   kRGBA_8888_GrPixelConfig, texture_info);
-  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, 0, nullptr,
-      nullptr);
+                                   GrMipMapped::kNo, texture_info);
+  sk_surface_ = SkSurface::MakeFromBackendTexture(
+      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, 0,
+      kBGRA_8888_SkColorType, nullptr, nullptr);
   if (!sk_surface_) {
     LOG(ERROR) << "Failed to create skia surface";
     return false;
