@@ -161,7 +161,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
       "--tool-path=%s "
       "--tool-arg=--extra-arg=-resource-dir=%s "
       "--tool-arg=--extra-arg=-Wno-comment "
-      "--tool-arg=--extra-arg=-Wno-tautological-unsigned-enum-zero-compare ",
+      "--tool-arg=--extra-arg=-Wno-tautological-unsigned-enum-zero-compare "
+      "--tool-arg=--extra-arg=-Wno-tautological-constant-compare ",
       build_path_.MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
