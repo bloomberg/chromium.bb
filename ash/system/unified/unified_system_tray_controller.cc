@@ -17,6 +17,8 @@
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray_accessibility.h"
+#include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -91,12 +93,23 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
                                  BubbleCreationType::BUBBLE_USE_EXISTING);
 }
 
+void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
+  // TODO(tetsui): Implement UnifiedSystemTray's Accessibility detailed view.
+
+  // Initially create default view to set |default_bubble_height_|.
+  system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
+                                true /* show_by_click */);
+  system_tray_->ShowDetailedView(system_tray_->GetTrayAccessibility(), 0,
+                                 BubbleCreationType::BUBBLE_USE_EXISTING);
+}
+
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
+  AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
   // TODO(tetsui): Add more feature pod items in spec.

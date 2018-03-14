@@ -410,6 +410,10 @@ TrayBluetooth* SystemTray::GetTrayBluetooth() const {
   return tray_bluetooth_;
 }
 
+TrayAccessibility* SystemTray::GetTrayAccessibility() const {
+  return tray_accessibility_;
+}
+
 void SystemTray::CanSwitchAwayFromActiveUser(
     base::OnceCallback<void(bool)> callback) {
   // If neither screen sharing nor capturing is going on we can immediately
