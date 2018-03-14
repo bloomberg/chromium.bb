@@ -33,17 +33,6 @@ static uint16_t inv_recenter_finite_nonneg(uint16_t n, uint16_t r, uint16_t v) {
   }
 }
 
-int16_t aom_read_primitive_symmetric_(aom_reader *r,
-                                      unsigned int mag_bits ACCT_STR_PARAM) {
-  if (aom_read_bit(r, ACCT_STR_NAME)) {
-    int s = aom_read_bit(r, ACCT_STR_NAME);
-    int16_t x = aom_read_literal(r, mag_bits, ACCT_STR_NAME) + 1;
-    return (s > 0 ? -x : x);
-  } else {
-    return 0;
-  }
-}
-
 uint16_t aom_read_primitive_quniform_(aom_reader *r,
                                       uint16_t n ACCT_STR_PARAM) {
   if (n <= 1) return 0;
@@ -124,17 +113,6 @@ static uint16_t aom_rb_read_primitive_refsubexpfin(
     struct aom_read_bit_buffer *rb, uint16_t n, uint16_t k, uint16_t ref) {
   return inv_recenter_finite_nonneg(n, ref,
                                     aom_rb_read_primitive_subexpfin(rb, n, k));
-}
-
-// Decode finite subexponential code that for a symbol v in [-(n-1), n-1] with
-// parameter k based on a reference ref also in [-(n-1), n-1].
-int16_t aom_read_signed_primitive_refsubexpfin_(aom_reader *r, uint16_t n,
-                                                uint16_t k,
-                                                int16_t ref ACCT_STR_PARAM) {
-  ref += n - 1;
-  const uint16_t scaled_n = (n << 1) - 1;
-  return aom_read_primitive_refsubexpfin(r, scaled_n, k, ref, ACCT_STR_NAME) -
-         n + 1;
 }
 
 int16_t aom_rb_read_signed_primitive_refsubexpfin(
