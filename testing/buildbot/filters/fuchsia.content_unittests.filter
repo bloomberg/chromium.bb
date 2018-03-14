@@ -31,7 +31,7 @@
 -MediaStreamManagerTest.MakeMultipleRequests
 
 # Flaky: http://crbug.com/819924.
--WebMediaPlayerMSTest.CreateHardwareFrames
+-WebMediaPlayerMSTest.*HardwareFrames*
 
 # Failing: https://crbug.com/771701.
 -IndexedDBFactoryTest.DataFormatVersion
