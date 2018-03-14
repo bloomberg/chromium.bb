@@ -30,8 +30,8 @@
   async function search(label, isRegex, ignoreCase) {
     TestRunner.addResult(label);
     const view = await Search.SearchView.openSearch('network.searchInNetwork', 'd.search');
-    view._ignoreCaseCheckbox.setChecked(ignoreCase);
-    view._regexCheckbox.setChecked(isRegex);
+    view._matchCaseButton.setToggled(!ignoreCase);
+    view._regexButton.setToggled(isRegex);
     const promise = TestRunner.addSnifferPromise(view, '_searchFinished');
     view._onAction();
     await promise;
