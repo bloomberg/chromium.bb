@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
@@ -21,7 +22,14 @@
 #include "third_party/WebKit/public/common/client_hints/client_hints.h"
 #include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/WebKit/public/platform/WebClientHintsType.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "content/public/browser/host_zoom_map.h"
+#include "content/public/common/page_zoom.h"
+#endif  // !OS_ANDROID
 
 namespace {
 
@@ -90,6 +98,42 @@ GetAdditionalNavigationRequestClientHintsHeaders(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDeviceMemory)],
         base::NumberToString(device_memory));
+  }
+
+  if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDpr)) {
+    double device_scale_factor = 1.0;
+    if (display::Screen::GetScreen()) {
+      device_scale_factor = display::Screen::GetScreen()
+                                ->GetPrimaryDisplay()
+                                .device_scale_factor();
+    }
+
+    double zoom_factor = 1.0;
+
+// Android does not have the concept of zooming in like desktop.
+#if !defined(OS_ANDROID)
+    double zoom_level =
+        content::HostZoomMap::GetDefaultForBrowserContext(context)
+            ->GetZoomLevelForHostAndScheme(url.scheme(),
+                                           net::GetHostOrSpecFromURL(url));
+
+    double default_zoom_level =
+        content::HostZoomMap::GetDefaultForBrowserContext(context)
+            ->GetDefaultZoomLevel();
+
+    if (zoom_level <= 0.0)
+      zoom_level = default_zoom_level;
+
+    if (zoom_level > 0.0)
+      zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+#endif  // !OS_ANDROID
+
+    DCHECK_LT(0.0, device_scale_factor);
+
+    additional_headers->SetHeader(
+        blink::kClientHintsHeaderMapping[static_cast<int>(
+            blink::mojom::WebClientHintsType::kDpr)],
+        base::NumberToString(device_scale_factor * zoom_factor));
   }
 
   // Static assert that triggers if a new client hint header is added. If a new
