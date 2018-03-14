@@ -56,6 +56,12 @@ int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
     case OBU_SEQUENCE_HEADER:
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
+#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
+    case OBU_REDUNDANT_FRAME_HEADER:
+#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
+#if CONFIG_OBU_FRAME
+    case OBU_FRAME:
+#endif  // CONFIG_OBU_FRAME
     case OBU_TILE_GROUP:
     case OBU_METADATA:
     case OBU_PADDING: break;
@@ -71,8 +77,13 @@ static int valid_obu_type(int obu_type) {
     case OBU_SEQUENCE_HEADER:
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
-    case OBU_TILE_GROUP:
+#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
+    case OBU_REDUNDANT_FRAME_HEADER:
+#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
+#if CONFIG_OBU_FRAME
     case OBU_FRAME:
+#endif  // CONFIG_OBU_FRAME
+    case OBU_TILE_GROUP:
     case OBU_METADATA:
     case OBU_PADDING: valid_type = 1; break;
     default: break;
@@ -423,6 +434,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_OBU_FRAME
       case OBU_FRAME:
 #endif  // CONFIG_OBU_FRAME
+#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
+      case OBU_REDUNDANT_FRAME_HEADER:
+#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
       case OBU_FRAME_HEADER:
         // Only decode first frame header received
         if (!frame_header_received) {
