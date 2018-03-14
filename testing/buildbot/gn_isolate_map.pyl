@@ -784,7 +784,7 @@
     ],
   },
   "media_router_tests": {
-    "label": "//chrome/test/media_router:media_router_tests",
+    "label": "//chrome/test/media_router:media_router_e2e_tests",
     "type": "script",
     "script": "//chrome/test/media_router/internal/media_router_tests.py",
     "args": [
