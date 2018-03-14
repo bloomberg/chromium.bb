@@ -126,6 +126,9 @@ void FormTracker::FormControlDidChangeImpl(
     const WebFormControlElement& element,
     Observer::ElementChangeSource change_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
+  // Render frame could be gone as this is the post task.
+  if (!render_frame()) return;
+
   if (element.Form().IsNull()) {
     last_interacted_formless_element_ = element;
   } else {
