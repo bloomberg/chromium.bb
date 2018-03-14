@@ -38,17 +38,17 @@ namespace ui {
 namespace ws {
 
 DisplayManager::DisplayManager(WindowServer* window_server)
-    // |next_root_id_| is used as the lower bits, so that starting at 0 is
-    // fine. |next_display_id_| is used by itself, so we start at 1 to reserve
-    // 0 as invalid.
     : window_server_(window_server),
       cursor_location_manager_(std::make_unique<CursorLocationManager>()) {
 #if defined(OS_CHROMEOS)
-  // TODO: http://crbug.com/701468 fix function key preferences and sticky keys.
-  ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
-  ui::EventRewriter* sticky_keys_controller = nullptr;
-  event_rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
-      delegate, sticky_keys_controller);
+  if (window_server->is_hosting_viz()) {
+    // TODO: http://crbug.com/701468 fix function key preferences and sticky
+    // keys.
+    ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
+    ui::EventRewriter* sticky_keys_controller = nullptr;
+    event_rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
+        delegate, sticky_keys_controller);
+  }
 #endif
 }
 
