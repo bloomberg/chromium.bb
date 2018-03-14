@@ -93,6 +93,9 @@ void TextServicesContextMenu::AppendToContextMenu(SimpleMenuModel* model) {
 }
 
 void TextServicesContextMenu::AppendEditableItems(SimpleMenuModel* model) {
+  // MacOS provides a contextual menu to set writing direction for BiDi
+  // languages. This functionality is exposed as a keyboard shortcut on
+  // Windows and Linux.
   model->AddSubMenuWithStringId(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
                                 IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
                                 &bidi_submenu_model_);

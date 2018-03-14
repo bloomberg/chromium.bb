@@ -58,6 +58,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/secure_password_input.h"
+#include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -660,10 +661,6 @@ void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
   browser_compositor_->UpdateVSyncParameters(vsync_timebase_, vsync_interval_);
 }
 
-void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
-  [NSApp speakString:base::SysUTF8ToNSString(text)];
-}
-
 RenderWidgetHostViewBase*
     RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
@@ -1091,11 +1088,6 @@ gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() const {
   return browser_compositor_->GetRendererSize();
 }
 
-bool RenderWidgetHostViewMac::SupportsSpeech() const {
-  return [NSApp respondsToSelector:@selector(speakString:)] &&
-         [NSApp respondsToSelector:@selector(stopSpeaking:)];
-}
-
 void RenderWidgetHostViewMac::SpeakSelection() {
   if (![NSApp respondsToSelector:@selector(speakString:)])
     return;
@@ -1114,16 +1106,7 @@ void RenderWidgetHostViewMac::SpeakSelection() {
     return;
   }
 
-  SpeakText(base::UTF16ToUTF8(selection->selected_text()));
-}
-
-bool RenderWidgetHostViewMac::IsSpeaking() const {
-  return [NSApp respondsToSelector:@selector(isSpeaking)] && [NSApp isSpeaking];
-}
-
-void RenderWidgetHostViewMac::StopSpeaking() {
-  if ([NSApp respondsToSelector:@selector(stopSpeaking:)])
-    [NSApp stopSpeaking:cocoa_view_];
+  ui::TextServicesContextMenu::SpeakText(selection->selected_text());
 }
 
 //
@@ -1686,7 +1669,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
     const std::string& text) {
-  SpeakText(text);
+  ui::TextServicesContextMenu::SpeakText(base::UTF8ToUTF16(text));
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
@@ -2916,10 +2899,10 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
       nullptr;
 
   if (action == @selector(stopSpeaking:))
-    return is_render_view && renderWidgetHostView_->IsSpeaking();
+    return is_render_view && ui::TextServicesContextMenu::IsSpeaking();
 
   if (action == @selector(startSpeaking:))
-    return is_render_view && renderWidgetHostView_->SupportsSpeech();
+    return is_render_view;
 
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
@@ -3518,7 +3501,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)stopSpeaking:(id)sender {
-  GetRenderWidgetHostViewToUse(renderWidgetHostView_.get())->StopSpeaking();
+  ui::TextServicesContextMenu::StopSpeaking();
 }
 
 - (void)cancelComposition {
