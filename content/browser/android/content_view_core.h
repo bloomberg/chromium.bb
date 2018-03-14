@@ -37,7 +37,6 @@ class RenderWidgetHostViewAndroid;
 
 class ContentViewCore : public WebContentsObserver {
  public:
-  static ContentViewCore* FromWebContents(WebContents* web_contents);
   ContentViewCore(JNIEnv* env,
                   const base::android::JavaRef<jobject>& obj,
                   WebContents* web_contents,

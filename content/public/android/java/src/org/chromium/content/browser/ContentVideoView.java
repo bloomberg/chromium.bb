@@ -24,6 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -297,11 +298,11 @@ public class ContentVideoView extends FrameLayout
      * ContentVideoView assumes that zero size means video has not been loaded yet.
      */
     @CalledByNative
-    private static ContentVideoView createContentVideoView(ContentViewCore contentViewCore,
-            ContentVideoViewEmbedder embedder, long nativeContentVideoView,
-            int videoWidth, int videoHeight) {
+    private static ContentVideoView createContentVideoView(WebContents webContents,
+            ContentVideoViewEmbedder embedder, long nativeContentVideoView, int videoWidth,
+            int videoHeight) {
         ThreadUtils.assertOnUiThread();
-        Context context = contentViewCore.getContext();
+        Context context = ContentViewCore.fromWebContents(webContents).getContext();
         ContentVideoView videoView = new ContentVideoView(
                 context, nativeContentVideoView, embedder, videoWidth, videoHeight);
         return videoView;

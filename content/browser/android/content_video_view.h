@@ -11,10 +11,15 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/android/content_view_core.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace content {
+
+class WebContents;
 
 // Native mirror of ContentVideoView.java. This class is responsible for
 // creating the Java video view and passing changes in player status to it.
@@ -43,7 +48,7 @@ class ContentVideoView {
   };
 
   explicit ContentVideoView(Client* client,
-                            ContentViewCore* content_view_core,
+                            WebContents* web_contents,
                             const base::android::JavaRef<jobject>& embedder,
                             const gfx::Size& video_natural_size);
   ~ContentVideoView();
@@ -90,7 +95,7 @@ class ContentVideoView {
  private:
   // Creates the corresponding ContentVideoView Java object.
   JavaObjectWeakGlobalRef CreateJavaObject(
-      ContentViewCore* content_view_core,
+      WebContents* web_contents,
       const base::android::JavaRef<jobject>& j_content_video_view_embedder,
       const gfx::Size& video_natural_size);
 

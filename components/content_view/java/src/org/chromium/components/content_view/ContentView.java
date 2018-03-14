@@ -40,7 +40,7 @@ public class ContentView
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
-    protected final ContentViewCore mContentViewCore;
+    private final WebContents mWebContents;
     private EventForwarder mEventForwarder;
 
     /**
@@ -57,20 +57,20 @@ public class ContentView
      * @param cvc A pointer to the content view core managing this content view.
      * @return an instance of a ContentView.
      */
-    public static ContentView createContentView(Context context, ContentViewCore cvc) {
+    public static ContentView createContentView(Context context, WebContents webContents) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new ContentViewApi23(context, cvc);
+            return new ContentViewApi23(context, webContents);
         }
-        return new ContentView(context, cvc);
+        return new ContentView(context, webContents);
     }
 
     /**
      * Creates an instance of a ContentView.
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
-     * @param cvc A pointer to the content view core managing this content view.
+     * @param webContents A pointer to the WebContents managing this content view.
      */
-    ContentView(Context context, ContentViewCore cvc) {
+    ContentView(Context context, WebContents webContents) {
         super(context, null, android.R.attr.webViewStyle);
 
         if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
@@ -78,15 +78,14 @@ public class ContentView
             setVerticalScrollBarEnabled(false);
         }
 
+        mWebContents = webContents;
+
         setFocusable(true);
         setFocusableInTouchMode(true);
-
-        mContentViewCore = cvc;
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
-        WebContents webContents = getWebContents();
-        return webContents != null ? WebContentsAccessibility.fromWebContents(webContents) : null;
+        return WebContentsAccessibility.fromWebContents(mWebContents);
     }
 
     @Override
@@ -134,14 +133,13 @@ public class ContentView
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if (getWebContents() == null) return null;
-        return ImeAdapter.fromWebContents(getWebContents()).onCreateInputConnection(outAttrs);
+        return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (getWebContents() == null) return false;
-        return ImeAdapter.fromWebContents(getWebContents()).onCheckIsTextEditor();
+        if (mWebContents == null) return false;
+        return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 
     @Override
@@ -149,7 +147,8 @@ public class ContentView
         try {
             TraceEvent.begin("ContentView.onFocusChanged");
             super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-            mContentViewCore.onFocusChanged(gainFocus, true /* hideKeyboardOnBlur */);
+            ContentViewCore cvc = getContentViewCore();
+            if (cvc != null) cvc.onFocusChanged(gainFocus, true /* hideKeyboardOnBlur */);
         } finally {
             TraceEvent.end("ContentView.onFocusChanged");
         }
@@ -158,18 +157,23 @@ public class ContentView
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        mContentViewCore.onWindowFocusChanged(hasWindowFocus);
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onWindowFocusChanged(hasWindowFocus);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return mContentViewCore.onKeyUp(keyCode, event);
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (isFocused()) {
-            return mContentViewCore.dispatchKeyEvent(event);
+            ContentViewCore cvc = getContentViewCore();
+            assert cvc != null;
+            return cvc.dispatchKeyEvent(event);
         } else {
             return super.dispatchKeyEvent(event);
         }
@@ -200,16 +204,19 @@ public class ContentView
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return mContentViewCore.onGenericMotionEvent(event);
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.onGenericMotionEvent(event);
     }
 
-    private WebContents getWebContents() {
-        return mContentViewCore.getWebContents();
+    private ContentViewCore getContentViewCore() {
+        ContentViewCore cvc = ContentViewCore.fromWebContents(mWebContents);
+        return cvc != null && cvc.isAlive() ? cvc : null;
     }
 
     private EventForwarder getEventForwarder() {
         if (mEventForwarder == null) {
-            mEventForwarder = mContentViewCore.getWebContents().getEventForwarder();
+            mEventForwarder = mWebContents.getEventForwarder();
         }
         return mEventForwarder;
     }
@@ -221,7 +228,8 @@ public class ContentView
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
-        mContentViewCore.onConfigurationChanged(newConfig);
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onConfigurationChanged(newConfig);
     }
 
     /**
@@ -232,75 +240,93 @@ public class ContentView
      */
     @Override
     public void scrollBy(int x, int y) {
-        mContentViewCore.scrollBy(x, y);
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.scrollBy(x, y);
     }
 
     @Override
     public void scrollTo(int x, int y) {
-        mContentViewCore.scrollTo(x, y);
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.scrollTo(x, y);
     }
 
     @Override
     protected int computeHorizontalScrollExtent() {
         // TODO(dtrainor): Need to expose scroll events properly to public. Either make getScroll*
         // work or expose computeHorizontalScrollOffset()/computeVerticalScrollOffset as public.
-        return mContentViewCore.computeHorizontalScrollExtent();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeHorizontalScrollExtent();
     }
 
     @Override
     protected int computeHorizontalScrollOffset() {
-        return mContentViewCore.computeHorizontalScrollOffset();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeHorizontalScrollOffset();
     }
 
     @Override
     protected int computeHorizontalScrollRange() {
-        return mContentViewCore.computeHorizontalScrollRange();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeHorizontalScrollRange();
     }
 
     @Override
     protected int computeVerticalScrollExtent() {
-        return mContentViewCore.computeVerticalScrollExtent();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeVerticalScrollExtent();
     }
 
     @Override
     protected int computeVerticalScrollOffset() {
-        return mContentViewCore.computeVerticalScrollOffset();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeVerticalScrollOffset();
     }
 
     @Override
     protected int computeVerticalScrollRange() {
-        return mContentViewCore.computeVerticalScrollRange();
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.computeVerticalScrollRange();
     }
 
     // End FrameLayout overrides.
 
     @Override
     public boolean awakenScrollBars(int startDelay, boolean invalidate) {
-        return mContentViewCore.awakenScrollBars(startDelay, invalidate);
+        ContentViewCore cvc = getContentViewCore();
+        assert cvc != null;
+        return cvc.awakenScrollBars(startDelay, invalidate);
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mContentViewCore.onAttachedToWindow();
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onAttachedToWindow();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mContentViewCore.onDetachedFromWindow();
+        ContentViewCore cvc = getContentViewCore();
+        if (cvc != null) cvc.onDetachedFromWindow();
     }
 
     // Implements SmartClipProvider
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
-        mContentViewCore.getWebContents().requestSmartClipExtract(x, y, width, height);
+        mWebContents.requestSmartClipExtract(x, y, width, height);
     }
 
     // Implements SmartClipProvider
     @Override
     public void setSmartClipResultHandler(final Handler resultHandler) {
-        mContentViewCore.getWebContents().setSmartClipResultHandler(resultHandler);
+        mWebContents.setSmartClipResultHandler(resultHandler);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,8 +363,8 @@ public class ContentView
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     private static class ContentViewApi23 extends ContentView {
-        public ContentViewApi23(Context context, ContentViewCore cvc) {
-            super(context, cvc);
+        public ContentViewApi23(Context context, WebContents webContents) {
+            super(context, webContents);
         }
 
         @Override

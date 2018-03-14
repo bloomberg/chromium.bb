@@ -81,12 +81,6 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
              : nullptr;
 }
 
-#if !defined(USE_AURA)
-ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
-  return ContentViewCore::FromWebContents(web_contents());
-}
-#endif
-
 std::unique_ptr<MediaPlayerAndroid>
 BrowserMediaPlayerManager::CreateMediaPlayer(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params,
@@ -342,10 +336,7 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   base::android::ScopedJavaLocalRef<jobject> embedder(
       web_contents()->GetDelegate()->GetContentVideoViewEmbedder());
   video_view_.reset(
-      new ContentVideoView(this,
-                           GetContentViewCore(),
-                           embedder,
-                           natural_video_size));
+      new ContentVideoView(this, web_contents(), embedder, natural_video_size));
 
   base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
       video_view_->GetJavaObject(base::android::AttachCurrentThread());

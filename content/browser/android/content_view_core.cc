@@ -109,15 +109,6 @@ class ContentViewCore::ContentViewUserData
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentViewUserData);
 };
 
-// static
-ContentViewCore* ContentViewCore::FromWebContents(
-    content::WebContents* web_contents) {
-  ContentViewCore::ContentViewUserData* data =
-      static_cast<ContentViewCore::ContentViewUserData*>(
-          web_contents->GetUserData(kContentViewUserDataKey));
-  return data ? data->get() : NULL;
-}
-
 ContentViewCore::ContentViewCore(JNIEnv* env,
                                  const JavaRef<jobject>& obj,
                                  WebContents* web_contents,
@@ -478,22 +469,6 @@ jlong JNI_ContentViewCoreImpl_Init(
   ContentViewCore* view =
       new ContentViewCore(env, obj, web_contents, dip_scale);
   return reinterpret_cast<intptr_t>(view);
-}
-
-static ScopedJavaLocalRef<jobject>
-JNI_ContentViewCoreImpl_FromWebContentsAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jobject>& jweb_contents) {
-  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
-  if (!web_contents)
-    return ScopedJavaLocalRef<jobject>();
-
-  ContentViewCore* view = ContentViewCore::FromWebContents(web_contents);
-  if (!view)
-    return ScopedJavaLocalRef<jobject>();
-
-  return view->GetJavaObject();
 }
 
 }  // namespace content
