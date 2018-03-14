@@ -56,6 +56,13 @@ KeyedService* PolicyBlacklistFactory::BuildServiceInstanceFor(
   return new PolicyBlacklistService(std::move(url_blacklist_manager));
 }
 
+content::BrowserContext* PolicyBlacklistFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return context;
+}
+
 PolicyBlacklistNavigationThrottle::PolicyBlacklistNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     content::BrowserContext* context)

@@ -52,6 +52,10 @@ class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
+  // Finds which browser context (if any) to use.
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
+
   policy::URLBlacklistManager::OverrideBlacklistCallback override_blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistFactory);

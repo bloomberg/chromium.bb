@@ -2604,6 +2604,53 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   CheckCanOpenURL(browser(), kURLS[4]);
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistIncognito) {
+  // Checks that URLs can be blacklisted, and that exceptions can be made to
+  // the blacklist.
+
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string kURLS[] = {
+      embedded_test_server()->GetURL("aaa.com", "/empty.html").spec(),
+      embedded_test_server()->GetURL("bbb.com", "/empty.html").spec(),
+      embedded_test_server()->GetURL("sub.bbb.com", "/empty.html").spec(),
+      embedded_test_server()->GetURL("bbb.com", "/policy/blank.html").spec(),
+      embedded_test_server()->GetURL("bbb.com.", "/policy/blank.html").spec(),
+  };
+
+  // Verify that "bbb.com" opens before applying the blacklist.
+  CheckCanOpenURL(incognito_browser, kURLS[1]);
+
+  // Set a blacklist.
+  base::ListValue blacklist;
+  blacklist.AppendString("bbb.com");
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+  // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
+  CheckCanOpenURL(incognito_browser, kURLS[0]);
+  for (size_t i = 1; i < arraysize(kURLS); ++i)
+    CheckURLIsBlocked(incognito_browser, kURLS[i]);
+
+  // Whitelist some sites of bbb.com.
+  base::ListValue whitelist;
+  whitelist.AppendString("sub.bbb.com");
+  whitelist.AppendString("bbb.com/policy");
+  policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+  CheckURLIsBlocked(incognito_browser, kURLS[1]);
+  CheckCanOpenURL(incognito_browser, kURLS[2]);
+  CheckCanOpenURL(incognito_browser, kURLS[3]);
+  CheckCanOpenURL(incognito_browser, kURLS[4]);
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistAndWhitelist) {
   // Regression test for http://crbug.com/755256. Blacklisting * and
   // whitelisting an origin should work.
