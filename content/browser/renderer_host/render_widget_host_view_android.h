@@ -474,6 +474,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
 
+  bool controls_initialized_ = false;
   float prev_top_shown_pix_;
   float prev_bottom_shown_pix_;
   float page_scale_;

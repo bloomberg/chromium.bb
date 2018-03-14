@@ -1246,7 +1246,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
 
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
-  if (top_changed) {
+  if (top_changed || !controls_initialized_) {
     float translate = top_shown_pix - top_controls_pix;
     view_.OnTopControlsChanged(translate, top_shown_pix);
     prev_top_shown_pix_ = top_shown_pix;
@@ -1256,11 +1256,12 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   float bottom_shown_pix =
       bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
   bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
-  if (bottom_changed) {
+  if (bottom_changed || !controls_initialized_) {
     float translate = bottom_controls_pix - bottom_shown_pix;
     view_.OnBottomControlsChanged(translate, bottom_shown_pix);
     prev_bottom_shown_pix_ = bottom_shown_pix;
   }
+  controls_initialized_ = true;
 
   page_scale_ = frame_metadata.page_scale_factor;
   min_page_scale_ = frame_metadata.min_page_scale_factor;
