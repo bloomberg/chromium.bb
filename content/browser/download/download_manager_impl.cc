@@ -26,6 +26,8 @@
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_file.h"
+#include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
@@ -34,8 +36,6 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_file.h"
-#include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -381,7 +381,7 @@ void InProgressDownloadObserver::OnDownloadRemoved(
 
 DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
-      file_factory_(new DownloadFileFactory()),
+      file_factory_(new download::DownloadFileFactory()),
       shutdown_needed_(true),
       initialized_(false),
       history_db_initialized_(false),
@@ -655,7 +655,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     download->AddObserver(in_progress_download_observer_.get());
   }
 
-  std::unique_ptr<DownloadFile> download_file;
+  std::unique_ptr<download::DownloadFile> download_file;
 
   if (info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(stream.get());
@@ -797,11 +797,12 @@ void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
 }
 
 void DownloadManagerImpl::SetDownloadFileFactoryForTesting(
-    std::unique_ptr<DownloadFileFactory> file_factory) {
+    std::unique_ptr<download::DownloadFileFactory> file_factory) {
   file_factory_ = std::move(file_factory);
 }
 
-DownloadFileFactory* DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
+download::DownloadFileFactory*
+DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
   return file_factory_.get();
 }
 

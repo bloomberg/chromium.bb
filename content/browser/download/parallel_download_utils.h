@@ -9,7 +9,6 @@
 
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
-#include "content/browser/download/download_file_impl.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -47,26 +46,6 @@ FindSlicesForRemainingContent(int64_t current_offset,
                               int request_count,
                               int64_t min_slice_size);
 
-// Given an array of slices that are received, returns an array of slices to
-// download. |received_slices| must be ordered by offsets.
-CONTENT_EXPORT std::vector<download::DownloadItem::ReceivedSlice>
-FindSlicesToDownload(
-    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices);
-
-// Adds or merges a new received slice into a vector of sorted slices. If the
-// slice can be merged with the slice preceding it, merge the 2 slices.
-// Otherwise, insert the slice and keep the vector sorted. Returns the index
-// of the newly updated slice.
-CONTENT_EXPORT size_t AddOrMergeReceivedSliceIntoSortedArray(
-    const download::DownloadItem::ReceivedSlice& new_slice,
-    std::vector<download::DownloadItem::ReceivedSlice>& received_slices);
-
-// Returns if a preceding stream can still download the part of content that
-// was arranged to |error_stream|.
-CONTENT_EXPORT bool CanRecoverFromError(
-    const DownloadFileImpl::SourceStream* error_stream,
-    const DownloadFileImpl::SourceStream* preceding_neighbor);
-
 // Finch configuration utilities.
 //
 // Get the minimum slice size to use parallel download from finch configuration.
@@ -83,10 +62,6 @@ CONTENT_EXPORT base::TimeDelta GetParallelRequestDelayConfig();
 
 // Get the required remaining time before creating parallel requests.
 CONTENT_EXPORT base::TimeDelta GetParallelRequestRemainingTimeConfig();
-
-// Print the states of received slices for debugging.
-CONTENT_EXPORT void DebugSlicesInfo(
-    const download::DownloadItem::ReceivedSlices& slices);
 
 // Given an ordered array of slices, get the maximum size of a contiguous data
 // block that starts from offset 0. If the first slice doesn't start from offset

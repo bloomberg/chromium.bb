@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_INPUT_STREAM_H_
-#define CONTENT_BROWSER_DOWNLOAD_MOCK_INPUT_STREAM_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_INPUT_STREAM_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_INPUT_STREAM_H_
 
 #include "components/download/public/common/input_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace content {
+namespace download {
 
-class MockInputStream : public download::InputStream {
+class MockInputStream : public InputStream {
  public:
   MockInputStream();
   ~MockInputStream() override;
 
-  // download::InputStream functions
+  // InputStream functions
   MOCK_METHOD0(IsEmpty, bool());
   MOCK_METHOD1(RegisterDataReadyCallback,
                void(const mojo::SimpleWatcher::ReadyCallback&));
   MOCK_METHOD0(ClearDataReadyCallback, void());
   MOCK_METHOD2(Read,
-               download::InputStream::StreamState(scoped_refptr<net::IOBuffer>*,
-                                                  size_t*));
-  MOCK_METHOD0(GetCompletionStatus, download::DownloadInterruptReason());
+               InputStream::StreamState(scoped_refptr<net::IOBuffer>*,
+                                        size_t*));
+  MOCK_METHOD0(GetCompletionStatus, DownloadInterruptReason());
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_INPUT_STREAM_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_INPUT_STREAM_H_

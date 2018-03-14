@@ -33,13 +33,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUkmHelper {
                                     DownloadSource download_source);
 
   // Record when the download is interrupted.
-  static void RecordDownloadInterrupted(
-      int download_id,
-      base::Optional<int> change_in_file_size,
-      download::DownloadInterruptReason reason,
-      int resulting_file_size,
-      const base::TimeDelta& time_since_start,
-      int64_t bytes_wasted);
+  static void RecordDownloadInterrupted(int download_id,
+                                        base::Optional<int> change_in_file_size,
+                                        DownloadInterruptReason reason,
+                                        int resulting_file_size,
+                                        const base::TimeDelta& time_since_start,
+                                        int64_t bytes_wasted);
 
   // Record when the download is resumed.
   static void RecordDownloadResumed(int download_id,

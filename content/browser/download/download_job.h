@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
-#include "content/browser/download/download_file.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -30,8 +30,8 @@ class CONTENT_EXPORT DownloadJob {
   // Download operations.
   // TODO(qinmin): Remove the |callback| and |download_file_| parameter if
   // DownloadJob owns download file.
-  void Start(DownloadFile* download_file_,
-             DownloadFile::InitializeCallback callback,
+  void Start(download::DownloadFile* download_file_,
+             download::DownloadFile::InitializeCallback callback,
              const download::DownloadItem::ReceivedSlices& received_slices);
 
   virtual void Cancel(bool user_cancel);
@@ -55,7 +55,7 @@ class CONTENT_EXPORT DownloadJob {
  protected:
   // Callback from file thread when we initialize the DownloadFile.
   virtual void OnDownloadFileInitialized(
-      DownloadFile::InitializeCallback callback,
+      download::DownloadFile::InitializeCallback callback,
       download::DownloadInterruptReason result,
       int64_t bytes_wasted);
 

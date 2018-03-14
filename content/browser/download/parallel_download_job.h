@@ -37,9 +37,10 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
 
  protected:
   // DownloadJobImpl implementation.
-  void OnDownloadFileInitialized(DownloadFile::InitializeCallback callback,
-                                 download::DownloadInterruptReason result,
-                                 int64_t bytes_wasted) override;
+  void OnDownloadFileInitialized(
+      download::DownloadFile::InitializeCallback callback,
+      download::DownloadInterruptReason result,
+      int64_t bytes_wasted) override;
 
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;

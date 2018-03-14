@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_file_impl.h"
+#include "components/download/public/common/download_file_impl.h"
 
 #include <string>
 #include <utility>
@@ -19,15 +19,14 @@
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_stats.h"
-#include "content/browser/download/parallel_download_utils.h"
-#include "content/public/common/content_features.h"
+#include "components/download/public/common/parallel_download_utils.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/features.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -54,7 +53,7 @@ const int kUnknownContentLength = -1;
 DownloadFileImpl::SourceStream::SourceStream(
     int64_t offset,
     int64_t length,
-    std::unique_ptr<download::InputStream> stream)
+    std::unique_ptr<InputStream> stream)
     : offset_(offset),
       length_(length),
       bytes_written_(0),
@@ -87,7 +86,7 @@ void DownloadFileImpl::SourceStream::TruncateLengthWithWrittenDataBlock(
     return;
   }
 
-  if (length_ == download::DownloadSaveInfo::kLengthFullContent ||
+  if (length_ == DownloadSaveInfo::kLengthFullContent ||
       length_ > offset - offset_) {
     length_ = offset - offset_;
   }
@@ -102,8 +101,8 @@ void DownloadFileImpl::SourceStream::ClearDataReadyCallback() {
   input_stream_->ClearDataReadyCallback();
 }
 
-download::DownloadInterruptReason
-DownloadFileImpl::SourceStream::GetCompletionStatus() const {
+DownloadInterruptReason DownloadFileImpl::SourceStream::GetCompletionStatus()
+    const {
   return input_stream_->GetCompletionStatus();
 }
 
@@ -113,18 +112,18 @@ void DownloadFileImpl::SourceStream::RegisterCompletionCallback(
       base::BindOnce(std::move(callback), base::Unretained(this)));
 }
 
-download::InputStream::StreamState DownloadFileImpl::SourceStream::Read(
+InputStream::StreamState DownloadFileImpl::SourceStream::Read(
     scoped_refptr<net::IOBuffer>* data,
     size_t* length) {
   return input_stream_->Read(data, length);
 }
 
 DownloadFileImpl::DownloadFileImpl(
-    std::unique_ptr<download::DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<download::InputStream> stream,
+    std::unique_ptr<InputStream> stream,
     uint32_t download_id,
-    base::WeakPtr<download::DownloadDestinationObserver> observer)
+    base::WeakPtr<DownloadDestinationObserver> observer)
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        download_id,
@@ -134,10 +133,10 @@ DownloadFileImpl::DownloadFileImpl(
 }
 
 DownloadFileImpl::DownloadFileImpl(
-    std::unique_ptr<download::DownloadSaveInfo> save_info,
+    std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     uint32_t download_id,
-    base::WeakPtr<download::DownloadDestinationObserver> observer)
+    base::WeakPtr<DownloadDestinationObserver> observer)
     : file_(download_id),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
@@ -170,7 +169,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 void DownloadFileImpl::Initialize(
     InitializeCallback initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
-    const download::DownloadItem::ReceivedSlices& received_slices,
+    const DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -193,12 +192,12 @@ void DownloadFileImpl::Initialize(
     bytes_so_far = save_info_->offset;
   }
   int64_t bytes_wasted = 0;
-  download::DownloadInterruptReason reason = file_.Initialize(
+  DownloadInterruptReason reason = file_.Initialize(
       save_info_->file_path, default_download_directory_,
       std::move(save_info_->file), bytes_so_far,
       save_info_->hash_of_partial_file, std::move(save_info_->hash_state),
       IsSparseFile(), &bytes_wasted);
-  if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(initialize_callback), reason, bytes_wasted));
@@ -212,19 +211,17 @@ void DownloadFileImpl::Initialize(
   SendUpdate();
 
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(initialize_callback),
-                     download::DOWNLOAD_INTERRUPT_REASON_NONE, bytes_wasted));
+      FROM_HERE, base::BindOnce(std::move(initialize_callback),
+                                DOWNLOAD_INTERRUPT_REASON_NONE, bytes_wasted));
 
   // Initial pull from the straw from all source streams.
   for (auto& source_stream : source_streams_)
     RegisterAndActivateStream(source_stream.second.get());
 }
 
-void DownloadFileImpl::AddInputStream(
-    std::unique_ptr<download::InputStream> stream,
-    int64_t offset,
-    int64_t length) {
+void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
+                                      int64_t offset,
+                                      int64_t length) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // UI thread may not be notified about completion and detach download file,
@@ -244,8 +241,7 @@ void DownloadFileImpl::OnSourceStreamAdded(SourceStream* source_stream) {
   // vector if necessary.
   if (received_slices_.empty() && TotalBytesReceived() > 0) {
     size_t index = AddOrMergeReceivedSliceIntoSortedArray(
-        download::DownloadItem::ReceivedSlice(0, TotalBytesReceived()),
-        received_slices_);
+        DownloadItem::ReceivedSlice(0, TotalBytesReceived()), received_slices_);
     DCHECK_EQ(index, 0u);
   }
   // If the file is initialized, start to write data, or wait until file opened.
@@ -253,10 +249,9 @@ void DownloadFileImpl::OnSourceStreamAdded(SourceStream* source_stream) {
     RegisterAndActivateStream(source_stream);
 }
 
-download::DownloadInterruptReason DownloadFileImpl::WriteDataToFile(
-    int64_t offset,
-    const char* data,
-    size_t data_len) {
+DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
+                                                          const char* data,
+                                                          size_t data_len) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   WillWriteToDisk(data_len);
@@ -284,8 +279,7 @@ bool DownloadFileImpl::CalculateBytesToWrite(SourceStream* source_stream,
     }
   }
 
-  if (source_stream->length() !=
-          download::DownloadSaveInfo::kLengthFullContent &&
+  if (source_stream->length() != DownloadSaveInfo::kLengthFullContent &&
       source_stream->bytes_written() +
               static_cast<int64_t>(bytes_available_to_write) >
           source_stream->length()) {
@@ -331,24 +325,21 @@ base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(
          (1 << attempt_number);
 }
 
-bool DownloadFileImpl::ShouldRetryFailedRename(
-    download::DownloadInterruptReason reason) {
-  return reason == download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
+bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
+  return reason == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
 }
 
-download::DownloadInterruptReason
-DownloadFileImpl::HandleStreamCompletionStatus(SourceStream* source_stream) {
-  download::DownloadInterruptReason reason =
-      source_stream->GetCompletionStatus();
-  if (source_stream->length() ==
-          download::DownloadSaveInfo::kLengthFullContent &&
+DownloadInterruptReason DownloadFileImpl::HandleStreamCompletionStatus(
+    SourceStream* source_stream) {
+  DownloadInterruptReason reason = source_stream->GetCompletionStatus();
+  if (source_stream->length() == DownloadSaveInfo::kLengthFullContent &&
       !received_slices_.empty() &&
       (source_stream->offset() == received_slices_.back().offset +
                                       received_slices_.back().received_bytes) &&
-      reason == download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
+      reason == DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
     // We are probably reaching the end of the stream, don't treat this
     // as an error.
-    return download::DOWNLOAD_INTERRUPT_REASON_NONE;
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
   }
   return reason;
 }
@@ -367,7 +358,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
           base::StringPrintf(" (%d)", uniquifier));
   }
 
-  download::DownloadInterruptReason reason = file_.Rename(new_path);
+  DownloadInterruptReason reason = file_.Rename(new_path);
 
   // Attempt to retry the rename if possible. If the rename failed and the
   // subsequent open also failed, then in_progress() would be false. We don't
@@ -389,11 +380,11 @@ void DownloadFileImpl::RenameWithRetryInternal(
   }
 
   if (!parameters->time_of_first_failure.is_null()) {
-    download::RecordDownloadFileRenameResultAfterRetry(
+    RecordDownloadFileRenameResultAfterRetry(
         base::TimeTicks::Now() - parameters->time_of_first_failure, reason);
   }
 
-  if (reason == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
       (parameters->option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
     // Doing the annotation after the rename rather than before leaves
     // a very small window during which the file has the final name but
@@ -406,7 +397,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
                                                  parameters->referrer_url);
   }
 
-  if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.
     SendUpdate();
@@ -494,9 +485,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   size_t num_buffers = 0;
   size_t bytes_to_write = 0;
   bool should_terminate = false;
-  download::InputStream::StreamState state(download::InputStream::EMPTY);
-  download::DownloadInterruptReason reason =
-      download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  InputStream::StreamState state(InputStream::EMPTY);
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
 
@@ -504,10 +494,10 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
     switch (state) {
-      case download::InputStream::EMPTY:
+      case InputStream::EMPTY:
         should_terminate = (source_stream->length() == kNoBytesToWrite);
         break;
-      case download::InputStream::HAS_DATA: {
+      case InputStream::HAS_DATA: {
         ++num_buffers;
         base::TimeTicks write_start(base::TimeTicks::Now());
         should_terminate = CalculateBytesToWrite(
@@ -519,7 +509,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
         disk_writes_time_ += (base::TimeTicks::Now() - write_start);
         bytes_seen_ += bytes_to_write;
         total_incoming_data_size += bytes_to_write;
-        if (reason == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+        if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
           int64_t prev_bytes_written = source_stream->bytes_written();
           source_stream->OnWriteBytesToDisk(bytes_to_write);
           if (!IsSparseFile())
@@ -535,23 +525,23 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
           }
         }
       } break;
-      case download::InputStream::WAIT_FOR_COMPLETION:
+      case InputStream::WAIT_FOR_COMPLETION:
         source_stream->RegisterCompletionCallback(base::BindOnce(
             &DownloadFileImpl::OnStreamCompleted, weak_factory_.GetWeakPtr()));
         break;
-      case download::InputStream::COMPLETE:
+      case InputStream::COMPLETE:
         break;
       default:
         NOTREACHED();
         break;
     }
     now = base::TimeTicks::Now();
-  } while (state == download::InputStream::HAS_DATA &&
-           reason == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
-           now - start <= delta && !should_terminate);
+  } while (state == InputStream::HAS_DATA &&
+           reason == DOWNLOAD_INTERRUPT_REASON_NONE && now - start <= delta &&
+           !should_terminate);
 
   // If we're stopping to yield the thread, post a task so we come back.
-  if (state == download::InputStream::HAS_DATA && now - start > delta &&
+  if (state == InputStream::HAS_DATA && now - start > delta &&
       !should_terminate) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadFileImpl::StreamActive,
@@ -560,11 +550,11 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   }
 
   if (total_incoming_data_size)
-    download::RecordFileThreadReceiveBuffers(num_buffers);
+    RecordFileThreadReceiveBuffers(num_buffers);
 
-  download::RecordContiguousWriteTime(now - start);
+  RecordContiguousWriteTime(now - start);
 
-  if (state == download::InputStream::COMPLETE)
+  if (state == InputStream::COMPLETE)
     OnStreamCompleted(source_stream);
   else
     NotifyObserver(source_stream, reason, state, should_terminate);
@@ -575,31 +565,27 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
 }
 
 void DownloadFileImpl::OnStreamCompleted(SourceStream* source_stream) {
-  download::DownloadInterruptReason reason =
-      HandleStreamCompletionStatus(source_stream);
+  DownloadInterruptReason reason = HandleStreamCompletionStatus(source_stream);
 
   SendUpdate();
 
-  NotifyObserver(source_stream, reason, download::InputStream::COMPLETE, false);
+  NotifyObserver(source_stream, reason, InputStream::COMPLETE, false);
 }
 
-void DownloadFileImpl::NotifyObserver(
-    SourceStream* source_stream,
-    download::DownloadInterruptReason reason,
-    download::InputStream::StreamState stream_state,
-    bool should_terminate) {
-  if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
+                                      DownloadInterruptReason reason,
+                                      InputStream::StreamState stream_state,
+                                      bool should_terminate) {
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     HandleStreamError(source_stream, reason);
-  } else if (stream_state == download::InputStream::COMPLETE ||
-             should_terminate) {
+  } else if (stream_state == InputStream::COMPLETE || should_terminate) {
     // Signal successful completion or termination of the current stream.
     source_stream->ClearDataReadyCallback();
     source_stream->set_finished(true);
 
     if (should_terminate)
       CancelRequest(source_stream->offset());
-    if (source_stream->length() ==
-        download::DownloadSaveInfo::kLengthFullContent) {
+    if (source_stream->length() == DownloadSaveInfo::kLengthFullContent) {
       // Mark received slice as finished.
       if (IsSparseFile() && source_stream->bytes_written() > 0) {
         DCHECK_GT(received_slices_.size(), source_stream->index())
@@ -617,10 +603,10 @@ void DownloadFileImpl::NotifyObserver(
 
     // All the stream reader are completed, shut down file IO processing.
     if (IsDownloadCompleted()) {
-      download::RecordFileBandwidth(bytes_seen_, disk_writes_time_,
-                                    base::TimeTicks::Now() - download_start_);
+      RecordFileBandwidth(bytes_seen_, disk_writes_time_,
+                          base::TimeTicks::Now() - download_start_);
       if (record_stream_bandwidth_) {
-        download::RecordParallelizableDownloadStats(
+        RecordParallelizableDownloadStats(
             bytes_seen_with_parallel_streams_,
             download_time_with_parallel_streams_,
             bytes_seen_without_parallel_streams_,
@@ -631,9 +617,9 @@ void DownloadFileImpl::NotifyObserver(
       update_timer_.reset();
       main_task_runner_->PostTask(
           FROM_HERE,
-          base::BindOnce(
-              &download::DownloadDestinationObserver::DestinationCompleted,
-              observer_, TotalBytesReceived(), std::move(hash_state)));
+          base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
+                         observer_, TotalBytesReceived(),
+                         std::move(hash_state)));
     }
   }
 }
@@ -663,9 +649,9 @@ void DownloadFileImpl::SendUpdate() {
   // far along with received_slices_.
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&download::DownloadDestinationObserver::DestinationUpdate,
-                     observer_, TotalBytesReceived(),
-                     rate_estimator_.GetCountPerSecond(), received_slices_));
+      base::BindOnce(&DownloadDestinationObserver::DestinationUpdate, observer_,
+                     TotalBytesReceived(), rate_estimator_.GetCountPerSecond(),
+                     received_slices_));
 }
 
 void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
@@ -689,7 +675,7 @@ void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
 
 void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
   size_t index = AddOrMergeReceivedSliceIntoSortedArray(
-      download::DownloadItem::ReceivedSlice(offset, length), received_slices_);
+      DownloadItem::ReceivedSlice(offset, length), received_slices_);
   // Check if the slice is added as a new slice, or merged with an existing one.
   bool slice_added = (offset == received_slices_[index].offset);
   // Update the index of exising SourceStreams.
@@ -716,7 +702,7 @@ bool DownloadFileImpl::IsDownloadCompleted() {
     return true;
 
   // Verify that all the file slices have been downloaded.
-  std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
+  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
       FindSlicesToDownload(received_slices_);
   if (slices_to_download.size() > 1) {
     // If there are 1 or more holes in the file, download is not finished.
@@ -726,9 +712,8 @@ bool DownloadFileImpl::IsDownloadCompleted() {
   return TotalBytesReceived() == potential_file_length_;
 }
 
-void DownloadFileImpl::HandleStreamError(
-    SourceStream* source_stream,
-    download::DownloadInterruptReason reason) {
+void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
+                                         DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_stream->ClearDataReadyCallback();
   source_stream->set_finished(true);
@@ -767,7 +752,7 @@ void DownloadFileImpl::HandleStreamError(
     std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&download::DownloadDestinationObserver::DestinationError,
+        base::BindOnce(&DownloadDestinationObserver::DestinationError,
                        observer_, reason, TotalBytesReceived(),
                        std::move(hash_state)));
   }
@@ -823,4 +808,4 @@ DownloadFileImpl::RenameParameters::RenameParameters(
 
 DownloadFileImpl::RenameParameters::~RenameParameters() {}
 
-}  // namespace content
+}  // namespace download

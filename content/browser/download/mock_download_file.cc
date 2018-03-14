@@ -15,8 +15,9 @@ namespace content {
 namespace {
 
 void PostSuccessRun(
-    DownloadFile::InitializeCallback initialize_callback,
-    const DownloadFile::CancelRequestCallback& cancel_request_callback,
+    download::DownloadFile::InitializeCallback initialize_callback,
+    const download::DownloadFile::CancelRequestCallback&
+        cancel_request_callback,
     const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   BrowserThread::PostTask(

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FILE_IMPL_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FILE_IMPL_H_
 
-#include "content/browser/download/download_file.h"
+#include "components/download/public/common/download_file.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -31,12 +31,10 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace download {
+
 class DownloadDestinationObserver;
-}
 
-namespace content {
-
-class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
  public:
   // Takes ownership of the object pointed to by |save_info|.
   // |net_log| will be used for logging the download file's events.
@@ -46,21 +44,20 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // |stream|, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(
-      std::unique_ptr<download::DownloadSaveInfo> save_info,
-      const base::FilePath& default_downloads_directory,
-      std::unique_ptr<download::InputStream> stream,
-      uint32_t download_id,
-      base::WeakPtr<download::DownloadDestinationObserver> observer);
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   std::unique_ptr<InputStream> stream,
+                   uint32_t download_id,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
   // DownloadFile functions.
   void Initialize(InitializeCallback initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
-                  const download::DownloadItem::ReceivedSlices& received_slices,
+                  const DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
-  void AddInputStream(std::unique_ptr<download::InputStream> stream,
+  void AddInputStream(std::unique_ptr<InputStream> stream,
                       int64_t offset,
                       int64_t length) override;
   void RenameAndUniquify(const base::FilePath& full_path,
@@ -86,11 +83,11 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // is handled.
   //
   // Multiple SourceStreams can concurrently write to the same file sink.
-  class CONTENT_EXPORT SourceStream {
+  class COMPONENTS_DOWNLOAD_EXPORT SourceStream {
    public:
     SourceStream(int64_t offset,
                  int64_t length,
-                 std::unique_ptr<download::InputStream> stream);
+                 std::unique_ptr<InputStream> stream);
     ~SourceStream();
 
     void Initialize();
@@ -114,18 +111,18 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // abort status at the end. The best way to do this is to add a separate
     // mojo interface for control messages when creating this object. See
     // http://crbug.com/748240. An alternative strategy is to let the
-    // DownloadManager pass the status code to download::DownloadItem or
+    // DownloadManager pass the status code to DownloadItem or
     // DownloadFile. However, a DownloadFile can have multiple SourceStreams, so
     // we have to maintain a map between data pipe and
-    // download::DownloadItem/DownloadFile somewhere.
-    download::DownloadInterruptReason GetCompletionStatus() const;
+    // DownloadItem/DownloadFile somewhere.
+    DownloadInterruptReason GetCompletionStatus() const;
 
     using CompletionCallback = base::OnceCallback<void(SourceStream*)>;
     // Register an callback to be called when download completes.
     void RegisterCompletionCallback(CompletionCallback callback);
 
-    download::InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
-                                            size_t* length);
+    InputStream::StreamState Read(scoped_refptr<net::IOBuffer>* data,
+                                  size_t* length);
 
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
@@ -156,7 +153,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     size_t index_;
 
     // The stream through which data comes.
-    std::unique_ptr<download::InputStream> input_stream_;
+    std::unique_ptr<InputStream> input_stream_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
@@ -165,26 +162,24 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // For test class overrides.
   // Write data from the offset to the file.
   // On OS level, it will seek to the |offset| and write from there.
-  virtual download::DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                            const char* data,
-                                                            size_t data_len);
+  virtual DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                                  const char* data,
+                                                  size_t data_len);
 
   virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
 
-  virtual bool ShouldRetryFailedRename(
-      download::DownloadInterruptReason reason);
+  virtual bool ShouldRetryFailedRename(DownloadInterruptReason reason);
 
-  virtual download::DownloadInterruptReason HandleStreamCompletionStatus(
+  virtual DownloadInterruptReason HandleStreamCompletionStatus(
       SourceStream* source_stream);
 
  private:
   friend class DownloadFileTest;
 
-  DownloadFileImpl(
-      std::unique_ptr<download::DownloadSaveInfo> save_info,
-      const base::FilePath& default_downloads_directory,
-      uint32_t download_id,
-      base::WeakPtr<download::DownloadDestinationObserver> observer);
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   uint32_t download_id,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   // Options for RenameWithRetryInternal.
   enum RenameOption {
@@ -249,8 +244,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Notify |observer_| about the download status.
   void NotifyObserver(SourceStream* source_stream,
-                      download::DownloadInterruptReason reason,
-                      download::InputStream::StreamState stream_state,
+                      DownloadInterruptReason reason,
+                      InputStream::StreamState stream_state,
                       bool should_terminate);
 
   // Adds a new slice to |received_slices_| and update the existing entries in
@@ -268,7 +263,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Helper method to handle stream error
   void HandleStreamError(SourceStream* source_stream,
-                         download::DownloadInterruptReason reason);
+                         DownloadInterruptReason reason);
 
   // Check whether this file is potentially sparse.
   bool IsSparseFile() const;
@@ -284,12 +279,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void DebugStates() const;
 
   // The base file instance.
-  download::BaseFile file_;
+  BaseFile file_;
 
   // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
   // can be created on any thread, this holds the save_info_ until it can be
   // used to initialize file_ on the download sequence.
-  std::unique_ptr<download::DownloadSaveInfo> save_info_;
+  std::unique_ptr<DownloadSaveInfo> save_info_;
 
   // The default directory for creating the download file.
   base::FilePath default_download_directory_;
@@ -315,7 +310,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   size_t bytes_seen_;
   base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
-  download::RateEstimator rate_estimator_;
+  RateEstimator rate_estimator_;
   int num_active_streams_;
   bool record_stream_bandwidth_;
   base::TimeTicks last_update_time_;
@@ -324,7 +319,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta download_time_with_parallel_streams_;
   base::TimeDelta download_time_without_parallel_streams_;
 
-  std::vector<download::DownloadItem::ReceivedSlice> received_slices_;
+  std::vector<DownloadItem::ReceivedSlice> received_slices_;
 
   // Used to track whether the download is paused or not. This value is ignored
   // when network service is disabled as download pause/resumption is handled
@@ -338,12 +333,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtr<download::DownloadDestinationObserver> observer_;
+  base::WeakPtr<DownloadDestinationObserver> observer_;
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FILE_IMPL_H_

@@ -41,12 +41,13 @@
 #include "base/task_runner_util.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_ukm_helper.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/download_file.h"
+#include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_job_impl.h"
@@ -92,14 +93,15 @@ void DeleteDownloadedFileDone(
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
-base::FilePath DownloadFileDetach(std::unique_ptr<DownloadFile> download_file) {
+base::FilePath DownloadFileDetach(
+    std::unique_ptr<download::DownloadFile> download_file) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
   return full_path;
 }
 
-base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
+base::FilePath MakeCopyOfDownloadFile(download::DownloadFile* download_file) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath temp_file_path;
   if (!base::CreateTemporaryFile(&temp_file_path))
@@ -113,7 +115,7 @@ base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
   return temp_file_path;
 }
 
-void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
+void DownloadFileCancel(std::unique_ptr<download::DownloadFile> download_file) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   download_file->Cancel();
 }
@@ -1404,7 +1406,7 @@ void DownloadItemImpl::Init(
 
 // We're starting the download.
 void DownloadItemImpl::Start(
-    std::unique_ptr<DownloadFile> file,
+    std::unique_ptr<download::DownloadFile> file,
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
     const download::DownloadCreateInfo& new_create_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1651,12 +1653,12 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
   DCHECK(!IsSavePackageDownload());
-  DownloadFile::RenameCompletionCallback callback =
+  download::DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
   download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&DownloadFile::RenameAndUniquify,
+      base::BindOnce(&download::DownloadFile::RenameAndUniquify,
                      // Safe because we control download file lifetime.
                      base::Unretained(download_file_.get()), intermediate_path,
                      callback));
@@ -1764,12 +1766,12 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(download_file_.get());
   // Unilaterally rename; even if it already has the right name,
   // we need theannotation.
-  DownloadFile::RenameCompletionCallback callback =
+  download::DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
   download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&DownloadFile::RenameAndAnnotate,
+      base::BindOnce(&download::DownloadFile::RenameAndAnnotate,
                      base::Unretained(download_file_.get()),
                      GetTargetFilePath(),
                      delegate_->GetApplicationClientIdForFileScanning(),
@@ -2388,7 +2390,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
-        FindSlicesToDownload(received_slices_);
+        download::FindSlicesToDownload(received_slices_);
     download_params->set_offset(slices_to_download[0].offset);
   } else {
     download_params->set_offset(GetReceivedBytes());
