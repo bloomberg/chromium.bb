@@ -42,7 +42,10 @@ float NormalizeUInt32Axis(uint32_t value, uint32_t min, uint32_t max) {
 
 namespace device {
 
-GamepadDeviceMac::GamepadDeviceMac(int location_id, IOHIDDeviceRef device_ref)
+GamepadDeviceMac::GamepadDeviceMac(int location_id,
+                                   IOHIDDeviceRef device_ref,
+                                   int vendor_id,
+                                   int product_id)
     : location_id_(location_id),
       device_ref_(device_ref),
       ff_device_ref_(nullptr),
@@ -55,9 +58,11 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id, IOHIDDeviceRef device_ref)
   std::fill(axis_report_sizes_, axis_report_sizes_ + Gamepad::kAxesLengthCap,
             0);
 
-  if (device_ref != nullptr) {
+  if (Dualshock4ControllerMac::IsDualshock4(vendor_id, product_id)) {
+    dualshock4_ = std::make_unique<Dualshock4ControllerMac>(device_ref);
+  } else if (device_ref) {
     ff_device_ref_ = CreateForceFeedbackDevice(device_ref);
-    if (ff_device_ref_ != nullptr) {
+    if (ff_device_ref_) {
       ff_effect_ref_ = CreateForceFeedbackEffect(ff_device_ref_, &ff_effect_,
                                                  &ff_custom_force_, force_data_,
                                                  axes_data_, direction_data_);
@@ -68,11 +73,16 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id, IOHIDDeviceRef device_ref)
 GamepadDeviceMac::~GamepadDeviceMac() = default;
 
 void GamepadDeviceMac::DoShutdown() {
-  SetZeroVibration();
-  if (ff_device_ref_ != nullptr) {
-    if (ff_effect_ref_ != nullptr)
+  if (ff_device_ref_) {
+    if (ff_effect_ref_)
       FFDeviceReleaseEffect(ff_device_ref_, ff_effect_ref_);
     FFReleaseDevice(ff_device_ref_);
+    ff_effect_ref_ = nullptr;
+    ff_device_ref_ = nullptr;
+  }
+  if (dualshock4_) {
+    dualshock4_->Shutdown();
+    dualshock4_ = nullptr;
   }
 }
 
@@ -240,28 +250,40 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
   }
 }
 
+bool GamepadDeviceMac::SupportsVibration() {
+  return dualshock4_ || ff_device_ref_;
+}
+
 void GamepadDeviceMac::SetVibration(double strong_magnitude,
                                     double weak_magnitude) {
-  FFCUSTOMFORCE* ff_custom_force =
-      static_cast<FFCUSTOMFORCE*>(ff_effect_.lpvTypeSpecificParams);
-  DCHECK(ff_custom_force);
-  DCHECK(ff_custom_force->rglForceData);
+  if (dualshock4_) {
+    dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+  } else if (ff_device_ref_) {
+    FFCUSTOMFORCE* ff_custom_force =
+        static_cast<FFCUSTOMFORCE*>(ff_effect_.lpvTypeSpecificParams);
+    DCHECK(ff_custom_force);
+    DCHECK(ff_custom_force->rglForceData);
 
-  ff_custom_force->rglForceData[0] =
-      static_cast<LONG>(strong_magnitude * kRumbleMagnitudeMax);
-  ff_custom_force->rglForceData[1] =
-      static_cast<LONG>(weak_magnitude * kRumbleMagnitudeMax);
+    ff_custom_force->rglForceData[0] =
+        static_cast<LONG>(strong_magnitude * kRumbleMagnitudeMax);
+    ff_custom_force->rglForceData[1] =
+        static_cast<LONG>(weak_magnitude * kRumbleMagnitudeMax);
 
-  // Download the effect to the device and start the effect.
-  HRESULT res = FFEffectSetParameters(
-      ff_effect_ref_, &ff_effect_,
-      FFEP_DURATION | FFEP_STARTDELAY | FFEP_TYPESPECIFICPARAMS);
-  if (res == FF_OK)
-    FFEffectStart(ff_effect_ref_, 1, FFES_SOLO);
+    // Download the effect to the device and start the effect.
+    HRESULT res = FFEffectSetParameters(
+        ff_effect_ref_, &ff_effect_,
+        FFEP_DURATION | FFEP_STARTDELAY | FFEP_TYPESPECIFICPARAMS);
+    if (res == FF_OK)
+      FFEffectStart(ff_effect_ref_, 1, FFES_SOLO);
+  }
 }
 
 void GamepadDeviceMac::SetZeroVibration() {
-  FFEffectStop(ff_effect_ref_);
+  if (dualshock4_) {
+    dualshock4_->SetZeroVibration();
+  } else if (ff_effect_ref_) {
+    FFEffectStop(ff_effect_ref_);
+  }
 }
 
 // static

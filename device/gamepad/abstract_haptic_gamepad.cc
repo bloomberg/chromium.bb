@@ -17,6 +17,7 @@ AbstractHapticGamepad::~AbstractHapticGamepad() {
 
 void AbstractHapticGamepad::Shutdown() {
   if (playing_effect_callback_) {
+    sequence_id_++;
     SetZeroVibration();
     RunCallbackOnMojoThread(
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
@@ -95,7 +96,7 @@ void AbstractHapticGamepad::StartVibration(int sequence_id,
                                            double duration,
                                            double strong_magnitude,
                                            double weak_magnitude) {
-  if (sequence_id != sequence_id_)
+  if (is_shut_down_ || sequence_id != sequence_id_)
     return;
   SetVibration(strong_magnitude, weak_magnitude);
 
@@ -107,7 +108,7 @@ void AbstractHapticGamepad::StartVibration(int sequence_id,
 }
 
 void AbstractHapticGamepad::StopVibration(int sequence_id) {
-  if (sequence_id != sequence_id_)
+  if (is_shut_down_ || sequence_id != sequence_id_)
     return;
   SetZeroVibration();
 

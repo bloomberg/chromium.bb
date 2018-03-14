@@ -227,7 +227,8 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
     state->data.mapping[0] = 0;
   }
 
-  devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device);
+  devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device,
+                                                      vendor_int, product_int);
   if (!devices_[slot]->AddButtonsAndAxes(&state->data)) {
     devices_[slot]->Shutdown();
     devices_[slot] = nullptr;
@@ -235,8 +236,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   }
 
   state->data.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
-  state->data.vibration_actuator.not_null =
-      devices_[slot]->SupportsForceFeedback();
+  state->data.vibration_actuator.not_null = devices_[slot]->SupportsVibration();
 
   state->data.connected = true;
 }
@@ -286,7 +286,7 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
 
   // Loop through and GetPadState to indicate the devices are still connected.
   for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
-    if (devices_[slot] != nullptr)
+    if (devices_[slot])
       GetPadState(devices_[slot]->GetLocationId());
   }
 }
@@ -298,9 +298,11 @@ void GamepadPlatformDataFetcherMac::PlayEffect(
     mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
-    // No connected gamepad with this location.
+    // No connected gamepad with this location. Probably the effect was issued
+    // while the gamepad was still connected, so handle this as if it were
+    // preempted by a disconnect.
     std::move(callback).Run(
-        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
     return;
   }
   devices_[slot]->PlayEffect(type, std::move(params), std::move(callback));
@@ -311,9 +313,10 @@ void GamepadPlatformDataFetcherMac::ResetVibration(
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
-    // No connected gamepad with this location.
+    // No connected gamepad with this location. Since the gamepad is already
+    // disconnected, allow the reset to report success.
     std::move(callback).Run(
-        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+        mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
     return;
   }
   devices_[slot]->ResetVibration(std::move(callback));
