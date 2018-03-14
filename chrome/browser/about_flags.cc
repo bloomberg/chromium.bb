@@ -140,7 +140,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
-#include "components/ui_devtools/switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif  // OS_CHROMEOS
 
@@ -2916,9 +2915,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-    {ui_devtools::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
+    {switches::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
      flag_descriptions::kUiDevToolsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ui_devtools::kEnableUiDevTools)},
+     SINGLE_VALUE_TYPE(switches::kEnableUiDevTools)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-autofill-credit-card-ablation-experiment",
@@ -3784,7 +3783,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 
   // enable-ui-devtools is only available on for non Stable channels.
-  if (!strcmp(ui_devtools::kEnableUiDevTools, entry.internal_name) &&
+  if (!strcmp(switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
     return true;
   }

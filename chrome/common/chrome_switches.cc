@@ -353,6 +353,10 @@ const char kEnableSiteSettings[] = "enable-site-settings";
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 
+// Enables DevTools server for UI (mus, ash, etc). Value should be the port the
+// server is started on. Default port is 9223.
+const char kEnableUiDevTools[] = "enable-ui-devtools";
+
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
 const char kExtensionContentVerification[] = "extension-content-verification";
