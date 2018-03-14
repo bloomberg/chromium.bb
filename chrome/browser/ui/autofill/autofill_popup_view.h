@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
 namespace autofill {
@@ -35,6 +36,10 @@ class AutofillPopupView {
 
   // Factory function for creating the view.
   static AutofillPopupView* Create(AutofillPopupController* controller);
+
+#if defined(OS_MACOSX)
+  static AutofillPopupView* CreateCocoa(AutofillPopupController* controller);
+#endif
 
  protected:
   virtual ~AutofillPopupView() {}
