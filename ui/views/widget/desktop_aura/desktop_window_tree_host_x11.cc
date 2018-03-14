@@ -518,7 +518,7 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
 void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (compositor())
-    compositor()->SetVisible(true);
+    SetVisible(true);
   if (!IsVisible() || !window_mapped_in_server_)
     MapWindow(show_state);
 
@@ -875,6 +875,13 @@ bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
   return is_always_on_top_;
 }
 
+void DesktopWindowTreeHostX11::SetVisible(bool visible) {
+  if (compositor())
+    compositor()->SetVisible(visible);
+  if (IsVisible() != visible)
+    native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
 void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
   ui::SetWMSpecState(xwindow_, always_visible,
                      gfx::GetAtom("_NET_WM_STATE_STICKY"), x11::None);
@@ -1179,15 +1186,14 @@ gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
 
 void DesktopWindowTreeHostX11::ShowImpl() {
   ShowWindowWithState(ui::SHOW_STATE_NORMAL);
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 }
 
 void DesktopWindowTreeHostX11::HideImpl() {
   if (IsVisible()) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_in_client_ = false;
+    native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
   }
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetBoundsInPixels() const {
@@ -1628,11 +1634,11 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // minimized.
   if (is_minimized != was_minimized) {
     if (is_minimized) {
-      compositor()->SetVisible(false);
+      SetVisible(false);
       content_window_->Hide();
     } else {
       content_window_->Show();
-      compositor()->SetVisible(true);
+      SetVisible(true);
     }
   }
 

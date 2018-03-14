@@ -282,6 +282,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // the queue) and adds it back at the end of the queue.
   void RestartDelayedResizeTask();
 
+  // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
+  void SetVisible(bool visible);
+
   // X11 things
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
