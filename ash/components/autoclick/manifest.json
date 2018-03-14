@@ -10,7 +10,8 @@
       },
       "requires": {
         "*": [ "app" ],
-        "service_manager": [ "service_manager:service_manager" ]
+        "service_manager": [ "service_manager:service_manager" ],
+        "ui": [ "privileged" ]
       }
     }
   }
