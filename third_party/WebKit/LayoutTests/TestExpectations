@@ -3316,9 +3316,6 @@ crbug.com/814889 [ Debug ] idle-callback/test-runner-run-idle-tasks.html [ Timeo
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
 crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
 
-# Sheriff failures 2018-02-26
-crbug.com/816026 external/wpt/css/css-fonts/font-display/font-display.html [ Failure Pass Timeout ]
-
 # MSAN
 crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass Failure ]
 
