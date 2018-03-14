@@ -32,10 +32,7 @@ void SetImageFromVectorIcon(ImageButton* button,
                             SkColor related_text_color) {
   const SkColor icon_color =
       color_utils::DeriveDefaultIconColor(related_text_color);
-  // DeriveDefaultIconColor is set up to spit out #757575 from black. Applying
-  // 0xB3 as alpha results in the desired #9E9E9E disabled color when rendered
-  // against a white background.
-  const SkColor disabled_color = SkColorSetA(icon_color, 0xB3);
+  const SkColor disabled_color = SkColorSetA(icon_color, 0xff / 2);
   button->SetImage(Button::STATE_NORMAL,
                    gfx::CreateVectorIcon(icon, icon_color));
   button->SetImage(Button::STATE_DISABLED,

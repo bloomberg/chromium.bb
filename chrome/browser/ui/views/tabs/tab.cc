@@ -1217,8 +1217,7 @@ void Tab::OnButtonColorMaybeChanged() {
   const SkColor title_color = theme_provider->GetColor(IsActive() ?
       ThemeProperties::COLOR_TAB_TEXT :
       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  // Alpha here is chosen so that black on tab is 0x75 (kChromeIconGrey).
-  const SkColor new_button_color = SkColorSetA(title_color, 0x84);
+  const SkColor new_button_color = SkColorSetA(title_color, 0xA0);
   if (button_color_ != new_button_color) {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);

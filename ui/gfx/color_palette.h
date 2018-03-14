@@ -13,6 +13,8 @@ namespace gfx {
 // as a visual flag for misbehaving code.
 constexpr SkColor kPlaceholderColor = SK_ColorRED;
 
+constexpr SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+
 // The number refers to the shade of darkness. Each color in the MD
 // palette ranges from 100-900.
 constexpr SkColor kGoogleBlue300 = SkColorSetRGB(0x8A, 0xB4, 0xF8);
@@ -36,13 +38,6 @@ constexpr SkColor kGoogleGrey400 = SkColorSetRGB(0xBD, 0xC1, 0xC6);
 constexpr SkColor kGoogleGrey700 = SkColorSetRGB(0x5F, 0x63, 0x68);
 constexpr SkColor kGoogleGrey800 = SkColorSetRGB(0x3C, 0x40, 0x43);
 constexpr SkColor kGoogleGrey900 = SkColorSetRGB(0x20, 0x21, 0x24);
-constexpr SkColor kPaperGrey600 = SkColorSetRGB(0x75, 0x75, 0x75);
-
-// kChromeIconGrey is subject to change in the future, kPaperGrey600 is set in
-// stone. If you're semantically looking for "the icon color Chrome uses" then
-// use kChromeIconGrey, if you're looking for paper grey specifically, use the
-// paper-grey constant directly.
-constexpr SkColor kChromeIconGrey = kPaperGrey600;
 
 // An alpha value for designating a control's disabled state. In specs this is
 // sometimes listed as 0.38a.

@@ -6,7 +6,6 @@
 #define ASH_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 
@@ -17,8 +16,8 @@ namespace message_center_style {
 constexpr SkColor kBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 constexpr SkColor kEmptyViewColor = SkColorSetARGB(0x8A, 0x0, 0x0, 0x0);
 constexpr SkColor kScrollShadowColor = SkColorSetARGB(0x24, 0x0, 0x0, 0x0);
-constexpr SkColor kActiveButtonColor = gfx::kChromeIconGrey;
-constexpr SkColor kInactiveButtonColor = SkColorSetA(kActiveButtonColor, 0xB3);
+constexpr SkColor kActiveButtonColor = SkColorSetARGB(0xFF, 0x5A, 0x5A, 0x5A);
+constexpr SkColor kInactiveButtonColor = SkColorSetARGB(0x8A, 0x5A, 0x5A, 0x5A);
 
 constexpr int kActionIconSize = 20;
 constexpr int kEmptyIconSize = 24;
