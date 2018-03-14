@@ -6845,6 +6845,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IncompatibleApplicationsPage.ApplicationRemoved">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    A user uninstalled one of the listed incompatible applications while the
+    chrome://settings/incompatibleApplications page was open.
+  </description>
+</action>
+
+<action name="IncompatibleApplicationsPage.UninstallationStarted">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    A user clicked the &quot;Uninstall&quot; button for one of the listed
+    incompatible applications while the
+    chrome://settings/incompatibleApplications was open.
+  </description>
+</action>
+
 <action name="Indent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

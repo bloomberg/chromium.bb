@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -95,13 +97,16 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
           {program.info, std::move(registry_key_watcher)});
     }
 
-    // Also the application to the list that is passed to the javascript.
+    // Also add the application to the list that is passed to the javascript.
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("name", base::Value(program.info.name));
     dict.SetKey("type", base::Value(program.blacklist_action->message_type()));
     dict.SetKey("url", base::Value(program.blacklist_action->message_url()));
     application_list.GetList().push_back(std::move(dict));
   }
+
+  UMA_HISTOGRAM_COUNTS_100("IncompatibleApplicationsPage.NumApplications",
+                           problematic_programs.size());
 
   const base::Value& callback_id = args->GetList().front();
   ResolveJavascriptCallback(callback_id, application_list);
@@ -110,6 +115,8 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
 void IncompatibleApplicationsHandler::HandleStartProgramUninstallation(
     const base::ListValue* args) {
   CHECK_EQ(1u, args->GetList().size());
+  base::RecordAction(base::UserMetricsAction(
+      "IncompatibleApplicationsPage.UninstallationStarted"));
 
   // Open the Apps & Settings page with the program name highlighted.
   uninstall_application::LaunchUninstallFlow(
@@ -150,6 +157,9 @@ void IncompatibleApplicationsHandler::GetPluralString(
 
 void IncompatibleApplicationsHandler::OnApplicationRemoved(
     const InstalledPrograms::ProgramInfo& program) {
+  base::RecordAction(base::UserMetricsAction(
+      "IncompatibleApplicationsPage.ApplicationRemoved"));
+
   registry_key_watchers_.erase(program);
   FireWebUIListener("incompatible-application-removed",
                     base::Value(program.name));
