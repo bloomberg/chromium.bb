@@ -25,8 +25,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'SynchronizeOnNonFinalField',
   # TODO(crbug.com/802073): Follow steps in bug.
   'TypeParameterUnusedInFormals',
-  # TODO(crbug.com/802075): Follow steps in bug.
-  'ReferenceEquality',
   # TODO(crbug.com/803484): Follow steps in bug.
   'CatchFail',
   # TODO(crbug.com/803485): Follow steps in bug.
@@ -99,6 +97,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'StaticGuardedByInstance',
   'StaticQualifiedUsingExpression',
   'UseCorrectAssertInTests',
+  'ReferenceEquality',
 ]
 
 

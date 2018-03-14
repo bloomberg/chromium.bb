@@ -47,7 +47,7 @@ public class AndroidProxySelectorTest {
     }
 
     static String toString(Proxy proxy) {
-        if (proxy == Proxy.NO_PROXY) return "DIRECT";
+        if (proxy.equals(Proxy.NO_PROXY)) return "DIRECT";
         // java.net.Proxy only knows about http and socks proxies.
         Proxy.Type type = proxy.type();
         switch (type) {
