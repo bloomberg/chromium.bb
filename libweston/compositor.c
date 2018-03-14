@@ -4706,9 +4706,6 @@ weston_output_set_transform(struct weston_output *output,
 	pixman_region32_init(&old_region);
 	pixman_region32_copy(&old_region, &output->region);
 
-	pixman_region32_fini(&output->region);
-	pixman_region32_fini(&output->previous_damage);
-
 	weston_output_init_geometry(output, output->x, output->y);
 
 	output->dirty = 1;
