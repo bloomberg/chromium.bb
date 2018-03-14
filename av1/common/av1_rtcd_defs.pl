@@ -129,13 +129,6 @@ add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *out
 
 add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
 
-
-  add_proto qw/void av1_iht64x64_4096_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-  add_proto qw/void av1_iht32x64_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-  add_proto qw/void av1_iht64x32_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-  add_proto qw/void av1_iht16x64_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-  add_proto qw/void av1_iht64x16_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
-
 # directional intra predictor functions
 add_proto qw/void av1_dr_prediction_z1/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int dx, int dy";
 add_proto qw/void av1_dr_prediction_z2/, "uint8_t *dst, ptrdiff_t stride, int bw, int bh, const uint8_t *above, const uint8_t *left, int upsample_above, int upsample_left, int dx, int dy";
