@@ -2818,7 +2818,9 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   DCHECK([self window]);
   DCHECK_EQ([self window], [notification object]);
-  if ([[self window] firstResponder] == self)
+  if ([responderDelegate_ respondsToSelector:@selector(windowDidBecomeKey)])
+    [responderDelegate_ windowDidBecomeKey];
+  if ([self window].isKeyWindow && [[self window] firstResponder] == self)
     renderWidgetHostView_->SetActive(true);
 }
 
@@ -2840,6 +2842,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 - (BOOL)becomeFirstResponder {
   if (!renderWidgetHostView_->render_widget_host_)
     return NO;
+  if ([responderDelegate_ respondsToSelector:@selector(becomeFirstResponder)])
+    [responderDelegate_ becomeFirstResponder];
 
   renderWidgetHostView_->render_widget_host_->GotFocus();
   renderWidgetHostView_->SetTextInputActive(true);
@@ -2864,6 +2868,8 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 }
 
 - (BOOL)resignFirstResponder {
+  if ([responderDelegate_ respondsToSelector:@selector(resignFirstResponder)])
+    [responderDelegate_ resignFirstResponder];
   renderWidgetHostView_->SetTextInputActive(false);
   if (!renderWidgetHostView_->render_widget_host_)
     return YES;
