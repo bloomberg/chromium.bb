@@ -777,6 +777,15 @@ cr.define('login', function() {
      */
     pinEnabled: false,
 
+    /**
+     * If set, a function which hides a persistent detachable base warning
+     * bubble. This will be set if a detachable base warning bubble is shown for
+     * this pod.
+     * @type {?function()}
+     * @private
+     */
+    detachableBaseWarningBubbleHider_: null,
+
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -1674,29 +1683,63 @@ cr.define('login', function() {
     },
 
     /**
+     * Returns the element that should be used as the anchor for error bubbles
+     * associated with the pod.
+     *
+     * @return {HTMLElement} The anchor for error bubbles.
+     * @private
+     */
+    getBubbleAnchor_: function() {
+      var bubbleAnchor = this.getElementsByClassName('auth-container')[0];
+      if (!bubbleAnchor) {
+        console.error('auth-container not found!');
+        bubbleAnchor = this.mainInput;
+      }
+      return bubbleAnchor;
+    },
+
+    /**
      * Shows a bubble under the auth-container of the user pod.
      * @param {HTMLElement} content Content to show in bubble.
+     * @param {!{bubble: (HTMLElement|undefined),
+     *           anchor: (HTMLElement|undefined),
+     *           timeout: (number|undefined)}|undefined} opt_options The custom
+     *     options describing how the bubble should be shown:
+     *     <ul>
+     *       <li>bubble: The element that hosts the bubble content.</li>
+     *       <li>
+     *           anchor: The element to which the bubble should be anchored.
+     *       </li>
+     *       <li>
+     *           timeout: Amount of time in ms after which the bubble
+     *           should be hidden. Note: this should only be used for
+     *           {@code $('bubble')} bubble element. The timeout will get
+     *           cleared if the bubble is shown again.
+     *       </li>
+     *     </ul>
+     * @return {function()} Function that, when called, hides the shown bubble.
      */
-    showBubble: function(content) {
+    showBubble: function(content, opt_options) {
       /** @const */ var BUBBLE_OFFSET = 25;
       // -8 = 4(BUBBLE_POD_OFFSET) - 2(bubble margin)
       //      - 10(internal bubble adjustment)
       var bubblePositioningPadding = -8;
 
-      var bubbleAnchor;
-      var attachment;
-      // Anchor the bubble to the input field.
-      bubbleAnchor = this.getElementsByClassName('auth-container')[0];
-      if (!bubbleAnchor) {
-        console.error('auth-container not found!');
-        bubbleAnchor = this.mainInput;
+      var options = opt_options || {};
+      var bubble = options.bubble || $('bubble');
+
+      // Make sure bubble timeout is changed only for $('bubble') element.
+      if (options.timeout && bubble != $('bubble')) {
+        console.error('Timeout can be set only when showing #bubble element.');
+        return;
       }
+
+      var bubbleAnchor = options.anchor || this.getBubbleAnchor_();
+      var attachment;
       if (this.pinContainer && this.pinContainer.style.visibility == 'visible')
         attachment = cr.ui.Bubble.Attachment.RIGHT;
       else
         attachment = cr.ui.Bubble.Attachment.BOTTOM;
-
-      var bubble = $('bubble');
 
       // Cannot use cr.ui.LoginUITools.get* on bubble until it is attached to
       // the element. getMaxHeight/Width rely on the correct up/left element
@@ -1734,14 +1777,89 @@ cr.define('login', function() {
           attachment = cr.ui.Bubble.Attachment.LEFT;
         }
       }
+
+      if (bubble == $('bubble'))
+        this.clearBubbleHideTimeout_();
+
+      var state = {shown: false, hidden: false};
+
       var showBubbleCallback = function() {
         this.removeEventListener('transitionend', showBubbleCallback);
-        $('bubble').showContentForElement(
+        // If the bubble was requested to be hidden while the transition was in
+        // progress, do not show the bubble.
+        if (state.hidden)
+          return;
+
+        state.shown = true;
+
+        bubble.showContentForElement(
             bubbleAnchor, attachment, content, BUBBLE_OFFSET,
             bubblePositioningPadding, true);
-      };
+
+        if (options.timeout != undefined) {
+          this.hideBubbleTimeout_ = setTimeout(() => {
+            this.hideBubbleTimeout_ = undefined;
+            bubble.hideForElement(bubbleAnchor);
+          }, options.timeout);
+        }
+      }.bind(this);
       this.addEventListener('transitionend', showBubbleCallback);
       ensureTransitionEndEvent(this);
+
+      return function() {
+        if (state.hidden)
+          return;
+
+        state.hidden = true;
+        if (state.shown)
+          bubble.hideForElement(bubbleAnchor);
+      };
+    },
+
+    /**
+     * Clears the timeout to hide a bubble, if a bubble timeout was set.
+     * @private
+     */
+    clearBubbleHideTimeout_: function() {
+      if (this.hideBubbleTimeout_) {
+        clearTimeout(this.hideBubbleTimeout_);
+        this.hideBubbleTimeout_ = null;
+      }
+    },
+
+    /**
+     * Shows persistent bubble for detachable base change warning.
+     * @param {HTMLElement} content The bubble contens.
+     */
+    showDetachableBaseWarningBubble: function(content) {
+      var anchor = this.getBubbleAnchor_();
+      if (!anchor)
+        return;
+      this.clearBubbleHideTimeout_();
+      $('bubble').hideForElement(anchor);
+      this.detachableBaseWarningBubbleHider_ = this.showBubble(
+          content, {bubble: $('bubble-persistent'), anchor: anchor});
+    },
+
+    /**
+     * If a peristent bubble for detachable base change warning is shown (and
+     * anchored at this pod), hides the bubble.
+     */
+    hideDetachableBaseWarningBubble: function() {
+      if (this.detachableBaseWarningBubbleHider_) {
+        this.detachableBaseWarningBubbleHider_();
+        this.detachableBaseWarningBubbleHider_ = null;
+      }
+    },
+
+    /**
+     * Whether a detachable base warning bubble is being shown for this pod.
+     * @return {boolean}
+     */
+    showingDetachableBaseWarningBubble: function() {
+      return this.detachableBaseWarningBubbleHider_ &&
+          !$('bubble-persistent').hidden &&
+          $('bubble-persistent').anchor == this.getBubbleAnchor_();
     },
 
     /**

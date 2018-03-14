@@ -55,6 +55,8 @@ cr.define('cr.ui', function() {
     // Whether to hide bubble when key is pressed.
     hideOnKeyPress_: true,
 
+    persistent_: false,
+
     /** @override */
     decorate: function() {
       this.docKeyDownHandler_ = this.handleDocKeyDown_.bind(this);
@@ -90,6 +92,24 @@ cr.define('cr.ui', function() {
      */
     set lastBubbleElement(value) {
       this.lastBubbleElement_ = value;
+    },
+
+    /**
+     * Whether the bubble should remain shown on user action events (e.g. on
+     * user clicking, or scrolling outside the bubble). Note that
+     * {@code this.hideOnKeyPress} has precedence.
+     * @type {boolean}
+     */
+    set persistent(value) {
+      this.persistent_ = value
+    },
+
+    /**
+     * If set, the element at which the bubble is anchored.
+     * @type {HTMLElement|undefined}
+     */
+    get anchor() {
+      return this.anchor_;
     },
 
     /**
@@ -218,9 +238,9 @@ cr.define('cr.ui', function() {
      * @param {boolean=} opt_oldstyle Optional flag to force old style bubble,
      *     i.e. pre-MD-style.
      */
-    showContentForElement: function(el, attachment, opt_content,
-                                    opt_offset, opt_padding, opt_match_width,
-                                    opt_oldstyle) {
+    showContentForElement: function(
+        el, attachment, opt_content, opt_offset, opt_padding, opt_match_width,
+        opt_oldstyle) {
       /** @const */ var ARROW_OFFSET = 25;
       /** @const */ var DEFAULT_PADDING = 18;
 
@@ -308,8 +328,8 @@ cr.define('cr.ui', function() {
      *     half of its weight/height.
      * @param {number=} opt_padding Optional padding of the bubble.
      */
-    showTextForElement: function(el, text, attachment,
-                                 opt_offset, opt_padding) {
+    showTextForElement: function(
+        el, text, attachment, opt_offset, opt_padding) {
       var span = this.ownerDocument.createElement('span');
       span.textContent = text;
       this.showContentForElement(el, attachment, span, opt_offset, opt_padding);
@@ -349,7 +369,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleScroll_: function(e) {
-      if (!this.hidden)
+      if (!this.hidden && !this.persistent_)
         this.hide();
     },
 
@@ -362,7 +382,7 @@ cr.define('cr.ui', function() {
       if (e.target == this.anchor_)
         return;
 
-      if (!this.hidden)
+      if (!this.hidden && !this.persistent_)
         this.hide();
     },
 
@@ -391,10 +411,9 @@ cr.define('cr.ui', function() {
         e.preventDefault();
       }
       // Close bubble on ESC or on hitting spacebar or Enter at close-button.
-      if (e.key == Keys.ESC ||
-          ((e.key == Keys.ENTER ||
-            e.key == Keys.SPACE) &&
-             e.target && e.target.classList.contains('close-button')))
+      if ((e.key == Keys.ESC && !this.persistent_) ||
+          ((e.key == Keys.ENTER || e.key == Keys.SPACE) && e.target &&
+           e.target.classList.contains('close-button')))
         this.hide();
     },
 
@@ -403,7 +422,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleWindowBlur_: function(e) {
-      if (!this.hidden)
+      if (!this.hidden && !this.persistent_)
         this.hide();
     }
   };

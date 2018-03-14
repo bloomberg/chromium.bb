@@ -58,6 +58,10 @@ cr.define('cr.ui.Oobe', function() {
       login.UpdateRequiredScreen.register();
       login.DemoSetupScreen.register();
 
+      cr.ui.Bubble.decorate($('bubble-persistent'));
+      $('bubble-persistent').persistent = true;
+      $('bubble-persistent').hideOnKeyPress = false;
+
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
       login.TopHeaderBar.decorate($('top-header-bar'));

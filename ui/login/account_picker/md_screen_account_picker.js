@@ -14,6 +14,14 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
    */
   var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
 
+  /**
+   * Time after which the sign-in error bubble should be hidden if it is
+   * overlayed over the detachable base change warning bubble (to ensure that
+   * the detachable base warning is not obscured indefinitely).
+   * @const {number}
+   */
+  var SIGNIN_ERROR_OVER_DETACHABLE_BASE_WARNING_TIMEOUT_MS = 5000;
+
   return {
     EXTERNAL_API: [
       'loadUsers',
@@ -30,6 +38,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'hideUserPodCustomIcon',
       'setUserPodFingerprintIcon',
       'removeUserPodFingerprintIcon',
+      'selectPodForDetachableBaseWarningBubble',
       'setPinEnabledForUser',
       'setAuthType',
       'setTabletModeState',
@@ -173,6 +182,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     onBeforeHide: function() {
       $('pod-row').clearFocusedPod();
+      $('bubble-persistent').hide();
       this.showing_ = false;
       chrome.send('loginUIStateChanged', ['account-picker', false]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
@@ -205,8 +215,63 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         }
         // Update the pod row display if incorrect password.
         $('pod-row').setFocusedPodErrorDisplay(true);
-        activatedPod.showBubble(error);
+
+        // If a warning that the detachable base is different than the one
+        // previously used by the user is shown for the pod, make sure that the
+        // sign-in error gets hidden reasonably soon.
+        // If the detachable base was changed maliciously while the user was
+        // away, the attacker might attempt to use the sign-in error but to
+        // obscure the detachable base warning hoping that the user will miss it
+        // when they get back to the device.
+        var timeout = activatedPod.showingDetachableBaseWarningBubble() ?
+            SIGNIN_ERROR_OVER_DETACHABLE_BASE_WARNING_TIMEOUT_MS :
+            undefined;
+        activatedPod.showBubble(error, {timeout: timeout});
       }
+    },
+
+    /**
+     * Ensures that a user pod is selected and focused, and thus ready to show a
+     * warning bubble for detachable base change. This is needed for two
+     * reasons:
+     *   1. The detachable base state is associated with a user, so a user pod
+     *      has to be selected in order to know for which user the detachable
+     *      base state should be considered (e.g. there might be two large user
+     *      pods in the account picker).
+     *   2. The warning bubble is attached to the pod's auth element, which is
+     *      only shown if the pod is focused. The bubble anchor should be
+     *      visible in order to properly calculate the bubble position.
+     */
+    selectPodForDetachableBaseWarningBubble: function() {
+      $('pod-row').maybePreselectPod();
+    },
+
+    /**
+     * Shows a persistent bubble warning to the user that the current detachable
+     * base is different than the one they were last using, and that it might
+     * not be trusted.
+     *
+     * @param {string} username The username of the user under whose user pod
+     *     the warning should be displayed.
+     * @param {HTMLElement} content The warning bubble content.
+     */
+    showDetachableBaseWarningBubble: function(username, content) {
+      var podRow = $('pod-row');
+      var pod = podRow.pods.find(pod => pod.user.username == username);
+      if (pod)
+        pod.showDetachableBaseWarningBubble(content);
+    },
+
+    /**
+     * Hides the detachable base warning for the user.
+     *
+     * @param {string} username The username that identifies the user pod from
+     *     under which the detachable base warning bubble should be removed.
+     */
+    hideDetachableBaseWarningBubble: function(username) {
+      var pod = $('pod-row').pods.find(pod => pod.user.username == username);
+      if (pod)
+        pod.hideDetachableBaseWarningBubble();
     },
 
     /**

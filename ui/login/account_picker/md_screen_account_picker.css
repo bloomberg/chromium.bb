@@ -7,7 +7,8 @@
   transition: width 180ms ease, height 180ms ease;
 }
 
-#bubble {
+#bubble,
+#bubble-persistent {
   margin-top: 16px;
   z-index: 1;
 }
