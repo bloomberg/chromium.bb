@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/paint/PaintPhase.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,6 +15,7 @@ namespace blink {
 class CullRect;
 class GraphicsContext;
 class IntRect;
+class IntSize;
 
 // EmbeddedContentView is a pure virtual class which is implemented by
 // LocalFrameView, RemoteFrameView, and WebPluginContainerImpl.
@@ -34,7 +36,8 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual IntRect FrameRect() const = 0;
   virtual void Paint(GraphicsContext&,
                      const GlobalPaintFlags,
-                     const CullRect&) const = 0;
+                     const CullRect&,
+                     const IntSize& paint_offset = IntSize()) const = 0;
   // Called when the size of the view changes.  Implementations of
   // EmbeddedContentView should call LayoutEmbeddedContent::UpdateGeometry in
   // addition to any internal logic.

@@ -161,7 +161,10 @@ void RemoteFrameView::FrameRectsChanged() {
 
 void RemoteFrameView::Paint(GraphicsContext& context,
                             const GlobalPaintFlags flags,
-                            const CullRect& rect) const {
+                            const CullRect& rect,
+                            const IntSize& paint_offset) const {
+  // TODO(wangxianzhu): Should we consider |paint_offset| for SPv175?
+
   // Painting remote frames is only for printing.
   if (!context.Printing())
     return;

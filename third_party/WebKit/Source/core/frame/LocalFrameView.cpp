@@ -5090,7 +5090,10 @@ ScrollBehavior LocalFrameView::ScrollBehaviorStyle() const {
 
 void LocalFrameView::Paint(GraphicsContext& context,
                            const GlobalPaintFlags global_paint_flags,
-                           const CullRect& cull_rect) const {
+                           const CullRect& cull_rect,
+                           const IntSize& paint_offset) const {
+  // |paint_offset| is not used because paint properties of the contents will
+  // ensure the correct location.
   PaintInternal(context, global_paint_flags, cull_rect);
 }
 

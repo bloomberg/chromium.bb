@@ -72,8 +72,6 @@ crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.h
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 
-crbug.com/711468 plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
-
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 crbug.com/807382 fast/multicol/multicol-svg.html [ Failure ]
 # End of Slimming paint v1.75

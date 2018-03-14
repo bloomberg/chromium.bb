@@ -163,7 +163,8 @@ IntRect WebPluginContainerImpl::FrameRect() const {
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const GlobalPaintFlags,
-                                   const CullRect& cull_rect) const {
+                                   const CullRect& cull_rect,
+                                   const IntSize& paint_offset) const {
   // Don't paint anything if the plugin doesn't intersect.
   if (!cull_rect.IntersectsCullRect(FrameRect()))
     return;
@@ -188,6 +189,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
   IntPoint origin = ParentFrameView().ContentsToRootFrame(IntPoint(0, 0));
+  origin -= paint_offset;
   context.Translate(static_cast<float>(-origin.X()),
                     static_cast<float>(-origin.Y()));
 
