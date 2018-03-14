@@ -83,6 +83,7 @@ CONTENT_EXPORT extern const char kDisablePepper3DImageChromium[];
 CONTENT_EXPORT extern const char kDisablePermissionsAPI[];
 CONTENT_EXPORT extern const char kDisablePinch[];
 CONTENT_EXPORT extern const char kDisablePresentationAPI[];
+CONTENT_EXPORT extern const char kDisablePushStateThrottle[];
 CONTENT_EXPORT extern const char kDisableRGBA4444Textures[];
 CONTENT_EXPORT extern const char kDisableReadingFromCanvas[];
 extern const char kDisableRemoteFonts[];

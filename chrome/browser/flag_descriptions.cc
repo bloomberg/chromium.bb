@@ -223,6 +223,11 @@ const char kDisableAudioForDesktopShareDescription[] =
     "With this flag on, desktop share picker window will not let the user "
     "choose whether to share audio.";
 
+const char kDisablePushStateThrottleName[] = "Disable pushState throttling";
+const char kDisablePushStateThrottleDescription[] =
+    "Disables throttling of history.pushState and history.replaceState method "
+    "calls.";
+
 const char kDisableTabForDesktopShareName[] =
     "Disable Desktop Share with tab source";
 const char kDisableTabForDesktopShareDescription[] =
