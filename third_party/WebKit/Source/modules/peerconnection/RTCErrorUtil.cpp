@@ -28,11 +28,18 @@ DOMException* CreateDOMExceptionFromWebRTCError(const WebRTCError& error) {
       break;
     case WebRTCErrorType::kInvalidState:
       return DOMException::Create(kInvalidStateError, error.message());
+    case WebRTCErrorType::kInvalidParameter:
+      // One use of this value is to signal invalid SDP syntax.
+      // According to spec, this should return an RTCError with name
+      // "RTCError" and detail "sdp-syntax-error", with
+      // "sdpLineNumber" set to indicate the line where the error
+      // occured.
+      // TODO(https://crbug.com/821806): Implement the RTCError object.
+      return DOMException::Create(kInvalidAccessError, error.message());
     case WebRTCErrorType::kInternalError:
       // Not a straightforward mapping, but used as a fallback at lower layers.
       return DOMException::Create(kOperationError, error.message());
       break;
-    case WebRTCErrorType::kInvalidParameter:
     case WebRTCErrorType::kUnsupportedParameter:
     case WebRTCErrorType::kInvalidRange:
       LOG(ERROR) << "Got unhandled WebRTC error "

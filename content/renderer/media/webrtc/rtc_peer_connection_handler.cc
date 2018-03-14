@@ -1072,11 +1072,7 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
             PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION, "OnFailure",
             error.message());
       }
-      // TODO(hbos): Use |error.type()| to reject the promise with the
-      // appropriate DOMException.
-      web_request_.RequestFailed(
-          blink::WebRTCError(blink::WebRTCErrorType::kOperationError,
-                             blink::WebString::FromUTF8(error.message())));
+      web_request_.RequestFailed(ConvertToWebKitRTCError(error));
       web_request_.Reset();
       return;
     }
