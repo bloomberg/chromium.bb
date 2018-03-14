@@ -5059,17 +5059,6 @@
             "chrome_internal"
         ]
     },
-    "autotest-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [],
-        "builder_class_name": "test_builders.AutotestTestsBuilder",
-        "description": "Run the autotest tests.",
-        "hw_tests_override": null,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "vm_tests": []
-    },
     "banjo-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
