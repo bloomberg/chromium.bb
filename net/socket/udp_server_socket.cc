@@ -67,10 +67,6 @@ int UDPServerSocket::SetDoNotFragment() {
   return socket_.SetDoNotFragment();
 }
 
-void UDPServerSocket::SetMsgConfirm(bool confirm) {
-  return socket_.SetMsgConfirm(confirm);
-}
-
 void UDPServerSocket::Close() {
   socket_.Close();
 }

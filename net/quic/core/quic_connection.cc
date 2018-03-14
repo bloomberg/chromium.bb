@@ -788,11 +788,6 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }
-
-  if (LargestAcked(incoming_ack) > sent_packet_manager_.GetLargestObserved()) {
-    visitor_->OnForwardProgressConfirmed();
-  }
-
   largest_seen_packet_with_ack_ = last_header_.packet_number;
   sent_packet_manager_.OnIncomingAck(incoming_ack,
                                      time_of_last_received_packet_);
@@ -835,9 +830,7 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
     return false;
   }
 
-  if (largest_acked > sent_packet_manager_.GetLargestObserved()) {
-    visitor_->OnForwardProgressConfirmed();
-  } else if (largest_acked < sent_packet_manager_.GetLargestObserved()) {
+  if (largest_acked < sent_packet_manager_.GetLargestObserved()) {
     QUIC_LOG(INFO) << ENDPOINT << "Peer's largest_observed packet decreased:"
                    << largest_acked << " vs "
                    << sent_packet_manager_.GetLargestObserved()

@@ -137,9 +137,6 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // return ERR_IO_PENDING.
   int SetDoNotFragment();
 
-  // This is a no-op on Windows.
-  void SetMsgConfirm(bool confirm);
-
   // Returns true if the socket is already connected or bound.
   bool is_connected() const { return is_connected_; }
 

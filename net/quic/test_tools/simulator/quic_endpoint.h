@@ -98,7 +98,6 @@ class QuicEndpoint : public Endpoint,
   void OnAckNeedsRetransmittableFrame() override {}
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;
-  void OnForwardProgressConfirmed() override {}
   // End QuicConnectionVisitorInterface implementation.
 
   // Begin SessionNotifierInterface methods:
