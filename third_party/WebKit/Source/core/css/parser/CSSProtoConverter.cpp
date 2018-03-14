@@ -980,7 +980,6 @@ const std::string Converter::kPropertyLookupTable[] = {
     "image-orientation",
     "animation-duration",
     "-webkit-columns",
-    "-webkit-box-flex-group",
     "-webkit-animation-delay",
     "-epub-text-emphasis",
     "flex-shrink",

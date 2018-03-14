@@ -3035,14 +3035,6 @@
       type_name: "float",
     },
     {
-      name: "-webkit-box-flex-group",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "primitive",
-      default_value: "1",
-      type_name: "unsigned",
-    },
-    {
       name: "-webkit-box-ordinal-group",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
