@@ -42,34 +42,37 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MANUAL_Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
   RunBasicTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_SendAndOnMessage) {
+                       SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
+// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_ReceiverCloseConnection) {
+                       DISABLED_ReceiverCloseConnection) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_Fail_SendMessage) {
+                       Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
+// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_ReconnectSession) {
+                       DISABLED_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
+// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_ReconnectSessionSameTab) {
+                       DISABLED_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
@@ -83,22 +86,23 @@ class MediaRouterIntegrationOneUANoReceiverBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_Basic) {
+                       Basic) {
   RunBasicTest();
 }
 
+// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_Fail_SendMessage) {
+                       DISABLED_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_ReconnectSession) {
+                       ReconnectSession) {
   RunReconnectSessionTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_ReconnectSessionSameTab) {
+                       ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
