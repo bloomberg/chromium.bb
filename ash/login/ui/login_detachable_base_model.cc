@@ -47,6 +47,7 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
       DetachableBasePairingStatus pairing_status) override {
     login_data_dispatcher_->SetDetachableBasePairingStatus(pairing_status);
   }
+  void OnDetachableBaseRequiresUpdateChanged(bool requires_update) override {}
 
  private:
   DetachableBaseHandler* detachable_base_handler_;

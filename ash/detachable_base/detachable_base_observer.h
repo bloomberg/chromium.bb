@@ -20,6 +20,11 @@ class ASH_EXPORT DetachableBaseObserver {
   // detached.
   virtual void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus status) = 0;
+
+  // Called when the state of whether the current detachable base requires a
+  // firmware update changes.
+  // |requires_update|: Whether the base currently requires a firmware update.
+  virtual void OnDetachableBaseRequiresUpdateChanged(bool requires_update) = 0;
 };
 
 }  // namespace ash

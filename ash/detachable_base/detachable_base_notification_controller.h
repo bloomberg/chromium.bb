@@ -22,11 +22,16 @@ class DetachableBaseHandler;
 //     tracking the user's key strokes).
 //   * when the attached base could not be authenticated, it warns the user that
 //     the base may not be trusted.
+//   * when the detachable base's firmware has to be updated, it shows a
+//     notification asking user to reboot in order to update the base. This
+//     notification will be shown regardless of the user session state - it will
+//     show up on both the lock and the login screen.
 class ASH_EXPORT DetachableBaseNotificationController
     : public DetachableBaseObserver,
       public SessionObserver {
  public:
   static const char kBaseChangedNotificationId[];
+  static const char kBaseRequiresUpdateNotificationId[];
 
   explicit DetachableBaseNotificationController(
       DetachableBaseHandler* detachable_base_handler);
@@ -35,6 +40,7 @@ class ASH_EXPORT DetachableBaseNotificationController
   // DetachableBaseObserver:
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
+  void OnDetachableBaseRequiresUpdateChanged(bool requires_update) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -49,6 +55,9 @@ class ASH_EXPORT DetachableBaseNotificationController
   // Removes kBaseChangedNotificationId notification if it was previously shown
   // within the current session.
   void RemovePairingNotification();
+
+  // Removes kBaseRequiresUpdateNotificationId if it was previously shown.
+  void RemoveUpdateRequiredNotification();
 
   DetachableBaseHandler* detachable_base_handler_;
 
