@@ -87,15 +87,15 @@ void CreateProfileCallback(const base::Closure& quit_closure,
     quit_closure.Run();
 }
 
-enum ViewID {
-  VIEW_ID_TOOLBAR,
-  VIEW_ID_BOOKMARK_BAR,
-  VIEW_ID_INFO_BAR,
-  VIEW_ID_FIND_BAR,
-  VIEW_ID_DOWNLOAD_SHELF,
-  VIEW_ID_TAB_CONTENT_AREA,
-  VIEW_ID_FULLSCREEN_FLOATING_BAR,
-  VIEW_ID_COUNT,
+enum BrowserViewID {
+  BROWSER_VIEW_ID_TOOLBAR,
+  BROWSER_VIEW_ID_BOOKMARK_BAR,
+  BROWSER_VIEW_ID_INFO_BAR,
+  BROWSER_VIEW_ID_FIND_BAR,
+  BROWSER_VIEW_ID_DOWNLOAD_SHELF,
+  BROWSER_VIEW_ID_TAB_CONTENT_AREA,
+  BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR,
+  BROWSER_VIEW_ID_COUNT,
 };
 
 // Checks that no views draw on top of the supposedly exposed view.
@@ -261,21 +261,21 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         false);
   }
 
-  NSView* GetViewWithID(ViewID view_id) const {
+  NSView* GetViewWithID(BrowserViewID view_id) const {
     switch (view_id) {
-      case VIEW_ID_FULLSCREEN_FLOATING_BAR:
+      case BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR:
         return [controller() floatingBarBackingView];
-      case VIEW_ID_TOOLBAR:
+      case BROWSER_VIEW_ID_TOOLBAR:
         return [[controller() toolbarController] view];
-      case VIEW_ID_BOOKMARK_BAR:
+      case BROWSER_VIEW_ID_BOOKMARK_BAR:
         return [[controller() bookmarkBarController] view];
-      case VIEW_ID_INFO_BAR:
+      case BROWSER_VIEW_ID_INFO_BAR:
         return [[controller() infoBarContainerController] view];
-      case VIEW_ID_FIND_BAR:
+      case BROWSER_VIEW_ID_FIND_BAR:
         return [[controller() findBarCocoaController] view];
-      case VIEW_ID_DOWNLOAD_SHELF:
+      case BROWSER_VIEW_ID_DOWNLOAD_SHELF:
         return [[controller() downloadShelf] view];
-      case VIEW_ID_TAB_CONTENT_AREA:
+      case BROWSER_VIEW_ID_TAB_CONTENT_AREA:
         return [controller() tabContentArea];
       default:
         NOTREACHED();
@@ -283,7 +283,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     }
   }
 
-  void VerifyZOrder(const std::vector<ViewID>& view_list) const {
+  void VerifyZOrder(const std::vector<BrowserViewID>& view_list) const {
     std::vector<NSView*> visible_views;
     for (size_t i = 0; i < view_list.size(); ++i) {
       NSView* view = GetViewWithID(view_list[i]);
@@ -300,17 +300,17 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     }
 
     // Views not in |view_list| must either be nil or not parented.
-    for (size_t i = 0; i < VIEW_ID_COUNT; ++i) {
+    for (size_t i = 0; i < BROWSER_VIEW_ID_COUNT; ++i) {
       if (!base::ContainsValue(view_list, i)) {
-        NSView* view = GetViewWithID(static_cast<ViewID>(i));
+        NSView* view = GetViewWithID(static_cast<BrowserViewID>(i));
         EXPECT_TRUE(!view || ![view superview]);
       }
     }
   }
 
-  CGFloat GetViewHeight(ViewID viewID) const {
+  CGFloat GetViewHeight(BrowserViewID viewID) const {
     CGFloat height = NSHeight([GetViewWithID(viewID) frame]);
-    if (viewID == VIEW_ID_INFO_BAR) {
+    if (viewID == BROWSER_VIEW_ID_INFO_BAR) {
       height -= [[controller() infoBarContainerController]
           overlappingTipHeight];
     }
@@ -518,13 +518,13 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
   browser()->GetFindBarController();  // add find bar
 
-  std::vector<ViewID> view_list;
-  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
-  view_list.push_back(VIEW_ID_BOOKMARK_BAR);
-  view_list.push_back(VIEW_ID_TOOLBAR);
-  view_list.push_back(VIEW_ID_INFO_BAR);
-  view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
-  view_list.push_back(VIEW_ID_FIND_BAR);
+  std::vector<BrowserViewID> view_list;
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
+  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
+  view_list.push_back(BROWSER_VIEW_ID_FIND_BAR);
   VerifyZOrder(view_list);
 
   [controller() showOverlay];
@@ -544,14 +544,14 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   chrome::ToggleFullscreenMode(browser());
   browser()->GetFindBarController();  // add find bar
 
-  std::vector<ViewID> view_list;
-  view_list.push_back(VIEW_ID_INFO_BAR);
-  view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
-  view_list.push_back(VIEW_ID_FULLSCREEN_FLOATING_BAR);
-  view_list.push_back(VIEW_ID_BOOKMARK_BAR);
-  view_list.push_back(VIEW_ID_TOOLBAR);
-  view_list.push_back(VIEW_ID_FIND_BAR);
-  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
+  std::vector<BrowserViewID> view_list;
+  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
+  view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
+  view_list.push_back(BROWSER_VIEW_ID_FIND_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
   VerifyZOrder(view_list);
 }
 
@@ -565,20 +565,20 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   chrome::ToggleFullscreenMode(browser());
 
   NSView* fullscreen_floating_bar =
-      GetViewWithID(VIEW_ID_FULLSCREEN_FLOATING_BAR);
+      GetViewWithID(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
   [fullscreen_floating_bar removeFromSuperview];
   [[[controller() window] contentView] addSubview:fullscreen_floating_bar
                                        positioned:NSWindowBelow
                                        relativeTo:nil];
   [controller() updateSubviewZOrder];
 
-  std::vector<ViewID> view_list;
-  view_list.push_back(VIEW_ID_INFO_BAR);
-  view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
-  view_list.push_back(VIEW_ID_FULLSCREEN_FLOATING_BAR);
-  view_list.push_back(VIEW_ID_BOOKMARK_BAR);
-  view_list.push_back(VIEW_ID_TOOLBAR);
-  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
+  std::vector<BrowserViewID> view_list;
+  view_list.push_back(BROWSER_VIEW_ID_INFO_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TAB_CONTENT_AREA);
+  view_list.push_back(BROWSER_VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_BOOKMARK_BAR);
+  view_list.push_back(BROWSER_VIEW_ID_TOOLBAR);
+  view_list.push_back(BROWSER_VIEW_ID_DOWNLOAD_SHELF);
   VerifyZOrder(view_list);
 }
 
