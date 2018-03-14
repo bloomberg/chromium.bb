@@ -25,7 +25,8 @@
 
 #include "platform/wtf/text/TextCodecUserDefined.h"
 
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
+
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -42,7 +43,7 @@ void TextCodecUserDefined::RegisterEncodingNames(
 static std::unique_ptr<TextCodec> NewStreamingTextDecoderUserDefined(
     const TextEncoding&,
     const void*) {
-  return WTF::WrapUnique(new TextCodecUserDefined);
+  return std::make_unique<TextCodecUserDefined>();
 }
 
 void TextCodecUserDefined::RegisterCodecs(TextCodecRegistrar registrar) {

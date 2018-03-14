@@ -45,7 +45,6 @@
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/properties/css_property.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

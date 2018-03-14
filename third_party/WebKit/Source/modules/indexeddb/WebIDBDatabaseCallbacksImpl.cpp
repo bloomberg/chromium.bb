@@ -35,7 +35,6 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBObservation.h"
 #include "modules/indexeddb/IDBValue.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "public/platform/modules/indexeddb/WebIDBObservation.h"
@@ -45,7 +44,7 @@ namespace blink {
 // static
 std::unique_ptr<WebIDBDatabaseCallbacksImpl>
 WebIDBDatabaseCallbacksImpl::Create(IDBDatabaseCallbacks* callbacks) {
-  return WTF::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
+  return base::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(

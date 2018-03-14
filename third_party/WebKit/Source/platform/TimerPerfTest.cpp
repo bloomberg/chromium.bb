@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"

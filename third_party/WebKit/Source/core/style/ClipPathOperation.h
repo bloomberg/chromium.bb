@@ -34,7 +34,6 @@
 #include "core/style/BasicShapes.h"
 #include "core/svg/SVGResource.h"
 #include "platform/graphics/Path.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/text/WTFString.h"
 

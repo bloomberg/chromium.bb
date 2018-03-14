@@ -10,7 +10,6 @@
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -34,7 +34,6 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/WorkerBackingThread.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

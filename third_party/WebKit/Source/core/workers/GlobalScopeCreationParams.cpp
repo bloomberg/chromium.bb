@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

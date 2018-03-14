@@ -13,7 +13,6 @@
 #include "core/layout/ng/ng_physical_container_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/paint/ng/ng_box_fragment_painter.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

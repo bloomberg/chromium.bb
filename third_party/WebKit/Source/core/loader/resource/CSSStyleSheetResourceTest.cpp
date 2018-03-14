@@ -30,7 +30,6 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"

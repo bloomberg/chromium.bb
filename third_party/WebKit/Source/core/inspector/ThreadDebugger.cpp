@@ -28,7 +28,6 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {

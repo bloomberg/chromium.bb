@@ -9,7 +9,6 @@
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

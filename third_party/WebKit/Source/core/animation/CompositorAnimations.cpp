@@ -57,7 +57,6 @@
 #include "platform/animation/CompositorTransformAnimationCurve.h"
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/geometry/FloatBox.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

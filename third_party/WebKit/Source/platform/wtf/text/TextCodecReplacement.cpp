@@ -4,7 +4,6 @@
 
 #include "platform/wtf/text/TextCodecReplacement.h"
 
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/WTFString.h"
 #include <memory>
@@ -28,7 +27,7 @@ void TextCodecReplacement::RegisterEncodingNames(
 static std::unique_ptr<TextCodec> NewStreamingTextDecoderReplacement(
     const TextEncoding&,
     const void*) {
-  return WTF::WrapUnique(new TextCodecReplacement);
+  return std::make_unique<TextCodecReplacement>();
 }
 
 void TextCodecReplacement::RegisterCodecs(TextCodecRegistrar registrar) {

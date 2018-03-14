@@ -42,7 +42,6 @@
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

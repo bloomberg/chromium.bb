@@ -32,7 +32,6 @@
 #include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {

@@ -29,7 +29,6 @@
 #include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

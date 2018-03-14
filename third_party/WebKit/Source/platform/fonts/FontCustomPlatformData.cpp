@@ -42,7 +42,6 @@
 #include "platform/fonts/opentype/FontFormatCheck.h"
 #include "platform/fonts/opentype/FontSettings.h"
 #include "platform/graphics/paint/PaintTypeface.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 

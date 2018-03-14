@@ -39,7 +39,6 @@
 #include "core/probe/CoreProbes.h"
 #include "core/workers/SharedWorker.h"
 #include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"

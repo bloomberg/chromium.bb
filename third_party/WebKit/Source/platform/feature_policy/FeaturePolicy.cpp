@@ -9,7 +9,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/BitVector.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "url/gurl.h"

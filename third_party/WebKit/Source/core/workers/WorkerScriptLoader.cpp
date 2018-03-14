@@ -44,7 +44,6 @@
 #include "platform/network/NetworkUtils.h"
 #include "platform/network/http_names.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/mojom/net/ip_address_space.mojom-blink.h"
 
 namespace blink {

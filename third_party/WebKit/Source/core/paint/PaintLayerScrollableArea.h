@@ -54,7 +54,6 @@
 #include "core/paint/ScrollbarManager.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

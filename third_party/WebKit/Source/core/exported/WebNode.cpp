@@ -46,7 +46,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutObject.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDOMEvent.h"

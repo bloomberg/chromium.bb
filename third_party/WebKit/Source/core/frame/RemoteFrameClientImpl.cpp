@@ -18,7 +18,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/web/WebRemoteFrameClient.h"
 
 namespace blink {

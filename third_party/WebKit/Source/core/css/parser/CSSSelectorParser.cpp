@@ -14,7 +14,6 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

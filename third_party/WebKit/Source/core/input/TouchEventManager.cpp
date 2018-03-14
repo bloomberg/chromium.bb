@@ -18,7 +18,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebTouchEvent.h"

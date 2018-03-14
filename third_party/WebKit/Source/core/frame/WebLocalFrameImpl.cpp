@@ -208,7 +208,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/TaskType.h"

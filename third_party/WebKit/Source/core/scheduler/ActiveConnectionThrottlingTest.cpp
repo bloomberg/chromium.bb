@@ -9,7 +9,6 @@
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/TestingPlatformSupportWithWebRTC.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

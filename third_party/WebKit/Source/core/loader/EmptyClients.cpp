@@ -37,7 +37,6 @@
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayer.h"

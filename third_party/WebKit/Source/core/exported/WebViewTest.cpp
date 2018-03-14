@@ -87,7 +87,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/testing/wtf/ScopedMockClock.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebCursorInfo.h"

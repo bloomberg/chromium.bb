@@ -39,7 +39,6 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMac.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace {
@@ -373,8 +372,8 @@ class BlinkScrollbarPartAnimationTimer {
   if (!self)
     return nil;
 
-  _timer = WTF::WrapUnique(
-      new blink::BlinkScrollbarPartAnimationTimer(self, duration));
+  _timer =
+      std::make_unique<blink::BlinkScrollbarPartAnimationTimer>(self, duration);
   _scrollbar = scrollbar;
   _featureToAnimate = featureToAnimate;
   _startValue = startValue;

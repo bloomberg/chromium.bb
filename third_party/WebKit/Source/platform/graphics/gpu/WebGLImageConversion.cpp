@@ -13,7 +13,6 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

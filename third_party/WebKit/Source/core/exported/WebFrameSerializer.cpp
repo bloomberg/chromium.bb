@@ -67,7 +67,6 @@
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringConcatenate.h"
 #include "public/platform/WebString.h"

@@ -14,7 +14,6 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

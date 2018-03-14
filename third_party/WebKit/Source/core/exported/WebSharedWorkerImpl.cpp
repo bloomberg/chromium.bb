@@ -60,7 +60,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"

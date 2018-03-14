@@ -11,7 +11,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 

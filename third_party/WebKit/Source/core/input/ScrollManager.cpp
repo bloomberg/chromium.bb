@@ -25,7 +25,6 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/Histogram.h"
 #include "platform/scroll/ScrollCustomization.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

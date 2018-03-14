@@ -30,7 +30,7 @@ PaintRenderingContext2D::PaintRenderingContext2D(
 }
 
 void PaintRenderingContext2D::InitializePaintRecorder() {
-  paint_recorder_ = WTF::WrapUnique(new PaintRecorder);
+  paint_recorder_ = std::make_unique<PaintRecorder>();
   PaintCanvas* canvas = paint_recorder_->beginRecording(
       container_size_.Width(), container_size_.Height());
 

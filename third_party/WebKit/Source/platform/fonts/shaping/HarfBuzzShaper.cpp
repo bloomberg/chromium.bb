@@ -38,6 +38,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackIterator.h"

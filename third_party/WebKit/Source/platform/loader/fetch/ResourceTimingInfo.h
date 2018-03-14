@@ -38,7 +38,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {

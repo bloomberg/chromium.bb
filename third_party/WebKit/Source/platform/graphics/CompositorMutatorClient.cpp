@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "platform/graphics/CompositorMutator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

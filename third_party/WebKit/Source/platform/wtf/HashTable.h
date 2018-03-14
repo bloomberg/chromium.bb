@@ -31,7 +31,6 @@
 #include "platform/wtf/ConditionalDestructor.h"
 #include "platform/wtf/ConstructTraits.h"
 #include "platform/wtf/HashTraits.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
 
 #if !defined(DUMP_HASHTABLE_STATS)

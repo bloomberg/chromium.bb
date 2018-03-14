@@ -61,7 +61,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebCORS.h"

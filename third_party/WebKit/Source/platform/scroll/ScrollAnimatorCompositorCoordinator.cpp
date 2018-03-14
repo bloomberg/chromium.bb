@@ -13,7 +13,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollableArea.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 

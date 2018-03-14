@@ -39,7 +39,6 @@
 #include "core/paint/TableCellPainter.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -30,7 +30,6 @@
 #include "core/layout/LayoutImage.h"
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

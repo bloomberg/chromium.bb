@@ -28,7 +28,6 @@
 #include "build/build_config.h"
 #include "platform/exported/WebSpeechSynthesizerClientImpl.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesizer.h"

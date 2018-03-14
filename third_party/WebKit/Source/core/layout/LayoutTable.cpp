@@ -46,7 +46,6 @@
 #include "core/paint/TablePaintInvalidator.h"
 #include "core/paint/TablePainter.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

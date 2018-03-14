@@ -26,7 +26,8 @@
 #include "platform/wtf/HashSet.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,7 +93,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
     HashSet<std::unique_ptr<Dummy>>::AddResult res1 =
-        set.insert(WTF::WrapUnique(ptr1));
+        set.insert(base::WrapUnique(ptr1));
     EXPECT_EQ(ptr1, res1.stored_value->get());
   }
 
@@ -105,7 +106,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
   Dummy* ptr2 = new Dummy(deleted2);
   {
     HashSet<std::unique_ptr<Dummy>>::AddResult res2 =
-        set.insert(WTF::WrapUnique(ptr2));
+        set.insert(base::WrapUnique(ptr2));
     EXPECT_EQ(res2.stored_value->get(), ptr2);
   }
 
@@ -140,8 +141,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.insert(WTF::WrapUnique(ptr1));
-    set.insert(WTF::WrapUnique(ptr2));
+    set.insert(base::WrapUnique(ptr1));
+    set.insert(base::WrapUnique(ptr2));
     own_ptr1 = set.Take(ptr1);
     EXPECT_EQ(1UL, set.size());
     own_ptr2 = set.TakeAny();

@@ -45,7 +45,6 @@
 #include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 #include <hb-ot.h>
 #include <hb.h>

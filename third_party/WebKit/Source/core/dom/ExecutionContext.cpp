@@ -40,7 +40,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {

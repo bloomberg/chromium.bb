@@ -30,7 +30,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

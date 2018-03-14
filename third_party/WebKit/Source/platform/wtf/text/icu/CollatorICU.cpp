@@ -28,16 +28,16 @@
 
 #include "platform/wtf/text/Collator.h"
 
+#include <stdlib.h>
+#include <string.h>
+#include <unicode/ucol.h>
+#include <memory>
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/ThreadingPrimitives.h"
-#include <memory>
-#include <stdlib.h>
-#include <string.h>
-#include <unicode/ucol.h>
 
 namespace WTF {
 
@@ -56,7 +56,7 @@ Collator::Collator(const char* locale)
 }
 
 std::unique_ptr<Collator> Collator::UserDefault() {
-  return WTF::WrapUnique(new Collator(nullptr));
+  return std::make_unique<Collator>(nullptr);
 }
 
 Collator::~Collator() {

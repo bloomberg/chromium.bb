@@ -64,7 +64,6 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/StringBuilder.h"
 

@@ -9,7 +9,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
