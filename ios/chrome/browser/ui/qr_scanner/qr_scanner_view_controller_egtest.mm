@@ -14,7 +14,7 @@
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
@@ -411,9 +411,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // method to load |searchURL| instead of the generated search URL.
 - (void)swizzleLocationBarCoordinatorLoadGURLFromLocationBar:
     (const GURL&)searchURL {
-  void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*, const GURL&,
-                                       ui::PageTransition) =
-      ^void(LocationBarCoordinator* self, const GURL& url,
+  void (^loadGURLFromLocationBarBlock)(LocationBarLegacyCoordinator*,
+                                       const GURL&, ui::PageTransition) =
+      ^void(LocationBarLegacyCoordinator* self, const GURL& url,
             ui::PageTransition transition) {
         [self.URLLoader loadURL:searchURL
                        referrer:web::Referrer()
@@ -423,7 +423,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
       };
 
   load_GURL_from_location_bar_swizzler_.reset(
-      new ScopedBlockSwizzler([LocationBarCoordinator class],
+      new ScopedBlockSwizzler([LocationBarLegacyCoordinator class],
                               @selector(loadGURLFromLocationBar:transition:),
                               loadGURLFromLocationBarBlock));
 }

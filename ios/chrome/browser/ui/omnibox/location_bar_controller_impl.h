@@ -31,7 +31,7 @@ class WebState;
 class OmniboxViewIOS;
 @class OmniboxPopupCoordinator;
 @protocol OmniboxPopupPositioner;
-@class LocationBarView;
+@class LocationBarLegacyView;
 class ScopedFullscreenDisabler;
 class ToolbarModel;
 
@@ -39,7 +39,7 @@ class ToolbarModel;
 class LocationBarControllerImpl : public LocationBarController,
                                   public LeftImageProvider {
  public:
-  LocationBarControllerImpl(LocationBarView* location_bar_view,
+  LocationBarControllerImpl(LocationBarLegacyView* location_bar_view,
                             ios::ChromeBrowserState* browser_state,
                             id<LocationBarDelegate> delegate,
                             id<BrowserCommands> dispatcher);
@@ -95,7 +95,7 @@ class LocationBarControllerImpl : public LocationBarController,
   // A bridge from a UIControl action to the dispatcher to display a page
   // info popup.
   __strong PageInfoBridge* page_info_bridge_;
-  LocationBarView* location_bar_view_;
+  LocationBarLegacyView* location_bar_view_;
   __weak id<LocationBarDelegate> delegate_;
   __weak id<LocationBarURLLoader> URLLoader_;
   // Dispatcher to send commands from the location bar.

@@ -77,6 +77,10 @@
       stopDispatchingForProtocol:@protocol(OmniboxSuggestionCommands)];
 }
 
+- (BOOL)isOpen {
+  return self.mediator.isOpen;
+}
+
 #pragma mark - Property accessor
 
 - (BOOL)hasResults {

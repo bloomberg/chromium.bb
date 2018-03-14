@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 source_set("omnibox") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   sources = [
     "location_bar_controller.cc",
     "location_bar_controller.h",
@@ -65,6 +67,8 @@ source_set("omnibox_internal") {
     "image_retriever.h",
     "location_bar_controller_impl.h",
     "location_bar_controller_impl.mm",
+    "omnibox_coordinator.h",
+    "omnibox_coordinator.mm",
     "omnibox_text_field_delegate.h",
     "omnibox_text_field_ios.h",
     "omnibox_text_field_ios.mm",
@@ -72,6 +76,8 @@ source_set("omnibox_internal") {
     "omnibox_text_field_paste_delegate.mm",
     "omnibox_view_ios.h",
     "omnibox_view_ios.mm",
+    "web_omnibox_edit_controller_impl.h",
+    "web_omnibox_edit_controller_impl.mm",
   ]
   deps = [
     ":omnibox",
@@ -86,7 +92,6 @@ source_set("omnibox_internal") {
     "//components/search_engines",
     "//components/security_state/core",
     "//components/strings",
-    "//components/toolbar",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
@@ -119,9 +124,13 @@ source_set("omnibox_internal") {
     "//ui/gfx/geometry",
     "//url",
   ]
-  allow_circular_includes_from = [ "//ios/chrome/browser/ui/omnibox/popup" ]
+  allow_circular_includes_from = [
+    "//ios/chrome/browser/ui/omnibox/popup",
+    ":omnibox",
+  ]
   public_deps = [
     "//components/omnibox/browser",
+    "//components/toolbar",
   ]
   libs = [
     "CoreText.framework",

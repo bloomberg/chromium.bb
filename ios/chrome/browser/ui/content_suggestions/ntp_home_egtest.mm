@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -414,7 +414,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Swizzle the method that needs to be called for correct logging.
   __block BOOL tapped = NO;
-  ScopedBlockSwizzler swizzler([LocationBarCoordinator class],
+  ScopedBlockSwizzler swizzler([LocationBarLegacyCoordinator class],
                                @selector(focusOmniboxFromFakebox), ^() {
                                  tapped = YES;
                                });

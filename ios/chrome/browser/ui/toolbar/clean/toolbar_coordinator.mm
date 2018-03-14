@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
@@ -66,7 +66,8 @@
 @property(nonatomic, strong)
     ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge;
 // The coordinator for the location bar in the toolbar.
-@property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
+@property(nonatomic, strong)
+    LocationBarLegacyCoordinator* locationBarCoordinator;
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
@@ -167,7 +168,7 @@ initWithToolsMenuConfigurationProvider:
   self.started = YES;
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
-  self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
+  self.locationBarCoordinator = [[LocationBarLegacyCoordinator alloc] init];
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher = self.dispatcher;
   self.locationBarCoordinator.URLLoader = self.URLLoader;
