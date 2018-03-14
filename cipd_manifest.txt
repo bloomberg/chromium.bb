@@ -11,7 +11,7 @@ $VerifiedPlatform windows-386 windows-amd64
 infra/tools/luci/vpython/${platform}  git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
 
 # LUCI editor
-infra/tools/luci/led/${platform}  git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
+infra/tools/luci/led/${platform}  git_revision:7c35171f0bf2061e5c231e5f4df1982dfa8066a6
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:d4dc0c29a004b59dcca1e69ae84eba0c932eb010
