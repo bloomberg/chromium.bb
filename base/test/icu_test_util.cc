@@ -13,6 +13,9 @@
 namespace base {
 namespace test {
 
+ScopedRestoreICUDefaultLocale::ScopedRestoreICUDefaultLocale()
+    : ScopedRestoreICUDefaultLocale(std::string()) {}
+
 ScopedRestoreICUDefaultLocale::ScopedRestoreICUDefaultLocale(
     const std::string& locale)
     : default_locale_(uloc_getDefault()) {
@@ -25,9 +28,9 @@ ScopedRestoreICUDefaultLocale::~ScopedRestoreICUDefaultLocale() {
 }
 
 void InitializeICUForTesting() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestDoNotInitializeIcu)) {
-    base::i18n::AllowMultipleInitializeCallsForTesting();
+    i18n::AllowMultipleInitializeCallsForTesting();
     i18n::InitializeICU();
   }
 }

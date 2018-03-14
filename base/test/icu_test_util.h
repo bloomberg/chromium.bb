@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ICU_TEST_UTIL_H_
-#define BASE_ICU_TEST_UTIL_H_
+#ifndef BASE_TEST_ICU_TEST_UTIL_H_
+#define BASE_TEST_ICU_TEST_UTIL_H_
 
 #include <string>
 
@@ -12,13 +12,17 @@
 namespace base {
 namespace test {
 
+// In unit tests, prefer ScopedRestoreICUDefaultLocale over
+// calling base::i18n::SetICUDefaultLocale() directly. This scoper makes it
+// harder to accidentally forget to reset the locale.
 class ScopedRestoreICUDefaultLocale {
  public:
-  ScopedRestoreICUDefaultLocale(const std::string& locale = std::string());
+  ScopedRestoreICUDefaultLocale();
+  explicit ScopedRestoreICUDefaultLocale(const std::string& locale);
   ~ScopedRestoreICUDefaultLocale();
 
  private:
-  std::string default_locale_;
+  const std::string default_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRestoreICUDefaultLocale);
 };
@@ -28,4 +32,4 @@ void InitializeICUForTesting();
 }  // namespace test
 }  // namespace base
 
-#endif  // BASE_ICU_TEST_UTIL_H_
+#endif  // BASE_TEST_ICU_TEST_UTIL_H_
