@@ -494,6 +494,8 @@
       getter: "GetSize",
       converter: "ConvertFontSize",
       priority: "High",
+      keywords: ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"],
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "font-size-adjust",
