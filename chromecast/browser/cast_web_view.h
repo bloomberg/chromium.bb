@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <string>
 
+#include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_content_window.h"
@@ -42,6 +44,17 @@ class CastWebView {
         const base::string16& source_id) = 0;
   };
 
+  // Observer interface for tracking CastWebView lifetime.
+  class Observer {
+   public:
+    // Notifies that |web_view| is being destroyed. |web_view| should be assumed
+    // invalid after this method returns.
+    virtual void OnPageDestroyed(CastWebView* web_view) {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   // The parameters used to create a CastWebView instance. Passed to
   // CastWebContentsManager::CreateWebView().
   struct CreateParams {
@@ -69,7 +82,8 @@ class CastWebView {
     bool enabled_for_dev = false;
   };
 
-  virtual ~CastWebView() {}
+  CastWebView();
+  virtual ~CastWebView();
 
   virtual shell::CastContentWindow* window() const = 0;
 
@@ -89,6 +103,15 @@ class CastWebView {
   // |is_visible| is true.
   virtual void CreateWindow(CastWindowManager* window_manager,
                             bool is_visible) = 0;
+
+  // Observer interface:
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ private:
+  base::ObserverList<Observer> observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastWebView);
 };
 
 }  // namespace chromecast
