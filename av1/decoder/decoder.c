@@ -148,10 +148,6 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   aom_free(pbi->tile_worker_info);
   aom_free(pbi->tile_workers);
 
-  if (pbi->num_tile_workers > 0) {
-    av1_loop_filter_dealloc(&pbi->lf_row_sync);
-  }
-
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);
 #endif

@@ -577,7 +577,6 @@ typedef struct AV1_COMP {
   int num_workers;
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
-  AV1LfSync lf_row_sync;
   int refresh_frame_mask;
   int existing_fb_idx_to_show;
   int is_arf_filter_off[MAX_EXT_ARFS + 1];

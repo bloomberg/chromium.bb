@@ -3111,8 +3111,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   aom_free(cpi->tile_thr_data);
   aom_free(cpi->workers);
 
-  if (cpi->num_workers > 1) av1_loop_filter_dealloc(&cpi->lf_row_sync);
-
   dealloc_compressor_data(cpi);
 
   for (i = 0; i < sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]);
