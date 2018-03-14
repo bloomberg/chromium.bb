@@ -154,17 +154,17 @@ void AutoclickApplication::BindAutoclickControllerRequest(
 }
 
 views::Widget* AutoclickApplication::CreateAutoclickRingWidget(
-    const gfx::Point& event_location) {
+    const gfx::Point& point_in_screen) {
   return widget_.get();
 }
 
 void AutoclickApplication::UpdateAutoclickRingWidget(
     views::Widget* widget,
-    const gfx::Point& event_location) {
+    const gfx::Point& point_in_screen) {
   // Not used in mus.
 }
 
-void AutoclickApplication::DoAutoclick(const gfx::Point& event_location,
+void AutoclickApplication::DoAutoclick(const gfx::Point& point_in_screen,
                                        const int mouse_event_flags) {
   // TODO(riajiang): Currently not working. Need to know how to generate events
   // in mus world. https://crbug.com/628665
