@@ -808,6 +808,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         Layout oldLayout = getActiveLayout();
         if (oldLayout != layout) {
             if (oldLayout != null) {
+                oldLayout.forceAnimationToFinish();
                 oldLayout.detachViews();
             }
             layout.contextChanged(mHost.getContext());
