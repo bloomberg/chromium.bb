@@ -133,6 +133,61 @@ class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeObserverTest);
 
+class VirtualTimeBaseTest : public VirtualTimeBrowserTest {
+ public:
+  VirtualTimeBaseTest() {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    SetInitialURL(embedded_test_server()->GetURL("/blank.html").spec());
+  }
+
+  void SetVirtualTimePolicy() override {
+    // Set to paused initially.
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
+            .Build(),
+        base::BindRepeating(&VirtualTimeBaseTest::SetFirstVirtualTimePolicyDone,
+                            base::Unretained(this)));
+  }
+
+  void SetFirstVirtualTimePolicyDone(
+      std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
+    // Should have enabled virtual time, and returned a valid time base.
+    virtual_time_base_ = result->GetVirtualTimeBase();
+    EXPECT_NE(0, virtual_time_base_);
+
+    // Set with wait_for_navigation, the returned time base shouldn't change.
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(
+                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
+            .SetBudget(1000)
+            .SetWaitForNavigation(true)
+            .Build(),
+        base::BindRepeating(
+            &VirtualTimeBaseTest::SetSecondVirtualTimePolicyDone,
+            base::Unretained(this)));
+  }
+
+  void SetSecondVirtualTimePolicyDone(
+      std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
+    EXPECT_EQ(virtual_time_base_, result->GetVirtualTimeBase());
+
+    SetVirtualTimePolicyDone(std::move(result));
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    FinishAsynchronousTest();
+  }
+
+ private:
+  double virtual_time_base_ = 0;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeBaseTest);
+
 class MaxVirtualTimeTaskStarvationCountTest : public VirtualTimeBrowserTest {
  public:
   MaxVirtualTimeTaskStarvationCountTest() {
