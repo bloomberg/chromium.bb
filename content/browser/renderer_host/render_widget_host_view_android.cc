@@ -444,7 +444,7 @@ int RenderWidgetHostViewAndroid::GetMouseWheelMinimumGranularity() const {
   // many pixels each tick scrolls. This multiplier is specified by device
   // metrics (See WindowAndroid.getMouseWheelScrollFactor) so the minimum
   // granularity will be the size of this tick multiplier.
-  return window->mouse_wheel_tick_multiplier();
+  return window->mouse_wheel_scroll_factor() / view_.GetDipScale();
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {

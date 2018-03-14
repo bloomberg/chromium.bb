@@ -136,9 +136,9 @@ WindowAndroid::WindowAndroid(JNIEnv* env,
       begin_frame_source_(new WindowBeginFrameSource(this)),
       needs_begin_frames_(false) {
   java_window_.Reset(env, obj);
-  mouse_wheel_tick_multiplier_ = scroll_factor > 0
-                                     ? scroll_factor / GetDipScale()
-                                     : kDefaultMouseWheelTickMultiplier;
+  mouse_wheel_scroll_factor_ =
+      scroll_factor > 0 ? scroll_factor
+                        : kDefaultMouseWheelTickMultiplier * GetDipScale();
 }
 
 void WindowAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
