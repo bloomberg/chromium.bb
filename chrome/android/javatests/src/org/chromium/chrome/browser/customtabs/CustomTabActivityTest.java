@@ -2867,7 +2867,11 @@ public class CustomTabActivityTest {
                 e.printStackTrace();
                 return false;
             }
-            return TextUtils.equals(mExpected, value);
+            boolean isSatisfied = TextUtils.equals(mExpected, value);
+            if (!isSatisfied) {
+              updateFailureReason("Page element is " + value + " instead of expected " + mExpected);
+            }
+            return isSatisfied;
         }
     }
 
