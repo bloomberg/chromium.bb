@@ -8,14 +8,8 @@
 #include <vector>
 
 #include "content/renderer/media_recorder/video_track_recorder.h"
-
-extern "C" {
-// VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
-// backwards compatibility for legacy applications using the library.
-#define VPX_CODEC_DISABLE_COMPAT 1
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
-}
 
 namespace content {
 

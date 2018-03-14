@@ -7,16 +7,8 @@
 #include "base/logging.h"
 #include "media/base/limits.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
-
-// Include libvpx header files.
-// VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
-// backwards compatibility for legacy applications using the library.
-#define VPX_CODEC_DISABLE_COMPAT 1
-extern "C" {
-// Note: vpx_decoder.h must be first or compile will fail.
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"  // NOLINT
-}
+#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
 
 // Enable USE_COPYPLANE_WITH_LIBVPX to use |CopyPlane()| instead of memcpy to
 // copy video frame data.
