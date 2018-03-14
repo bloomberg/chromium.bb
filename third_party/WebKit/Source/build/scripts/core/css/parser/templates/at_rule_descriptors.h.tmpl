@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AtRuleDescriptors_h
-#define AtRuleDescriptors_h
+#ifndef BLINK_CORE_CSS_PARSER_AT_RULE_DESCRIPTORS_H_
+#define BLINK_CORE_CSS_PARSER_AT_RULE_DESCRIPTORS_H_
 
 #include "core/css_property_names.h"
 #include "platform/wtf/text/StringView.h"
@@ -27,6 +27,6 @@ AtRuleDescriptorID AsAtRuleDescriptorID(StringView string);
 CSSPropertyID AtRuleDescriptorIDAsCSSPropertyID(AtRuleDescriptorID);
 AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id);
 
-} // namespace blink
+}  // namespace blink
 
-#endif  // AtRuleDescriptors_h
+#endif  // BLINK_CORE_CSS_PARSER_AT_RULE_DESCRIPTORS_H_

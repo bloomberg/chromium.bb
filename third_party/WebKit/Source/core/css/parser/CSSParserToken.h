@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/parser/AtRuleDescriptors.h"
+#include "core/css/parser/at_rule_descriptors.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/StringView.h"
 

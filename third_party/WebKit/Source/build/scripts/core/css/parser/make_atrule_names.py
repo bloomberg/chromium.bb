@@ -23,8 +23,8 @@ class AtRuleNamesWriter(json5_generator.Writer):
         super(AtRuleNamesWriter, self).__init__(json5_file_paths)
 
         self._outputs = {
-            'AtRuleDescriptors.h': self.generate_header,
-            'AtRuleDescriptors.cpp': self.generate_implementation
+            'at_rule_descriptors.h': self.generate_header,
+            'at_rule_descriptors.cc': self.generate_implementation
         }
 
         self._descriptors = self.json5_file.name_dictionaries
@@ -49,7 +49,7 @@ class AtRuleNamesWriter(json5_generator.Writer):
                 self._longest_name_length)
 
     @template_expander.use_jinja(
-        'core/css/parser/templates/AtRuleDescriptors.h.tmpl')
+        'core/css/parser/templates/at_rule_descriptors.h.tmpl')
     def generate_header(self):
         return {
             'descriptors': self._descriptors,
@@ -57,7 +57,7 @@ class AtRuleNamesWriter(json5_generator.Writer):
         }
 
     @gperf.use_jinja_gperf_template(
-        'core/css/parser/templates/AtRuleDescriptors.cpp.tmpl')
+        'core/css/parser/templates/at_rule_descriptors.cc.tmpl')
     def generate_implementation(self):
         return {
             'descriptors': self._descriptors,

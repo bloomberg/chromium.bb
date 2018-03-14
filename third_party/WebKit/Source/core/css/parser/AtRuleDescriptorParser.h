@@ -6,7 +6,7 @@
 #define AtRuleDescriptorParser_h
 
 #include "core/css/CSSPropertyValue.h"
-#include "core/css/parser/AtRuleDescriptors.h"
+#include "core/css/parser/at_rule_descriptors.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

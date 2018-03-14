@@ -1112,15 +1112,15 @@ css_properties("make_core_generated_css_property_names") {
 
 code_generator("make_core_generated_atrule_names") {
   script = "../build/scripts/core/css/parser/make_atrule_names.py"
-  json_inputs = [ "css/parser/AtRuleNames.json5" ]
+  json_inputs = [ "css/parser/at_rule_names.json5" ]
   other_inputs = [ "../build/scripts/gperf.py" ]
   templates = [
-    "../build/scripts/core/css/parser/templates/AtRuleDescriptors.cpp.tmpl",
-    "../build/scripts/core/css/parser/templates/AtRuleDescriptors.h.tmpl",
+    "../build/scripts/core/css/parser/templates/at_rule_descriptors.cc.tmpl",
+    "../build/scripts/core/css/parser/templates/at_rule_descriptors.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/css/parser/AtRuleDescriptors.cpp",
-    "$blink_core_output_dir/css/parser/AtRuleDescriptors.h",
+    "$blink_core_output_dir/css/parser/at_rule_descriptors.cc",
+    "$blink_core_output_dir/css/parser/at_rule_descriptors.h",
   ]
   other_args = [
     "--gperf",

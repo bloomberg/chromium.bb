@@ -36,7 +36,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/css/CSSValue.h"
-#include "core/css/parser/AtRuleDescriptors.h"
+#include "core/css/parser/at_rule_descriptors.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "platform/bindings/ScriptWrappable.h"
