@@ -1102,6 +1102,7 @@
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
         "recto", "right", "verso"
       ],
+      typedom_types: ["Keyword"],
       default_value: "auto",
       type_name: "EBreakBetween",
     },
@@ -1115,6 +1116,7 @@
         "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
         "recto", "right", "verso"
       ],
+      typedom_types: ["Keyword"],
       default_value: "auto",
       type_name: "EBreakBetween",
     },
@@ -1125,6 +1127,7 @@
       // page-break-inside, -webkit-column-break-inside
       field_template: "keyword",
       keywords: ["auto", "avoid", "avoid-column", "avoid-page"],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
