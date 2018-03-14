@@ -2079,6 +2079,7 @@ void UiSceneCreator::CreateOmnibox() {
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
           base::Unretained(browser_), base::Unretained(ui_)),
       vector_icons::kMicIcon, audio_delegate_);
+  mic_button->set_icon_scale_factor(kVoiceSearchIconScaleFactor);
   mic_button->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                       kOmniboxTextFieldIconButtonSizeDMM);
   mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);

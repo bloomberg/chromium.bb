@@ -16,14 +16,14 @@ namespace vr {
 
 namespace {
 
-constexpr float kIconScaleFactor = 0.5f;
+constexpr float kDefaultIconScaleFactor = 0.5f;
 
 }  // namespace
 
 DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
                        const gfx::VectorIcon& icon,
                        AudioDelegate* audio_delegate)
-    : Button(click_handler) {
+    : Button(click_handler), icon_scale_factor_(kDefaultIconScaleFactor) {
   auto vector_icon = std::make_unique<VectorIcon>(512);
   vector_icon->SetType(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
@@ -76,8 +76,8 @@ void DiscButton::NotifyClientSizeAnimated(const gfx::SizeF& size,
   if (target_property_id == BOUNDS) {
     background()->SetSize(size.width(), size.height());
     background()->set_corner_radius(size.width() * 0.5f);  // Creates a circle.
-    foreground()->SetSize(size.width() * kIconScaleFactor,
-                          size.height() * kIconScaleFactor);
+    foreground()->SetSize(size.width() * icon_scale_factor_,
+                          size.height() * icon_scale_factor_);
     hit_plane()->SetSize(size.width(), size.height());
     hit_plane()->set_corner_radius(size.width() * 0.5f);  // Creates a circle.
   }
