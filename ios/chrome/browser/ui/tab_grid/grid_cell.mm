@@ -233,8 +233,9 @@ const CGFloat kBorderWidth = 6.0f;
                                                constant:-6.0f],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
-  [closeButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                 forAxis:UILayoutConstraintAxisHorizontal];
+  [titleLabel
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                      forAxis:UILayoutConstraintAxisHorizontal];
   return topBar;
 }
 
