@@ -63,7 +63,7 @@ void CastWebViewExtension::ClosePage(const base::TimeDelta& shutdown_delay) {}
 void CastWebViewExtension::CreateWindow(CastWindowManager* window_manager,
                                         bool is_visible) {
   window_->CreateWindowForWebContents(web_contents(), window_manager,
-                                      is_visible);
+                                      is_visible, chromecast::shell::VisibilityPriority::DEFAULT);
   web_contents()->Focus();
 }
 

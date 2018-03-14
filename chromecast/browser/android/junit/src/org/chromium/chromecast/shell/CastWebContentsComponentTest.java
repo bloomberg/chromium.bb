@@ -35,6 +35,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chromecast.shell.CastWebContentsComponent.StartParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -54,17 +55,23 @@ public class CastWebContentsComponentTest {
 
     private static final String INSTANCE_ID = "1";
 
+    private static final String APP_ID = "app";
+
+    private static final int VISIBILITY_PRIORITY = 2;
+
     @Mock
     private WebContents mWebContents;
 
     private Activity mActivity;
     private ShadowActivity mShadowActivity;
+    private StartParams mStartParams;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActivity = Mockito.spy(Robolectric.buildActivity(Activity.class).setup().get());
         mShadowActivity = Shadows.shadowOf(mActivity);
+        mStartParams = new StartParams(mActivity, mWebContents, APP_ID, VISIBILITY_PRIORITY);
     }
 
     @Test
@@ -72,8 +79,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
-        component.start(mActivity, mWebContents);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.start(mStartParams);
         Intent intent = mShadowActivity.getNextStartedActivity();
         Assert.assertEquals(
                 intent.getComponent().getClassName(), CastWebContentsActivity.class.getName());
@@ -91,8 +98,8 @@ public class CastWebContentsComponentTest {
                 .registerReceiver(receiver, intentFilter);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
-        component.start(ContextUtils.getApplicationContext(), mWebContents);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.start(mStartParams);
         component.stop(ContextUtils.getApplicationContext());
 
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
@@ -106,8 +113,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
-        component.start(mActivity, mWebContents);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.start(mStartParams);
         component.stop(mActivity);
 
         ArgumentCaptor<Intent> intent = ArgumentCaptor.forClass(Intent.class);
@@ -122,8 +129,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
-        component.start(mActivity, mWebContents);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
+        component.start(mStartParams);
         component.stop(mActivity);
 
         verify(mActivity).unbindService(any(ServiceConnection.class));
@@ -135,10 +142,9 @@ public class CastWebContentsComponentTest {
                 Mockito.mock(CastWebContentsComponent.OnComponentClosedHandler.class);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, callback, null, false, false);
-        component.start(ContextUtils.getApplicationContext(), mWebContents);
-        CastWebContentsComponent.onComponentClosed(
-                ContextUtils.getApplicationContext(), INSTANCE_ID);
+                new CastWebContentsComponent(INSTANCE_ID, callback, null, null, false, false);
+        component.start(mStartParams);
+        CastWebContentsComponent.onComponentClosed(INSTANCE_ID);
         verify(callback).onComponentClosed();
 
         component.stop(mActivity);
@@ -150,9 +156,9 @@ public class CastWebContentsComponentTest {
                 Mockito.mock(CastWebContentsComponent.OnKeyDownHandler.class);
 
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, callback, false, false);
-        component.start(mActivity, mWebContents);
-        CastWebContentsComponent.onKeyDown(mActivity, INSTANCE_ID, 42);
+                new CastWebContentsComponent(INSTANCE_ID, null, callback, null, false, false);
+        component.start(mStartParams);
+        CastWebContentsComponent.onKeyDown(INSTANCE_ID, 42);
         component.stop(mActivity);
 
         verify(callback).onKeyDown(42);
@@ -161,7 +167,7 @@ public class CastWebContentsComponentTest {
     @Test
     public void testStopDoesNotUnbindServiceIfStartWasNotCalled() {
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
 
         component.stop(mActivity);
 
@@ -169,21 +175,49 @@ public class CastWebContentsComponentTest {
     }
 
     @Test
+    public void testOnVisibilityChangeCallback() {
+        CastWebContentsComponent.SurfaceEventHandler callback =
+                Mockito.mock(CastWebContentsComponent.SurfaceEventHandler.class);
+
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, callback, false, false);
+        component.start(mStartParams);
+        CastWebContentsComponent.onVisiblityChange(INSTANCE_ID, 2);
+        component.stop(mActivity);
+
+        verify(callback).onVisibilityChange(2);
+    }
+
+    @Test
+    public void testOnGestureCallback() {
+        CastWebContentsComponent.SurfaceEventHandler callback =
+                Mockito.mock(CastWebContentsComponent.SurfaceEventHandler.class);
+
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, callback, false, false);
+        component.start(mStartParams);
+        CastWebContentsComponent.onGesture(INSTANCE_ID, 1);
+        component.stop(mActivity);
+
+        verify(callback).consumeGesture(1);
+    }
+
+    @Test
     public void testStartWebContentsComponentMultipleTimes() {
         CastWebContentsComponent component =
-                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
+                new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
         CastWebContentsComponent.Delegate delegate = mock(CastWebContentsComponent.Delegate.class);
         component.setDelegate(delegate);
-        component.start(mActivity, mWebContents);
-        Object receiver1 = component.getIntentReceiver();
-        Assert.assertNotNull(receiver1);
-        verify(delegate, times(1)).start(eq(mActivity), eq(mWebContents));
-        component.start(mActivity, mWebContents);
-        Object receiver2 = component.getIntentReceiver();
-        Assert.assertEquals(receiver1, receiver2);
-        verify(delegate, times(1)).start(any(Context.class), any(WebContents.class));
+        component.start(mStartParams);
+        Assert.assertTrue(component.isStarted());
+        verify(delegate, times(1)).start(eq(mStartParams));
+        StartParams params2 = new StartParams(mActivity, mWebContents, "test", 1);
+        component.start(params2);
+        Assert.assertTrue(component.isStarted());
+        verify(delegate, times(1)).start(any(StartParams.class));
+        verify(delegate, times(0)).start(eq(params2));
         component.stop(mActivity);
-        Assert.assertNull(component.getIntentReceiver());
+        Assert.assertFalse(component.isStarted());
         verify(delegate, times(1)).stop(any(Context.class));
     }
 }

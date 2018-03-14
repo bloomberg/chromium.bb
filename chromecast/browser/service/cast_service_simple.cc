@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/time/time.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "content/public/browser/web_contents.h"
@@ -97,6 +98,16 @@ bool CastServiceSimple::OnAddMessageToConsoleReceived(
     int32_t line_no,
     const base::string16& source_id) {
   return false;
+}
+
+bool CastServiceSimple::ConsumeGesture(GestureType gesture_type) {
+  return false;
+};
+
+void CastServiceSimple::OnVisibilityChange(VisibilityType visibility_type) {}
+
+std::string CastServiceSimple::GetId() {
+  return "";
 }
 
 }  // namespace shell

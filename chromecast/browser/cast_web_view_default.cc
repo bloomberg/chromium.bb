@@ -134,8 +134,9 @@ void CastWebViewDefault::CreateWindow(CastWindowManager* window_manager,
   }
 
   DCHECK(window_manager);
-  window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
-                                      is_visible);
+  window_->CreateWindowForWebContents(
+      web_contents_.get(), window_manager, is_visible,
+      chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
   web_contents_->Focus();
 }
 

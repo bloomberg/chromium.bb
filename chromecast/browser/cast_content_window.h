@@ -21,6 +21,30 @@ class CastWindowManager;
 
 namespace shell {
 
+enum class VisibilityType {
+  UNKNOWN = 0,
+  FULL_SCREEN = 1,
+  PARTIAL_OUT = 2,
+  HIDDEN = 3
+};
+
+enum class VisibilityPriority {
+  // Default priority, up to system to decide how to show the app.
+  DEFAULT = 0,
+
+  // Priority for app need to show in full screen mode but could be timout.
+  TRANSIENT_ACTIVITY = 1,
+
+  // A high priority interruption takes half screen if a sticky activity
+  // showing on screen, otherwise takes full screen.
+  HIGH_PRIORITY_INTERRUPTION = 2,
+
+  // Priority for app need to show in full screen mode and stick to screen.
+  STICKY_ACTIVITY = 3,
+};
+
+enum class GestureType { NO_GESTURE = 0, GO_BACK = 1 };
+
 // Class that represents the "window" a WebContents is displayed in cast_shell.
 // For Linux, this represents an Aura window. For Android, this is a Activity.
 // See CastContentWindowLinux and CastContentWindowAndroid.
@@ -30,6 +54,17 @@ class CastContentWindow {
    public:
     virtual void OnWindowDestroyed() = 0;
     virtual void OnKeyEvent(const ui::KeyEvent& key_event) = 0;
+
+    // To be called from Android side through JNI to send surface gesture to
+    // cast activity or appliction.
+    virtual bool ConsumeGesture(GestureType gesture_type) = 0;
+
+    // To be called from Android side through JNI to notify cast activity or
+    // appliction its visibility change in Android app hosting it.
+    virtual void OnVisibilityChange(VisibilityType visibility_type) = 0;
+
+    // Returns app ID of cast activity or appliction.
+    virtual std::string GetId() = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -48,9 +83,19 @@ class CastContentWindow {
   // |is_visible| is true.
   // |web_contents| should outlive this CastContentWindow.
   // |window_manager| should outlive this CastContentWindow.
-  virtual void CreateWindowForWebContents(content::WebContents* web_contents,
-                                          CastWindowManager* window_manager,
-                                          bool is_visible) = 0;
+  virtual void CreateWindowForWebContents(
+      content::WebContents* web_contents,
+      CastWindowManager* window_manager,
+      bool is_visible,
+      VisibilityPriority visibility_priority) = 0;
+
+  // Cast activity or application calls it to request for a visibility priority
+  // change.
+  virtual void RequestVisibility(VisibilityPriority visibility_priority) = 0;
+
+  // Cast activity or application calls it to request for moving out of the
+  // screen.
+  virtual void RequestMoveOut() = 0;
 };
 
 }  // namespace shell

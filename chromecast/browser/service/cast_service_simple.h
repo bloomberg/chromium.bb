@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "chromecast/service/cast_service.h"
 #include "url/gurl.h"
@@ -46,6 +47,9 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
   // CastContentWindow::Delegate implementation:
   void OnWindowDestroyed() override;
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
+  bool ConsumeGesture(GestureType gesture_type) override;
+  void OnVisibilityChange(VisibilityType visibility_type) override;
+  std::string GetId() override;
 
  private:
   CastWindowManager* const window_manager_;

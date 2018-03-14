@@ -38,6 +38,10 @@ public class CastWebContentsFragment extends Fragment {
 
     private View mFragmentRootView;
 
+    private String mAppId;
+
+    private int mInitialVisiblityPriority;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -83,18 +87,25 @@ public class CastWebContentsFragment extends Fragment {
                     (FrameLayout) getView().findViewById(R.id.web_contents_container),
                     true /* showInFragment */);
         Bundle bundle = getArguments();
-        bundle.setClassLoader(WebContents.class.getClassLoader());
-        String uriString = bundle.getString(CastWebContentsComponent.INTENT_EXTRA_URI);
+
+        String uriString = CastWebContentsIntentUtils.getUriString(bundle);
         if (uriString == null) {
             return;
         }
         Uri uri = Uri.parse(uriString);
-        WebContents webContents = (WebContents) bundle.getParcelable(
-                CastWebContentsComponent.ACTION_EXTRA_WEB_CONTENTS);
 
-        boolean touchInputEnabled =
-                bundle.getBoolean(CastWebContentsComponent.ACTION_EXTRA_TOUCH_INPUT_ENABLED, false);
+        WebContents webContents = CastWebContentsIntentUtils.getWebContents(bundle);
+        mAppId = CastWebContentsIntentUtils.getAppId(bundle);
+        mInitialVisiblityPriority = CastWebContentsIntentUtils.getVisibilityPriority(bundle);
+        boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(bundle);
+
         mSurfaceHelper.onNewWebContents(uri, webContents, touchInputEnabled);
+    }
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        args.setClassLoader(WebContents.class.getClassLoader());
     }
 
     @Override
