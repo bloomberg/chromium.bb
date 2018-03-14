@@ -109,8 +109,17 @@ UserType UserManager::CalculateUserType(const AccountId& account_id,
   if (user) {
     // This branch works for any other user type, including PUBLIC_ACCOUNT.
     const UserType user_type = user->GetType();
-    if (is_child && user_type != USER_TYPE_CHILD)
+    if (user_type == USER_TYPE_CHILD || user_type == USER_TYPE_REGULAR) {
+      const UserType new_user_type =
+          is_child ? USER_TYPE_CHILD : USER_TYPE_REGULAR;
+      if (new_user_type != user_type) {
+        LOG(WARNING) << "Child user type has changed: " << user_type << " => "
+                     << new_user_type;
+      }
+      return new_user_type;
+    } else if (is_child) {
       LOG(FATAL) << "Incorrect child user type " << user_type;
+    }
 
     // TODO (rsorokin): Check for reverse: account_id AD type should imply
     // AD user type.

@@ -87,6 +87,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns the user type.
   virtual UserType GetType() const = 0;
 
+  // Will LOG(FATAL) unless overridden.
+  virtual void UpdateType(UserType user_type);
+
   // Returns true if user has gaia account. True for users of types
   // USER_TYPE_REGULAR and USER_TYPE_CHILD.
   virtual bool HasGaiaAccount() const;

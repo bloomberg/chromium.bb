@@ -178,6 +178,7 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
   } else {
     switch (user_type) {
       case USER_TYPE_REGULAR:  // fallthrough
+      case USER_TYPE_CHILD:    // fallthrough
       case USER_TYPE_ACTIVE_DIRECTORY:
         if (account_id != GetOwnerAccountId() && !user &&
             (AreEphemeralUsersEnabled() || browser_restart)) {
@@ -202,10 +203,6 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
 
       case USER_TYPE_KIOSK_APP:
         KioskAppLoggedIn(user);
-        break;
-
-      case USER_TYPE_CHILD:
-        RegularUserLoggedIn(account_id, USER_TYPE_CHILD);
         break;
 
       case USER_TYPE_ARC_KIOSK_APP:
@@ -917,6 +914,9 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   // Remove the user from the user list.
   active_user_ =
       RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
+
+  if (active_user_)
+    active_user_->UpdateType(user_type);
 
   // If the user was not found on the user list, create a new user.
   SetIsCurrentUserNew(!active_user_);
