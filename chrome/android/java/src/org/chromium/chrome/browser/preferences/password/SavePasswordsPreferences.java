@@ -189,11 +189,9 @@ public class SavePasswordsPreferences
     private boolean mSearchRecorded;
     private Menu mMenuForTesting;
 
-    // Contains the reference to the progress-bar dialog after the user confirms the password
-    // export and before the serialized passwords arrive, so that the dialog can be dismissed on the
-    // passwords' arrival. It is null during all other times.
-    @Nullable
-    private ProgressBarDialogFragment mProgressBarDialogFragment;
+    // Takes care of displaying and hiding the progress bar for exporting, while avoiding
+    // flickering.
+    private DialogManager mProgressBarManager = new DialogManager();
 
     // If an error dialog should be shown, this contains the arguments for it, such as the error
     // message. If no error dialog should be shown, this is null.
@@ -205,6 +203,10 @@ public class SavePasswordsPreferences
     // for the reauthentication time window to still allow exporting. It is null during all other
     // times.
     private ExportWarningDialogFragment mExportWarningDialogFragment;
+
+    public DialogManager getDialogManagerForTesting() {
+        return mProgressBarManager;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -486,9 +488,8 @@ public class SavePasswordsPreferences
         if (mExportFileUri == null) {
             // The serialization has not finished. Until this finishes, a progress bar is
             // displayed with an option to cancel the export.
-            assert mProgressBarDialogFragment == null;
-            mProgressBarDialogFragment = new ProgressBarDialogFragment();
-            mProgressBarDialogFragment.setCancelProgressHandler(
+            ProgressBarDialogFragment progressBarDialogFragment = new ProgressBarDialogFragment();
+            progressBarDialogFragment.setCancelProgressHandler(
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -500,12 +501,15 @@ public class SavePasswordsPreferences
                             }
                         }
                     });
-            mProgressBarDialogFragment.show(getFragmentManager(), null);
+            mProgressBarManager.show(progressBarDialogFragment, getFragmentManager());
         } else {
             // Note: if the serialization is quicker than the user interacting with the
-            // confirmation dialog, then there is no progress bar shown.
-            if (mProgressBarDialogFragment != null) mProgressBarDialogFragment.dismiss();
-            sendExportIntent();
+            // confirmation dialog, then there is no progress bar shown, in which case hide() is
+            // just calling the callback synchronously.
+            // TODO(crbug.com/821377) -- remove clang-format pragmas
+            // clang-format off
+            mProgressBarManager.hide(this::sendExportIntent);
+            // clang-format on
         }
     }
 
@@ -520,8 +524,15 @@ public class SavePasswordsPreferences
     public void showExportErrorAndAbort(int descriptionId, @Nullable String detailedDescription,
             int positiveButtonLabelId, @HistogramExportResult int histogramExportResult) {
         assert mErrorDialogParams == null;
-        if (mProgressBarDialogFragment != null) mProgressBarDialogFragment.dismiss();
+        mProgressBarManager.hide(() -> {
+            showExportErrorAndAbortImmediately(descriptionId, detailedDescription,
+                    positiveButtonLabelId, histogramExportResult);
+        });
+    }
 
+    public void showExportErrorAndAbortImmediately(int descriptionId,
+            @Nullable String detailedDescription, int positiveButtonLabelId,
+            @HistogramExportResult int histogramExportResult) {
         RecordHistogram.recordEnumeratedHistogram("PasswordManager.ExportPasswordsToCSVResult",
                 histogramExportResult, EXPORT_RESULT_COUNT);
 

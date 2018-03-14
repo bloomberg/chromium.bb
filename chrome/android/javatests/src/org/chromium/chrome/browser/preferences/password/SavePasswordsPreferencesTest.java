@@ -202,6 +202,12 @@ public class SavePasswordsPreferencesTest {
     FakePasswordManagerHandler mHandler;
 
     /**
+     * Delayer controling hiding the progress bar during exporting passwords. This replaces a time
+     * delay used in production.
+     */
+    private final ManualCallbackDelayer mManualDelayer = new ManualCallbackDelayer();
+
+    /**
      * Helper to set up a fake source of displayed passwords.
      * @param entry An entry to be added to saved passwords. Can be null.
      */
@@ -264,6 +270,9 @@ public class SavePasswordsPreferencesTest {
 
     /**
      * Taps the menu item to trigger exporting and ensures that reauthentication passes.
+     * It also disables the timer in {@link DialogManager} which is used to allow hiding the
+     * progress bar after an initial period. Hiding can be later allowed manually in tests with
+     * {@link #allowProgressBarToBeHidden}, to avoid time-dependent flakiness.
      */
     private void reauthenticateAndRequestExport(Preferences preferences) {
         openActionBarOverflowOrOptionsMenu(
@@ -281,10 +290,15 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
 
-        // Now call onResume to nudge Chrome into continuing the export flow.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                // Disable the timer for progress bar.
+                SavePasswordsPreferences fragment =
+                        (SavePasswordsPreferences) preferences.getFragmentForTest();
+                fragment.getDialogManagerForTesting().replaceCallbackDelayerForTesting(
+                        mManualDelayer);
+                // Now call onResume to nudge Chrome into continuing the export flow.
                 preferences.getFragmentForTest().onResume();
             }
         });
@@ -335,6 +349,13 @@ public class SavePasswordsPreferencesTest {
         });
     }
 
+    /**
+     * Sends the signal to {@link DialogManager} that the minimal time for showing the progress
+     * bar has passed. This results in the progress bar getting hidden as soon as requested.
+     */
+    private void allowProgressBarToBeHidden(Preferences preferences) {
+        ThreadUtils.runOnUiThreadBlocking(mManualDelayer::runCallbacksSynchronously);
+    }
     /**
      * Call after activity.finish() to wait for the wrap up to complete. If it was already completed
      * or could be finished within |timeout_ms|, stop waiting anyways.
@@ -1063,6 +1084,64 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that a progressbar is displayed for a minimal time duration to avoid flickering.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportProgressMinimalTime() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Intents.init();
+
+        // This also disables the timer for keeping the progress bar up. The test can thus emulate
+        // that timer going off by calling {@link allowProgressBarToBeHidden}.
+        reauthenticateAndRequestExport(preferences);
+
+        // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
+        // after the test is finished.
+        intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
+                .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+        // Confirm the export warning to fire the sharing intent.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Before simulating the serialized passwords being received, check that the progress bar is
+        // shown.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(matches(isDisplayed()));
+
+        // Now pretend that passwords have been serialized.
+        mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
+
+        // Check that the progress bar is still shown, though, because the timer has not gone off
+        // yet.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(matches(isDisplayed()));
+
+        // Now mark the timer as gone off and check that the progress bar is hidden.
+        allowProgressBarToBeHidden(preferences);
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(doesNotExist());
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                        allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
+
+        Intents.release();
+    }
+
+    /**
      * Check that a progressbar is displayed when the user confirms the export and the serialized
      * passwords are not ready yet.
      */
@@ -1100,6 +1179,7 @@ public class SavePasswordsPreferencesTest {
                 .check(matches(isDisplayed()));
 
         // Now pretend that passwords have been serialized.
+        allowProgressBarToBeHidden(preferences);
         mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
 
         // After simulating the serialized passwords being received, check that the progress bar is
@@ -1137,6 +1217,10 @@ public class SavePasswordsPreferencesTest {
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
+
+        // Simulate the minimal time for showing the progress bar to have passed, to ensure that it
+        // is kept live because of the pending serialization.
+        allowProgressBarToBeHidden(preferences);
 
         // Check that the progress bar is shown.
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
@@ -1182,6 +1266,7 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error. This should replace the progress bar if that has been shown in
         // the meantime.
+        allowProgressBarToBeHidden(preferences);
         requestShowingExportError(
                 preferences, R.string.save_password_preferences_export_learn_google_drive);
 
@@ -1224,6 +1309,7 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error but ensure that the positive button label is the one for "try
         // again".
+        allowProgressBarToBeHidden(preferences);
         requestShowingExportError(preferences, R.string.try_again);
 
         // Hit the positive button to try again.
@@ -1261,6 +1347,7 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error but ensure that the positive button label is the one for the
         // Google Drive help site.
+        allowProgressBarToBeHidden(preferences);
         requestShowingExportError(
                 preferences, R.string.save_password_preferences_export_learn_google_drive);
 
@@ -1312,6 +1399,7 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
 
         // Check that now the error is displayed, instead of the progress bar.
+        allowProgressBarToBeHidden(preferences);
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(doesNotExist());
         Espresso.onView(withText(R.string.save_password_preferences_export_no_app))
