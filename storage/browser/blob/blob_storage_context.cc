@@ -666,7 +666,7 @@ bool BlobStorageContext::OnMemoryDump(
           ->system_allocator_pool_name();
 
   auto* mad = pmd->CreateAllocatorDump(
-      base::StringPrintf("site_storage/blob_storage_0x%" PRIXPTR,
+      base::StringPrintf("site_storage/blob_storage/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this)));
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
