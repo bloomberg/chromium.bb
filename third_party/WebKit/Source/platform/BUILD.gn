@@ -69,12 +69,12 @@ action("runtime_enabled_features") {
 action("color_data") {
   script = "../build/scripts/gperf.py"
 
-  color_data_gperf = "ColorData.gperf"
+  color_data_gperf = "color_data.gperf"
   inputs = [
     color_data_gperf,
   ]
 
-  output_file = "$blink_platform_output_dir/ColorData.cpp"
+  output_file = "$blink_platform_output_dir/color_data.cc"
   outputs = [
     output_file,
   ]
