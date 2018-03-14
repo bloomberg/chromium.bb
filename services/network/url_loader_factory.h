@@ -45,6 +45,10 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override;
   void Clone(mojom::URLLoaderFactoryRequest request) override;
 
+  static constexpr int kMaxKeepaliveConnections = 256;
+  static constexpr int kMaxKeepaliveConnectionsPerProcess = 20;
+  static constexpr int kMaxKeepaliveConnectionsPerProcessForFetchAPI = 10;
+
  private:
   // Not owned.
   NetworkContext* context_;

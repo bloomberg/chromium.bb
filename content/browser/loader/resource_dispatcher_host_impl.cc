@@ -114,6 +114,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/resource_scheduler.h"
+#include "services/network/url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -275,11 +276,6 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
 }
 
 }  // namespace
-
-constexpr int ResourceDispatcherHostImpl::kMaxKeepaliveConnections;
-constexpr int ResourceDispatcherHostImpl::kMaxKeepaliveConnectionsPerProcess;
-constexpr int
-    ResourceDispatcherHostImpl::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
 
 class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
     : public ResourceThrottle {
@@ -2139,6 +2135,14 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
   // requests with keepalive set have additional limitations.
   if (info->keepalive()) {
+    constexpr auto kMaxKeepaliveConnections =
+        network::URLLoaderFactory::kMaxKeepaliveConnections;
+    constexpr auto kMaxKeepaliveConnectionsPerProcess =
+        network::URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
+    constexpr auto kMaxKeepaliveConnectionsPerProcessForFetchAPI = network::
+        URLLoaderFactory::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
+    // URLLoaderFactory::CreateLoaderAndStart has the duplicate logic.
+    // Update there too when this logic is updated.
     const auto& recorder = keepalive_statistics_recorder_;
     if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections)
       exhausted = true;

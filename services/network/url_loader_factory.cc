@@ -13,6 +13,10 @@
 
 namespace network {
 
+constexpr int URLLoaderFactory::kMaxKeepaliveConnections;
+constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
+constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcessForFetchAPI;
+
 URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
     uint32_t process_id,
@@ -58,6 +62,41 @@ void URLLoaderFactory::CreateLoaderAndStart(
                                         ->keepalive_statistics_recorder()
                                         ->AsWeakPtr();
   }
+
+  if (url_request.keepalive && keepalive_statistics_recorder) {
+    // This logic comes from
+    // content::ResourceDispatcherHostImpl::BeginRequestInternal.
+    bool exhausted = false;
+    // This is needed because we want to know whether the request is initiated
+    // by fetch() or not. We hope that we can unify these restrictions and
+    // remove the reference to fetch_request_context_type in the future.
+    constexpr uint32_t kInitiatedByFetchAPI = 8;
+    const bool is_initiated_by_fetch_api =
+        url_request.fetch_request_context_type == kInitiatedByFetchAPI;
+    const auto& recorder = *keepalive_statistics_recorder;
+    if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections)
+      exhausted = true;
+    if (recorder.NumInflightRequestsPerProcess(process_id_) >=
+        kMaxKeepaliveConnectionsPerProcess) {
+      exhausted = true;
+    }
+    if (is_initiated_by_fetch_api &&
+        recorder.NumInflightRequestsPerProcess(process_id_) >=
+            kMaxKeepaliveConnectionsPerProcessForFetchAPI) {
+      exhausted = true;
+    }
+    if (exhausted) {
+      if (client) {
+        URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_INSUFFICIENT_RESOURCES;
+        status.exists_in_cache = false;
+        status.completion_time = base::TimeTicks::Now();
+        client->OnComplete(status);
+      }
+      return;
+    }
+  }
+
   new URLLoader(
       context_->url_request_context_getter(), network_service_client,
       std::move(request), options, url_request, report_raw_headers,
