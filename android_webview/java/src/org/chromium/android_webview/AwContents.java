@@ -3134,6 +3134,15 @@ public class AwContents implements SmartClipProvider {
         callback.handleJavaScriptResult(jsonResult);
     }
 
+    /**
+     * Return the device locale in the same format we use to populate the 'hl' query parameter for
+     * Safe Browsing interstitial urls, as done in BaseUIManager::app_locale().
+     */
+    @VisibleForTesting
+    public static String getSafeBrowsingLocaleForTesting() {
+        return nativeGetSafeBrowsingLocaleForTesting();
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------
@@ -3621,6 +3630,7 @@ public class AwContents implements SmartClipProvider {
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
     private static native void nativeUpdateDefaultLocale(String locale, String localeList);
+    private static native String nativeGetSafeBrowsingLocaleForTesting();
 
     private native void nativeEvaluateJavaScriptOnInterstitialForTesting(
             long nativeAwContents, String script, JavaScriptCallback jsCallback);

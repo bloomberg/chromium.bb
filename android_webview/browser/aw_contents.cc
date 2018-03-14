@@ -44,6 +44,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -451,6 +452,15 @@ static void JNI_AwContents_SetAwDrawGLFunctionTable(JNIEnv* env,
 jint JNI_AwContents_GetNativeInstanceCount(JNIEnv* env,
                                            const JavaParamRef<jclass>&) {
   return base::subtle::NoBarrier_Load(&g_instance_count);
+}
+
+// static
+ScopedJavaLocalRef<jstring> JNI_AwContents_GetSafeBrowsingLocaleForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
+  ScopedJavaLocalRef<jstring> locale =
+      ConvertUTF8ToJavaString(env, base::i18n::GetConfiguredLocale());
+  return locale;
 }
 
 namespace {
