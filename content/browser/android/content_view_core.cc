@@ -233,12 +233,12 @@ void ContentViewCore::RenderViewHostChanged(RenderViewHost* old_host,
         static_cast<RenderWidgetHostViewAndroid*>(
             old_host->GetWidget()->GetView());
     if (view)
-      view->SetContentViewCore(NULL);
+      view->UpdateNativeViewTree(nullptr);
 
     view = static_cast<RenderWidgetHostViewAndroid*>(
         new_host->GetWidget()->GetView());
     if (view)
-      view->SetContentViewCore(this);
+      view->UpdateNativeViewTree(GetViewAndroid());
   }
   int new_pid =
       GetRenderProcessIdFromRenderViewHost(web_contents_->GetRenderViewHost());
@@ -280,13 +280,6 @@ jint ContentViewCore::GetBackgroundColor(JNIEnv* env, jobject obj) {
   if (!rwhva)
     return SK_ColorWHITE;
   return rwhva->GetCachedBackgroundColor();
-}
-
-void ContentViewCore::RequestDisallowInterceptTouchEvent() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_ContentViewCoreImpl_requestDisallowInterceptTouchEvent(env, obj);
 }
 
 void ContentViewCore::SendScreenRectsAndResizeWidget() {

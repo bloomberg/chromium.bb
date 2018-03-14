@@ -47,7 +47,6 @@ struct DidOverscrollParams;
 }
 
 namespace content {
-class ContentViewCore;
 class GestureListenerManager;
 class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
@@ -79,7 +78,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public viz::BeginFrameObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
-                              ContentViewCore* content_view_core);
+                              gfx::NativeView parent_native_view);
   ~RenderWidgetHostViewAndroid() override;
 
   // Interface used to observe the destruction of a RenderWidgetHostViewAndroid.
@@ -251,7 +250,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool WantsAnimateOnlyBeginFrames() const override;
 
   // Non-virtual methods
-  void SetContentViewCore(ContentViewCore* content_view_core);
+  void UpdateNativeViewTree(gfx::NativeView parent_native_view);
   void OnContentViewCoreDestroyed();
   SkColor GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
@@ -415,9 +414,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Used to customize behavior for virtual reality mode, such as the
   // appearance of overscroll glow and the keyboard.
   bool is_in_vr_;
-
-  // ContentViewCore is our interface to the view system.
-  ContentViewCore* content_view_core_;
 
   ImeAdapterAndroid* ime_adapter_android_;
   TapDisambiguator* tap_disambiguator_;

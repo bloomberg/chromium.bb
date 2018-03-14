@@ -334,6 +334,12 @@ public abstract class ViewAndroidDelegate {
     }
 
     @CalledByNative
+    private void requestDisallowInterceptTouchEvent() {
+        ViewGroup container = getContainerView();
+        if (container != null) container.requestDisallowInterceptTouchEvent(true);
+    }
+
+    @CalledByNative
     private boolean hasFocus() {
         ViewGroup containerView = getContainerView();
         return containerView == null ? false : ViewUtils.hasFocus(containerView);
