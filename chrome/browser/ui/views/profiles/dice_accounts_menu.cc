@@ -86,7 +86,8 @@ DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
   menu_.AddSeparator(ui::SPACING_SEPARATOR);
 }
 
-void DiceAccountsMenu::Show(views::View* anchor_view) {
+void DiceAccountsMenu::Show(views::View* anchor_view,
+                            views::MenuButton* menu_button) {
   DCHECK(!runner_);
   runner_ =
       std::make_unique<views::MenuRunner>(&menu_, views::MenuRunner::COMBOBOX);
@@ -112,7 +113,7 @@ void DiceAccountsMenu::Show(views::View* anchor_view) {
   else
     anchor_bounds.Inset(anchor_bounds.width(), 0, 0, 0);
 
-  runner_->RunMenuAt(anchor_view->GetWidget(), nullptr, anchor_bounds,
+  runner_->RunMenuAt(anchor_view->GetWidget(), menu_button, anchor_bounds,
                      views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_MOUSE);
 }
 

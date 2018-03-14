@@ -92,7 +92,8 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
         accounts_for_submenu_, images_for_submenu_,
         base::BindOnce(&DiceBubbleSyncPromoView::EnableSync,
                        base::Unretained(this)));
-    dice_accounts_menu_->Show(signin_button_view_);
+    dice_accounts_menu_->Show(signin_button_view_,
+                              signin_button_view_->drop_down_arrow());
     return;
   }
 

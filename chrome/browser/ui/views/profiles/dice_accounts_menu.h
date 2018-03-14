@@ -37,9 +37,9 @@ class DiceAccountsMenu : public ui::SimpleMenuModel::Delegate {
                    Callback account_selected_callback);
   ~DiceAccountsMenu() override;
 
-  // Shows the accounts menu below |anchor_view|. This method can only be called
-  // once.
-  void Show(views::View* anchor_view);
+  // Shows the accounts menu below |anchor_view| and locks |menu_button| if
+  // given. This method can only be called once.
+  void Show(views::View* anchor_view, views::MenuButton* menu_button = nullptr);
 
  private:
   // Overridden from ui::SimpleMenuModel::Delegate:

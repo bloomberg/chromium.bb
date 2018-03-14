@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "components/signin/core/browser/account_info.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
@@ -37,7 +38,7 @@ class DiceSigninButtonView : public views::View {
   ~DiceSigninButtonView() override;
 
   views::LabelButton* signin_button() const { return signin_button_; }
-  views::LabelButton* drop_down_arrow() const { return arrow_; }
+  HoverButton* drop_down_arrow() const { return arrow_; }
   base::Optional<AccountInfo> account() const { return account_; }
 
  private:
@@ -46,7 +47,7 @@ class DiceSigninButtonView : public views::View {
   void Layout() override;
 
   views::LabelButton* signin_button_ = nullptr;
-  views::LabelButton* arrow_ = nullptr;
+  HoverButton* arrow_ = nullptr;
 
   const base::Optional<AccountInfo> account_;
 
