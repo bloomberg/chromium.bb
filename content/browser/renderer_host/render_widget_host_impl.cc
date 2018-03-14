@@ -2778,10 +2778,17 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
         new_surface_properties.ToDiffString(last_surface_properties_).c_str());
     LOG(ERROR) << "Surface invariants violation: " << error;
 
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "surface-invariants-violation", base::debug::CrashKeySize::Size256);
-    base::debug::ScopedCrashKeyString key_value(crash_key, error);
-    base::debug::DumpWithoutCrashing();
+    static int invariants_violation_count = 0;
+    ++invariants_violation_count;
+    UMA_HISTOGRAM_COUNTS_1000("Compositing.SurfaceInvariantsViolations",
+                              invariants_violation_count);
+
+    if (features::IsSurfaceInvariantsViolationLoggingEnabled()) {
+      static auto* crash_key = base::debug::AllocateCrashKeyString(
+          "surface-invariants-violation", base::debug::CrashKeySize::Size256);
+      base::debug::ScopedCrashKeyString key_value(crash_key, error);
+      base::debug::DumpWithoutCrashing();
+    }
 
     if (view_) {
       frame.metadata.begin_frame_ack.has_damage = false;
