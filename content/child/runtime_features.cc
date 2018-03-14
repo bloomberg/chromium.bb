@@ -434,6 +434,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (base::FeatureList::IsEnabled(features::kUnifiedTouchAdjustment))
     WebRuntimeFeatures::EnableUnifiedTouchAdjustment(true);
+
+  // Make srcset on link rel=preload work with SignedHTTPExchange flag too.
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
+    WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
 };
 
 }  // namespace content

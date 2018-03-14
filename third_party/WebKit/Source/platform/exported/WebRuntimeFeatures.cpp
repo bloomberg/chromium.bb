@@ -260,6 +260,10 @@ void WebRuntimeFeatures::EnablePreloadDefaultIsMetadata(bool enable) {
   RuntimeEnabledFeatures::SetPreloadDefaultIsMetadataEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(bool enable) {
+  RuntimeEnabledFeatures::SetPreloadImageSrcSetEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableRasterInducingScroll(bool enable) {
   RuntimeEnabledFeatures::SetRasterInducingScrollEnabled(enable);
 }
