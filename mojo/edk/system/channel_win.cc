@@ -165,7 +165,8 @@ class ChannelWin : public Channel,
         case ERROR_PIPE_CONNECTED:
           break;
         case ERROR_IO_PENDING:
-          is_connect_pending_ = this;
+          is_connect_pending_ = true;
+          AddRef();
           return;
         case ERROR_NO_DATA:
         default:
@@ -221,7 +222,7 @@ class ChannelWin : public Channel,
         OnError(Error::kDisconnected);
     } else if (context == &connect_context_) {
       DCHECK(is_connect_pending_);
-      scoped_refptr<ChannelWin> self(std::move(is_connect_pending_));
+      is_connect_pending_ = false;
       ReadMore(0);
 
       base::AutoLock lock(write_lock_);
@@ -230,17 +231,18 @@ class ChannelWin : public Channel,
         WriteNextNoLock();
       }
     } else if (context == &read_context_) {
-      scoped_refptr<ChannelWin> self(std::move(is_read_pending_));
       OnReadDone(static_cast<size_t>(bytes_transfered));
     } else {
       CHECK(context == &write_context_);
-      scoped_refptr<ChannelWin> self(std::move(is_write_pending_));
       OnWriteDone(static_cast<size_t>(bytes_transfered));
     }
-    // |this| may have been deleted by the time we reach here.
+    Release();
   }
 
   void OnReadDone(size_t bytes_read) {
+    DCHECK(is_read_pending_);
+    is_read_pending_ = false;
+
     if (bytes_read > 0) {
       size_t next_read_size = 0;
       if (OnReadComplete(bytes_read, &next_read_size)) {
@@ -283,6 +285,8 @@ class ChannelWin : public Channel,
   }
 
   void ReadMore(size_t next_read_size_hint) {
+    DCHECK(!is_read_pending_);
+
     size_t buffer_capacity = next_read_size_hint;
     char* buffer = GetReadBuffer(&buffer_capacity);
     DCHECK_GT(buffer_capacity, 0u);
@@ -294,7 +298,8 @@ class ChannelWin : public Channel,
                        &read_context_.overlapped);
 
     if (ok || GetLastError() == ERROR_IO_PENDING) {
-      is_read_pending_ = this;
+      is_read_pending_ = true;
+      AddRef();
     } else {
       OnError(Error::kDisconnected);
     }
@@ -311,7 +316,7 @@ class ChannelWin : public Channel,
                         &write_context_.overlapped);
 
     if (ok || GetLastError() == ERROR_IO_PENDING) {
-      is_write_pending_ = this;
+      AddRef();
       return true;
     }
     return false;
@@ -347,9 +352,8 @@ class ChannelWin : public Channel,
   base::MessageLoopForIO::IOContext connect_context_;
   base::MessageLoopForIO::IOContext read_context_;
   base::MessageLoopForIO::IOContext write_context_;
-  scoped_refptr<ChannelWin> is_connect_pending_;
-  scoped_refptr<ChannelWin> is_read_pending_;
-  scoped_refptr<ChannelWin> is_write_pending_;
+  bool is_connect_pending_ = false;
+  bool is_read_pending_ = false;
 
   // Protects |delay_writes_|, |reject_writes_| and |outgoing_messages_|.
   base::Lock write_lock_;
