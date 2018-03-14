@@ -72,7 +72,6 @@ class WebMediaPlayerMS::FrameDeliverer {
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
         media_task_runner_(media_task_runner),
-        weak_factory_for_pool_(this),
         weak_factory_(this) {
     io_thread_checker_.DetachFromThread();
 
@@ -88,7 +87,6 @@ class WebMediaPlayerMS::FrameDeliverer {
   ~FrameDeliverer() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     if (gpu_memory_buffer_pool_) {
-      gpu_memory_buffer_pool_->Abort();
       media_task_runner_->DeleteSoon(FROM_HERE,
                                      gpu_memory_buffer_pool_.release());
     }
@@ -97,7 +95,6 @@ class WebMediaPlayerMS::FrameDeliverer {
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
-// On Android, stop passing frames.
 #if defined(OS_ANDROID)
     if (render_frame_suspended_)
       return;
@@ -105,20 +102,6 @@ class WebMediaPlayerMS::FrameDeliverer {
 
     if (!gpu_memory_buffer_pool_) {
       FrameReady(frame);
-      return;
-    }
-
-    // If |render_frame_suspended_|, we can keep passing the frames to keep the
-    // latest frame in compositor up to date. However, creating GMB backed
-    // frames is unnecessary, because the frames are not going to be shown for
-    // the time period.
-    if (render_frame_suspended_) {
-      FrameReady(frame);
-      // If there are any existing MaybeCreateHardwareFrame() calls, we do not
-      // want those frames to be placed after the current one, so just drop
-      // them.
-      gpu_memory_buffer_pool_->Abort();
-      weak_factory_for_pool_.InvalidateWeakPtrs();
       return;
     }
 
@@ -130,9 +113,8 @@ class WebMediaPlayerMS::FrameDeliverer {
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
             base::Unretained(gpu_memory_buffer_pool_.get()), frame,
-            media::BindToCurrentLoop(
-                base::BindOnce(&FrameDeliverer::FrameReady,
-                               weak_factory_for_pool_.GetWeakPtr()))));
+            media::BindToCurrentLoop(base::BindRepeating(
+                &FrameDeliverer::FrameReady, weak_factory_.GetWeakPtr()))));
   }
 
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame) {
@@ -177,10 +159,12 @@ class WebMediaPlayerMS::FrameDeliverer {
     enqueue_frame_cb_.Run(frame);
   }
 
+#if defined(OS_ANDROID)
   void SetRenderFrameSuspended(bool render_frame_suspended) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     render_frame_suspended_ = render_frame_suspended;
   }
+#endif  // defined(OS_ANDROID)
 
   MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
     return base::Bind(&FrameDeliverer::OnVideoFrame,
@@ -193,7 +177,10 @@ class WebMediaPlayerMS::FrameDeliverer {
   bool last_frame_opaque_;
   media::VideoRotation last_frame_rotation_;
   bool received_first_frame_;
+
+#if defined(OS_ANDROID)
   bool render_frame_suspended_ = false;
+#endif  // defined(OS_ANDROID)
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const base::WeakPtr<WebMediaPlayerMS> player_;
@@ -206,7 +193,6 @@ class WebMediaPlayerMS::FrameDeliverer {
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   base::ThreadChecker io_thread_checker_;
 
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_;
   base::WeakPtrFactory<FrameDeliverer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -750,28 +736,27 @@ size_t WebMediaPlayerMS::VideoDecodedByteCount() const {
 }
 
 void WebMediaPlayerMS::OnFrameHidden() {
+#if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
-  // This method is called when the RenderFrame is sent to background or
-  // suspended. During undoable tab closures OnHidden() may be called back to
-  // back, so we can't rely on |render_frame_suspended_| being false here.
+
+  // Method called when the RenderFrame is sent to background and suspended
+  // (android). Substitute the displayed VideoFrame with a copy to avoid
+  // holding on to it unnecessarily.
+  //
+  // During undoable tab closures OnHidden() may be called back to back, so we
+  // can't rely on |render_frame_suspended_| being false here.
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
                               base::Unretained(frame_deliverer_.get()), true));
   }
 
-// On Android, substitute the displayed VideoFrame with a copy to avoid holding
-// onto it unnecessarily.
-#if defined(OS_ANDROID)
   if (!paused_)
     compositor_->ReplaceCurrentFrameWithACopy();
 #endif  // defined(OS_ANDROID)
 }
 
 void WebMediaPlayerMS::OnFrameClosed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-// On Android, pause the video completely for this time period.
 #if defined(OS_ANDROID)
   if (!paused_) {
     Pause();
@@ -779,16 +764,17 @@ void WebMediaPlayerMS::OnFrameClosed() {
   }
 
   delegate_->PlayerGone(delegate_id_);
-#endif  // defined(OS_ANDROID)
 
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
                               base::Unretained(frame_deliverer_.get()), true));
   }
+#endif  // defined(OS_ANDROID)
 }
 
 void WebMediaPlayerMS::OnFrameShown() {
+#if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (frame_deliverer_) {
@@ -797,9 +783,7 @@ void WebMediaPlayerMS::OnFrameShown() {
                               base::Unretained(frame_deliverer_.get()), false));
   }
 
-// On Android, resume playback on visibility. play() clears
-// |should_play_upon_shown_|.
-#if defined(OS_ANDROID)
+  // Resume playback on visibility. play() clears |should_play_upon_shown_|.
   if (should_play_upon_shown_)
     Play();
 #endif  // defined(OS_ANDROID)
