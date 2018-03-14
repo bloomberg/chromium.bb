@@ -4,12 +4,20 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
 
+#include "build/buildflag.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
+#include "ui/base/ui_features.h"
 
 namespace chrome {
 
-void DisableFindBarAnimationsDuringTesting(bool /* disable */) {
+void DisableFindBarCocoaAnimationsDuringTesting(bool /* disable */) {
   FindBarBridge::disable_animations_during_testing_ = true;
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+void DisableFindBarAnimationsDuringTesting(bool disable) {
+  DisableFindBarCocoaAnimationsDuringTesting(disable);
+}
+#endif
 
 }  // namespace chrome

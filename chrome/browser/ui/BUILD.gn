@@ -3901,15 +3901,16 @@ static_library("test_support") {
       "views/toolbar/browser_action_test_util_views_mac.mm",
     ]
     if (is_mac) {
-      sources += [ "cocoa/extensions/browser_action_test_util_views_cocoa.mm" ]
+      sources += [
+        "cocoa/extensions/browser_action_test_util_views_cocoa.mm",
+        "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
+      ]
     }
     if (!is_mac || mac_views_browser) {
       sources += [
         "views/find_bar_host_unittest_util_views.cc",
         "views/toolbar/browser_action_test_util_views.cc",
       ]
-    } else {
-      sources += [ "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm" ]
     }
     if (use_aura) {
       sources += [ "views/toolbar/browser_action_test_util_views_aura.cc" ]
