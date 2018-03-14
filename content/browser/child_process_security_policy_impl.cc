@@ -806,6 +806,10 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
         // sufficient defense against access from an unrelated renderer.
         break;
 
+      case network::DataElement::TYPE_DATA_PIPE:
+        // Data is self-contained within |body| - no need to check access.
+        break;
+
       case network::DataElement::TYPE_UNKNOWN:
       default:
         // Fail safe - deny access.
