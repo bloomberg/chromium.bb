@@ -50,6 +50,12 @@ bool ShouldDoExperimentalRTLLayout();
 // OSes would make Chrome stick out.
 bool ShouldFlipWindowControlsInRTL();
 
+// Set or clear the keys in NSUserDefaults which control UI direction based on
+// whether direction is forced by a Chrome flag. This should be early in
+// Chrome's launch, before any views or windows have been created, because it's
+// cached by AppKit.
+void ApplyForcedRTL();
+
 // Returns NSImageLeading when available (10.12+), otherwise
 // NSImageLeft for LTR and NSImageRight in RTL.
 NSCellImagePosition LeadingCellImagePosition();

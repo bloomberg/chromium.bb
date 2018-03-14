@@ -84,30 +84,6 @@ base::i18n::TextDirection GetCharacterDirection(UChar32 character) {
   return base::i18n::UNKNOWN_DIRECTION;
 }
 
-// Gets the explicitly forced text direction for debugging. If no forcing is
-// applied, returns UNKNOWN_DIRECTION.
-base::i18n::TextDirection GetForcedTextDirection() {
-  // On iOS, check for RTL forcing.
-#if defined(OS_IOS)
-  if (base::ios::IsInForcedRTL())
-    return base::i18n::RIGHT_TO_LEFT;
-#endif
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceUIDirection)) {
-    std::string force_flag =
-        command_line->GetSwitchValueASCII(switches::kForceUIDirection);
-
-    if (force_flag == switches::kForceDirectionLTR)
-      return base::i18n::LEFT_TO_RIGHT;
-
-    if (force_flag == switches::kForceDirectionRTL)
-      return base::i18n::RIGHT_TO_LEFT;
-  }
-
-  return base::i18n::UNKNOWN_DIRECTION;
-}
-
 }  // namespace
 
 namespace base {
@@ -184,6 +160,28 @@ bool ICUIsRTL() {
     g_icu_text_direction = GetTextDirectionForLocaleInStartUp(locale.getName());
   }
   return g_icu_text_direction == RIGHT_TO_LEFT;
+}
+
+TextDirection GetForcedTextDirection() {
+// On iOS, check for RTL forcing.
+#if defined(OS_IOS)
+  if (base::ios::IsInForcedRTL())
+    return base::i18n::RIGHT_TO_LEFT;
+#endif
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceUIDirection)) {
+    std::string force_flag =
+        command_line->GetSwitchValueASCII(switches::kForceUIDirection);
+
+    if (force_flag == switches::kForceDirectionLTR)
+      return base::i18n::LEFT_TO_RIGHT;
+
+    if (force_flag == switches::kForceDirectionRTL)
+      return base::i18n::RIGHT_TO_LEFT;
+  }
+
+  return base::i18n::UNKNOWN_DIRECTION;
 }
 
 TextDirection GetTextDirectionForLocaleInStartUp(const char* locale_name) {

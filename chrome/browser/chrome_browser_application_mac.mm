@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/mac/exception_processor.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/core/common/crash_key.h"
 #import "components/crash/core/common/objc_zombie.h"
@@ -48,6 +49,8 @@ void CancelTerminate() {
   ObjcEvilDoers::ZombieEnable(true, 10000);
 
   chrome::InstallObjcExceptionPreprocessor();
+
+  cocoa_l10n_util::ApplyForcedRTL();
 }
 
 - (id)init {

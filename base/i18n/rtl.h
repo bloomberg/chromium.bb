@@ -60,6 +60,10 @@ BASE_I18N_EXPORT bool IsRTL();
 // NOTE: Generally, you should call IsRTL() instead of this.
 BASE_I18N_EXPORT bool ICUIsRTL();
 
+// Gets the explicitly forced text direction for debugging. If no forcing is
+// applied, returns UNKNOWN_DIRECTION.
+BASE_I18N_EXPORT TextDirection GetForcedTextDirection();
+
 // Returns the text direction for |locale_name|.
 // As a startup optimization, this method checks the locale against a list of
 // Chrome-supported RTL locales.

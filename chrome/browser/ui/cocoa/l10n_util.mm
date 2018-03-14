@@ -94,6 +94,28 @@ bool ShouldFlipWindowControlsInRTL() {
   return ShouldDoExperimentalRTLLayout() && base::mac::IsAtLeastOS10_12();
 }
 
+void ApplyForcedRTL() {
+  NSUserDefaults* defaults = NSUserDefaults.standardUserDefaults;
+
+  // -registerDefaults: won't do the trick here because these defaults exist
+  // (in the global domain) to reflect the system locale. They need to be set
+  // in Chrome's domain to supersede the system value.
+  switch (base::i18n::GetForcedTextDirection()) {
+    case base::i18n::RIGHT_TO_LEFT:
+      [defaults setBool:YES forKey:@"AppleTextDirection"];
+      [defaults setBool:YES forKey:@"NSForceRightToLeftWritingDirection"];
+      break;
+    case base::i18n::LEFT_TO_RIGHT:
+      [defaults setBool:YES forKey:@"AppleTextDirection"];
+      [defaults setBool:NO forKey:@"NSForceRightToLeftWritingDirection"];
+      break;
+    default:
+      [defaults removeObjectForKey:@"AppleTextDirection"];
+      [defaults removeObjectForKey:@"NSForceRightToLeftWritingDirection"];
+      break;
+  }
+}
+
 // TODO(lgrey): Remove these when deployment target is 10.12.
 #if defined(MAC_OS_X_VERSION_10_12) && \
     (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12)
