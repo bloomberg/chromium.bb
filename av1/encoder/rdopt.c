@@ -9626,29 +9626,35 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
            rows * cols * sizeof(best_palette_color_map[0]));
     super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
     if (rd_stats_y.rate == INT_MAX) goto PALETTE_EXIT;
-    uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
-    if (rate_uv_intra[uv_tx] == INT_MAX) {
-      choose_intra_uv_mode(cpi, x, bsize, uv_tx, &rate_uv_intra[uv_tx],
-                           &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
-                           &skip_uvs[uv_tx], &mode_uv[uv_tx]);
-      pmi_uv[uv_tx] = *pmi;
-      uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
-    }
-    mbmi->uv_mode = mode_uv[uv_tx];
-    pmi->palette_size[1] = pmi_uv[uv_tx].palette_size[1];
-    if (pmi->palette_size[1] > 0) {
-      memcpy(pmi->palette_colors + PALETTE_MAX_SIZE,
-             pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
-             2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
-    }
-    mbmi->angle_delta[PLANE_TYPE_UV] = uv_angle_delta[uv_tx];
-    skippable = rd_stats_y.skip && skip_uvs[uv_tx];
-    distortion2 = rd_stats_y.dist + dist_uvs[uv_tx];
-    rate2 = rd_stats_y.rate + rate_overhead_palette + rate_uv_intra[uv_tx];
+    skippable = rd_stats_y.skip;
+    distortion2 = rd_stats_y.dist;
+    rate2 = rd_stats_y.rate + rate_overhead_palette;
     rate2 += ref_costs_single[INTRA_FRAME];
+    if (num_planes > 1) {
+      uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
+      if (rate_uv_intra[uv_tx] == INT_MAX) {
+        choose_intra_uv_mode(cpi, x, bsize, uv_tx, &rate_uv_intra[uv_tx],
+                             &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
+                             &skip_uvs[uv_tx], &mode_uv[uv_tx]);
+        pmi_uv[uv_tx] = *pmi;
+        uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
+      }
+      mbmi->uv_mode = mode_uv[uv_tx];
+      pmi->palette_size[1] = pmi_uv[uv_tx].palette_size[1];
+      if (pmi->palette_size[1] > 0) {
+        memcpy(pmi->palette_colors + PALETTE_MAX_SIZE,
+               pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
+               2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
+      }
+      mbmi->angle_delta[PLANE_TYPE_UV] = uv_angle_delta[uv_tx];
+      skippable = skippable && skip_uvs[uv_tx];
+      distortion2 += dist_uvs[uv_tx];
+      rate2 += rate_uv_intra[uv_tx];
+    }
 
     if (skippable) {
-      rate2 -= (rd_stats_y.rate + rate_uv_tokenonly[uv_tx]);
+      rate2 -= rd_stats_y.rate;
+      if (num_planes > 1) rate2 -= rate_uv_tokenonly[uv_tx];
       rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
     } else {
       rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
