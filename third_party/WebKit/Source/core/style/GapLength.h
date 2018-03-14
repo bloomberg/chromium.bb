@@ -16,7 +16,7 @@ class GapLength {
  public:
   GapLength() : is_normal_(true) {}
   GapLength(const Length& length) : is_normal_(false), length_(length) {
-    DCHECK(length.IsFixed() || length.IsPercent());
+    DCHECK(length.IsSpecified());
   }
 
   bool IsNormal() const { return is_normal_; }

@@ -423,7 +423,7 @@ LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
   if (gap.IsNormal())
     return LayoutUnit();
 
-  if (gap.GetLength().IsPercent())
+  if (gap.GetLength().IsPercentOrCalc())
     available_size = is_row_axis
                          ? AvailableLogicalWidth()
                          : AvailableLogicalHeightForPercentageComputation();
