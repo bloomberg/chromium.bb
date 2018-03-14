@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicetype.h"
@@ -18,7 +19,10 @@ namespace power {
 namespace ml {
 
 UserActivityController::UserActivityController() {
-  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook)
+  // TODO(jiameng): video detector below doesn't work with MASH. Temporary
+  // solution is to disable logging if we're under MASH env.
+  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook ||
+      chromeos::GetAshConfig() == ash::Config::MASH)
     return;
 
   chromeos::PowerManagerClient* power_manager_client =
