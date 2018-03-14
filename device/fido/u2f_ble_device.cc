@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
-#include "device/fido/u2f_apdu_response.h"
+#include "components/apdu/apdu_response.h"
 #include "device/fido/u2f_ble_frames.h"
 #include "device/fido/u2f_ble_transaction.h"
 
@@ -82,8 +82,8 @@ void U2fBleDevice::DeviceTransact(std::vector<uint8_t> command,
           [](DeviceCallback callback, base::Optional<U2fBleFrame> frame) {
             std::move(callback).Run(
                 frame.has_value(),
-                frame ? U2fApduResponse::CreateFromMessage(frame->data())
-                      : nullptr);
+                frame ? apdu::ApduResponse::CreateFromMessage(frame->data())
+                      : base::nullopt);
           },
           std::move(callback)));
   Transition();

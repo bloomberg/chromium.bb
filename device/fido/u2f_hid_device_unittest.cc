@@ -11,10 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/apdu/apdu_command.h"
+#include "components/apdu/apdu_response.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_apdu_command.h"
-#include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_command_type.h"
 #include "device/fido/u2f_hid_device.h"
 #include "device/fido/u2f_request.h"
@@ -96,7 +96,8 @@ device::mojom::HidDeviceInfoPtr TestHidDevice() {
 class U2fDeviceEnumerateCallbackReceiver
     : public test::TestCallbackReceiver<std::vector<mojom::HidDeviceInfoPtr>> {
  public:
-  U2fDeviceEnumerateCallbackReceiver(device::mojom::HidManager* hid_manager)
+  explicit U2fDeviceEnumerateCallbackReceiver(
+      device::mojom::HidManager* hid_manager)
       : hid_manager_(hid_manager) {}
   ~U2fDeviceEnumerateCallbackReceiver() = default;
 
@@ -124,7 +125,7 @@ class U2fDeviceEnumerateCallbackReceiver
 using TestVersionCallbackReceiver =
     test::StatusAndValueCallbackReceiver<bool, U2fDevice::ProtocolVersion>;
 using TestDeviceCallbackReceiver = ::device::test::
-    StatusAndValueCallbackReceiver<bool, std::unique_ptr<U2fApduResponse>>;
+    StatusAndValueCallbackReceiver<bool, base::Optional<apdu::ApduResponse>>;
 
 }  // namespace
 
@@ -201,7 +202,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Manually delete connection.
   device->connection_ = nullptr;
 
-  // Add pending transactions manually and ensure they are processed
+  // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
   device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
                                         receiver_1.callback());
@@ -211,10 +212,11 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_3.callback());
+
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
-  EXPECT_EQ(nullptr, receiver_1.value());
-  EXPECT_EQ(nullptr, receiver_2.value());
-  EXPECT_EQ(nullptr, receiver_3.value());
+  EXPECT_EQ(base::nullopt, receiver_1.value());
+  EXPECT_EQ(base::nullopt, receiver_2.value());
+  EXPECT_EQ(base::nullopt, receiver_3.value());
 }
 
 TEST_F(U2fHidDeviceTest, TestDeviceError) {
@@ -235,14 +237,14 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Mock connection where writes always fail.
   FakeHidConnection::mock_connection_error_ = true;
   device->state_ = U2fHidDevice::State::IDLE;
+
   TestDeviceCallbackReceiver receiver_0;
-  std::unique_ptr<U2fApduResponse> response_0(
-      U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
                          receiver_0.callback());
-  EXPECT_EQ(nullptr, receiver_0.value());
+  EXPECT_EQ(base::nullopt, receiver_0.value());
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
 
+  // Add pending transactions manually and ensure they are processed.
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
   device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
@@ -256,9 +258,9 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   FakeHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
-  EXPECT_EQ(nullptr, receiver_1.value());
-  EXPECT_EQ(nullptr, receiver_2.value());
-  EXPECT_EQ(nullptr, receiver_3.value());
+  EXPECT_EQ(base::nullopt, receiver_1.value());
+  EXPECT_EQ(base::nullopt, receiver_2.value());
+  EXPECT_EQ(base::nullopt, receiver_3.value());
 }
 
 TEST_F(U2fHidDeviceTest, TestLegacyVersion) {
@@ -350,7 +352,7 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
   MockHidConnection mock_connection(
       hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
 
-  // Delegate custom functions to be invoked for mock hid connection
+  // Delegate custom functions to be invoked for mock hid connection.
   EXPECT_CALL(mock_connection, WritePtr(_, _, _))
       // HID_INIT request to authenticator for channel allocation.
       .WillOnce(WithArgs<1, 2>(
@@ -392,7 +394,7 @@ TEST_F(U2fHidDeviceTest, TestRetryChannelAllocation) {
                                    mock_connection.connection_channel_id()));
           })));
 
-  // Add device and set mock connection to fake hid manager
+  // Add device and set mock connection to fake hid manager.
   fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
                                                std::move(connection_client));
 

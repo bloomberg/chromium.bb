@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/apdu",
   "+components/cbor",
   "+crypto",
   "+net/base",

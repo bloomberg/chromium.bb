@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "device/fido/u2f_apdu_command.h"
-#include "device/fido/u2f_apdu_response.h"
+#include "components/apdu/apdu_command.h"
 #include "device/fido/u2f_request.h"
 
 namespace device {
@@ -52,21 +51,21 @@ void U2fDevice::Version(VersionCallback callback) {
 void U2fDevice::OnRegisterComplete(
     MessageCallback callback,
     bool success,
-    std::unique_ptr<U2fApduResponse> register_response) {
+    base::Optional<apdu::ApduResponse> register_response) {
   if (!success || !register_response) {
     std::move(callback).Run(U2fReturnCode::FAILURE, std::vector<uint8_t>());
     return;
   }
   switch (register_response->status()) {
-    case U2fApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
       std::move(callback).Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
                               std::vector<uint8_t>());
       break;
-    case U2fApduResponse::Status::SW_NO_ERROR:
+    case apdu::ApduResponse::Status::SW_NO_ERROR:
       std::move(callback).Run(U2fReturnCode::SUCCESS,
                               register_response->data());
       break;
-    case U2fApduResponse::Status::SW_WRONG_DATA:
+    case apdu::ApduResponse::Status::SW_WRONG_DATA:
       std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                               std::vector<uint8_t>());
       break;
@@ -76,23 +75,24 @@ void U2fDevice::OnRegisterComplete(
   }
 }
 
-void U2fDevice::OnSignComplete(MessageCallback callback,
-                               bool success,
-                               std::unique_ptr<U2fApduResponse> sign_response) {
+void U2fDevice::OnSignComplete(
+    MessageCallback callback,
+    bool success,
+    base::Optional<apdu::ApduResponse> sign_response) {
   if (!success || !sign_response) {
     std::move(callback).Run(U2fReturnCode::FAILURE, std::vector<uint8_t>());
     return;
   }
   switch (sign_response->status()) {
-    case U2fApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
       std::move(callback).Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
                               std::vector<uint8_t>());
       break;
-    case U2fApduResponse::Status::SW_NO_ERROR:
+    case apdu::ApduResponse::Status::SW_NO_ERROR:
       std::move(callback).Run(U2fReturnCode::SUCCESS, sign_response->data());
       break;
-    case U2fApduResponse::Status::SW_WRONG_DATA:
-    case U2fApduResponse::Status::SW_WRONG_LENGTH:
+    case apdu::ApduResponse::Status::SW_WRONG_DATA:
+    case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
     default:
       std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                               std::vector<uint8_t>());
@@ -104,9 +104,9 @@ void U2fDevice::OnVersionComplete(
     VersionCallback callback,
     bool legacy,
     bool success,
-    std::unique_ptr<U2fApduResponse> version_response) {
+    base::Optional<apdu::ApduResponse> version_response) {
   if (success && version_response &&
-      version_response->status() == U2fApduResponse::Status::SW_NO_ERROR &&
+      version_response->status() == apdu::ApduResponse::Status::SW_NO_ERROR &&
       version_response->data() ==
           std::vector<uint8_t>({'U', '2', 'F', '_', 'V', '2'})) {
     std::move(callback).Run(success, ProtocolVersion::U2F_V2);
