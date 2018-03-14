@@ -180,7 +180,7 @@ var availableTests = [
     chrome.networkingPrivate.createNetwork(
       false,  // shared
       { Type: NetworkType.WI_FI,
-        GUID: 'ignored_guid',
+        GUID: 'some_guid',
         WiFi: {
           SSID: 'wifi_created',
           Security: 'WEP-PSK'
@@ -188,7 +188,7 @@ var availableTests = [
       },
       callbackPass(function(guid) {
         assertFalse(guid == '');
-        assertFalse(guid == 'ignored_guid');
+        assertEq('some_guid', guid);
         chrome.networkingPrivate.getProperties(
             guid, callbackPass(function(properties) {
               assertEq(NetworkType.WI_FI, properties.Type);
