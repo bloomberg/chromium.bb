@@ -96,6 +96,7 @@
 ../../third_party/jinja2/environment.py
 ../../third_party/jinja2/exceptions.py
 ../../third_party/jinja2/filters.py
+../../third_party/jinja2/idtracking.py
 ../../third_party/jinja2/lexer.py
 ../../third_party/jinja2/loaders.py
 ../../third_party/jinja2/nodes.py
