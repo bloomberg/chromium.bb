@@ -4,6 +4,8 @@
 
 import("//testing/test.gni")
 
+assert(is_chromeos, "ProximityAuth is Chrome OS only")
+
 static_library("proximity_auth") {
   sources = [
     "bluetooth_connection.cc",
@@ -57,6 +59,7 @@ static_library("proximity_auth") {
 
   deps = [
     "//base",
+    "//chromeos",
     "//components/cryptauth",
     "//components/cryptauth/ble",
     "//components/pref_registry:pref_registry",
@@ -67,10 +70,6 @@ static_library("proximity_auth") {
     "//device/bluetooth",
     "//net",
   ]
-
-  if (is_chromeos) {
-    deps += [ "//chromeos" ]
-  }
 }
 
 static_library("test_support") {
@@ -121,6 +120,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos",
     "//components/cryptauth:test_support",
     "//components/cryptauth:unit_tests",
     "//components/cryptauth/ble",
@@ -132,23 +132,17 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (is_chromeos) {
-    deps += [ "//chromeos" ]
-  }
 }
 
 # Note: This is a convenience target for ease of rapid iteration during
 # development. It is not executed on any try or build bots.
-if (!is_chromeos) {
-  test("proximity_auth_unittests") {
-    sources = [
-      "run_all_unittests.cc",
-    ]
-    deps = [
-      ":unit_tests",
-      "//base",
-      "//base/test:test_support",
-    ]
-  }
+test("proximity_auth_unittests") {
+  sources = [
+    "run_all_unittests.cc",
+  ]
+  deps = [
+    ":unit_tests",
+    "//base",
+    "//base/test:test_support",
+  ]
 }

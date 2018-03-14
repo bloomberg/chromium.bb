@@ -19,10 +19,11 @@
 namespace proximity_auth {
 
 // ScreenlockBridge brings together the screenLockPrivate API and underlying
-// support. On ChromeOS, it delegates calls to the ScreenLocker. On other
-// platforms, it delegates calls to UserManagerUI (and friends).
+// support. It delegates calls to the ScreenLocker.
 // TODO(tbarzic): Rename ScreenlockBridge to SignInScreenBridge, as this is not
 // used solely for the lock screen anymore.
+// TODO(jhawkins): Rationalize this class now that it is CrOS only and most of
+// its functionality is not useful.
 class ScreenlockBridge {
  public:
   // User pod icons supported by lock screen / signin screen UI.

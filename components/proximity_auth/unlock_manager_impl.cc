@@ -13,6 +13,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -23,11 +24,7 @@
 #include "components/proximity_auth/proximity_monitor_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-
 using chromeos::DBusThreadManager;
-#endif  // defined(OS_CHROMEOS)
 
 namespace proximity_auth {
 namespace {
@@ -103,9 +100,8 @@ UnlockManagerImpl::UnlockManagerImpl(
   screenlock_bridge->AddObserver(this);
   OnScreenLockedOrUnlocked(screenlock_bridge->IsLocked());
 
-#if defined(OS_CHROMEOS)
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-#endif  // defined(OS_CHROMEOS)
+
   SetWakingUpState(true);
 
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
@@ -121,9 +117,7 @@ UnlockManagerImpl::~UnlockManagerImpl() {
 
   ScreenlockBridge::Get()->RemoveObserver(this);
 
-#if defined(OS_CHROMEOS)
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-#endif  // defined(OS_CHROMEOS)
 
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
@@ -283,11 +277,9 @@ void UnlockManagerImpl::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
   UpdateLockScreen();
 }
 
-#if defined(OS_CHROMEOS)
 void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
   SetWakingUpState(true);
 }
-#endif  // defined(OS_CHROMEOS)
 
 void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
   if (is_attempting_auth_) {
