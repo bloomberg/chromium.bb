@@ -193,14 +193,7 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
 
   // Navigation to a new page or a page refresh.
 
-  // Do Finch testing to see how much regressions are caused by this leak fix
-  // (crbug/753071).
-  std::string group_name =
-      base::FieldTrialList::FindFullName("FixDocumentLeakInAutofillAgent");
-  if (base::StartsWith(group_name, "enabled",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    element_.Reset();
-  }
+  element_.Reset();
 
   form_cache_.Reset();
   ResetLastInteractedElements();
@@ -460,20 +453,17 @@ void AutofillAgent::ClearForm() {
 }
 
 void AutofillAgent::ClearPreviewedForm() {
-  if (!element_.IsNull()) {
-    if (password_autofill_agent_->DidClearAutofillSelection(element_))
-      return;
+  // TODO(crbug.com/816533): It is very rare, but it looks like the |element_|
+  // can be null if a provisional load was committed immediately prior to
+  // clearing the previewed form.
+  if (element_.IsNull())
+    return;
 
-    form_util::ClearPreviewedFormWithElement(element_,
-                                             was_query_node_autofilled_);
-  } else {
-    // TODO(isherman): There seem to be rare cases where this code *is*
-    // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
-    // understand those cases and fix the code to avoid them.  However, so far I
-    // have been unable to reproduce such a case locally.  If you hit this
-    // NOTREACHED(), please file a bug against me.
-    NOTREACHED();
-  }
+  if (password_autofill_agent_->DidClearAutofillSelection(element_))
+    return;
+
+  form_util::ClearPreviewedFormWithElement(element_,
+                                           was_query_node_autofilled_);
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value) {
