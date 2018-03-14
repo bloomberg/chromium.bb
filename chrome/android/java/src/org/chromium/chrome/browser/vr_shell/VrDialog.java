@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -22,10 +24,13 @@ public class VrDialog extends FrameLayout {
      * Constructor of VrDialog. Sets the DialogManager that will be used to
      * communicate with the vr presentation of the dialog.
      */
+    // For some reason we have to use Gravity.LEFT instead of Gravity.{START|END}. This works for
+    // both LTR and RTL languages.
+    @SuppressLint("RtlHardcoded")
     public VrDialog(Context context, VrDialogManager vrDialogManager) {
         super(context);
-        setLayoutParams(
-                new FrameLayout.LayoutParams(DIALOG_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT));
+        setLayoutParams(new FrameLayout.LayoutParams(
+                DIALOG_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.LEFT));
         mVrDialogManager = vrDialogManager;
     }
 
