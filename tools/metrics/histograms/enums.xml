@@ -45945,6 +45945,14 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Error"/>
 </enum>
 
+<enum name="WebRtcNativeRate">
+  <int value="0" label="8kHz"/>
+  <int value="1" label="16kHz"/>
+  <int value="2" label="32kHz"/>
+  <int value="3" label="48kHz"/>
+  <int value="4" label="Other"/>
+</enum>
+
 <enum name="WebRtcVideoCodecs">
   <int value="0" label="Unknown"/>
   <int value="1" label="VP8"/>
