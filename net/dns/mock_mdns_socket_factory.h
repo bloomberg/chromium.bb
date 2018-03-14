@@ -45,6 +45,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD1(SetReceiveBufferSize, int(int32_t size));
   MOCK_METHOD1(SetSendBufferSize, int(int32_t size));
   MOCK_METHOD0(SetDoNotFragment, int());
+  MOCK_METHOD1(SetMsgConfirm, void(bool confirm));
 
   MOCK_METHOD0(Close, void());
 

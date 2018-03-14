@@ -45,6 +45,10 @@ class NET_EXPORT_PRIVATE DatagramSocket {
   // return ERR_IO_PENDING.
   virtual int SetDoNotFragment() = 0;
 
+  // If |confirm| is true, then the MSG_CONFIRM flag will be passed to
+  // subsequent writes if it's supported by the platform.
+  virtual void SetMsgConfirm(bool confirm) = 0;
+
   // Gets the NetLog for this socket.
   virtual const NetLogWithSource& NetLog() const = 0;
 };

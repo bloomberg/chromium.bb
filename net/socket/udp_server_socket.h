@@ -39,6 +39,7 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
   int SetDoNotFragment() override;
+  void SetMsgConfirm(bool confirm) override;
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
