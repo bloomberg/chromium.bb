@@ -96,10 +96,14 @@ class PLATFORM_EXPORT FloatQuad {
 
   // Tests whether any part of the rectangle intersects with this quad.
   // This only works for convex quads.
+  // This intersection is edge-inclusive and will return true even if the
+  // intersecting area is empty (i.e., the intersection is a line or a point).
   bool IntersectsRect(const FloatRect&) const;
 
   // Test whether any part of the circle/ellipse intersects with this quad.
   // Note that these two functions only work for convex quads.
+  // These intersections are edge-inclusive and will return true even if the
+  // intersecting area is empty (i.e., the intersection is a line or a point).
   bool IntersectsCircle(const FloatPoint& center, float radius) const;
   bool IntersectsEllipse(const FloatPoint& center,
                          const FloatSize& radii) const;

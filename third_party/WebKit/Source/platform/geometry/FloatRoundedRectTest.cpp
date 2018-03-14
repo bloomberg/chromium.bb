@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatRoundedRect.h"
 
+#include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,7 +128,6 @@ TEST(FloatRoundedRectTest, circle) {
  *       (25, 15)  x=25      x=80  (20, 30)
  */
 TEST(FloatRoundedRectTest, ellipticalCorners) {
-  FloatSize corner_size(10, 20);
   FloatRoundedRect::Radii corner_radii;
   corner_radii.SetTopLeft(FloatSize(10, 15));
   corner_radii.SetTopRight(FloatSize(10, 20));
@@ -178,6 +178,58 @@ TEST(FloatRoundedRectTest, radiusCenterRect) {
       FloatSize(55, 55), FloatSize(), FloatSize(), FloatSize());
   FloatRoundedRect r2(FloatRect(0, 0, 100, 50), radii_with_too_large_corner);
   EXPECT_TRUE(r2.RadiusCenterRect().IsEmpty());
+}
+
+TEST(FloatRoundedRectTest, IntersectsQuadIsInclusive) {
+  FloatRoundedRect::Radii corner_radii;
+  corner_radii.SetTopLeft(FloatSize(5, 5));
+  corner_radii.SetTopRight(FloatSize(5, 5));
+  corner_radii.SetBottomLeft(FloatSize(5, 5));
+  corner_radii.SetBottomRight(FloatSize(5, 5));
+  // A rect at (10, 10) with dimensions 20x20 and radii of size 5x5.
+  FloatRoundedRect r(FloatRect(10, 10, 20, 20), corner_radii);
+
+  // A quad fully inside the rounded rect should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(11, 11, 8, 8))));
+
+  // A quad fully outside the rounded rect should not intersect.
+  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(FloatRect(0, 0, 1, 1))));
+
+  // A quad touching the top edge of the rounded rect should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(15, 9, 5, 1))));
+
+  // A quad touching the right edge of the rounded rect should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(30, 15, 1, 1))));
+
+  // A quad touching the bottom edge of the rounded rect should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(15, 30, 1, 1))));
+
+  // A quad touching the left edge of the rounded rect should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(9, 15, 1, 1))));
+
+  // A quad outside the top-left arc should not intersect.
+  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(FloatRect(10, 10, 1, 1))));
+
+  // A quad inside the top-left arc should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(13, 13, 1, 1))));
+
+  // A quad outside the top-right arc should not intersect.
+  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(FloatRect(29, 10, 1, 1))));
+
+  // A quad inside the top-right arc should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(26, 13, 1, 1))));
+
+  // A quad outside the bottom-right arc should not intersect.
+  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(FloatRect(29, 29, 1, 1))));
+
+  // A quad inside the bottom-right arc should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(26, 26, 1, 1))));
+
+  // A quad outside the bottom-left arc should not intersect.
+  EXPECT_FALSE(r.IntersectsQuad(FloatQuad(FloatRect(10, 29, 1, 1))));
+
+  // A quad inside the bottom-left arc should intersect.
+  EXPECT_TRUE(r.IntersectsQuad(FloatQuad(FloatRect(13, 26, 1, 1))));
 }
 
 TEST(FloatRoundedRectTest, ToString) {
