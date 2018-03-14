@@ -702,15 +702,21 @@ class _BuilderRunBase(object):
     Returns:
       The fully formed URL
     """
-    # TODO(akeshet): At the moment, stage links still link back to buildbot,
-    # whereas build links link to luci-milo. Eventually, stage links will link
-    # to logdog instead of buildbot.
+    # TODO: Stage links are only used in metadata_lib, and may not be
+    # necessary. The logs links are currently limited an uninteresting. We
+    # should remove or update to logdog.
     if stage:
       return tree_status.ConstructBuildStageURL(
           self.GetBuildbotUrl(),
           self.GetBuilderName(),
           self.options.buildnumber, stage=stage)
     else:
+      # If we have a buildbucket_id, use it to construct URLs.
+      if self.options.buildbucket_id:
+        return tree_status.ConstructLegolandBuildURL(
+            self.options.buildbucket_id)
+
+      # If not, assume buildbot URLs are needed.
       return tree_status.ConstructDashboardURL(
           self.GetWaterfall(),
           self.GetBuilderName(),
