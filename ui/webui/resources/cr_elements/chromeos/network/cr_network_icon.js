@@ -158,7 +158,7 @@ Polymer({
         networkState.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;
     }
-    var security = networkState.WiFi.Security;
+    var security = CrOnc.getStateOrActiveString(networkState.WiFi.Security);
     return !!security && security != 'None';
   },
 });
