@@ -390,7 +390,7 @@ void SessionStorageDatabase::OnMemoryDump(
     return;
 
   auto* mad = pmd->CreateAllocatorDump(
-      base::StringPrintf("site_storage/session_storage_0x%" PRIXPTR,
+      base::StringPrintf("site_storage/session_storage/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this)));
   pmd->AddOwnershipEdge(mad->guid(), tracker_dump->guid());
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
