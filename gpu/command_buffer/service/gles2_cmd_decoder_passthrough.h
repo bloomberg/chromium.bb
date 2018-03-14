@@ -276,7 +276,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   ErrorState* GetErrorState() override;
 
-  void WaitForReadPixels(base::Closure callback) override;
+  void WaitForReadPixels(base::OnceClosure callback) override;
 
   // Returns true if the context was lost either by GL_ARB_robustness, forced
   // context loss or command buffer parse error.

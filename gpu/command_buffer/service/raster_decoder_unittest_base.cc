@@ -77,7 +77,7 @@ void RasterDecoderTestBase::SetUp() {
 }
 
 void RasterDecoderTestBase::InitDecoderWithWorkarounds() {
-  const std::string extensions("GL_EXT_framebuffer_object ");
+  const std::string extensions("GL_ARB_sync ");
   const std::string gl_version("2.1");
   const bool bind_generates_resource(false);
   const bool lose_context_when_out_of_memory(false);

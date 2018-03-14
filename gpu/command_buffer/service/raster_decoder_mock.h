@@ -26,12 +26,12 @@ class GLSurface;
 }  // namespace gl
 
 namespace gpu {
+class QueryManager;
 
 namespace gles2 {
 class ContextGroup;
 class ErrorState;
 class GpuFenceManager;
-class QueryManager;
 class GLES2Util;
 struct ContextState;
 class FeatureInfo;
@@ -86,7 +86,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_CONST_METHOD1(RestoreTextureUnitBindings, void(unsigned unit));
   MOCK_METHOD1(RestoreVertexAttribArray, void(unsigned index));
 
-  MOCK_METHOD0(GetQueryManager, gles2::QueryManager*());
+  MOCK_METHOD0(GetQueryManager, QueryManager*());
   MOCK_METHOD0(GetGpuFenceManager, gpu::gles2::GpuFenceManager*());
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
   MOCK_METHOD4(DoCommands,

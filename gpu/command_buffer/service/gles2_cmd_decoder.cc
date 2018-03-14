@@ -52,6 +52,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gles2_cmd_srgb_converter.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/gles2_query_manager.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
@@ -63,7 +64,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
-#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -504,7 +504,7 @@ struct FenceCallback {
   FenceCallback() : fence(gl::GLFence::Create()) { DCHECK(fence); }
   FenceCallback(FenceCallback&&) = default;
   FenceCallback& operator=(FenceCallback&&) = default;
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   std::unique_ptr<gl::GLFence> fence;
 };
 
@@ -661,7 +661,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool HasPollingWork() const override;
   void PerformPollingWork() override;
 
-  void WaitForReadPixels(base::Closure callback) override;
+  void WaitForReadPixels(base::OnceClosure callback) override;
 
   Logger* GetLogger() override;
 
@@ -2461,7 +2461,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   std::unique_ptr<FramebufferManager> framebuffer_manager_;
 
-  std::unique_ptr<QueryManager> query_manager_;
+  std::unique_ptr<GLES2QueryManager> query_manager_;
 
   std::unique_ptr<GpuFenceManager> gpu_fence_manager_;
 
@@ -3448,7 +3448,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       group_->framebuffer_completeness_cache()));
   group_->texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
 
-  query_manager_.reset(new QueryManager(this, feature_info_.get()));
+  query_manager_.reset(new GLES2QueryManager(this, feature_info_.get()));
 
   gpu_fence_manager_.reset(new GpuFenceManager());
 
@@ -12096,7 +12096,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         // sent to GL.
         api()->glReadPixelsFn(x, y, width, height, format, type, 0);
         pending_readpixel_fences_.push(FenceCallback());
-        WaitForReadPixels(base::Bind(
+        WaitForReadPixels(base::BindOnce(
             &GLES2DecoderImpl::FinishReadPixels, weak_ptr_factory_.GetWeakPtr(),
             width, height, format, type, pixels_shm_id, pixels_shm_offset,
             result_shm_id, result_shm_offset, state_.pack_alignment,
@@ -16622,11 +16622,11 @@ void GLES2DecoderImpl::ProcessPendingQueries(bool did_finish) {
 
 // Note that if there are no pending readpixels right now,
 // this function will call the callback immediately.
-void GLES2DecoderImpl::WaitForReadPixels(base::Closure callback) {
+void GLES2DecoderImpl::WaitForReadPixels(base::OnceClosure callback) {
   if (features().use_async_readpixels && !pending_readpixel_fences_.empty()) {
-    pending_readpixel_fences_.back().callbacks.push_back(callback);
+    pending_readpixel_fences_.back().callbacks.push_back(std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
@@ -16637,11 +16637,11 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
   while (!pending_readpixel_fences_.empty() &&
          (did_finish ||
           pending_readpixel_fences_.front().fence->HasCompleted())) {
-    std::vector<base::Closure> callbacks =
+    std::vector<base::OnceClosure> callbacks =
         std::move(pending_readpixel_fences_.front().callbacks);
     pending_readpixel_fences_.pop();
     for (size_t i = 0; i < callbacks.size(); i++) {
-      callbacks[i].Run();
+      std::move(callbacks[i]).Run();
     }
   }
 }
