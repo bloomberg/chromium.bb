@@ -850,10 +850,9 @@ void AutofillAgent::OnProvisionallySaveForm(
     else {
       FormData form;
       FormFieldData field;
-      const mojom::AutofillDriverPtr& driver = GetAutofillDriver();
-      if (driver && form_util::FindFormAndFieldForFormControlElement(
-                        element, &form, &field)) {
-        driver->SelectControlDidChange(
+      if (form_util::FindFormAndFieldForFormControlElement(element, &form,
+                                                           &field)) {
+        GetAutofillDriver()->SelectControlDidChange(
             form, field,
             render_frame()->GetRenderView()->ElementBoundsInWindow(element));
       }
