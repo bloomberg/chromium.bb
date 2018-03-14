@@ -4,6 +4,7 @@
 
 #include "content/browser/download/download_worker.h"
 
+#include "base/message_loop/message_loop.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/input_stream.h"
@@ -46,7 +47,8 @@ std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
 CreateUrlDownloadHandler(
     std::unique_ptr<download::DownloadUrlParameters> params,
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter) {
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -56,7 +58,7 @@ CreateUrlDownloadHandler(
         ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
             url_loader_factory_getter->GetNetworkFactory(), GURL(), GURL(),
-            GURL(), download::DownloadItem::kInvalidId, true)
+            GURL(), download::DownloadItem::kInvalidId, true, task_runner)
             .release());
   } else {
     // Build the URLRequest, BlobDataHandle is hold in original request for
@@ -96,7 +98,8 @@ void DownloadWorker::SendRequest(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
-                     weak_factory_.GetWeakPtr(), url_loader_factory_getter),
+                     weak_factory_.GetWeakPtr(), url_loader_factory_getter,
+                     base::MessageLoop::current()->task_runner()),
       base::BindOnce(&DownloadWorker::AddUrlDownloadHandler,
                      weak_factory_.GetWeakPtr()));
 }
