@@ -27,6 +27,11 @@ class SelectionPopupController : public RenderWidgetHostConnector {
                            const base::android::JavaParamRef<jobject>& obj,
                            WebContents* web_contents);
 
+  void SetTextHandlesTemporarilyHidden(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean hidden);
+
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(
       RenderWidgetHostViewAndroid* old_rwhva,
@@ -50,6 +55,7 @@ class SelectionPopupController : public RenderWidgetHostConnector {
  private:
   ~SelectionPopupController() override {}
   base::android::ScopedJavaLocalRef<jobject> GetContext() const;
+  RenderWidgetHostViewAndroid* rwhva_ = nullptr;
 
   JavaObjectWeakGlobalRef java_obj_;
 };

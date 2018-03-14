@@ -10,6 +10,8 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.PopupController;
+import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -24,7 +26,8 @@ import org.chromium.ui.base.WindowAndroid;
  * the commands in that menu (by calling back to the C++ class).
  */
 @JNINamespace("content")
-public class TextSuggestionHost implements WindowEventObserver, WindowAndroidChangedObserver {
+public class TextSuggestionHost
+        implements WindowEventObserver, WindowAndroidChangedObserver, HideablePopup {
     private long mNativeTextSuggestionHost;
     private final WebContentsImpl mWebContents;
 
@@ -83,6 +86,7 @@ public class TextSuggestionHost implements WindowEventObserver, WindowAndroidCha
         mWindowAndroid = windowAndroid;
         mContainerView = view;
         mNativeTextSuggestionHost = nativeInit(mWebContents);
+        PopupController.register(mWebContents, this);
         mInitialized = true;
     }
 
@@ -121,6 +125,12 @@ public class TextSuggestionHost implements WindowEventObserver, WindowAndroidCha
     @Override
     public void onDetachedFromWindow() {
         mIsAttachedToWindow = false;
+    }
+
+    // HieablePopup
+    @Override
+    public void hide() {
+        hidePopups();
     }
 
     @CalledByNative

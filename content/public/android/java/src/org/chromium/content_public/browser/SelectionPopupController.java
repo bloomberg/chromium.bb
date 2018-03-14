@@ -119,6 +119,22 @@ public interface SelectionPopupController {
     TextClassifier getCustomTextClassifier();
 
     /**
+     * Set the flag indicating where the selection is preserved the next time the view loses focus.
+     * @param preserve {@code true} if the selection needs to be preserved.
+     */
+    void setPreserveSelectionOnNextLossOfFocus(boolean preserve);
+
+    /**
+     * Update the text selection UI depending on the focus of the page. This will hide the selection
+     * handles and selection popups if focus is lost.
+     * TODO(mdjones): This was added as a temporary measure to hide text UI while Reader Mode or
+     * Contextual Search are showing. This should be removed in favor of proper focusing of the
+     * panel's ContentViewCore (which is currently not being added to the view hierarchy).
+     * @param focused If the ContentViewCore currently has focus.
+     */
+    void updateTextSelectionUI(boolean focused);
+
+    /**
      * Create and initialize a new instance for testing.
      *
      * @param webContents {@link WebContents} object.
@@ -127,6 +143,7 @@ public interface SelectionPopupController {
      */
     static SelectionPopupController createForTesting(
             Context context, WindowAndroid window, WebContents webContents, View view) {
-        return SelectionPopupControllerImpl.createForTesting(context, window, webContents, view);
+        return SelectionPopupControllerImpl.createForTesting(
+                context, window, webContents, view, null);
     }
 }

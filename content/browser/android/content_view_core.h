@@ -84,11 +84,6 @@ class ContentViewCore : public WebContentsObserver {
                                jfloat ticks_y,
                                jfloat pixels_per_tick);
 
-  void SetTextHandlesTemporarilyHidden(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean hidden);
-
   void ResetGestureDetection(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
   void SetDoubleTapSupportEnabled(

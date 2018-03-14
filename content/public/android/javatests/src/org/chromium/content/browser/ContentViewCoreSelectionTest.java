@@ -141,7 +141,7 @@ public class ContentViewCoreSelectionTest {
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
 
-        mContentViewCore.preserveSelectionOnNextLossOfFocus();
+        mSelectionPopupController.setPreserveSelectionOnNextLossOfFocus(true);
         requestFocusOnUiThread(false);
         waitForSelectActionBarVisible(false);
         Assert.assertTrue(mSelectionPopupController.hasSelection());

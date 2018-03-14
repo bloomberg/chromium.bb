@@ -137,6 +137,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/MotionEventSynthesizer.java",
     "java/src/org/chromium/content/browser/NfcHost.java",
     "java/src/org/chromium/content/browser/PepperPluginManager.java",
+    "java/src/org/chromium/content/browser/PopupController.java",
     "java/src/org/chromium/content/browser/PopupZoomer.java",
     "java/src/org/chromium/content/browser/PositionObserver.java",
     "java/src/org/chromium/content/browser/RenderCoordinates.java",

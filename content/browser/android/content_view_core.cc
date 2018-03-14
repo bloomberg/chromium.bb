@@ -344,15 +344,6 @@ void ContentViewCore::SendOrientationChangeEvent(
   }
 }
 
-void ContentViewCore::SetTextHandlesTemporarilyHidden(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean hidden) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->SetTextHandlesTemporarilyHidden(hidden);
-}
-
 void ContentViewCore::ResetGestureDetection(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();

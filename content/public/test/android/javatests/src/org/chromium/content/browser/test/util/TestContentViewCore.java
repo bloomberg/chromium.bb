@@ -106,9 +106,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void scrollTo(float xPix, float yPix) {}
 
     @Override
-    public void updateTextSelectionUI(boolean focused) {}
-
-    @Override
     public void onPause() {}
 
     @Override
@@ -160,9 +157,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void updateDoubleTapSupport(boolean supportsDoubleTap) {}
-
-    @Override
-    public void preserveSelectionOnNextLossOfFocus() {}
 
     @Override
     public boolean isSelectPopupVisibleForTest() {
