@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service.h"
 
-#include "ash/shell.h"
 #include "base/guid.h"
 #include "base/linux_util.h"
 #include "base/memory/ptr_util.h"
@@ -94,29 +93,8 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   // The Chrome OS version tracks the Chrome version, so fill in the same value
   // as |device_software_version_code|.
   device_info.set_device_os_version_code(software_version_code);
-
-  // There may not be a Shell instance in tests.
-  if (!ash::Shell::HasInstance())
-    return device_info;
-
-  display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-  int64_t primary_display_id =
-      display_manager->GetPrimaryDisplayCandidate().id();
-  display::ManagedDisplayInfo display_info =
-      display_manager->GetDisplayInfo(primary_display_id);
-  gfx::Rect bounds = display_info.bounds_in_native();
-
-  // TODO(tengs): This is a heuristic to deterimine the DPI of the display, as
-  // there is no convenient way of getting this information right now.
-  const double dpi = display_info.device_scale_factor() > 1.0f ? 239.0f : 96.0f;
-  double width_in_inches = (bounds.width() - bounds.x()) / dpi;
-  double height_in_inches = (bounds.height() - bounds.y()) / dpi;
-  double diagonal_in_inches = sqrt(width_in_inches * width_in_inches +
-                                   height_in_inches * height_in_inches);
-
-  // Note: The unit of this measument is in milli-inches.
-  device_info.set_device_display_diagonal_mils(diagonal_in_inches * 1000.0);
+  // |device_display_diagonal_mils| is unset because it only applies to
+  // phones/tablets.
 
   return device_info;
 }
