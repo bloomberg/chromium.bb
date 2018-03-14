@@ -24,7 +24,6 @@
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/id_allocator.h"
@@ -256,8 +255,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   base::RepeatingCallback<void(const char*, int32_t)> error_message_callback_;
 
   int current_trace_stack_;
-
-  Capabilities capabilities_;
 
   // Flag to indicate whether the implementation can retain resources, or
   // whether it should aggressively free them.

@@ -26,6 +26,7 @@ ImplementationBase::ImplementationBase(CommandBufferHelper* helper,
                                        GpuControl* gpu_control)
     : transfer_buffer_(transfer_buffer),
       gpu_control_(gpu_control),
+      capabilities_(gpu_control->GetCapabilities()),
       helper_(helper),
       transfer_cache_(this),
       weak_ptr_factory_(this) {}

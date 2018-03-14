@@ -27,18 +27,19 @@
 #include "url/gurl.h"
 
 namespace gpu {
+class CommandBufferHelper;
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 struct GpuFeatureInfo;
 class GpuMemoryBufferManager;
+class ImplementationBase;
 class TransferBuffer;
 namespace gles2 {
-class GLES2CmdHelper;
 class GLES2Implementation;
 class GLES2TraceImplementation;
 }
 namespace raster {
-class RasterImplementationGLES;
+class RasterInterface;
 }
 }
 
@@ -151,11 +152,15 @@ class ContextProviderCommandBuffer
 
   base::Lock context_lock_;  // Referenced by command_buffer_.
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
-  std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<gpu::CommandBufferHelper> helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
+
+  // Owned by either gles2_impl_ or raster_interface_, not both.
+  gpu::ImplementationBase* impl_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
-  std::unique_ptr<gpu::raster::RasterImplementationGLES> raster_impl_;
+  std::unique_ptr<gpu::raster::RasterInterface> raster_interface_;
+
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 

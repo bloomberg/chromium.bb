@@ -98,7 +98,6 @@ RasterImplementation::RasterImplementation(
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       use_count_(0),
       current_trace_stack_(0),
-      capabilities_(gpu_control->GetCapabilities()),
       aggressively_free_resources_(false),
       lost_(false) {
   DCHECK(helper);
@@ -929,7 +928,7 @@ GLuint RasterImplementation::CreateAndConsumeTexture(
     viz::ResourceFormat format,
     const GLbyte* mailbox) {
   NOTIMPLEMENTED();
-  return 0;
+  return texture_id_allocator_.AllocateID();
 }
 void RasterImplementation::BeginRasterCHROMIUM(
     GLuint texture_id,

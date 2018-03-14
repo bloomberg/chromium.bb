@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/context_result.h"
 
 namespace gpu {
@@ -71,6 +72,8 @@ class GLES2_IMPL_EXPORT ImplementationBase
   // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
   // intercept it.
   void SetLostContextCallback(base::OnceClosure callback);
+
+  const Capabilities& capabilities() const { return capabilities_; }
 
   // ContextSupport implementation.
   void FlushPendingWork() override;
@@ -144,6 +147,8 @@ class GLES2_IMPL_EXPORT ImplementationBase
   bool lost_context_callback_run_ = false;
 
   GpuControl* const gpu_control_;
+
+  Capabilities capabilities_;
 
  private:
   virtual void IssueShallowFlush() = 0;
