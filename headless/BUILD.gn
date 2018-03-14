@@ -111,11 +111,17 @@ mojom("tab_socket") {
   sources = [
     "lib/tab_socket.mojom",
   ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
 }
 
 mojom("headless_render_frame_controller") {
   sources = [
     "lib/headless_render_frame_controller.mojom",
+  ]
+  public_deps = [
+    "//mojo/public/mojom/base",
   ]
 }
 

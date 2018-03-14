@@ -847,6 +847,57 @@ class SingleTabMultipleIsolatedWorldsHeadlessTabSocketTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     SingleTabMultipleIsolatedWorldsHeadlessTabSocketTest);
 
+class LargeStringTabSocketTest : public TabSocketTest {
+ public:
+  void RunTabSocketTest() override {
+    CreateMainWorldTabSocket(
+        main_frame_id(),
+        base::BindOnce(&LargeStringTabSocketTest::OnInstalledHeadlessTabSocket,
+                       base::Unretained(this)));
+  }
+
+  void OnInstalledHeadlessTabSocket(int execution_context_id) {
+    devtools_client_->GetRuntime()->Evaluate(
+        R"(window.TabSocket.onmessage =
+            function(message) {
+              window.TabSocket.send('Embedder sent us: ' + message);
+            };
+          )",
+        base::BindOnce(&LargeStringTabSocketTest::FailOnJsEvaluateException,
+                       base::Unretained(this)));
+
+    HeadlessTabSocket* headless_tab_socket =
+        web_contents_->GetHeadlessTabSocket();
+    DCHECK(headless_tab_socket);
+
+    std::string big_string;
+    big_string.reserve(IPC::Channel::kMaximumMessageSize);
+    for (size_t i = 0; i < IPC::Channel::kMaximumMessageSize; i++) {
+      big_string.push_back('A' + (i % 24));
+    }
+
+    headless_tab_socket->SendMessageToContext(big_string, execution_context_id);
+    headless_tab_socket->SetListener(this);
+    main_frame_execution_context_id_ = execution_context_id;
+  }
+
+  void OnMessageFromContext(const std::string& message,
+                            int execution_context_id) override {
+    EXPECT_EQ(execution_context_id, *main_frame_execution_context_id_);
+    messages_.push_back(message);
+    if (messages_.size() == 1u) {
+      EXPECT_EQ(18 + IPC::Channel::kMaximumMessageSize, messages_[0].size());
+      FinishAsynchronousTest();
+    }
+  }
+
+ private:
+  std::vector<std::string> messages_;
+  base::Optional<int> main_frame_execution_context_id_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(LargeStringTabSocketTest);
+
 // Regression test for https://crbug.com/733569.
 class HeadlessWebContentsRequestStorageQuotaTest
     : public HeadlessAsyncDevTooledBrowserTest,
