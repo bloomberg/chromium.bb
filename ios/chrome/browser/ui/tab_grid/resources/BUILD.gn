@@ -12,3 +12,12 @@ imageset("grid_close_cell") {
     "grid_close_cell.imageset/grid_close_cell@3x.png",
   ]
 }
+
+imageset("tab_grid_new_tab_fab") {
+  sources = [
+    "tab_grid_new_tab_fab.imageset/Contents.json",
+    "tab_grid_new_tab_fab.imageset/tab_grid_new_tab_fab.png",
+    "tab_grid_new_tab_fab.imageset/tab_grid_new_tab_fab@2x.png",
+    "tab_grid_new_tab_fab.imageset/tab_grid_new_tab_fab@3x.png",
+  ]
+}
