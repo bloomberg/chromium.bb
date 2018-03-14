@@ -11,10 +11,9 @@
   "use_clang_coverage=true" and "is_component_build=false" GN flags to args.gn
   file in your build output directory (e.g. out/coverage).
 
-  Clang Source-based Code Coverage requires "is_component_build=false" flag
-  because: There will be no coverage info for libraries in component builds and
-  "is_component_build" is set to true by "is_debug" unless it is explicitly set
-  to false.
+  Existing implementation requires "is_component_build=false" flag because
+  coverage info for dynamic libraries may be missing and "is_component_build"
+  is set to true by "is_debug" unless it is explicitly set to false.
 
   Example usage:
 
