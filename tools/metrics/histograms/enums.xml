@@ -27135,6 +27135,7 @@ from previous Chrome versions.
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
+  <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
   <int value="1533111748" label="Multidevice:enabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>

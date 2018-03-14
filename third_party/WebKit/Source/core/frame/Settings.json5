@@ -952,5 +952,9 @@
       initial: "WebEffectiveConnectionType::kTypeUnknown",
       type: "WebEffectiveConnectionType",
     },
+    {
+      name: "shouldThrottlePushState",
+      initial: true,
+    },
   ],
 }

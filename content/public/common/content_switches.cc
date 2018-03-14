@@ -246,6 +246,9 @@ const char kDisablePreferCompositingToLCDText[] =
 // Disables the Presentation API.
 const char kDisablePresentationAPI[]        = "disable-presentation-api";
 
+// Disables throttling of history.pushState/replaceState calls.
+const char kDisablePushStateThrottle[] = "disable-pushstate-throttle";
+
 // Disables RGBA_4444 textures.
 const char kDisableRGBA4444Textures[]       = "disable-rgba-4444-textures";
 
