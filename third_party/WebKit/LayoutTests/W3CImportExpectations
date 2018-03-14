@@ -181,6 +181,28 @@ external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
 
+# CSS Text Level 3
+# There are no active plans to implement these features at this point.
+external/wpt/css/css-text/hanging-punctuation [ Skip ]
+external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Skip ]
+external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-001.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-002.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-003.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-004.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-005.html [ Skip ]
+external/wpt/css/css-text/text-align/text-align-justifyall-006.html [ Skip ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-001.xht [ Skip ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-002.xht [ Skip ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-004.xht [ Skip ]
+external/wpt/css/css-text/text-transform/text-transform-fullwidth-005.xht [ Skip ]
+external/wpt/css/css-text/white-space/pre-wrap-008.html [ Skip ]
+external/wpt/css/css-text/white-space/pre-wrap-010.html [ Skip ]
+external/wpt/css/css-text/white-space/textarea-pre-wrap-010.html [ Skip ]
+external/wpt/css/css-text/white-space/textarea-pre-wrap-008.html [ Skip ]
+external/wpt/css/css-text/white-space/white-space-collapsing-discard-001.xht [ Skip ]
+external/wpt/css/css-text/white-space/white-space-collapsing-preserve-breaks-001.xht [ Skip ]
+
 # CSS Writing Modes Level 3: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 external/wpt/css/css-writing-modes/block-flow-direction-slr-043.xht [ Skip ]
 external/wpt/css/css-writing-modes/block-flow-direction-slr-047.xht [ Skip ]
