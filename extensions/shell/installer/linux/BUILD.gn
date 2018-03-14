@@ -174,11 +174,18 @@ template("linux_package") {
   action(deb_target_name) {
     visibility = [ ":*" ]
     script = "//build/gn_run_binary.py"
+
+    assert(current_cpu == "x64", "app_shell installer only supported for amd64")
     deb_arch = "amd64"
+    if (is_chrome_branded) {
+      package = "google-app-shell"
+    } else {
+      package = "chromium-app-shell"
+    }
 
     inputs = packaging_files_binaries
     outputs = [
-      "$root_out_dir/google-app-shell-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
+      "$root_out_dir/${package}-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
     ]
 
     args = [
