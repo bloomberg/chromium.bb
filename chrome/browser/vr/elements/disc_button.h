@@ -28,6 +28,8 @@ class DiscButton : public Button {
 
   VectorIcon* foreground() const { return foreground_; }
 
+  void set_icon_scale_factor(float factor) { icon_scale_factor_ = factor; }
+
  private:
   void OnStateUpdated() override;
   void OnSetDrawPhase() override;
@@ -37,6 +39,10 @@ class DiscButton : public Button {
                                 int target_property_id,
                                 cc::KeyframeModel* keyframe_model) override;
 
+  // This button will automatically scale down the given icon to fit the button.
+  // This value is used to determine the amount of scaling and can be set
+  // externally to create a smaller or larger icon.
+  float icon_scale_factor_;
   VectorIcon* foreground_;
   DISALLOW_COPY_AND_ASSIGN(DiscButton);
 };

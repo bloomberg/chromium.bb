@@ -162,6 +162,7 @@ static constexpr float kVoiceSearchRecognitionResultTextHeight =
     0.026f * kContentDistance;
 static constexpr float kVoiceSearchRecognitionResultTextWidth =
     0.4f * kContentDistance;
+static constexpr float kVoiceSearchIconScaleFactor = 0.75f;
 
 static constexpr float kTimeoutScreenDisatance = 2.5f;
 static constexpr float kTimeoutSpinnerSizeDMM = 0.088f;
