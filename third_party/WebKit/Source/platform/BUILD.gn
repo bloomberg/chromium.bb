@@ -101,7 +101,7 @@ action("color_data") {
 compiled_action("character_data") {
   tool = ":character_data_generator"
   outputs = [
-    "$blink_platform_output_dir/CharacterPropertyData.cpp",
+    "$blink_platform_output_dir/character_property_data.cc",
   ]
   args = rebase_path(outputs, root_build_dir)
 }
