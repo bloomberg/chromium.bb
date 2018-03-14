@@ -215,10 +215,19 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            OverviewUnsnappableIndicatorVisibility);
 
+  // The different ways the overview header can fade in and be laid out.
   enum class HeaderFadeInMode {
-    ENTER,
-    UPDATE,
-    EXIT,
+    // Used when entering overview mode, to fade in the header background color.
+    kEnter,
+    // Used when the overview header bounds change for the first time, to
+    // skip animating when in tablet mode.
+    kFirstUpdate,
+    // Used when the overview header bounds change, to animate or move the
+    // header
+    // to the desired bounds.
+    kUpdate,
+    // Used when exiting overview mode, to fade out the header background color.
+    kExit,
   };
 
   // Sets the bounds of this selector's items to |target_bounds| in

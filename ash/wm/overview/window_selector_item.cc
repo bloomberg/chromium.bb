@@ -152,14 +152,32 @@ constexpr int kShadowElevation = 16;
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetARGBMacro(0x24, 0xFF, 0xFF, 0xFF);
 
+// Windows in tablet have different animations. Overview headers do not
+// translate when entering or exiting overview mode. Title bars also do not
+// animate in, as tablet mode windows have no title bars. Exceptions are windows
+// that are not maximized, minimized or snapped.
+bool UseTabletModeAnimations(aura::Window* original_window) {
+  if (!IsNewOverviewUi())
+    return false;
+
+  wm::WindowState* state = wm::GetWindowState(original_window);
+  return Shell::Get()
+             ->tablet_mode_controller()
+             ->IsTabletModeWindowManagerEnabled() &&
+         (state->IsMaximized() || state->IsMinimized() || state->IsSnapped());
+}
+
 // Convenience method to fade in a Window with predefined animation settings.
-// Note: The fade in animation will occur after a delay where the delay is how
-// long the lay out animations take.
-void SetupFadeInAfterLayout(views::Widget* widget) {
+void SetupFadeInAfterLayout(views::Widget* widget,
+                            aura::Window* original_window) {
   aura::Window* window = widget->GetNativeWindow();
   window->layer()->SetOpacity(0.0f);
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
-      OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      UseTabletModeAnimations(original_window)
+          ? OverviewAnimationType::
+                OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_TABLET_FADE_IN
+          : OverviewAnimationType::
+                OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       window);
   window->layer()->SetOpacity(1.0f);
 }
@@ -342,15 +360,9 @@ class WindowSelectorItem::RoundedContainerView
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
-    if (IsNewOverviewUi()) {
-      // Do not animate in the title bar of windows which are maximized in
-      // tablet mode, as their title bars are already hidden.
-      should_animate_ =
-          !(Shell::Get()
-                ->tablet_mode_controller()
-                ->IsTabletModeWindowManagerEnabled() &&
-            wm::GetWindowState(item_->GetWindow())->IsMaximized());
-    }
+    // Do not animate in the title bar of windows which are maximized in
+    // tablet mode, as their title bars are already hidden.
+    should_animate_ = !UseTabletModeAnimations(item_->GetWindow());
   }
 
   ~RoundedContainerView() override { StopObservingImplicitAnimations(); }
@@ -708,7 +720,7 @@ void WindowSelectorItem::RestoreWindow(bool reset_transform) {
     background_view_->OnItemRestored();
     background_view_ = nullptr;
   }
-  UpdateHeaderLayout(HeaderFadeInMode::EXIT, GetExitOverviewAnimationType());
+  UpdateHeaderLayout(HeaderFadeInMode::kExit, GetExitOverviewAnimationType());
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -741,7 +753,7 @@ void WindowSelectorItem::Shutdown() {
 
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
-  UpdateHeaderLayout(HeaderFadeInMode::ENTER,
+  UpdateHeaderLayout(HeaderFadeInMode::kEnter,
                      OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
 }
 
@@ -754,6 +766,13 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   if (in_bounds_update_)
     return;
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
+  // If |target_bounds_| is empty, this is the first update. For tablet mode,
+  // let UpdateHeaderLayout know, as we do not want |item_widget_| to be
+  // animated with the window.
+  HeaderFadeInMode mode =
+      target_bounds_.IsEmpty() && UseTabletModeAnimations(GetWindow())
+          ? HeaderFadeInMode::kFirstUpdate
+          : HeaderFadeInMode::kUpdate;
   target_bounds_ = target_bounds;
 
   gfx::Rect inset_bounds(target_bounds);
@@ -762,7 +781,7 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
-  UpdateHeaderLayout(HeaderFadeInMode::UPDATE, animation_type);
+  UpdateHeaderLayout(mode, animation_type);
 
   UpdateBackdropBounds();
 }
@@ -1090,7 +1109,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   params_label.activatable =
       views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
   params_label.accept_events = true;
-  item_widget_.reset(new views::Widget);
+  item_widget_ = std::make_unique<views::Widget>();
   params_label.parent = transform_window_.window()->parent();
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);
@@ -1162,6 +1181,10 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 void WindowSelectorItem::UpdateHeaderLayout(
     HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
+  // On exit while in tablet mode, do not move the header.
+  if (mode == HeaderFadeInMode::kExit && UseTabletModeAnimations(GetWindow()))
+    return;
+
   gfx::Rect transformed_window_bounds =
       transform_window_.window_selector_bounds().value_or(
           transform_window_.GetTransformedBounds());
@@ -1172,7 +1195,7 @@ void WindowSelectorItem::UpdateHeaderLayout(
   // For tabbed windows the initial bounds of the caption are set such that it
   // appears to be "growing" up from the window content area.
   label_rect.set_y(
-      (mode != HeaderFadeInMode::ENTER || transform_window_.GetTopInset())
+      (mode != HeaderFadeInMode::kEnter || transform_window_.GetTopInset())
           ? -label_rect.height()
           : 0);
 
@@ -1180,13 +1203,13 @@ void WindowSelectorItem::UpdateHeaderLayout(
     ui::ScopedLayerAnimationSettings layer_animation_settings(
         item_widget_->GetLayer()->GetAnimator());
     if (background_view_) {
-      if (mode == HeaderFadeInMode::ENTER) {
+      if (mode == HeaderFadeInMode::kEnter) {
         // Animate the color of |background_view_| once the fade in animation of
         // |item_widget_| ends.
         layer_animation_settings.AddObserver(background_view_);
         if (!IsNewOverviewUi())
           background_view_->set_color(kLabelBackgroundColor);
-      } else if (mode == HeaderFadeInMode::EXIT) {
+      } else if (mode == HeaderFadeInMode::kExit) {
         // Make the header visible above the window. It will be faded out when
         // the Shutdown() is called.
         background_view_->AnimateColor(
@@ -1200,17 +1223,21 @@ void WindowSelectorItem::UpdateHeaderLayout(
     }
     if (!label_view_->visible()) {
       label_view_->SetVisible(true);
-      SetupFadeInAfterLayout(item_widget_.get());
+      SetupFadeInAfterLayout(item_widget_.get(), GetWindow());
     }
   }
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings(animation_type,
-                                                     widget_window);
+  // For the first update, place the widget at its destination.
+  ScopedOverviewAnimationSettings animation_settings(
+      mode == HeaderFadeInMode::kFirstUpdate
+          ? OverviewAnimationType::OVERVIEW_ANIMATION_NONE
+          : animation_type,
+      widget_window);
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
-  if (mode != HeaderFadeInMode::ENTER) {
+  if (mode != HeaderFadeInMode::kEnter) {
     label_rect.set_height(close_button_->GetPreferredSize().height() +
                           transformed_window_bounds.height());
   }
