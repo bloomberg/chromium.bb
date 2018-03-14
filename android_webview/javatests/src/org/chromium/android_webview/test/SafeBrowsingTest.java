@@ -778,7 +778,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest
     public void testSafeBrowsingOnSafeBrowsingHitProceed() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.PROCEED);
 
