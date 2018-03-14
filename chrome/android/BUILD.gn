@@ -9,9 +9,9 @@ import("//build/util/process_version.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/chrome_paks.gni")
+import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
-import("//components/feed/features.gni")  # For disabling Feed library.
 import("//device/vr/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
@@ -284,9 +284,7 @@ android_library("chrome_java") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
-  if (enable_feed_in_chrome) {
-    deps += [ "//third_party/feed:feed_java" ]
-  }
+  deps += feed_deps
 
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
@@ -334,6 +332,9 @@ android_library("chrome_java") {
                  app_hooks_impl,
                  class_register_impl,
                ]
+
+  # Include sources from feed_java_sources.gni.
+  java_files += feed_java_sources
 
   if (enable_vr) {
     java_files += chrome_vr_java_sources

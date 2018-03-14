@@ -28,6 +28,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="base/android/junit/src"/>
     <classpathentry kind="src" path="base/test/android/javatests/src"/>
     <classpathentry kind="src" path="base/test/android/junit/src"/>
+    <classpathentry kind="src" path="chrome/android/feed/core/java/src"/>
+    <classpathentry kind="src" path="chrome/android/feed/dummy/java/src"/>
     <classpathentry kind="src" path="chrome/android/java/src"/>
     <classpathentry kind="src" path="chrome/android/javatests/src"/>
     <classpathentry kind="src" path="chrome/android/junit/src"/>

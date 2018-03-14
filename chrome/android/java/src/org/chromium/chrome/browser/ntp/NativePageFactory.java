@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
+import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -35,9 +36,13 @@ public class NativePageFactory {
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity);
-            } else {
-                return new NewTabPage(activity, new TabShim(tab), tabModelSelector);
             }
+
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
+                return new FeedNewTabPage(activity, new TabShim(tab), tabModelSelector);
+            }
+
+            return new NewTabPage(activity, new TabShim(tab), tabModelSelector);
         }
 
         protected NativePage buildBookmarksPage(Activity activity, Tab tab) {
