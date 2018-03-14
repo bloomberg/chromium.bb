@@ -45628,6 +45628,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Installation started from the add to homescreen menu"/>
 </enum>
 
+<enum name="WebApkInstallSpaceStatus">
+  <int value="0" label="Enough space to install."/>
+  <int value="1" label="Enough space to install after freeing up cache."/>
+  <int value="2" label="Not enough space to install."/>
+</enum>
+
 <enum name="WebApkOpenResult">
   <int value="0" label="Open an installed WebAPK successfully"/>
   <int value="1" label="(Obsolete) Launch intent for WebAPK is null"/>
