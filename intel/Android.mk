@@ -21,6 +21,7 @@
 # IN THE SOFTWARE.
 #
 
+ifeq ($(TARGET_ARCH),$(filter $(TARGET_ARCH),x86 x86_64))
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -37,3 +38,4 @@ LOCAL_SHARED_LIBRARIES := \
 
 include $(LIBDRM_COMMON_MK)
 include $(BUILD_SHARED_LIBRARY)
+endif
