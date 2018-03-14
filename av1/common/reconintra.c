@@ -533,20 +533,12 @@ void av1_dr_prediction_z1_c(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   assert(dx > 0);
 
   const int max_base_x = ((bw + bh) - 1) << upsample_above;
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits = 6 - upsample_above;
-#else
-  const int frac_bits = 8 - upsample_above;
-#endif
   const int base_inc = 1 << upsample_above;
   x = dx;
   for (r = 0; r < bh; ++r, dst += stride, x += dx) {
     base = x >> frac_bits;
-#if CONFIG_EXT_INTRA_MOD2
     shift = ((x << upsample_above) & 0x3F) >> 1;
-#else
-    shift = (x << upsample_above) & 0xFF;
-#endif
 
     if (base >= max_base_x) {
       for (int i = r; i < bh; ++i) {
@@ -558,13 +550,8 @@ void av1_dr_prediction_z1_c(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
     for (c = 0; c < bw; ++c, base += base_inc) {
       if (base < max_base_x) {
-#if CONFIG_EXT_INTRA_MOD2
         val = above[base] * (32 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        val = above[base] * (256 - shift) + above[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
         dst[c] = clip_pixel(val);
       } else {
         dst[c] = above[max_base_x];
@@ -584,45 +571,24 @@ void av1_dr_prediction_z2_c(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   assert(dy > 0);
 
   const int min_base_x = -(1 << upsample_above);
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits_x = 6 - upsample_above;
   const int frac_bits_y = 6 - upsample_left;
-#else
-  const int frac_bits_x = 8 - upsample_above;
-  const int frac_bits_y = 8 - upsample_left;
-#endif
   const int base_inc_x = 1 << upsample_above;
   x = -dx;
   for (r = 0; r < bh; ++r, x -= dx, dst += stride) {
     base1 = x >> frac_bits_x;
-#if CONFIG_EXT_INTRA_MOD2
     y = (r << 6) - dy;
-#else
-    y = (r << 8) - dy;
-#endif
     for (c = 0; c < bw; ++c, base1 += base_inc_x, y -= dy) {
       if (base1 >= min_base_x) {
-#if CONFIG_EXT_INTRA_MOD2
         shift1 = ((x * (1 << upsample_above)) & 0x3F) >> 1;
         val = above[base1] * (32 - shift1) + above[base1 + 1] * shift1;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        shift1 = (x * (1 << upsample_above)) & 0xFF;
-        val = above[base1] * (256 - shift1) + above[base1 + 1] * shift1;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
       } else {
         base2 = y >> frac_bits_y;
         assert(base2 >= -(1 << upsample_left));
-#if CONFIG_EXT_INTRA_MOD2
         shift2 = ((y * (1 << upsample_left)) & 0x3F) >> 1;
         val = left[base2] * (32 - shift2) + left[base2 + 1] * shift2;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        shift2 = (y * (1 << upsample_left)) & 0xFF;
-        val = left[base2] * (256 - shift2) + left[base2 + 1] * shift2;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
       }
       dst[c] = clip_pixel(val);
     }
@@ -642,30 +608,17 @@ void av1_dr_prediction_z3_c(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   assert(dy > 0);
 
   const int max_base_y = (bw + bh - 1) << upsample_left;
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits = 6 - upsample_left;
-#else
-  const int frac_bits = 8 - upsample_left;
-#endif
   const int base_inc = 1 << upsample_left;
   y = dy;
   for (c = 0; c < bw; ++c, y += dy) {
     base = y >> frac_bits;
-#if CONFIG_EXT_INTRA_MOD2
     shift = ((y << upsample_left) & 0x3F) >> 1;
-#else
-    shift = (y << upsample_left) & 0xFF;
-#endif
 
     for (r = 0; r < bh; ++r, base += base_inc) {
       if (base < max_base_y) {
-#if CONFIG_EXT_INTRA_MOD2
         val = left[base] * (32 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        val = left[base] * (256 - shift) + left[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
         dst[r * stride + c] = clip_pixel(val);
       } else {
         for (; r < bh; ++r) dst[r * stride + c] = left[max_base_y];
@@ -743,20 +696,12 @@ void av1_highbd_dr_prediction_z1_c(uint16_t *dst, ptrdiff_t stride, int bw,
   assert(dx > 0);
 
   const int max_base_x = ((bw + bh) - 1) << upsample_above;
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits = 6 - upsample_above;
-#else
-  const int frac_bits = 8 - upsample_above;
-#endif
   const int base_inc = 1 << upsample_above;
   x = dx;
   for (r = 0; r < bh; ++r, dst += stride, x += dx) {
     base = x >> frac_bits;
-#if CONFIG_EXT_INTRA_MOD2
     shift = ((x << upsample_above) & 0x3F) >> 1;
-#else
-    shift = (x << upsample_above) & 0xFF;
-#endif
 
     if (base >= max_base_x) {
       for (int i = r; i < bh; ++i) {
@@ -768,13 +713,8 @@ void av1_highbd_dr_prediction_z1_c(uint16_t *dst, ptrdiff_t stride, int bw,
 
     for (c = 0; c < bw; ++c, base += base_inc) {
       if (base < max_base_x) {
-#if CONFIG_EXT_INTRA_MOD2
         val = above[base] * (32 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        val = above[base] * (256 - shift) + above[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
         dst[c] = clip_pixel_highbd(val, bd);
       } else {
         dst[c] = above[max_base_x];
@@ -794,49 +734,24 @@ void av1_highbd_dr_prediction_z2_c(uint16_t *dst, ptrdiff_t stride, int bw,
   assert(dy > 0);
 
   const int min_base_x = -(1 << upsample_above);
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits_x = 6 - upsample_above;
   const int frac_bits_y = 6 - upsample_left;
-#else
-  const int frac_bits_x = 8 - upsample_above;
-  const int frac_bits_y = 8 - upsample_left;
-#endif
   for (r = 0; r < bh; ++r) {
     for (c = 0; c < bw; ++c) {
       y = r + 1;
-#if CONFIG_EXT_INTRA_MOD2
       x = (c << 6) - y * dx;
-#else
-      x = (c << 8) - y * dx;
-#endif
       base = x >> frac_bits_x;
       if (base >= min_base_x) {
-#if CONFIG_EXT_INTRA_MOD2
         shift = ((x * (1 << upsample_above)) & 0x3F) >> 1;
         val = above[base] * (32 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        shift = (x * (1 << upsample_above)) & 0xFF;
-        val = above[base] * (256 - shift) + above[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
       } else {
         x = c + 1;
-#if CONFIG_EXT_INTRA_MOD2
         y = (r << 6) - x * dy;
-#else
-        y = (r << 8) - x * dy;
-#endif
         base = y >> frac_bits_y;
-#if CONFIG_EXT_INTRA_MOD2
         shift = ((y * (1 << upsample_left)) & 0x3F) >> 1;
         val = left[base] * (32 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        shift = (y * (1 << upsample_left)) & 0xFF;
-        val = left[base] * (256 - shift) + left[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
       }
       dst[c] = clip_pixel_highbd(val, bd);
     }
@@ -857,30 +772,17 @@ void av1_highbd_dr_prediction_z3_c(uint16_t *dst, ptrdiff_t stride, int bw,
   assert(dy > 0);
 
   const int max_base_y = (bw + bh - 1) << upsample_left;
-#if CONFIG_EXT_INTRA_MOD2
   const int frac_bits = 6 - upsample_left;
-#else
-  const int frac_bits = 8 - upsample_left;
-#endif
   const int base_inc = 1 << upsample_left;
   y = dy;
   for (c = 0; c < bw; ++c, y += dy) {
     base = y >> frac_bits;
-#if CONFIG_EXT_INTRA_MOD2
     shift = ((y << upsample_left) & 0x3F) >> 1;
-#else
-    shift = (y << upsample_left) & 0xFF;
-#endif
 
     for (r = 0; r < bh; ++r, base += base_inc) {
       if (base < max_base_y) {
-#if CONFIG_EXT_INTRA_MOD2
         val = left[base] * (32 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 5);
-#else
-        val = left[base] * (256 - shift) + left[base + 1] * shift;
-        val = ROUND_POWER_OF_TWO(val, 8);
-#endif
         dst[r * stride + c] = clip_pixel_highbd(val, bd);
       } else {
         for (; r < bh; ++r) dst[r * stride + c] = left[max_base_y];
