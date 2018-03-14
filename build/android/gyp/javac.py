@@ -35,8 +35,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'AssertionFailureIgnored',
   # TODO(crbug.com/803589): Follow steps in bug.
   'MissingFail',
-  # TODO(crbug.com/803625): Follow steps in bug.
-  'StaticGuardedByInstance',
   # Android platform default is always UTF-8.
   # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
   'DefaultCharset',
@@ -98,6 +96,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'MissingOverride',
   'NarrowingCompoundAssignment',
   'ParameterName',
+  'StaticGuardedByInstance',
   'StaticQualifiedUsingExpression',
   'UseCorrectAssertInTests',
 ]
