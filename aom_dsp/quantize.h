@@ -52,36 +52,6 @@ void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              const int16_t *dequant_ptr, uint16_t *eob_ptr,
                              const int16_t *scan, const int16_t *iscan);
 
-void aom_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs, int skip_block,
-                     const int16_t *round_ptr, const int16_t quant_ptr,
-                     tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                     const int16_t dequant_ptr, uint16_t *eob_ptr);
-void aom_quantize_dc_32x32(const tran_low_t *coeff_ptr, int skip_block,
-                           const int16_t *round_ptr, const int16_t quant_ptr,
-                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                           const int16_t dequant_ptr, uint16_t *eob_ptr);
-void aom_quantize_dc_64x64(const tran_low_t *coeff_ptr, int skip_block,
-                           const int16_t *round_ptr, const int16_t quant_ptr,
-                           tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                           const int16_t dequant_ptr, uint16_t *eob_ptr);
-
-void aom_highbd_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
-                            int skip_block, const int16_t *round_ptr,
-                            const int16_t quant_ptr, tran_low_t *qcoeff_ptr,
-                            tran_low_t *dqcoeff_ptr, const int16_t dequant_ptr,
-                            uint16_t *eob_ptr, const qm_val_t *qm_ptr,
-                            const qm_val_t *iqm_ptr);
-void aom_highbd_quantize_dc_32x32(
-    const tran_low_t *coeff_ptr, int skip_block, const int16_t *round_ptr,
-    const int16_t quant_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-    const int16_t dequant_ptr, uint16_t *eob_ptr, const qm_val_t *qm_ptr,
-    const qm_val_t *iqm_ptr);
-void aom_highbd_quantize_dc_64x64(
-    const tran_low_t *coeff_ptr, int skip_block, const int16_t *round_ptr,
-    const int16_t quant_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-    const int16_t dequant_ptr, uint16_t *eob_ptr, const qm_val_t *qm_ptr,
-    const qm_val_t *iqm_ptr);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
