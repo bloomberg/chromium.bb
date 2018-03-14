@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
@@ -17,14 +16,12 @@ namespace assistant {
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl()
     : platform_api_(kDefaultConfigStr),
-      action_module_(std::make_unique<action::CrosActionModule>()),
+      action_module_(std::make_unique<action::CrosActionModule>(this)),
       assistant_manager_(
           assistant_client::AssistantManager::Create(&platform_api_,
                                                      kDefaultConfigStr)),
       assistant_manager_internal_(
-          UnwrapAssistantManagerInternal(assistant_manager_.get())) {
-  display_connection_.SetAssistantEventObserver(this);
-}
+          UnwrapAssistantManagerInternal(assistant_manager_.get())) {}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -35,7 +32,6 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
   assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;
   });
-  assistant_manager_internal_->SetDisplayConnection(&display_connection_);
 
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
 
@@ -73,6 +69,10 @@ void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
 
 void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
   subscribers_.ForAllPtrs([&text](auto* ptr) { ptr->OnTextResponse(text); });
+}
+
+void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
+  subscribers_.ForAllPtrs([&url](auto* ptr) { ptr->OnTextResponse(url); });
 }
 
 }  // namespace assistant

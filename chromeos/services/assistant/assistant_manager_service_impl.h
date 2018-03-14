@@ -10,7 +10,7 @@
 
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
-#include "chromeos/assistant/internal/cros_display_connection.h"
+#include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -25,13 +25,10 @@ class AssistantManagerInternal;
 namespace chromeos {
 namespace assistant {
 
-namespace action {
-class CrosActionModule;
-}  // namespace action
-
 // Implementation of AssistantManagerService based on libassistant.
-class AssistantManagerServiceImpl : public AssistantManagerService,
-                                    public AssistantEventObserver {
+class AssistantManagerServiceImpl
+    : public AssistantManagerService,
+      public ::chromeos::assistant::action::AssistantActionObserver {
  public:
   AssistantManagerServiceImpl();
   ~AssistantManagerServiceImpl() override;
@@ -46,13 +43,13 @@ class AssistantManagerServiceImpl : public AssistantManagerService,
   void AddAssistantEventSubscriber(
       mojom::AssistantEventSubscriberPtr subscriber) override;
 
-  // AssistantEventObserver overrides:
+  // AssistantActionObserver overrides:
   void OnShowHtml(const std::string& html) override;
-  void OnShowText(const std::string& html) override;
+  void OnShowText(const std::string& text) override;
+  void OnOpenUrl(const std::string& url) override;
 
  private:
   PlatformApiImpl platform_api_;
-  CrosDisplayConnection display_connection_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
