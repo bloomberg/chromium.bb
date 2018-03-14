@@ -31,7 +31,7 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
             os.path.join(path_util.GetChromiumSrcDir(), 'out',
             'Release', 'mr_extension', 'release'),
              os.path.join(path_util.GetChromiumSrcDir(), 'out',
-             'Release', 'media_router', 'telemetry_extension')]),
+             'Release', 'media_router', 'test_extension')]),
         '--whitelisted-extension-id=enhhojjnijigcajfphajepfemndkmdlo',
         '--media-router=1',
         '--enable-stats-collection-bindings'

@@ -42,34 +42,34 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MANUAL_Basic) {
   RunBasicTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       SendAndOnMessage) {
+                       MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       ReceiverCloseConnection) {
+                       MANUAL_ReceiverCloseConnection) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckSessionValidity(web_contents);
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       Fail_SendMessage) {
+                       MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       ReconnectSession) {
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       ReconnectSessionSameTab) {
+                       MANUAL_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
@@ -83,22 +83,22 @@ class MediaRouterIntegrationOneUANoReceiverBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       Basic) {
+                       MANUAL_Basic) {
   RunBasicTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       Fail_SendMessage) {
+                       MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       ReconnectSession) {
+                       MANUAL_ReconnectSession) {
   RunReconnectSessionTest();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       ReconnectSessionSameTab) {
+                       MANUAL_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
