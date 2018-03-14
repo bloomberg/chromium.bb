@@ -5,6 +5,7 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
@@ -39,12 +40,26 @@ constexpr char kMiHeader[] = "MI";
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
+base::Optional<base::Time> g_verification_time_for_testing;
+
+base::Time GetVerificationTime() {
+  if (g_verification_time_for_testing)
+    return *g_verification_time_for_testing;
+  return base::Time::Now();
+}
+
 }  // namespace
 
 // static
 void SignedExchangeHandler::SetCertVerifierForTesting(
     net::CertVerifier* cert_verifier) {
   g_cert_verifier_for_testing = cert_verifier;
+}
+
+// static
+void SignedExchangeHandler::SetVerificationTimeForTesting(
+    base::Optional<base::Time> verification_time_for_testing) {
+  g_verification_time_for_testing = verification_time_for_testing;
 }
 
 SignedExchangeHandler::SignedExchangeHandler(
@@ -201,7 +216,9 @@ void SignedExchangeHandler::OnCertReceived(
     RunErrorCallback(net::ERR_FAILED);
     return;
   }
-  if (SignedExchangeSignatureVerifier::Verify(*header_, cert) !=
+
+  if (SignedExchangeSignatureVerifier::Verify(*header_, cert,
+                                              GetVerificationTime()) !=
       SignedExchangeSignatureVerifier::Result::kSuccess) {
     RunErrorCallback(net::ERR_FAILED);
     return;

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -34,6 +35,8 @@
 namespace content {
 
 namespace {
+
+const uint64_t kSignatureHeaderDate = 1520834000;
 
 const char* kMockHeaderFileSuffix = ".mock-http-headers";
 
@@ -75,6 +78,10 @@ class WebPackageRequestHandlerBrowserTest
 
   void SetUp() override {
     SignedExchangeHandler::SetCertVerifierForTesting(mock_cert_verifier_.get());
+    SignedExchangeHandler::SetVerificationTimeForTesting(
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromSeconds(kSignatureHeaderDate));
+
     if (is_network_service_enabled()) {
       feature_list_.InitWithFeatures(
           {features::kSignedHTTPExchange, network::features::kNetworkService},
@@ -88,6 +95,8 @@ class WebPackageRequestHandlerBrowserTest
   void TearDownOnMainThread() override {
     interceptor_.reset();
     SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
+    SignedExchangeHandler::SetVerificationTimeForTesting(
+        base::Optional<base::Time>());
   }
 
  protected:

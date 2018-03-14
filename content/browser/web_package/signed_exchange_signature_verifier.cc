@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
@@ -193,11 +194,43 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
   return message;
 }
 
+base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
+  return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(t);
+}
+
+// Implements steps 9-10 of
+// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
+bool VerifyTimestamps(const SignedExchangeHeader& header,
+                      const base::Time& verification_time) {
+  base::Time expires_time =
+      TimeFromSignedExchangeUnixTime(header.signature().expires);
+  base::Time creation_time =
+      TimeFromSignedExchangeUnixTime(header.signature().date);
+
+  // 9. "If expires is more than 7 days (604800 seconds) after date, return
+  // "invalid"." [spec text]
+  if ((expires_time - creation_time).InSeconds() > 604800)
+    return false;
+
+  // 10. "If the current time is before date or after expires, return
+  // "invalid"."
+  if (verification_time < creation_time || expires_time < verification_time)
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     const SignedExchangeHeader& header,
-    scoped_refptr<net::X509Certificate> certificate) {
+    scoped_refptr<net::X509Certificate> certificate,
+    const base::Time& verification_time) {
+  if (!VerifyTimestamps(header, verification_time)) {
+    DVLOG(1) << "Invalid timestamp";
+    return Result::kErrInvalidTimestamp;
+  }
+
   if (!certificate) {
     DVLOG(1) << "No certificate set.";
     return Result::kErrNoCertificate;
@@ -236,8 +269,6 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
         << "The current implemention only supports \"mi\" integrity scheme.";
     return Result::kErrInvalidSignatureIntegrity;
   }
-
-  // TODO(crbug.com/803774): Verify header.signature().{date,expires}.
 
   return Result::kSuccess;
 }
