@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
@@ -91,6 +92,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -107,6 +109,7 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_analysis.h"
@@ -218,6 +221,23 @@ std::string GetNetworkName(const std::string& service_path) {
   return network->name();
 }
 
+ash::mojom::UserInfoPtr GetUserInfoForAccount(const AccountId& account_id) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (!user)
+    return nullptr;
+
+  auto user_info = ash::mojom::UserInfo::New();
+  user_info->type = user->GetType();
+  user_info->account_id = account_id;
+  user_info->is_ephemeral =
+      user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+          account_id);
+  user_info->display_name = base::UTF16ToUTF8(user->display_name());
+  user_info->display_email = user->display_email();
+  return user_info;
+}
+
 }  // namespace
 
 // LoginScreenContext implementation ------------------------------------------
@@ -258,7 +278,9 @@ SigninScreenHandler::SigninScreenHandler(
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
+      session_manager_observer_(this),
       lock_screen_apps_observer_(this),
+      detachable_base_observer_(this),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
@@ -294,11 +316,16 @@ SigninScreenHandler::SigninScreenHandler(
   tablet_mode_client->AddObserver(this);
   OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
 
+  session_manager_observer_.Add(session_manager::SessionManager::Get());
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
   // TODO(wzang): Make this work under mash.
   if (GetAshConfig() != ash::Config::MASH)
     ash::Shell::Get()->wallpaper_controller()->AddObserver(this);
+  // TODO(tbarzic): This is needed for login UI - remove it when login switches
+  // to views implementation (or otherwise, make it work under mash).
+  if (GetAshConfig() != ash::Config::MASH)
+    detachable_base_observer_.Add(ash::Shell::Get()->detachable_base_handler());
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -1132,6 +1159,34 @@ void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
   CallJSOrDefer("login.AccountPickerScreen.setTabletModeState", enabled);
 }
 
+void SigninScreenHandler::OnSessionStateChanged() {
+  // If the session got unblocked, and the user for which the detachable base
+  // change notification was shown got added to the session, mark the paired
+  // base as used by the user, so they don't get further notifications about
+  // the detachable base change.
+  // The fact the user got added to the session implies that they have
+  // authenticated while the warning was displayed, so they should be aware
+  // of the base change at this point.
+  if (!account_with_detachable_base_error_.has_value())
+    return;
+
+  if (session_manager::SessionManager::Get()->IsUserSessionBlocked())
+    return;
+
+  const AccountId& account_id = *account_with_detachable_base_error_;
+  if (session_manager::SessionManager::Get()->HasSessionForAccountId(
+          account_id)) {
+    ash::mojom::UserInfoPtr user_info = GetUserInfoForAccount(account_id);
+    if (user_info) {
+      ash::Shell::Get()
+          ->detachable_base_handler()
+          ->SetPairedBaseAsLastUsedByUser(*user_info);
+    }
+  }
+
+  HideDetachableBaseChangedError();
+}
+
 void SigninScreenHandler::OnLockScreenNoteStateChanged(
     ash::mojom::TrayActionState state) {
   if (!ScreenLocker::default_screen_locker())
@@ -1441,6 +1496,12 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
     ui_state_ = UI_STATE_GAIA_SIGNIN;
   } else if (source == kSourceAccountPicker) {
     ui_state_ = UI_STATE_ACCOUNT_PICKER;
+
+    if (active) {
+      UpdateDetachableBaseChangedError();
+    } else {
+      HideDetachableBaseChangedError();
+    }
   } else {
     NOTREACHED();
     return;
@@ -1458,7 +1519,7 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 }
 
 void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
-                                         bool load_wallpaper) {
+                                         bool is_large_pod) {
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
   if (delegate_)
     delegate_->CheckUserStatus(account_id);
@@ -1476,7 +1537,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());
     lock_screen_utils::SetKeyboardSettings(account_id);
-    if (LoginDisplayHost::default_host() && load_wallpaper)
+    if (LoginDisplayHost::default_host() && is_large_pod)
       LoginDisplayHost::default_host()->LoadWallpaper(account_id);
 
     bool use_24hour_clock = false;
@@ -1487,6 +1548,12 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
           ->SetLastFocusedPodHourClockType(
               use_24hour_clock ? base::k24HourClock : base::k12HourClock);
     }
+
+    // Update the detachable base change warning visibility when the focused
+    // user pod changes. Note that this should only be done for large pods - the
+    // pods whose authentication method is shown in the sign-in UI.
+    if (is_large_pod)
+      UpdateDetachableBaseChangedError();
   }
 }
 
@@ -1694,6 +1761,79 @@ void SigninScreenHandler::OnAllowedInputMethodsChanged() {
   } else {
     lock_screen_utils::EnforcePolicyInputMethods(std::string());
   }
+}
+
+void SigninScreenHandler::OnDetachableBasePairingStatusChanged(
+    ash::DetachableBasePairingStatus status) {
+  UpdateDetachableBaseChangedError();
+}
+void SigninScreenHandler::OnDetachableBaseRequiresUpdateChanged(
+    bool requires_update) {}
+
+void SigninScreenHandler::UpdateDetachableBaseChangedError() {
+  if (GetAshConfig() == ash::Config::MASH)
+    return;
+
+  auto pairing_status =
+      ash::Shell::Get()->detachable_base_handler()->GetPairingStatus();
+  if (pairing_status == ash::DetachableBasePairingStatus::kNone) {
+    HideDetachableBaseChangedError();
+    return;
+  }
+
+  // Requests to update the notification state will be postponed until a pod
+  // gets focused. Reasons for that are:
+  //   * The warning bubble is anchored at a user pod authentication element,
+  //     which is only shown when the pod is focused.
+  //   * If two large pods are shown, it's unclear which one should be
+  //     considered active if neither is focused.
+  // Send a request to the login UI to select/focus a use pod so the warning can
+  // be shown sooner, rather than later - the user might start typing without
+  // focusing a pod first, in which case showing the warning as the pod gets
+  // focused might be too late to warn the user their keyboard might not be
+  // trusted.
+  if (!focused_pod_account_id_) {
+    CallJSOrDefer(
+        "login.AccountPickerScreen.selectPodForDetachableBaseWarningBubble");
+    return;
+  }
+
+  bool base_trusted =
+      pairing_status == ash::DetachableBasePairingStatus::kAuthenticated;
+  if (base_trusted) {
+    ash::mojom::UserInfoPtr user_info =
+        GetUserInfoForAccount(*focused_pod_account_id_);
+    if (user_info) {
+      base_trusted = ash::Shell::Get()
+                         ->detachable_base_handler()
+                         ->PairedBaseMatchesLastUsedByUser(*user_info);
+    }
+  }
+
+  if (base_trusted) {
+    HideDetachableBaseChangedError();
+  } else {
+    ShowDetachableBaseChangedError();
+  }
+}
+
+void SigninScreenHandler::ShowDetachableBaseChangedError() {
+  account_with_detachable_base_error_ = *focused_pod_account_id_;
+
+  CallJSOrDefer(
+      "cr.ui.login.DisplayManager.showDetachableBaseChangedWarning",
+      *focused_pod_account_id_,
+      l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_DETACHABLE_BASE_CHANGED),
+      std::string(), 0);
+}
+
+void SigninScreenHandler::HideDetachableBaseChangedError() {
+  if (!account_with_detachable_base_error_.has_value())
+    return;
+
+  CallJSOrDefer("cr.ui.login.DisplayManager.hideDetachableBaseChangedWarning",
+                *account_with_detachable_base_error_);
+  account_with_detachable_base_error_ = base::nullopt;
 }
 
 }  // namespace chromeos

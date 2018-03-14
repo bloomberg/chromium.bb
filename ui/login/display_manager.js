@@ -1019,14 +1019,14 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
-   * Shows sign-in error bubble.
-   * @param {number} loginAttempts Number of login attemps tried.
-   * @param {string} message Error message to show.
+   * Creates a div element used to display error message in an error bubble.
+   *
+   * @param {string} message The error message.
    * @param {string} link Text to use for help link.
    * @param {number} helpId Help topic Id associated with help link.
+   * @return {!HTMLElement} The error bubble content.
    */
-  DisplayManager.showSignInError = function(loginAttempts, message, link,
-                                            helpId) {
+  DisplayManager.createErrorElement_ = function(message, link, helpId) {
     var error = document.createElement('div');
 
     var messageDiv = document.createElement('div');
@@ -1048,11 +1048,61 @@ cr.define('cr.ui.login', function() {
     }
 
     error.setAttribute('aria-live', 'assertive');
+    return error;
+  };
+
+  /**
+   * Shows sign-in error bubble.
+   * @param {number} loginAttempts Number of login attemps tried.
+   * @param {string} message Error message to show.
+   * @param {string} link Text to use for help link.
+   * @param {number} helpId Help topic Id associated with help link.
+   */
+  DisplayManager.showSignInError = function(
+      loginAttempts, message, link, helpId) {
+    var error = DisplayManager.createErrorElement_(message, link, helpId);
 
     var currentScreen = Oobe.getInstance().currentScreen;
     if (currentScreen && typeof currentScreen.showErrorBubble === 'function') {
       currentScreen.showErrorBubble(loginAttempts, error);
       this.errorMessageWasShownForTesting_ = true;
+    }
+  };
+
+  /**
+   * Shows a warning to the user that the detachable base (keyboard) different
+   * than the one previously used by the user got attached to the device. It
+   * warn the user that the attached base might be untrusted.
+   *
+   * @param {string} username The username of the user with which the error
+   *     bubble is associated. For example, in the account picker screen, it
+   *     identifies the user pod under which the error bubble should be shown.
+   * @param {string} message Error message to show.
+   * @param {string} link Text to use for help link.
+   * @param {number} helpId Help topic Id associated with help link.
+   */
+  DisplayManager.showDetachableBaseChangedWarning = function(
+      username, message, link, helpId) {
+    var error = DisplayManager.createErrorElement_(message, link, helpId);
+
+    var currentScreen = Oobe.getInstance().currentScreen;
+    if (currentScreen &&
+        typeof currentScreen.showDetachableBaseWarningBubble === 'function') {
+      currentScreen.showDetachableBaseWarningBubble(username, error);
+    }
+  };
+
+  /**
+   * Hides the warning bubble shown by {@code showDetachableBaseChangedWarning}.
+   *
+   * @param {string} username The username of the user with wich the warning was
+   *     associated.
+   */
+  DisplayManager.hideDetachableBaseChangedWarning = function(username) {
+    var currentScreen = Oobe.getInstance().currentScreen;
+    if (currentScreen &&
+        typeof currentScreen.hideDetachableBaseWarningBubble === 'function') {
+      currentScreen.hideDetachableBaseWarningBubble(username);
     }
   };
 

@@ -56,6 +56,10 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.login.DisplayManager.initialize();
       login.AccountPickerScreen.register();
 
+      cr.ui.Bubble.decorate($('bubble-persistent'));
+      $('bubble-persistent').persistent = true;
+      $('bubble-persistent').hideOnKeyPress = false;
+
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
       login.TopHeaderBar.decorate($('top-header-bar'));
