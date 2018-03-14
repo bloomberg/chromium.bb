@@ -41,6 +41,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentClassFactory;
+import org.chromium.content.browser.PopupController;
+import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -65,7 +67,7 @@ import java.util.List;
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         implements ImeEventObserver, SelectionPopupController, WindowEventObserver,
-                   WindowAndroidChangedObserver {
+                   WindowAndroidChangedObserver, HideablePopup {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -104,6 +106,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private WindowAndroid mWindowAndroid;
     private WebContentsImpl mWebContents;
     private ActionMode.Callback mCallback;
+    private long mNativeSelectionPopupController;
 
     private SelectionClient.ResultCallback mResultCallback;
 
@@ -153,12 +156,16 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // SelectionMetricsLogger, could be null.
     private SmartSelectionMetricsLogger mSelectionMetricsLogger;
 
+    private PopupController mPopupController;
+
     // The classificaton result of the selected text if the selection exists and
     // SelectionClient was able to classify it, otherwise null.
     private SelectionClient.Result mClassificationResult;
 
     // Whether a scroll is in progress.
     private boolean mScrollInProgress;
+
+    private boolean mPreserveSelectionOnNextLossOfFocus;
 
     private boolean mInitialized;
 
@@ -220,12 +227,19 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * @param window WindowAndroid instance.
      * @param webContents WebContents instance.
      * @param view Container view.
+     * @param popupController {@link PopupController} mocked for testing.
      */
-    public static SelectionPopupControllerImpl createForTesting(
-            Context context, WindowAndroid window, WebContents webContents, View view) {
+    public static SelectionPopupControllerImpl createForTesting(Context context,
+            WindowAndroid window, WebContents webContents, View view,
+            PopupController popupController) {
         SelectionPopupControllerImpl controller = new SelectionPopupControllerImpl(webContents);
+        controller.setPopupControllerForTesting(popupController);
         controller.init(context, window, view, false);
         return controller;
+    }
+
+    private void setPopupControllerForTesting(PopupController popupController) {
+        mPopupController = popupController;
     }
 
     /**
@@ -260,13 +274,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         };
 
         mResultCallback = new SmartSelectionCallback();
-
         mLastSelectedText = "";
-
         initHandleObserver();
-
-        if (initializeNative) nativeInit(mWebContents);
-
+        if (initializeNative) mNativeSelectionPopupController = nativeInit(mWebContents);
+        getPopupController().registerPopup(this);
         mInitialized = true;
     }
 
@@ -515,6 +526,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
+    // HideablePopup implementation
+    @Override
+    public void hide() {
+        destroyPastePopup();
+    }
+
     public void destroyPastePopup() {
         if (isPastePopupShowing()) {
             mPastePopupMenu.hide();
@@ -570,6 +587,21 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (supportsFloatingActionMode() && isActionModeValid()) {
             mActionMode.onWindowFocusChanged(gainFocus);
         }
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        updateTextSelectionUI(true);
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        // WebView uses PopupWindows for handle rendering, which may remain
+        // unintentionally visible even after the WebView has been detached.
+        // Override the handle visibility explicitly to address this, but
+        // preserve the underlying selection for detachment cases like screen
+        // locking and app switching.
+        updateTextSelectionUI(false);
     }
 
     public void setScrollInProgress(boolean touchScrollInProgress, boolean scrollInProgress) {
@@ -1146,6 +1178,31 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         }
     }
 
+    @Override
+    public void setPreserveSelectionOnNextLossOfFocus(boolean preserve) {
+        mPreserveSelectionOnNextLossOfFocus = preserve;
+    }
+
+    public boolean getPreserveSelectionOnNextLossOfFocus() {
+        return mPreserveSelectionOnNextLossOfFocus;
+    }
+
+    @Override
+    public void updateTextSelectionUI(boolean focused) {
+        setTextHandlesTemporarilyHidden(!focused);
+        if (focused) {
+            restoreSelectionPopupsIfNecessary();
+        } else {
+            destroyActionModeAndKeepSelection();
+            getPopupController().hideAllPopups();
+        }
+    }
+
+    private void setTextHandlesTemporarilyHidden(boolean hide) {
+        if (mNativeSelectionPopupController == 0) return;
+        nativeSetTextHandlesTemporarilyHidden(mNativeSelectionPopupController, hide);
+    }
+
     public void restoreSelectionPopupsIfNecessary() {
         if (hasSelection() && !isActionModeValid()) {
             showActionModeOrClearOnFailure();
@@ -1268,6 +1325,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (mWebContents == null || !isActionModeSupported()) return;
         mWebContents.collapseSelection();
         mClassificationResult = null;
+    }
+
+    private PopupController getPopupController() {
+        if (mPopupController == null) {
+            mPopupController = PopupController.fromWebContents(mWebContents);
+        }
+        return mPopupController;
     }
 
     /**
@@ -1453,5 +1517,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return client == null ? null : client.getCustomTextClassifier();
     }
 
-    private native void nativeInit(WebContents webContents);
+    private native long nativeInit(WebContents webContents);
+    private native void nativeSetTextHandlesTemporarilyHidden(
+            long nativeSelectionPopupController, boolean hidden);
 }

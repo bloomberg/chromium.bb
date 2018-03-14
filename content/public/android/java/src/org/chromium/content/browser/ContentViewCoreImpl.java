@@ -155,8 +155,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
 
-    private boolean mPreserveSelectionOnNextLossOfFocus;
-
     // Notifies the ContentViewCore when platform closed caption settings have changed
     // if they are supported. Otherwise does nothing.
     private SystemCaptioningBridge mSystemCaptioningBridge;
@@ -352,7 +350,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         try {
             TraceEvent.begin("ContentViewCore.setContainerView");
             if (mContainerView != null) {
-                hideSelectPopupWithCancelMessage();
+                getSelectPopup().hide();
                 getImeAdapter().setContainerView(containerView);
                 getTextSuggestionHost().setContainerView(containerView);
                 getSelectPopup().setContainerView(containerView);
@@ -474,20 +472,13 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private void hidePopupsAndClearSelection() {
         getSelectionPopupController().destroyActionModeAndUnselect();
         mWebContents.dismissTextHandles();
-        hidePopups();
+        PopupController.hideAll(mWebContents);
     }
 
     @CalledByNative
     private void hidePopupsAndPreserveSelection() {
         getSelectionPopupController().destroyActionModeAndKeepSelection();
-        hidePopups();
-    }
-
-    private void hidePopups() {
-        destroyPastePopup();
-        getTapDisambiguator().hidePopup(false);
-        getTextSuggestionHost().hidePopups();
-        hideSelectPopupWithCancelMessage();
+        PopupController.hideAll(mWebContents);
     }
 
     private void resetGestureDetection() {
@@ -506,21 +497,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mAttachedToWindow = true;
         for (WindowEventObserver observer : mWindowEventObservers) observer.onAttachedToWindow();
         addDisplayAndroidObserverIfNeeded();
-        updateTextSelectionUI(true);
         GamepadList.onAttachedToWindow(mContext);
         mSystemCaptioningBridge.addListener(this);
-    }
-
-    @Override
-    public void updateTextSelectionUI(boolean focused) {
-        // TODO(jinsukkim): Replace all the null checks against mWebContents to assert stmt.
-        if (mWebContents == null) return;
-        setTextHandlesTemporarilyHidden(!focused);
-        if (focused) {
-            getSelectionPopupController().restoreSelectionPopupsIfNecessary();
-        } else {
-            hidePopupsAndPreserveSelection();
-        }
     }
 
     @SuppressWarnings("javadoc")
@@ -532,12 +510,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
 
-        // WebView uses PopupWindows for handle rendering, which may remain
-        // unintentionally visible even after the WebView has been detached.
-        // Override the handle visibility explicitly to address this, but
-        // preserve the underlying selection for detachment cases like screen
-        // locking and app switching.
-        updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
     }
 
@@ -603,19 +575,20 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         getJoystick().setScrollEnabled(
                 gainFocus && !getSelectionPopupController().isFocusedNodeEditable());
 
+        SelectionPopupControllerImpl controller = getSelectionPopupController();
         if (gainFocus) {
-            getSelectionPopupController().restoreSelectionPopupsIfNecessary();
+            controller.restoreSelectionPopupsIfNecessary();
         } else {
             cancelRequestToScrollFocusedEditableNodeIntoView();
-            if (mPreserveSelectionOnNextLossOfFocus) {
-                mPreserveSelectionOnNextLossOfFocus = false;
+            if (controller.getPreserveSelectionOnNextLossOfFocus()) {
+                controller.setPreserveSelectionOnNextLossOfFocus(false);
                 hidePopupsAndPreserveSelection();
             } else {
                 hidePopupsAndClearSelection();
                 // Clear the selection. The selection is cleared on destroying IME
                 // and also here since we may receive destroy first, for example
                 // when focus is lost in webview.
-                getSelectionPopupController().clearSelection();
+                controller.clearSelection();
             }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
@@ -789,24 +762,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
     }
 
-    @Override
-    public void preserveSelectionOnNextLossOfFocus() {
-        mPreserveSelectionOnNextLossOfFocus = true;
-    }
-
-    private void setTextHandlesTemporarilyHidden(boolean hide) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetTextHandlesTemporarilyHidden(mNativeContentViewCore, hide);
-    }
-
-    /**
-     * Called when the &lt;select&gt; popup needs to be hidden. This calls
-     * nativeSelectMenuItems() with null indices.
-     */
-    private void hideSelectPopupWithCancelMessage() {
-        getSelectPopup().hideWithCancel();
-    }
-
     @VisibleForTesting
     @Override
     public boolean isSelectPopupVisibleForTest() {
@@ -913,8 +868,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore);
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);
-    private native void nativeSetTextHandlesTemporarilyHidden(
-            long nativeContentViewCore, boolean hidden);
     private native void nativeResetGestureDetection(long nativeContentViewCore);
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeContentViewCore, boolean enabled);

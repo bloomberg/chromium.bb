@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -298,8 +300,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     protected void setBasePageTextControlsVisibility(boolean visible) {
         if (mActivity == null || mActivity.getActivityTab() == null) return;
 
-        ContentViewCore baseContentView = mActivity.getActivityTab().getContentViewCore();
-        if (baseContentView == null) return;
+        WebContents baseWebContents = mActivity.getActivityTab().getWebContents();
+        if (baseWebContents == null) return;
 
         // If the panel does not have focus or isn't open, return.
         if (isPanelOpened() && mDidClearTextControls && !visible) return;
@@ -307,12 +309,13 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
         mDidClearTextControls = !visible;
 
+        SelectionPopupController spc = SelectionPopupController.fromWebContents(baseWebContents);
         if (!visible) {
-            baseContentView.preserveSelectionOnNextLossOfFocus();
-            baseContentView.getContainerView().clearFocus();
+            spc.setPreserveSelectionOnNextLossOfFocus(true);
+            ContentViewCore.fromWebContents(baseWebContents).getContainerView().clearFocus();
         }
 
-        baseContentView.updateTextSelectionUI(visible);
+        spc.updateTextSelectionUI(visible);
     }
 
     // ============================================================================================

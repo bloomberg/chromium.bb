@@ -26,7 +26,7 @@ import org.chromium.content_public.browser.WebContents;
  * must re-tap the magnified content in order to clarify their intent.
  */
 @JNINamespace("content")
-public class TapDisambiguator implements ImeEventObserver {
+public class TapDisambiguator implements ImeEventObserver, PopupController.HideablePopup {
     private final WebContents mWebContents;
     private PopupZoomer mPopupView;
     private boolean mInitialized;
@@ -100,6 +100,7 @@ public class TapDisambiguator implements ImeEventObserver {
         };
         mPopupView = new PopupZoomer(context, containerView, visibilityListener, tapListener);
         mNativeTapDisambiguator = nativeInit(mWebContents);
+        PopupController.register(mWebContents, this);
         mInitialized = true;
     }
 
@@ -112,6 +113,13 @@ public class TapDisambiguator implements ImeEventObserver {
     @Override
     public void onImeEvent() {
         hidePopup(true);
+    }
+
+    // HideablePopup
+
+    @Override
+    public void hide() {
+        hidePopup(false);
     }
 
     /**

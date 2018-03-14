@@ -137,7 +137,7 @@ void SelectPopup::HideMenu() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_obj_.get(env);
   if (!j_obj.is_null())
-    Java_SelectPopup_hide(env, j_obj);
+    Java_SelectPopup_hideWithoutCancel(env, j_obj);
   popup_view_.Reset();
 }
 

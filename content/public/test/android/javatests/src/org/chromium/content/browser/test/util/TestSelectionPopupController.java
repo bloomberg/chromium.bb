@@ -79,4 +79,10 @@ public class TestSelectionPopupController implements SelectionPopupController {
     public TextClassifier getCustomTextClassifier() {
         return null;
     }
+
+    @Override
+    public void setPreserveSelectionOnNextLossOfFocus(boolean preserve) {}
+
+    @Override
+    public void updateTextSelectionUI(boolean focused) {}
 }

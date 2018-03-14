@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -200,11 +202,13 @@ public class TabModalPresenter extends ModalDialogManager.Presenter {
             }
 
             // Dismiss the action bar that obscures the dialogs but preserve the text selection.
-            ContentViewCore contentViewCore = mActiveTab.getContentViewCore();
-            if (contentViewCore != null) {
-                contentViewCore.preserveSelectionOnNextLossOfFocus();
-                contentViewCore.getContainerView().clearFocus();
-                contentViewCore.updateTextSelectionUI(false);
+            WebContents webContents = mActiveTab.getWebContents();
+            if (webContents != null) {
+                SelectionPopupController controller =
+                        SelectionPopupController.fromWebContents(webContents);
+                controller.setPreserveSelectionOnNextLossOfFocus(true);
+                ContentViewCore.fromWebContents(webContents).getContainerView().clearFocus();
+                controller.updateTextSelectionUI(false);
                 mDidClearTextControls = true;
             }
 
@@ -222,11 +226,12 @@ public class TabModalPresenter extends ModalDialogManager.Presenter {
             menuButton.setEnabled(false);
         } else {
             // Show the action bar back if it was dismissed when the dialogs were showing.
-            ContentViewCore contentViewCore = mActiveTab.getContentViewCore();
             if (mDidClearTextControls) {
                 mDidClearTextControls = false;
-                if (contentViewCore != null) {
-                    contentViewCore.updateTextSelectionUI(true);
+                WebContents webContents = mActiveTab.getWebContents();
+                if (webContents != null) {
+                    SelectionPopupController.fromWebContents(webContents)
+                            .updateTextSelectionUI(true);
                 }
             }
 

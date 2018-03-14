@@ -220,16 +220,6 @@ public interface ContentViewCore {
     void scrollTo(float xPix, float yPix);
 
     /**
-     * Update the text selection UI depending on the focus of the page. This will hide the selection
-     * handles and selection popups if focus is lost.
-     * TODO(mdjones): This was added as a temporary measure to hide text UI while Reader Mode or
-     * Contextual Search are showing. This should be removed in favor of proper focusing of the
-     * panel's ContentViewCore (which is currently not being added to the view hierarchy).
-     * @param focused If the ContentViewCore currently has focus.
-     */
-    void updateTextSelectionUI(boolean focused);
-
-    /**
      * When the activity pauses, the content should lose focus.
      * TODO(mthiesse): See crbug.com/686232 for context. Desktop platforms use keyboard focus to
      * trigger blur/focus, and the equivalent to this on Android is Window focus. However, we don't
@@ -305,11 +295,6 @@ public interface ContentViewCore {
      * @param supportsDoubleTap {@code true} if the feature is enabled.
      */
     void updateDoubleTapSupport(boolean supportsDoubleTap);
-
-    /**
-     * Ensure the selection is preserved the next time the view loses focus.
-     */
-    void preserveSelectionOnNextLossOfFocus();
 
     // Test-only methods
 

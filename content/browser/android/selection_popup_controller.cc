@@ -24,7 +24,7 @@ using blink::WebContextMenuData;
 
 namespace content {
 
-void JNI_SelectionPopupControllerImpl_Init(
+jlong JNI_SelectionPopupControllerImpl_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents) {
@@ -32,7 +32,9 @@ void JNI_SelectionPopupControllerImpl_Init(
   DCHECK(web_contents);
 
   // Owns itself and gets destroyed when |WebContentsDestroyed| is called.
-  (new SelectionPopupController(env, obj, web_contents))->Initialize();
+  auto* controller = new SelectionPopupController(env, obj, web_contents);
+  controller->Initialize();
+  return reinterpret_cast<intptr_t>(controller);
 }
 
 SelectionPopupController::SelectionPopupController(
@@ -51,6 +53,14 @@ ScopedJavaLocalRef<jobject> SelectionPopupController::GetContext() const {
     return nullptr;
 
   return Java_SelectionPopupControllerImpl_getContext(env, obj);
+}
+
+void SelectionPopupController::SetTextHandlesTemporarilyHidden(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean hidden) {
+  if (rwhva_)
+    rwhva_->SetTextHandlesTemporarilyHidden(hidden);
 }
 
 std::unique_ptr<ui::TouchHandleDrawable>
@@ -95,6 +105,7 @@ void SelectionPopupController::UpdateRenderProcessConnection(
     old_rwhva->set_selection_popup_controller(nullptr);
   if (new_rwhva)
     new_rwhva->set_selection_popup_controller(this);
+  rwhva_ = new_rwhva;
 }
 
 void SelectionPopupController::OnSelectionEvent(

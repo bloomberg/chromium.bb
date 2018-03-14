@@ -10,7 +10,8 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.TapDisambiguator;
+import org.chromium.content.browser.PopupController;
+import org.chromium.content.browser.PopupController.HideablePopup;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -27,7 +28,7 @@ import java.util.List;
  * Handles the popup UI for the lt&;select&gt; HTML tag support.
  */
 @JNINamespace("content")
-public class SelectPopup {
+public class SelectPopup implements HideablePopup {
     /** UI for Select popup. */
     public interface Ui {
         /**
@@ -90,6 +91,7 @@ public class SelectPopup {
         mContext = context;
         mContainerView = containerView;
         mNativeSelectPopup = nativeInit(mWebContents);
+        PopupController.register(mWebContents, this);
         mInitialized = true;
     }
 
@@ -112,10 +114,11 @@ public class SelectPopup {
         mPopupView = null;
     }
 
-    /**
-     * Hide popup after canceling selection of menu items.
-     */
-    public void hideWithCancel() {
+    // HideablePopup
+
+    @Override
+    public void hide() {
+        // Cancels the selection by calling nativeSelectMenuItems() with null indices.
         if (mPopupView != null) mPopupView.hide(true);
     }
 
@@ -167,7 +170,7 @@ public class SelectPopup {
      * Called when the &lt;select&gt; popup needs to be hidden.
      */
     @CalledByNative
-    public void hide() {
+    public void hideWithoutCancel() {
         if (mPopupView == null) return;
         mPopupView.hide(false);
         mPopupView = null;
@@ -188,14 +191,9 @@ public class SelectPopup {
     }
 
     private void hidePopupsAndClearSelection() {
-        SelectionPopupControllerImpl controller =
-                SelectionPopupControllerImpl.fromWebContents(mWebContents);
-        controller.destroyActionModeAndUnselect();
-        controller.destroyPastePopup();
+        SelectionPopupControllerImpl.fromWebContents(mWebContents).destroyActionModeAndUnselect();
         mWebContents.dismissTextHandles();
-        TapDisambiguator.fromWebContents(mWebContents).hidePopup(false);
-        TextSuggestionHost.fromWebContents(mWebContents).hidePopups();
-        if (mPopupView != null) mPopupView.hide(true);
+        PopupController.hideAll(mWebContents);
     }
 
     private WindowAndroid getWindowAndroid() {
