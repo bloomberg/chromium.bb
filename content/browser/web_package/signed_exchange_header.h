@@ -44,8 +44,8 @@ class CONTENT_EXPORT SignedExchangeHeader {
   // TODO(kouhei): Replace above with spec reference when we actually have spec
   // text.
   //
-  // Note: |Parse| will only deserialize the data, and will not verify its
-  // validity.
+  // This also performs the step 3 and 4 of "Cross-origin trust" validation.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4
   static base::Optional<SignedExchangeHeader> Parse(
       base::span<const uint8_t> input);
   SignedExchangeHeader();
