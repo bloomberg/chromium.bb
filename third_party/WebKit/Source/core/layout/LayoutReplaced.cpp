@@ -156,7 +156,7 @@ void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     // Handle zoom & vertical writing modes here, as the embedded document
     // doesn't know about them.
     intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
-    if (IsLayoutImage())
+    if (IsLayoutImage() && Style()->GetObjectFit() != EObjectFit::kScaleDown)
       intrinsic_sizing_info.size.Scale(
           ToLayoutImage(this)->ImageDevicePixelRatio());
 
@@ -605,21 +605,30 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
   if (!intrinsic_size.Width() || !intrinsic_size.Height())
     return content_rect;
 
+  LayoutSize scaled_intrinsic_size = intrinsic_size;
   LayoutRect final_rect = content_rect;
   switch (object_fit) {
-    case EObjectFit::kContain:
     case EObjectFit::kScaleDown:
+      // Srcset images have an intrinsic size depending on their destination,
+      // but with object-fit: scale-down they need to use the underlying image
+      // src's size. So revert back to the original size in that case.
+      if (IsLayoutImage()) {
+        scaled_intrinsic_size.Scale(
+            1.0 / ToLayoutImage(this)->ImageDevicePixelRatio());
+      }
+      FALLTHROUGH;
+    case EObjectFit::kContain:
     case EObjectFit::kCover:
       final_rect.SetSize(final_rect.Size().FitToAspectRatio(
-          intrinsic_size, object_fit == EObjectFit::kCover
-                              ? kAspectRatioFitGrow
-                              : kAspectRatioFitShrink));
+          scaled_intrinsic_size, object_fit == EObjectFit::kCover
+                                     ? kAspectRatioFitGrow
+                                     : kAspectRatioFitShrink));
       if (object_fit != EObjectFit::kScaleDown ||
-          final_rect.Width() <= intrinsic_size.Width())
+          final_rect.Width() <= scaled_intrinsic_size.Width())
         break;
       FALLTHROUGH;
     case EObjectFit::kNone:
-      final_rect.SetSize(intrinsic_size);
+      final_rect.SetSize(scaled_intrinsic_size);
       break;
     case EObjectFit::kFill:
       break;
