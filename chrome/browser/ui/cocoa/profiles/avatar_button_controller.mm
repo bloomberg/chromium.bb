@@ -31,7 +31,7 @@ namespace {
 
 const SkColor kButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
 const SkColor kButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
-const SkColor kAvatarIconColor = SkColorSetRGB(0x75, 0x75, 0x75);
+const SkColor kAvatarIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
 
 const CGFloat kButtonHeight = 24;
 
