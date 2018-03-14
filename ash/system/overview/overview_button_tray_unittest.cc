@@ -166,28 +166,22 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
 TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
-  // Tapping on the control when there are no windows (and thus the user cannot
-  // enter overview mode) should still record the action.
-  base::UserActionTester user_action_tester;
-  GetTray()->PerformAction(CreateTapEvent());
-  ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_EQ(1, user_action_tester.GetActionCount(kTrayOverview));
-
   // With one window present, tapping on the control to enter overview mode
   // should record the user action.
+  base::UserActionTester user_action_tester;
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   GetTray()->PerformAction(
       CreateTapEvent(OverviewButtonTray::kDoubleTapThresholdMs));
   ASSERT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_EQ(2, user_action_tester.GetActionCount(kTrayOverview));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kTrayOverview));
 
   // Tapping on the control to exit overview mode should record the
   // user action.
   GetTray()->PerformAction(
       CreateTapEvent(OverviewButtonTray::kDoubleTapThresholdMs * 2));
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_EQ(3, user_action_tester.GetActionCount(kTrayOverview));
+  EXPECT_EQ(2, user_action_tester.GetActionCount(kTrayOverview));
 }
 
 // Tests that a second OverviewButtonTray has been created, and only shows

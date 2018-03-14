@@ -194,15 +194,15 @@ TEST_F(SplitViewControllerTest, WindowCloseTest) {
   // Since left window was closed, its default snap position changed to RIGHT.
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::RIGHT);
-  // It can't open overview window grid since there is no window to be shown
-  // in the overview window grid.
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // Window grid is showing no recent items, and has no windows, but it is still
+  // available.
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Now close the other snapped window.
   window2.reset();
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), false);
   EXPECT_EQ(split_view_controller()->state(), SplitViewController::NO_SNAP);
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // 3 - Then test the scenario with more than two windows.
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));

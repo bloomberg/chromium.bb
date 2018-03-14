@@ -15,6 +15,7 @@
 #include "ash/frame/frame_header_origin_text.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -23,6 +24,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -442,10 +444,8 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
 
   // Update the window icon so that overview mode can grab the icon from
   // aura::client::kWindowIcon to display.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableNewOverviewUi)) {
+  if (base::FeatureList::IsEnabled(ash::features::kNewOverviewUi))
     frame()->UpdateWindowIcon();
-  }
 
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
                                           GetFrameColor());
