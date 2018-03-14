@@ -477,9 +477,9 @@ TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
   EXPECT_FALSE(client->Finished());
 
   pending_script_ = nullptr;
-  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
-                                         BlinkGC::kGCWithSweep,
-                                         BlinkGC::kForcedGC);
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
 }
 
 }  // namespace

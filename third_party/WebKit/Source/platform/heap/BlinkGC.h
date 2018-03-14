@@ -67,17 +67,21 @@ class PLATFORM_EXPORT BlinkGC final {
   // whether or not they have pointers on the stack.
   enum StackState { kNoHeapPointersOnStack, kHeapPointersOnStack };
 
-  enum GCType {
-    // Both of the marking task and the sweeping task run in
-    // ThreadHeap::collectGarbage().
-    kGCWithSweep,
-    // Only the marking task runs in ThreadHeap::collectGarbage().
-    // The sweeping task is split into chunks and scheduled lazily.
-    kGCWithoutSweep,
-    // Only the marking task runs just to take a heap snapshot.
-    // The sweeping task doesn't run. The marks added in the marking task
-    // are just cleared.
+  enum MarkingType {
+    // The marking completes synchronously.
+    kAtomicMarking,
+    // The marking task is split and executed in chunks.
+    kIncrementalMarking,
+    // We run marking to take a heap snapshot. Sweeping should do nothing and
+    // just clear the mark flags.
     kTakeSnapshot,
+  };
+
+  enum SweepingType {
+    // The sweeping task is split into chunks and scheduled lazily.
+    kLazySweeping,
+    // The sweeping task executs synchronously right after marking.
+    kEagerSweeping,
   };
 
   enum GCReason {

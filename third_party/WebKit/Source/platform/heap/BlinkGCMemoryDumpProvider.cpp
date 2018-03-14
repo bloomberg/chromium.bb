@@ -59,10 +59,11 @@ bool BlinkGCMemoryDumpProvider::OnMemoryDump(
   MemoryDumpLevelOfDetail level_of_detail = args.level_of_detail;
   // In the case of a detailed dump perform a mark-only GC pass to collect
   // more detailed stats.
-  if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED)
-    ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
-                                           BlinkGC::kTakeSnapshot,
-                                           BlinkGC::kForcedGC);
+  if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+    ThreadState::Current()->CollectGarbage(
+        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kTakeSnapshot,
+        BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+  }
   DumpMemoryTotals(memory_dump);
 
   if (allocation_register_.is_enabled()) {

@@ -292,15 +292,15 @@ class PLATFORM_EXPORT ThreadState {
   // - isSweepingInProgress() returns true while any sweeping operation is
   //   running.
   void MarkPhasePrologue(BlinkGC::StackState,
-                         BlinkGC::GCType,
+                         BlinkGC::MarkingType,
                          BlinkGC::GCReason);
   void MarkPhaseVisitRoots();
   bool MarkPhaseAdvanceMarking(double deadline_seconds);
-  void MarkPhaseEpilogue(BlinkGC::GCType);
-  void VerifyMarking(BlinkGC::GCType);
+  void MarkPhaseEpilogue(BlinkGC::MarkingType);
+  void VerifyMarking(BlinkGC::MarkingType);
 
   void CompleteSweep();
-  void PreSweep(BlinkGC::GCType);
+  void PreSweep(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void PostSweep();
 
   // Support for disallowing allocation. Mainly used for sanity
@@ -501,7 +501,10 @@ class PLATFORM_EXPORT ThreadState {
 
   BlinkGC::StackState GetStackState() const { return stack_state_; }
 
-  void CollectGarbage(BlinkGC::StackState, BlinkGC::GCType, BlinkGC::GCReason);
+  void CollectGarbage(BlinkGC::StackState,
+                      BlinkGC::MarkingType,
+                      BlinkGC::SweepingType,
+                      BlinkGC::GCReason);
   void CollectAllGarbage();
 
   // Register the pre-finalizer for the |self| object. The class T must have
@@ -682,7 +685,7 @@ class PLATFORM_EXPORT ThreadState {
 
   struct GCData {
     BlinkGC::StackState stack_state;
-    BlinkGC::GCType gc_type;
+    BlinkGC::MarkingType marking_type;
     BlinkGC::GCReason reason;
     double marking_time_in_milliseconds;
     size_t marked_object_size;
