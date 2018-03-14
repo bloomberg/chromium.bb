@@ -925,11 +925,8 @@
       },
       'linux-annotator-rel': {
         'test_suites': {
-          'scripts': 'check_network_annotations_script',
-        },
-        'args': [
-          '--end-to-end',
-        ],
+          'scripts': 'check_network_annotation_auditor_script',
+        }
       },
       'Chromium Mac 10.10 MacViews': {
         'test_suites': {
