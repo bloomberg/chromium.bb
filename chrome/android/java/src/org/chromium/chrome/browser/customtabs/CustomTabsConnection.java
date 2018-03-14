@@ -1378,6 +1378,7 @@ public class CustomTabsConnection {
             case SpeculationParams.HIDDEN_TAB:
                 recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_BACKGROUND_TAB);
                 launchUrlInHiddenTab(session, url, extras);
+                createSpareWebContents = false;
                 break;
             default:
                 break;

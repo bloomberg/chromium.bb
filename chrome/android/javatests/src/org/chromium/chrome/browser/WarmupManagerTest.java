@@ -134,9 +134,10 @@ public class WarmupManagerTest {
     public void testTakeSpareWebContentsChecksArguments() throws Throwable {
         mWarmupManager.createSpareWebContents();
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false));
-        Assert.assertNull(mWarmupManager.takeSpareWebContents(false, true));
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
         Assert.assertTrue(mWarmupManager.hasSpareWebContents());
+        Assert.assertNotNull(mWarmupManager.takeSpareWebContents(false, true));
+        Assert.assertFalse(mWarmupManager.hasSpareWebContents());
     }
 
     @Test
