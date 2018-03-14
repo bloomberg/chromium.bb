@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_
-#define CHROME_BROWSER_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_
 
 #include <memory>
 
@@ -22,6 +22,8 @@ class Profile;
 namespace cryptauth {
 class CryptAuthGCMManager;
 }  // namespace cryptauth
+
+namespace chromeos {
 
 // Implementation of cryptauth::CryptAuthService.
 class ChromeCryptAuthService
@@ -90,4 +92,6 @@ class ChromeCryptAuthService
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptAuthService);
 };
 
-#endif  // CHROME_BROWSER_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_CRYPTAUTH_CHROME_CRYPTAUTH_SERVICE_H_

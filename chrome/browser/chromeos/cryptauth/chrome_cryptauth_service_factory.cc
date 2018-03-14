@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
+#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 
-#include "chrome/browser/cryptauth/chrome_cryptauth_service.h"
+#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+
+namespace chromeos {
 
 // static
 cryptauth::CryptAuthService*
@@ -46,3 +48,5 @@ void ChromeCryptAuthServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   cryptauth::CryptAuthService::RegisterProfilePrefs(registry);
 }
+
+}  // namespace chromeos

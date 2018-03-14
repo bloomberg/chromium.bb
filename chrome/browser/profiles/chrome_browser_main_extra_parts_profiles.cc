@@ -91,7 +91,6 @@
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
-#include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
@@ -99,6 +98,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/recommendation_restorer_factory.h"
@@ -224,8 +224,8 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   android::DataUseUITabModelFactory::GetInstance();
 #endif
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  ChromeCryptAuthServiceFactory::GetInstance();
+#if defined(OS_CHROMEOS)
+  chromeos::ChromeCryptAuthServiceFactory::GetInstance();
 #endif
   ChromeSigninClientFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
