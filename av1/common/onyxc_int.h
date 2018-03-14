@@ -137,6 +137,7 @@ typedef struct {
   MV_REF *mvs;
 #if CONFIG_SEGMENT_PRED_LAST
   uint8_t *seg_map;
+  struct segmentation seg;
 #endif
   int mi_rows;
   int mi_cols;

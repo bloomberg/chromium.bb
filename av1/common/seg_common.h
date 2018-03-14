@@ -69,6 +69,31 @@ static INLINE int segfeature_active(const struct segmentation *seg,
   return seg->enabled && (seg->feature_mask[segment_id] & (1 << feature_id));
 }
 
+#if CONFIG_SEGMENT_PRED_LAST
+static INLINE void segfeatures_copy(struct segmentation *dst,
+                                    struct segmentation *src) {
+  int i, j;
+#if CONFIG_SPATIAL_SEGMENTATION
+  dst->preskip_segid = 0;
+  dst->last_active_segid = 0;
+#endif
+  for (i = 0; i < MAX_SEGMENTS; i++) {
+    dst->feature_mask[i] = src->feature_mask[i];
+    for (j = 0; j < SEG_LVL_MAX; j++) {
+      dst->feature_data[i][j] = src->feature_data[i][j];
+#if CONFIG_SPATIAL_SEGMENTATION
+      if (segfeature_active(src, i, (SEG_LVL_FEATURES)j)) {
+        dst->preskip_segid |= j >= SEG_LVL_REF_FRAME;
+        dst->last_active_segid = i;
+        src->preskip_segid = dst->preskip_segid;
+        src->last_active_segid = dst->last_active_segid;
+      }
+#endif
+    }
+  }
+}
+#endif
+
 void av1_clearall_segfeatures(struct segmentation *seg);
 
 void av1_enable_segfeature(struct segmentation *seg, int segment_id,

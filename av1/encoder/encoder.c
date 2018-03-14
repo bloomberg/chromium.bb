@@ -4377,6 +4377,14 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
     av1_cyclic_refresh_setup(cpi);
   }
   apply_active_map(cpi);
+#if CONFIG_SEGMENT_PRED_LAST
+  if (cm->seg.enabled) {
+    if (cm->seg.update_data)
+      segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
+    else if (cm->prev_frame)
+      segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+  }
+#endif
 
   // transform / motion compensation build reconstruction frame
   av1_encode_frame(cpi);
@@ -4479,6 +4487,14 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     } else if (cpi->oxcf.aq_mode == COMPLEXITY_AQ) {
       av1_setup_in_frame_q_adj(cpi);
     }
+#if CONFIG_SEGMENT_PRED_LAST
+    if (cm->seg.enabled) {
+      if (cm->seg.update_data)
+        segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
+      else if (cm->prev_frame)
+        segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+    }
+#endif
 
     // transform / motion compensation build reconstruction frame
     save_coding_context(cpi);
