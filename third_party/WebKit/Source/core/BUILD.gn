@@ -1370,17 +1370,16 @@ action("make_minimized_css") {
   deps = make_core_generated_deps
 }
 
-# "HTMLEntityTable" in make_core_generated from GYP.
 action("make_core_generated_html_entity_table") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
   script = "html/parser/create-html-entity-table"
 
   inputs = [
-    "html/parser/HTMLEntityNames.csv",
+    "html/parser/html_entity_names.csv",
   ]
   outputs = [
-    "$blink_core_output_dir/HTMLEntityTable.cpp",
+    "$blink_core_output_dir/html_entity_table.cc",
   ]
 
   args = [ "-o" ] + rebase_path(outputs, root_build_dir)
