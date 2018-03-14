@@ -222,13 +222,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
   video_profile_ = config.profile;
 
-  if (egl_display_ == EGL_NO_DISPLAY) {
-    VLOGF(1) << "could not get EGLDisplay";
-    return false;
-  }
-
   // We need the context to be initialized to query extensions.
   if (!make_context_current_cb_.is_null()) {
+    if (egl_display_ == EGL_NO_DISPLAY) {
+      VLOGF(1) << "could not get EGLDisplay";
+      return false;
+    }
+
     if (!make_context_current_cb_.Run()) {
       VLOGF(1) << "could not make context current";
       return false;
