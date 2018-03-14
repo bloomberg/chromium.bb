@@ -346,6 +346,7 @@ test("gpu_unittests") {
     "command_buffer/service/program_cache_unittest.cc",
     "command_buffer/service/program_manager_unittest.cc",
     "command_buffer/service/query_manager_unittest.cc",
+    "command_buffer/service/raster_decoder_unittest.cc",
     "command_buffer/service/raster_decoder_unittest_1.cc",
     "command_buffer/service/raster_decoder_unittest_base.cc",
     "command_buffer/service/raster_decoder_unittest_base.h",

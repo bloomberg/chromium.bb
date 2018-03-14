@@ -26,13 +26,13 @@ class GLSurface;
 
 namespace gpu {
 class TextureBase;
+class QueryManager;
 struct ContextCreationAttribs;
 
 namespace gles2 {
 class ContextGroup;
 class ErrorState;
 class GpuFenceManager;
-class QueryManager;
 struct ContextState;
 struct DisallowedFeatures;
 }  // namespace gles2
@@ -96,7 +96,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   virtual bool CheckResetStatus() = 0;
 
   // Gets the QueryManager for this context.
-  virtual gles2::QueryManager* GetQueryManager() = 0;
+  virtual QueryManager* GetQueryManager() = 0;
 
   // Gets the GpuFenceManager for this context.
   virtual gles2::GpuFenceManager* GetGpuFenceManager() = 0;

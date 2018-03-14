@@ -58,6 +58,7 @@ source_set("common_sources") {
     "cmd_buffer_common.h",
     "command_buffer.h",
     "command_buffer_id.h",
+    "common_cmd_format.h",
     "constants.h",
     "context_creation_attribs.cc",
     "context_creation_attribs.h",

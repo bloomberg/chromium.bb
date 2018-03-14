@@ -213,7 +213,7 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
                             int height,
                             int depth) = 0;
 
-  virtual void WaitForReadPixels(base::Closure callback) = 0;
+  virtual void WaitForReadPixels(base::OnceClosure callback) = 0;
 
   virtual Logger* GetLogger() = 0;
 

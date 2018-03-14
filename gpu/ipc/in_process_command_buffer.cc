@@ -992,11 +992,11 @@ void InProcessCommandBuffer::SignalQuery(unsigned query_id,
 void InProcessCommandBuffer::SignalQueryOnGpuThread(
     unsigned query_id,
     base::OnceClosure callback) {
-  gles2::QueryManager* query_manager = decoder_->GetQueryManager();
+  QueryManager* query_manager = decoder_->GetQueryManager();
   if (query_manager) {
-    gles2::QueryManager::Query* query = query_manager->GetQuery(query_id);
+    QueryManager::Query* query = query_manager->GetQuery(query_id);
     if (query) {
-      query->AddCallback(base::AdaptCallbackForRepeating(std::move(callback)));
+      query->AddCallback(std::move(callback));
       return;
     }
   }

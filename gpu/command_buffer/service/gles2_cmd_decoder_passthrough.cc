@@ -1274,7 +1274,7 @@ size_t GLES2DecoderPassthroughImpl::GetCreatedBackTextureCountForTest() {
   return create_color_buffer_count_for_test_;
 }
 
-gpu::gles2::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
+gpu::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
   return nullptr;
 }
 
@@ -1388,7 +1388,8 @@ gpu::gles2::ErrorState* GLES2DecoderPassthroughImpl::GetErrorState() {
   return nullptr;
 }
 
-void GLES2DecoderPassthroughImpl::WaitForReadPixels(base::Closure callback) {}
+void GLES2DecoderPassthroughImpl::WaitForReadPixels(
+    base::OnceClosure callback) {}
 
 bool GLES2DecoderPassthroughImpl::WasContextLost() const {
   return context_lost_;

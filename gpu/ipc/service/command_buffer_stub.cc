@@ -692,12 +692,12 @@ void CommandBufferStub::OnSignalAck(uint32_t id) {
 
 void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
   if (decoder_context_) {
-    gles2::QueryManager* query_manager = decoder_context_->GetQueryManager();
+    QueryManager* query_manager = decoder_context_->GetQueryManager();
     if (query_manager) {
-      gles2::QueryManager::Query* query = query_manager->GetQuery(query_id);
+      QueryManager::Query* query = query_manager->GetQuery(query_id);
       if (query) {
-        query->AddCallback(
-            base::Bind(&CommandBufferStub::OnSignalAck, this->AsWeakPtr(), id));
+        query->AddCallback(base::BindOnce(&CommandBufferStub::OnSignalAck,
+                                          this->AsWeakPtr(), id));
         return;
       }
     }

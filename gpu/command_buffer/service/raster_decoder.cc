@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -90,7 +91,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void RestoreTextureUnitBindings(unsigned unit) const override;
   void RestoreVertexAttribArray(unsigned index) override;
   void RestoreAllExternalTextureBindingsIfNeeded() override;
-  gles2::QueryManager* GetQueryManager() override;
+  QueryManager* GetQueryManager() override;
   gles2::GpuFenceManager* GetGpuFenceManager() override;
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -202,13 +203,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   }
 
   void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids);
-  bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids) {
-    NOTIMPLEMENTED();
-    return true;
-  }
-  void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids) {
-    NOTIMPLEMENTED();
-  }
+  bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids);
   void DoFinish();
   void DoFlush();
   void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
@@ -352,6 +348,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   std::unique_ptr<Validators> validators_;
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
+  std::unique_ptr<QueryManager> query_manager_;
+
   // All the state for this context.
   gles2::ContextState state_;
 
@@ -473,6 +471,8 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
+  query_manager_.reset(new QueryManager());
+
   state_.texture_units.resize(group_->max_texture_units());
   state_.sampler_units.resize(group_->max_texture_units());
   for (uint32_t tt = 0; tt < state_.texture_units.size(); ++tt) {
@@ -494,6 +494,11 @@ const gles2::ContextState* RasterDecoderImpl::GetContextState() {
 }
 
 void RasterDecoderImpl::Destroy(bool have_context) {
+  if (query_manager_.get()) {
+    query_manager_->Destroy(have_context);
+    query_manager_.reset();
+  }
+
   if (group_.get()) {
     group_->Destroy(this, have_context);
     group_ = NULL;
@@ -597,8 +602,7 @@ void RasterDecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
 }
 
 QueryManager* RasterDecoderImpl::GetQueryManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return query_manager_.get();
 }
 
 GpuFenceManager* RasterDecoderImpl::GetGpuFenceManager() {
@@ -607,12 +611,13 @@ GpuFenceManager* RasterDecoderImpl::GetGpuFenceManager() {
 }
 
 bool RasterDecoderImpl::HasPendingQueries() const {
-  NOTIMPLEMENTED();
-  return false;
+  return query_manager_.get() && query_manager_->HavePendingQueries();
 }
 
 void RasterDecoderImpl::ProcessPendingQueries(bool did_finish) {
-  NOTIMPLEMENTED();
+  if (!query_manager_.get())
+    return;
+  query_manager_->ProcessPendingQueries(did_finish);
 }
 
 bool RasterDecoderImpl::HasMoreIdleWork() const {
@@ -878,14 +883,83 @@ error::Error RasterDecoderImpl::HandleSetColorSpaceMetadata(
 error::Error RasterDecoderImpl::HandleBeginQueryEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
+  const volatile raster::cmds::BeginQueryEXT& c =
+      *static_cast<const volatile raster::cmds::BeginQueryEXT*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint client_id = static_cast<GLuint>(c.id);
+  int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
+  uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
+
+  switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glBeginQueryEXT",
+                         "unknown query target");
+      return error::kNoError;
+  }
+
+  if (query_manager_->GetActiveQuery(target)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                       "query already in progress");
+    return error::kNoError;
+  }
+
+  if (client_id == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT", "id is 0");
+    return error::kNoError;
+  }
+
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
+  if (!buffer)
+    return error::kInvalidArguments;
+  QuerySync* sync = static_cast<QuerySync*>(
+      buffer->GetDataAddress(sync_shm_offset, sizeof(QuerySync)));
+  if (!sync)
+    return error::kOutOfBounds;
+
+  QueryManager::Query* query = query_manager_->GetQuery(client_id);
+  if (!query) {
+    if (!query_manager_->IsValidQuery(client_id)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                         "id not made by glGenQueriesEXT");
+      return error::kNoError;
+    }
+
+    query =
+        query_manager_->CreateQuery(target, client_id, std::move(buffer), sync);
+  } else {
+    if (query->target() != target) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                         "target does not match");
+      return error::kNoError;
+    } else if (query->sync() != sync) {
+      DLOG(ERROR) << "Shared memory used by query not the same as before";
+      return error::kInvalidArguments;
+    }
+  }
+
+  query_manager_->BeginQuery(query);
   return error::kNoError;
 }
 
 error::Error RasterDecoderImpl::HandleEndQueryEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
+  const volatile raster::cmds::EndQueryEXT& c =
+      *static_cast<const volatile raster::cmds::EndQueryEXT*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  uint32_t submit_count = static_cast<GLuint>(c.submit_count);
+
+  QueryManager::Query* query = query_manager_->GetActiveQuery(target);
+  if (!query) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glEndQueryEXT",
+                       "No active query");
+    return error::kNoError;
+  }
+
+  query_manager_->EndQuery(query, submit_count);
   return error::kNoError;
 }
 
@@ -950,6 +1024,26 @@ void RasterDecoderImpl::DeleteTexturesHelper(
       UnbindTexture(texture_ref);
       RemoveTexture(client_id);
     }
+  }
+}
+
+bool RasterDecoderImpl::GenQueriesEXTHelper(GLsizei n,
+                                            const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (query_manager_->IsValidQuery(client_ids[ii])) {
+      return false;
+    }
+  }
+  query_manager_->GenQueries(n, client_ids);
+  return true;
+}
+
+void RasterDecoderImpl::DeleteQueriesEXTHelper(
+    GLsizei n,
+    const volatile GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint client_id = client_ids[ii];
+    query_manager_->RemoveQuery(client_id);
   }
 }
 
