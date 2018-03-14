@@ -242,8 +242,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
       // device-memory header is attached to the main frame request.
       EXPECT_EQ(expect_client_hints_on_main_frame_,
                 base::ContainsKey(request.headers, "device-memory"));
-      // Currently, dpr header is never attached on the main frame request.
-      EXPECT_FALSE(base::ContainsKey(request.headers, "dpr"));
+      EXPECT_EQ(expect_client_hints_on_main_frame_,
+                base::ContainsKey(request.headers, "dpr"));
     }
 
     if (!is_main_frame_navigation) {
@@ -350,8 +350,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // Two client hints are attached to the image request, and the device-memory
-  // header is attached to the main frame request.
-  EXPECT_EQ(3u, count_client_hints_headers_seen());
+  // and dpr headers are attached to the main frame request.
+  EXPECT_EQ(4u, count_client_hints_headers_seen());
 
   // Navigating to without_accept_ch_without_lifetime_img_foo_com() should not
   // attach client hints to the image subresouce contained in that page since
@@ -362,8 +362,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // The device-memory header is attached to the main frame request.
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
+  // The device-memory and dprheader is attached to the main frame request.
+  EXPECT_EQ(6u, count_client_hints_headers_seen());
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   // Two client hints are attached to the image request, and the device-memory
   // header is attached to the main frame request.
-  EXPECT_EQ(3u, count_client_hints_headers_seen());
+  EXPECT_EQ(4u, count_client_hints_headers_seen());
 }
 
 // Loads a webpage that does not request persisting of client hints.
@@ -500,8 +500,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                                without_accept_ch_without_lifetime_url());
 
   // Two client hints are attached to the image request, and the device-memory
-  // header is attached to the main frame request.
-  EXPECT_EQ(3u, count_client_hints_headers_seen());
+  // and dpr headers are attached to the main frame request.
+  EXPECT_EQ(4u, count_client_hints_headers_seen());
 }
 
 // Ensure that when cookies are blocked, client hint preferences are not
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                                without_accept_ch_without_lifetime_url());
   // Two client hints are attached to the image request, and the device-memory
   // header is attached to the main frame request.
-  EXPECT_EQ(3u, count_client_hints_headers_seen());
+  EXPECT_EQ(4u, count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -688,8 +688,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
   // Two client hints are attached to the image request, and the device-memory
-  // header is attached to the main frame request.
-  EXPECT_EQ(3u, count_client_hints_headers_seen());
+  // and dpr headers are attached to the main frame request.
+  EXPECT_EQ(4u, count_client_hints_headers_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
