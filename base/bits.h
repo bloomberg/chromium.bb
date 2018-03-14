@@ -21,34 +21,6 @@
 namespace base {
 namespace bits {
 
-// Returns the integer i such as 2^i <= n < 2^(i+1)
-inline int Log2Floor(uint32_t n) {
-  if (n == 0)
-    return -1;
-  int log = 0;
-  uint32_t value = n;
-  for (int i = 4; i >= 0; --i) {
-    int shift = (1 << i);
-    uint32_t x = value >> shift;
-    if (x != 0) {
-      value = x;
-      log += shift;
-    }
-  }
-  DCHECK_EQ(value, 1u);
-  return log;
-}
-
-// Returns the integer i such as 2^(i-1) < n <= 2^i
-inline int Log2Ceiling(uint32_t n) {
-  if (n == 0) {
-    return -1;
-  } else {
-    // Log2Floor returns -1 for 0, so the following works correctly for n=1.
-    return 1 + Log2Floor(n - 1);
-  }
-}
-
 // Round up |size| to a multiple of alignment, which must be a power of two.
 inline size_t Align(size_t size, size_t alignment) {
   DCHECK_EQ(alignment & (alignment - 1), 0u);
@@ -178,6 +150,19 @@ ALWAYS_INLINE size_t CountLeadingZeroBitsSizeT(size_t x) {
 
 ALWAYS_INLINE size_t CountTrailingZeroBitsSizeT(size_t x) {
   return CountTrailingZeroBits(x);
+}
+
+// Returns the integer i such as 2^i <= n < 2^(i+1)
+inline int Log2Floor(uint32_t n) {
+  return 31 - CountLeadingZeroBits(n);
+}
+
+// Returns the integer i such as 2^(i-1) < n <= 2^i
+inline int Log2Ceiling(uint32_t n) {
+  // When n == 0, we want the function to return -1.
+  // When n == 0, (n - 1) will underflow to 0xFFFFFFFF, which is
+  // why the statement below starts with (n ? 32 : -1).
+  return (n ? 32 : -1) - CountLeadingZeroBits(n - 1);
 }
 
 }  // namespace bits
