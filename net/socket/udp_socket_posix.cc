@@ -199,6 +199,7 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       addr_family_(0),
       is_connected_(false),
       socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
+      sendto_flags_(0),
       multicast_interface_(0),
       multicast_time_to_live_(1),
       bind_type_(bind_type),
@@ -649,6 +650,16 @@ int UDPSocketPosix::SetDoNotFragment() {
 #endif
 }
 
+void UDPSocketPosix::SetMsgConfirm(bool confirm) {
+#if defined(OS_LINUX)
+  if (confirm) {
+    sendto_flags_ |= MSG_CONFIRM;
+  } else {
+    sendto_flags_ &= ~MSG_CONFIRM;
+  }
+#endif  // defined(OS_LINUX)
+}
+
 int UDPSocketPosix::AllowAddressReuse() {
   DCHECK_NE(socket_, kInvalidSocket);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -867,12 +878,8 @@ int UDPSocketPosix::InternalSendTo(IOBuffer* buf,
     }
   }
 
-  int result = HANDLE_EINTR(sendto(socket_,
-                            buf->data(),
-                            buf_len,
-                            0,
-                            addr,
-                            storage.addr_len));
+  int result = HANDLE_EINTR(sendto(socket_, buf->data(), buf_len, sendto_flags_,
+                                   addr, storage.addr_len));
   if (result < 0)
     result = MapSystemError(errno);
   if (result != ERR_IO_PENDING)
