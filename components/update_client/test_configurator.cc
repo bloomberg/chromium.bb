@@ -8,8 +8,8 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
-#include "components/patch_service/patch_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/patch/patch_service.h"
 #include "components/unzip_service/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "net/url_request/url_request_test_util.h"

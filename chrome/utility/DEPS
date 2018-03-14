@@ -19,7 +19,7 @@ include_rules = [
   "+chrome/services/wifi_util_win/public/mojom",
   "+components/crash/core/common/crash_keys.h",
   "+components/services/font/font_service_app.h",
-  "+components/patch_service",
+  "+components/services/patch",
   "+components/payments/content/utility",
   "+components/printing/service/public/cpp",
   "+components/printing/service/public/interfaces",

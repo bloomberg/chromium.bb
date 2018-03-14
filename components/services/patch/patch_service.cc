@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/patch_service/patch_service.h"
+#include "components/services/patch/patch_service.h"
 
 #include "build/build_config.h"
-#include "components/patch_service/file_patcher_impl.h"
+#include "components/services/patch/file_patcher_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace patch {

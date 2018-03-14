@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PATCH_SERVICE_PUBLIC_CPP_PATCH_H_
-#define COMPONENTS_PATCH_SERVICE_PUBLIC_CPP_PATCH_H_
+#ifndef COMPONENTS_SERVICES_PATCH_PUBLIC_CPP_PATCH_H_
+#define COMPONENTS_SERVICES_PATCH_PUBLIC_CPP_PATCH_H_
 
 #include <string>
 
@@ -31,4 +31,4 @@ void Patch(service_manager::Connector* connector,
 
 }  // namespace patch
 
-#endif  // COMPONENTS_PATCH_SERVICE_PUBLIC_CPP_PATCH_H_
+#endif  // COMPONENTS_SERVICES_PATCH_PUBLIC_CPP_PATCH_H_
