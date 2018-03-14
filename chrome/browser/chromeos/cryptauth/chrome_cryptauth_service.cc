@@ -4,13 +4,16 @@
 
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service.h"
 
+#include "ash/shell.h"
 #include "base/guid.h"
+#include "base/linux_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -33,15 +36,9 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/version_info/version_info.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/shell.h"
-#include "base/linux_util.h"
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/rect.h"
-#endif
 
 namespace chromeos {
 
@@ -65,17 +62,13 @@ std::string GetDeviceId() {
 cryptauth::DeviceClassifier GetDeviceClassifierImpl() {
   cryptauth::DeviceClassifier device_classifier;
 
-#if defined(OS_CHROMEOS)
   int32_t major_version;
   int32_t minor_version;
   int32_t bugfix_version;
-  // TODO(tengs): base::OperatingSystemVersionNumbers only works for ChromeOS.
-  // We need to get different numbers for other platforms.
   base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
                                                &bugfix_version);
   device_classifier.set_device_os_version_code(major_version);
   device_classifier.set_device_type(cryptauth::CHROME);
-#endif
 
   const std::vector<uint32_t> version_components =
       base::Version(version_info::GetVersionNumber()).components();
@@ -96,8 +89,6 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   device_info.set_device_software_version_code(software_version_code);
   ChromeContentBrowserClient chrome_content_browser_client;
   device_info.set_locale(chrome_content_browser_client.GetApplicationLocale());
-
-#if defined(OS_CHROMEOS)
   device_info.set_device_model(base::SysInfo::GetLsbReleaseBoard());
   device_info.set_device_os_version(base::GetLinuxDistro());
   // The Chrome OS version tracks the Chrome version, so fill in the same value
@@ -126,9 +117,7 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
 
   // Note: The unit of this measument is in milli-inches.
   device_info.set_device_display_diagonal_mils(diagonal_in_inches * 1000.0);
-#else
-// TODO(tengs): Fill in device information for other platforms.
-#endif
+
   return device_info;
 }
 
@@ -142,11 +131,7 @@ CreateCryptAuthClientFactoryImpl(Profile* profile) {
 
 std::unique_ptr<cryptauth::SecureMessageDelegate>
 CreateSecureMessageDelegateImpl() {
-#if defined(OS_CHROMEOS)
   return std::make_unique<chromeos::SecureMessageDelegateChromeOS>();
-#else
-  return nullptr;
-#endif
 }
 
 class CryptAuthEnrollerFactoryImpl
@@ -224,11 +209,9 @@ ChromeCryptAuthService::ChromeCryptAuthService(
   registrar_.Add(prefs::kEasyUnlockAllowed,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
-#if defined(OS_CHROMEOS)
   registrar_.Add(prefs::kInstantTetheringAllowed,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
-#endif  // defined(OS_CHROMEOS)
 
   if (!signin_manager_->IsAuthenticated()) {
     PA_LOG(INFO) << "Profile is not authenticated yet; "
@@ -348,11 +331,8 @@ bool ChromeCryptAuthService::IsEnrollmentAllowedByPolicy() {
   // We allow CryptAuth enrollments if at least one of the features which
   // depends on CryptAuth is enabled by enterprise policy.
   PrefService* pref_service = profile_->GetPrefs();
-  bool is_allowed = pref_service->GetBoolean(prefs::kEasyUnlockAllowed);
-#if defined(OS_CHROMEOS)
-  is_allowed |= pref_service->GetBoolean(prefs::kInstantTetheringAllowed);
-#endif  // defined(OS_CHROMEOS)
-  return is_allowed;
+  return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) |
+         pref_service->GetBoolean(prefs::kInstantTetheringAllowed);
 }
 
 void ChromeCryptAuthService::OnPrefsChanged() {
