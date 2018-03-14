@@ -96,7 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fHidDevice : public U2fDevice {
   void ArmTimeout(DeviceCallback callback);
   void OnTimeout(DeviceCallback callback);
   void OnDeviceTransact(bool success,
-                        std::unique_ptr<U2fApduResponse> response);
+                        base::Optional<apdu::ApduResponse> response);
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
   uint32_t channel_id_ = kBroadcastChannel;

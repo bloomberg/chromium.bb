@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "device/fido/u2f_apdu_response.h"
+#include "components/apdu/apdu_response.h"
 #include "device/fido/u2f_return_code.h"
 
 namespace device {
@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
       base::OnceCallback<void(bool success, ProtocolVersion version)>;
   using DeviceCallback =
       base::OnceCallback<void(bool success,
-                              std::unique_ptr<U2fApduResponse> response)>;
+                              base::Optional<apdu::ApduResponse> response)>;
   using WinkCallback = base::OnceCallback<void()>;
 
   static constexpr auto kDeviceTimeout = base::TimeDelta::FromSeconds(3);
@@ -65,14 +65,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fDevice {
  private:
   void OnRegisterComplete(MessageCallback callback,
                           bool success,
-                          std::unique_ptr<U2fApduResponse> register_response);
+                          base::Optional<apdu::ApduResponse> register_response);
   void OnSignComplete(MessageCallback callback,
                       bool success,
-                      std::unique_ptr<U2fApduResponse> sign_response);
+                      base::Optional<apdu::ApduResponse> sign_response);
   void OnVersionComplete(VersionCallback callback,
                          bool legacy,
                          bool success,
-                         std::unique_ptr<U2fApduResponse> version_response);
+                         base::Optional<apdu::ApduResponse> version_response);
 
   DISALLOW_COPY_AND_ASSIGN(U2fDevice);
 };

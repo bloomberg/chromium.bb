@@ -62,6 +62,7 @@ test("components_unittests") {
 
   deps = [
     "//base",
+    "//components/apdu:unit_tests",
     "//components/assist_ranker:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",

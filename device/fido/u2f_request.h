@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
 #include "device/fido/u2f_discovery.h"
 #include "device/fido/u2f_transport_protocol.h"

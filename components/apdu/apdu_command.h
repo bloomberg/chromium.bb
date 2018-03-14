@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_U2F_APDU_COMMAND_H_
-#define DEVICE_FIDO_U2F_APDU_COMMAND_H_
+#ifndef COMPONENTS_APDU_APDU_COMMAND_H_
+#define COMPONENTS_APDU_APDU_COMMAND_H_
 
 #include <cinttypes>
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/optional.h"
 
-namespace device {
+namespace apdu {
 
 // APDU commands are defined as part of ISO 7816-4. Commands can be serialized
 // into either short length encodings, where the maximum data length is 256
@@ -23,20 +25,22 @@ namespace device {
 // byte, denoting the instruction code, P1 and P2, each one byte denoting
 // instruction parameters, a length field (Lc), a data field of length Lc, and
 // a maximum expected response length (Le).
-class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduCommand {
+class COMPONENT_EXPORT(APDU) ApduCommand {
  public:
   // Constructs an APDU command from the serialized message data.
-  static std::unique_ptr<U2fApduCommand> CreateFromMessageForTesting(
-      const std::vector<uint8_t>& data);
+  static base::Optional<ApduCommand> CreateFromMessage(
+      base::span<const uint8_t> message);
 
-  U2fApduCommand();
-  U2fApduCommand(uint8_t cla,
-                 uint8_t ins,
-                 uint8_t p1,
-                 uint8_t p2,
-                 size_t response_length,
-                 std::vector<uint8_t> data);
-  ~U2fApduCommand();
+  ApduCommand();
+  ApduCommand(uint8_t cla,
+              uint8_t ins,
+              uint8_t p1,
+              uint8_t p2,
+              size_t response_length,
+              std::vector<uint8_t> data);
+  ApduCommand(ApduCommand&& that);
+  ApduCommand& operator=(ApduCommand&& that);
+  ~ApduCommand();
 
   // Returns serialized message data.
   std::vector<uint8_t> GetEncodedCommand() const;
@@ -58,12 +62,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduCommand {
   const std::vector<uint8_t>& data() const { return data_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeBasic);
-  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeComplex);
-  FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestSerializeEdgeCases);
+  FRIEND_TEST_ALL_PREFIXES(ApduTest, TestDeserializeBasic);
+  FRIEND_TEST_ALL_PREFIXES(ApduTest, TestDeserializeComplex);
+  FRIEND_TEST_ALL_PREFIXES(ApduTest, TestSerializeEdgeCases);
 
   static constexpr size_t kApduMinHeader = 4;
   static constexpr size_t kApduMaxHeader = 7;
+  static constexpr size_t kApduCommandDataOffset = 7;
+  static constexpr size_t kApduCommandLengthOffset = 5;
+
   // As defined in ISO7816-4, extended length APDU request data is limited to
   // 16 bits in length with a maximum value of 65535. Response data length is
   // also limited to 16 bits in length with a value of 0x0000 corresponding to
@@ -73,14 +80,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fApduCommand {
   static constexpr size_t kApduMaxLength =
       kApduMaxDataLength + kApduMaxHeader + 2;
 
-  uint8_t cla_;
-  uint8_t ins_;
-  uint8_t p1_;
-  uint8_t p2_;
-  size_t response_length_;
+  uint8_t cla_ = 0;
+  uint8_t ins_ = 0;
+  uint8_t p1_ = 0;
+  uint8_t p2_ = 0;
+  size_t response_length_ = 0;
   std::vector<uint8_t> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ApduCommand);
 };
 
-}  // namespace device
+}  // namespace apdu
 
-#endif  // DEVICE_FIDO_U2F_APDU_COMMAND_H_
+#endif  // COMPONENTS_APDU_APDU_COMMAND_H_

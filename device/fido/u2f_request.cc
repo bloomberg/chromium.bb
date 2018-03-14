@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/fido/u2f_apdu_command.h"
+#include "components/apdu/apdu_command.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -49,7 +49,7 @@ void U2fRequest::Start() {
 
 // static
 std::vector<uint8_t> U2fRequest::GetBogusRegisterCommand() {
-  U2fApduCommand command;
+  apdu::ApduCommand command;
   std::vector<uint8_t> data(kBogusChallenge.cbegin(), kBogusChallenge.cend());
   data.insert(data.end(), kBogusAppParam.cbegin(), kBogusAppParam.cend());
   command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kRegister));
@@ -61,7 +61,7 @@ std::vector<uint8_t> U2fRequest::GetBogusRegisterCommand() {
 // static
 std::vector<uint8_t> U2fRequest::GetU2fVersionApduCommand(
     bool is_legacy_version) {
-  U2fApduCommand command;
+  apdu::ApduCommand command;
   command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kVersion));
   // Set maximum expected response length to maximum length possible.
   command.set_response_length(kU2fMaxResponseSize);
@@ -85,7 +85,7 @@ base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fSignApduCommand(
       key_handle.size() > kMaxKeyHandleLength) {
     return base::nullopt;
   }
-  U2fApduCommand command;
+  apdu::ApduCommand command;
   std::vector<uint8_t> data(challenge_digest_.begin(), challenge_digest_.end());
   data.insert(data.end(), application_parameter.begin(),
               application_parameter.end());
@@ -103,7 +103,7 @@ base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fRegisterApduCommand(
       challenge_digest_.size() != kU2fParameterLength) {
     return base::nullopt;
   }
-  U2fApduCommand command;
+  apdu::ApduCommand command;
   std::vector<uint8_t> data(challenge_digest_.begin(), challenge_digest_.end());
   data.insert(data.end(), application_parameter_.begin(),
               application_parameter_.end());

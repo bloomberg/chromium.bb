@@ -75,7 +75,7 @@ void U2fHidDevice::Transition(std::vector<uint8_t> command,
     case State::DEVICE_ERROR:
     default:
       base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
-      repeating_callback.Run(false, nullptr);
+      repeating_callback.Run(false, base::nullopt);
 
       // Executing callbacks may free |this|. Check |self| first.
       while (self && !pending_transactions_.empty()) {
@@ -83,7 +83,7 @@ void U2fHidDevice::Transition(std::vector<uint8_t> command,
         DeviceCallback pending_cb =
             std::move(pending_transactions_.front().second);
         pending_transactions_.pop();
-        std::move(pending_cb).Run(false, nullptr);
+        std::move(pending_cb).Run(false, base::nullopt);
       }
       break;
   }
@@ -280,9 +280,11 @@ void U2fHidDevice::MessageReceived(DeviceCallback callback,
     Transition(std::vector<uint8_t>(), std::move(callback));
     return;
   }
-  std::unique_ptr<U2fApduResponse> response = nullptr;
-  if (message)
-    response = U2fApduResponse::CreateFromMessage(message->GetMessagePayload());
+
+  auto response =
+      message
+          ? apdu::ApduResponse::CreateFromMessage(message->GetMessagePayload())
+          : base::nullopt;
 
   state_ = State::IDLE;
   base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
