@@ -287,7 +287,8 @@ public final class WarmupManager {
         ThreadUtils.assertOnUiThread();
         if (!LibraryLoader.isInitialized()) return;
         if (mSpareWebContents != null || SysUtils.isLowEndDevice()) return;
-        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
+        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(
+                false /* incognito */, true /* initiallyHidden */);
         mObserver = new RenderProcessGoneObserver();
         mSpareWebContents.addObserver(mObserver);
         mWebContentsCreationTimeMs = SystemClock.elapsedRealtime();
@@ -313,12 +314,13 @@ public final class WarmupManager {
      */
     public WebContents takeSpareWebContents(boolean incognito, boolean initiallyHidden) {
         ThreadUtils.assertOnUiThread();
-        if (incognito || initiallyHidden) return null;
+        if (incognito) return null;
         WebContents result = mSpareWebContents;
         if (result == null) return null;
         mSpareWebContents = null;
         result.removeObserver(mObserver);
         mObserver = null;
+        if (!initiallyHidden) result.onShow();
         recordWebContentsStatus(WEBCONTENTS_STATUS_USED);
         return result;
     }
