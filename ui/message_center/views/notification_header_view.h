@@ -42,6 +42,9 @@ class NotificationHeaderView : public views::Button {
   bool IsExpandButtonEnabled();
   void SetSubpixelRenderingEnabled(bool enabled);
 
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
   // Button override:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 

@@ -333,6 +333,17 @@ void NotificationHeaderView::ClearOverflowIndicator() {
   UpdateSummaryTextVisibility();
 }
 
+void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Button::GetAccessibleNodeData(node_data);
+
+  node_data->SetName(app_name_view_->text());
+  node_data->SetDescription(summary_text_view_->text() +
+                            base::ASCIIToUTF16(" ") + timestamp_view_->text());
+
+  if (is_expanded_)
+    node_data->AddState(ax::mojom::State::kExpanded);
+}
+
 void NotificationHeaderView::SetTimestamp(base::Time past) {
   timestamp_view_->SetText(FormatToRelativeTime(past));
   has_timestamp_ = true;
@@ -361,6 +372,7 @@ void NotificationHeaderView::SetExpanded(bool expanded) {
   expand_button_->SetTooltipText(l10n_util::GetStringUTF16(
       expanded ? IDS_MESSAGE_CENTER_COLLAPSE_NOTIFICATION
                : IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION));
+  NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
 }
 
 void NotificationHeaderView::SetAccentColor(SkColor color) {
