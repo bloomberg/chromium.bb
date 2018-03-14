@@ -12,10 +12,8 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromecast.base.CastSwitches;
@@ -92,15 +90,16 @@ class CastWebContentsSurfaceHelper {
                 maybeFinishLater();
             });
         });
+
         // Receive broadcasts requesting to tear down this app while we have a valid URI.
         mHasUriState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
-                String intentUri = intent.getStringExtra(CastWebContentsComponent.INTENT_EXTRA_URI);
+                String intentUri = CastWebContentsIntentUtils.getUriString(intent);
                 Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);
                 if (!uri.toString().equals(intentUri)) {
-                    Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
+                    Log.d(TAG, "Current URI=" + mUri + "; intent URI=" + intentUri);
                     return;
                 }
                 detachWebContentsIfAny();
@@ -136,19 +135,16 @@ class CastWebContentsSurfaceHelper {
 
     // Closes this activity if a new WebContents is not being displayed.
     private void maybeFinishLater() {
-        Log.d(TAG, "maybeFinishLater");
+        Log.d(TAG, "maybeFinishLater: " + mUri);
         final String currentInstanceId = mInstanceId;
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
                     if (mShowInFragment) {
-                        Intent in = new Intent();
-                        in.setAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
-                        in.putExtra(CastWebContentsComponent.INTENT_EXTRA_URI, mUri.toString());
                         Log.d(TAG, "Sending intent: ON_WEB_CONTENT_STOPPED: URI=" + mUri);
-                        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
-                                .sendBroadcastSync(in);
+                        CastWebContentsIntentUtils.getLocalBroadcastManager().sendBroadcastSync(
+                                CastWebContentsIntentUtils.onWebContentStopped(mUri));
                     } else {
                         Log.d(TAG, "Finishing cast content activity of URI:" + mUri);
                         mHostActivity.finish();
@@ -164,7 +160,7 @@ class CastWebContentsSurfaceHelper {
 
     // Sets webContents to be the currently displayed webContents.
     private void showWebContents(WebContents webContents) {
-        Log.d(TAG, "showWebContents");
+        Log.d(TAG, "showWebContents: " + mUri);
 
         detachWebContentsIfAny();
 
@@ -206,7 +202,7 @@ class CastWebContentsSurfaceHelper {
 
     // Remove the currently displayed webContents. no-op if nothing is being displayed.
     void detachWebContentsIfAny() {
-        Log.d(TAG, "Detach web contents if any.");
+        Log.d(TAG, "Maybe detach web contents if any: " + mUri);
         if (mContentView != null) {
             mCastWebContentsLayout.removeView(mContentView);
             mCastWebContentsLayout.removeView(mContentViewRenderView);
@@ -217,12 +213,13 @@ class CastWebContentsSurfaceHelper {
             mContentViewCore = null;
             mContentViewRenderView = null;
             mWindow = null;
-            CastWebContentsComponent.onComponentClosed(getActivity(), mInstanceId);
-            Log.d(TAG, "Detach web contents done.");
+            CastWebContentsComponent.onComponentClosed(mInstanceId);
+            Log.d(TAG, "Detach web contents done: " + mUri);
         }
     }
 
     void onPause() {
+        Log.d(TAG, "onPause: " + mUri);
         mResumedState.reset();
 
         if (mContentViewCore != null) {
@@ -251,6 +248,7 @@ class CastWebContentsSurfaceHelper {
     }
 
     void onResume() {
+        Log.d(TAG, "onResume: " + mUri);
         mResumedState.set(Unit.unit());
 
         if (mContentViewCore != null) {
@@ -260,6 +258,7 @@ class CastWebContentsSurfaceHelper {
 
     // Destroys all resources. After calling this method, this object must be dropped.
     void onDestroy() {
+        Log.d(TAG, "onDestroy: " + mUri);
         detachWebContentsIfAny();
         mHasWebContentsState.reset();
         mHasUriState.reset();

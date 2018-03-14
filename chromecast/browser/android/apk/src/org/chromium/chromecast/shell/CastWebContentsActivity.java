@@ -124,7 +124,7 @@ public class CastWebContentsActivity extends Activity {
             Log.i(TAG, "Intent without bundle received!");
             return;
         }
-        final String uriString = bundle.getString(CastWebContentsComponent.INTENT_EXTRA_URI);
+        final String uriString = CastWebContentsIntentUtils.getUriString(intent);
         if (uriString == null) {
             Log.i(TAG, "Intent without uri received!");
             return;
@@ -140,11 +140,9 @@ public class CastWebContentsActivity extends Activity {
         }
 
         bundle.setClassLoader(WebContents.class.getClassLoader());
-        final WebContents webContents = (WebContents) bundle.getParcelable(
-                CastWebContentsComponent.ACTION_EXTRA_WEB_CONTENTS);
+        final WebContents webContents = CastWebContentsIntentUtils.getWebContents(intent);
 
-        boolean touchInputEnabled =
-                bundle.getBoolean(CastWebContentsComponent.ACTION_EXTRA_TOUCH_INPUT_ENABLED, false);
+        final boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(intent);
         mSurfaceHelper.onNewWebContents(uri, webContents, touchInputEnabled);
     }
 
@@ -224,7 +222,7 @@ public class CastWebContentsActivity extends Activity {
                     || keyCode == KeyEvent.KEYCODE_MEDIA_STOP
                     || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
-                CastWebContentsComponent.onKeyDown(this, mSurfaceHelper.getInstanceId(), keyCode);
+                CastWebContentsComponent.onKeyDown(mSurfaceHelper.getInstanceId(), keyCode);
 
                 // Stop key should end the entire session.
                 if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {

@@ -57,7 +57,8 @@ CastContentWindowAura::CastContentWindowAura(bool is_touch_enabled)
 void CastContentWindowAura::CreateWindowForWebContents(
     content::WebContents* web_contents,
     CastWindowManager* window_manager,
-    bool is_visible) {
+    bool is_visible,
+    VisibilityPriority visibility_priority) {
   DCHECK(web_contents);
   DCHECK(window_manager);
   gfx::NativeView window = web_contents->GetNativeView();
@@ -74,6 +75,11 @@ void CastContentWindowAura::CreateWindowForWebContents(
     window->Hide();
   }
 }
+
+void CastContentWindowAura::RequestVisibility(
+    VisibilityPriority visibility_priority){};
+
+void CastContentWindowAura::RequestMoveOut(){};
 
 }  // namespace shell
 }  // namespace chromecast

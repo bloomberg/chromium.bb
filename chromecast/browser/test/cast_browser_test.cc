@@ -90,6 +90,16 @@ void CastBrowserTest::OnWindowDestroyed() {}
 
 void CastBrowserTest::OnKeyEvent(const ui::KeyEvent& key_event) {}
 
+void CastBrowserTest::OnVisibilityChange(VisibilityType visibility_type) {}
+
+bool CastBrowserTest::ConsumeGesture(GestureType gesture_type) {
+  return false;
+};
+
+std::string CastBrowserTest::GetId() {
+  return "";
+}
+
 bool CastBrowserTest::OnAddMessageToConsoleReceived(
     content::WebContents* source,
     int32_t level,

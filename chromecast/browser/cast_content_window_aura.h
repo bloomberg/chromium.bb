@@ -22,9 +22,13 @@ class CastContentWindowAura : public CastContentWindow {
   ~CastContentWindowAura() override;
 
   // CastContentWindow implementation.
-  void CreateWindowForWebContents(content::WebContents* web_contents,
-                                  CastWindowManager* window_manager,
-                                  bool is_visible) override;
+  void CreateWindowForWebContents(
+      content::WebContents* web_contents,
+      CastWindowManager* window_manager,
+      bool is_visible,
+      VisibilityPriority visibility_priority) override;
+  void RequestVisibility(VisibilityPriority visibility_priority) override;
+  void RequestMoveOut() override;
 
  private:
   friend class CastContentWindow;
