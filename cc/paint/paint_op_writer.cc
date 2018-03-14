@@ -250,8 +250,13 @@ void PaintOpWriter::Write(const SkColorSpace* color_space) {
 }
 
 void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
+  // TODO(khushalsagar): Change skia API to serialize directly into shared mem.
   auto data = blob->serialize(&TypefaceCataloger, transfer_cache_);
-  Write(data);
+  DCHECK(data);
+  DCHECK_GT(data->size(), 0u);
+
+  WriteSize(data->size());
+  WriteData(data->size(), data->data());
 }
 
 void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob) {

@@ -22,7 +22,7 @@ class CC_PAINT_EXPORT PaintTextBlob
   PaintTextBlob(sk_sp<SkTextBlob> blob, std::vector<PaintTypeface> typefaces);
 
   const sk_sp<SkTextBlob>& ToSkTextBlob() const { return sk_blob_; }
-  const std::vector<PaintTypeface> typefaces() const { return typefaces_; }
+  const std::vector<PaintTypeface>& typefaces() const { return typefaces_; }
 
   operator bool() const { return !!sk_blob_; }
 

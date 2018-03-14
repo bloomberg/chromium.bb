@@ -384,19 +384,21 @@ void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
 }
 
 void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
-  sk_sp<SkData> data;
-  Read(&data);
-  if (!data || !valid_) {
+  size_t data_bytes = 0u;
+  ReadSimple(&data_bytes);
+  // Skia expects aligned data size, make sure we don't pass it incorrect data.
+  if (remaining_bytes_ < data_bytes || data_bytes == 0u ||
+      !SkIsAlign4(data_bytes)) {
     SetInvalid();
-    return;
   }
 
-  // Skia expects the following to be true, make sure we don't pass it incorrect
-  // data.
-  if (!data->data() || !SkIsAlign4(data->size())) {
-    SetInvalid();
+  if (!valid_)
     return;
-  }
+
+  sk_sp<SkData> data =
+      SkData::MakeWithoutCopy(const_cast<const char*>(memory_), data_bytes);
+  memory_ += data_bytes;
+  remaining_bytes_ -= data_bytes;
 
   TypefacesCatalog catalog;
   catalog.transfer_cache = transfer_cache_;
