@@ -22,6 +22,9 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/command_buffer/client/implementation_base.h"
+#include "gpu/command_buffer/client/raster_cmd_helper.h"
+#include "gpu/command_buffer/client/raster_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -158,7 +161,8 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
                             ? shared_context_provider->shared_providers_
                             : new SharedProviders),
       channel_(std::move(channel)),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      impl_(nullptr) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(channel_);
   context_thread_checker_.DetachFromThread();
@@ -181,7 +185,7 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
     // shutdown.
     command_buffer_->SetLock(nullptr);
     // Disconnect lost callbacks during destruction.
-    gles2_impl_->SetLostContextCallback(base::Closure());
+    impl_->SetLostContextCallback(base::OnceClosure());
     // Unregister memory dump provider.
     base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
         this);
@@ -259,34 +263,73 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       return bind_result_;
     }
 
-    // The GLES2 helper writes the command buffer protocol.
-    gles2_helper_ =
-        std::make_unique<gpu::gles2::GLES2CmdHelper>(command_buffer_.get());
-    gles2_helper_->SetAutomaticFlushes(automatic_flushes_);
-    bind_result_ =
-        gles2_helper_->Initialize(memory_limits_.command_buffer_size);
-    if (bind_result_ != gpu::ContextResult::kSuccess) {
-      DLOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
-      return bind_result_;
-    }
+    if (attributes_.enable_raster_decoder) {
+      DCHECK(attributes_.enable_raster_interface);
+      DCHECK(!attributes_.enable_gles2_interface);
+      // The raster helper writes the command buffer protocol.
+      auto raster_helper =
+          std::make_unique<gpu::raster::RasterCmdHelper>(command_buffer_.get());
+      raster_helper->SetAutomaticFlushes(automatic_flushes_);
+      bind_result_ =
+          raster_helper->Initialize(memory_limits_.command_buffer_size);
+      if (bind_result_ != gpu::ContextResult::kSuccess) {
+        DLOG(ERROR) << "Failed to initialize RasterCmdHelper.";
+        return bind_result_;
+      }
+      // The transfer buffer is used to copy resources between the client
+      // process and the GPU process.
+      transfer_buffer_ =
+          std::make_unique<gpu::TransferBuffer>(raster_helper.get());
 
-    // The transfer buffer is used to copy resources between the client
-    // process and the GPU process.
-    transfer_buffer_ =
-        std::make_unique<gpu::TransferBuffer>(gles2_helper_.get());
+      // The RasterImplementation exposes the RasterInterface, as well as the
+      // gpu::ContextSupport interface.
+      auto raster_impl = std::make_unique<gpu::raster::RasterImplementation>(
+          raster_helper.get(), transfer_buffer_.get(),
+          attributes_.bind_generates_resource,
+          attributes_.lose_context_when_out_of_memory, command_buffer_.get());
+      bind_result_ = raster_impl->Initialize(memory_limits_);
+      if (bind_result_ != gpu::ContextResult::kSuccess) {
+        DLOG(ERROR) << "Failed to initialize RasterImplementation.";
+        return bind_result_;
+      }
 
-    // The GLES2Implementation exposes the OpenGLES2 API, as well as the
-    // gpu::ContextSupport interface.
-    constexpr bool support_client_side_arrays = false;
-    gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
-        gles2_helper_.get(), share_group, transfer_buffer_.get(),
-        attributes_.bind_generates_resource,
-        attributes_.lose_context_when_out_of_memory, support_client_side_arrays,
-        command_buffer_.get());
-    bind_result_ = gles2_impl_->Initialize(memory_limits_);
-    if (bind_result_ != gpu::ContextResult::kSuccess) {
-      DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
-      return bind_result_;
+      impl_ = raster_impl.get();
+      raster_interface_ = std::move(raster_impl);
+      helper_ = std::move(raster_helper);
+    } else {
+      // The GLES2 helper writes the command buffer protocol.
+      auto gles2_helper =
+          std::make_unique<gpu::gles2::GLES2CmdHelper>(command_buffer_.get());
+      gles2_helper->SetAutomaticFlushes(automatic_flushes_);
+      bind_result_ =
+          gles2_helper->Initialize(memory_limits_.command_buffer_size);
+      if (bind_result_ != gpu::ContextResult::kSuccess) {
+        DLOG(ERROR) << "Failed to initialize GLES2CmdHelper.";
+        return bind_result_;
+      }
+
+      // The transfer buffer is used to copy resources between the client
+      // process and the GPU process.
+      transfer_buffer_ =
+          std::make_unique<gpu::TransferBuffer>(gles2_helper.get());
+
+      // The GLES2Implementation exposes the OpenGLES2 API, as well as the
+      // gpu::ContextSupport interface.
+      constexpr bool support_client_side_arrays = false;
+      gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
+          gles2_helper.get(), share_group, transfer_buffer_.get(),
+          attributes_.bind_generates_resource,
+          attributes_.lose_context_when_out_of_memory,
+          support_client_side_arrays, command_buffer_.get());
+
+      bind_result_ = gles2_impl_->Initialize(memory_limits_);
+      if (bind_result_ != gpu::ContextResult::kSuccess) {
+        DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
+        return bind_result_;
+      }
+
+      impl_ = gles2_impl_.get();
+      helper_ = std::move(gles2_helper);
     }
 
     if (command_buffer_->GetLastState().error != gpu::error::kNoError) {
@@ -322,34 +365,36 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
 
     shared_providers_->list.push_back(this);
 
-    cache_controller_ = std::make_unique<viz::ContextCacheController>(
-        gles2_impl_.get(), task_runner);
+    cache_controller_ =
+        std::make_unique<viz::ContextCacheController>(impl_, task_runner);
   }
 
-  gles2_impl_->SetLostContextCallback(
+  impl_->SetLostContextCallback(
       base::Bind(&ContextProviderCommandBuffer::OnLostContext,
-                 // |this| owns the GLES2Implementation which holds the
-                 // callback.
+                 // |this| owns the impl_, which holds the callback.
                  base::Unretained(this)));
 
-  // Grab the implementation directly instead of going through ContextGL()
-  // because the lock hasn't been acquired yet.
-  gpu::gles2::GLES2Interface* gl = gles2_impl_.get();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuClientTracing)) {
-    // This wraps the real GLES2Implementation and we should always use this
-    // instead when it's present.
-    trace_impl_ = std::make_unique<gpu::gles2::GLES2TraceImplementation>(
-        gles2_impl_.get());
-    gl = trace_impl_.get();
+  if (gles2_impl_) {
+    // Grab the implementation directly instead of going through ContextGL()
+    // because the lock hasn't been acquired yet.
+    gpu::gles2::GLES2Interface* gl = gles2_impl_.get();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableGpuClientTracing)) {
+      // This wraps the real GLES2Implementation and we should always use this
+      // instead when it's present.
+      trace_impl_ = std::make_unique<gpu::gles2::GLES2TraceImplementation>(
+          gles2_impl_.get());
+      gl = trace_impl_.get();
+    }
+
+    // Do this last once the context is set up.
+    std::string type_name =
+        command_buffer_metrics::ContextTypeToString(context_type_);
+    std::string unique_context_name =
+        base::StringPrintf("%s-%p", type_name.c_str(), gles2_impl_.get());
+    gl->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   }
 
-  // Do this last once the context is set up.
-  std::string type_name =
-      command_buffer_metrics::ContextTypeToString(context_type_);
-  std::string unique_context_name =
-      base::StringPrintf("%s-%p", type_name.c_str(), gles2_impl_.get());
-  gl->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   // If support_locking_ is true, the context may be used from multiple
   // threads, and any async callstacks will need to hold the same lock, so
   // give it to the command buffer and cache controller.
@@ -384,25 +429,25 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   CheckValidThreadOrLockAcquired();
 
-  if (raster_impl_)
-    return raster_impl_.get();
+  if (raster_interface_)
+    return raster_interface_.get();
 
   if (!attributes_.enable_raster_interface) {
     DLOG(ERROR) << "Unexpected access to RasterInterface()";
     return nullptr;
   }
 
+  DCHECK(!attributes_.enable_raster_decoder);
   if (!gles2_impl_.get())
     return nullptr;
 
-  raster_impl_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
+  raster_interface_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
       gles2_impl_.get(), gles2_impl_.get(), ContextCapabilities());
-
-  return raster_impl_.get();
+  return raster_interface_.get();
 }
 
 gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
-  return gles2_impl_.get();
+  return impl_;
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
@@ -412,6 +457,9 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
   if (gr_context_)
     return gr_context_->get();
+
+  if (attributes_.enable_raster_decoder)
+    return nullptr;
 
   // TODO(vmiura): crbug.com/793508 Disable access to GrContext if
   // enable_gles2_interface is disabled, after removing any dependencies on
@@ -473,7 +521,7 @@ const gpu::Capabilities& ContextProviderCommandBuffer::ContextCapabilities()
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   CheckValidThreadOrLockAcquired();
   // Skips past the trace_impl_ as it doesn't have capabilities.
-  return gles2_impl_->capabilities();
+  return impl_->capabilities();
 }
 
 const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
@@ -522,8 +570,8 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   if (support_locking_)
     hold.emplace(context_lock_);
 
-  gles2_impl_->OnMemoryDump(args, pmd);
-  gles2_helper_->OnMemoryDump(args, pmd);
+  impl_->OnMemoryDump(args, pmd);
+  helper_->OnMemoryDump(args, pmd);
 
   if (gr_context_) {
     context_thread_checker_.DetachFromThread();

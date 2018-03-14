@@ -385,6 +385,15 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.enable_raster_interface = support_raster_interface;
   attributes.enable_oop_rasterization = support_oop_rasterization;
 
+  bool enable_raster_decoder =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRasterDecoder);
+  // --enable-raster-decoder supports raster interface, but not
+  // gles2 interface
+  attributes.enable_raster_decoder = enable_raster_decoder &&
+                                     support_raster_interface &&
+                                     !support_gles2_interface;
+
   const bool automatic_flushes = false;
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), gpu_memory_buffer_manager, stream_id,
