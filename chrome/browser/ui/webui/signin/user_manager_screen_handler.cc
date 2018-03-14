@@ -303,83 +303,7 @@ UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
   }
 }
 
-UserManagerScreenHandler::~UserManagerScreenHandler() {
-  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
-}
-
-void UserManagerScreenHandler::ShowBannerMessage(
-    const base::string16& message) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "login.AccountPickerScreen.showBannerMessage", base::Value(message));
-}
-
-void UserManagerScreenHandler::ShowUserPodCustomIcon(
-    const AccountId& account_id,
-    const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
-        icon_options) {
-  std::unique_ptr<base::DictionaryValue> icon =
-      icon_options.ToDictionaryValue();
-  if (!icon || icon->empty())
-    return;
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "login.AccountPickerScreen.showUserPodCustomIcon",
-      base::Value(account_id.GetUserEmail()), *icon);
-}
-
-void UserManagerScreenHandler::HideUserPodCustomIcon(
-    const AccountId& account_id) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "login.AccountPickerScreen.hideUserPodCustomIcon",
-      base::Value(account_id.GetUserEmail()));
-}
-
-void UserManagerScreenHandler::EnableInput() {
-  // Nothing here because UI is not disabled when starting to authenticate.
-}
-
-void UserManagerScreenHandler::SetAuthType(
-    const AccountId& account_id,
-    proximity_auth::mojom::AuthType auth_type,
-    const base::string16& auth_value) {
-  if (GetAuthType(account_id) ==
-      proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD) {
-    return;
-  }
-
-  user_auth_type_map_[account_id.GetUserEmail()] = auth_type;
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "login.AccountPickerScreen.setAuthType",
-      base::Value(account_id.GetUserEmail()),
-      base::Value(static_cast<int>(auth_type)), base::Value(auth_value));
-}
-
-proximity_auth::mojom::AuthType UserManagerScreenHandler::GetAuthType(
-    const AccountId& account_id) const {
-  const auto it = user_auth_type_map_.find(account_id.GetUserEmail());
-  if (it == user_auth_type_map_.end())
-    return proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
-  return it->second;
-}
-
-proximity_auth::ScreenlockBridge::LockHandler::ScreenType
-UserManagerScreenHandler::GetScreenType() const {
-  return proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
-}
-
-void UserManagerScreenHandler::Unlock(const AccountId& account_id) {
-  const base::FilePath path = profiles::GetPathOfProfileWithEmail(
-      g_browser_process->profile_manager(), account_id.GetUserEmail());
-  if (!path.empty()) {
-    authenticating_profile_path_ = path;
-    ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
-  }
-}
-
-void UserManagerScreenHandler::AttemptEasySignin(const AccountId& account_id,
-                                                 const std::string& secret,
-                                                 const std::string& key_label) {
-  NOTREACHED();
-}
+UserManagerScreenHandler::~UserManagerScreenHandler() {}
 
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   // If the URL has a hash parameter, store it for later.
@@ -389,8 +313,6 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.ui.UserManager.showUserManagerScreen",
       base::Value(IsGuestModeEnabled()), base::Value(IsAddPersonEnabled()));
-
-  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
@@ -586,10 +508,6 @@ void UserManagerScreenHandler::HandleHardlockUserPod(
   std::string email;
   CHECK(args->GetString(0, &email));
   const AccountId account_id = AccountId::FromUserEmail(email);
-  SetAuthType(account_id,
-              proximity_auth::mojom::AuthType::FORCE_OFFLINE_PASSWORD,
-              base::string16());
-  HideUserPodCustomIcon(account_id);
 }
 
 void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
@@ -862,7 +780,6 @@ void UserManagerScreenHandler::SendUserList() {
   std::vector<ProfileAttributesEntry*> entries =
       g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetAllProfilesAttributesSortedByName();
-  user_auth_type_map_.clear();
 
   for (const ProfileAttributesEntry* entry : entries) {
     // Don't show profiles still in the middle of being set up as new legacy

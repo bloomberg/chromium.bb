@@ -17,13 +17,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_statistics.h"
-#include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
-class AccountId;
 class Browser;
 
 namespace base {
@@ -47,7 +45,6 @@ enum AuthenticatedLaunchUserEvent {
 
 class UserManagerScreenHandler
     : public content::WebUIMessageHandler,
-      public proximity_auth::ScreenlockBridge::LockHandler,
       public gaia::GaiaOAuthClient::Delegate,
       public content::NotificationObserver {
  public:
@@ -68,25 +65,6 @@ class UserManagerScreenHandler
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // proximity_auth::ScreenlockBridge::LockHandler implementation.
-  void ShowBannerMessage(const base::string16& message) override;
-  void ShowUserPodCustomIcon(
-      const AccountId& account_id,
-      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
-          icon_options) override;
-  void HideUserPodCustomIcon(const AccountId& account_id) override;
-  void EnableInput() override;
-  void SetAuthType(const AccountId& account_id,
-                   proximity_auth::mojom::AuthType auth_type,
-                   const base::string16& auth_value) override;
-  proximity_auth::mojom::AuthType GetAuthType(
-      const AccountId& account_id) const override;
-  ScreenType GetScreenType() const override;
-  void Unlock(const AccountId& account_id) override;
-  void AttemptEasySignin(const AccountId& account_id,
-                         const std::string& secret,
-                         const std::string& key_label) override;
 
   void HandleInitialize(const base::ListValue* args);
   void HandleAuthenticatedLaunchUser(const base::ListValue* args);
@@ -142,10 +120,6 @@ class UserManagerScreenHandler
 
   // URL hash, used to key post-profile actions if present.
   std::string url_hash_;
-
-  typedef std::map<std::string, proximity_auth::mojom::AuthType>
-      UserAuthTypeMap;
-  UserAuthTypeMap user_auth_type_map_;
 
   content::NotificationRegistrar registrar_;
 
