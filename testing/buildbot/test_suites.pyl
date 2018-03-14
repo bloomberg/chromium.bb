@@ -320,6 +320,12 @@
     }
   },
 
+  'check_network_annotation_auditor_script': {
+    'check_network_annotation_auditor': {
+      'script': 'check_network_annotation_auditor.py',
+    },
+  },
+
   'check_network_annotations_script': {
     'check_network_annotations': {
       'script': 'check_network_annotations.py',

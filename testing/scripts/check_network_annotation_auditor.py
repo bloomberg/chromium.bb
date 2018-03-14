@@ -3,7 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""//testing/scripts wrapper for the network traffic annotations checks."""
+"""//testing/scripts wrapper for the network traffic annotation auditor
+checks."""
 
 import json
 import os
@@ -17,7 +18,7 @@ def main_run(args):
   command_line = [
       sys.executable,
       os.path.join(common.SRC_DIR, 'tools', 'traffic_annotation', 'scripts',
-                   'check_annotations.py'),
+                   'traffic_annotation_auditor_tests.py'),
       '--build-path',
       os.path.join(args.paths['checkout'], 'out', args.build_config_fs),
   ]
