@@ -59,7 +59,6 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
   int SetDoNotFragment() override;
-  void SetMsgConfirm(bool confirm) override {}
 
  private:
   void OnReadComplete(const net::CompletionCallback& callback, int result);

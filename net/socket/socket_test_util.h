@@ -799,7 +799,6 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   int ConnectUsingDefaultNetwork(const IPEndPoint& address) override;
   NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
   void ApplySocketTag(const SocketTag& tag) override;
-  void SetMsgConfirm(bool confirm) override {}
 
   // AsyncSocket implementation.
   void OnReadComplete(const MockRead& data) override;

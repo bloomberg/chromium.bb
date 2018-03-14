@@ -332,7 +332,6 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnAckNeedsRetransmittableFrame, void());
   MOCK_METHOD0(SendPing, void());
   MOCK_CONST_METHOD0(AllowSelfAddressChange, bool());
-  MOCK_METHOD0(OnForwardProgressConfirmed, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicConnectionVisitor);

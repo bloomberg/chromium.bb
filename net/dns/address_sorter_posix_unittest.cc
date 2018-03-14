@@ -79,7 +79,6 @@ class TestUDPClientSocket : public DatagramClientSocket {
     return NetworkChangeNotifier::kInvalidNetworkHandle;
   }
   void ApplySocketTag(const SocketTag& tag) override {}
-  void SetMsgConfirm(bool confirm) override {}
 
   int Connect(const IPEndPoint& remote) override {
     if (connected_)

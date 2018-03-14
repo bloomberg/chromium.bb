@@ -567,8 +567,6 @@ int UDPSocketWin::SetDoNotFragment() {
   return rv == 0 ? OK : MapSystemError(WSAGetLastError());
 }
 
-void UDPSocketWin::SetMsgConfirm(bool confirm) {}
-
 int UDPSocketWin::AllowAddressReuse() {
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -172,10 +172,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when a self address change is observed. Returns true if self address
   // change is allowed.
   virtual bool AllowSelfAddressChange() const = 0;
-
-  // Called when an ACK is received with a larger |largest_acked| than
-  // previously observed.
-  virtual void OnForwardProgressConfirmed() = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
