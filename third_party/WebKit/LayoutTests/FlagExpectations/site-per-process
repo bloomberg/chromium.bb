@@ -143,6 +143,7 @@ crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ance
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-same-in-cross-url-allow.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Pass Timeout ]
+crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-composite-image.html [ Pass Timeout ]
 crbug.com/711468 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Pass Timeout ]
