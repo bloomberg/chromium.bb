@@ -2255,6 +2255,7 @@
         logical_side: "after",
         shorthand_for_physical_side: "scrollMarginShorthand",
       },
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-customization",
@@ -2276,6 +2277,7 @@
         logical_side: "before",
         shorthand_for_physical_side: "scrollMarginShorthand",
       },
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-bottom",
@@ -2286,6 +2288,7 @@
       default_value: "0.0f",
       type_name: "float",
       converter: "ConvertComputedLength<float>",
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-inline-end",
@@ -2295,6 +2298,7 @@
         logical_side: "end",
         shorthand_for_physical_side: "scrollMarginShorthand",
       },
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-inline-start",
@@ -2304,6 +2308,7 @@
         logical_side: "start",
         shorthand_for_physical_side: "scrollMarginShorthand",
       },
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-left",
@@ -2314,6 +2319,7 @@
       default_value: "0.0f",
       type_name: "float",
       converter: "ConvertComputedLength<float>",
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-right",
@@ -2324,6 +2330,7 @@
       default_value: "0.0f",
       type_name: "float",
       converter: "ConvertComputedLength<float>",
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-margin-top",
@@ -2334,6 +2341,7 @@
       default_value: "0.0f",
       type_name: "float",
       converter: "ConvertComputedLength<float>",
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "scroll-padding-block-end",
