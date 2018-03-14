@@ -4,9 +4,12 @@
 
 module headless;
 
+import "mojo/public/mojom/base/big_string.mojom";
+
 interface TabSocket {
   // Send a message from the Tab to C++ embedder.
-  SendMessageToEmbedder(string message, int32 v8_execution_context_id);
+  SendMessageToEmbedder(mojo_base.mojom.BigString message,
+                        int32 v8_execution_context_id);
 
   // To send a message to the tab use
   // HeadlessRenderFrameController::SendMessageToTabSocket.
