@@ -340,4 +340,3 @@ INIT_XMM sse2
 convolve_fn copy
 convolve_fn avg
 convolve_fn copy, highbd
-convolve_fn avg, highbd

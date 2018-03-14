@@ -269,34 +269,22 @@ specialize qw/aom_dc_predictor_64x16 sse2 avx2/;
 # Sub Pixel Filters
 #
 add_proto qw/void aom_convolve_copy/,             "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve_avg/,              "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
-add_proto qw/void aom_convolve8/,                 "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 add_proto qw/void aom_convolve8_horiz/,           "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 add_proto qw/void aom_convolve8_vert/,            "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 
 specialize qw/aom_convolve_copy       sse2      /;
-specialize qw/aom_convolve_avg        sse2      /;
-specialize qw/aom_convolve8           sse2 ssse3/, "$avx2_ssse3";
 specialize qw/aom_convolve8_horiz     sse2 ssse3/, "$avx2_ssse3";
 specialize qw/aom_convolve8_vert      sse2 ssse3/, "$avx2_ssse3";
 
 # TODO(any): These need to be extended to up to 128x128 block sizes
 if (!(aom_config("CONFIG_AV1") eq "yes")) {
   specialize qw/aom_convolve_copy       neon dspr2 msa/;
-  specialize qw/aom_convolve_avg        neon dspr2 msa/;
-  specialize qw/aom_convolve8           neon dspr2 msa/;
   specialize qw/aom_convolve8_horiz     neon dspr2 msa/;
   specialize qw/aom_convolve8_vert      neon dspr2 msa/;
 }
 
 add_proto qw/void aom_highbd_convolve_copy/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
 specialize qw/aom_highbd_convolve_copy sse2 avx2/;
-
-add_proto qw/void aom_highbd_convolve_avg/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-specialize qw/aom_highbd_convolve_avg sse2 avx2/;
-
-add_proto qw/void aom_highbd_convolve8/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-specialize qw/aom_highbd_convolve8 avx2/, "$sse2_x86_64";
 
 add_proto qw/void aom_highbd_convolve8_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
 specialize qw/aom_highbd_convolve8_horiz avx2/, "$sse2_x86_64";

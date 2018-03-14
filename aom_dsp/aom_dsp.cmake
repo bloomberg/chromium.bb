@@ -133,9 +133,7 @@ set(AOM_DSP_COMMON_INTRIN_DSPR2
 
 set(AOM_DSP_COMMON_INTRIN_MSA
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_horiz_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_avg_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_msa.h"
     "${AOM_ROOT}/aom_dsp/mips/fwd_dct32x32_msa.c"
