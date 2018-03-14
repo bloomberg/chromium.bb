@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_permission_request.h"
@@ -26,6 +27,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/feature_list.h"
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -223,7 +229,13 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
+#if defined(OS_ANDROID)
+  if (vr::VrTabHelper::IsInVr(web_contents_) &&
+      !base::FeatureList::IsEnabled(
+          chrome::android::kVrBrowsingNativeAndroidUi)) {
+#else
   if (vr::VrTabHelper::IsInVr(web_contents_)) {
+#endif
     vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kDownloadPermission);
 
     // Permission request UI cannot currently be rendered binocularly in VR
