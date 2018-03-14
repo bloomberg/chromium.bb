@@ -602,6 +602,11 @@ INTRA_PRED_TEST(SSE2_3, TX_16X32, aom_dc_predictor_16x32_sse2,
                 aom_dc_top_predictor_16x32_sse2,
                 aom_dc_128_predictor_16x32_sse2, aom_v_predictor_16x32_sse2,
                 aom_h_predictor_16x32_sse2, NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(SSE2_4, TX_16X64, aom_dc_predictor_16x64_sse2,
+                aom_dc_left_predictor_16x64_sse2,
+                aom_dc_top_predictor_16x64_sse2,
+                aom_dc_128_predictor_16x64_sse2, aom_v_predictor_16x64_sse2,
+                aom_h_predictor_16x64_sse2, NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
