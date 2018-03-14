@@ -593,6 +593,7 @@ typedef struct AV1_COMP {
   int dv_cost[2][MV_VALS];
   // TODO(huisu@google.com): we can update dv_joint_cost per SB.
   int dv_joint_cost[MV_JOINTS];
+  int has_lossless_segment;
 } AV1_COMP;
 
 void av1_initialize_enc(void);
