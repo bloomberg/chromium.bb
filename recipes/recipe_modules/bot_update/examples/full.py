@@ -44,8 +44,6 @@ def RunSteps(api):
   with_branch_heads = api.properties.get('with_branch_heads', False)
   with_tags = api.properties.get('with_tags', False)
   refs = api.properties.get('refs', [])
-  oauth2 = api.properties.get('oauth2', False)
-  oauth2_json = api.properties.get('oauth2_json', False)
   root_solution_revision = api.properties.get('root_solution_revision')
   suffix = api.properties.get('suffix')
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
@@ -75,8 +73,7 @@ def RunSteps(api):
         patch=patch,
         with_branch_heads=with_branch_heads,
         with_tags=with_tags,
-        refs=refs, patch_oauth2=oauth2,
-        oauth2_json=oauth2_json,
+        refs=refs,
         clobber=clobber,
         root_solution_revision=root_solution_revision,
         suffix=suffix,
@@ -134,22 +131,6 @@ def GenTests(api):
   yield api.test('trychange') + api.properties(
       refs=['+refs/change/1/2/333'],
   )
-  yield api.test('trychange_oauth2_buildbot') + api.properties(
-      path_config='buildbot',
-      oauth2=True,
-  )
-  yield api.test('trychange_oauth2_json') + api.properties(
-      mastername='tryserver.chromium.linux',
-      buildername='linux_rel',
-      slavename='totallyaslave-c4',
-      oauth2_json=True,
-  )
-  yield api.test('trychange_oauth2_json_win') + api.properties(
-      mastername='tryserver.chromium.win',
-      buildername='win_rel',
-      slavename='totallyaslave-c4',
-      oauth2_json=True,
-  ) + api.platform('win', 64)
   yield api.test('tryjob_fail') + api.properties(
       issue=12345,
       patchset=654321,

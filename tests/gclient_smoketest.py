@@ -782,7 +782,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
@@ -958,7 +958,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
@@ -1247,7 +1247,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'deps = {',
         '  # src',

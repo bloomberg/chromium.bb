@@ -30,8 +30,6 @@ PROPERTIES = {
   'event.patchSet.ref': Property(default=None, param_name='gerrit_ref'),
 
   # Rietveld-only (?) fields.
-  'issue': Property(default=None),
-  'patchset': Property(default=None),
   'repository': Property(default=None),
 
   # Common fields for both systems.

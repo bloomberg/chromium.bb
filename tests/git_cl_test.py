@@ -388,7 +388,7 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
 
   def test_git_number_ever_moooooooore_lineage(self):
-    self.maxDiff = 10000
+    self.maxDiff = 10000  # pylint: disable=attribute-defined-outside-init
     actual = self._test_git_number(
         'CQ commit on fresh new branch + numbering.\n'
         '\n'
@@ -618,7 +618,7 @@ class GitCookiesCheckerTest(TestCase):
       expected = f.read()
     def by_line(text):
       return [l.rstrip() for l in text.rstrip().splitlines()]
-    self.maxDiff = 10000
+    self.maxDiff = 10000  # pylint: disable=attribute-defined-outside-init
     self.assertEqual(by_line(sys.stdout.getvalue().strip()), by_line(expected))
 
 

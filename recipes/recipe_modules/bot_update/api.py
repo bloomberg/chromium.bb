@@ -10,12 +10,12 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, issue, patch_issue, patchset, patch_set,
+  def __init__(self, patch_issue, patch_set,
                repository, patch_repository_url, gerrit_ref, patch_ref,
                patch_gerrit_url, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):
-    self._issue = issue or patch_issue
-    self._patchset = patchset or patch_set
+    self._issue = patch_issue
+    self._patchset = patch_set
     self._repository = repository or patch_repository_url
     self._gerrit_ref = gerrit_ref or patch_ref
     self._gerrit = patch_gerrit_url
@@ -68,7 +68,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch=True, update_presentation=True,
                       patch_root=None, no_shallow=False,
                       with_branch_heads=False, with_tags=False, refs=None,
-                      patch_oauth2=False, oauth2_json=False,
+                      patch_oauth2=None, oauth2_json=None,
                       use_site_config_creds=None, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
@@ -79,10 +79,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     Args:
       gclient_config: The gclient configuration to use when running bot_update.
         If omitted, the current gclient configuration is used.
-      issue: The rietveld issue number to use. If omitted, will infer from
-        the 'issue' property.
-      patchset: The rietveld issue patchset to use. If omitted, will infer from
-        the 'patchset' property.
       disable_syntax_validation: (legacy) Disables syntax validation for DEPS.
         Needed as migration paths for recipes dealing with older revisions,
         such as bisect.
@@ -91,6 +87,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
     """
     assert use_site_config_creds is None, "use_site_config_creds is deprecated"
     assert rietveld is None, "rietveld is deprecated"
+    assert issue is None, "issue is deprecated"
+    assert patchset is None, "patchset is deprecated"
+    assert patch_oauth2 is None, "patch_oauth2 is deprecated"
+    assert oauth2_json is None, "oauth2_json is deprecated"
 
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -99,8 +99,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert cfg is not None, (
         'missing gclient_config or forgot api.gclient.set_config(...) before?')
 
-    # Only one of these should exist.
-    assert not (oauth2_json and patch_oauth2)
 
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
@@ -110,42 +108,19 @@ class BotUpdateApi(recipe_api.RecipeApi):
           self.m.properties.get('patch_project'), cfg, self._repository)
 
     if patch:
-      issue = issue or self._issue
       patchset = patchset or self._patchset
       gerrit_repo = self._repository
       gerrit_ref = self._gerrit_ref
     else:
       # The trybot recipe sometimes wants to de-apply the patch. In which case
       # we pretend the issue/patchset never existed.
-      issue = patchset = None
       gerrit_repo = gerrit_ref = None
-
-    # Issue and patchset must come together.
-    if issue:
-      assert patchset
-    if patchset:
-      assert issue
 
     # The gerrit_ref and gerrit_repo must be together or not at all.  If one is
     # missing, clear both of them.
     if not gerrit_ref or not gerrit_repo:
       gerrit_repo = gerrit_ref = None
     assert (gerrit_ref != None) == (gerrit_repo != None)
-    if gerrit_ref:
-      # Gerrit patches have historically not specified issue and patchset.
-      # resourece/bot_update has as a result implicit assumption that set issue
-      # implies Rietveld patch.
-      # TODO(tandrii): fix this madness.
-      issue = patchset = None
-
-    # Point to the oauth2 auth files if specified.
-    # These paths are where the bots put their credential files.
-    oauth2_json_file = None
-    if oauth2_json:
-      if self.m.platform.is_win:
-        oauth2_json_file = 'C:\\creds\\refresh_tokens\\internal-try'
-      else:
-        oauth2_json_file = '/creds/refresh_tokens/internal-try'
 
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
@@ -164,12 +139,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--git-cache-dir', cfg.cache_dir],
         ['--cleanup-dir', self.m.path['cleanup'].join('bot_update')],
 
-        # How to find the patch, if any (issue/patchset).
-        ['--issue', issue],
-        ['--patchset', patchset],
+        # How to find the patch, if any
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],
-        ['--apply_issue_oauth2_file', oauth2_json_file],
 
         # Hookups to JSON output back into recipes.
         ['--output_json', self.m.json.output()],
