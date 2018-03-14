@@ -76,7 +76,7 @@ void FormFieldDataAndroid::GetValue() {
   field_ptr_->is_autofilled = true;
 }
 
-void FormFieldDataAndroid::OnTextFieldDidChange(const base::string16& value) {
+void FormFieldDataAndroid::OnFormFieldDidChange(const base::string16& value) {
   field_ptr_->value = value;
   field_ptr_->is_autofilled = false;
   JNIEnv* env = AttachCurrentThread();

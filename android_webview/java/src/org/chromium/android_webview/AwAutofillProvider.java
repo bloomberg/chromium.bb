@@ -270,14 +270,14 @@ public class AwAutofillProvider extends AutofillProvider {
     }
 
     @Override
-    public void onTextFieldDidChange(int index, float x, float y, float width, float height) {
+    public void onFormFieldDidChange(int index, float x, float y, float width, float height) {
         // Check index inside short value?
         if (mRequest == null) return;
 
         short sIndex = (short) index;
         FocusField focusField = mRequest.getFocusField();
         if (focusField == null || sIndex != focusField.fieldIndex) {
-            onFocusChanged(true, index, x, y, width, height);
+            onFocusChangedImpl(true, index, x, y, width, height, true /*causedByValueChange*/);
         } else {
             // Currently there is no api to notify both value and position
             // change, before the API is availabe, we still need to call
@@ -333,6 +333,12 @@ public class AwAutofillProvider extends AutofillProvider {
     @Override
     public void onFocusChanged(
             boolean focusOnForm, int focusField, float x, float y, float width, float height) {
+        onFocusChangedImpl(
+                focusOnForm, focusField, x, y, width, height, false /*causedByValueChange*/);
+    }
+
+    private void onFocusChangedImpl(boolean focusOnForm, int focusField, float x, float y,
+            float width, float height, boolean causedByValueChange) {
         // Check focusField inside short value?
         // FocusNoLongerOnForm is called after form submitted.
         if (mRequest == null) return;
@@ -353,7 +359,7 @@ public class AwAutofillProvider extends AutofillProvider {
                     mContainerView, mRequest.getVirtualId((short) focusField), absBound);
             // The focus field value might not sync with platform's
             // AutofillManager, just notify it value changed.
-            notifyVirtualValueChanged(focusField);
+            if (!causedByValueChange) notifyVirtualValueChanged(focusField);
             mRequest.setFocusField(new FocusField((short) focusField, absBound));
         } else {
             if (prev == null) return;
@@ -421,5 +427,12 @@ public class AwAutofillProvider extends AutofillProvider {
         matrix.mapRect(bounds);
         return new Rect(
                 (int) bounds.left, (int) bounds.top, (int) bounds.right, (int) bounds.bottom);
+    }
+
+    @VisibleForTesting
+    public void fireSelectControlDidChangeForTesting(
+            int selectControlIndex, String selectControlId, String[] options, int selectedOption) {
+        nativeFireSelectControlDidChangeForTesting(mNativeAutofillProvider, selectControlIndex,
+                selectControlId, options, selectedOption);
     }
 }

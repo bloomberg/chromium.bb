@@ -3619,6 +3619,15 @@ public class AwContents implements SmartClipProvider {
     }
 
     //--------------------------------------------------------------------------------------------
+    //  Methods which is only for testing
+    //--------------------------------------------------------------------------------------------
+
+    @VisibleForTesting
+    public AwAutofillProvider getAwAutofillProviderForTesting() {
+        return (AwAutofillProvider) mAutofillProvider;
+    }
+
+    //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
 

@@ -64,10 +64,10 @@ ScopedJavaLocalRef<jobject> FormDataAndroid::GetNextFormFieldData(
   return fields_[index_++]->GetJavaPeer();
 }
 
-void FormDataAndroid::OnTextFieldDidChange(size_t index,
+void FormDataAndroid::OnFormFieldDidChange(size_t index,
                                            const base::string16& value) {
   form_.fields[index].value = value;
-  fields_[index]->OnTextFieldDidChange(value);
+  fields_[index]->OnFormFieldDidChange(value);
 }
 
 bool FormDataAndroid::GetFieldIndex(const FormFieldData& field, size_t* index) {
