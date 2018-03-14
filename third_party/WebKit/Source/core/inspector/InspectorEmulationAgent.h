@@ -87,11 +87,11 @@ class CORE_EXPORT InspectorEmulationAgent final
     WTF::Optional<double> virtual_time_budget_ms;
     WTF::Optional<int> max_virtual_time_task_starvation_count;
   };
-  WTF::TimeTicks ApplyVirtualTimePolicy(
-      const PendingVirtualTimePolicy& new_policy);
+  void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
   Member<WebLocalFrameImpl> web_local_frame_;
   bool virtual_time_setup_ = false;
+  WTF::TimeTicks virtual_time_base_ticks_;
 
   // Supports a virtual time policy change scheduled to occur after any
   // navigation has started.

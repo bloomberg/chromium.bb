@@ -215,24 +215,28 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   }
 
   if (wait_for_navigation.fromMaybe(false)) {
-    *virtual_time_base_ms = 0;
     pending_virtual_time_policy_ = std::move(new_policy);
-    return Response::OK();
+  } else {
+    ApplyVirtualTimePolicy(new_policy);
   }
 
-  WTF::TimeDelta virtual_time_base_delta =
-      ApplyVirtualTimePolicy(new_policy) - WTF::TimeTicks::UnixEpoch();
-  *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
+  if (virtual_time_base_ticks_.is_null()) {
+    *virtual_time_base_ms = 0;
+  } else {
+    WTF::TimeDelta virtual_time_base_delta =
+        virtual_time_base_ticks_ - WTF::TimeTicks::UnixEpoch();
+    *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
+  }
 
   return Response::OK();
 }
 
-WTF::TimeTicks InspectorEmulationAgent::ApplyVirtualTimePolicy(
+void InspectorEmulationAgent::ApplyVirtualTimePolicy(
     const PendingVirtualTimePolicy& new_policy) {
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       new_policy.policy);
-  WTF::TimeTicks virtual_time_base_ticks(
-      web_local_frame_->View()->Scheduler()->EnableVirtualTime());
+  virtual_time_base_ticks_ =
+      web_local_frame_->View()->Scheduler()->EnableVirtualTime();
   if (new_policy.virtual_time_budget_ms) {
     TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget", this,
                              "budget", *new_policy.virtual_time_budget_ms);
@@ -247,7 +251,6 @@ WTF::TimeTicks InspectorEmulationAgent::ApplyVirtualTimePolicy(
     web_local_frame_->View()->Scheduler()->SetMaxVirtualTimeTaskStarvationCount(
         *new_policy.max_virtual_time_task_starvation_count);
   }
-  return virtual_time_base_ticks;
 }
 
 void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*, FrameLoadType) {
