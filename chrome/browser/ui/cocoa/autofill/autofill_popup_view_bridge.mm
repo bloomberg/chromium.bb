@@ -7,10 +7,12 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 
 #include "base/logging.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace autofill {
@@ -61,9 +63,16 @@ void AutofillPopupViewBridge::OnSuggestionsChanged() {
   [view_ updateBoundsAndRedrawPopup];
 }
 
-AutofillPopupView* AutofillPopupView::Create(
+AutofillPopupView* AutofillPopupView::CreateCocoa(
     AutofillPopupController* controller) {
   return new AutofillPopupViewBridge(controller);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+AutofillPopupView* AutofillPopupView::Create(
+    AutofillPopupController* controller) {
+  return CreateCocoa(controller);
+}
+#endif
 
 }  // namespace autofill
