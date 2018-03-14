@@ -623,8 +623,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     // Add the origin text.
     frame_header_origin_text_ =
         std::make_unique<ash::FrameHeaderOriginText>(
-            base::UTF8ToUTF16(
-                browser->hosted_app_controller()->GetUrlOrigin().host()),
+            browser->hosted_app_controller()->GetFormattedUrlOrigin(),
             active_color, inactive_color,
             default_frame_header->GetActiveFrameColor(),
             default_frame_header->GetInactiveFrameColor())
