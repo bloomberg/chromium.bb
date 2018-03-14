@@ -41,6 +41,11 @@ class AutofillProvider {
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) = 0;
 
+  virtual void OnSelectControlDidChange(AutofillHandlerProxy* handler,
+                                        const FormData& form,
+                                        const FormFieldData& field,
+                                        const gfx::RectF& bounding_box) = 0;
+
   virtual bool OnFormSubmitted(AutofillHandlerProxy* handler,
                                const FormData& form,
                                bool known_success,

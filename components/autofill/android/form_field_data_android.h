@@ -20,7 +20,7 @@ class FormFieldDataAndroid {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaPeer();
   void GetValue();
-  void OnTextFieldDidChange(const base::string16& value);
+  void OnFormFieldDidChange(const base::string16& value);
 
  private:
   // Not owned.

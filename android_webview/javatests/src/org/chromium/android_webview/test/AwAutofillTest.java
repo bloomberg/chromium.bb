@@ -1076,6 +1076,79 @@ public class AwAutofillTest {
         }
     }
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSelectControlChangeNotification() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "value='blue' id='blue'>blue</option></select>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            clearChangedValues();
+            mAwContents.getAwAutofillProviderForTesting().fireSelectControlDidChangeForTesting(
+                    1, "color", new String[] {"red", "blue"}, 1);
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {
+                            AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
+            assertEquals(1, values.size());
+            assertTrue(values.get(0).second.isList());
+            assertEquals(1, values.get(0).second.getListValue());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSelectControlChangeStartAutofillSession() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "value='blue' id='blue'>blue</option></select>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            // Change select control first shall start autofill session.
+            mAwContents.getAwAutofillProviderForTesting().fireSelectControlDidChangeForTesting(
+                    1, "color", new String[] {"red", "blue"}, 1);
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
+            assertEquals(1, values.size());
+            assertTrue(values.get(0).second.isList());
+            assertEquals(1, values.get(0).second.getListValue());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     private void loadUrlSync(String url) throws Exception {
         mRule.loadUrlSync(
                 mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(), url);

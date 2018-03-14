@@ -28,6 +28,10 @@ class TestAutofillProvider : public AutofillProvider {
                             const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box) override;
+  void OnSelectControlDidChange(AutofillHandlerProxy* handler,
+                                const FormData& form,
+                                const FormFieldData& field,
+                                const gfx::RectF& bounding_box) override;
   bool OnFormSubmitted(AutofillHandlerProxy* handler,
                        const FormData& form,
                        bool known_success,

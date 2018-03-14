@@ -26,6 +26,12 @@ void TestAutofillProvider::OnTextFieldDidScroll(
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {}
 
+void TestAutofillProvider::OnSelectControlDidChange(
+    AutofillHandlerProxy* handler,
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {}
+
 bool TestAutofillProvider::OnFormSubmitted(AutofillHandlerProxy* handler,
                                            const FormData& form,
                                            bool known_success,
