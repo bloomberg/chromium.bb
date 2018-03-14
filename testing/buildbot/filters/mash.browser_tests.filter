@@ -276,3 +276,11 @@
 
 # Flaky segfaults: https://crbug.com/818147
 -ExtensionApiTest.BookmarkManager
+
+# Depends on chrome/browser/media/webrtc; CHECKs in ash::Shell::Get()
+# https://crbug.com/723880
+-MediaRouterIntegrationBrowserTest.*
+-MediaRouterIntegrationOneUABrowserTest.*
+-MediaRouterIntegrationOneUANoReceiverBrowserTest.*
+
+
