@@ -15,11 +15,11 @@ namespace blink {
 class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
  public:
   enum MarkingMode {
-    // This is a default visitor. This is used for GCType=GCWithSweep
-    // and GCType=GCWithoutSweep.
+    // This is a default visitor. This is used for MarkingType=kAtomicMarking
+    // and MarkingType=kIncrementalMarking.
     kGlobalMarking,
     // This visitor just marks objects and ignores weak processing.
-    // This is used for GCType=TakeSnapshot.
+    // This is used for MarkingType=kTakeSnapshot.
     kSnapshotMarking,
     // Perform global marking along with preparing for additional sweep
     // compaction of heap arenas afterwards. Compared to the GlobalMarking

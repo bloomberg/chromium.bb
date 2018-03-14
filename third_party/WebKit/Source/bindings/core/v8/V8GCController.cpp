@@ -261,9 +261,9 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       // next event loop.  Regarding (2), it would be OK in practice to trigger
       // only one GC per gcEpilogue, because GCController.collectAll() forces
       // multiple V8's GC.
-      current_thread_state->CollectGarbage(BlinkGC::kHeapPointersOnStack,
-                                           BlinkGC::kGCWithSweep,
-                                           BlinkGC::kForcedGC);
+      current_thread_state->CollectGarbage(
+          BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
+          BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
 
       // Forces a precise GC at the end of the current event loop.
       CHECK(!current_thread_state->IsInGC());
@@ -275,9 +275,9 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
     if ((flags & v8::kGCCallbackFlagCollectAllAvailableGarbage) ||
         (flags & v8::kGCCallbackFlagCollectAllExternalMemory)) {
       // This single GC is not enough. See the above comment.
-      current_thread_state->CollectGarbage(BlinkGC::kHeapPointersOnStack,
-                                           BlinkGC::kGCWithSweep,
-                                           BlinkGC::kForcedGC);
+      current_thread_state->CollectGarbage(
+          BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
+          BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
 
       // The conservative GC might have left floating garbage. Schedule
       // precise GC to ensure that we collect all available garbage.

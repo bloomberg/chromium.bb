@@ -288,7 +288,7 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
 
 bool HeapCompact::ShouldCompact(ThreadHeap* heap,
                                 BlinkGC::StackState stack_state,
-                                BlinkGC::GCType gc_type,
+                                BlinkGC::MarkingType marking_type,
                                 BlinkGC::GCReason reason) {
 #if !ENABLE_HEAP_COMPACTION
   return false;

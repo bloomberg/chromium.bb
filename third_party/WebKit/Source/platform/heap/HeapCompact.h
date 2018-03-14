@@ -54,7 +54,7 @@ class PLATFORM_EXPORT HeapCompact final {
   //
   bool ShouldCompact(ThreadHeap*,
                      BlinkGC::StackState,
-                     BlinkGC::GCType,
+                     BlinkGC::MarkingType,
                      BlinkGC::GCReason);
 
   // Compaction should be performed as part of the ongoing GC, initialize
