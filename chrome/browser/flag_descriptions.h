@@ -847,6 +847,9 @@ extern const char kDisableShowSavedCopy[];
 extern const char kSilentDebuggerExtensionApiName[];
 extern const char kSilentDebuggerExtensionApiDescription[];
 
+extern const char kSignedHTTPExchangeName[];
+extern const char kSignedHTTPExchangeDescription[];
+
 extern const char kSimpleCacheBackendName[];
 extern const char kSimpleCacheBackendDescription[];
 
