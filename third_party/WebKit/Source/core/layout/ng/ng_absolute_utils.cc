@@ -263,10 +263,10 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   // Rules 4 through 6, 1 out of 3 are unknown.
   if (!left) {
     left =
-        container_size.width - *right - *width - *margin_left - *margin_right;
+        container_size.width - *width - *right - *margin_left - *margin_right;
   } else if (!right) {
     right =
-        container_size.width - *left - *width - *margin_left - *margin_right;
+        container_size.width - *width - *left - *margin_left - *margin_right;
   } else if (!width) {
     width =
         container_size.width - *left - *right - *margin_left - *margin_right;
@@ -431,18 +431,22 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
 
   // Rules 4 through 6, 1 out of 3 are unknown.
   if (!top) {
-    top = container_size.height - *bottom - *height - *margin_top -
+    top = container_size.height - *height - *bottom - *margin_top -
           *margin_bottom;
   } else if (!bottom) {
     bottom =
-        container_size.height - *top - *height - *margin_top - *margin_bottom;
+        container_size.height - *height - *top - *margin_top - *margin_bottom;
   } else if (!height) {
     height =
         container_size.height - *top - *bottom - *margin_top - *margin_bottom;
   }
-  DCHECK_EQ(container_size.height,
-            *top + *bottom + *margin_top + *margin_bottom + *height);
-
+  // The DCHECK is useful, but only holds true when not saturated.
+  if (!(top->MightBeSaturated() || bottom->MightBeSaturated() ||
+        height->MightBeSaturated() || margin_top->MightBeSaturated() ||
+        margin_bottom->MightBeSaturated())) {
+    DCHECK_EQ(container_size.height,
+              *top + *bottom + *margin_top + *margin_bottom + *height);
+  }
   // If calculated height is outside of min/max constraints,
   // rerun the algorithm with constrained width.
   Optional<LayoutUnit> min_height;
