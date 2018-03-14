@@ -13,49 +13,27 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.io.File;
 
-import javax.annotation.Nullable;
-
 /**
  * Helper class to handle communication between download location dialog and native.
  */
 public class DownloadLocationDialogBridge implements ModalDialogView.Controller {
-    // TODO(jming): Remove this when switching to a dropdown instead of going to preferences.
-    private static DownloadLocationDialogBridge sInstance;
-
     private long mNativeDownloadLocationDialogBridge;
     private DownloadLocationDialog mLocationDialog;
     private ModalDialogManager mModalDialogManager;
-
-    @Nullable
-    public static DownloadLocationDialogBridge getInstance() {
-        return sInstance;
-    }
 
     private DownloadLocationDialogBridge(long nativeDownloadLocationDialogBridge) {
         mNativeDownloadLocationDialogBridge = nativeDownloadLocationDialogBridge;
     }
 
-    /**
-     * Update the file location that is displayed on the alert dialog.
-     *
-     * @param newLocation Where the user wants to download the file.
-     */
-    public void updateFileLocation(File newLocation) {
-        if (mLocationDialog == null) return;
-        mLocationDialog.setFileLocation(newLocation);
-    }
-
     @CalledByNative
     public static DownloadLocationDialogBridge create(long nativeDownloadLocationDialogBridge) {
-        sInstance = new DownloadLocationDialogBridge(nativeDownloadLocationDialogBridge);
-        return sInstance;
+        return new DownloadLocationDialogBridge(nativeDownloadLocationDialogBridge);
     }
 
     @CalledByNative
     private void destroy() {
         mNativeDownloadLocationDialogBridge = 0;
         if (mModalDialogManager != null) mModalDialogManager.dismissDialog(mLocationDialog);
-        sInstance = null;
     }
 
     @CalledByNative

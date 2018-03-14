@@ -1189,9 +1189,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Downloads preferences -->
-      <message name="IDS_DOWNLOAD_LOCATION_TITLE" desc="Title for 'Downloads location' preference that changes the default device directory that stores downloaded items.">
-        Location
-      </message>
       <message name="IDS_DOWNLOADS_LOCATION_SELECTOR_TITLE" desc="Title of the preference that allows the user to select which of the folders they would like to make the default location to save their downloads.">
         Download location
       </message>

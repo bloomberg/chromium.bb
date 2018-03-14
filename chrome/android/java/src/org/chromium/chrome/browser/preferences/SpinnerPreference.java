@@ -44,7 +44,8 @@ public class SpinnerPreference extends Preference {
 
     /**
      * Provides a list of arbitrary objects to be shown in the spinner. Visually, each option will
-     * be presented as its toString() text.
+     * be presented as its toString() text. Alternative to {@link #setAdapter(ArrayAdapter, int)}.
+     *
      * @param options The options to be shown in the spinner.
      * @param selectedIndex Index of the initially selected option.
      */
@@ -56,6 +57,20 @@ public class SpinnerPreference extends Preference {
             itemLayout = android.R.layout.simple_spinner_item;
         }
         mAdapter = new ArrayAdapter<>(getContext(), itemLayout, options);
+        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSelectedIndex = selectedIndex;
+    }
+
+    /**
+     * Provides an adapter containing objects to be shown in the spinner. Alternatively, a list of
+     * objects to be shown may be provided in {@link #setOptions(Object[], int)}. It is expected
+     * that only one of these methods will be called.
+     *
+     * @param arrayAdapter  The array adapter to use.
+     * @param selectedIndex The index of the selected item.
+     */
+    public void setAdapter(ArrayAdapter<Object> arrayAdapter, int selectedIndex) {
+        mAdapter = arrayAdapter;
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSelectedIndex = selectedIndex;
     }
