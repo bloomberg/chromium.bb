@@ -16,6 +16,7 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkletGlobalScope.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"

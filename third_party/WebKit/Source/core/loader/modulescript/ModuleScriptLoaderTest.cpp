@@ -11,7 +11,7 @@
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
-#include "core/loader/modulescript/WorkletModuleScriptFetcher.h"
+#include "core/loader/modulescript/WorkerOrWorkletModuleScriptFetcher.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/script/Modulator.h"
 #include "core/script/ModuleScript.h"
@@ -20,6 +20,7 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/MainThreadWorkletReportingProxy.h"
+#include "core/workers/WorkletModuleResponsesMap.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/testing/FetchTestingPlatformSupport.h"
@@ -109,8 +110,8 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     if (execution_context->IsDocument())
       return new DocumentModuleScriptFetcher(Fetcher());
     auto* global_scope = ToWorkletGlobalScope(execution_context);
-    return new WorkletModuleScriptFetcher(
-        global_scope->ModuleResponsesMapProxy());
+    return new WorkerOrWorkletModuleScriptFetcher(
+        global_scope->ModuleFetchCoordinatorProxy());
   }
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -186,8 +187,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),
       GetDocument().GetSecurityOrigin());
-  global_scope_->SetModuleResponsesMapProxyForTesting(
-      WorkletModuleResponsesMapProxy::Create(
+  global_scope_->SetModuleFetchCoordinatorProxyForTesting(
+      WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
           new WorkletModuleResponsesMap(modulator_->Fetcher()),
           GetDocument().GetTaskRunner(TaskType::kInternalTest),
           global_scope_->GetTaskRunner(TaskType::kInternalTest)));
@@ -350,8 +351,8 @@ TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";
 
-  // Advance until WorkletModuleScriptFetcher finishes looking up a cache in
-  // WorkletModuleResponsesMap and issues a fetch request so that
+  // Advance until WorkerOrWorkletModuleScriptFetcher finishes looking up a
+  // cache in WorkletModuleResponsesMap and issues a fetch request so that
   // ServeAsynchronousRequests() can serve for the pending request.
   platform_->RunUntilIdle();
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
