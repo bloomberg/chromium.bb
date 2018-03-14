@@ -120,19 +120,15 @@
 # Focus doesn't move. Possible EventGenerator problem. http://crbug.com/814011
 -LoginShelfViewTest.TabGoesFromShelfToStatusAreaAndBackToShelf
 
-# TODO: Triage
+# Needs to support one InputMethod per top-level widget. May also have issues
+# with multiple displays. https://crbug.com/821551
 -MagnificationControllerTest.CenterTextCaretInViewport
 -MagnificationControllerTest.CenterTextCaretNotInsideViewport
 -MagnificationControllerTest.FollowTextInputFieldFocus
 -MagnificationControllerTest.FollowTextInputFieldKeyPress
+-MagnificationControllerTest.MoveToSecondDisplayWithTouch
 -MagnificationControllerTest.PanWindowToLeft
 -MagnificationControllerTest.PanWindowToRight
-
-# Mash has one InputMethodBase per root window, whereas classic ash has a
-# single shared instance. This causes a shutdown use-after-free because the
-# magnifier controller adds and removes IME observers assuming there is a single
-# IME instance. https://crbug.com/820464
--MagnificationControllerTest.MoveToSecondDisplayWithTouch
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -MirrorWindowControllerTest.MirrorCursorBasic
