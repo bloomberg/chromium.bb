@@ -144,7 +144,7 @@ zucchini::status::Code MainMatch(MainParams params) {
   }
   File new_file(params.file_paths[1], File::FLAG_OPEN | File::FLAG_READ);
   zucchini::MappedFileReader new_image(std::move(new_file));
-  if (old_image.HasError()) {
+  if (new_image.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[1].value() << ": "
                << new_image.error();
     return zucchini::status::kStatusFileReadError;
