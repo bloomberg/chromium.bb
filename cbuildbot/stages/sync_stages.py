@@ -1029,9 +1029,14 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # Note that this function is only called after the repo is already
     # sync'd, so AcquirePoolFromManifest does not need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
-        manifest, self._run.config.overlays, self.repo,
-        self._run.buildnumber, self._run.GetBuilderName(),
-        self._run.config.master, self._run.options.debug,
+        manifest=manifest,
+        overlays=self._run.config.overlays,
+        repo=self.repo,
+        build_number=self._run.buildnumber,
+        builder_name=self._run.GetBuilderName(),
+        buildbucket_id=self._run.options.buildbucket_id,
+        is_master=self._run.config.master,
+        dryrun=self._run.options.debug,
         builder_run=self._run)
 
   def _GetLKGMVersionFromManifest(self, manifest):
@@ -1063,9 +1068,12 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         query = (self._run.options.cq_gerrit_override, None)
 
       self.pool = validation_pool.ValidationPool.AcquirePool(
-          self._run.config.overlays, self.repo,
-          self._run.buildnumber, self._run.GetBuilderName(),
-          query,
+          overlays=self._run.config.overlays,
+          repo=self.repo,
+          build_number=self._run.buildnumber,
+          builder_name=self._run.GetBuilderName(),
+          buildbucket_id=self._run.options.buildbucket_id,
+          query=query,
           dryrun=self._run.options.debug,
           check_tree_open=(not self._run.options.debug or
                            self._run.options.mock_tree_status),
@@ -1164,9 +1172,13 @@ class PreCQSyncStage(SyncStage):
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
-        self._run.config.overlays, self._build_root,
-        self._run.buildnumber, self._run.config.name,
-        dryrun=self._run.options.debug_forced, candidates=self.patches,
+        overlays=self._run.config.overlays,
+        build_root=self._build_root,
+        build_number=self._run.buildnumber,
+        builder_name=self._run.config.name,
+        buildbucket_id=self._run.options.buildbucket_id,
+        dryrun=self._run.options.debug_forced,
+        candidates=self.patches,
         builder_run=self._run)
     self.pool.ApplyPoolIntoRepo()
 
@@ -2107,10 +2119,12 @@ class PreCQLauncherStage(SyncStage):
 
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
-        self._run.config.overlays, self.repo,
-        self._run.buildnumber,
-        self._run.GetBuilderName(),
-        query,
+        overlays=self._run.config.overlays,
+        repo=self.repo,
+        build_number=self._run.buildnumber,
+        builder_name=self._run.GetBuilderName(),
+        buildbucket_id=self._run.options.buildbucket_id,
+        query=query,
         dryrun=self._run.options.debug,
         check_tree_open=False, change_filter=self.ProcessChanges,
         builder_run=self._run)

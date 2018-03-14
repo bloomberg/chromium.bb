@@ -65,8 +65,8 @@ def GetTestJson(change_id=None):
   return data
 
 def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
-             builder_name='foon', is_master=True, dryrun=True,
-             fake_db=None, **kwargs):
+             builder_name='foon', buildbucket_id='bb_id', is_master=True,
+             dryrun=True, fake_db=None, **kwargs):
   """Helper for creating ValidationPool objects for tests."""
   kwargs.setdefault('candidates', [])
   build_root = kwargs.pop('build_root', '/fake_root')
@@ -75,13 +75,14 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
   if fake_db:
     build_id = fake_db.InsertBuild(
         builder_name, waterfall.WATERFALL_INTERNAL, build_number,
-        'build-config', 'bot hostname')
+        'build-config', 'bot hostname', buildbucket_id=buildbucket_id)
     builder_run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
 
   pool = validation_pool.ValidationPool(
-      overlays, build_root, build_number, builder_name, is_master,
-      dryrun, builder_run=builder_run, **kwargs)
+      overlays, build_root, build_number, builder_name,
+      is_master, dryrun, buildbucket_id=buildbucket_id,
+      builder_run=builder_run, **kwargs)
   return pool
 
 
@@ -220,6 +221,7 @@ class TestSubmitChange(_Base):
         build_root=None,
         build_number=0,
         builder_name='',
+        buildbucket_id=None,
         is_master=False,
         dryrun=False)
     pool._run = FakeBuilderRun(self.fake_db)
@@ -687,8 +689,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
-        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True, builder_run=builder_run)
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
+        dryrun=False, check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
     tree_status_mock.assert_called()
@@ -700,8 +702,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
-        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True, builder_run=builder_run)
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
+        dryrun=False, check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
     self.assertEqual(acquire_changes_mock.call_count, 2)
@@ -713,8 +715,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
-        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True, builder_run=builder_run)
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', 'bb_id', query,
+        dryrun=False, check_tree_open=True, builder_run=builder_run)
 
     self.assertFalse(pool.tree_was_open)
 
@@ -1216,6 +1218,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
         constants.PUBLIC_OVERLAYS,
         '/fake/pathway', 1,
         'testing', True, True,
+        buildbucket_id='bb_id',
         candidates=changes, non_os_changes=non_os,
         conflicting_changes=conflicting)
     return pickle.dumps([pool, changes, non_os, conflicting])

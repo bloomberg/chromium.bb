@@ -200,7 +200,8 @@ class ValidationPool(object):
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, candidates=None, non_os_changes=None,
                conflicting_changes=None, pre_cq_trybot=False,
-               tree_was_open=True, applied=None, builder_run=None):
+               tree_was_open=True, applied=None, buildbucket_id=None,
+               builder_run=None):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -223,6 +224,8 @@ class ValidationPool(object):
         launcher is NOT considered a Pre-CQ trybot.)
       tree_was_open: Whether the tree was open when the pool was created.
       applied: List of CLs that have been applied to the current repo.
+      buildbucket_id: Buildbucket id of the current build as a string .
+                      None if not buildbucket scheduled.
       builder_run: BuilderRun instance used to fetch cidb handle and metadata
         instance. Please note due to the pickling logic, this MUST be the last
         kwarg listed.
@@ -242,6 +245,10 @@ class ValidationPool(object):
 
     if not isinstance(builder_name, basestring):
       raise ValueError("Invalid builder_name: %r" % (builder_name,))
+
+    if (buildbucket_id is not None and
+        not isinstance(buildbucket_id, basestring)):
+      raise ValueError("Invalid buildbucket_id: %r" % (builder_name,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
@@ -291,6 +298,7 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
+    self._buildbucket_id = buildbucket_id
 
     # Set to False if the tree was not open when we acquired changes.
     self.tree_was_open = tree_was_open
@@ -315,6 +323,9 @@ class ValidationPool(object):
 
   @property
   def build_log(self):
+    if self._buildbucket_id:
+      return tree_status.ConstructLegolandBuildURL(self._buildbucket_id)
+
     if self._run:
       return tree_status.ConstructDashboardURL(
           self._run.GetWaterfall(), self._builder_name, self._build_number)
@@ -349,7 +360,8 @@ class ValidationPool(object):
             self.changes_that_failed_to_apply_earlier,
             self.pre_cq_trybot,
             self.tree_was_open,
-            self.applied))
+            self.applied,
+            self._buildbucket_id))
 
   @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
@@ -420,8 +432,8 @@ class ValidationPool(object):
     return self.candidates or self.non_manifest_changes
 
   @classmethod
-  def AcquirePool(cls, overlays, repo, build_number, builder_name, query,
-                  dryrun=False, check_tree_open=True,
+  def AcquirePool(cls, overlays, repo, build_number, builder_name,
+                  buildbucket_id, query, dryrun=False, check_tree_open=True,
                   change_filter=None, builder_run=None):
     """Acquires the current pool from Gerrit.
 
@@ -434,6 +446,8 @@ class ValidationPool(object):
         against.
       build_number: Corresponding build number for the build.
       builder_name: Builder name on buildbot dashboard.
+      buildbucket_id: Buildbucket id of the current build as a string .
+                      None if not buildbucket scheduled.
       query: constants.CQ_READY_QUERY, PRECQ_READY_QUERY, or a custom
         query description of the form (<query_str>, None).
       dryrun: Don't submit anything to gerrit.
@@ -494,9 +508,17 @@ class ValidationPool(object):
         logging.error('Timeout getting experimental builders from the tree'
                       'status.')
 
-      pool = ValidationPool(overlays, repo.directory, build_number,
-                            builder_name, True, dryrun, builder_run=builder_run,
-                            tree_was_open=tree_was_open, applied=[])
+      pool = ValidationPool(
+          overlays=overlays,
+          build_root=repo.directory,
+          build_number=build_number,
+          builder_name=builder_name,
+          is_master=True,
+          dryrun=dryrun,
+          builder_run=builder_run,
+          tree_was_open=tree_was_open,
+          applied=[],
+          buildbucket_id=buildbucket_id)
 
       if pool.AcquireChanges(gerrit_query, ready_fn, change_filter):
         break
@@ -557,7 +579,7 @@ class ValidationPool(object):
 
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
-                              builder_name, is_master, dryrun,
+                              builder_name, buildbucket_id, is_master, dryrun,
                               builder_run=None):
     """Acquires the current pool from a given manifest.
 
@@ -569,6 +591,8 @@ class ValidationPool(object):
       repo: The repo used to filter projects and to apply patches against.
       build_number: Corresponding build number for the build.
       builder_name: Builder name on buildbot dashboard.
+      buildbucket_id: Buildbucket id of the current build as a string .
+                      None if not buildbucket scheduled.
       is_master: Boolean that indicates whether this is a pool for a master.
         config or not.
       dryrun: Don't submit anything to gerrit.
@@ -578,9 +602,16 @@ class ValidationPool(object):
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
-                          is_master, dryrun, builder_run=builder_run,
-                          applied=[])
+    pool = ValidationPool(
+        overlays=overlays,
+        build_root=repo.directory,
+        build_number=build_number,
+        builder_name=builder_name,
+        is_master=is_master,
+        dryrun=dryrun,
+        buildbucket_id=buildbucket_id,
+        builder_run=builder_run,
+        applied=[])
     pool.AddPendingCommitsIntoPool(manifest)
     return pool
 
