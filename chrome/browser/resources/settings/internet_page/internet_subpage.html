@@ -83,9 +83,9 @@
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <paper-icon-button-light class="icon-add-wifi"
+        <paper-icon-button-light class="icon-add-wifi" id="addButton"
             hidden$="[[!showAddButton_(deviceState, globalPolicy)]]">
-          <button id="addButton" aria-label="$i18n{internetAddWiFi}"
+          <button aria-label="$i18n{internetAddWiFi}"
               on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
           </button>
         </paper-icon-button-light>
