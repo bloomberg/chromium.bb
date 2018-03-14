@@ -630,9 +630,6 @@ Polymer({
       this.showTetherDialog_();
       return;
     }
-    // Clear the error state when 'Connect' is clicked to force a connect
-    // attempt instead of showing the configuration UI.
-    this.networkProperties.ErrorState = '';
     this.fire('network-connect', {networkProperties: this.networkProperties});
   },
 

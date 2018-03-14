@@ -15,7 +15,8 @@
           "OpenVPN": {
               "Port": 1194,
               "Username": "abc fake email def",
-              "Recommended": [ "Username", "Password" ],
+              // "UNKNOWN_FIELD" is removed and "OTP" is added (issue 817617).
+              "Recommended": [ "Username", "Password", "OTP" ],
               "ClientCertType": "Pattern",
               "ClientCertPattern": {
                   "IssuerCAPEMs": [ "-----BEGIN CERTIFICATE-----\nMIIG\n-----END CERTIFICATE-----\n" ],

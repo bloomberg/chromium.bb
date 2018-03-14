@@ -58,7 +58,7 @@ void CopyServiceResult(bool* called,
   *guid_out = guid;
 }
 
-static std::string PrettyJson(const base::DictionaryValue& value) {
+std::string PrettyJson(const base::DictionaryValue& value) {
   std::string pretty;
   base::JSONWriter::WriteWithOptions(
       value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty);
