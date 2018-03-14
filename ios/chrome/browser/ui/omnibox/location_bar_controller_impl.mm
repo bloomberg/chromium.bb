@@ -21,8 +21,8 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_view.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_view.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
@@ -107,7 +107,7 @@ bool IsCurrentPageOffline(web::WebState* webState) {
 @end
 
 LocationBarControllerImpl::LocationBarControllerImpl(
-    LocationBarView* location_bar_view,
+    LocationBarLegacyView* location_bar_view,
     ios::ChromeBrowserState* browser_state,
     id<LocationBarDelegate> delegate,
     id<BrowserCommands> dispatcher)

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_mediator.h"
 
 #include <memory>
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -34,9 +34,9 @@ static const int kNumberOfWebStates = 3;
 class LocationBarMediatorTest : public PlatformTest {
  public:
   LocationBarMediatorTest() {
-    mediator_ = [[LocationBarMediator alloc] init];
-    consumer_ = OCMProtocolMock(@protocol(LocationBarConsumer));
-    consumer_strict_ = OCMProtocolMock(@protocol(LocationBarConsumer));
+    mediator_ = [[LocationBarLegacyMediator alloc] init];
+    consumer_ = OCMProtocolMock(@protocol(LocationBarLegacyConsumer));
+    consumer_strict_ = OCMProtocolMock(@protocol(LocationBarLegacyConsumer));
     SetUpWebStateList();
   }
 
@@ -75,7 +75,7 @@ class LocationBarMediatorTest : public PlatformTest {
 
   void SetUpActiveWebState() { web_state_list_->ActivateWebStateAt(0); }
 
-  LocationBarMediator* mediator_;
+  LocationBarLegacyMediator* mediator_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<WebStateList> web_state_list_;

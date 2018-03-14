@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 
 #include <memory>
 
@@ -51,9 +51,10 @@
 
 namespace {
 
-class LocationBarCoordinatorTest : public PlatformTest {
+class LocationBarLegacyCoordinatorTest : public PlatformTest {
  protected:
-  LocationBarCoordinatorTest() : web_state_list_(&web_state_list_delegate_) {}
+  LocationBarLegacyCoordinatorTest()
+      : web_state_list_(&web_state_list_delegate_) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -69,21 +70,21 @@ class LocationBarCoordinatorTest : public PlatformTest {
 
     delegate_ = [[TestToolbarCoordinatorDelegate alloc] init];
 
-    coordinator_ = [[LocationBarCoordinator alloc] init];
+    coordinator_ = [[LocationBarLegacyCoordinator alloc] init];
     coordinator_.browserState = browser_state_.get();
     coordinator_.webStateList = &web_state_list_;
     coordinator_.delegate = delegate_;
   }
 
   web::TestWebThreadBundle web_thread_bundle_;
-  LocationBarCoordinator* coordinator_;
+  LocationBarLegacyCoordinator* coordinator_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   TestToolbarCoordinatorDelegate* delegate_;
 };
 
-TEST_F(LocationBarCoordinatorTest, Stops) {
+TEST_F(LocationBarLegacyCoordinatorTest, Stops) {
   EXPECT_TRUE(coordinator_.view == nil);
   [coordinator_ start];
   EXPECT_TRUE(coordinator_.view != nil);

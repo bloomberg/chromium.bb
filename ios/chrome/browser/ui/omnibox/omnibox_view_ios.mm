@@ -868,7 +868,9 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
 }
 
 void OmniboxViewIOS::SetLeftImage(int imageId) {
-  left_image_provider_->SetLeftImage(imageId);
+  if (left_image_provider_) {
+    left_image_provider_->SetLeftImage(imageId);
+  }
 }
 
 void OmniboxViewIOS::HideKeyboardAndEndEditing() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_coordinator.h"
 
 #import <CoreLocation/CoreLocation.h>
 
@@ -17,15 +17,15 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_consumer.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_legacy_mediator.h"
+#include "ios/chrome/browser/ui/location_bar/location_bar_legacy_view.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
-#include "ios/chrome/browser/ui/location_bar/location_bar_view.h"
+#include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
+#include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
-#include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
@@ -48,23 +48,22 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 4;
 }  // namespace
 
-@interface LocationBarCoordinator ()<LocationBarConsumer, LocationBarDelegate> {
-  std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
+@interface LocationBarLegacyCoordinator ()<LocationBarLegacyConsumer,
+                                           LocationBarDelegate> {
+  std::unique_ptr<LocationBarControllerImpl> _locationBarController;
 }
 // Object taking care of adding the accessory views to the keyboard.
 @property(nonatomic, strong)
     ToolbarAssistiveKeyboardDelegateImpl* keyboardDelegate;
 // Coordinator for the omnibox popup.
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
-// Coordinator for the omnibox.
-@property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
-@property(nonatomic, strong) LocationBarMediator* mediator;
+@property(nonatomic, strong) LocationBarLegacyMediator* mediator;
 // Redefined as readwrite and as LocationBarView.
-@property(nonatomic, strong, readwrite) LocationBarView* locationBarView;
+@property(nonatomic, strong, readwrite) LocationBarLegacyView* locationBarView;
 
 @end
 
-@implementation LocationBarCoordinator
+@implementation LocationBarLegacyCoordinator
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
 @synthesize keyboardDelegate = _keyboardDelegate;
@@ -75,7 +74,6 @@ const int kLocationAuthorizationStatusCount = 4;
 @synthesize webStateList = _webStateList;
 @synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
 @synthesize popupPositioner = _popupPositioner;
-@synthesize omniboxCoordinator = _omniboxCoordinator;
 
 #pragma mark - public
 
@@ -92,10 +90,10 @@ const int kLocationAuthorizationStatusCount = 4;
           : [UIColor colorWithWhite:0 alpha:[MDCTypography body1FontOpacity]];
   UIColor* tintColor = isIncognito ? textColor : nil;
   self.locationBarView =
-      [[LocationBarView alloc] initWithFrame:CGRectZero
-                                        font:[MDCTypography subheadFont]
-                                   textColor:textColor
-                                   tintColor:tintColor];
+      [[LocationBarLegacyView alloc] initWithFrame:CGRectZero
+                                              font:[MDCTypography subheadFont]
+                                         textColor:textColor
+                                         tintColor:tintColor];
   SetA11yLabelAndUiAutomationName(self.locationBarView.textField,
                                   IDS_ACCNAME_LOCATION, @"Address");
   self.locationBarView.incognito = isIncognito;
@@ -121,22 +119,17 @@ const int kLocationAuthorizationStatusCount = 4;
   ConfigureAssistiveKeyboardViews(self.locationBarView.textField, kDotComTLD,
                                   self.keyboardDelegate);
 
-  _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
-  _editController->SetURLLoader(self);
-
-  self.omniboxCoordinator = [[OmniboxCoordinator alloc] init];
-  self.omniboxCoordinator.textField = self.locationBarView.textField;
-  self.omniboxCoordinator.editController = _editController.get();
-  self.omniboxCoordinator.browserState = self.browserState;
-  self.omniboxCoordinator.dispatcher = self.dispatcher;
-  [self.omniboxCoordinator start];
-
+  _locationBarController = std::make_unique<LocationBarControllerImpl>(
+      self.locationBarView, self.browserState, self,
+      static_cast<id<BrowserCommands>>(self.dispatcher));
+  _locationBarController->SetURLLoader(self);
   self.omniboxPopupCoordinator =
-      [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
+      _locationBarController->CreatePopupCoordinator(self.popupPositioner);
   self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
   [self.omniboxPopupCoordinator start];
-
-  self.mediator = [[LocationBarMediator alloc] init];
+  self.locationBarView.textField.suggestionCommandsEndpoint =
+      static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);
+  self.mediator = [[LocationBarLegacyMediator alloc] init];
   self.mediator.webStateList = self.webStateList;
   self.mediator.consumer = self;
 }
@@ -144,8 +137,7 @@ const int kLocationAuthorizationStatusCount = 4;
 - (void)stop {
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];
-  [self.omniboxCoordinator stop];
-  _editController.reset();
+  _locationBarController.reset();
 
   self.locationBarView = nil;
   [self.mediator disconnect];
@@ -157,10 +149,14 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (BOOL)showingOmniboxPopup {
-  return self.omniboxPopupCoordinator.isOpen;
+  OmniboxViewIOS* omniboxViewIOS = static_cast<OmniboxViewIOS*>(
+      _locationBarController.get()->GetLocationEntry());
+  return omniboxViewIOS->IsPopupOpen();
 }
 
 - (void)focusOmniboxFromFakebox {
+  OmniboxEditModel* model = _locationBarController->GetLocationEntry()->model();
+  model->set_focus_source(OmniboxEditModel::FocusSource::FAKEBOX);
   [self focusOmnibox];
 }
 
@@ -181,7 +177,11 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - LocationBarConsumer
 
 - (void)updateOmniboxState {
-  [self.omniboxCoordinator updateOmniboxState];
+  if (!_locationBarController)
+    return;
+  _locationBarController->SetShouldShowHintText(
+      [self.delegate shouldDisplayHintText]);
+  _locationBarController->OnToolbarUpdated();
 }
 
 - (void)defocusOmnibox {
@@ -255,7 +255,8 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)cancelOmniboxEdit {
-  [self.omniboxCoordinator endEditing];
+  _locationBarController->HideKeyboardAndEndEditing();
+  [self updateOmniboxState];
 }
 
 #pragma mark - LocationBarDelegate
