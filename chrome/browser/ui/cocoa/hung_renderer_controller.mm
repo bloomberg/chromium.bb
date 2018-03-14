@@ -18,6 +18,10 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -69,16 +73,20 @@ HungRendererController* g_hung_renderer_controller_instance = nil;
 }  // namespace
 
 class HungRendererObserverBridge : public content::WebContentsObserver,
-                                   public content::RenderProcessHostObserver {
+                                   public content::RenderProcessHostObserver,
+                                   public content::NotificationObserver {
  public:
   HungRendererObserverBridge(WebContents* web_contents,
-                             content::RenderProcessHost* hung_process,
+                             content::RenderWidgetHost* hung_widget,
                              HungRendererController* controller)
       : content::WebContentsObserver(web_contents),
-        hung_process_(hung_process),
+        hung_process_(hung_widget->GetProcess()),
         process_observer_(this),
         controller_(controller) {
     process_observer_.Add(hung_process_);
+    notification_registrar_.Add(
+        this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+        content::Source<content::RenderWidgetHost>(hung_widget));
   }
 
   ~HungRendererObserverBridge() override = default;
@@ -99,6 +107,14 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
     [controller_ renderProcessGone];
   }
 
+  // NotificationObserver overrides:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
+    [controller_ renderProcessGone];
+  }
+
  private:
   content::RenderProcessHost* hung_process_;
 
@@ -106,6 +122,8 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
       process_observer_;
 
   HungRendererController* controller_;  // weak
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererObserverBridge);
 };
@@ -261,8 +279,8 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   DCHECK(contents);
   hungContents_ = contents;
   hungWidget_ = renderWidget;
-  hungContentsObserver_.reset(new HungRendererObserverBridge(
-      contents, renderWidget->GetProcess(), self));
+  hungContentsObserver_.reset(
+      new HungRendererObserverBridge(contents, renderWidget, self));
 
   base::scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   base::scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
