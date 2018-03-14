@@ -961,18 +961,18 @@ if (is_win) {
     }
   }
 
-  if (use_egl_on_mac) {
+  if (use_egl) {
     # We need to copy the ANGLE libraries so that the bundle_data dependencies
     # have a "copy" target type. Otherwise for "shared_library" target types
-    # it will try to link things into Chromium.app when we want to keep the
-    # ANGLE libraries separate instead.
+    # it will try to link things into Chromium Framework when we want to keep
+    # the ANGLE libraries separate instead.
     copy("angle_library_copy") {
       sources = [
         "$root_out_dir/libEGL.dylib",
         "$root_out_dir/libGLESv2.dylib",
       ]
       outputs = [
-        "$root_out_dir/for_bundle/{{source_file_part}}",
+        "$root_out_dir/egl_intermediates/{{source_file_part}}",
       ]
       deps = [
         "//third_party/angle:libEGL",
@@ -983,11 +983,11 @@ if (is_win) {
     # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
     bundle_data("angle_binaries") {
       sources = [
-        "$root_out_dir/for_bundle/libEGL.dylib",
-        "$root_out_dir/for_bundle/libGLESv2.dylib",
+        "$root_out_dir/egl_intermediates/libEGL.dylib",
+        "$root_out_dir/egl_intermediates/libGLESv2.dylib",
       ]
       outputs = [
-        "{{bundle_contents_dir}}/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Libraries/{{source_file_part}}",
       ]
       public_deps = [
         ":angle_library_copy",
@@ -996,7 +996,7 @@ if (is_win) {
   }
 
   group("angle_library") {
-    if (use_egl_on_mac) {
+    if (use_egl) {
       deps = [
         ":angle_binaries",
       ]
