@@ -70,13 +70,9 @@ PageRequestSummary CreatePageRequestSummary(
 URLRequestSummary CreateURLRequestSummary(
     SessionID::id_type tab_id,
     const std::string& main_frame_url,
-    const std::string& resource_url = std::string(),
+    const std::string& request_url = std::string(),
     content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME,
-    net::RequestPriority priority = net::MEDIUM,
-    const std::string& mime_type = std::string(),
-    bool was_cached = false,
     const std::string& redirect_url = std::string(),
-    bool has_validators = false,
     bool always_revalidate = false);
 
 URLRequestSummary CreateRedirectRequestSummary(

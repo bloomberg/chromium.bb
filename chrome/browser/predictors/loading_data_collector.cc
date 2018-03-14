@@ -54,30 +54,14 @@ bool IsNoStore(const net::URLRequest& response) {
 
 }  // namespace
 
-OriginRequestSummary::OriginRequestSummary()
-    : origin(),
-      always_access_network(false),
-      accessed_network(false),
-      first_occurrence(0) {}
-
+OriginRequestSummary::OriginRequestSummary() = default;
 OriginRequestSummary::OriginRequestSummary(const OriginRequestSummary& other) =
     default;
+OriginRequestSummary::~OriginRequestSummary() = default;
 
-OriginRequestSummary::~OriginRequestSummary() {}
-
-URLRequestSummary::URLRequestSummary()
-    : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
-      priority(net::IDLE),
-      before_first_contentful_paint(false),
-      was_cached(false),
-      has_validators(false),
-      always_revalidate(false),
-      is_no_store(false),
-      network_accessed(false) {}
-
+URLRequestSummary::URLRequestSummary() = default;
 URLRequestSummary::URLRequestSummary(const URLRequestSummary& other) = default;
-
-URLRequestSummary::~URLRequestSummary() {}
+URLRequestSummary::~URLRequestSummary() = default;
 
 // static
 bool URLRequestSummary::SummarizeResponse(const net::URLRequest& request,
@@ -87,28 +71,17 @@ bool URLRequestSummary::SummarizeResponse(const net::URLRequest& request,
   if (!request_info)
     return false;
 
-  // This method is called when the response is started, so this field reflects
-  // the time at which the response began, not when it finished, as would
-  // arguably be ideal. This means if firstContentfulPaint happens after the
-  // response has started, but before it's finished, we will erroneously mark
-  // the resource as having been loaded before firstContentfulPaint. This is
-  // a rare and insignificant enough occurrence that we opt to record the time
-  // here for the sake of simplicity.
-  summary->response_time = base::TimeTicks::Now();
-  summary->resource_url = request.original_url();
   summary->request_url = request.url();
   content::ResourceType resource_type_from_request =
       request_info->GetResourceType();
-  summary->priority = request.priority();
-  request.GetMimeType(&summary->mime_type);
-  summary->was_cached = request.was_cached();
+  std::string mime_type;
+  request.GetMimeType(&mime_type);
   summary->resource_type = LoadingDataCollector::GetResourceType(
-      resource_type_from_request, summary->mime_type);
+      resource_type_from_request, mime_type);
 
   scoped_refptr<net::HttpResponseHeaders> headers =
       request.response_info().headers;
   if (headers.get()) {
-    summary->has_validators = headers->HasValidators();
     // RFC 2616, section 14.9.
     summary->always_revalidate =
         headers->HasHeaderValue("cache-control", "no-cache") ||
@@ -117,13 +90,6 @@ bool URLRequestSummary::SummarizeResponse(const net::URLRequest& request,
     summary->is_no_store = IsNoStore(request);
   }
   summary->network_accessed = request.response_info().network_accessed;
-
-  net::LoadTimingInfo timing_info;
-  request.GetLoadTimingInfo(&timing_info);
-  const auto& connect_timing = timing_info.connect_timing;
-  summary->connect_duration =
-      (connect_timing.dns_end - connect_timing.dns_start) +
-      (connect_timing.connect_end - connect_timing.connect_start);
 
   return true;
 }
@@ -156,7 +122,7 @@ void PageRequestSummary::UpdateOrAddToOrigins(
   it->second.accessed_network |= request_summary.network_accessed;
 }
 
-PageRequestSummary::~PageRequestSummary() {}
+PageRequestSummary::~PageRequestSummary() = default;
 
 // static
 content::ResourceType LoadingDataCollector::GetResourceTypeFromMimeType(
@@ -313,7 +279,7 @@ LoadingDataCollector::LoadingDataCollector(
       stats_collector_(stats_collector),
       config_(config) {}
 
-LoadingDataCollector::~LoadingDataCollector() {}
+LoadingDataCollector::~LoadingDataCollector() = default;
 
 void LoadingDataCollector::RecordURLRequest(const URLRequestSummary& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -101,7 +101,6 @@ void LoadingPredictorObserver::OnRequestStarted(
     return;
 
   auto summary = std::make_unique<URLRequestSummary>();
-  summary->resource_url = request->original_url();
   summary->resource_type = resource_type;
 
   BrowserThread::PostTask(

@@ -13,7 +13,6 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "content/public/common/resource_type.h"
-#include "net/base/request_priority.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -33,9 +32,9 @@ struct OriginRequestSummary {
   ~OriginRequestSummary();
 
   GURL origin;
-  bool always_access_network;
-  bool accessed_network;
-  int first_occurrence;
+  bool always_access_network = false;
+  bool accessed_network = false;
+  int first_occurrence = 0;
 };
 
 // Stores the data that we need to get from the URLRequest.
@@ -45,27 +44,13 @@ struct URLRequestSummary {
   ~URLRequestSummary();
 
   NavigationID navigation_id;
-  GURL resource_url;
   GURL request_url;  // URL after all redirects.
-  content::ResourceType resource_type;
-  net::RequestPriority priority;
-  base::TimeTicks response_time;
-  bool before_first_contentful_paint;
-
-  // Only for responses.
-  std::string mime_type;
-  bool was_cached;
   GURL redirect_url;  // Empty unless request was redirected to a valid url.
+  content::ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
 
-  bool has_validators;
-  bool always_revalidate;
-  bool is_no_store;
-  bool network_accessed;
-
-  // The time spent looking up the host's DNS address and establishing the
-  // connection. This can be zero if the request was cached or if the existing
-  // connection was reused.
-  base::TimeDelta connect_duration;
+  bool always_revalidate = false;
+  bool is_no_store = false;
+  bool network_accessed = false;
 
   // Initializes a |URLRequestSummary| from a |URLRequest| response.
   // Returns true for success. Note: NavigationID is NOT initialized
