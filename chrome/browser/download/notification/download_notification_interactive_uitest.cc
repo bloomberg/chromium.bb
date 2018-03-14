@@ -357,9 +357,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-// Disabled due to timeouts; see https://crbug.com/810302.
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DISABLED_DownloadDangerousFile) {
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
