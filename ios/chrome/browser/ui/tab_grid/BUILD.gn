@@ -68,7 +68,8 @@ source_set("tab_grid_ui") {
 
   deps = [
     "resources:grid_close_cell",
-    "resources:tab_grid_new_tab_fab",
+    "resources:new_tab_floating_button",
+    "resources:new_tab_floating_button_incognito",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

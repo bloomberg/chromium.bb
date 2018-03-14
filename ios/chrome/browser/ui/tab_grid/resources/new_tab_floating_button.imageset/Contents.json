@@ -3,17 +3,17 @@
         {
             "idiom": "universal",
             "scale": "1x",
-            "filename": "tab_grid_new_tab_fab.png"
+            "filename": "new_tab_floating_button.png"
         },
         {
             "idiom": "universal",
             "scale": "2x",
-            "filename": "tab_grid_new_tab_fab@2x.png"
+            "filename": "new_tab_floating_button@2x.png"
         },
         {
             "idiom": "universal",
             "scale": "3x",
-            "filename": "tab_grid_new_tab_fab@3x.png"
+            "filename": "new_tab_floating_button@3x.png"
         }
     ],
     "info": {
