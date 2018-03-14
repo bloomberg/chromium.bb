@@ -99,6 +99,11 @@
 #pragma mark - AutocompleteResultConsumerDelegate
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
+                   didHighlightRow:(NSUInteger)row {
+  _delegate->OnMatchHighlighted(row);
+}
+
+- (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
                       didSelectRow:(NSUInteger)row {
   // OpenMatch() may close the popup, which will clear the result set and, by
   // extension, |match| and its contents.  So copy the relevant match out to

@@ -112,17 +112,23 @@ const int kLocationAuthorizationStatusCount = 4;
   }
 
   self.keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
-  self.keyboardDelegate.dispatcher = self.dispatcher;
+  self.keyboardDelegate.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
   self.keyboardDelegate.omniboxTextField = self.locationBarView.textField;
   ConfigureAssistiveKeyboardViews(self.locationBarView.textField, kDotComTLD,
                                   self.keyboardDelegate);
 
   _locationBarController = std::make_unique<LocationBarControllerImpl>(
-      self.locationBarView, self.browserState, self, self.dispatcher);
+      self.locationBarView, self.browserState, self,
+      static_cast<id<BrowserCommands>>(self.dispatcher));
   _locationBarController->SetURLLoader(self);
   self.omniboxPopupCoordinator =
       _locationBarController->CreatePopupCoordinator(self.popupPositioner);
+  self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
   [self.omniboxPopupCoordinator start];
+  self.locationBarView.textField.suggestionCommandsEndpoint =
+      static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);
+
   self.mediator = [[LocationBarMediator alloc] init];
   self.mediator.webStateList = self.webStateList;
   self.mediator.consumer = self;
