@@ -23,7 +23,8 @@ TransformFeedback::TransformFeedback(TransformFeedbackManager* manager,
       has_been_bound_(false),
       active_(false),
       paused_(false),
-      primitive_mode_(GL_NONE) {
+      primitive_mode_(GL_NONE),
+      vertices_drawn_(0) {
   DCHECK_LE(0u, client_id);
   DCHECK_LT(0u, service_id);
 }
@@ -75,6 +76,7 @@ void TransformFeedback::DoBeginTransformFeedback(GLenum primitive_mode) {
   glBeginTransformFeedback(primitive_mode);
   active_ = true;
   primitive_mode_ = primitive_mode;
+  vertices_drawn_ = 0;
 }
 
 void TransformFeedback::DoEndTransformFeedback() {
@@ -94,6 +96,33 @@ void TransformFeedback::DoResumeTransformFeedback() {
   DCHECK(active_ && paused_);
   glResumeTransformFeedback();
   paused_ = false;
+}
+
+GLsizei TransformFeedback::VerticesNeededForDraw(GLenum mode,
+                                                 GLsizei count,
+                                                 GLsizei primcount) const {
+  // Transform feedback only outputs complete primitives, so we need to round
+  // down to the nearest complete primitive before multiplying by the number of
+  // instances.
+  switch (mode) {
+    case GL_TRIANGLES:
+      return vertices_drawn_ + primcount * (count - count % 3);
+    case GL_LINES:
+      return vertices_drawn_ + primcount * (count - count % 2);
+    default:
+      NOTREACHED();
+      FALLTHROUGH;
+    case GL_POINTS:
+      return vertices_drawn_ + primcount * count;
+  }
+}
+
+void TransformFeedback::OnVerticesDrawn(GLenum mode,
+                                        GLsizei count,
+                                        GLsizei primcount) {
+  if (active_ && !paused_) {
+    vertices_drawn_ = VerticesNeededForDraw(mode, count, primcount);
+  }
 }
 
 TransformFeedbackManager::TransformFeedbackManager(

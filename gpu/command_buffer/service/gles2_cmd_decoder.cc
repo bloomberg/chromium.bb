@@ -10580,12 +10580,11 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         return error::kNoError;
       }
       if (!buffer_manager()->RequestBuffersAccess(
-              state_.GetErrorState(),
-              state_.bound_transform_feedback.get(),
+              state_.GetErrorState(), state_.bound_transform_feedback.get(),
               state_.current_program->GetTransformFeedbackVaryingSizes(),
-              count,
-              function_name,
-              "transformfeedback buffers")) {
+              state_.bound_transform_feedback->VerticesNeededForDraw(
+                  mode, count, primcount),
+              function_name, "transformfeedback buffers")) {
         return error::kNoError;
       }
     }
@@ -10633,6 +10632,10 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         api()->glDrawArraysFn(mode, first, count);
       } else {
         api()->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
+      }
+      if (state_.bound_transform_feedback.get()) {
+        state_.bound_transform_feedback->OnVerticesDrawn(mode, count,
+                                                         primcount);
       }
       if (textures_set) {
         RestoreStateForTextures();
