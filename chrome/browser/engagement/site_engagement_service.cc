@@ -282,6 +282,11 @@ double SiteEngagementService::GetTotalEngagementPoints() const {
   return total_score;
 }
 
+void SiteEngagementService::AddPointsForTesting(const GURL& url,
+                                                double points) {
+  AddPoints(url, points);
+}
+
 #if defined(OS_ANDROID)
 SiteEngagementServiceAndroid* SiteEngagementService::GetAndroidService() const {
   return android_service_.get();
