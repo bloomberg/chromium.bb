@@ -277,6 +277,9 @@ std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
   std::unique_ptr<views::InkDrop> ink_drop = LabelButton::CreateInkDrop();
   // Turn on highlighting when the button is focused only - hovering the button
   // will request focus.
+  // Note that the setup done in Button::CreateInkDrop() needs to be repeated
+  // here to configure flood-fill ink drops from LabelButton.
+  ink_drop->SetShowHighlightOnFocus(true);
   ink_drop->SetShowHighlightOnHover(false);
   return ink_drop;
 }
