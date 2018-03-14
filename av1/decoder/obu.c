@@ -80,9 +80,9 @@ static int valid_obu_type(int obu_type) {
   return valid_type;
 }
 
-// Parses OBU header and stores values in 'header'. Returns 0 for success, and
-// -1 when an error occurs.
-static int read_obu_header(struct aom_read_bit_buffer *rb, ObuHeader *header) {
+// Parses OBU header and stores values in 'header'.
+static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
+                                       ObuHeader *header) {
   if (!rb || !header) return AOM_CODEC_INVALID_PARAM;
 
   header->size = 1;
@@ -96,10 +96,10 @@ static int read_obu_header(struct aom_read_bit_buffer *rb, ObuHeader *header) {
 
 #if CONFIG_OBU_SIZE_AFTER_HEADER
   header->has_extension = aom_rb_read_bit(rb);
-  // TODO(vigneshv): This field is ignored for now since the library always
-  // assumes that length is going to be present after the obu header when this
-  // experiment is on.
-  aom_rb_read_bit(rb);  // obu_has_payload_length_field
+  if (!aom_rb_read_bit(rb)) {  // obu_has_payload_length_field
+    // libaom does not support streams with this bit set to 0.
+    return AOM_CODEC_UNSUP_BITSTREAM;
+  }
   aom_rb_read_bit(rb);  // reserved
 #else
   aom_rb_read_literal(rb, 2);  // reserved
@@ -372,8 +372,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
     av1_init_read_bit_buffer(pbi, &rb, data + length_field_size, data_end);
 
-    if (read_obu_header(&rb, &obu_header) != AOM_CODEC_OK) {
-      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    const aom_codec_err_t status = read_obu_header(&rb, &obu_header);
+    if (status != AOM_CODEC_OK) {
+      cm->error.error_code = status;
       return;
     }
 
