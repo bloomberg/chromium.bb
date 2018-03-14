@@ -247,7 +247,8 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   if (!pending_time_update_task_) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MediaPipelineImpl::UpdateMediaTime, weak_this_));
+        FROM_HERE,
+        base::BindOnce(&MediaPipelineImpl::UpdateMediaTime, weak_this_));
   }
 
   // Setup the audio and video pipeline for the new timeline.
@@ -501,7 +502,8 @@ void MediaPipelineImpl::UpdateMediaTime() {
   if (media_time == ::media::kNoTimestamp) {
     pending_time_update_task_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MediaPipelineImpl::UpdateMediaTime, weak_this_),
+        FROM_HERE,
+        base::BindOnce(&MediaPipelineImpl::UpdateMediaTime, weak_this_),
         kTimeUpdateInterval);
     return;
   }
@@ -532,7 +534,8 @@ void MediaPipelineImpl::UpdateMediaTime() {
 
   pending_time_update_task_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&MediaPipelineImpl::UpdateMediaTime, weak_this_),
+      FROM_HERE,
+      base::BindOnce(&MediaPipelineImpl::UpdateMediaTime, weak_this_),
       kTimeUpdateInterval);
 }
 

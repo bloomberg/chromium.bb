@@ -307,7 +307,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockFile_WaitsForOtherThread) {
   sleepy_thread.Start();
   sleepy_thread.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DoWorkLockedTask, base::Unretained(&sleepy_manager)));
+      base::BindOnce(&DoWorkLockedTask, base::Unretained(&sleepy_manager)));
 
   // Meanwhile, this thread should wait brielfy to allow the other thread to
   // grab the lock.

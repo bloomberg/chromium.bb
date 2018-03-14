@@ -228,8 +228,9 @@ void CastExtensionSystem::RegisterExtensionWithRequestContexts(
     const base::Closure& callback) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InfoMap::AddExtension, info_map(),
-                 base::RetainedRef(extension), base::Time::Now(), false, false),
+      base::BindOnce(&InfoMap::AddExtension, info_map(),
+                     base::RetainedRef(extension), base::Time::Now(), false,
+                     false),
       callback);
 }
 

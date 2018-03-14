@@ -81,8 +81,8 @@ MultiDemuxerStreamAdaptersTest::~MultiDemuxerStreamAdaptersTest() {
 void MultiDemuxerStreamAdaptersTest::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MultiDemuxerStreamAdaptersTest::OnTestTimeout,
-                 base::Unretained(this)),
+      base::BindOnce(&MultiDemuxerStreamAdaptersTest::OnTestTimeout,
+                     base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
 
   media_task_runner_factory_ = new BalancedMediaTaskRunnerFactory(
@@ -162,8 +162,8 @@ TEST_F(MultiDemuxerStreamAdaptersTest, EarlyEos) {
 
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&MultiDemuxerStreamAdaptersTest::Start,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&MultiDemuxerStreamAdaptersTest::Start,
+                                base::Unretained(this)));
   base::RunLoop().Run();
 }
 }  // namespace media

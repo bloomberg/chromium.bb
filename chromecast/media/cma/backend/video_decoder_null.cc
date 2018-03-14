@@ -36,8 +36,8 @@ MediaPipelineBackend::BufferStatus VideoDecoderNull::PushBuffer(
   DCHECK(buffer);
   if (buffer->end_of_stream()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&VideoDecoderNull::OnEndOfStream,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&VideoDecoderNull::OnEndOfStream,
+                                  weak_factory_.GetWeakPtr()));
   }
   return MediaPipelineBackend::kBufferSuccess;
 }

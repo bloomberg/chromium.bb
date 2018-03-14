@@ -70,8 +70,8 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
   DCHECK(task_runner_.get());
 
   task_runner->PostTask(
-      FROM_HERE, base::Bind(&ConnectivityCheckerImpl::Initialize, this,
-                            base::RetainedRef(url_request_context_getter)));
+      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::Initialize, this,
+                                base::RetainedRef(url_request_context_getter)));
 }
 
 void ConnectivityCheckerImpl::Initialize(
@@ -87,7 +87,7 @@ void ConnectivityCheckerImpl::Initialize(
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ConnectivityCheckerImpl::Check, this));
+                         base::BindOnce(&ConnectivityCheckerImpl::Check, this));
 }
 
 ConnectivityCheckerImpl::~ConnectivityCheckerImpl() {
@@ -114,8 +114,8 @@ void ConnectivityCheckerImpl::SetConnected(bool connected) {
 }
 
 void ConnectivityCheckerImpl::Check() {
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&ConnectivityCheckerImpl::CheckInternal, this));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, this));
 }
 
 void ConnectivityCheckerImpl::CheckInternal() {
@@ -157,7 +157,7 @@ void ConnectivityCheckerImpl::OnNetworkChanged(
   network_changed_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ConnectivityCheckerImpl::OnNetworkChangedInternal, this),
+      base::BindOnce(&ConnectivityCheckerImpl::OnNetworkChangedInternal, this),
       base::TimeDelta::FromSeconds(kNetworkChangedDelayInSeconds));
 }
 
@@ -247,7 +247,7 @@ void ConnectivityCheckerImpl::OnUrlRequestError(ErrorType type) {
   url_request_.reset(nullptr);
   // Check again.
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ConnectivityCheckerImpl::Check, this),
+      FROM_HERE, base::BindOnce(&ConnectivityCheckerImpl::Check, this),
       base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
 }
 

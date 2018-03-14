@@ -48,12 +48,13 @@ void MockFrameProvider::Read(const ReadCB& read_cb) {
   if (delayed) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MockFrameProvider::DoRead, base::Unretained(this), read_cb),
+        base::BindOnce(&MockFrameProvider::DoRead, base::Unretained(this),
+                       read_cb),
         base::TimeDelta::FromMilliseconds(1));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockFrameProvider::DoRead,
-                              base::Unretained(this), read_cb));
+        FROM_HERE, base::BindOnce(&MockFrameProvider::DoRead,
+                                  base::Unretained(this), read_cb));
   }
 }
 

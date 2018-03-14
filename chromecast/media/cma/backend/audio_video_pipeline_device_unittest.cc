@@ -309,7 +309,8 @@ void BufferFeeder::Start() {
   last_pushed_pts_ = std::numeric_limits<int64_t>::min();
   buffers_copy_ = buffers_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BufferFeeder::FeedBuffer, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BufferFeeder::FeedBuffer, base::Unretained(this)));
 }
 
 void BufferFeeder::Stop() {
@@ -418,7 +419,8 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BufferFeeder::FeedBuffer, base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BufferFeeder::FeedBuffer, base::Unretained(this)));
 }
 
 void BufferFeeder::OnDecoderError() {
@@ -722,8 +724,8 @@ void AudioVideoPipelineDeviceTest::Start() {
   last_pts_ = current_pts;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&AudioVideoPipelineDeviceTest::MonitorLoop,
+                                base::Unretained(this)));
 }
 
 void AudioVideoPipelineDeviceTest::RunStoppedChecks() {
@@ -817,16 +819,18 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
 
     // Wait for pause finish
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::OnPauseCompleted,
-                              base::Unretained(this)),
+        FROM_HERE,
+        base::BindOnce(&AudioVideoPipelineDeviceTest::OnPauseCompleted,
+                       base::Unretained(this)),
         pause_pattern_[pause_pattern_idx_].length);
     return;
   }
 
   // Check state again in a little while
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&AudioVideoPipelineDeviceTest::MonitorLoop,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&AudioVideoPipelineDeviceTest::MonitorLoop,
+                     base::Unretained(this)),
       kMonitorLoopDelay);
 }
 
