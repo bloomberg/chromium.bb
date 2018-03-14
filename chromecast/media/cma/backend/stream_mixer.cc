@@ -86,13 +86,11 @@ int GetFixedSampleRate() {
   int fixed_sample_rate = GetSwitchValueNonNegativeInt(
       switches::kAudioOutputSampleRate, MixerOutputStream::kInvalidSampleRate);
 
-#if defined(USE_ALSA)
   if (fixed_sample_rate == MixerOutputStream::kInvalidSampleRate) {
     fixed_sample_rate =
         GetSwitchValueNonNegativeInt(switches::kAlsaFixedOutputSampleRate,
                                      MixerOutputStream::kInvalidSampleRate);
   }
-#endif  // defined(USE_ALSA)
   return fixed_sample_rate;
 }
 

@@ -192,7 +192,7 @@ void PostProcessingPipelineImpl::UpdateCastVolume(float multiplier) {
     return;
   }
   current_multiplier_ = multiplier;
-  current_dbfs_ = std::log10(multiplier) * 20;
+  current_dbfs_ = (multiplier == 0.0f ? -200.0f : std::log10(multiplier) * 20);
   DCHECK(chromecast::media::VolumeControl::DbFSToVolume);
   cast_volume_ = chromecast::media::VolumeControl::DbFSToVolume(current_dbfs_);
 }
