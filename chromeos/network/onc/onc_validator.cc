@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -48,7 +49,7 @@ Validator::~Validator() = default;
 
 std::unique_ptr<base::DictionaryValue> Validator::ValidateAndRepairObject(
     const OncValueSignature* object_signature,
-    const base::DictionaryValue& onc_object,
+    const base::Value& onc_object,
     Result* result) {
   CHECK(object_signature);
   *result = VALID;
@@ -804,6 +805,26 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
           *result, kUserAuthenticationType, valid_user_auth_types) ||
       FieldExistsAndIsEmpty(*result, kServerCARefs)) {
     return false;
+  }
+
+  if ((onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY ||
+       onc_source_ == ::onc::ONC_SOURCE_USER_POLICY) &&
+      !result->FindKeyOfType(::onc::openvpn::kUserAuthenticationType,
+                             base::Value::Type::STRING)) {
+    // If kUserAuthenticationType is unspecified for a policy controlled
+    // network, allow Password and OTP to be specified by the user by adding
+    // them to the recommended list.
+    base::Value* recommended =
+        result->FindKeyOfType(::onc::kRecommended, base::Value::Type::LIST);
+    if (!recommended)
+      recommended = result->SetKey(::onc::kRecommended, base::ListValue());
+    base::Value::ListStorage& result_list = recommended->GetList();
+    base::Value password_value(::onc::openvpn::kPassword);
+    if (!base::ContainsValue(result_list, password_value))
+      result_list.push_back(std::move(password_value));
+    base::Value otp_value(::onc::openvpn::kOTP);
+    if (!base::ContainsValue(result_list, otp_value))
+      result_list.push_back(std::move(otp_value));
   }
 
   if (result->HasKey(kServerCARefs) && result->HasKey(kServerCARef)) {
