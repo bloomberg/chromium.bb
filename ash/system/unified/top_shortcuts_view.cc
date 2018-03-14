@@ -27,6 +27,7 @@ views::View* CreateUserAvatarView() {
   DCHECK(Shell::Get());
   const mojom::UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
+  DCHECK(user_session);
 
   auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
   if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
@@ -47,12 +48,16 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     : controller_(controller) {
   DCHECK(controller_);
 
-  auto layout = std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
-      kUnifiedTopShortcutSpacing);
+      kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
 
-  AddChildView(CreateUserAvatarView());
+  if (Shell::Get()->session_controller()->login_status() !=
+      LoginStatus::NOT_LOGGED_IN) {
+    user_avatar_view_ = CreateUserAvatarView();
+    AddChildView(user_avatar_view_);
+  }
 
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
@@ -82,13 +87,11 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   // |collapse_button_| should be right-aligned, so we need spacing between
   // other buttons and |collapse_button_|.
   views::View* spacing = new views::View;
-  layout->SetFlexForView(spacing, 1);
   AddChildView(spacing);
+  layout->SetFlexForView(spacing, 1);
 
   collapse_button_ = new CollapseButton(this);
   AddChildView(collapse_button_);
-
-  SetLayoutManager(std::move(layout));
 }
 
 TopShortcutsView::~TopShortcutsView() = default;
