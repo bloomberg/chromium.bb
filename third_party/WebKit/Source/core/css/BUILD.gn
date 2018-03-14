@@ -734,7 +734,6 @@ blink_core_sources("css") {
     "properties/longhands/WebkitBoxDecorationBreakCustom.cpp",
     "properties/longhands/WebkitBoxDirectionCustom.cpp",
     "properties/longhands/WebkitBoxFlexCustom.cpp",
-    "properties/longhands/WebkitBoxFlexGroupCustom.cpp",
     "properties/longhands/WebkitBoxOrdinalGroupCustom.cpp",
     "properties/longhands/WebkitBoxOrientCustom.cpp",
     "properties/longhands/WebkitBoxPackCustom.cpp",

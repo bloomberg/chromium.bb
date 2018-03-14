@@ -53,7 +53,7 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
 
-  LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
+  LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding);
 
   bool IsVertical() const {
     return Style()->BoxOrient() == EBoxOrient::kVertical;

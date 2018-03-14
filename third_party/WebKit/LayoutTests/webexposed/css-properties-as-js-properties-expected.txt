@@ -362,7 +362,6 @@ webkitBoxAlign
 webkitBoxDecorationBreak
 webkitBoxDirection
 webkitBoxFlex
-webkitBoxFlexGroup
 webkitBoxOrdinalGroup
 webkitBoxOrient
 webkitBoxPack
