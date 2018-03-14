@@ -27,48 +27,48 @@ WaylandTest::WaylandTest() {
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
-  connection.reset(new WaylandConnection);
-  window = std::make_unique<WaylandWindow>(&delegate, connection.get(),
-                                           gfx::Rect(0, 0, 800, 600));
+  connection_.reset(new WaylandConnection);
+  window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get(),
+                                            gfx::Rect(0, 0, 800, 600));
 }
 
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
-  ASSERT_TRUE(server.Start(GetParam()));
-  ASSERT_TRUE(connection->Initialize());
-  EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
-      .WillOnce(SaveArg<0>(&widget));
-  ASSERT_TRUE(window->Initialize());
-  ASSERT_NE(widget, gfx::kNullAcceleratedWidget);
+  ASSERT_TRUE(server_.Start(GetParam()));
+  ASSERT_TRUE(connection_->Initialize());
+  EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_, _))
+      .WillOnce(SaveArg<0>(&widget_));
+  ASSERT_TRUE(window_->Initialize());
+  ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 
   // Wait for the client to flush all pending requests from initialization.
   base::RunLoop().RunUntilIdle();
 
   // Pause the server after it has responded to all incoming events.
-  server.Pause();
+  server_.Pause();
 
-  surface = server.GetObject<wl::MockSurface>(widget);
-  ASSERT_TRUE(surface);
+  surface_ = server_.GetObject<wl::MockSurface>(widget_);
+  ASSERT_TRUE(surface_);
 
-  initialized = true;
+  initialized_ = true;
 }
 
 void WaylandTest::TearDown() {
-  if (initialized)
+  if (initialized_)
     Sync();
 }
 
 void WaylandTest::Sync() {
   // Resume the server, flushing its pending events.
-  server.Resume();
+  server_.Resume();
 
   // Wait for the client to finish processing these events.
   base::RunLoop().RunUntilIdle();
 
   // Pause the server, after it has finished processing any follow-up requests
   // from the client.
-  server.Pause();
+  server_.Pause();
 }
 
 }  // namespace ui

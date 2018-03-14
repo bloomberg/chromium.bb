@@ -38,7 +38,7 @@ class WaylandWindowTest : public WaylandTest {
   void SetUp() override {
     WaylandTest::SetUp();
 
-    xdg_surface = surface->xdg_surface.get();
+    xdg_surface = surface_->xdg_surface.get();
     ASSERT_TRUE(xdg_surface);
   }
 
@@ -90,25 +90,26 @@ class WaylandWindowTest : public WaylandTest {
 
 TEST_P(WaylandWindowTest, SetTitle) {
   EXPECT_CALL(*GetXdgSurface(), SetTitle(StrEq("hello")));
-  window->SetTitle(base::ASCIIToUTF16("hello"));
+  window_->SetTitle(base::ASCIIToUTF16("hello"));
 }
 
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
-  window->Maximize();
+  window_->Maximize();
   SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
-  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
-  window->Restore();
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 2, &states);
@@ -120,7 +121,8 @@ TEST_P(WaylandWindowTest, Minimize) {
   wl_array_init(&states);
 
   // Initialize to normal first.
-  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
@@ -129,8 +131,8 @@ TEST_P(WaylandWindowTest, Minimize) {
   // notified about the state, because 1) minimized state was set manually
   // in WaylandWindow, and it has been confirmed in a back call from the server,
   // which resulted in the same state as before.
-  EXPECT_CALL(delegate, OnWindowStateChanged(_)).Times(0);
-  window->Minimize();
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
+  window_->Minimize();
   // Reinitialize wl_array, which removes previous old states.
   wl_array_init(&states);
   SendConfigureEvent(0, 0, 2, &states);
@@ -144,15 +146,16 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
-  window->ToggleFullscreen();
+  window_->ToggleFullscreen();
   SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
-  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
-  window->Restore();
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 2, &states);
@@ -164,25 +167,26 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   InitializeWlArrayWithActivatedState(&states);
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
-  window->Maximize();
+  window_->Maximize();
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
   SendConfigureEvent(0, 0, 2, &states);
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
-  EXPECT_CALL(delegate,
+  EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
-  window->ToggleFullscreen();
+  window_->ToggleFullscreen();
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
   SendConfigureEvent(0, 0, 3, &states);
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
-  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
-  window->Restore();
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 4, &states);
@@ -190,26 +194,26 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
-  const gfx::Rect current_bounds = window->GetBounds();
+  const gfx::Rect current_bounds = window_->GetBounds();
 
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(maximized_bounds)));
-  window->Maximize();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
+  window_->Maximize();
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      &states);
   Sync();
 
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(current_bounds)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
   EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
                                               current_bounds.height()));
-  window->Restore();
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 2, &states);
@@ -217,26 +221,26 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
-  const gfx::Rect current_bounds = window->GetBounds();
+  const gfx::Rect current_bounds = window_->GetBounds();
 
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(fullscreen_bounds)));
-  window->ToggleFullscreen();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
+  window_->ToggleFullscreen();
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 1,
                      &states);
   Sync();
 
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(current_bounds)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
   EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
                                               current_bounds.height()));
-  window->Restore();
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 2, &states);
@@ -244,29 +248,29 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
-  const gfx::Rect current_bounds = window->GetBounds();
+  const gfx::Rect current_bounds = window_->GetBounds();
 
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(maximized_bounds)));
-  window->Maximize();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
+  window_->Maximize();
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      &states);
   Sync();
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(fullscreen_bounds)));
-  window->ToggleFullscreen();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
+  window_->ToggleFullscreen();
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 2,
                      &states);
   Sync();
 
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(maximized_bounds)));
-  window->Maximize();
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
+  window_->Maximize();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
@@ -274,13 +278,13 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
                      &states);
   Sync();
 
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(current_bounds)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
   // Both in XdgV5 and XdgV6, surfaces implement SetWindowGeometry method.
   // Thus, using a toplevel object in XdgV6 case is not right thing. Use a
   // surface here instead.
   EXPECT_CALL(*xdg_surface, SetWindowGeometry(0, 0, current_bounds.width(),
                                               current_bounds.height()));
-  window->Restore();
+  window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
   InitializeWlArrayWithActivatedState(&states);
   SendConfigureEvent(0, 0, 4, &states);
@@ -288,12 +292,12 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
 }
 
 TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
-  const gfx::Rect initial_bounds = window->GetBounds();
+  const gfx::Rect initial_bounds = window_->GetBounds();
 
   const gfx::Rect new_bounds = gfx::Rect(0, 0, initial_bounds.width() + 10,
                                          initial_bounds.height() + 10);
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(new_bounds)));
-  window->SetBounds(new_bounds);
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(new_bounds)));
+  window_->SetBounds(new_bounds);
 
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
@@ -314,17 +318,17 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
-  EXPECT_FALSE(window->CanDispatchEvent(&test_mouse_event));
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
-  window->set_pointer_focus(true);
-  EXPECT_TRUE(window->CanDispatchEvent(&test_mouse_event));
+  window_->set_pointer_focus(true);
+  EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventUnfocus) {
-  window->set_pointer_focus(false);
-  EXPECT_FALSE(window->CanDispatchEvent(&test_mouse_event));
+  window_->set_pointer_focus(false);
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event));
 }
 
 ACTION_P(CloneEvent, ptr) {
@@ -333,8 +337,8 @@ ACTION_P(CloneEvent, ptr) {
 
 TEST_P(WaylandWindowTest, DispatchEvent) {
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  window->DispatchEvent(&test_mouse_event);
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  window_->DispatchEvent(&test_mouse_event);
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
   auto* mouse_event = event->AsMouseEvent();
@@ -354,7 +358,7 @@ TEST_P(WaylandWindowTest, ConfigureEvent) {
 
   // Make sure that the implementation does not call OnBoundsChanged for each
   // configure event if it receives multiple in a row.
-  EXPECT_CALL(delegate, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
   // Responding to a configure event, the window geometry in here must respect
   // the sizing negotiations specified by the configure event.
   // |xdg_surface| must receive the following calls in both xdg_shell_v5 and

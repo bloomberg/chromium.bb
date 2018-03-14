@@ -25,17 +25,17 @@ class WaylandPointerTest : public WaylandTest {
   void SetUp() override {
     WaylandTest::SetUp();
 
-    wl_seat_send_capabilities(server.seat()->resource(),
+    wl_seat_send_capabilities(server_.seat()->resource(),
                               WL_SEAT_CAPABILITY_POINTER);
 
     Sync();
 
-    pointer = server.seat()->pointer.get();
-    ASSERT_TRUE(pointer);
+    pointer_ = server_.seat()->pointer_.get();
+    ASSERT_TRUE(pointer_);
   }
 
  protected:
-  wl::MockPointer* pointer;
+  wl::MockPointer* pointer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandPointerTest);
@@ -43,7 +43,7 @@ class WaylandPointerTest : public WaylandTest {
 
 TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
-  WaylandWindow other_window(&other_delegate, connection.get(),
+  WaylandWindow other_window(&other_delegate, connection_.get(),
                              gfx::Rect(0, 0, 10, 10));
   gfx::AcceleratedWidget other_widget = gfx::kNullAcceleratedWidget;
   EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_, _))
@@ -54,16 +54,16 @@ TEST_P(WaylandPointerTest, Leave) {
   Sync();
 
   wl::MockSurface* other_surface =
-      server.GetObject<wl::MockSurface>(other_widget);
+      server_.GetObject<wl::MockSurface>(other_widget);
   ASSERT_TRUE(other_surface);
 
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(), 0, 0);
-  wl_pointer_send_leave(pointer->resource(), 2, surface->resource());
-  wl_pointer_send_enter(pointer->resource(), 3, other_surface->resource(), 0,
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);
+  wl_pointer_send_leave(pointer_->resource(), 2, surface_->resource());
+  wl_pointer_send_enter(pointer_->resource(), 3, other_surface->resource(), 0,
                         0);
-  wl_pointer_send_button(pointer->resource(), 4, 1004, BTN_LEFT,
+  wl_pointer_send_button(pointer_->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
-  EXPECT_CALL(delegate, DispatchEvent(_)).Times(1);
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(1);
 
   // Do an extra Sync() here so that we process the second enter event before we
   // destroy |other_window|.
@@ -75,12 +75,13 @@ ACTION_P(CloneEvent, ptr) {
 }
 
 TEST_P(WaylandPointerTest, Motion) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(), 0, 0);
-  wl_pointer_send_motion(pointer->resource(), 1002, wl_fixed_from_double(10.75),
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);
+  wl_pointer_send_motion(pointer_->resource(), 1002,
+                         wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
 
@@ -95,15 +96,15 @@ TEST_P(WaylandPointerTest, Motion) {
 }
 
 TEST_P(WaylandPointerTest, MotionDragged) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(), 0, 0);
-  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_MIDDLE,
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(), 0, 0);
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_MIDDLE,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  wl_pointer_send_motion(pointer->resource(), 1003, wl_fixed_from_int(400),
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  wl_pointer_send_motion(pointer_->resource(), 1003, wl_fixed_from_int(400),
                          wl_fixed_from_int(500));
 
   Sync();
@@ -119,16 +120,16 @@ TEST_P(WaylandPointerTest, MotionDragged) {
 }
 
 TEST_P(WaylandPointerTest, ButtonPress) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
                         wl_fixed_from_int(200), wl_fixed_from_int(150));
-  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_RIGHT,
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_RIGHT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  wl_pointer_send_button(pointer->resource(), 3, 1003, BTN_LEFT,
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  wl_pointer_send_button(pointer_->resource(), 3, 1003, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
@@ -145,18 +146,18 @@ TEST_P(WaylandPointerTest, ButtonPress) {
 }
 
 TEST_P(WaylandPointerTest, ButtonRelease) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
                         wl_fixed_from_int(50), wl_fixed_from_int(50));
-  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_BACK,
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_BACK,
                          WL_POINTER_BUTTON_STATE_PRESSED);
-  wl_pointer_send_button(pointer->resource(), 3, 1003, BTN_LEFT,
+  wl_pointer_send_button(pointer_->resource(), 3, 1003, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  wl_pointer_send_button(pointer->resource(), 4, 1004, BTN_LEFT,
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  wl_pointer_send_button(pointer_->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_RELEASED);
 
   Sync();
@@ -173,17 +174,17 @@ TEST_P(WaylandPointerTest, ButtonRelease) {
 }
 
 TEST_P(WaylandPointerTest, AxisVertical) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
                         wl_fixed_from_int(0), wl_fixed_from_int(0));
-  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_RIGHT,
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_RIGHT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   // Wayland servers typically send a value of 10 per mouse wheel click.
-  wl_pointer_send_axis(pointer->resource(), 1003,
+  wl_pointer_send_axis(pointer_->resource(), 1003,
                        WL_POINTER_AXIS_VERTICAL_SCROLL, wl_fixed_from_int(20));
 
   Sync();
@@ -200,17 +201,17 @@ TEST_P(WaylandPointerTest, AxisVertical) {
 }
 
 TEST_P(WaylandPointerTest, AxisHorizontal) {
-  wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
                         wl_fixed_from_int(50), wl_fixed_from_int(75));
-  wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_LEFT,
+  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
 
   Sync();
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   // Wayland servers typically send a value of 10 per mouse wheel click.
-  wl_pointer_send_axis(pointer->resource(), 1003,
+  wl_pointer_send_axis(pointer_->resource(), 1003,
                        WL_POINTER_AXIS_HORIZONTAL_SCROLL,
                        wl_fixed_from_int(10));
 

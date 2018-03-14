@@ -35,17 +35,17 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   void Sync();
 
  private:
-  bool initialized = false;
-  base::MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop_;
+  bool initialized_ = false;
 
  protected:
-  wl::FakeServer server;
-  wl::MockSurface* surface;
+  wl::FakeServer server_;
+  wl::MockSurface* surface_;
 
-  MockPlatformWindowDelegate delegate;
-  std::unique_ptr<WaylandConnection> connection;
-  std::unique_ptr<WaylandWindow> window;
-  gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
+  MockPlatformWindowDelegate delegate_;
+  std::unique_ptr<WaylandConnection> connection_;
+  std::unique_ptr<WaylandWindow> window_;
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
  private:
 #if BUILDFLAG(USE_XKBCOMMON)

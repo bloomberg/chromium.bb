@@ -139,7 +139,7 @@ void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->pointer.reset(new MockPointer(pointer_resource));
+  seat->pointer_.reset(new MockPointer(pointer_resource));
 }
 
 void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -150,7 +150,7 @@ void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->keyboard.reset(new MockKeyboard(keyboard_resource));
+  seat->keyboard_.reset(new MockKeyboard(keyboard_resource));
 }
 
 void GetTouch(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -161,7 +161,7 @@ void GetTouch(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->touch.reset(new MockTouch(touch_resource));
+  seat->touch_.reset(new MockTouch(touch_resource));
 }
 
 const struct wl_seat_interface seat_impl = {

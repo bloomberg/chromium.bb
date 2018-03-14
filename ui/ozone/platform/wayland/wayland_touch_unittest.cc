@@ -33,13 +33,13 @@ class WaylandTouchTest : public WaylandTest {
   void SetUp() override {
     WaylandTest::SetUp();
 
-    wl_seat_send_capabilities(server.seat()->resource(),
+    wl_seat_send_capabilities(server_.seat()->resource(),
                               WL_SEAT_CAPABILITY_TOUCH);
 
     Sync();
 
-    touch = server.seat()->touch.get();
-    ASSERT_TRUE(touch);
+    touch_ = server_.seat()->touch_.get();
+    ASSERT_TRUE(touch_);
   }
 
  protected:
@@ -51,7 +51,7 @@ class WaylandTouchTest : public WaylandTest {
     EXPECT_EQ(event_type, key_event->type());
   }
 
-  wl::MockTouch* touch;
+  wl::MockTouch* touch_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandTouchTest);
@@ -59,21 +59,21 @@ class WaylandTouchTest : public WaylandTest {
 
 TEST_P(WaylandTouchTest, KeypressAndMotion) {
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event));
 
-  wl_touch_send_down(touch->resource(), 1, 0, surface->resource(), 0 /* id */,
+  wl_touch_send_down(touch_->resource(), 1, 0, surface_->resource(), 0 /* id */,
                      wl_fixed_from_int(50), wl_fixed_from_int(100));
 
   Sync();
   CheckEventType(ui::ET_TOUCH_PRESSED, event.get());
 
-  wl_touch_send_motion(touch->resource(), 500, 0 /* id */,
+  wl_touch_send_motion(touch_->resource(), 500, 0 /* id */,
                        wl_fixed_from_int(100), wl_fixed_from_int(100));
 
   Sync();
   CheckEventType(ui::ET_TOUCH_MOVED, event.get());
 
-  wl_touch_send_up(touch->resource(), 1, 1000, 0 /* id */);
+  wl_touch_send_up(touch_->resource(), 1, 1000, 0 /* id */);
 
   Sync();
   CheckEventType(ui::ET_TOUCH_RELEASED, event.get());

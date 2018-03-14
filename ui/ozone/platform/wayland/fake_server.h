@@ -207,9 +207,9 @@ class MockSeat : public Global {
   MockSeat();
   ~MockSeat() override;
 
-  std::unique_ptr<MockPointer> pointer;
-  std::unique_ptr<MockKeyboard> keyboard;
-  std::unique_ptr<MockTouch> touch;
+  std::unique_ptr<MockPointer> pointer_;
+  std::unique_ptr<MockKeyboard> keyboard_;
+  std::unique_ptr<MockTouch> touch_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSeat);

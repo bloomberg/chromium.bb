@@ -19,13 +19,13 @@ namespace ui {
 
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest() : surface_factory(connection.get()) {}
+  WaylandSurfaceFactoryTest() : surface_factory(connection_.get()) {}
 
   ~WaylandSurfaceFactoryTest() override {}
 
   void SetUp() override {
     WaylandTest::SetUp();
-    canvas = surface_factory.CreateCanvasForWidget(widget);
+    canvas = surface_factory.CreateCanvasForWidget(widget_);
     ASSERT_TRUE(canvas);
   }
 
@@ -41,11 +41,11 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
   canvas->GetSurface();
   canvas->PresentCanvas(gfx::Rect(5, 10, 20, 15));
 
-  Expectation damage = EXPECT_CALL(*surface, Damage(5, 10, 20, 15));
+  Expectation damage = EXPECT_CALL(*surface_, Damage(5, 10, 20, 15));
   wl_resource* buffer_resource = nullptr;
-  Expectation attach = EXPECT_CALL(*surface, Attach(_, 0, 0))
+  Expectation attach = EXPECT_CALL(*surface_, Attach(_, 0, 0))
                            .WillOnce(SaveArg<0>(&buffer_resource));
-  EXPECT_CALL(*surface, Commit()).After(damage, attach);
+  EXPECT_CALL(*surface_, Commit()).After(damage, attach);
 
   Sync();
 
@@ -65,11 +65,11 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
   canvas->GetSurface();
   canvas->PresentCanvas(gfx::Rect(0, 0, 100, 50));
 
-  Expectation damage = EXPECT_CALL(*surface, Damage(0, 0, 100, 50));
+  Expectation damage = EXPECT_CALL(*surface_, Damage(0, 0, 100, 50));
   wl_resource* buffer_resource = nullptr;
-  Expectation attach = EXPECT_CALL(*surface, Attach(_, 0, 0))
+  Expectation attach = EXPECT_CALL(*surface_, Attach(_, 0, 0))
                            .WillOnce(SaveArg<0>(&buffer_resource));
-  EXPECT_CALL(*surface, Commit()).After(damage, attach);
+  EXPECT_CALL(*surface_, Commit()).After(damage, attach);
 
   Sync();
 

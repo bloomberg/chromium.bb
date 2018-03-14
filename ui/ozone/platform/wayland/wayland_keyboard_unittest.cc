@@ -31,13 +31,13 @@ class WaylandKeyboardTest : public WaylandTest {
   void SetUp() override {
     WaylandTest::SetUp();
 
-    wl_seat_send_capabilities(server.seat()->resource(),
+    wl_seat_send_capabilities(server_.seat()->resource(),
                               WL_SEAT_CAPABILITY_KEYBOARD);
 
     Sync();
 
-    keyboard = server.seat()->keyboard.get();
-    ASSERT_TRUE(keyboard);
+    keyboard_ = server_.seat()->keyboard_.get();
+    ASSERT_TRUE(keyboard_);
 
 #if BUILDFLAG(USE_XKBCOMMON)
     // Set up XKB bits and set the keymap to the client.
@@ -54,14 +54,14 @@ class WaylandKeyboardTest : public WaylandTest {
     bool rv = shared_keymap.CreateAndMapAnonymous(keymap_size);
     DCHECK(rv);
     memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
-    wl_keyboard_send_keymap(keyboard->resource(),
+    wl_keyboard_send_keymap(keyboard_->resource(),
                             WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
                             shared_keymap.handle().GetHandle(), keymap_size);
 #endif
   }
 
  protected:
-  wl::MockKeyboard* keyboard;
+  wl::MockKeyboard* keyboard_;
 
  private:
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -81,14 +81,15 @@ ACTION_P(CloneEvent, ptr) {
 TEST_P(WaylandKeyboardTest, Keypress) {
   struct wl_array empty;
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
   ASSERT_TRUE(event);
@@ -98,27 +99,28 @@ TEST_P(WaylandKeyboardTest, Keypress) {
   EXPECT_EQ(ui::VKEY_A, key_event->key_code());
   EXPECT_EQ(ET_KEY_PRESSED, key_event->type());
 
-  wl_keyboard_send_leave(keyboard->resource(), 3, surface->resource());
+  wl_keyboard_send_leave(keyboard_->resource(), 3, surface_->resource());
 
   Sync();
 
-  wl_keyboard_send_key(keyboard->resource(), 3, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 3, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
-  EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(0);
 }
 
 TEST_P(WaylandKeyboardTest, AltModifierKeypress) {
   struct wl_array empty;
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Alt
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 56 /* left Alt */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 56 /* left Alt */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
   ASSERT_TRUE(event);
@@ -134,15 +136,16 @@ TEST_P(WaylandKeyboardTest, AltModifierKeypress) {
 TEST_P(WaylandKeyboardTest, ControlModifierKeypress) {
   struct wl_array empty;
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Control
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 29 /* left Control */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 29 /* left Control */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
   ASSERT_TRUE(event);
@@ -158,15 +161,16 @@ TEST_P(WaylandKeyboardTest, ControlModifierKeypress) {
 TEST_P(WaylandKeyboardTest, ShiftModifierKeypress) {
   struct wl_array empty;
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Shift
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 42 /* left Shift */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 42 /* left Shift */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
   ASSERT_TRUE(event);
@@ -183,41 +187,42 @@ TEST_P(WaylandKeyboardTest, ControlShiftModifiers) {
   struct wl_array empty;
   wl_array_init(&empty);
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Pressing control.
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 29 /* Control */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 29 /* Control */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   Sync();
 
-  wl_keyboard_send_modifiers(keyboard->resource(), 3, 4 /* mods_depressed*/,
+  wl_keyboard_send_modifiers(keyboard_->resource(), 3, 4 /* mods_depressed*/,
                              0 /* mods_latched */, 0 /* mods_locked */,
                              0 /* group */);
   Sync();
 
   // Pressing shift (with control key still held down).
-  wl_keyboard_send_key(keyboard->resource(), 4, 0, 42 /* Shift */,
+  wl_keyboard_send_key(keyboard_->resource(), 4, 0, 42 /* Shift */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event2;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
   Sync();
 
-  wl_keyboard_send_modifiers(keyboard->resource(), 5, 5 /* mods_depressed*/,
+  wl_keyboard_send_modifiers(keyboard_->resource(), 5, 5 /* mods_depressed*/,
                              0 /* mods_latched */, 0 /* mods_locked */,
                              0 /* group */);
   Sync();
 
   // Sending a reguard keypress, eg 'a'.
-  wl_keyboard_send_key(keyboard->resource(), 6, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 6, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event3;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event3));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event3));
   Sync();
 
   ASSERT_TRUE(event3);
@@ -234,15 +239,16 @@ TEST_P(WaylandKeyboardTest, CapsLockKeypress) {
   struct wl_array empty;
   wl_array_init(&empty);
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Capslock
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 58 /* Capslock */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
   ASSERT_TRUE(event);
@@ -256,11 +262,11 @@ TEST_P(WaylandKeyboardTest, CapsLockKeypress) {
 
   Sync();
 
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 58 /* Capslock */,
                        WL_KEYBOARD_KEY_STATE_RELEASED);
 
   std::unique_ptr<Event> event2;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
 
   Sync();
   ASSERT_TRUE(event2);
@@ -278,41 +284,42 @@ TEST_P(WaylandKeyboardTest, CapsLockModifier) {
   struct wl_array empty;
   wl_array_init(&empty);
   wl_array_init(&empty);
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Pressing capslock (led ON).
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 58 /* Capslock */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 58 /* Capslock */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   Sync();
 
-  wl_keyboard_send_modifiers(keyboard->resource(), 3, 2 /* mods_depressed*/,
+  wl_keyboard_send_modifiers(keyboard_->resource(), 3, 2 /* mods_depressed*/,
                              0 /* mods_latched */, 2 /* mods_locked */,
                              0 /* group */);
   Sync();
 
   // Releasing capslock (led ON).
-  wl_keyboard_send_key(keyboard->resource(), 4, 0, 58 /* Capslock */,
+  wl_keyboard_send_key(keyboard_->resource(), 4, 0, 58 /* Capslock */,
                        WL_KEYBOARD_KEY_STATE_RELEASED);
 
   std::unique_ptr<Event> event2;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
   Sync();
 
-  wl_keyboard_send_modifiers(keyboard->resource(), 5, 0 /* mods_depressed*/,
+  wl_keyboard_send_modifiers(keyboard_->resource(), 5, 0 /* mods_depressed*/,
                              0 /* mods_latched */, 2 /* mods_locked */,
                              0 /* group */);
   Sync();
 
   // Sending a reguard keypress, eg 'a'.
-  wl_keyboard_send_key(keyboard->resource(), 6, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 6, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event3;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event3));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event3));
   Sync();
 
   ASSERT_TRUE(event3);
@@ -330,20 +337,21 @@ TEST_P(WaylandKeyboardTest, EventAutoRepeat) {
   struct wl_array empty;
   wl_array_init(&empty);
 
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Auto repeat info in ms.
   uint32_t rate = 75;
   uint32_t delay = 25;
 
-  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+  wl_keyboard_send_repeat_info(keyboard_->resource(), rate, delay);
 
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
 
@@ -361,9 +369,9 @@ TEST_P(WaylandKeyboardTest, EventAutoRepeat) {
   Sync();
 
   std::unique_ptr<Event> event2;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event2));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event2));
 
-  wl_keyboard_send_key(keyboard->resource(), 3, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 3, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_RELEASED);
   Sync();
 }
@@ -372,20 +380,21 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatOnLeave) {
   struct wl_array empty;
   wl_array_init(&empty);
 
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Auto repeat info in ms.
   uint32_t rate = 75;
   uint32_t delay = 25;
 
-  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+  wl_keyboard_send_repeat_info(keyboard_->resource(), rate, delay);
 
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
 
@@ -400,13 +409,13 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatOnLeave) {
         base::TimeDelta::FromMilliseconds(rate * 2));
   }
 
-  wl_keyboard_send_leave(keyboard->resource(), 3, surface->resource());
+  wl_keyboard_send_leave(keyboard_->resource(), 3, surface_->resource());
 
   Sync();
 
-  EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(0);
 
-  wl_keyboard_send_key(keyboard->resource(), 4, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 4, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_RELEASED);
   Sync();
 }
@@ -415,20 +424,21 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
   struct wl_array empty;
   wl_array_init(&empty);
 
-  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_keyboard_send_enter(keyboard_->resource(), 1, surface_->resource(),
+                         &empty);
   wl_array_release(&empty);
 
   // Auto repeat info in ms.
   uint32_t rate = 500;
   uint32_t delay = 50;
 
-  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+  wl_keyboard_send_repeat_info(keyboard_->resource(), rate, delay);
 
-  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 2, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_PRESSED);
 
   std::unique_ptr<Event> event;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
 
@@ -444,11 +454,11 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
         base::TimeDelta::FromMilliseconds(rate / 5));
   }
 
-  wl_keyboard_send_key(keyboard->resource(), 4, 0, 30 /* a */,
+  wl_keyboard_send_key(keyboard_->resource(), 4, 0, 30 /* a */,
                        WL_KEYBOARD_KEY_STATE_RELEASED);
 
   std::unique_ptr<Event> event2;
-  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
 
   Sync();
   ASSERT_TRUE(event2);
