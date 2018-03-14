@@ -17,11 +17,12 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionIndependently) {
   gfx::ScrollOffset current_position(100, 100);
   SnapAreaData snap_x_only(
       SnapAxis::kX, gfx::ScrollOffset(80, SnapAreaData::kInvalidScrollPosition),
-      false);
+      gfx::RectF(0, 0, 360, 380), false);
   SnapAreaData snap_y_only(
       SnapAxis::kY, gfx::ScrollOffset(SnapAreaData::kInvalidScrollPosition, 70),
-      false);
-  SnapAreaData snap_on_both(SnapAxis::kBoth, gfx::ScrollOffset(50, 150), false);
+      gfx::RectF(0, 0, 360, 380), false);
+  SnapAreaData snap_on_both(SnapAxis::kBoth, gfx::ScrollOffset(50, 150),
+                            gfx::RectF(0, 0, 360, 380), false);
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
   data.AddSnapAreaData(snap_on_both);
@@ -38,11 +39,12 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionOnAxisValueBoth) {
   gfx::ScrollOffset current_position(40, 150);
   SnapAreaData snap_x_only(
       SnapAxis::kX, gfx::ScrollOffset(80, SnapAreaData::kInvalidScrollPosition),
-      false);
+      gfx::RectF(0, 0, 360, 380), false);
   SnapAreaData snap_y_only(
       SnapAxis::kY, gfx::ScrollOffset(SnapAreaData::kInvalidScrollPosition, 70),
-      false);
-  SnapAreaData snap_on_both(SnapAxis::kBoth, gfx::ScrollOffset(50, 150), false);
+      gfx::RectF(0, 0, 360, 380), false);
+  SnapAreaData snap_on_both(SnapAxis::kBoth, gfx::ScrollOffset(50, 150),
+                            gfx::RectF(0, 0, 360, 380), false);
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
   data.AddSnapAreaData(snap_on_both);
@@ -59,16 +61,63 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonScrolledAxis) {
   gfx::ScrollOffset current_position(100, 100);
   SnapAreaData snap_x_only(
       SnapAxis::kX, gfx::ScrollOffset(80, SnapAreaData::kInvalidScrollPosition),
-      false);
+      gfx::RectF(0, 0, 360, 380), false);
   SnapAreaData snap_y_only(
       SnapAxis::kY, gfx::ScrollOffset(SnapAreaData::kInvalidScrollPosition, 70),
-      false);
+      gfx::RectF(0, 0, 360, 380), false);
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
   gfx::ScrollOffset snap_position =
       data.FindSnapPosition(current_position, true, false);
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(100, snap_position.y());
+}
+
+TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonVisibleAreas) {
+  SnapContainerData data(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::ScrollOffset(360, 380));
+  gfx::ScrollOffset current_position(100, 100);
+  SnapAreaData non_visible_x(SnapAxis::kBoth, gfx::ScrollOffset(70, 70),
+                             gfx::RectF(0, 0, 90, 200), false);
+  SnapAreaData non_visible_y(SnapAxis::kBoth, gfx::ScrollOffset(70, 70),
+                             gfx::RectF(0, 0, 200, 90), false);
+  data.AddSnapAreaData(non_visible_x);
+  data.AddSnapAreaData(non_visible_y);
+  gfx::ScrollOffset snap_position =
+      data.FindSnapPosition(current_position, true, true);
+  EXPECT_EQ(100, snap_position.x());
+  EXPECT_EQ(100, snap_position.y());
+}
+
+TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
+  SnapContainerData data(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::ScrollOffset(360, 380));
+  gfx::ScrollOffset current_position(100, 100);
+
+  // Both the areas are currently visible.
+  // However, if we snap to them on x and y independently, none is visible after
+  // snapping. So we only snap on the axis that has a closer snap point first.
+  // After that, we look for another snap point on y axis which does not
+  // conflict with the snap point on x.
+  SnapAreaData snap_x(
+      SnapAxis::kX, gfx::ScrollOffset(80, SnapAreaData::kInvalidScrollPosition),
+      gfx::RectF(60, 60, 60, 60), false);
+  SnapAreaData snap_y1(
+      SnapAxis::kY,
+      gfx::ScrollOffset(SnapAreaData::kInvalidScrollPosition, 130),
+      gfx::RectF(90, 90, 60, 60), false);
+  SnapAreaData snap_y2(
+      SnapAxis::kY, gfx::ScrollOffset(SnapAreaData::kInvalidScrollPosition, 60),
+      gfx::RectF(50, 50, 60, 60), false);
+  data.AddSnapAreaData(snap_x);
+  data.AddSnapAreaData(snap_y1);
+  data.AddSnapAreaData(snap_y2);
+  gfx::ScrollOffset snap_position =
+      data.FindSnapPosition(current_position, true, true);
+  EXPECT_EQ(80, snap_position.x());
+  EXPECT_EQ(60, snap_position.y());
 }
 
 }  // namespace cc

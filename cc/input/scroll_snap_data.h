@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "cc/cc_export.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
@@ -20,6 +21,9 @@ enum class SnapAxis : unsigned {
   kBlock,
   kInline,
 };
+
+// A helper enum to specify the the axis when doing calculations.
+enum class SearchAxis : unsigned { kX, kY };
 
 // See https://www.w3.org/TR/css-scroll-snap-1/#snap-strictness
 // TODO(sunyunjia): Add kNone for SnapStrictness to match the spec.
@@ -90,12 +94,19 @@ struct SnapAreaData {
 
   SnapAreaData() {}
 
-  SnapAreaData(SnapAxis axis, gfx::ScrollOffset position, bool msnap)
-      : snap_axis(axis), snap_position(position), must_snap(msnap) {}
+  SnapAreaData(SnapAxis axis,
+               gfx::ScrollOffset position,
+               gfx::RectF visible,
+               bool msnap)
+      : snap_axis(axis),
+        snap_position(position),
+        visible_region(visible),
+        must_snap(msnap) {}
 
   bool operator==(const SnapAreaData& other) const {
     return (other.snap_axis == snap_axis) &&
            (other.snap_position == snap_position) &&
+           (other.visible_region == visible_region) &&
            (other.must_snap == must_snap);
   }
 
@@ -111,6 +122,11 @@ struct SnapAreaData {
   // overflow rect.
   gfx::ScrollOffset snap_position;
 
+  // The area is only visible when the current scroll offset is within
+  // |visible_region|.
+  // See https://drafts.csswg.org/css-scroll-snap-1/#snap-scope
+  gfx::RectF visible_region;
+
   // Whether this area has scroll-snap-stop: always.
   // See https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-stop
   bool must_snap;
@@ -118,6 +134,8 @@ struct SnapAreaData {
   // TODO(sunyunjia): Add fields for visibility requirement and large area
   // snapping.
 };
+
+typedef std::vector<SnapAreaData> SnapAreaList;
 
 // Snap container is a scroll container that has non-'none' value for
 // scroll-snap-type. It can be snapped to one of its snap areas when a scroll
