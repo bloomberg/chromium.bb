@@ -315,6 +315,7 @@ void EventPath::ShrinkForRelatedTarget(const Node& event_target_node,
 }
 
 void EventPath::AdjustForTouchEvent(const TouchEvent& touch_event) {
+  // Each vector and a TouchEventContext share the same TouchList instance.
   HeapVector<Member<TouchList>> adjusted_touches;
   HeapVector<Member<TouchList>> adjusted_target_touches;
   HeapVector<Member<TouchList>> adjusted_changed_touches;
@@ -329,8 +330,9 @@ void EventPath::AdjustForTouchEvent(const TouchEvent& touch_event) {
     tree_scopes.push_back(&tree_scope_event_context->GetTreeScope());
   }
 
-  // TODO(mustaq): The following adjustments to local vars seems suspicious.
-  // Only used for DCHECK?
+  // AdjustTouchList appends adjusted Touch(es) to each member TouchList
+  // instance in |adjusted_touch_list| argument, which is reflected on
+  // TouchEventContext because they refer to the same TouchList instance.
   AdjustTouchList(touch_event.touches(), adjusted_touches, tree_scopes);
   AdjustTouchList(touch_event.targetTouches(), adjusted_target_touches,
                   tree_scopes);
