@@ -19,6 +19,8 @@ component("gamepad") {
     "dualshock4_controller_base.h",
     "dualshock4_controller_linux.cc",
     "dualshock4_controller_linux.h",
+    "dualshock4_controller_mac.cc",
+    "dualshock4_controller_mac.h",
     "dualshock4_controller_win.cc",
     "dualshock4_controller_win.h",
     "game_controller_data_fetcher_mac.h",
