@@ -75,8 +75,8 @@ android {
 {% for t in android_test %}
 {{ expand_sourceset(t, 'androidTest') }}
 {% endfor %}
-    }
 {% endif %}
+    }
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
