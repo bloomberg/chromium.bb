@@ -3144,6 +3144,7 @@
         { "kind" : "IdRef", "name" : "'Target'" },
         { "kind" : "Decoration" }
       ],
+      "extensions" : [ "SPV_GOOGLE_hlsl_functionality1" ],
       "version" : "1.2"
     },
     {
@@ -3602,7 +3603,9 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "'Predicate'" }
       ],
-      "capabilities" : [ "SubgroupBallotKHR" ]
+      "capabilities" : [ "SubgroupBallotKHR" ],
+      "extensions" : [ "SPV_KHR_shader_ballot" ],
+      "version" : "None"
     },
     {
       "opname" : "OpSubgroupFirstInvocationKHR",
@@ -3612,7 +3615,9 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "'Value'" }
       ],
-      "capabilities" : [ "SubgroupBallotKHR" ]
+      "capabilities" : [ "SubgroupBallotKHR" ],
+      "extensions" : [ "SPV_KHR_shader_ballot" ],
+      "version" : "None"
     },
     {
       "opname" : "OpSubgroupAllKHR",
@@ -3666,6 +3671,7 @@
         { "kind" : "IdRef", "name" : "'Index'" }
       ],
       "capabilities" : [ "SubgroupBallotKHR" ],
+      "extensions" : [ "SPV_KHR_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3679,6 +3685,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3692,6 +3699,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3705,6 +3713,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3718,6 +3727,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3731,6 +3741,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3744,6 +3755,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3757,6 +3769,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -3770,6 +3783,7 @@
         { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ],
+      "extensions" : [ "SPV_AMD_shader_ballot" ],
       "version" : "None"
     },
     {
@@ -5728,7 +5742,7 @@
         {
           "enumerant" : "SubgroupSize",
           "value" : 36,
-          "capabilities" : [ "Kernel", "GroupNonUniform" ]
+          "capabilities" : [ "Kernel", "GroupNonUniform", "SubgroupBallotKHR" ]
         },
         {
           "enumerant" : "SubgroupMaxSize",
@@ -5753,7 +5767,7 @@
         {
           "enumerant" : "SubgroupLocalInvocationId",
           "value" : 41,
-          "capabilities" : [ "Kernel", "GroupNonUniform" ]
+          "capabilities" : [ "Kernel", "GroupNonUniform", "SubgroupBallotKHR" ]
         },
         {
           "enumerant" : "VertexIndex",
@@ -5799,60 +5813,70 @@
           "enumerant" : "SubgroupEqMaskKHR",
           "value" : 4416,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "extensions" : [ "SPV_KHR_shader_ballot" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "SubgroupGeMaskKHR",
           "value" : 4417,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "extensions" : [ "SPV_KHR_shader_ballot" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "SubgroupGtMaskKHR",
           "value" : 4418,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "extensions" : [ "SPV_KHR_shader_ballot" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "SubgroupLeMaskKHR",
           "value" : 4419,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "extensions" : [ "SPV_KHR_shader_ballot" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "SubgroupLtMaskKHR",
           "value" : 4420,
           "capabilities" : [ "SubgroupBallotKHR", "GroupNonUniformBallot" ],
+          "extensions" : [ "SPV_KHR_shader_ballot" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "BaseVertex",
           "value" : 4424,
           "capabilities" : [ "DrawParameters" ],
+          "extensions" : [ "SPV_KHR_shader_draw_parameters" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "BaseInstance",
           "value" : 4425,
           "capabilities" : [ "DrawParameters" ],
+          "extensions" : [ "SPV_KHR_shader_draw_parameters" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "DrawIndex",
           "value" : 4426,
           "capabilities" : [ "DrawParameters" ],
+          "extensions" : [ "SPV_KHR_shader_draw_parameters" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "DeviceIndex",
           "value" : 4438,
           "capabilities" : [ "DeviceGroup" ],
+          "extensions" : [ "SPV_KHR_device_group" ],
           "version" : "1.3"
         },
         {
           "enumerant" : "ViewIndex",
           "value" : 4440,
           "capabilities" : [ "MultiView" ],
+          "extensions" : [ "SPV_KHR_multiview" ],
           "version" : "1.3"
         },
         {
@@ -6412,6 +6436,7 @@
         {
           "enumerant" : "DeviceGroup",
           "value" : 4437,
+          "extensions" : [ "SPV_KHR_device_group" ],
           "version" : "1.3"
         },
         {
