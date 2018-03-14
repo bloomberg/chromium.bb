@@ -253,35 +253,35 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   std::vector<URLRequestSummary> resources;
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script2.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", true));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image1.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image2.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
+      content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script2.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image1.png",
+                                              content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image2.png",
+                                              content::RESOURCE_TYPE_IMAGE));
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style2.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true));
+      content::RESOURCE_TYPE_STYLESHEET));
 
-  auto no_store = CreateURLRequestSummary(
-      1, "http://www.google.com",
-      "http://static.google.com/style2-no-store.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
+  auto no_store =
+      CreateURLRequestSummary(1, "http://www.google.com",
+                              "http://static.google.com/style2-no-store.css",
+                              content::RESOURCE_TYPE_STYLESHEET);
   no_store.is_no_store = true;
 
   auto redirected = CreateURLRequestSummary(
       1, "http://www.google.com", "http://reader.google.com/style.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
+      content::RESOURCE_TYPE_STYLESHEET);
   redirected.redirect_url = GURL("http://dev.null.google.com/style.css");
 
   auto page_summary = CreatePageRequestSummary(
@@ -331,34 +331,34 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
       1, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+      content::RESOURCE_TYPE_MAIN_FRAME);
 
   std::vector<URLRequestSummary> resources;
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script2.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", true));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image1.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image2.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
+      content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script2.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image1.png",
+                                              content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image2.png",
+                                              content::RESOURCE_TYPE_IMAGE));
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style2.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true));
-  auto no_store = CreateURLRequestSummary(
-      1, "http://www.google.com",
-      "http://static.google.com/style2-no-store.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
+      content::RESOURCE_TYPE_STYLESHEET));
+  auto no_store =
+      CreateURLRequestSummary(1, "http://www.google.com",
+                              "http://static.google.com/style2-no-store.css",
+                              content::RESOURCE_TYPE_STYLESHEET);
   no_store.is_no_store = true;
 
   auto page_summary = CreatePageRequestSummary(
@@ -397,16 +397,16 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   ResetPredictor();
   InitializePredictor();
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      1, "http://www.nike.com", "http://www.nike.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1, "http://www.nike.com", "http://www.nike.com",
+                              content::RESOURCE_TYPE_MAIN_FRAME);
 
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, "http://www.nike.com", "http://nike.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false);
+      content::RESOURCE_TYPE_STYLESHEET);
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, "http://www.nike.com", "http://nike.com/image2.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false);
+      content::RESOURCE_TYPE_IMAGE);
 
   auto page_summary = CreatePageRequestSummary(
       "http://www.nike.com", "http://www.nike.com", {resource1, resource2});
@@ -448,8 +448,7 @@ TEST_F(ResourcePrefetchPredictorTest,
   const int num_resources = predictor_->config_.max_origins_per_entry + 10;
   for (int i = 1; i <= num_resources; ++i) {
     resources.push_back(CreateURLRequestSummary(
-        1, "http://www.google.com", gen(i), content::RESOURCE_TYPE_SCRIPT,
-        net::MEDIUM, "text/javascript", false));
+        1, "http://www.google.com", gen(i), content::RESOURCE_TYPE_SCRIPT));
   }
 
   auto page_summary = CreatePageRequestSummary(

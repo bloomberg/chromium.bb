@@ -69,10 +69,8 @@ TEST_F(LoadingDataCollectorTest, SummarizeResponse) {
                        content::RESOURCE_TYPE_IMAGE, true);
   URLRequestSummary summary;
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
-  EXPECT_EQ(url, summary.resource_url);
+  EXPECT_EQ(url, summary.request_url);
   EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, summary.resource_type);
-  EXPECT_TRUE(summary.was_cached);
-  EXPECT_FALSE(summary.has_validators);
   EXPECT_FALSE(summary.always_revalidate);
 
   // Navigation_id elements should be unset by default.
@@ -111,7 +109,6 @@ TEST_F(LoadingDataCollectorTest, SummarizeResponseCachePolicy) {
   URLRequestSummary summary;
   EXPECT_TRUE(
       URLRequestSummary::SummarizeResponse(*request_no_validators, &summary));
-  EXPECT_FALSE(summary.has_validators);
 
   response_info.headers = MakeResponseHeaders(
       "HTTP/1.1 200 OK\n"
@@ -122,37 +119,7 @@ TEST_F(LoadingDataCollectorTest, SummarizeResponseCachePolicy) {
       url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
       content::RESOURCE_TYPE_PREFETCH, true);
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request_etag, &summary));
-  EXPECT_TRUE(summary.has_validators);
   EXPECT_TRUE(summary.always_revalidate);
-}
-
-TEST_F(LoadingDataCollectorTest, SummarizeResponseConnectDuration) {
-  net::HttpResponseInfo response_info;
-  response_info.headers =
-      MakeResponseHeaders("HTTP/1.1 200 OK\n\nSome: Headers\n");
-  url_request_job_factory_.set_response_info(response_info);
-
-  net::LoadTimingInfo load_timing_info;
-  // These times must be after request start in CreateURLRequest().
-  auto block_on_connect =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1);
-  load_timing_info.connect_timing.dns_start = block_on_connect;
-  load_timing_info.connect_timing.dns_end =
-      block_on_connect + base::TimeDelta::FromMilliseconds(100);
-  load_timing_info.connect_timing.connect_start =
-      block_on_connect + base::TimeDelta::FromMilliseconds(500);
-  load_timing_info.connect_timing.connect_end =
-      block_on_connect + base::TimeDelta::FromMilliseconds(700);
-  url_request_job_factory_.set_load_timing_info(load_timing_info);
-
-  GURL url("http://www.google.com/cat.png");
-  std::unique_ptr<net::URLRequest> request =
-      CreateURLRequest(url_request_context_, url, net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-
-  URLRequestSummary summary;
-  EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(300), summary.connect_duration);
 }
 
 TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
@@ -400,43 +367,43 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   std::vector<URLRequestSummary> resources;
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false));
+      content::RESOURCE_TYPE_STYLESHEET));
   collector_->RecordURLResponse(resources.back());
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
   collector_->RecordURLResponse(resources.back());
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script2.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script2.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
   collector_->RecordURLResponse(resources.back());
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", true));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
   collector_->RecordURLResponse(resources.back());
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image1.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image1.png",
+                                              content::RESOURCE_TYPE_IMAGE));
   collector_->RecordURLResponse(resources.back());
-  resources.push_back(CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/image2.png",
-      content::RESOURCE_TYPE_IMAGE, net::MEDIUM, "image/png", false));
+  resources.push_back(CreateURLRequestSummary(1, "http://www.google.com",
+                                              "http://google.com/image2.png",
+                                              content::RESOURCE_TYPE_IMAGE));
   collector_->RecordURLResponse(resources.back());
   resources.push_back(CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style2.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true));
+      content::RESOURCE_TYPE_STYLESHEET));
   collector_->RecordURLResponse(resources.back());
 
-  auto no_store = CreateURLRequestSummary(
-      1, "http://www.google.com",
-      "http://static.google.com/style2-no-store.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
+  auto no_store =
+      CreateURLRequestSummary(1, "http://www.google.com",
+                              "http://static.google.com/style2-no-store.css",
+                              content::RESOURCE_TYPE_STYLESHEET);
   no_store.is_no_store = true;
   collector_->RecordURLResponse(no_store);
 
   auto redirected = CreateURLRequestSummary(
       1, "http://www.google.com", "http://reader.google.com/style.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
+      content::RESOURCE_TYPE_STYLESHEET);
   redirected.redirect_url = GURL("http://dev.null.google.com/style.css");
   collector_->RecordURLRedirect(redirected);
 
@@ -484,13 +451,13 @@ TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
 TEST_F(LoadingDataCollectorTest, OnMainFrameRequest) {
   URLRequestSummary summary1 = CreateURLRequestSummary(
       1, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+      content::RESOURCE_TYPE_MAIN_FRAME);
   URLRequestSummary summary2 = CreateURLRequestSummary(
       2, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
-  URLRequestSummary summary3 = CreateURLRequestSummary(
-      3, "http://www.yahoo.com", "http://www.yahoo.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  URLRequestSummary summary3 =
+      CreateURLRequestSummary(3, "http://www.yahoo.com", "http://www.yahoo.com",
+                              content::RESOURCE_TYPE_MAIN_FRAME);
 
   collector_->RecordURLRequest(summary1);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
@@ -500,12 +467,12 @@ TEST_F(LoadingDataCollectorTest, OnMainFrameRequest) {
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
   // Insert another with same navigation id. It should replace.
-  URLRequestSummary summary4 = CreateURLRequestSummary(
-      1, "http://www.nike.com", "http://www.nike.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+  URLRequestSummary summary4 =
+      CreateURLRequestSummary(1, "http://www.nike.com", "http://www.nike.com",
+                              content::RESOURCE_TYPE_MAIN_FRAME);
   URLRequestSummary summary5 = CreateURLRequestSummary(
       2, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+      content::RESOURCE_TYPE_MAIN_FRAME);
 
   collector_->RecordURLRequest(summary4);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
@@ -516,9 +483,9 @@ TEST_F(LoadingDataCollectorTest, OnMainFrameRequest) {
   collector_->RecordURLRequest(summary5);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
-  URLRequestSummary summary6 = CreateURLRequestSummary(
-      4, "http://www.shoes.com", "http://www.shoes.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+  URLRequestSummary summary6 =
+      CreateURLRequestSummary(4, "http://www.shoes.com", "http://www.shoes.com",
+                              content::RESOURCE_TYPE_MAIN_FRAME);
   collector_->RecordURLRequest(summary6);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
@@ -608,71 +575,29 @@ TEST_F(LoadingDataCollectorTest, OnSubresourceResponse) {
   // If there is no inflight navigation, nothing happens.
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false);
+      content::RESOURCE_TYPE_STYLESHEET);
   collector_->RecordURLResponse(resource1);
   EXPECT_TRUE(collector_->inflight_navigations_.empty());
 
   // Add an inflight navigation.
   URLRequestSummary main_frame1 = CreateURLRequestSummary(
       1, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME, net::MEDIUM, std::string(), false);
+      content::RESOURCE_TYPE_MAIN_FRAME);
   collector_->RecordURLRequest(main_frame1);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
   // Now add a few subresources.
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
+      content::RESOURCE_TYPE_SCRIPT);
   URLRequestSummary resource3 = CreateURLRequestSummary(
       1, "http://www.google.com", "http://google.com/script2.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
+      content::RESOURCE_TYPE_SCRIPT);
   collector_->RecordURLResponse(resource1);
   collector_->RecordURLResponse(resource2);
   collector_->RecordURLResponse(resource3);
 
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-}
-
-TEST_F(LoadingDataCollectorTest, TestRecordFirstContentfulPaint) {
-  auto res1_time = base::TimeTicks::FromInternalValue(1);
-  auto res2_time = base::TimeTicks::FromInternalValue(2);
-  auto fcp_time = base::TimeTicks::FromInternalValue(3);
-  auto res3_time = base::TimeTicks::FromInternalValue(4);
-
-  URLRequestSummary main_frame =
-      CreateURLRequestSummary(1, "http://www.google.com");
-  collector_->RecordURLRequest(main_frame);
-  collector_->RecordURLResponse(main_frame);
-  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-
-  URLRequestSummary resource1 = CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false);
-  resource1.response_time = res1_time;
-  collector_->RecordURLResponse(resource1);
-  URLRequestSummary resource2 = CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script1.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
-  resource2.response_time = res2_time;
-  collector_->RecordURLResponse(resource2);
-  URLRequestSummary resource3 = CreateURLRequestSummary(
-      1, "http://www.google.com", "http://google.com/script2.js",
-      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
-  resource3.response_time = res3_time;
-  collector_->RecordURLResponse(resource3);
-
-  collector_->RecordFirstContentfulPaint(main_frame.navigation_id, fcp_time);
-
-  // Since res3_time is after fcp_time, we expect this field to have been set to
-  // false before RecordPageRequestSummary is called.
-  resource3.before_first_contentful_paint = false;
-  EXPECT_CALL(
-      *mock_predictor_,
-      RecordPageRequestSummaryProxy(testing::Pointee(CreatePageRequestSummary(
-          "http://www.google.com", "http://www.google.com",
-          {resource1, resource2, resource3}))));
-
-  collector_->RecordMainFrameLoadComplete(main_frame.navigation_id);
 }
 
 }  // namespace predictors

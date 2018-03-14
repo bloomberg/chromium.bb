@@ -103,27 +103,17 @@ PageRequestSummary CreatePageRequestSummary(
 
 URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
                                           const std::string& main_frame_url,
-                                          const std::string& resource_url,
+                                          const std::string& request_url,
                                           content::ResourceType resource_type,
-                                          net::RequestPriority priority,
-                                          const std::string& mime_type,
-                                          bool was_cached,
                                           const std::string& redirect_url,
-                                          bool has_validators,
                                           bool always_revalidate) {
   URLRequestSummary summary;
   summary.navigation_id = CreateNavigationID(tab_id, main_frame_url);
-  summary.resource_url =
-      resource_url.empty() ? GURL(main_frame_url) : GURL(resource_url);
-  summary.request_url = summary.resource_url;
-  summary.resource_type = resource_type;
-  summary.priority = priority;
-  summary.before_first_contentful_paint = true;
-  summary.mime_type = mime_type;
-  summary.was_cached = was_cached;
+  summary.request_url =
+      request_url.empty() ? GURL(main_frame_url) : GURL(request_url);
   if (!redirect_url.empty())
     summary.redirect_url = GURL(redirect_url);
-  summary.has_validators = has_validators;
+  summary.resource_type = resource_type;
   summary.always_revalidate = always_revalidate;
   summary.is_no_store = false;
   summary.network_accessed = true;
@@ -295,12 +285,10 @@ std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
 }
 
 std::ostream& operator<<(std::ostream& os, const URLRequestSummary& summary) {
-  return os << "[" << summary.navigation_id << "," << summary.resource_url
-            << "," << summary.resource_type << "," << summary.priority << ","
-            << summary.before_first_contentful_paint << "," << summary.mime_type
-            << "," << summary.was_cached << "," << summary.redirect_url << ","
-            << summary.has_validators << "," << summary.always_revalidate
-            << "]";
+  return os << "[" << summary.navigation_id << "," << summary.request_url << ","
+            << summary.redirect_url << "," << summary.resource_type << ","
+            << summary.always_revalidate << "," << summary.is_no_store << ","
+            << summary.network_accessed << "]";
 }
 
 std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
@@ -351,15 +339,12 @@ bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
 
 bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
   return lhs.navigation_id == rhs.navigation_id &&
-         lhs.resource_url == rhs.resource_url &&
-         lhs.resource_type == rhs.resource_type &&
-         lhs.priority == rhs.priority && lhs.mime_type == rhs.mime_type &&
-         lhs.before_first_contentful_paint ==
-             rhs.before_first_contentful_paint &&
-         lhs.was_cached == rhs.was_cached &&
+         lhs.request_url == rhs.request_url &&
          lhs.redirect_url == rhs.redirect_url &&
-         lhs.has_validators == rhs.has_validators &&
-         lhs.always_revalidate == rhs.always_revalidate;
+         lhs.resource_type == rhs.resource_type &&
+         lhs.always_revalidate == rhs.always_revalidate &&
+         lhs.is_no_store == rhs.is_no_store &&
+         lhs.network_accessed == rhs.network_accessed;
 }
 
 bool operator==(const OriginRequestSummary& lhs,

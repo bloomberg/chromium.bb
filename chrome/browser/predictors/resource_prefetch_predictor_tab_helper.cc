@@ -57,12 +57,9 @@ void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
 
   URLRequestSummary summary;
   summary.navigation_id = NavigationID(web_contents());
-  summary.resource_url = url;
   summary.request_url = url;
-  summary.mime_type = mime_type;
   summary.resource_type =
       LoadingDataCollector::GetResourceType(resource_type, mime_type);
-  summary.was_cached = true;
   auto* collector = loading_predictor->loading_data_collector();
   collector->RecordURLResponse(summary);
 }
