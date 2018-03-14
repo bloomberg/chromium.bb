@@ -84,9 +84,6 @@ class IndefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
       : GridTrackSizingAlgorithmStrategy(algorithm) {}
 
  private:
-  LayoutUnit MinLogicalWidthForChild(LayoutBox&,
-                                     Length child_min_size,
-                                     LayoutUnit available_size) const override;
   void LayoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool override_size_has_changed) const override;
@@ -109,9 +106,6 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
       : GridTrackSizingAlgorithmStrategy(algorithm) {}
 
  private:
-  LayoutUnit MinLogicalWidthForChild(LayoutBox&,
-                                     Length child_min_size,
-                                     LayoutUnit available_size) const override;
   void LayoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool override_size_has_changed) const override;
@@ -438,7 +432,7 @@ void GridTrackSizingAlgorithmStrategy::DistributeSpaceToTracks(
                                                       available_logical_space);
 }
 
-LayoutUnit DefiniteSizeStrategy::MinLogicalWidthForChild(
+LayoutUnit GridTrackSizingAlgorithmStrategy::MinLogicalWidthForChild(
     LayoutBox& child,
     Length child_min_size,
     LayoutUnit available_size) const {
@@ -485,19 +479,6 @@ double DefiniteSizeStrategy::FindUsedFlexFraction(
 LayoutUnit DefiniteSizeStrategy::FreeSpaceForStretchAutoTracksStep() const {
   DCHECK(algorithm_.FreeSpace(Direction()));
   return algorithm_.FreeSpace(Direction()).value();
-}
-
-LayoutUnit IndefiniteSizeStrategy::MinLogicalWidthForChild(
-    LayoutBox& child,
-    Length child_min_size,
-    LayoutUnit available_size) const {
-  // TODO(svillar): we should use marginIntrinsicLogicalWidthForChild() instead
-  // but it is protected for LayoutObjects. Apparently none of the current tests
-  // fail, so we need a test case for this too.
-  LayoutUnit margin_logical_width = LayoutUnit();
-  return child.ComputeLogicalWidthUsing(kMinSize, child_min_size,
-                                        available_size, GetLayoutGrid()) +
-         margin_logical_width;
 }
 
 void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(

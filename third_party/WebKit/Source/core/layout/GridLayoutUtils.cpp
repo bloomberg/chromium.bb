@@ -68,6 +68,10 @@ LayoutUnit GridLayoutUtils::MarginLogicalWidthForChild(const LayoutGrid& grid,
                                                        const LayoutBox& child) {
   if (child.NeedsLayout())
     return ComputeMarginLogicalSizeForChild(grid, kInlineDirection, child);
+  // TODO(rego): Evaluate the possibility of using
+  // LayoutBlock::MarginIntrinsicLogicalWidthForChild() (note that this is
+  // protected so it cannot be directly used right now) or some similar method
+  // for this case.
   LayoutUnit margin_start = child.StyleRef().MarginStart().IsAuto()
                                 ? LayoutUnit()
                                 : child.MarginStart();
