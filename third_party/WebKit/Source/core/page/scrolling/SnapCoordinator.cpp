@@ -14,6 +14,7 @@
 #include "platform/scroll/ScrollSnapData.h"
 
 namespace blink {
+// TODO(sunyunjia): Move the static functions to an anonymous namespace.
 
 SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
 
@@ -81,12 +82,31 @@ static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
              : layout_box.GetScrollableArea();
 }
 
+// TODO(sunyunjia): Needs to add layout test for vertical writing mode.
+// https://crbug.com/821645
+static ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
+  ScrollSnapType scroll_snap_type = snap_container.Style()->GetScrollSnapType();
+  if (scroll_snap_type.axis == SnapAxis::kInline) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = SnapAxis::kX;
+    else
+      scroll_snap_type.axis = SnapAxis::kY;
+  }
+  if (scroll_snap_type.axis == SnapAxis::kBlock) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = SnapAxis::kY;
+    else
+      scroll_snap_type.axis = SnapAxis::kX;
+  }
+  // Writing mode does not affect the cases where axis kX, kY or kBoth.
+  return scroll_snap_type;
+}
+
 void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   if (snap_container.Style()->GetScrollSnapType().is_none)
     return;
 
-  SnapContainerData snap_container_data(
-      snap_container.Style()->GetScrollSnapType());
+  SnapContainerData snap_container_data(GetPhysicalSnapType(snap_container));
 
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (!scrollable_area)
@@ -127,11 +147,12 @@ static float ClipInContainer(LayoutUnit unit, float max) {
 //    that this rect is represented by the dotted box below, which is expanded
 //    by the scroll-margin from the element's original boundary.
 static float CalculateSnapPosition(SnapAlignment alignment,
-                                   SnapAxis axis,
+                                   SearchAxis axis,
                                    const LayoutRect& container,
                                    const FloatPoint& max_position,
                                    const LayoutRect& area) {
-  DCHECK(axis == SnapAxis::kX || axis == SnapAxis::kY);
+  if (alignment == SnapAlignment::kNone)
+    return SnapAreaData::kInvalidScrollPosition;
   switch (alignment) {
     /* Start alignment aligns the area's start edge with container's start edge.
        https://www.w3.org/TR/css-scroll-snap-1/#valdef-scroll-snap-align-start
@@ -164,7 +185,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
 
     */
     case SnapAlignment::kStart:
-      if (axis == SnapAxis::kX) {
+      if (axis == SearchAxis::kX) {
         return ClipInContainer(area.X() - container.X(), max_position.X());
       }
       return ClipInContainer(area.Y() - container.Y(), max_position.Y());
@@ -201,7 +222,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
 
     */
     case SnapAlignment::kCenter:
-      if (axis == SnapAxis::kX) {
+      if (axis == SearchAxis::kX) {
         return ClipInContainer(area.Center().X() - container.Center().X(),
                                max_position.X());
       }
@@ -239,7 +260,7 @@ static float CalculateSnapPosition(SnapAlignment alignment,
 
     */
     case SnapAlignment::kEnd:
-      if (axis == SnapAxis::kX) {
+      if (axis == SearchAxis::kX) {
         return ClipInContainer(area.MaxX() - container.MaxX(),
                                max_position.X());
       }
@@ -261,6 +282,27 @@ static ScrollSnapAlign GetPhysicalAlignment(
     }
   }
   return align;
+}
+
+static FloatRect GetVisibleRegion(const LayoutRect& container,
+                                  const LayoutRect& area) {
+  float left = area.X() - container.MaxX();
+  float right = area.MaxX() - container.X();
+  float top = area.Y() - container.MaxY();
+  float bottom = area.MaxY() - container.Y();
+  return FloatRect(left, top, right - left, bottom - top);
+}
+
+static SnapAxis ToSnapAxis(ScrollSnapAlign align) {
+  if (align.alignmentX != SnapAlignment::kNone &&
+      align.alignmentY != SnapAlignment::kNone)
+    return SnapAxis::kBoth;
+
+  if (align.alignmentX != SnapAlignment::kNone &&
+      align.alignmentY == SnapAlignment::kNone)
+    return SnapAxis::kX;
+
+  return SnapAxis::kY;
 }
 
 SnapAreaData SnapCoordinator::CalculateSnapAreaData(
@@ -331,20 +373,13 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   ScrollSnapAlign align = GetPhysicalAlignment(*area_style, *container_style);
 
   snap_area_data.snap_position.set_x(CalculateSnapPosition(
-      align.alignmentX, SnapAxis::kX, container, max_position, area));
+      align.alignmentX, SearchAxis::kX, container, max_position, area));
   snap_area_data.snap_position.set_y(CalculateSnapPosition(
-      align.alignmentY, SnapAxis::kY, container, max_position, area));
+      align.alignmentY, SearchAxis::kY, container, max_position, area));
 
-  if (align.alignmentX != SnapAlignment::kNone &&
-      align.alignmentY != SnapAlignment::kNone) {
-    snap_area_data.snap_axis = SnapAxis::kBoth;
-  } else if (align.alignmentX != SnapAlignment::kNone &&
-             align.alignmentY == SnapAlignment::kNone) {
-    snap_area_data.snap_axis = SnapAxis::kX;
-  } else {
-    snap_area_data.snap_axis = SnapAxis::kY;
-  }
+  snap_area_data.snap_axis = ToSnapAxis(align);
 
+  snap_area_data.visible_region = GetVisibleRegion(container, area);
   snap_area_data.must_snap =
       (area_style->ScrollSnapStop() == EScrollSnapStop::kAlways);
 
@@ -393,22 +428,11 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
   if (scroll_snap_type.is_none) {
     snap_container_map_.erase(&snap_container);
     snap_container.ClearSnapAreas();
-  } else {
-    if (scroll_snap_type.axis == SnapAxis::kInline) {
-      if (snap_container.Style()->IsHorizontalWritingMode())
-        scroll_snap_type.axis = SnapAxis::kX;
-      else
-        scroll_snap_type.axis = SnapAxis::kY;
-    }
-    if (scroll_snap_type.axis == SnapAxis::kBlock) {
-      if (snap_container.Style()->IsHorizontalWritingMode())
-        scroll_snap_type.axis = SnapAxis::kY;
-      else
-        scroll_snap_type.axis = SnapAxis::kX;
-    }
-    // TODO(sunyunjia): Only update when the localframe doesn't need layout.
-    UpdateSnapContainerData(snap_container);
+    return;
   }
+
+  // TODO(sunyunjia): Only update when the localframe doesn't need layout.
+  UpdateSnapContainerData(snap_container);
 
   // TODO(majidvp): Add logic to correctly handle orphaned snap areas here.
   // 1. Removing container: find a new snap container for its orphan snap
