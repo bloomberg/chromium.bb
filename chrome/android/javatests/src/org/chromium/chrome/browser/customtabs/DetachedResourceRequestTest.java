@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
@@ -34,7 +35,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.net.GURLUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /** Tests for detached resource requests. */
@@ -50,7 +50,7 @@ public class DetachedResourceRequestTest {
     private EmbeddedTestServer mServer;
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
-    private static final String ORIGIN = "http://cats.google.com";
+    private static final Uri ORIGIN = Uri.parse("http://cats.google.com");
 
     @Before
     public void setUp() throws Exception {
@@ -83,8 +83,8 @@ public class DetachedResourceRequestTest {
                 () -> { Assert.assertFalse(mConnection.canDoParallelRequest(session, ORIGIN)); });
         ThreadUtils.runOnUiThreadBlocking(() -> {
             String packageName = mContext.getPackageName();
-            OriginVerifier.addVerifiedOriginForPackage(
-                    packageName, new Origin(ORIGIN), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            OriginVerifier.addVerifiedOriginForPackage(packageName, new Origin(ORIGIN.toString()),
+                    CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(session, ORIGIN));
         });
     }
@@ -97,12 +97,14 @@ public class DetachedResourceRequestTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Should not allow android-app:// scheme",
                     mConnection.startParallelRequest(
-                            session, "android-app://this.is.an.android.app", ORIGIN));
+                            session, Uri.parse("android-app://this.is.an.android.app"), ORIGIN));
             Assert.assertFalse("Should not allow an empty URL",
-                    mConnection.startParallelRequest(session, "", ORIGIN));
+                    mConnection.startParallelRequest(session, Uri.parse(""), ORIGIN));
             Assert.assertFalse("Should not allow an arbitrary origin",
-                    mConnection.startParallelRequest(session, "HTTPS://foo.bar", "wrong://origin"));
-            Assert.assertTrue(mConnection.startParallelRequest(session, "HTTP://foo.bar", ORIGIN));
+                    mConnection.startParallelRequest(
+                            session, Uri.parse("HTTPS://foo.bar"), Uri.parse("wrong://origin")));
+            Assert.assertTrue(
+                    mConnection.startParallelRequest(session, Uri.parse("HTTP://foo.bar"), ORIGIN));
         });
     }
 
@@ -122,7 +124,7 @@ public class DetachedResourceRequestTest {
         });
         mServer.start();
 
-        String url = mServer.getURL("/echotitle");
+        Uri url = Uri.parse(mServer.getURL("/echotitle"));
         ThreadUtils.runOnUiThread(
                 () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
         cb.waitForCallback(0, 1);
@@ -134,7 +136,7 @@ public class DetachedResourceRequestTest {
     public void testCanSetCookie() throws Exception {
         CustomTabsSessionToken session = prepareSession();
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
-        final String url = mServer.getURL("/set-cookie?acookie");
+        final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         ThreadUtils.runOnUiThreadBlocking(
                 () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
 
@@ -159,7 +161,7 @@ public class DetachedResourceRequestTest {
             Assert.assertFalse(prefs.isBlockThirdPartyCookiesEnabled());
             prefs.setBlockThirdPartyCookiesEnabled(true);
         });
-        final String url = mServer.getURL("/set-cookie?acookie");
+        final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         ThreadUtils.runOnUiThreadBlocking(
                 () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, ORIGIN)));
 
@@ -184,9 +186,9 @@ public class DetachedResourceRequestTest {
             Assert.assertFalse(prefs.isBlockThirdPartyCookiesEnabled());
             prefs.setBlockThirdPartyCookiesEnabled(true);
         });
-        final String url = mServer.getURL("/set-cookie?acookie");
-        String origin = GURLUtils.getOrigin(url);
-        CustomTabsSessionToken session = prepareSession(origin);
+        final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
+        final Uri origin = Uri.parse(new Origin(url).toString());
+        CustomTabsSessionToken session = prepareSession(url);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> Assert.assertTrue(mConnection.startParallelRequest(session, url, origin)));
@@ -205,14 +207,14 @@ public class DetachedResourceRequestTest {
         return prepareSession(ORIGIN);
     }
 
-    private CustomTabsSessionToken prepareSession(String origin) throws Exception {
+    private CustomTabsSessionToken prepareSession(Uri origin) throws Exception {
         final CustomTabsSessionToken session =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
         Assert.assertTrue(mConnection.newSession(session));
         CustomTabsTestUtils.warmUpAndWait();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             OriginVerifier.addVerifiedOriginForPackage(mContext.getPackageName(),
-                    new Origin(origin), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                    new Origin(origin.toString()), CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(session, origin));
         });
         return session;

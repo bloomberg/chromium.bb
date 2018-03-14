@@ -147,6 +147,12 @@ public class CustomTabsConnection {
     // TODO(lizeb): Move to the support library.
     @VisibleForTesting
     static final String REDIRECT_ENDPOINT_KEY = "android.support.customtabs.REDIRECT_ENDPOINT";
+    @VisibleForTesting
+    static final String PARALLEL_REQUEST_REFERRER_KEY =
+            "android.support.customtabs.PARALLEL_REQUEST_REFERRER";
+    @VisibleForTesting
+    static final String PARALLEL_REQUEST_URL_KEY =
+            "android.support.customtabs.PARALLEL_REQUEST_URL";
 
     private static final CustomTabsConnection sInstance =
             AppHooks.get().createCustomTabsConnection();
@@ -894,6 +900,12 @@ public class CustomTabsConnection {
         // processing from now on.
         if (mWarmupTasks != null) mWarmupTasks.cancel();
 
+        maybePreconnectToRedirectEndpoint(session, url, intent);
+        maybeStartParallelRequest(session, intent);
+    }
+
+    private void maybePreconnectToRedirectEndpoint(
+            CustomTabsSessionToken session, String url, Intent intent) {
         // For the preconnection to not be a no-op, we need more than just the native library.
         if (!ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()) {
             return;
@@ -914,19 +926,29 @@ public class CustomTabsConnection {
                 Profile.getLastUsedProfile(), redirectEndpoint.toString());
     }
 
-    /** @return Whether {@code session} can create a parallel request for a given {@code origin}. */
+    private void maybeStartParallelRequest(CustomTabsSessionToken session, Intent intent) {
+        if (!mClientManager.getAllowParallelRequestForSession(session)) return;
+        Uri referrer = intent.getParcelableExtra(PARALLEL_REQUEST_REFERRER_KEY);
+        Uri url = intent.getParcelableExtra(PARALLEL_REQUEST_URL_KEY);
+        if (referrer == null || url == null) return;
+        startParallelRequest(session, url, referrer);
+    }
+
+    /** @return Whether {@code session} can create a parallel request for a given
+     * {@code referrer}.
+     */
     @VisibleForTesting
-    boolean canDoParallelRequest(CustomTabsSessionToken session, String origin) {
+    boolean canDoParallelRequest(CustomTabsSessionToken session, Uri referrer) {
         ThreadUtils.assertOnUiThread();
         // The restrictions are:
         // - Native initialization: Required to get the profile, and the feature state.
         // - Feature check
-        // - The origin is allowed.
+        // - The referrer's origin is allowed.
         //
         // TODO(lizeb): Relax the restrictions.
         return ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
-                && mClientManager.isFirstPartyOriginForSession(session, Uri.parse(origin));
+                && mClientManager.isFirstPartyOriginForSession(session, referrer);
     }
 
     /**
@@ -934,20 +956,21 @@ public class CustomTabsConnection {
      *
      * @param session Calling context session.
      * @param url URL to send the request to.
-     * @param origin Origin to use.
+     * @param referrer Referrer (and first party for cookies) to use.
      * @return Whether the request started. False if the session is not authorized to use the
      *         provided origin, if Chrome hasn't been initialized, or the feature is disabled.
      *         Also fails if the URL is neither HTTPS not HTTP.
      */
     @VisibleForTesting
-    boolean startParallelRequest(CustomTabsSessionToken session, String url, String origin) {
+    boolean startParallelRequest(CustomTabsSessionToken session, Uri url, Uri referrer) {
         ThreadUtils.assertOnUiThread();
-        if (TextUtils.isEmpty(url) || !isValid(Uri.parse(url))
-                || !canDoParallelRequest(session, origin)) {
+        if (url.toString().equals("") || !isValid(url)
+                || !canDoParallelRequest(session, referrer)) {
             return false;
         }
 
-        nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), url, origin);
+        nativeCreateAndStartDetachedResourceRequest(
+                Profile.getLastUsedProfile(), url.toString(), referrer.toString());
         return true;
     }
 
