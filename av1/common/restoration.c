@@ -1188,7 +1188,7 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
   }
 }
 
-#define highbd_wiener_convolve_add_src av1_highbd_wiener_convolve_add_src_hip_c
+#define highbd_wiener_convolve_add_src av1_highbd_wiener_convolve_add_src_hip
 
 static void wiener_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                         int stripe_width, int stripe_height,
