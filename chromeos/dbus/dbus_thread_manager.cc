@@ -247,7 +247,7 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 }
 
 UpstartClient* DBusThreadManager::GetUpstartClient() {
-  return clients_browser_ ? clients_browser_->upstart_client_.get() : nullptr;
+  return clients_common_ ? clients_common_->upstart_client_.get() : nullptr;
 }
 
 VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
@@ -471,7 +471,7 @@ void DBusThreadManagerSetter::SetUpdateEngineClient(
 
 void DBusThreadManagerSetter::SetUpstartClient(
     std::unique_ptr<UpstartClient> client) {
-  DBusThreadManager::Get()->clients_browser_->upstart_client_ =
+  DBusThreadManager::Get()->clients_common_->upstart_client_ =
       std::move(client);
 }
 

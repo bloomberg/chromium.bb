@@ -34,6 +34,7 @@ class ShillThirdPartyVpnDriverClient;
 class SMSClient;
 class SystemClockClient;
 class UpdateEngineClient;
+class UpstartClient;
 
 // D-Bus clients used in multiple processes (e.g. ash, browser, mus).
 class CHROMEOS_EXPORT DBusClientsCommon {
@@ -69,6 +70,7 @@ class CHROMEOS_EXPORT DBusClientsCommon {
   std::unique_ptr<PowerManagerClient> power_manager_client_;
   std::unique_ptr<SessionManagerClient> session_manager_client_;
   std::unique_ptr<UpdateEngineClient> update_engine_client_;
+  std::unique_ptr<UpstartClient> upstart_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsCommon);
 };

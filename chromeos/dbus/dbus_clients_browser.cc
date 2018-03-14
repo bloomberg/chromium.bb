@@ -25,14 +25,12 @@
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
-#include "chromeos/dbus/fake_upstart_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
-#include "chromeos/dbus/upstart_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
 
 namespace chromeos {
@@ -98,11 +96,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     smb_provider_client_ = std::make_unique<FakeSmbProviderClient>();
 
   if (use_real_clients)
-    upstart_client_.reset(UpstartClient::Create());
-  else
-    upstart_client_.reset(new FakeUpstartClient);
-
-  if (use_real_clients)
     virtual_file_provider_client_.reset(VirtualFileProviderClient::Create());
   else
     virtual_file_provider_client_.reset(new FakeVirtualFileProviderClient);
@@ -125,7 +118,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   lorgnette_manager_client_->Init(system_bus);
   media_analytics_client_->Init(system_bus);
   smb_provider_client_->Init(system_bus);
-  upstart_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
 }
 
