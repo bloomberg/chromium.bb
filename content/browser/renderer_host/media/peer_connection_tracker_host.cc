@@ -70,7 +70,8 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
   }
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->PeerConnectionAdded(render_process_id_, info.lid);
+    logger->PeerConnectionAdded(render_process_id_, info.lid,
+                                info.peer_connection_id);
   }
 }
 

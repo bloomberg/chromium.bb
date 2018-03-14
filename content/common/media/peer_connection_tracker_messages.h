@@ -15,9 +15,19 @@
 #define IPC_MESSAGE_START PeerConnectionTrackerMsgStart
 
 IPC_STRUCT_BEGIN(PeerConnectionInfo)
+  // ID of the peer connection. Unique only within the renderer process.
   IPC_STRUCT_MEMBER(int, lid)
+  // Textual ID of the peer connection. It corresponds to RTCPeerConnection.id.
+  // TODO(eladalon): Update comment or remove TODO, depending on whether
+  // RTCPeerconnection.id ends up being standardized or rejected.
+  // https://crbug.com/775415
+  IPC_STRUCT_MEMBER(std::string, peer_connection_id)
+  // Serialized version of RTCConfiguration.
   IPC_STRUCT_MEMBER(std::string, rtc_configuration)
+  // Serialized version of blink::WebMediaConstraints.
   IPC_STRUCT_MEMBER(std::string, constraints)
+  // The URL of the blink::WebLocalFrame within which this peer connection
+  // lives. Used for debugging purposes (displayed by WebRTC-Internals).
   IPC_STRUCT_MEMBER(std::string, url)
 IPC_STRUCT_END()
 

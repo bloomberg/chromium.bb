@@ -14,6 +14,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
@@ -247,6 +248,26 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   }
 
   rtp_dump_handler_->StopDump(type, callback);
+}
+
+void WebRtcLoggingHandlerHost::StartEventLogging(
+    const std::string& peer_connection_id,
+    size_t max_log_size_bytes,
+    const std::string& metadata,
+    const GenericDoneCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto reply = [](const GenericDoneCallback& callback, bool result) {
+    // Same as callback, but hard-codes the empty string as the *second*
+    // argument; only |result| is truly provided by StartRemoteLogging().
+    // The empty string is given in lieu of an error message, which JS expects
+    // but WebRtcEventLogManager does not provide.
+    callback.Run(result, std::string());
+  };
+
+  WebRtcEventLogManager::GetInstance()->StartRemoteLogging(
+      render_process_id_, peer_connection_id, max_log_size_bytes, metadata,
+      base::BindOnce(std::move(reply), callback));
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

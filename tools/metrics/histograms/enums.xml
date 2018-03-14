@@ -14809,6 +14809,7 @@ Called by update_net_error_codes.py.-->
   <int value="1223" label="FILEMANAGERPRIVATE_MARKCACHEASMOUNTED"/>
   <int value="1224" label="WALLPAPERPRIVATE_CONFIRMPREVIEWWALLPAPER"/>
   <int value="1225" label="WALLPAPERPRIVATE_CANCELPREVIEWWALLPAPER"/>
+  <int value="1226" label="WEBRTCLOGGINGPRIVATE_STARTEVENTLOGGING"/>
 </enum>
 
 <enum name="ExtensionIconState">

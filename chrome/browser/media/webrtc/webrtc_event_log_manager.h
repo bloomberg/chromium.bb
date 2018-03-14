@@ -86,6 +86,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   void PeerConnectionAdded(int render_process_id,
                            int lid,  // Renderer-local PeerConnection ID.
+                           const std::string& peer_connection_id,
                            base::OnceCallback<void(bool)> reply =
                                base::OnceCallback<void(bool)>()) override;
 
@@ -122,7 +123,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       base::OnceCallback<void(std::pair<bool, bool>)> reply =
           base::OnceCallback<void(std::pair<bool, bool>)>()) override;
 
-  // Start logging the peer connection's WebRTC events to a file, which will
+  // Start logging a peer connection's WebRTC events to a file, which will
   // later be uploaded to a remote server. If a reply is provided, it will be
   // posted back to BrowserThread::UI with the return value provided by
   // WebRtcRemoteEventLogManager::StartRemoteLogging - see the comment there
@@ -133,7 +134,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // is 10, only 6 bytes are left available for the actual WebRTC event log.)
   void StartRemoteLogging(
       int render_process_id,
-      int lid,  // Renderer-local PeerConnection ID.
+      const std::string& peer_connection_id,
       size_t max_file_size_bytes,
       const std::string& metadata = "",
       base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
@@ -159,7 +160,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                              base::OnceClosure reply = base::OnceClosure());
 
  private:
-  friend class WebRtcEventLogManagerTest;  // Calls *ForTesting() methods.
+  friend class WebRtcEventLogManagerTestBase;  // Calls *ForTesting() methods.
 
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
@@ -205,6 +206,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                         base::OnceClosure reply);
 
   void PeerConnectionAddedInternal(PeerConnectionKey key,
+                                   const std::string& peer_connection_id,
                                    base::OnceCallback<void(bool)> reply);
   void PeerConnectionRemovedInternal(PeerConnectionKey key,
                                      base::OnceCallback<void(bool)> reply);
@@ -214,7 +216,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                   base::OnceCallback<void(bool)> reply);
   void DisableLocalLoggingInternal(base::OnceCallback<void(bool)> reply);
 
-  void StartRemoteLoggingInternal(PeerConnectionKey key,
+  void StartRemoteLoggingInternal(int render_process_id,
+                                  BrowserContextId browser_context_id,
+                                  const std::string& peer_connection_id,
                                   const base::FilePath& browser_context_dir,
                                   size_t max_file_size_bytes,
                                   const std::string& metadata,
@@ -281,7 +285,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   WebRtcLocalEventLogManager local_logs_manager_;
 
   // Manages remote-bound logs - logs which will be sent to a remote server.
-  WebRtcRemoteEventLogManager remote_logs_manager_;
+  // This is only possible when a command line flag is present.
+  // TODO(eladalon): Remove the command-line flag and the unique_ptr.
+  // https://crbug.com/775415
+  std::unique_ptr<WebRtcRemoteEventLogManager> remote_logs_manager_;
 
   // This keeps track of which peer connections have event logging turned on
   // in WebRTC, and for which client(s).

@@ -256,6 +256,20 @@ class WebrtcLoggingPrivateStopAudioDebugRecordingsFunction
   bool RunAsync() override;
 };
 
+class WebrtcLoggingPrivateStartEventLoggingFunction
+    : public WebrtcLoggingPrivateFunctionWithGenericCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startEventLogging",
+                             WEBRTCLOGGINGPRIVATE_STARTEVENTLOGGING)
+  WebrtcLoggingPrivateStartEventLoggingFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateStartEventLoggingFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
 class WebrtcLoggingPrivateGetLogsDirectoryFunction
     : public WebrtcLoggingPrivateFunction {
  public:
