@@ -179,6 +179,9 @@ class CONTENT_EXPORT GestureEventQueue {
   // remain at the head of the queue until ack'ed.
   size_t EventsInFlightCount() const;
 
+  // TODO(818214): Remove once the cause of the hang is identified.
+  void ReportPossibleHang(const blink::WebGestureEvent& event);
+
   // The receiver of all forwarded gesture events.
   GestureEventQueueClient* client_;
 
@@ -229,6 +232,12 @@ class CONTENT_EXPORT GestureEventQueue {
   // events that happen immediately after touchscreen/touchpad fling canceling
   // taps.
   FlingController fling_controller_;
+
+  // Diagnostic for the hang in https://crbug.com/818214
+  // Meaningful only when processing_acks_ is true.
+  // TODO(818214): Remove once the cause of the hang is identified.
+  base::TimeTicks processing_acks_start_;
+  bool did_report_hang_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
 };
