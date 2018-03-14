@@ -91,21 +91,5 @@ HIGH_FUN_CONV_1D(vert, y_step_q4, filter_y, v, src - src_stride * 3, , sse2);
 //                                int w, int h, int bd);
 HIGH_FUN_CONV_2D(, sse2);
 
-// The SSE2 highbd convolve functions can deal with coefficients up to 32767.
-// So redirect highbd_convolve8_add_src to regular highbd_convolve8.
-void aom_highbd_convolve8_add_src_sse2(const uint8_t *src, ptrdiff_t src_stride,
-                                       uint8_t *dst, ptrdiff_t dst_stride,
-                                       const int16_t *filter_x, int x_step_q4,
-                                       const int16_t *filter_y, int y_step_q4,
-                                       int w, int h, int bd) {
-  assert(x_step_q4 == 16);
-  assert(y_step_q4 == 16);
-  ((int16_t *)filter_x)[3] += 128;
-  ((int16_t *)filter_y)[3] += 128;
-  aom_highbd_convolve8_sse2(src, src_stride, dst, dst_stride, filter_x,
-                            x_step_q4, filter_y, y_step_q4, w, h, bd);
-  ((int16_t *)filter_x)[3] -= 128;
-  ((int16_t *)filter_y)[3] -= 128;
-}
 #endif  // ARCH_X86_64
 #endif  // HAVE_SSE2

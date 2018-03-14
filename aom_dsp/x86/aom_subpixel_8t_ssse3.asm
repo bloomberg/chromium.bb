@@ -378,10 +378,6 @@ SUBPIX_HFILTER16 h8
 SUBPIX_HFILTER8  h8
 SUBPIX_HFILTER4  h8
 
-SUBPIX_HFILTER16 h8_add_src
-SUBPIX_HFILTER8  h8_add_src
-SUBPIX_HFILTER4  h8_add_src
-
 ;-------------------------------------------------------------------------------
 
 ; TODO(Linfeng): Detect cpu type and choose the code with better performance.
@@ -872,9 +868,3 @@ INIT_XMM ssse3
 SUBPIX_VFILTER16     v8
 SUBPIX_VFILTER       v8, 8
 SUBPIX_VFILTER       v8, 4
-
-%if (ARCH_X86 || X86_SUBPIX_VFILTER_PREFER_SLOW_CELERON)
-SUBPIX_VFILTER16 v8_add_src
-SUBPIX_VFILTER   v8_add_src, 8
-SUBPIX_VFILTER   v8_add_src, 4
-%endif

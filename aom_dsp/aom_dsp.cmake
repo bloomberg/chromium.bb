@@ -358,22 +358,6 @@ if (CONFIG_AV1_ENCODER)
   endif ()
 endif ()
 
-set(AOM_DSP_COMMON_INTRIN_SSE2
-    ${AOM_DSP_COMMON_INTRIN_SSE2}
-    "${AOM_ROOT}/aom_dsp/x86/aom_convolve_hip_sse2.c")
-
-set(AOM_DSP_COMMON_INTRIN_AVX2
-    ${AOM_DSP_COMMON_INTRIN_AVX2}
-    "${AOM_ROOT}/aom_dsp/x86/aom_convolve_hip_avx2.c")
-
-set(AOM_DSP_COMMON_INTRIN_SSSE3
-   ${AOM_DSP_COMMON_INTRIN_SSSE3}
-   "${AOM_ROOT}/aom_dsp/x86/aom_highbd_convolve_hip_ssse3.c")
-
-set(AOM_DSP_COMMON_INTRIN_AVX2
-    ${AOM_DSP_COMMON_INTRIN_AVX2}
-    "${AOM_ROOT}/aom_dsp/x86/aom_highbd_convolve_hip_avx2.c")
-
 # Creates aom_dsp build targets. Must not be called until after libaom target
 # has been created.
 function (setup_aom_dsp_targets)
