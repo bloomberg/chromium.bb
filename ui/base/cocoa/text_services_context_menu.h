@@ -15,8 +15,6 @@ namespace ui {
 
 // This class is used to append and handle the Speech and BiDi submenu for the
 // context menu.
-// TODO (spqchan): Replace the Speech and BiDi logic in RenderViewContextMenu
-// with TextServicesContextMenu.
 class UI_BASE_EXPORT TextServicesContextMenu
     : public SimpleMenuModel::Delegate {
  public:

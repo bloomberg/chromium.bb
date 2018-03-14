@@ -171,10 +171,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // RenderWidgetHostView implementation.
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
-  bool SupportsSpeech() const override;
   void SpeakSelection() override;
-  bool IsSpeaking() const override;
-  void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
 
   InputEventAckState FilterInputEvent(

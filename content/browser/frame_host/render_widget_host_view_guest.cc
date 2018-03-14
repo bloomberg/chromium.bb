@@ -593,20 +593,8 @@ void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
   helper.ShowDefinitionForSelection();
 }
 
-bool RenderWidgetHostViewGuest::SupportsSpeech() const {
-  return platform_view_->SupportsSpeech();
-}
-
 void RenderWidgetHostViewGuest::SpeakSelection() {
   platform_view_->SpeakSelection();
-}
-
-bool RenderWidgetHostViewGuest::IsSpeaking() const {
-  return platform_view_->IsSpeaking();
-}
-
-void RenderWidgetHostViewGuest::StopSpeaking() {
-  platform_view_->StopSpeaking();
 }
 #endif  // defined(OS_MACOSX)
 
