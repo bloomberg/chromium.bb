@@ -1872,8 +1872,16 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   TXB_RD_INFO *intra_txb_rd_info = NULL;
   uint16_t cur_joint_ctx = 0;
-  if (cpi->sf.use_intra_txb_hash && frame_is_intra_only(cm) && !is_inter &&
-      plane == 0 && tx_size_wide[tx_size] == tx_size_high[tx_size]) {
+  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
+  const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
+  const int within_border =
+      mi_row >= xd->tile.mi_row_start &&
+      (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
+      mi_col >= xd->tile.mi_col_start &&
+      (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
+  if (within_border && cpi->sf.use_intra_txb_hash && frame_is_intra_only(cm) &&
+      !is_inter && plane == 0 &&
+      tx_size_wide[tx_size] == tx_size_high[tx_size]) {
     const uint32_t intra_hash =
         get_intra_txb_hash(x, plane, blk_row, blk_col, plane_bsize, tx_size);
     const int intra_hash_idx =
