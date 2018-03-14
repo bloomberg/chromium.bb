@@ -594,6 +594,26 @@ void aom_paeth_predictor_16x32_avx2(uint8_t *dst, ptrdiff_t stride,
   }
 }
 
+void aom_paeth_predictor_16x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                    const uint8_t *above, const uint8_t *left) {
+  const __m256i tl16 = _mm256_set1_epi16((uint16_t)above[-1]);
+  const __m256i one = _mm256_set1_epi16(1);
+  const __m256i top = get_top_vector(above);
+
+  for (int j = 0; j < 4; ++j) {
+    const __m256i l = get_left_vector(left + j * 16);
+    __m256i rep = _mm256_set1_epi16(0x8000);
+    for (int i = 0; i < 16; ++i) {
+      const __m256i l16 = _mm256_shuffle_epi8(l, rep);
+      const __m128i row = paeth_16x1_pred(&l16, &top, &tl16);
+
+      _mm_store_si128((__m128i *)dst, row);
+      dst += stride;
+      rep = _mm256_add_epi16(rep, one);
+    }
+  }
+}
+
 // Return 32 8-bit pixels in one row (__m256i)
 static INLINE __m256i paeth_32x1_pred(const __m256i *left, const __m256i *top0,
                                       const __m256i *top1,

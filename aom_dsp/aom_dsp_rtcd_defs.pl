@@ -156,6 +156,7 @@ specialize qw/aom_paeth_predictor_8x16 ssse3/;
 specialize qw/aom_paeth_predictor_16x8 ssse3 avx2/;
 specialize qw/aom_paeth_predictor_16x16 ssse3 avx2/;
 specialize qw/aom_paeth_predictor_16x32 ssse3 avx2/;
+specialize qw/aom_paeth_predictor_16x64 ssse3 avx2/;
 specialize qw/aom_paeth_predictor_32x16 ssse3 avx2/;
 specialize qw/aom_paeth_predictor_32x32 ssse3 avx2/;
 specialize qw/aom_paeth_predictor_32x64 ssse3 avx2/;
