@@ -14,6 +14,7 @@ import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.Arrays;
@@ -190,6 +191,13 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
             recordResultHistogram(RESOLVE_RESULT_HUC_EXCEPTION);
             Log.e(TAG, "Threading issue with HUC, see https://crbug.com/754480", e);
             uri = Uri.EMPTY;
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof URISyntaxException) {
+                Log.e(TAG, "Invalid URL format", e);
+                uri = Uri.EMPTY;
+            } else {
+                throw e;
+            }
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
