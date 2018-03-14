@@ -1206,7 +1206,7 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
 }
 
 void av1_setup_motion_field(AV1_COMMON *cm) {
-  memset(cm->ref_frame_side, -1, sizeof(cm->ref_frame_side));
+  memset(cm->ref_frame_side, 0, sizeof(cm->ref_frame_side));
   if (!cm->seq_params.enable_order_hint || cm->error_resilient_mode) return;
 
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
