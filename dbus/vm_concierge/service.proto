@@ -241,3 +241,40 @@ message ContainerStartedSignal {
   // Name of the container within the VM.
   string container_name = 2;
 }
+
+// Request to start a specified container image within a VM. If the container
+// does not exist in the VM it will be created. Used with the StartContainer
+// D-Bus message into vm_concierge.
+message StartContainerRequest {
+  // Name of the VM to start the container in.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM. If empty, the default
+  // container name will be used.
+  string container_name = 2;
+
+  // Username for the default user in the container. This is only used if the
+  // container has not been created yet.
+  string container_username = 3;
+
+  // Whether we should perform setup/startup of the container asynchronously.
+  // If this is false or unspecified, then this call will not return until
+  // container setup/startup has completed or failed. Otherwise, this will
+  // return after initiating the startup process and then D-Bus
+  // ContainerStartedSignal will be sent when startup completes. If async mode
+  // is used, the other D-Bus setup/startup signals should be monitored as well
+  // for progress/failure.
+  // NOTE: It is strongly recommended to use async mode when doing setup of a
+  // container due to the length of time it can take for that operation.
+  bool async = 4;
+}
+
+// Response sent back by vm_concierge when it receives a StartContaienr D-Bus
+// message.
+message StartContainerResponse {
+  // If true, the requested container was successfully started.
+  bool success = 1;
+
+  // The failure_reason if the requested container could not be started.
+  string failure_reason = 2;
+}

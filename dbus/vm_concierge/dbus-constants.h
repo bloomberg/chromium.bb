@@ -19,6 +19,7 @@ const char kGetVmInfoMethod[] = "GetVmInfo";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
 const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
 const char kListVmDisksMethod[] = "ListVmDisks";
+const char kStartContainerMethod[] = "StartContainer";
 
 const char kContainerStartedSignal[] = "ContainerStarted";
 
