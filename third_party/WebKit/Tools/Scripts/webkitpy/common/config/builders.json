@@ -31,13 +31,13 @@
         "port_name": "mac-mac10.11",
         "specifiers": ["Mac10.11", "Debug"]
     },
-    "WebKit Mac10.11 (retina)": {
-        "port_name": "mac-retina",
-        "specifiers": ["Retina", "Release"]
-    },
     "WebKit Mac10.12": {
         "port_name": "mac-mac10.12",
         "specifiers": ["Mac10.12", "Release"]
+    },
+    "WebKit Mac10.12 (retina)": {
+        "port_name": "mac-retina",
+        "specifiers": ["Retina", "Release"]
     },
     "WebKit Android (Nexus4)": {
         "port_name": "android-kitkat",
@@ -62,14 +62,14 @@
         "specifiers": ["Mac10.11", "Release"],
         "is_try_builder": true
     },
-    "mac10.11_retina_blink_rel": {
-        "port_name": "mac-retina",
-        "specifiers": ["Retina", "Release"],
-        "is_try_builder": true
-    },
     "mac10.12_blink_rel": {
         "port_name": "mac-mac10.12",
         "specifiers": ["Mac10.12", "Release"],
+        "is_try_builder": true
+    },
+    "mac10.12_retina_blink_rel": {
+        "port_name": "mac-retina",
+        "specifiers": ["Retina", "Release"],
         "is_try_builder": true
     },
     "mac10.13_blink_rel": {

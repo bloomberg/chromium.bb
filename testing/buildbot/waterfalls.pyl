@@ -1838,7 +1838,7 @@
           ],
         },
       },
-      'WebKit Mac10.11 (retina)': {
+      'WebKit Mac10.12 (retina)': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
