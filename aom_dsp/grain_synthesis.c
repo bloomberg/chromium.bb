@@ -1134,7 +1134,7 @@ void av1_add_film_grain_run(aom_film_grain_t *params, uint8_t *luma,
             chroma_stride,
             AOMMIN(chroma_subblock_size_x -
                        ((x ? 1 : 0) << (1 - chroma_subsamp_x)),
-                   (width - ((x ? x + 1 : 0) << 1)) >> (1 - chroma_subsamp_x)),
+                   (width - ((x ? x + 1 : 0) << 1)) >> chroma_subsamp_x),
             2 >> chroma_subsamp_y);
 
         hor_boundary_overlap(
@@ -1147,7 +1147,7 @@ void av1_add_film_grain_run(aom_film_grain_t *params, uint8_t *luma,
             chroma_stride,
             AOMMIN(chroma_subblock_size_x -
                        ((x ? 1 : 0) << (1 - chroma_subsamp_x)),
-                   (width - ((x ? x + 1 : 0) << 1)) >> (1 - chroma_subsamp_x)),
+                   (width - ((x ? x + 1 : 0) << 1)) >> chroma_subsamp_x),
             2 >> chroma_subsamp_y);
 
         if (use_high_bit_depth) {
