@@ -117,14 +117,14 @@ TEST_F(FeaturePolicyTest, TestInitialCrossOriginChildPolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestCrossOriginChildCannotEnableFeature) {
-  // +---------------------------------------+
-  // |(1) Origin A                           |
-  // |No Policy                              |
-  // | +-----------------------------------+ |
-  // | |(2) Origin B                       | |
-  // | |Policy: {"default-self": ["self"]} | |
-  // | +-----------------------------------+ |
-  // +---------------------------------------+
+  // +----------------------------------------+
+  // |(1) Origin A                            |
+  // |No Policy                               |
+  // | +------------------------------------+ |
+  // | |(2) Origin B                        | |
+  // | |Feature-Policy: default-self 'self' | |
+  // | +------------------------------------+ |
+  // +----------------------------------------+
   // Default-self feature should be disabled in cross origin frame, even if no
   // policy was specified in the parent frame.
   std::unique_ptr<FeaturePolicy> policy1 =
@@ -138,7 +138,7 @@ TEST_F(FeaturePolicyTest, TestCrossOriginChildCannotEnableFeature) {
 TEST_F(FeaturePolicyTest, TestFrameSelfInheritance) {
   // +------------------------------------------+
   // |(1) Origin A                              |
-  // |Policy: {"default-self": ["self"]}        |
+  // |Feature-Policy: default-self 'self'       |
   // | +-----------------+  +-----------------+ |
   // | |(2) Origin A     |  |(4) Origin B     | |
   // | |No Policy        |  |No Policy        | |
@@ -169,18 +169,18 @@ TEST_F(FeaturePolicyTest, TestFrameSelfInheritance) {
 }
 
 TEST_F(FeaturePolicyTest, TestReflexiveFrameSelfInheritance) {
-  // +-----------------------------------+
-  // |(1) Origin A                       |
-  // |Policy: {"default-self": ["self"]} |
-  // | +-----------------+               |
-  // | |(2) Origin B     |               |
-  // | |No Policy        |               |
-  // | | +-------------+ |               |
-  // | | |(3)Origin A  | |               |
-  // | | |No Policy    | |               |
-  // | | +-------------+ |               |
-  // | +-----------------+               |
-  // +-----------------------------------+
+  // +------------------------------------+
+  // |(1) Origin A                        |
+  // |Feature-Policy: default-self 'self' |
+  // | +-----------------+                |
+  // | |(2) Origin B     |                |
+  // | |No Policy        |                |
+  // | | +-------------+ |                |
+  // | | |(3)Origin A  | |                |
+  // | | |No Policy    | |                |
+  // | | +-------------+ |                |
+  // | +-----------------+                |
+  // +------------------------------------+
   // Feature which is enabled at top-level should be disabled in frame 3, as
   // it is embedded by frame 2, for which the feature is not enabled.
   std::unique_ptr<FeaturePolicy> policy1 =
@@ -197,7 +197,7 @@ TEST_F(FeaturePolicyTest, TestReflexiveFrameSelfInheritance) {
 TEST_F(FeaturePolicyTest, TestSelectiveFrameInheritance) {
   // +------------------------------------------+
   // |(1) Origin A                              |
-  // |Policy: {"default-self": ["Origin B"]}    |
+  // |Feature-Policy: default-self OriginB      |
   // | +-----------------+  +-----------------+ |
   // | |(2) Origin B     |  |(3) Origin C     | |
   // | |No Policy        |  |No Policy        | |
@@ -225,10 +225,10 @@ TEST_F(FeaturePolicyTest, TestSelectiveFrameInheritance) {
 }
 
 TEST_F(FeaturePolicyTest, TestPolicyCanBlockSelf) {
-  // +----------------------------+
-  // |(1)Origin A                 |
-  // |Policy: {"default-on": []}  |
-  // +----------------------------+
+  // +----------------------------------+
+  // |(1)Origin A                       |
+  // |Feature-Policy: default-on 'none' |
+  // +----------------------------------+
   // Default-on feature should be disabled in top-level frame.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
@@ -238,14 +238,14 @@ TEST_F(FeaturePolicyTest, TestPolicyCanBlockSelf) {
 }
 
 TEST_F(FeaturePolicyTest, TestParentPolicyBlocksSameOriginChildPolicy) {
-  // +----------------------------+
-  // |(1)Origin A                 |
-  // |Policy: {"default-on": []}  |
-  // | +-------------+            |
-  // | |(2)Origin A  |            |
-  // | |No Policy    |            |
-  // | +-------------+            |
-  // +----------------------------+
+  // +----------------------------------+
+  // |(1)Origin A                       |
+  // |Feature-Policy: default-on 'none' |
+  // | +-------------+                  |
+  // | |(2)Origin A  |                  |
+  // | |No Policy    |                  |
+  // | +-------------+                  |
+  // +----------------------------------+
   // Feature should be disabled in child frame.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
@@ -257,14 +257,14 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksSameOriginChildPolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockSelf) {
-  // +--------------------------------+
-  // |(1)Origin A                     |
-  // |No Policy                       |
-  // | +----------------------------+ |
-  // | |(2)Origin B                 | |
-  // | |Policy: {"default-on": []}  | |
-  // | +----------------------------+ |
-  // +--------------------------------+
+  // +--------------------------------------+
+  // |(1)Origin A                           |
+  // |No Policy                             |
+  // | +----------------------------------+ |
+  // | |(2)Origin B                       | |
+  // | |Feature-Policy: default-on 'none' | |
+  // | +----------------------------------+ |
+  // +--------------------------------------+
   // Default-on feature should be disabled by cross-origin child frame.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
@@ -281,7 +281,7 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockChildren) {
   // |No Policy                             |
   // | +----------------------------------+ |
   // | |(2)Origin B                       | |
-  // | |Policy: {"default-on": ["self"]}  | |
+  // | |Feature-Policy: default-on 'self' | |
   // | | +-------------+                  | |
   // | | |(3)Origin C  |                  | |
   // | | |No Policy    |                  | |
@@ -302,14 +302,14 @@ TEST_F(FeaturePolicyTest, TestChildPolicyCanBlockChildren) {
 }
 
 TEST_F(FeaturePolicyTest, TestParentPolicyBlocksCrossOriginChildPolicy) {
-  // +----------------------------+
-  // |(1)Origin A                 |
-  // |Policy: {"default-on": []}  |
-  // | +-------------+            |
-  // | |(2)Origin B  |            |
-  // | |No Policy    |            |
-  // | +-------------+            |
-  // +----------------------------+
+  // +----------------------------------+
+  // |(1)Origin A                       |
+  // |Feature-Policy: default-on 'none' |
+  // | +-------------+                  |
+  // | |(2)Origin B  |                  |
+  // | |No Policy    |                  |
+  // | +-------------+                  |
+  // +----------------------------------+
   // Default-on feature should be disabled in cross-origin child frame.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
@@ -323,7 +323,7 @@ TEST_F(FeaturePolicyTest, TestParentPolicyBlocksCrossOriginChildPolicy) {
 TEST_F(FeaturePolicyTest, TestEnableForAllOrigins) {
   // +--------------------------------+
   // |(1) Origin A                    |
-  // |Policy: {"default-self": ["*"]} |
+  // |Feature-Policy: default-self *  |
   // | +-----------------+            |
   // | |(2) Origin B     |            |
   // | |No Policy        |            |
@@ -350,7 +350,7 @@ TEST_F(FeaturePolicyTest, TestEnableForAllOrigins) {
 TEST_F(FeaturePolicyTest, TestDefaultOnEnablesForAllAncestors) {
   // +---------------------------------------+
   // |(1) Origin A                           |
-  // |Policy: {"default-on": ["Origin B"]}   |
+  // |Feature-Policy: default-on OriginB     |
   // | +-----------------------------------+ |
   // | |(2) Origin B                       | |
   // | |No Policy                          | |
@@ -379,7 +379,7 @@ TEST_F(FeaturePolicyTest, TestDefaultOnEnablesForAllAncestors) {
 TEST_F(FeaturePolicyTest, TestDefaultSelfRespectsSameOriginEmbedding) {
   // +---------------------------------------+
   // |(1) Origin A                           |
-  // |Policy: {"default-self": ["Origin B"]} |
+  // |Feature-Policy: default-self OriginB   |
   // | +-----------------------------------+ |
   // | |(2) Origin B                       | |
   // | |No Policy                          | |
@@ -406,18 +406,18 @@ TEST_F(FeaturePolicyTest, TestDefaultSelfRespectsSameOriginEmbedding) {
 }
 
 TEST_F(FeaturePolicyTest, TestDefaultOffMustBeDelegatedToAllCrossOriginFrames) {
-  // +------------------------------------------------------------+
-  // |(1) Origin A                                                |
-  // |Policy: {"default-off": ["Origin B"]}                       |
-  // | +--------------------------------------------------------+ |
-  // | |(2) Origin B                                            | |
-  // | |Policy: {"default-off": ["self"]}                       | |
-  // | | +-------------+   +----------------------------------+ | |
-  // | | |(3)Origin B  |   |(4)Origin C                       | | |
-  // | | |No Policy    |   |Policy: {"default-off": ["self"]} | | |
-  // | | +-------------+   +----------------------------------+ | |
-  // | +--------------------------------------------------------+ |
-  // +------------------------------------------------------------+
+  // +-------------------------------------------------------------+
+  // |(1) Origin A                                                 |
+  // |Feature-Policy: default-off OriginB                          |
+  // | +---------------------------------------------------------+ |
+  // | |(2) Origin B                                             | |
+  // | |Feature-Policy: default-off 'self'                       | |
+  // | | +-------------+   +-----------------------------------+ | |
+  // | | |(3)Origin B  |   |(4)Origin C                        | | |
+  // | | |No Policy    |   |Feature-Policy: default-off 'self' | | |
+  // | | +-------------+   +-----------------------------------+ | |
+  // | +---------------------------------------------------------+ |
+  // +-------------------------------------------------------------+
   // Feature should be disabled in frames 1, 3 and 4; enabled in frame 2 only.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
@@ -439,10 +439,10 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeDelegatedToAllCrossOriginFrames) {
 TEST_F(FeaturePolicyTest, TestReenableForAllOrigins) {
   // +------------------------------------+
   // |(1) Origin A                        |
-  // |Policy: {"default-self": ["*"]}     |
+  // |Feature-Policy: default-self *      |
   // | +--------------------------------+ |
   // | |(2) Origin B                    | |
-  // | |Policy: {"default-self": ["*"]} | |
+  // | |Feature-Policy: default-self *  | |
   // | | +-------------+                | |
   // | | |(3)Origin A  |                | |
   // | | |No Policy    |                | |
@@ -468,10 +468,10 @@ TEST_F(FeaturePolicyTest, TestReenableForAllOrigins) {
 TEST_F(FeaturePolicyTest, TestBlockedFrameCannotReenable) {
   // +--------------------------------------+
   // |(1)Origin A                           |
-  // |Policy: {"default-self": ["self"]}    |
+  // |Feature-Policy: default-self 'self'   |
   // | +----------------------------------+ |
   // | |(2)Origin B                       | |
-  // | |Policy: {"default-self": ["*"]}   | |
+  // | |Feature-Policy: default-self *    | |
   // | | +-------------+  +-------------+ | |
   // | | |(3)Origin A  |  |(4)Origin C  | | |
   // | | |No Policy    |  |No Policy    | | |
@@ -499,10 +499,10 @@ TEST_F(FeaturePolicyTest, TestBlockedFrameCannotReenable) {
 TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegate) {
   // +---------------------------------------------------+
   // |(1) Origin A                                       |
-  // |Policy: {"default-self": ["self", "Origin B"]}     |
+  // |Feature-Policy: default-self 'self' OriginB        |
   // | +-----------------------------------------------+ |
   // | |(2) Origin B                                   | |
-  // | |Policy: {"default-self": ["self", "Origin C"]} | |
+  // | |Feature-Policy: default-self 'self' OriginC    | |
   // | | +-------------+                               | |
   // | | |(3)Origin C  |                               | |
   // | | |No Policy    |                               | |
@@ -528,7 +528,7 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegate) {
 TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegateByDefault) {
   // +-----------------------------------------------+
   // |(1) Origin A                                   |
-  // |Policy: {"default-on": ["self", "Origin B"]}   |
+  // |Feature-Policy: default-on 'self' OriginB      |
   // | +--------------------+ +--------------------+ |
   // | |(2) Origin B        | | (4) Origin C       | |
   // | |No Policy           | | No Policy          | |
@@ -558,7 +558,7 @@ TEST_F(FeaturePolicyTest, TestEnabledFrameCanDelegateByDefault) {
 TEST_F(FeaturePolicyTest, TestNonNestedFeaturesDontDelegateByDefault) {
   // +-----------------------------------------------+
   // |(1) Origin A                                   |
-  // |Policy: {"default-self": ["self", "Origin B"]} |
+  // |Feature-Policy: default-self 'self' OriginB    |
   // | +--------------------+ +--------------------+ |
   // | |(2) Origin B        | | (4) Origin C       | |
   // | |No Policy           | | No Policy          | |
@@ -589,12 +589,12 @@ TEST_F(FeaturePolicyTest, TestNonNestedFeaturesDontDelegateByDefault) {
 TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
   // +-----------------------------------------------+
   // |(1) Origin A                                   |
-  // |Policy: {"default-self": ["self", "Origin B"], |
-  // |         "default-on": ["self"]}               |
+  // |Feature-Policy: default-self 'self' OriginB;   |
+  // |                default-on 'self'              |
   // | +-------------------------------------------+ |
   // | |(2) Origin B                               | |
-  // | |Policy: {"default-self": ["*"],            | |
-  // | |         "default-on": ["*"]}              | |
+  // | |Feature-Policy: default-self *;            | |
+  // | |                default-on *               | |
   // | | +-------------+                           | |
   // | | |(3)Origin C  |                           | |
   // | | |No Policy    |                           | |
@@ -626,7 +626,7 @@ TEST_F(FeaturePolicyTest, TestFeaturesAreIndependent) {
 TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
   // +-----------------------------------------------+
   // |(1) Origin A                                   |
-  // |Policy: {"default-off": ["self", "Origin B"]}  |
+  // |Feature-Policy: default-off 'self' OriginB     |
   // +-----------------------------------------------+
   // Features should be enabled by the policy in frame 1 for origins A and B,
   // and disabled for origin C.
@@ -645,16 +645,16 @@ TEST_F(FeaturePolicyTest, TestFeatureEnabledForOrigin) {
 // Test frame policies
 
 TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
-  // +-------------------------------------------------+
-  // |(1)Origin A                                      |
-  // |No Policy                                        |
-  // |                                                 |
-  // |<iframe policy='{"default-self": ["Origin B"]}'> |
-  // | +-------------+                                 |
-  // | |(2)Origin B  |                                 |
-  // | |No Policy    |                                 |
-  // | +-------------+                                 |
-  // +-------------------------------------------------+
+  // +--------------------------------------+
+  // |(1)Origin A                           |
+  // |No Policy                             |
+  // |                                      |
+  // |<iframe allow="default-self OriginB"> |
+  // | +-------------+                      |
+  // | |(2)Origin B  |                      |
+  // | |No Policy    |                      |
+  // | +-------------+                      |
+  // +--------------------------------------+
   // Default-self feature should be enabled in cross-origin child frame because
   // permission was delegated through frame policy.
   // This is the same scenario as when the iframe is declared as
@@ -680,16 +680,16 @@ TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
-  // +------------------------------------------+
-  // |(1)Origin A                               |
-  // |No Policy                                 |
-  // |                                          |
-  // |<iframe policy='{"default-self": ["*"]}'> |
-  // | +-------------+                          |
-  // | |(2)Origin B  |                          |
-  // | |No Policy    |                          |
-  // | +-------------+                          |
-  // +------------------------------------------+
+  // +--------------------------------+
+  // |(1)Origin A                     |
+  // |No Policy                       |
+  // |                                |
+  // |<iframe allow="default-self *"> |
+  // | +-------------+                |
+  // | |(2)Origin B  |                |
+  // | |No Policy    |                |
+  // | +-------------+                |
+  // +--------------------------------+
   // Default-self feature should be enabled in cross-origin child frame because
   // permission was delegated through frame policy.
   // This is the same scenario that arises when the iframe is declared as
@@ -715,28 +715,28 @@ TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
-  // +-----------------------------------------------------+
-  // |(1)Origin A                                          |
-  // |No Policy                                            |
-  // |                                                     |
-  // |<iframe policy='{"default-self": ["Origin B"]}'>     |
-  // | +-------------------------------------------------+ |
-  // | |(2)Origin B                                      | |
-  // | |No Policy                                        | |
-  // | |                                                 | |
-  // | |<iframe policy='{"default-self": ["Origin C"]}'> | |
-  // | | +-------------+                                 | |
-  // | | |(3)Origin C  |                                 | |
-  // | | |No Policy    |                                 | |
-  // | | +-------------+                                 | |
-  // | |                                                 | |
-  // | |<iframe> (No frame policy)                       | |
-  // | | +-------------+                                 | |
-  // | | |(4)Origin C  |                                 | |
-  // | | |No Policy    |                                 | |
-  // | | +-------------+                                 | |
-  // | +-------------------------------------------------+ |
-  // +-----------------------------------------------------+
+  // +------------------------------------------+
+  // |(1)Origin A                               |
+  // |No Policy                                 |
+  // |                                          |
+  // |<iframe allow="default-self OriginB">     |
+  // | +--------------------------------------+ |
+  // | |(2)Origin B                           | |
+  // | |No Policy                             | |
+  // | |                                      | |
+  // | |<iframe allow="default-self OriginC"> | |
+  // | | +-------------+                      | |
+  // | | |(3)Origin C  |                      | |
+  // | | |No Policy    |                      | |
+  // | | +-------------+                      | |
+  // | |                                      | |
+  // | |<iframe> (No frame policy)            | |
+  // | | +-------------+                      | |
+  // | | |(4)Origin C  |                      | |
+  // | | |No Policy    |                      | |
+  // | | +-------------+                      | |
+  // | +--------------------------------------+ |
+  // +------------------------------------------+
   // Default-self feature should be enabled in cross-origin child frames 2 and
   // 3. Feature should be disabled in frame 4 because it was not further
   // delegated through frame policy.
@@ -767,22 +767,22 @@ TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
 }
 
 TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
-  // +-------------------------------------+
-  // |(1)Origin A                          |
-  // |No Policy                            |
-  // |                                     |
-  // |<iframe policy='{"default-on": []}'> |
-  // | +-------------+                     |
-  // | |(2)Origin A  |                     |
-  // | |No Policy    |                     |
-  // | +-------------+                     |
-  // |                                     |
-  // |<iframe policy='{"default-on": []}'> |
-  // | +-------------+                     |
-  // | |(3)Origin B  |                     |
-  // | |No Policy    |                     |
-  // | +-------------+                     |
-  // +-------------------------------------+
+  // +-----------------------------------+
+  // |(1)Origin A                        |
+  // |No Policy                          |
+  // |                                   |
+  // |<iframe allow="default-on 'none'"> |
+  // | +-------------+                   |
+  // | |(2)Origin A  |                   |
+  // | |No Policy    |                   |
+  // | +-------------+                   |
+  // |                                   |
+  // |<iframe allow="default-on 'none'"> |
+  // | +-------------+                   |
+  // | |(3)Origin B  |                   |
+  // | |No Policy    |                   |
+  // | +-------------+                   |
+  // +-----------------------------------+
   // Default-on feature should be disabled in both same-origin and cross-origin
   // child frames because permission was removed through frame policy.
   std::unique_ptr<FeaturePolicy> policy1 =
@@ -813,22 +813,22 @@ TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
-  // +------------------------------------------------+
-  // |(1)Origin A                                     |
-  // |Policy: {"default-off": ["self"]}               |
-  // |                                                |
-  // |<iframe policy='{"default-off": ["Origin A"]}'> |
-  // | +-------------+                                |
-  // | |(2)Origin A  |                                |
-  // | |No Policy    |                                |
-  // | +-------------+                                |
-  // |                                                |
-  // |<iframe policy='{"default-off": ["Origin B"]}'> |
-  // | +-------------+                                |
-  // | |(3)Origin B  |                                |
-  // | |No Policy    |                                |
-  // | +-------------+                                |
-  // +------------------------------------------------+
+  // +-------------------------------------+
+  // |(1)Origin A                          |
+  // |Feature-Policy: default-off 'self'   |
+  // |                                     |
+  // |<iframe allow="default-off OriginA"> |
+  // | +-------------+                     |
+  // | |(2)Origin A  |                     |
+  // | |No Policy    |                     |
+  // | +-------------+                     |
+  // |                                     |
+  // |<iframe allow="default-off OriginB"> |
+  // | +-------------+                     |
+  // | |(3)Origin B  |                     |
+  // | |No Policy    |                     |
+  // | +-------------+                     |
+  // +-------------------------------------+
   // Default-off feature should be disabled in both same-origin and cross-origin
   // child frames because they did not declare their own policy to enable it.
   std::unique_ptr<FeaturePolicy> policy1 =
@@ -863,22 +863,22 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
 }
 
 TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
-  // +------------------------------------------------+
-  // |(1)Origin A                                     |
-  // |Policy: {"default-off": ["self"]}               |
-  // |                                                |
-  // |<iframe policy='{"default-off": ["Origin A"]}'> |
-  // | +--------------------------------------------+ |
-  // | |(2)Origin A                                 | |
-  // | |Policy: {"default-off": ["self"]}           | |
-  // | +--------------------------------------------+ |
-  // |                                                |
-  // |<iframe policy='{"default-off": ["Origin B"]}'> |
-  // | +--------------------------------------------+ |
-  // | |(3)Origin B                                 | |
-  // | |Policy: {"default-off": ["self"]}           | |
-  // | +--------------------------------------------+ |
-  // +------------------------------------------------+
+  // +---------------------------------------+
+  // |(1)Origin A                            |
+  // |Feature-Policy: default-off 'self'     |
+  // |                                       |
+  // |<iframe allow="default-off OriginA">   |
+  // | +-----------------------------------+ |
+  // | |(2)Origin A                        | |
+  // | |Feature-Policy: default-off 'self' | |
+  // | +-----------------------------------+ |
+  // |                                       |
+  // |<iframe allow="default-off OriginB">   |
+  // | +-----------------------------------+ |
+  // | |(3)Origin B                        | |
+  // | |Feature-Policy: default-off 'self' | |
+  // | +-----------------------------------+ |
+  // +---------------------------------------+
   // Default-off feature should be enabled in both same-origin and cross-origin
   // child frames because it is delegated through the parent's frame policy, and
   // they declare their own policy to enable it.
@@ -916,22 +916,22 @@ TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
 }
 
 TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
-  // +-----------------------------------------------+
-  // |(1)Origin A                                    |
-  // |Policy: {"default-self": ["self", "Origin B"]} |
-  // |                                               |
-  // |<iframe policy='{"default-self": []}'>         |
-  // | +-------------------------------------------+ |
-  // | |(2)Origin B                                | |
-  // | |No Policy                                  | |
-  // | +-------------------------------------------+ |
-  // |                                               |
-  // |<iframe policy='{"default-self": []}'>         |
-  // | +-------------------------------------------+ |
-  // | |(3)Origin B                                | |
-  // | |Policy: {"default-self": ["self"]}         | |
-  // | +-------------------------------------------+ |
-  // +-----------------------------------------------+
+  // +---------------------------------------------+
+  // |(1)Origin A                                  |
+  // |Feature-Policy: default-self 'self', OriginB |
+  // |                                             |
+  // |<iframe allow="default-self 'none'">         |
+  // | +-----------------------------------------+ |
+  // | |(2)Origin B                              | |
+  // | |No Policy                                | |
+  // | +-----------------------------------------+ |
+  // |                                             |
+  // |<iframe allow="default-self 'none'">         |
+  // | +-----------------------------------------+ |
+  // | |(3)Origin B                              | |
+  // | |Feature-Policy: default-self 'self'      | |
+  // | +-----------------------------------------+ |
+  // +---------------------------------------------+
   // Default-self feature should be disabled in both cross-origin child frames
   // by frame policy, even though the parent frame's header policy would
   // otherwise enable it. This is true regardless of the child frame's header
@@ -956,28 +956,28 @@ TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
 }
 
 TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
-  // +-------------------------------------------------+
-  // |(1)Origin A                                      |
-  // |No Policy                                        |
-  // |                                                 |
-  // |<iframe policy='{"default-self": ["Origin B"]}'> |
-  // | +---------------------------------------------+ |
-  // | |(2)Origin B                                  | |
-  // | |Policy: {"default-self": ["*"]}              | |
-  // | |                                             | |
-  // | |<iframe policy='{"default-self": []}'>       | |
-  // | | +-------------+                             | |
-  // | | |(3)Origin C  |                             | |
-  // | | |No Policy    |                             | |
-  // | | +-------------+                             | |
-  // | |                                             | |
-  // | |<iframe> (No frame policy)                   | |
-  // | | +-------------+                             | |
-  // | | |(4)Origin C  |                             | |
-  // | | |No Policy    |                             | |
-  // | | +-------------+                             | |
-  // | +---------------------------------------------+ |
-  // +-------------------------------------------------+
+  // +-----------------------------------------+
+  // |(1)Origin A                              |
+  // |No Policy                                |
+  // |                                         |
+  // |<iframe allow="default-self OriginB">    |
+  // | +-------------------------------------+ |
+  // | |(2)Origin B                          | |
+  // | |Feature-Policy: default-self *       | |
+  // | |                                     | |
+  // | |<iframe allow="default-self 'none'"> | |
+  // | | +-------------+                     | |
+  // | | |(3)Origin C  |                     | |
+  // | | |No Policy    |                     | |
+  // | | +-------------+                     | |
+  // | |                                     | |
+  // | |<iframe> (No frame policy)           | |
+  // | | +-------------+                     | |
+  // | | |(4)Origin C  |                     | |
+  // | | |No Policy    |                     | |
+  // | | +-------------+                     | |
+  // | +-------------------------------------+ |
+  // +-----------------------------------------+
   // Default-self feature should be enabled in cross-origin child frames 2 and
   // 4. Feature should be disabled in frame 3 by frame policy.
   std::unique_ptr<FeaturePolicy> policy1 =
