@@ -17,8 +17,7 @@ namespace {
 
 struct FileNames {
   FileNames() : is_dummy(true) {
-    // Use fake names. If |is_dummy| is true these files are only used for error
-    // output.
+    // Use fake names.
     old_name = old_name.AppendASCII("old_name");
     patch_name = patch_name.AppendASCII("patch_name");
     new_name = new_name.AppendASCII("new_name");
@@ -35,6 +34,8 @@ struct FileNames {
   base::FilePath old_name;
   base::FilePath patch_name;
   base::FilePath new_name;
+
+  // A flag to decide whether the filenames are only for error output.
   const bool is_dummy;
 };
 
@@ -97,10 +98,10 @@ status::Code ApplyCommon(base::File&& old_file_handle,
 
 }  // namespace
 
-status::Code Apply(base::File old_file_handle,
-                   base::File patch_file_handle,
-                   base::File new_file_handle) {
-  const FileNames file_names = FileNames();
+status::Code Apply(base::File&& old_file_handle,
+                   base::File&& patch_file_handle,
+                   base::File&& new_file_handle) {
+  const FileNames file_names;
   return ApplyCommon(std::move(old_file_handle), std::move(patch_file_handle),
                      std::move(new_file_handle), file_names);
 }
