@@ -226,33 +226,6 @@
       }
     ]
   },
-  "WebKit Mac10.11 (retina)": {
-    "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac-10.12.6",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 6
-        }
-      }
-    ]
-  },
   "WebKit Mac10.12": {
     "isolated_scripts": [
       {
@@ -272,6 +245,33 @@
               "gpu": "8086:0a2e",
               "hidpi": "0",
               "os": "Mac-10.12.6"
+            }
+          ],
+          "shards": 6
+        }
+      }
+    ]
+  },
+  "WebKit Mac10.12 (retina)": {
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.12.6",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 6
