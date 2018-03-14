@@ -37,7 +37,7 @@ class WorkletModuleResponsesMap::Entry final
   State GetState() const { return state_; }
   const ModuleScriptCreationParams& GetParams() const { return *params_; }
 
-  void AddClient(WorkletModuleResponsesMap::Client* client) {
+  void AddClient(WorkerOrWorkletModuleFetchCoordinator::Client* client) {
     // Clients can be added only while a module script is being fetched.
     DCHECK(state_ == State::kInitial || state_ == State::kFetching);
     clients_.push_back(client);
@@ -68,15 +68,15 @@ class WorkletModuleResponsesMap::Entry final
     // Step 8: "Set the value of the entry in cache whose key is url to
     // response, and asynchronously complete this algorithm with response."
     params_.emplace(*params);
-    for (WorkletModuleResponsesMap::Client* client : clients_)
-      client->OnRead(*params);
+    for (WorkerOrWorkletModuleFetchCoordinator::Client* client : clients_)
+      client->OnFetched(*params);
     clients_.clear();
     module_fetcher_.Clear();
   }
 
   void NotifyFailure() {
     AdvanceState(State::kFailed);
-    for (WorkletModuleResponsesMap::Client* client : clients_)
+    for (WorkerOrWorkletModuleFetchCoordinator::Client* client : clients_)
       client->OnFailed();
     clients_.clear();
     module_fetcher_.Clear();
@@ -109,7 +109,7 @@ class WorkletModuleResponsesMap::Entry final
   Member<DocumentModuleScriptFetcher> module_fetcher_;
 
   WTF::Optional<ModuleScriptCreationParams> params_;
-  HeapVector<Member<WorkletModuleResponsesMap::Client>> clients_;
+  HeapVector<Member<WorkerOrWorkletModuleFetchCoordinator::Client>> clients_;
 };
 
 WorkletModuleResponsesMap::WorkletModuleResponsesMap(ResourceFetcher* fetcher)
@@ -122,8 +122,8 @@ WorkletModuleResponsesMap::WorkletModuleResponsesMap(ResourceFetcher* fetcher)
 // "To perform the fetch given request, perform the following steps:"
 // Step 1: "Let cache be the moduleResponsesMap."
 // Step 2: "Let url be request's url."
-void WorkletModuleResponsesMap::ReadEntry(FetchParameters& fetch_params,
-                                          Client* client) {
+void WorkletModuleResponsesMap::Fetch(FetchParameters& fetch_params,
+                                      Client* client) {
   DCHECK(IsMainThread());
   if (!is_available_ || !IsValidURL(fetch_params.Url())) {
     client->OnFailed();
@@ -147,7 +147,7 @@ void WorkletModuleResponsesMap::ReadEntry(FetchParameters& fetch_params,
         // Step 4: "If cache contains an entry with key url, asynchronously
         // complete this algorithm with that entry's value, and abort these
         // steps."
-        client->OnRead(entry->GetParams());
+        client->OnFetched(entry->GetParams());
         return;
       case Entry::State::kFailed:
         // Module fetching failed before. Abort following steps.
@@ -169,7 +169,7 @@ void WorkletModuleResponsesMap::ReadEntry(FetchParameters& fetch_params,
   entry->Fetch(fetch_params, fetcher_.Get());
 }
 
-void WorkletModuleResponsesMap::InvalidateEntry(const KURL& url) {
+void WorkletModuleResponsesMap::Invalidate(const KURL& url) {
   DCHECK(IsMainThread());
   DCHECK(IsValidURL(url));
   if (!is_available_)

@@ -12,7 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkletModuleResponsesMapProxy.h"
+#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -69,8 +69,10 @@ class CORE_EXPORT WorkletGlobalScope
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 
-  WorkletModuleResponsesMapProxy* ModuleResponsesMapProxy() const;
-  void SetModuleResponsesMapProxyForTesting(WorkletModuleResponsesMapProxy*);
+  WorkerOrWorkletModuleFetchCoordinatorProxy* ModuleFetchCoordinatorProxy()
+      const;
+  void SetModuleFetchCoordinatorProxyForTesting(
+      WorkerOrWorkletModuleFetchCoordinatorProxy*);
 
   const SecurityOrigin* DocumentSecurityOrigin() const {
     return document_security_origin_.get();
@@ -110,7 +112,7 @@ class CORE_EXPORT WorkletGlobalScope
   // Used for origin trials, inherited from the parent Document.
   const bool document_secure_context_;
 
-  Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
+  Member<WorkerOrWorkletModuleFetchCoordinatorProxy> fetch_coordinator_proxy_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

@@ -81,12 +81,13 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
-  if (!module_responses_map_proxy_) {
+  if (!fetch_coordinator_proxy_) {
     // |kUnspecedLoading| is used here because this is a part of script module
     // loading and this usage is not explicitly spec'ed.
-    module_responses_map_proxy_ = WorkletModuleResponsesMapProxy::Create(
-        module_responses_map, outside_settings_task_runner,
-        GetTaskRunner(TaskType::kUnspecedLoading));
+    fetch_coordinator_proxy_ =
+        WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
+            module_responses_map, outside_settings_task_runner,
+            GetTaskRunner(TaskType::kUnspecedLoading));
   }
 
   // Step 1: "Let insideSettings be the workletGlobalScope's associated
@@ -105,17 +106,17 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   FetchModuleScript(module_url_record, credentials_mode, client);
 }
 
-WorkletModuleResponsesMapProxy* WorkletGlobalScope::ModuleResponsesMapProxy()
-    const {
+WorkerOrWorkletModuleFetchCoordinatorProxy*
+WorkletGlobalScope::ModuleFetchCoordinatorProxy() const {
   DCHECK(IsContextThread());
-  DCHECK(module_responses_map_proxy_);
-  return module_responses_map_proxy_;
+  DCHECK(fetch_coordinator_proxy_);
+  return fetch_coordinator_proxy_;
 }
 
-void WorkletGlobalScope::SetModuleResponsesMapProxyForTesting(
-    WorkletModuleResponsesMapProxy* proxy) {
-  DCHECK(!module_responses_map_proxy_);
-  module_responses_map_proxy_ = proxy;
+void WorkletGlobalScope::SetModuleFetchCoordinatorProxyForTesting(
+    WorkerOrWorkletModuleFetchCoordinatorProxy* proxy) {
+  DCHECK(!fetch_coordinator_proxy_);
+  fetch_coordinator_proxy_ = proxy;
 }
 
 KURL WorkletGlobalScope::CompleteURL(const String& url) const {
@@ -129,7 +130,7 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
 }
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
-  visitor->Trace(module_responses_map_proxy_);
+  visitor->Trace(fetch_coordinator_proxy_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 

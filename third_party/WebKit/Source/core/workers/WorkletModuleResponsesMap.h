@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/loader/modulescript/ModuleScriptCreationParams.h"
+#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -23,36 +24,33 @@ namespace blink {
 //
 // This acts as a cache for creation params (including source code) of module
 // scripts, but also performs fetch when needed. The creation params are added
-// and retrieved using ReadEntry(). If a module script for a given URL has
-// already been fetched, ReadEntry() returns the cached creation params.
-// Otherwise, ReadEntry() internally creates DocumentModuleScriptFetcher with
-// thie ResourceFetcher that is given to its ctor. Once the module script is
-// fetched, its creation params are cached and ReadEntry() returns it.
+// and retrieved using Fetch(). If a module script for a given URL has already
+// been fetched, Fetch() returns the cached creation params. Otherwise, Fetch()
+// internally creates DocumentModuleScriptFetcher with thie ResourceFetcher that
+// is given to its ctor. Once the module script is fetched, its creation params
+// are cached and Fetch() returns it.
+//
+// TODO(nhiroki): Rename this to WorkletModuleFetchCoordinator, and revise the
+// class-level comment.
 class CORE_EXPORT WorkletModuleResponsesMap
-    : public GarbageCollectedFinalized<WorkletModuleResponsesMap> {
- public:
-  // Used for notifying results of ReadEntry(). See comments on the function for
-  // details.
-  class CORE_EXPORT Client : public GarbageCollectedMixin {
-   public:
-    virtual ~Client() = default;
-    virtual void OnRead(const ModuleScriptCreationParams&) = 0;
-    virtual void OnFailed() = 0;
-  };
+    : public GarbageCollectedFinalized<WorkletModuleResponsesMap>,
+      public WorkerOrWorkletModuleFetchCoordinator {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleResponsesMap);
 
+ public:
   explicit WorkletModuleResponsesMap(ResourceFetcher*);
 
-  // Reads an entry for the given URL. If the entry is already fetched,
-  // synchronously calls Client::OnRead(). Otherwise, it's called on the
-  // completion of the fetch. See also the class-level comment.
-  void ReadEntry(FetchParameters&, Client*);
+  // Fetches a module script. If the script is already fetched, synchronously
+  // calls Client::OnFetched(). Otherwise, it's called on the completion of the
+  // fetch. See also the class-level comment.
+  void Fetch(FetchParameters&, Client*);
 
-  // Invalidates the entry and calls OnFailed() for waiting clients.
-  void InvalidateEntry(const KURL&);
+  // Invalidates an inflight module script fetch, and calls OnFailed() for
+  // waiting clients.
+  void Invalidate(const KURL&);
 
   // Called when the associated document is destroyed. Aborts all waiting
-  // clients and clears the map. Following read and write requests to the map
-  // are simply ignored.
+  // clients and clears the map. Following Fetch() calls are simply ignored.
   void Dispose();
 
   void Trace(blink::Visitor*);

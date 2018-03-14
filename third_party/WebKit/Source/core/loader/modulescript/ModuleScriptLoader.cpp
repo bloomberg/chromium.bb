@@ -10,7 +10,6 @@
 #include "core/loader/modulescript/ModuleScriptFetcher.h"
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
-#include "core/loader/modulescript/WorkletModuleScriptFetcher.h"
 #include "core/script/Modulator.h"
 #include "core/script/ModuleScript.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
