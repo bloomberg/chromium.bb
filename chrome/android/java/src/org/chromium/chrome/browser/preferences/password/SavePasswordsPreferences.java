@@ -322,7 +322,7 @@ public class SavePasswordsPreferences
 
         // Constructs the successful result: a valid URI and no error.
         public ExportResult(Uri uri) {
-            assert uri != null && uri != Uri.EMPTY;
+            assert uri != null && !uri.equals(Uri.EMPTY);
             mUri = uri;
             mError = null;
         }
@@ -624,7 +624,7 @@ public class SavePasswordsPreferences
         assert mExportState == EXPORT_STATE_CONFIRMED;
         mExportState = EXPORT_STATE_INACTIVE;
 
-        if (mExportFileUri == Uri.EMPTY) return;
+        if (mExportFileUri.equals(Uri.EMPTY)) return;
 
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/csv");

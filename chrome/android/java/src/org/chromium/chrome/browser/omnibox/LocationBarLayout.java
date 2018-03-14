@@ -1777,8 +1777,9 @@ public class LocationBarLayout extends FrameLayout
      * @param skipCheck Whether to skip an out of bounds check.
      * @return The url to navigate to.
      */
-    private String updateSuggestionUrlIfNeeded(OmniboxSuggestion suggestion, int selectedIndex,
-            boolean skipCheck) {
+    @SuppressWarnings("ReferenceEquality")
+    private String updateSuggestionUrlIfNeeded(
+            OmniboxSuggestion suggestion, int selectedIndex, boolean skipCheck) {
         // Only called once we have suggestions, and don't have a listener though which we can
         // receive suggestions until the native side is ready, so this is safe
         assert mNativeInitialized

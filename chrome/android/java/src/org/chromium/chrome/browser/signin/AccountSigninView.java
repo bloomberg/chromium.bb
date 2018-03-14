@@ -886,12 +886,11 @@ public class AccountSigninView extends FrameLayout {
                           + "by setText() or setTextNonRecordable().";
 
         // Ensure that the text hasn't changed since the assignment.
-        assert view.getText().toString()
-                == metadata.getString()
+        assert view.getText().toString().equals(metadata.getString())
             : "The text '"
-                        + view.getText().toString()
-                        + "' has been modified after it was assigned by setText() "
-                        + "or setTextNonRecordable().";
+                + view.getText().toString()
+                + "' has been modified after it was assigned by setText() "
+                + "or setTextNonRecordable().";
         return metadata.getId();
     }
 

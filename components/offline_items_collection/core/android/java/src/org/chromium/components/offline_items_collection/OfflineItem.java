@@ -45,6 +45,7 @@ public class OfflineItem {
         }
 
         @Override
+        @SuppressWarnings("ReferenceEquality")
         public boolean equals(Object obj) {
             if (obj instanceof Progress) {
                 Progress other = (Progress) obj;
