@@ -28,7 +28,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebColor.h"
 #include "public/web/WebFrameClient.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

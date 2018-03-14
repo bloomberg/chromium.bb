@@ -31,7 +31,6 @@
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/text/WritingModeUtils.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

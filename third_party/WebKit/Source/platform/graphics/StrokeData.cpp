@@ -29,7 +29,6 @@
 #include "platform/graphics/StrokeData.h"
 #include <memory>
 #include "platform/graphics/paint/PaintFlags.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 namespace blink {

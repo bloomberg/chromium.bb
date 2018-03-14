@@ -31,7 +31,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 
 #define PNG_SET_OPTION_SUPPORTED

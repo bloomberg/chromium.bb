@@ -10,7 +10,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/graphics/CompositorElementId.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

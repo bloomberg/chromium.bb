@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <memory>
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

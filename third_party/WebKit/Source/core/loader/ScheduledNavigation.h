@@ -6,7 +6,6 @@
 #define ScheduledNavigation_h
 
 #include "base/macros.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

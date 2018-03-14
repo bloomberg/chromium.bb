@@ -14,7 +14,6 @@
 #include "platform/blob/BlobBytesProvider.h"
 #include "platform/blob/testing/FakeBlobRegistry.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"

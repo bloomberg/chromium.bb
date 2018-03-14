@@ -8,7 +8,6 @@
 #include "core/frame/Location.h"
 #include "core/probe/CoreProbes.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <memory>

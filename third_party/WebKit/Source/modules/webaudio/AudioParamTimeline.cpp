@@ -224,7 +224,7 @@ AudioParamTimeline::ParamEvent::CreateSetValueCurveEvent(
 std::unique_ptr<AudioParamTimeline::ParamEvent>
 AudioParamTimeline::ParamEvent::CreateSetValueCurveEndEvent(float value,
                                                             double time) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new ParamEvent(ParamEvent::kSetValueCurveEnd, value, time));
 }
 

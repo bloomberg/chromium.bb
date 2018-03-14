@@ -28,7 +28,6 @@
 #include "platform/WindowsKeyboardCodes.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
 

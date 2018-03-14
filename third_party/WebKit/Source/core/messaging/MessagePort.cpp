@@ -41,7 +41,6 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Atomics.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebString.h"

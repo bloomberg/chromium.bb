@@ -26,7 +26,6 @@
 #include "SkMergeImageFilter.h"
 #include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

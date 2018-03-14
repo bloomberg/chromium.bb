@@ -22,7 +22,6 @@
 #include "core/style/CounterDirectives.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -27,9 +27,9 @@
 
 #include <memory>
 #include <type_traits>
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -561,7 +561,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
   {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
-    OwnPtrSet::AddResult res1 = set.insert(WTF::WrapUnique(ptr1));
+    OwnPtrSet::AddResult res1 = set.insert(base::WrapUnique(ptr1));
     EXPECT_EQ(res1.stored_value->get(), ptr1);
   }
 
@@ -573,7 +573,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
 
   Dummy* ptr2 = new Dummy(deleted2);
   {
-    OwnPtrSet::AddResult res2 = set.insert(WTF::WrapUnique(ptr2));
+    OwnPtrSet::AddResult res2 = set.insert(base::WrapUnique(ptr2));
     EXPECT_EQ(res2.stored_value->get(), ptr2);
   }
 
@@ -608,8 +608,8 @@ TEST(ListHashSetTest, WithOwnPtr) {
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.insert(WTF::WrapUnique(ptr1));
-    set.insert(WTF::WrapUnique(ptr2));
+    set.insert(base::WrapUnique(ptr1));
+    set.insert(base::WrapUnique(ptr2));
     own_ptr1 = set.TakeFirst();
     EXPECT_EQ(1UL, set.size());
     own_ptr2 = set.Take(ptr2);

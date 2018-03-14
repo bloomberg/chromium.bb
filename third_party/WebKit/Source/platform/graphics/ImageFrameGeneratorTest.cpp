@@ -34,7 +34,6 @@
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"

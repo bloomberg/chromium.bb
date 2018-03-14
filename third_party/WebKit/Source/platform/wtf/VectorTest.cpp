@@ -28,7 +28,6 @@
 #include <memory>
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/WTFTestHelper.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,8 +170,8 @@ typedef WTF::Vector<std::unique_ptr<DestructCounter>> OwnPtrVector;
 TEST(VectorTest, OwnPtr) {
   int destruct_number = 0;
   OwnPtrVector vector;
-  vector.push_back(WTF::WrapUnique(new DestructCounter(0, &destruct_number)));
-  vector.push_back(WTF::WrapUnique(new DestructCounter(1, &destruct_number)));
+  vector.push_back(std::make_unique<DestructCounter>(0, &destruct_number));
+  vector.push_back(std::make_unique<DestructCounter>(1, &destruct_number));
   EXPECT_EQ(2u, vector.size());
 
   std::unique_ptr<DestructCounter>& counter0 = vector.front();
@@ -216,8 +215,7 @@ TEST(VectorTest, OwnPtr) {
   size_t count = 1025;
   destruct_number = 0;
   for (size_t i = 0; i < count; i++)
-    vector.push_front(
-        WTF::WrapUnique(new DestructCounter(i, &destruct_number)));
+    vector.push_front(std::make_unique<DestructCounter>(i, &destruct_number));
 
   // Vector relocation must not destruct std::unique_ptr element.
   EXPECT_EQ(0, destruct_number);

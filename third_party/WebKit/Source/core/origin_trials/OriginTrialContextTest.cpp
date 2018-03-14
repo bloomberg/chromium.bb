@@ -16,7 +16,6 @@
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/common/origin_trials/trial_token.h"
 #include "public/platform/WebTrialTokenValidator.h"

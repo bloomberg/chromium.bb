@@ -83,7 +83,6 @@
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "v8/include/v8.h"

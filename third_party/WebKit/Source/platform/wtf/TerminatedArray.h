@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/VectorTraits.h"
 #include "platform/wtf/allocator/Partitions.h"
 
@@ -98,14 +98,14 @@ class TerminatedArray {
     static PassPtr Release(Ptr& ptr) { return ptr.release(); }
 
     static PassPtr Create(size_t capacity) {
-      return WTF::WrapUnique(
+      return base::WrapUnique(
           static_cast<TerminatedArray*>(WTF::Partitions::FastMalloc(
               WTF::Partitions::ComputeAllocationSize(capacity, sizeof(T)),
               WTF_HEAP_PROFILER_TYPE_NAME(T))));
     }
 
     static PassPtr Resize(Ptr ptr, size_t capacity) {
-      return WTF::WrapUnique(
+      return base::WrapUnique(
           static_cast<TerminatedArray*>(WTF::Partitions::FastRealloc(
               ptr.release(),
               WTF::Partitions::ComputeAllocationSize(capacity, sizeof(T)),

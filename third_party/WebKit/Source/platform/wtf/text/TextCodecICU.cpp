@@ -26,17 +26,19 @@
 
 #include "platform/wtf/text/TextCodecICU.h"
 
+#include <memory>
+
+#include <unicode/ucnv.h>
+#include <unicode/ucnv_cb.h>
+#include <memory>
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/WTFThreadData.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include <memory>
-#include <unicode/ucnv.h>
-#include <unicode/ucnv_cb.h>
 
 namespace WTF {
 
@@ -53,7 +55,7 @@ static UConverter*& CachedConverterICU() {
 
 std::unique_ptr<TextCodec> TextCodecICU::Create(const TextEncoding& encoding,
                                                 const void*) {
-  return WTF::WrapUnique(new TextCodecICU(encoding));
+  return base::WrapUnique(new TextCodecICU(encoding));
 }
 
 namespace {

@@ -33,10 +33,10 @@
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
 #include <memory>
+#include "base/memory/ptr_util.h"
 #include "platform/Language.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/wtf/DateMath.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RetainPtr.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -104,11 +104,11 @@ LocaleMac::~LocaleMac() {}
 std::unique_ptr<LocaleMac> LocaleMac::Create(const String& locale_identifier) {
   RetainPtr<NSLocale> locale =
       [[NSLocale alloc] initWithLocaleIdentifier:locale_identifier];
-  return WTF::WrapUnique(new LocaleMac(locale.Get()));
+  return base::WrapUnique(new LocaleMac(locale.Get()));
 }
 
 std::unique_ptr<LocaleMac> LocaleMac::Create(NSLocale* locale) {
-  return WTF::WrapUnique(new LocaleMac(locale));
+  return base::WrapUnique(new LocaleMac(locale));
 }
 
 RetainPtr<NSDateFormatter> LocaleMac::ShortDateFormatter() {

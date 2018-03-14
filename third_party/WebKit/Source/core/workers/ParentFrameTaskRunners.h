@@ -14,7 +14,6 @@
 #include "core/dom/TaskTypeTraits.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

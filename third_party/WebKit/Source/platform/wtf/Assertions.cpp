@@ -35,7 +35,6 @@
 #include "platform/wtf/Assertions.h"
 
 #include "build/build_config.h"
-#include "platform/wtf/PtrUtil.h"
 
 #if defined(OS_MACOSX)
 #include <asl.h>

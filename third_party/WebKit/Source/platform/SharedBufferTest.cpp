@@ -34,7 +34,6 @@
 #include <cstdlib>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

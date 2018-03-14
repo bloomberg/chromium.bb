@@ -25,7 +25,6 @@
 
 #include "platform/wtf/text/TextCodecLatin1.h"
 
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/TextCodecASCIIFastPath.h"
@@ -93,7 +92,7 @@ void TextCodecLatin1::RegisterEncodingNames(EncodingNameRegistrar registrar) {
 static std::unique_ptr<TextCodec> NewStreamingTextDecoderWindowsLatin1(
     const TextEncoding&,
     const void*) {
-  return WTF::WrapUnique(new TextCodecLatin1);
+  return std::make_unique<TextCodecLatin1>();
 }
 
 void TextCodecLatin1::RegisterCodecs(TextCodecRegistrar registrar) {

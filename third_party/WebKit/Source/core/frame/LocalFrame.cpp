@@ -97,7 +97,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/text/TextStream.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/InterfaceRegistry.h"

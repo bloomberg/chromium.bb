@@ -52,7 +52,6 @@
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"

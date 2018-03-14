@@ -25,12 +25,12 @@
 
 #include "platform/wtf/text/TextCodecUTF8.h"
 
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/TextCodecASCIIFastPath.h"
-#include <memory>
 
 namespace WTF {
 
@@ -48,7 +48,7 @@ bool IsNonCharacter(int character) {
 
 std::unique_ptr<TextCodec> TextCodecUTF8::Create(const TextEncoding&,
                                                  const void*) {
-  return WTF::WrapUnique(new TextCodecUTF8);
+  return base::WrapUnique(new TextCodecUTF8());
 }
 
 void TextCodecUTF8::RegisterEncodingNames(EncodingNameRegistrar registrar) {

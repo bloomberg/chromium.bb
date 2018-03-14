@@ -34,7 +34,6 @@
 #include "core/paint/compositing/CompositingReasonFinder.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

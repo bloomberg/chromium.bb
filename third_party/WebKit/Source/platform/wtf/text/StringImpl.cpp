@@ -27,7 +27,6 @@
 
 #include "platform/wtf/DynamicAnnotations.h"
 #include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StaticConstructors.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/allocator/Partitions.h"

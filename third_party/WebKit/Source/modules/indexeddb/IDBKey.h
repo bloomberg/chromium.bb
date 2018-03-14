@@ -30,11 +30,11 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebVector.h"
@@ -54,28 +54,28 @@ class MODULES_EXPORT IDBKey {
   typedef Vector<std::unique_ptr<IDBKey>> KeyArray;
 
   static std::unique_ptr<IDBKey> CreateInvalid() {
-    return WTF::WrapUnique(new IDBKey());
+    return base::WrapUnique(new IDBKey());
   }
 
   static std::unique_ptr<IDBKey> CreateNumber(double number) {
-    return WTF::WrapUnique(new IDBKey(kNumberType, number));
+    return base::WrapUnique(new IDBKey(kNumberType, number));
   }
 
   static std::unique_ptr<IDBKey> CreateBinary(
       scoped_refptr<SharedBuffer> binary) {
-    return WTF::WrapUnique(new IDBKey(std::move(binary)));
+    return base::WrapUnique(new IDBKey(std::move(binary)));
   }
 
   static std::unique_ptr<IDBKey> CreateString(const String& string) {
-    return WTF::WrapUnique(new IDBKey(string));
+    return base::WrapUnique(new IDBKey(string));
   }
 
   static std::unique_ptr<IDBKey> CreateDate(double date) {
-    return WTF::WrapUnique(new IDBKey(kDateType, date));
+    return base::WrapUnique(new IDBKey(kDateType, date));
   }
 
   static std::unique_ptr<IDBKey> CreateArray(KeyArray array) {
-    return WTF::WrapUnique(new IDBKey(std::move(array)));
+    return base::WrapUnique(new IDBKey(std::move(array)));
   }
 
   ~IDBKey();

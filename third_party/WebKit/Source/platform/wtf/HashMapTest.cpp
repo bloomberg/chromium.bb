@@ -26,8 +26,9 @@
 #include "platform/wtf/HashMap.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/WTFTestHelper.h"
@@ -96,8 +97,8 @@ using OwnPtrHashMap = HashMap<int, std::unique_ptr<DestructCounter>>;
 TEST(HashMapTest, OwnPtrAsValue) {
   int destruct_number = 0;
   OwnPtrHashMap map;
-  map.insert(1, WTF::WrapUnique(new DestructCounter(1, &destruct_number)));
-  map.insert(2, WTF::WrapUnique(new DestructCounter(2, &destruct_number)));
+  map.insert(1, std::make_unique<DestructCounter>(1, &destruct_number));
+  map.insert(2, std::make_unique<DestructCounter>(2, &destruct_number));
 
   DestructCounter* counter1 = map.at(1);
   EXPECT_EQ(1, counter1->Get());
@@ -210,7 +211,7 @@ TEST(HashMapTest, AddResult) {
   EXPECT_EQ(nullptr, result.stored_value->value.get());
 
   SimpleClass* simple1 = new SimpleClass(1);
-  result.stored_value->value = WTF::WrapUnique(simple1);
+  result.stored_value->value = base::WrapUnique(simple1);
   EXPECT_EQ(simple1, map.at(1));
 
   IntSimpleMap::AddResult result2 =

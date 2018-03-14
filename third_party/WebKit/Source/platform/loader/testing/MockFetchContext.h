@@ -12,7 +12,6 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_task_runner.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderFactory.h"
 

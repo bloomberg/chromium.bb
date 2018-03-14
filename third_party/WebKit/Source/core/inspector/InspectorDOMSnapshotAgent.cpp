@@ -38,7 +38,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

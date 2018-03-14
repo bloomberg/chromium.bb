@@ -52,7 +52,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {

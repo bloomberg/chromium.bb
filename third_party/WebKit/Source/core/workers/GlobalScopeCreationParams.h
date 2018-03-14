@@ -19,7 +19,6 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 

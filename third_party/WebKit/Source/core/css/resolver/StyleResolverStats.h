@@ -36,7 +36,6 @@
 #include "base/memory/ptr_util.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

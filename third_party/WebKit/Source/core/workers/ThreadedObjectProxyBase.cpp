@@ -12,7 +12,6 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

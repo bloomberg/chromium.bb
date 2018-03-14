@@ -14,7 +14,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class AnimationCurve;

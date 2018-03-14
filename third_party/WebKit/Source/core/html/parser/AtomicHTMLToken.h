@@ -34,7 +34,6 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html_element_lookup_trie.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
