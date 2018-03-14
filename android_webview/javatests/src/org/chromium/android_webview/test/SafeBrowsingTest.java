@@ -41,7 +41,6 @@ import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -985,7 +984,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug/819085")
     public void testSafeBrowsingClickLearnMoreLink() throws Throwable {
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "learn-more-link",
                 appendLocale("https://support.google.com/chrome/?p=cpn_safe_browsing_wv"));
@@ -994,7 +992,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug/819085")
     public void testSafeBrowsingClickReportErrorLink() throws Throwable {
         // Only phishing interstitials have the report-error-link
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link",
@@ -1004,8 +1001,13 @@ public class SafeBrowsingTest {
     private String appendLocale(String url) throws Exception {
         return Uri.parse(url)
                 .buildUpon()
-                .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                 .toString();
+    }
+
+    private String getSafeBrowsingLocaleOnUiThreadForTesting() throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> AwContents.getSafeBrowsingLocaleForTesting());
     }
 
     @Test
@@ -1017,7 +1019,7 @@ public class SafeBrowsingTest {
                 Uri.parse("https://transparencyreport.google.com/safe-browsing/search")
                         .buildUpon()
                         .appendQueryParameter("url", responseUrl)
-                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .toString();
         loadInterstitialAndClickLink(MALWARE_HTML_PATH, "diagnostic-link", diagnosticUrl);
     }
@@ -1029,7 +1031,7 @@ public class SafeBrowsingTest {
         final String whitepaperUrl =
                 Uri.parse("https://www.google.com/chrome/browser/privacy/whitepaper.html")
                         .buildUpon()
-                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .fragment("extendedreport")
                         .toString();
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "whitepaper-link", whitepaperUrl);
@@ -1042,7 +1044,7 @@ public class SafeBrowsingTest {
         final String privacyPolicyUrl =
                 Uri.parse("https://www.google.com/chrome/browser/privacy/")
                         .buildUpon()
-                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .fragment("safe-browsing-policies")
                         .toString();
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "privacy-link", privacyPolicyUrl);
@@ -1118,7 +1120,7 @@ public class SafeBrowsingTest {
         final Uri privacyPolicyUrl =
                 Uri.parse("https://www.google.com/chrome/browser/privacy/")
                         .buildUpon()
-                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .fragment("safe-browsing-policies")
                         .build();
         ThreadUtils.runOnUiThreadBlocking(
