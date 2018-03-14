@@ -7,10 +7,50 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "components/cbor/cbor_values.h"
+#include "components/cbor/cbor_writer.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
+
+const char kSignatureString[] =
+    "sig1;"
+    " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+    "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+    " integrity=\"mi\";"
+    " validityUrl=\"https://example.com/resource.validity.1511128380\";"
+    " certUrl=\"https://example.com/oldcerts\";"
+    " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+    " date=1511128380; expires=1511733180";
+
+cbor::CBORValue CBORByteString(const char* str) {
+  return cbor::CBORValue(str, cbor::CBORValue::Type::BYTE_STRING);
+}
+
+base::Optional<SignedExchangeHeader> GenerateHeaderAndParse(
+    const std::map<const char*, const char*>& request_map,
+    const std::map<const char*, const char*>& response_map) {
+  cbor::CBORValue::MapValue request_cbor_map;
+  cbor::CBORValue::MapValue response_cbor_map;
+  for (auto& pair : request_map)
+    request_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
+  for (auto& pair : response_map)
+    response_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
+
+  cbor::CBORValue::ArrayValue array;
+  array.push_back(cbor::CBORValue(std::move(request_cbor_map)));
+  array.push_back(cbor::CBORValue(std::move(response_cbor_map)));
+
+  auto serialized = cbor::CBORWriter::Write(cbor::CBORValue(std::move(array)));
+  return SignedExchangeHeader::Parse(
+      base::make_span(serialized->data(), serialized->size()));
+}
+
+}  // namespace
 
 TEST(SignedExchangeHeaderTest, ParseHeaderLength) {
   constexpr struct {
@@ -28,7 +68,7 @@ TEST(SignedExchangeHeaderTest, ParseHeaderLength) {
   }
 }
 
-TEST(SignedExchangeHeaderTest, Parse) {
+TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   base::FilePath test_htxg_path;
   PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
   test_htxg_path = test_htxg_path.AppendASCII("htxg").AppendASCII(
@@ -56,6 +96,58 @@ TEST(SignedExchangeHeaderTest, Parse) {
   EXPECT_EQ(header->response_headers().size(), 5u);
   EXPECT_EQ(header->response_headers().find("content-encoding")->second,
             "mi-sha256");
+}
+
+TEST(SignedExchangeHeaderTest, ValidHeader) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
+      },
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_TRUE(header.has_value());
+  EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
+  EXPECT_EQ(header->request_method(), "GET");
+  EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(200u));
+  EXPECT_EQ(header->response_headers().size(), 1u);
+}
+
+TEST(SignedExchangeHeaderTest, UnsafeMethod) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "POST"},
+      },
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeHeaderTest, StatefulRequestHeader) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/"},
+          {kMethodKey, "GET"},
+          {"Authorization", "Basic Zm9vOmJhcg=="},
+      },
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeHeaderTest, StatefulResponseHeader) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
+      },
+      {
+          {kStatusKey, "200"},
+          {kSignature, kSignatureString},
+          {"Set-Cookie", "foo=bar"},
+      });
+  ASSERT_FALSE(header.has_value());
 }
 
 }  // namespace content

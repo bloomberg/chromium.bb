@@ -1658,6 +1658,7 @@ test("content_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/ipc",
+    "//components/cbor",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
     "//components/offline_pages/buildflags",

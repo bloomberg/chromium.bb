@@ -16,6 +16,49 @@ namespace content {
 
 namespace {
 
+// IsStateful{Request,Response}Header return true if |name| is a stateful
+// header field. Stateful header fields will cause validation failure of
+// signed exchanges.
+// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4.1
+bool IsStatefulRequestHeader(base::StringPiece name) {
+  const char* const kStatefulRequestHeaders[] = {
+      "authorization", "cookie", "cookie2", "proxy-authorization",
+      "sec-webSocket-key"};
+
+  std::string lower_name(base::ToLowerASCII(name));
+  for (const char* field : kStatefulRequestHeaders) {
+    if (lower_name == field)
+      return true;
+  }
+  return false;
+}
+
+bool IsStatefulResponseHeader(base::StringPiece name) {
+  const char* const kStatefulResponseHeaders[] = {
+      "authentication-control",
+      "authentication-info",
+      "optional-www-authenticate",
+      "proxy-authenticate",
+      "proxy-authentication-info",
+      "sec-websocket-accept",
+      "set-cookie",
+      "set-cookie2",
+      "setprofile",
+      "www-authenticate",
+  };
+
+  std::string lower_name(base::ToLowerASCII(name));
+  for (const char* field : kStatefulResponseHeaders) {
+    if (lower_name == field)
+      return true;
+  }
+  return false;
+}
+
+bool IsMethodCacheable(base::StringPiece method) {
+  return method == "GET" || method == "HEAD" || method == "POST";
+}
+
 bool ParseRequestMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
   if (!value.is_map()) {
     DVLOG(1) << "Expected request map, got non-map type "
@@ -40,7 +83,32 @@ bool ParseRequestMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
     DVLOG(1) << kMethodKey << " is not found or not a bytestring";
     return false;
   }
-  out->set_request_method(method_iter->second.GetBytestringAsString());
+  base::StringPiece method_str = method_iter->second.GetBytestringAsString();
+  // 3. If exchange’s request method is not safe (Section 4.2.1 of [RFC7231])
+  // or not cacheable (Section 4.2.3 of [RFC7231]), return “invalid”.
+  // [spec text]
+  if (!net::HttpUtil::IsMethodSafe(method_str.as_string()) ||
+      !IsMethodCacheable(method_str)) {
+    DVLOG(1) << "Request method is not safe or not cacheable: " << method_str;
+    return false;
+  }
+  out->set_request_method(method_str);
+
+  for (const auto& it : request_map) {
+    if (!it.first.is_bytestring() || !it.second.is_bytestring()) {
+      DVLOG(1) << "Non-bytestring value in the request map";
+      return false;
+    }
+    base::StringPiece name_str = it.first.GetBytestringAsString();
+    if (name_str == kStatusKey)
+      continue;
+    // 4. If exchange’s headers contain a stateful header field, as defined in
+    // Section 4.1, return “invalid”. [spec text]
+    if (IsStatefulRequestHeader(name_str)) {
+      DVLOG(1) << "Exchange contains stateful request header: " << name_str;
+      return false;
+    }
+  }
 
   return true;
 }
@@ -80,6 +148,12 @@ bool ParseResponseMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
       continue;
     if (!net::HttpUtil::IsValidHeaderName(name_str)) {
       DVLOG(1) << "Invalid header name";
+      return false;
+    }
+    // 4. If exchange’s headers contain a stateful header field, as defined in
+    // Section 4.1, return “invalid”. [spec text]
+    if (IsStatefulResponseHeader(name_str)) {
+      DVLOG(1) << "Exchange contains stateful response header: " << name_str;
       return false;
     }
 
@@ -170,21 +244,20 @@ void SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
 
 scoped_refptr<net::HttpResponseHeaders>
 SignedExchangeHeader::BuildHttpResponseHeaders() const {
-  std::string fake_header_str("HTTP/1.1 ");
-  fake_header_str.append(base::NumberToString(response_code()));
-  fake_header_str.append(" ");
-  fake_header_str.append(net::GetHttpReasonPhrase(response_code()));
-  fake_header_str.append(" \r\n");
+  std::string header_str("HTTP/1.1 ");
+  header_str.append(base::NumberToString(response_code()));
+  header_str.append(" ");
+  header_str.append(net::GetHttpReasonPhrase(response_code()));
+  header_str.append(" \r\n");
   for (const auto& it : response_headers()) {
-    fake_header_str.append(it.first);
-    fake_header_str.append(": ");
-    fake_header_str.append(it.second);
-    fake_header_str.append("\r\n");
+    header_str.append(it.first);
+    header_str.append(": ");
+    header_str.append(it.second);
+    header_str.append("\r\n");
   }
-  fake_header_str.append("\r\n");
+  header_str.append("\r\n");
   return base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(fake_header_str.c_str(),
-                                        fake_header_str.size()));
+      net::HttpUtil::AssembleRawHeaders(header_str.c_str(), header_str.size()));
 }
 
 }  // namespace content
