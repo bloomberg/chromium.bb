@@ -162,6 +162,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
     case CSSPropertyStrokeMiterlimit:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyColumnCount:
+    case CSSPropertyTextSizeAdjust:
     case CSSPropertyWidows:
     case CSSPropertyZIndex:
       applicable_types->push_back(

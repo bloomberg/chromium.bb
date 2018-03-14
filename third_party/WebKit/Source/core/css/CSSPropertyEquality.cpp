@@ -277,6 +277,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextIndent() == b.TextIndent();
     case CSSPropertyTextShadow:
       return DataEquivalent(a.TextShadow(), b.TextShadow());
+    case CSSPropertyTextSizeAdjust:
+      return a.GetTextSizeAdjust() == b.GetTextSizeAdjust();
     case CSSPropertyTop:
       return a.Top() == b.Top();
     case CSSPropertyVerticalAlign:
