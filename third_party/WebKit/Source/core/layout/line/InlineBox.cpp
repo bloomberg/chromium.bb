@@ -21,6 +21,7 @@
 
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -110,7 +111,13 @@ void InlineBox::ShowTreeForThis() const {
 }
 
 void InlineBox::ShowLineTreeForThis() const {
-  GetLineLayoutItem().ContainingBlock().ShowLineTreeAndMark(this, "*");
+  const LayoutBlock* containing_block =
+      LineLayoutAPIShim::LayoutObjectFrom(GetLineLayoutItem())
+          ->InclusiveContainingBlock();
+  if (containing_block) {
+    LineLayoutBox(const_cast<LayoutBlock*>(containing_block))
+        .ShowLineTreeAndMark(this, "*");
+  }
 }
 
 void InlineBox::DumpLineTreeAndMark(StringBuilder& string_builder,
