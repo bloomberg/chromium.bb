@@ -18,12 +18,33 @@ class LinearLayout : public UiElement {
 
   void set_margin(float margin) { margin_ = margin; }
   void set_direction(Direction direction) { direction_ = direction; }
+  void set_layout_length(float extent) { layout_length = extent; }
 
+  // UiElement overrides.
+  bool SizeAndLayOut() override;
   void LayOutChildren() override;
 
  private:
+  bool Horizontal() const;
+
+  // Compute the total extents of all layout-enabled children, including margin.
+  // Optionally, an element to exclude may be specified, allowing the layout to
+  // compute how much space is left for that element.
+  void GetTotalExtent(const UiElement* element_to_exclude,
+                      float* major_extent,
+                      float* minor_extent) const;
+
+  // Sets the specified element to a size that ensures the overall layout totals
+  // its own specified extents.
+  bool AdjustResizableElement(UiElement* element_to_resize);
+
   Direction direction_;
   float margin_ = 0.0f;
+
+  // If non-zero, LinearLayout will look for an element tagged as allowing
+  // sizing by its parent, and set that element's size such that the total
+  // layout's length is attained.
+  float layout_length = 0.0f;
 };
 
 }  // namespace vr
