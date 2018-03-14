@@ -41,7 +41,6 @@
 #include <memory>
 #include <utility>
 
-#include "core/StyleBuilderFunctions.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -78,6 +77,7 @@
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
+#include "core/style_builder_functions.h"
 #include "core/style_property_shorthand.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/wtf/MathExtras.h"

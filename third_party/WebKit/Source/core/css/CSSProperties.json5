@@ -245,7 +245,7 @@
     // succinctly describe how to apply properties. When default handlers are
     // not sufficient, we should prefer to use converter, and failing that
     // define custom property handlers in StyleBuilderCustom.cpp. We only should
-    // use StyleBuilderFunctions.cpp.tmpl to define handlers when there are
+    // use style_builder_functions.cc.tmpl to define handlers when there are
     // multiple properties requiring the same handling, but converter doesn't
     // suffice.
 

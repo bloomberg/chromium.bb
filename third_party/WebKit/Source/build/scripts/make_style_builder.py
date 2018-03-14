@@ -69,10 +69,10 @@ class StyleBuilderWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths):
         super(StyleBuilderWriter, self).__init__([])
         self._outputs = {
-            'StyleBuilderFunctions.h': self.generate_style_builder_functions_h,
-            'StyleBuilderFunctions.cpp':
+            'style_builder_functions.h': self.generate_style_builder_functions_h,
+            'style_builder_functions.cc':
                 self.generate_style_builder_functions_cpp,
-            'StyleBuilder.cpp': self.generate_style_builder,
+            'style_builder.cc': self.generate_style_builder,
         }
 
         self._json5_properties = css_properties.CSSProperties(json5_file_paths)
@@ -86,7 +86,7 @@ class StyleBuilderWriter(json5_generator.Writer):
     def css_properties(self):
         return self._json5_properties
 
-    @template_expander.use_jinja('templates/StyleBuilderFunctions.h.tmpl',
+    @template_expander.use_jinja('templates/style_builder_functions.h.tmpl',
                                  filters=filters)
     def generate_style_builder_functions_h(self):
         return {
@@ -94,7 +94,7 @@ class StyleBuilderWriter(json5_generator.Writer):
             'properties': self._properties,
         }
 
-    @template_expander.use_jinja('templates/StyleBuilderFunctions.cpp.tmpl',
+    @template_expander.use_jinja('templates/style_builder_functions.cc.tmpl',
                                  filters=filters)
     def generate_style_builder_functions_cpp(self):
         return {
@@ -104,7 +104,7 @@ class StyleBuilderWriter(json5_generator.Writer):
         }
 
     @template_expander.use_jinja(
-        'templates/StyleBuilder.cpp.tmpl', filters=filters)
+        'templates/style_builder.cc.tmpl', filters=filters)
     def generate_style_builder(self):
         return {
             'input_files': self._input_files,

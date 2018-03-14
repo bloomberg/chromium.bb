@@ -1152,14 +1152,14 @@ css_properties("make_core_generated_style_property_shorthand") {
 css_properties("make_core_generated_style_builder") {
   script = "../build/scripts/make_style_builder.py"
   other_inputs = [
-    "../build/scripts/templates/StyleBuilder.cpp.tmpl",
-    "../build/scripts/templates/StyleBuilderFunctions.cpp.tmpl",
-    "../build/scripts/templates/StyleBuilderFunctions.h.tmpl",
+    "../build/scripts/templates/style_builder.cc.tmpl",
+    "../build/scripts/templates/style_builder_functions.cc.tmpl",
+    "../build/scripts/templates/style_builder_functions.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/StyleBuilder.cpp",
-    "$blink_core_output_dir/StyleBuilderFunctions.h",
-    "$blink_core_output_dir/StyleBuilderFunctions.cpp",
+    "$blink_core_output_dir/style_builder.cc",
+    "$blink_core_output_dir/style_builder_functions.h",
+    "$blink_core_output_dir/style_builder_functions.cc",
   ]
 }
 
