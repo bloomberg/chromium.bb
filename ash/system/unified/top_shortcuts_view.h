@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_TOP_SHORTCUTS_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_TOP_SHORTCUTS_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -13,10 +14,12 @@ namespace ash {
 class CollapseButton;
 class SignOutButton;
 class TopShortcutButton;
+class TopShortcutsViewTest;
 class UnifiedSystemTrayController;
 
 // Top shortcuts view shown on the top of UnifiedSystemTrayView.
-class TopShortcutsView : public views::View, public views::ButtonListener {
+class ASH_EXPORT TopShortcutsView : public views::View,
+                                    public views::ButtonListener {
  public:
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
   ~TopShortcutsView() override;
@@ -25,9 +28,12 @@ class TopShortcutsView : public views::View, public views::ButtonListener {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
+  friend class TopShortcutsViewTest;
+
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
+  views::View* user_avatar_view_ = nullptr;
   SignOutButton* sign_out_button_ = nullptr;
   TopShortcutButton* lock_button_ = nullptr;
   TopShortcutButton* settings_button_ = nullptr;

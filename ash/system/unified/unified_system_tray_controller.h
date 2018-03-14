@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -18,7 +19,7 @@ class UnifiedBrightnessSliderController;
 class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
-class UnifiedSystemTrayController {
+class ASH_EXPORT UnifiedSystemTrayController {
  public:
   // |system_tray| is used to show detailed views which are still not
   // implemented on UnifiedSystemTray.
