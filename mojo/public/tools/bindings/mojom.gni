@@ -12,6 +12,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
+import("//third_party/jinja2/jinja2.gni")
 
 declare_args() {
   # Indicates whether typemapping should be supported in this build
@@ -399,7 +400,7 @@ template("mojom") {
     }
     action_foreach(parser_target_name) {
       script = mojom_generator_script
-      inputs = mojom_generator_sources
+      inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
       outputs = [
         "{{source_gen_dir}}/{{source_name_part}}.p",
@@ -444,7 +445,7 @@ template("mojom") {
       source_file_name = target_name
       action_foreach(verify_deps_target_name) {
         script = mojom_generator_script
-        inputs = mojom_generator_sources
+        inputs = mojom_generator_sources + jinja2_sources
         sources = invoker.sources
         deps = [
           ":$parsed_target_name",
@@ -537,7 +538,7 @@ template("mojom") {
 
     action_foreach(generator_cpp_message_ids_target_name) {
       script = mojom_generator_script
-      inputs = mojom_generator_sources
+      inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
       deps = [
         ":$parsed_target_name",
@@ -569,7 +570,7 @@ template("mojom") {
     generator_shared_target_name = "${target_name}_shared__generator"
     action_foreach(generator_shared_target_name) {
       script = mojom_generator_script
-      inputs = mojom_generator_sources
+      inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
       deps = [
                ":$parsed_target_name",
@@ -743,7 +744,7 @@ template("mojom") {
       generator_target_name = "${target_name}${variant_suffix}__generator"
       action_foreach(generator_target_name) {
         script = mojom_generator_script
-        inputs = mojom_generator_sources
+        inputs = mojom_generator_sources + jinja2_sources
         sources = invoker.sources
         deps = [
                  ":$parsed_target_name",
@@ -813,7 +814,8 @@ template("mojom") {
     }
 
     action(type_mappings_target_name) {
-      inputs = _bindings_configuration_files + mojom_generator_sources
+      inputs = _bindings_configuration_files + mojom_generator_sources +
+               jinja2_sources
       outputs = [
         type_mappings_path,
       ]
@@ -994,7 +996,7 @@ template("mojom") {
             [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
         action_foreach(java_generator_target_name) {
           script = mojom_generator_script
-          inputs = mojom_generator_sources
+          inputs = mojom_generator_sources + jinja2_sources
           sources = enabled_sources
           deps = [
                    ":$parsed_target_name",
@@ -1078,7 +1080,7 @@ template("mojom") {
       ]
       action_foreach(generator_js_target_name) {
         script = mojom_generator_script
-        inputs = mojom_generator_sources
+        inputs = mojom_generator_sources + jinja2_sources
         sources = []
         if (defined(invoker.sources)) {
           sources += invoker.sources

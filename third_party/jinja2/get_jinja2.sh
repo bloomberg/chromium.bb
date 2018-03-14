@@ -120,3 +120,17 @@ mv "$INSTALL_DIR" "$OLD_DIR"
 mv "$PACKAGE_DIR" "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 rm -fr "$OLD_DIR"
+
+# Generating jinja2.gni
+cat > jinja2.gni <<EOF
+# DO NOT EDIT
+# This is generated from get_jinja2.sh.
+jinja2_sources = [
+EOF
+
+for i in $(LC_COLLATE=C ls *.py)
+do
+  echo "  \"//third_party/jinja2/${i}\"," >> jinja2.gni
+done
+
+echo "]" >> jinja2.gni
