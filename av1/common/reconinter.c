@@ -299,15 +299,6 @@ static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
   return master;
 }
 
-const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
-                                 BLOCK_SIZE sb_type, int offset_x,
-                                 int offset_y) {
-  const uint8_t *mask =
-      get_wedge_mask_inplace(wedge_index, wedge_sign, sb_type);
-  if (mask) mask -= (offset_x + offset_y * MASK_MASTER_STRIDE);
-  return mask;
-}
-
 static uint8_t *invert_mask(uint8_t *mask_inv_buffer, const uint8_t *const mask,
                             int h, int w, int stride) {
   int i, j;
@@ -1989,74 +1980,6 @@ void av1_build_inter_predictors_for_planes_single_buf(
                                       mi_y, ref, ext_dst[plane],
                                       ext_dst_stride[plane]);
   }
-}
-
-// Build a high precision single ref predictor and store the results in ext_dst.
-// The high precision prediction will be used in high precision blending for
-// compound modes.
-void av1_build_inter_predictor_hp_sr(MACROBLOCKD *xd, int plane,
-                                     const MODE_INFO *mi, int build_for_obmc,
-                                     int bw, int bh, int x, int y, int w, int h,
-                                     int mi_x, int mi_y, int ref,
-                                     CONV_BUF_TYPE *const ext_dst,
-                                     int ext_dst_stride) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
-  struct buf_2d *const pre_buf = &pd->pre[ref];
-  const MV mv = mi->mbmi.mv[ref].as_mv;
-  uint8_t *pre;
-  int xs, ys, subpel_x, subpel_y;
-  const int is_scaled = av1_is_scaled(sf);
-  // Set is_compound as 1 to enable high precision output
-  ConvolveParams conv_params = get_conv_params_no_round(
-      ref, 0, plane, ext_dst, ext_dst_stride, 1, xd->bd);
-  WarpTypesAllowed warp_types;
-  const WarpedMotionParams *const wm =
-      &xd->global_motion[mi->mbmi.ref_frame[ref]];
-  warp_types.global_warp_allowed = is_global_mv_block(mi, wm->wmtype);
-  warp_types.local_warp_allowed = mi->mbmi.motion_mode == WARPED_CAUSAL;
-
-  if (is_scaled) {
-    int ssx = pd->subsampling_x;
-    int ssy = pd->subsampling_y;
-    int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
-    orig_pos_y += mv.row * (1 << (1 - ssy));
-    int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
-    orig_pos_x += mv.col * (1 << (1 - ssx));
-    int pos_y = sf->scale_value_y(orig_pos_y, sf);
-    int pos_x = sf->scale_value_x(orig_pos_x, sf);
-    pos_x += SCALE_EXTRA_OFF;
-    pos_y += SCALE_EXTRA_OFF;
-
-    const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
-    const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
-    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
-                       << SCALE_SUBPEL_BITS;
-    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
-    pos_y = clamp(pos_y, top, bottom);
-    pos_x = clamp(pos_x, left, right);
-
-    pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-          (pos_x >> SCALE_SUBPEL_BITS);
-    subpel_x = pos_x & SCALE_SUBPEL_MASK;
-    subpel_y = pos_y & SCALE_SUBPEL_MASK;
-    xs = sf->x_step_q4;
-    ys = sf->y_step_q4;
-  } else {
-    const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
-        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-    xs = ys = SCALE_SUBPEL_SHIFTS;
-    subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-          (x + (mv_q4.col >> SUBPEL_BITS));
-  }
-
-  av1_make_inter_predictor(pre, pre_buf->stride, NULL, 0, subpel_x, subpel_y,
-                           sf, w, h, &conv_params, mi->mbmi.interp_filters,
-                           &warp_types, (mi_x >> pd->subsampling_x) + x,
-                           (mi_y >> pd->subsampling_y) + y, plane, ref, mi,
-                           build_for_obmc, xs, ys, xd);
 }
 
 static void build_wedge_inter_predictor_from_buf(

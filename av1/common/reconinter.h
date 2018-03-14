@@ -377,10 +377,6 @@ static INLINE const uint8_t *av1_get_contiguous_soft_mask(int wedge_index,
   return wedge_params_lookup[sb_type].masks[wedge_sign][wedge_index];
 }
 
-const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
-                                 BLOCK_SIZE sb_type, int wedge_offset_x,
-                                 int wedge_offset_y);
-
 const uint8_t *av1_get_compound_type_mask_inverse(
     const INTERINTER_COMPOUND_DATA *const comp_data, uint8_t *mask_buffer,
     int h, int w, int stride, BLOCK_SIZE sb_type);
