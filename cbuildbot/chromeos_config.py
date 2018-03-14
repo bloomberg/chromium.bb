@@ -2266,9 +2266,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
 
   _mst_hwtest_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([
+  ])
+  _mst_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
   ])
-  _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
 
   # Android NYC master.
