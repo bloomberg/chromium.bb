@@ -339,6 +339,7 @@ GURL StartupTabProviderImpl::GetWin10WelcomePageUrl(
 #if defined(GOOGLE_CHROME_BUILD)
 // static
 GURL StartupTabProviderImpl::GetIncompatibleApplicationsUrl() {
+  UMA_HISTOGRAM_BOOLEAN("IncompatibleApplicationsPage.AddedPostCrash", true);
   GURL url(chrome::kChromeUISettingsURL);
   return url.Resolve("incompatibleApplications");
 }
