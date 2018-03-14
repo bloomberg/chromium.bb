@@ -38,11 +38,11 @@ class ComputedStyleInitialValuesWriter(json5_generator.Writer):
                 self._includes.update(property_['include_paths'])
 
         self._outputs = {
-            'ComputedStyleInitialValues.h': self.generate_header,
+            'computed_style_initial_values.h': self.generate_header,
         }
 
     @template_expander.use_jinja(
-        'core/style/templates/ComputedStyleInitialValues.h.tmpl')
+        'core/style/templates/computed_style_initial_values.h.tmpl')
     def generate_header(self):
         return {
             'properties': self._properties,

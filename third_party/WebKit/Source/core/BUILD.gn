@@ -476,11 +476,9 @@ action("generated_testing_idls_internal_runtime_flags") {
 css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
   in_files = [ "css/ComputedStyleExtraFields.json5" ]
-  other_inputs = [
-    "../build/scripts/core/style/templates/ComputedStyleInitialValues.h.tmpl",
-  ]
+  other_inputs = [ "../build/scripts/core/style/templates/computed_style_initial_values.h.tmpl" ]
   outputs = [
-    "$blink_core_output_dir/style/ComputedStyleInitialValues.h",
+    "$blink_core_output_dir/style/computed_style_initial_values.h",
   ]
 }
 
