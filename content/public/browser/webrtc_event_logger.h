@@ -56,12 +56,17 @@ class CONTENT_EXPORT WebRtcEventLogger {
       base::OnceClosure reply = base::OnceClosure()) = 0;
 
   // Call this to let the logger know when a PeerConnection was created.
+  // |peer_connection_id| should be a non-empty, relatively short (i.e.
+  // inexpensive to store) identifier, by which the peer connection may later
+  // be identified. The identifier is assumed  to be unique (within the
+  // renderer process).
   // If a reply callback is given, it will be posted back to BrowserThread::UI,
   // with true if and only if the operation was successful (failure is only
   // possible if a peer connection with this exact key was previously added,
   // but not removed).
   virtual void PeerConnectionAdded(int render_process_id,
                                    int lid,
+                                   const std::string& peer_connection_id,
                                    base::OnceCallback<void(bool)> reply =
                                        base::OnceCallback<void(bool)>()) = 0;
 

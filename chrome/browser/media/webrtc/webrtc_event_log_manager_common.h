@@ -66,6 +66,12 @@ extern const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention;
 struct WebRtcEventLogPeerConnectionKey {
   using BrowserContextId = uintptr_t;
 
+  constexpr WebRtcEventLogPeerConnectionKey()
+      : WebRtcEventLogPeerConnectionKey(
+            /* render_process_id = */ 0,
+            /* lid = */ 0,
+            reinterpret_cast<BrowserContextId>(nullptr)) {}
+
   constexpr WebRtcEventLogPeerConnectionKey(int render_process_id,
                                             int lid,
                                             BrowserContextId browser_context_id)

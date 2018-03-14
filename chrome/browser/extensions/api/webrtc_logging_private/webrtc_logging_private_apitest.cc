@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -36,6 +38,7 @@ using extensions::WebrtcLoggingPrivateUploadFunction;
 using extensions::WebrtcLoggingPrivateUploadStoredFunction;
 using extensions::WebrtcLoggingPrivateStartAudioDebugRecordingsFunction;
 using extensions::WebrtcLoggingPrivateStopAudioDebugRecordingsFunction;
+using extensions::WebrtcLoggingPrivateStartEventLoggingFunction;
 
 namespace utils = extension_function_test_utils;
 
@@ -184,6 +187,18 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     return RunFunction<WebrtcLoggingPrivateStopAudioDebugRecordingsFunction>(
         params, true);
+  }
+
+  bool StartEventLogging(const std::string& peerConnectionId,
+                         int maxLogSizeBytes,
+                         const std::string& metadata) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendString(peerConnectionId);
+    params.AppendInteger(maxLogSizeBytes);
+    params.AppendString(metadata);
+    return RunFunction<WebrtcLoggingPrivateStartEventLoggingFunction>(params,
+                                                                      false);
   }
 
  private:
@@ -447,4 +462,31 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAudioDebugRecordingsFromExtension);
   ASSERT_TRUE(StartAudioDebugRecordings(1));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingForKnownPeerConnection) {
+  auto* manager = content::WebRtcEventLogger::Get();
+  auto* rph = web_contents()->GetRenderViewHost()->GetProcess();
+
+  const int render_process_id = rph->GetID();
+  const int lid = 0;
+  const std::string peer_connection_id = "id";
+
+  manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
+
+  constexpr int max_size_bytes = 1000;
+  const std::string metadata = "metadata";
+  // TODO(eladalon): Remove the redundant expectation. https://crbug.com/814402
+  EXPECT_TRUE(StartEventLogging(peer_connection_id, max_size_bytes, metadata));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingForUnknownPeerConnection) {
+  // Note that manager->PeerConnectionAdded() is not called.
+  const std::string peer_connection_id = "id";
+  constexpr int max_size_bytes = 1000;
+  const std::string metadata = "metadata";
+  // TODO(eladalon): Remove the redundant expectation. https://crbug.com/814402
+  EXPECT_TRUE(StartEventLogging(peer_connection_id, max_size_bytes, metadata));
 }

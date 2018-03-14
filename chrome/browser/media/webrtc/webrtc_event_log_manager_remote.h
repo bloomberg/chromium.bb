@@ -45,7 +45,8 @@ class WebRtcRemoteEventLogManager final
   // The return value of both methods indicates only the consistency of the
   // information with previously received information (e.g. can't remove a
   // peer connection that was never added, etc.).
-  bool PeerConnectionAdded(const PeerConnectionKey& key);
+  bool PeerConnectionAdded(const PeerConnectionKey& key,
+                           const std::string& peer_connection_id);
   bool PeerConnectionRemoved(const PeerConnectionKey& key);
 
   // Attempt to start logging the WebRTC events of an active peer connection.
@@ -59,7 +60,9 @@ class WebRtcRemoteEventLogManager final
   // 3. The maximum file size must be sensible.
   // The return value is true if all of the restrictions were observed, and if
   // a file was successfully created for this log.
-  bool StartRemoteLogging(const PeerConnectionKey& key,
+  bool StartRemoteLogging(int render_process_id,
+                          BrowserContextId browser_context_id,
+                          const std::string& peer_connection_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
                           const std::string& metadata);
@@ -95,7 +98,7 @@ class WebRtcRemoteEventLogManager final
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory);
 
  protected:
-  friend class WebRtcEventLogManagerTest;
+  friend class WebRtcEventLogManagerTestBase;
 
   // Given a BrowserContext's directory, return the path to the directory where
   // we store the pending remote-bound logs associated with this BrowserContext.
@@ -194,6 +197,22 @@ class WebRtcRemoteEventLogManager final
   // When an upload is complete, it might be time to upload the next file.
   void OnWebRtcEventLogUploadCompleteInternal();
 
+  // Given a renderer process ID and peer connection ID (a string naming the
+  // peer connection), find the peer connection to which they refer.
+  bool FindPeerConnection(int render_process_id,
+                          const std::string& peer_connection_id,
+                          PeerConnectionKey* key) const;
+
+  // Find the next peer connection in a map to which the renderer process ID
+  // and peer connection ID refer.
+  // This helper allows FindPeerConnection() to DCHECK on uniqueness of the ID
+  // without descending down a recursive rabbit hole.
+  std::map<PeerConnectionKey, const std::string>::const_iterator
+  FindNextPeerConnection(
+      std::map<PeerConnectionKey, const std::string>::const_iterator begin,
+      int render_process_id,
+      const std::string& peer_connection_id) const;
+
   // This object is expected to be created and destroyed on the UI thread,
   // but live on its owner's internal, IO-capable task queue.
   SEQUENCE_CHECKER(io_task_sequence_checker_);
@@ -206,9 +225,10 @@ class WebRtcRemoteEventLogManager final
   // The IDs of the BrowserContexts for which logging is enabled.
   std::set<BrowserContextId> enabled_browser_contexts_;
 
-  // Currently active peer connections. PeerConnections which have been closed
+  // Currently active peer connections, mapped to their ID (as per the
+  // RTCPeerConnection.id origin trial). PeerConnections which have been closed
   // are not considered active, regardless of whether they have been torn down.
-  std::set<PeerConnectionKey> active_peer_connections_;
+  std::map<PeerConnectionKey, const std::string> active_peer_connections_;
 
   // Remote-bound logs which we're currently in the process of writing to disk.
   std::map<PeerConnectionKey, LogFile> active_logs_;

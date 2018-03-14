@@ -460,11 +460,15 @@ void PeerConnectionTracker::RegisterPeerConnection(
     const blink::WebMediaConstraints& constraints,
     const blink::WebLocalFrame* frame) {
   DCHECK(main_thread_.CalledOnValidThread());
+  DCHECK(pc_handler);
   DCHECK_EQ(GetLocalIDForHandler(pc_handler), -1);
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
   PeerConnectionInfo info;
 
   info.lid = GetNextLocalID();
+  // RTCPeerConnection.id is guaranteed to be an ASCII string. The ID's origin
+  // is local, so this conversion is safe.
+  info.peer_connection_id = pc_handler->Id().Ascii();
   info.rtc_configuration = SerializeConfiguration(config);
 
   info.constraints = SerializeMediaConstraints(constraints);

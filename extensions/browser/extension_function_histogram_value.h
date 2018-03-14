@@ -1286,6 +1286,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATE_MARKCACHEASMOUNTED,
   WALLPAPERPRIVATE_CONFIRMPREVIEWWALLPAPER,
   WALLPAPERPRIVATE_CANCELPREVIEWWALLPAPER,
+  WEBRTCLOGGINGPRIVATE_STARTEVENTLOGGING,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

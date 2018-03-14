@@ -153,6 +153,18 @@ namespace webrtcLoggingPrivate {
                                          DOMString securityOrigin,
                                          RecordingDoneCallback callback);
 
+    // Start remote-bound event logging for a specific peer connection,
+    // indicated by its ID, for which remote-bound event logging was not active.
+    // The callback will be posted back, indicating |true| if and only if an
+    // event log was successfully started.
+    // |metadata| is an arbitrary string, to be prepended to the event log.
+    static void startEventLogging(RequestInfo request,
+                                  DOMString securityOrigin,
+                                  DOMString peerConnectionId,
+                                  long maxLogSizeBytes,
+                                  DOMString metadata,
+                                  GenericDoneCallback callback);
+
     // Returns the directory entry for the "WebRTC Logs" directory. If the
     // directory doesn't exist yet, this will create it. If the directory
     // cannot be created, this call will fail with a runtime error.

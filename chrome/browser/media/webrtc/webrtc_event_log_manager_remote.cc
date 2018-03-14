@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
 
 #include "base/big_endian.h"
@@ -150,10 +151,11 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
 }
 
 bool WebRtcRemoteEventLogManager::PeerConnectionAdded(
-    const PeerConnectionKey& key) {
+    const PeerConnectionKey& key,
+    const std::string& peer_connection_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
-  const auto result = active_peer_connections_.insert(key);
+  const auto result = active_peer_connections_.emplace(key, peer_connection_id);
   return result.second;
 }
 
@@ -178,7 +180,9 @@ bool WebRtcRemoteEventLogManager::PeerConnectionRemoved(
 }
 
 bool WebRtcRemoteEventLogManager::StartRemoteLogging(
-    const PeerConnectionKey& key,
+    int render_process_id,
+    BrowserContextId browser_context_id,
+    const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     const std::string& metadata) {
@@ -188,13 +192,13 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     return false;
   }
 
-  if (!BrowserContextEnabled(key.browser_context_id)) {
+  if (!BrowserContextEnabled(browser_context_id)) {
     return false;
   }
 
-  // May not start logging inactive peer connections.
-  if (active_peer_connections_.find(key) == active_peer_connections_.end()) {
-    return false;
+  PeerConnectionKey key;
+  if (!FindPeerConnection(render_process_id, peer_connection_id, &key)) {
+    return false;  // Peer connection is either unknown or no longer active.
   }
 
   // May not restart active remote logs.
@@ -241,7 +245,7 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
   // files can trigger a new upload if no active peer connections are present.
   auto pc_it = active_peer_connections_.begin();
   while (pc_it != active_peer_connections_.end()) {
-    if (pc_it->render_process_id == render_process_id) {
+    if (pc_it->first.render_process_id == render_process_id) {
       pc_it = active_peer_connections_.erase(pc_it);
     } else {
       ++pc_it;
@@ -408,7 +412,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
                 "Restructure this otherwise.");
   char header[sizeof(uint32_t)];
   base::WriteBigEndian<uint32_t>(header, header_host_order);
-  int written = file.WriteAtCurrentPos(header, arraysize(header));
+  int written = file.WriteAtCurrentPos(header, sizeof(header));
   if (written != arraysize(header)) {
     LOG(WARNING) << "Failed to write header to log file.";
     DiscardLogFile(&file, file_path);
@@ -531,6 +535,7 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
   // delete the log permanently if the network is just down, on the one hand,
   // but also would not be uploading unlimited data on endless retries on the
   // other hand. https://crbug.com/775415
+  // TODO(eladalon): Delay the upload's start. https://crbug.com/814362
   uploader_ = uploader_factory_->Create(pending_logs_.begin()->path, this);
   pending_logs_.erase(pending_logs_.begin());
 }
@@ -539,4 +544,43 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   uploader_.reset();
   MaybeStartUploading();
+}
+
+bool WebRtcRemoteEventLogManager::FindPeerConnection(
+    int render_process_id,
+    const std::string& peer_connection_id,
+    PeerConnectionKey* key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
+  const auto it = FindNextPeerConnection(active_peer_connections_.cbegin(),
+                                         render_process_id, peer_connection_id);
+  if (it == active_peer_connections_.cend()) {
+    return false;
+  }
+
+  // Make sure that the peer connection ID is unique for the renderer process
+  // in which it exists, though not necessarily between renderer processes.
+  // (The helper exists just to allow this DCHECK.)
+  DCHECK(FindNextPeerConnection(std::next(it), render_process_id,
+                                peer_connection_id) ==
+         active_peer_connections_.cend());
+
+  *key = it->first;
+  return true;
+}
+
+std::map<WebRtcEventLogPeerConnectionKey, const std::string>::const_iterator
+WebRtcRemoteEventLogManager::FindNextPeerConnection(
+    std::map<PeerConnectionKey, const std::string>::const_iterator begin,
+    int render_process_id,
+    const std::string& peer_connection_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  const auto end = active_peer_connections_.cend();
+  for (auto it = begin; it != end; it++) {
+    if (it->first.render_process_id == render_process_id &&
+        it->second == peer_connection_id) {
+      return it;
+    }
+  }
+  return end;
 }
