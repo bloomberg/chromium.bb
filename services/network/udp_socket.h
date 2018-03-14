@@ -13,8 +13,6 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
@@ -26,6 +24,7 @@
 namespace net {
 class IOBuffer;
 class IOBufferWithSize;
+class NetLog;
 }  // namespace net
 
 namespace network {
@@ -70,12 +69,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
                          const net::CompletionCallback& callback) = 0;
   };
 
-  UDPSocket(mojom::UDPSocketRequest request,
-            mojom::UDPSocketReceiverPtr receiver);
+  UDPSocket(mojom::UDPSocketReceiverPtr receiver, net::NetLog* net_log);
   ~UDPSocket() override;
-
-  // Sets connection error handler.
-  void set_connection_error_handler(base::OnceClosure handler);
 
   // UDPSocket implementation.
   void Connect(const net::IPEndPoint& remote_addr,
@@ -137,6 +132,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
   void OnRecvFromCompleted(uint32_t buffer_size, int net_result);
   void OnSendToCompleted(int net_result);
 
+  net::NetLog* net_log_;
+
   // Whether a Bind() has been successfully executed.
   bool is_bound_;
 
@@ -165,8 +162,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
   // The queue owns the PendingSendRequest instances.
   base::circular_deque<std::unique_ptr<PendingSendRequest>>
       pending_send_requests_;
-
-  mojo::Binding<mojom::UDPSocket> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocket);
 };
