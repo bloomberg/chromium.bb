@@ -5,10 +5,9 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.download.DownloadDirectoryPreference"
+    <org.chromium.chrome.browser.preferences.SpinnerPreference
         android:key="location_change"
-        android:title="@string/download_location_title" />
+        android:title="@string/downloads_location_selector_title" />
 
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="location_prompt_enabled"

@@ -983,8 +983,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionStatsPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/datareduction/DataReductionDataUseItem.java",
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadDirectoryAdapter.java",
-  "java/src/org/chromium/chrome/browser/preferences/download/DownloadDirectoryList.java",
-  "java/src/org/chromium/chrome/browser/preferences/download/DownloadDirectoryPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/download/DownloadPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/AddLanguageFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguagesManager.java",

@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.preferences.download.DownloadDirectoryList;
 
 import java.util.Locale;
 

@@ -26,7 +26,8 @@
         <org.chromium.chrome.browser.widget.AlertDialogEditText
             android:id="@+id/file_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/BlackTitle1" />
 
     </LinearLayout>
 
@@ -42,10 +43,11 @@
             android:tint="@color/black_alpha_87"
             style="@style/ListItemStartIcon" />
 
-        <org.chromium.chrome.browser.widget.AlertDialogEditText
+        <Spinner
             android:id="@+id/file_location"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            style="@android:style/Widget.EditText"/>
 
     </LinearLayout>
 

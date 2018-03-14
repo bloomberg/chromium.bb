@@ -5,18 +5,14 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Context;
-import android.content.Intent;
-import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.download.DownloadDirectoryList;
-import org.chromium.chrome.browser.preferences.download.DownloadDirectoryPreference;
+import org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter;
 import org.chromium.chrome.browser.widget.AlertDialogEditText;
 
 import java.io.File;
@@ -26,11 +22,11 @@ import javax.annotation.Nullable;
 /**
  * Dialog that is displayed to ask user where they want to download the file.
  */
-public class DownloadLocationDialog extends ModalDialogView implements View.OnFocusChangeListener {
-    private DownloadDirectoryList mDownloadDirectoryUtil;
+public class DownloadLocationDialog extends ModalDialogView {
+    private DownloadDirectoryAdapter mDirectoryAdapter;
 
     private AlertDialogEditText mFileName;
-    private AlertDialogEditText mFileLocation;
+    private Spinner mFileLocation;
     private CheckBox mDontShowAgain;
 
     /**
@@ -57,16 +53,15 @@ public class DownloadLocationDialog extends ModalDialogView implements View.OnFo
             Controller controller, Context context, File suggestedPath, Params params) {
         super(controller, params);
 
-        mDownloadDirectoryUtil = new DownloadDirectoryList(context);
+        mDirectoryAdapter = new DownloadDirectoryAdapter(context);
 
         mFileName = (AlertDialogEditText) params.customView.findViewById(R.id.file_name);
         mFileName.setText(suggestedPath.getName());
 
-        mFileLocation = (AlertDialogEditText) params.customView.findViewById(R.id.file_location);
-        // NOTE: This makes the EditText correctly styled but not editable.
-        mFileLocation.setInputType(InputType.TYPE_NULL);
-        mFileLocation.setOnFocusChangeListener(this);
-        setFileLocation(suggestedPath.getParentFile());
+        mFileLocation = (Spinner) params.customView.findViewById(R.id.file_location);
+        mFileLocation.setAdapter(mDirectoryAdapter);
+
+        mFileLocation.setSelection(mDirectoryAdapter.getSelectedItemId());
 
         // Automatically check "don't show again" the first time the user is seeing the dialog.
         mDontShowAgain = (CheckBox) params.customView.findViewById(R.id.show_again_checkbox);
@@ -76,16 +71,6 @@ public class DownloadLocationDialog extends ModalDialogView implements View.OnFo
     }
 
     // Helper methods available to DownloadLocationDialogBridge.
-
-    /**
-     * Update the string in the file location text view.
-     *
-     * @param location  The location that the download will go to.
-     */
-    void setFileLocation(File location) {
-        if (mFileLocation == null) return;
-        mFileLocation.setText(mDownloadDirectoryUtil.getNameForFile(location));
-    }
 
     /**
      * @return  The text that the user inputted as the name of the file.
@@ -102,7 +87,9 @@ public class DownloadLocationDialog extends ModalDialogView implements View.OnFo
     @Nullable
     File getFileLocation() {
         if (mFileLocation == null) return null;
-        return mDownloadDirectoryUtil.getFileForName(mFileLocation.getText().toString());
+        DownloadDirectoryAdapter.DirectoryOption selected =
+                (DownloadDirectoryAdapter.DirectoryOption) mFileLocation.getSelectedItem();
+        return selected.getLocation();
     }
 
     /**
@@ -110,17 +97,5 @@ public class DownloadLocationDialog extends ModalDialogView implements View.OnFo
      */
     boolean getDontShowAgain() {
         return mDontShowAgain != null && mDontShowAgain.isChecked();
-    }
-
-    // View.OnFocusChange implementation.
-
-    @Override
-    public void onFocusChange(View view, boolean hasFocus) {
-        // When the file location text view is clicked.
-        if (hasFocus) {
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    getContext(), DownloadDirectoryPreference.class.getName());
-            getContext().startActivity(intent);
-        }
     }
 }
