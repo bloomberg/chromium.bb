@@ -8,6 +8,7 @@ function init() {
       loadTimeData.data = strings;
       i18nTemplate.process(document, loadTimeData);
     });
+    backgroundPage.unpacker.app.cleanupOldStorageInfo();
   });
 }
 
