@@ -264,10 +264,9 @@ class GridTrackSizingAlgorithmStrategy {
   GridTrackSizingAlgorithmStrategy(GridTrackSizingAlgorithm& algorithm)
       : algorithm_(algorithm) {}
 
-  virtual LayoutUnit MinLogicalWidthForChild(
-      LayoutBox&,
-      Length child_min_size,
-      LayoutUnit available_size) const = 0;
+  virtual LayoutUnit MinLogicalWidthForChild(LayoutBox&,
+                                             Length child_min_size,
+                                             LayoutUnit available_size) const;
   virtual void LayoutGridItemForMinSizeComputation(
       LayoutBox&,
       bool override_size_has_changed) const = 0;
