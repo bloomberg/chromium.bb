@@ -12,6 +12,10 @@
 // Delegate for AutocompleteResultConsumer.
 @protocol AutocompleteResultConsumerDelegate<NSObject>
 
+// Tells the delegate when a row containing a suggestion is highlighted (i.e.
+// with arrow keys).
+- (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
+                   didHighlightRow:(NSUInteger)row;
 // Tells the delegate when a row containing a suggestion is clicked.
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
                       didSelectRow:(NSUInteger)row;

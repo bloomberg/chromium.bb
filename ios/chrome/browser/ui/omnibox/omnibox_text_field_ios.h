@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield.h"
 
 #include "base/strings/string16.h"
+#import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_delegate.h"
 
 // Enum type specifying the direction of fade animations.
@@ -98,6 +99,10 @@ typedef enum {
 // The delegate for this textfield.  Overridden to use OmniboxTextFieldDelegate
 // instead of UITextFieldDelegate.
 @property(nonatomic, weak) id<OmniboxTextFieldDelegate> delegate;
+
+// The object handling suggestion commands.
+@property(nonatomic, weak) id<OmniboxSuggestionCommands>
+    suggestionCommandsEndpoint;
 
 // Text displayed when in pre-edit state.
 @property(nonatomic, strong) NSString* preEditText;

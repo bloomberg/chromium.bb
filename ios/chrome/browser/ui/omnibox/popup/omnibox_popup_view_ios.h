@@ -50,6 +50,7 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
 
   // OmniboxPopupViewControllerDelegate implementation.
   bool IsStarredMatch(const AutocompleteMatch& match) const override;
+  void OnMatchHighlighted(size_t row) override;
   void OnMatchSelected(const AutocompleteMatch& match, size_t row) override;
   void OnMatchSelectedForAppending(const AutocompleteMatch& match) override;
   void OnMatchSelectedForDeletion(const AutocompleteMatch& match) override;

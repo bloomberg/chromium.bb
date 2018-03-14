@@ -57,12 +57,17 @@ UIColor* BackgroundColorIncognito() {
   CGFloat _keyboardHeight;
 }
 
+// Index path of currently highlighted row. The rows can be highlighted by
+// tapping and holding on them or by using arrow keys on a hardware keyboard.
+@property(nonatomic, strong) NSIndexPath* highlightedIndexPath;
+
 @end
 
 @implementation OmniboxPopupViewController
 @synthesize delegate = _delegate;
 @synthesize incognito = _incognito;
 @synthesize imageRetriever = _imageRetriever;
+@synthesize highlightedIndexPath = _highlightedIndexPath;
 
 #pragma mark -
 #pragma mark Initialization
@@ -163,6 +168,12 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
         withAnimation:(BOOL)animation {
+  // Reset highlight state.
+  if (self.highlightedIndexPath) {
+    [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
+    self.highlightedIndexPath = nil;
+  }
+
   _currentResult = result;
   [self layoutRows];
 
@@ -402,6 +413,16 @@ UIColor* BackgroundColorIncognito() {
   [CATransaction commit];
 }
 
+- (void)highlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+  [cell setHighlighted:YES animated:NO];
+}
+
+- (void)unhighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+  [cell setHighlighted:NO animated:NO];
+}
+
 #pragma mark -
 #pragma mark Action for append UIButton
 
@@ -436,6 +457,70 @@ UIColor* BackgroundColorIncognito() {
 // Set text alignment for popup cells.
 - (void)setTextAlignment:(NSTextAlignment)alignment {
   _alignment = alignment;
+}
+
+#pragma mark -
+#pragma mark OmniboxSuggestionCommands
+
+- (void)highlightNextSuggestion {
+  NSIndexPath* path = self.highlightedIndexPath;
+  if (path == nil) {
+    // When nothing is highlighted, pressing Up Arrow doesn't do anything.
+    return;
+  }
+
+  if (path.row == 0) {
+    // Can't move up from first row. Call the delegate again so that the inline
+    // autocomplete text is set again (in case the user exited the inline
+    // autocomplete).
+    [self.delegate autocompleteResultConsumer:self
+                              didHighlightRow:self.highlightedIndexPath.row];
+    return;
+  }
+
+  [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
+  self.highlightedIndexPath =
+      [NSIndexPath indexPathForRow:self.highlightedIndexPath.row - 1
+                         inSection:0];
+  [self highlightRowAtIndexPath:self.highlightedIndexPath];
+
+  [self.delegate autocompleteResultConsumer:self
+                            didHighlightRow:self.highlightedIndexPath.row];
+}
+
+- (void)highlightPreviousSuggestion {
+  if (!self.highlightedIndexPath) {
+    // Initialize the highlighted row to -1, so that pressing down when nothing
+    // is highlighted highlights the first row (at index 0).
+    self.highlightedIndexPath = [NSIndexPath indexPathForRow:-1 inSection:0];
+  }
+
+  NSIndexPath* path = self.highlightedIndexPath;
+
+  if (path.row == [self.tableView numberOfRowsInSection:0] - 1) {
+    // Can't go below last row. Call the delegate again so that the inline
+    // autocomplete text is set again (in case the user exited the inline
+    // autocomplete).
+    [self.delegate autocompleteResultConsumer:self
+                              didHighlightRow:self.highlightedIndexPath.row];
+    return;
+  }
+
+  // There is a row below, move highlight there.
+  [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
+  self.highlightedIndexPath =
+      [NSIndexPath indexPathForRow:self.highlightedIndexPath.row + 1
+                         inSection:0];
+  [self highlightRowAtIndexPath:self.highlightedIndexPath];
+
+  [self.delegate autocompleteResultConsumer:self
+                            didHighlightRow:self.highlightedIndexPath.row];
+}
+
+- (void)keyCommandReturn {
+  [self.tableView selectRowAtIndexPath:self.highlightedIndexPath
+                              animated:YES
+                        scrollPosition:UITableViewScrollPositionNone];
 }
 
 #pragma mark -

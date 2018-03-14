@@ -92,6 +92,10 @@ bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {
   return model_->IsStarredMatch(match);
 }
 
+void OmniboxPopupViewIOS::OnMatchHighlighted(size_t row) {
+  model_->SetSelectedLine(row, false, true);
+}
+
 void OmniboxPopupViewIOS::OnMatchSelected(
     const AutocompleteMatch& selectedMatch,
     size_t row) {

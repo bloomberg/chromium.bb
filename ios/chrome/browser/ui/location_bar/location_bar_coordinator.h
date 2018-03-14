@@ -17,6 +17,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 class WebStateList;
+@class CommandDispatcher;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxPopupPositioner;
@@ -33,7 +34,7 @@ class WebStateList;
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak) CommandDispatcher* dispatcher;
 // URL loader for the location bar.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 // Delegate for this coordinator.

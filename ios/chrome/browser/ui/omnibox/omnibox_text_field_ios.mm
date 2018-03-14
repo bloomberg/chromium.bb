@@ -93,6 +93,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 @synthesize selectedTextBackgroundColor = _selectedTextBackgroundColor;
 @synthesize placeholderTextColor = _placeholderTextColor;
 @synthesize incognito = _incognito;
+@synthesize suggestionCommandsEndpoint = _suggestionCommandsEndpoint;
 
 #pragma mark - Public methods
 // Overload to allow for code-based initialization.
@@ -663,6 +664,32 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if ([[self delegate] respondsToSelector:@selector(onDeleteBackward)])
     [[self delegate] onDeleteBackward];
   [super deleteBackward];
+}
+
+#pragma mark Key Commands
+
+- (NSArray<UIKeyCommand*>*)keyCommands {
+  // These up/down arrow key commands override the standard UITextInput handling
+  // of up/down arrow key. The standard behavior is to go to the beginning/end
+  // of the text. Instead, the omnibox popup needs to highlight suggestions.
+  UIKeyCommand* commandUp =
+      [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow
+                          modifierFlags:0
+                                 action:@selector(keyCommandUp)];
+  UIKeyCommand* commandDown =
+      [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow
+                          modifierFlags:0
+                                 action:@selector(keyCommandDown)];
+
+  return @[ commandUp, commandDown ];
+}
+
+- (void)keyCommandUp {
+  [self.suggestionCommandsEndpoint highlightNextSuggestion];
+}
+
+- (void)keyCommandDown {
+  [self.suggestionCommandsEndpoint highlightPreviousSuggestion];
 }
 
 #pragma mark - helpers

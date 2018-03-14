@@ -139,6 +139,7 @@ NS_INLINE CGFloat BottomPadding() {
     self.bottomConstraint.active = NO;
     self.heightConstraint.active = YES;
   }
+
   [UIView animateWithDuration:kCollapseAnimationDuration
       delay:0
       options:UIViewAnimationOptionCurveEaseInOut

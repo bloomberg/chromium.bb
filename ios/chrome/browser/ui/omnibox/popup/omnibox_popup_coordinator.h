@@ -9,6 +9,7 @@
 
 #include <memory>
 
+@class CommandDispatcher;
 @protocol OmniboxPopupPositioner;
 class OmniboxPopupViewIOS;
 
@@ -29,6 +30,8 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<OmniboxPopupPositioner> positioner;
 // Whether this coordinator has results to show.
 @property(nonatomic, assign, readonly) BOOL hasResults;
+// The dispatcher for this view controller.
+@property(nonatomic, readwrite, weak) CommandDispatcher* dispatcher;
 
 - (void)start;
 - (void)stop;

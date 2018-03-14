@@ -28,6 +28,7 @@ source_set("popup") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/toolbar/public:public",

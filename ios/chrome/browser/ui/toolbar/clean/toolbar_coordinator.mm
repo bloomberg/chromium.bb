@@ -70,9 +70,11 @@
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
+@property(nonatomic, weak) CommandDispatcher* dispatcher;
+// The commands endpoint for this view controller.
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
-        dispatcher;
+        commandsEndpoint;
 // Coordinator for the tools menu UI.
 @property(nonatomic, strong) ToolsMenuCoordinator* toolsMenuCoordinator;
 // Button updater for the toolbar.
@@ -93,6 +95,7 @@
 @synthesize URLLoader = _URLLoader;
 @synthesize webStateList = _webStateList;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
+@synthesize commandsEndpoint = _commandsEndpoint;
 
 - (instancetype)
 initWithToolsMenuConfigurationProvider:
@@ -103,9 +106,10 @@ initWithToolsMenuConfigurationProvider:
   if (self) {
     DCHECK(browserState);
     _mediator = [[ToolbarMediator alloc] init];
-    _dispatcher =
-        static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
-            dispatcher);
+    _dispatcher = dispatcher;
+    _commandsEndpoint =
+        static_cast<CommandDispatcher<ApplicationCommands, BrowserCommands,
+                                      OmniboxFocuser>*>(dispatcher);
     _browserState = browserState;
 
     _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
@@ -175,19 +179,19 @@ initWithToolsMenuConfigurationProvider:
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
-  factory.dispatcher = self.dispatcher;
+  factory.dispatcher = self.commandsEndpoint;
   factory.visibilityConfiguration =
       [[ToolbarButtonVisibilityConfiguration alloc] initWithType:LEGACY];
 
   self.buttonUpdater = [[ToolbarButtonUpdater alloc] init];
   self.buttonUpdater.factory = factory;
   self.toolbarViewController = [[ToolbarViewController alloc]
-      initWithDispatcher:self.dispatcher
+      initWithDispatcher:self.commandsEndpoint
            buttonFactory:factory
            buttonUpdater:self.buttonUpdater
           omniboxFocuser:self.locationBarCoordinator];
   self.toolbarViewController.locationBarView = self.locationBarCoordinator.view;
-  self.toolbarViewController.dispatcher = self.dispatcher;
+  self.toolbarViewController.dispatcher = self.commandsEndpoint;
 
   _fullscreenObserver =
       std::make_unique<FullscreenUIUpdater>(self.toolbarViewController);
