@@ -1811,8 +1811,6 @@ crbug.com/626703 external/wpt/css/css-fonts/font-variant-position-03.html [ Fail
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-position.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006c.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/cssom-view/matchMedia.xht [ Timeout ]
