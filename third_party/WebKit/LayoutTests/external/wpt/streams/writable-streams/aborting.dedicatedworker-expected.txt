@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = error1
-Found 51 tests; 26 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 54 tests; 26 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Aborting a WritableStream before it starts should cause the writer's unsettled ready promise to reject assert_throws: the ready promise should reject with error1 function "function() { throw e }" threw object "TypeError: The stream is in the process of being aborted" ("TypeError") expected object "error1: error1" ("error1")
 FAIL Aborting a WritableStream should cause the writer's fulfilled ready promise to reset to a rejected one assert_throws: the ready promise should reject with error1 function "function() { throw e }" threw object "TypeError: The stream is in the process of being aborted" ("TypeError") expected object "error1: error1" ("error1")
 PASS abort() on a released writer rejects
@@ -52,5 +52,8 @@ FAIL when calling abort() twice on the same stream, but sequentially so so there
 FAIL calling abort() on an errored stream should fulfill with undefined promise_test: Unhandled rejection with value: object "error1: error1"
 PASS sink abort() should not be called if stream was erroring due to controller.error() before abort() was called
 PASS sink abort() should not be called if stream was erroring due to bad strategy before abort() was called
+FAIL abort with no arguments should set the stored error to undefined assert_equals: e should be undefined expected (undefined) undefined but got (object) object "TypeError: The stream is in the process of being aborted"
+FAIL abort with an undefined argument should set the stored error to undefined assert_equals: e should be undefined expected (undefined) undefined but got (object) object "TypeError: The stream is in the process of being aborted"
+FAIL abort with a string argument should set the stored error to that argument assert_equals: e should be 'string argument' expected (string) "string argument" but got (object) object "TypeError: The stream is in the process of being aborted"
 Harness: the test ran to completion.
 

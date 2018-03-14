@@ -52,5 +52,8 @@ FAIL when calling abort() twice on the same stream, but sequentially so so there
 FAIL calling abort() on an errored stream should fulfill with undefined promise_test: Unhandled rejection with value: object "error1: error1"
 PASS sink abort() should not be called if stream was erroring due to controller.error() before abort() was called
 PASS sink abort() should not be called if stream was erroring due to bad strategy before abort() was called
+FAIL abort with no arguments should set the stored error to undefined assert_equals: e should be undefined expected (undefined) undefined but got (object) object "TypeError: The stream is in the process of being aborted"
+FAIL abort with an undefined argument should set the stored error to undefined assert_equals: e should be undefined expected (undefined) undefined but got (object) object "TypeError: The stream is in the process of being aborted"
+FAIL abort with a string argument should set the stored error to that argument assert_equals: e should be 'string argument' expected (string) "string argument" but got (object) object "TypeError: The stream is in the process of being aborted"
 Harness: the test ran to completion.
 
