@@ -147,6 +147,9 @@ static inline FloatPoint RightMostCornerToVector(const FloatRect& rect,
 }
 
 bool FloatQuad::IntersectsRect(const FloatRect& rect) const {
+  // IntersectsRect is only valid on convex quads which an empty quad is not.
+  DCHECK(!IsEmpty());
+
   // For each side of the quad clockwise we check if the rectangle is to the
   // left of it since only content on the right can onlap with the quad.  This
   // only works if the quad is convex.

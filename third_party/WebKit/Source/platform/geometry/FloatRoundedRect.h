@@ -167,6 +167,8 @@ class PLATFORM_EXPORT FloatRoundedRect {
 
   // Tests whether the quad intersects any part of this rounded rectangle.
   // This only works for convex quads.
+  // This intersection is edge-inclusive and will return true even if the
+  // intersecting area is empty (i.e., the intersection is a line or a point).
   bool IntersectsQuad(const FloatQuad&) const;
 
   void AdjustRadii();
