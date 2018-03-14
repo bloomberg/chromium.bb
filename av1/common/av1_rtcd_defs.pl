@@ -262,14 +262,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/void av1_fht32x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
   specialize qw/av1_fht32x32 sse2 avx2/;
 
-
-    add_proto qw/void av1_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    add_proto qw/void av1_fht32x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    add_proto qw/void av1_fht64x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    add_proto qw/void av1_fht16x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    add_proto qw/void av1_fht64x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-
-
   add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
   specialize qw/av1_fht4x8 sse2/;
 
