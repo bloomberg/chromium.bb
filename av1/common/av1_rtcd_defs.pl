@@ -189,21 +189,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
 
-  add_proto qw/void av1_fht32x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-  specialize qw/av1_fht32x32 sse2 avx2/;
-
-  add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-  specialize qw/av1_fht4x8 sse2/;
-
-  add_proto qw/void av1_fht4x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-
-  add_proto qw/void av1_fht16x4/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-
-  add_proto qw/void av1_fht8x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-
-  add_proto qw/void av1_fht32x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-
-
   add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bsx, int bsy, TX_TYPE tx_type";
 
   #fwd txfm

@@ -265,10 +265,6 @@ if (CONFIG_AV1_ENCODER)
           "${AOM_ROOT}/test/hash_test.cc")
     endif ()
 
-    set(AOM_UNIT_TEST_ENCODER_SOURCES
-        ${AOM_UNIT_TEST_ENCODER_SOURCES}
-        "${AOM_ROOT}/test/av1_fht4x4_test.cc")
-
     set(AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1
         ${AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1}
         "${AOM_ROOT}/test/corner_match_test.cc")
