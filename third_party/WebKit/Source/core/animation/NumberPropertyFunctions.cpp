@@ -55,6 +55,13 @@ Optional<double> NumberPropertyFunctions::GetNumber(
         return Optional<double>();
       return style.ZIndex();
 
+    case CSSPropertyTextSizeAdjust: {
+      const TextSizeAdjust& text_size_adjust = style.GetTextSizeAdjust();
+      if (text_size_adjust.IsAuto())
+        return Optional<double>();
+      return text_size_adjust.Multiplier() * 100;
+    }
+
     case CSSPropertyLineHeight: {
       const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
@@ -92,6 +99,7 @@ double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
     case CSSPropertyFlexShrink:
     case CSSPropertyFontSizeAdjust:
     case CSSPropertyLineHeight:
+    case CSSPropertyTextSizeAdjust:
       return clampTo<float>(value, 0);
 
     case CSSPropertyOrphans:
@@ -157,6 +165,9 @@ bool NumberPropertyFunctions::SetNumber(const CSSProperty& property,
       return true;
     case CSSPropertyColumnCount:
       style.SetColumnCount(value);
+      return true;
+    case CSSPropertyTextSizeAdjust:
+      style.SetTextSizeAdjust(value / 100.);
       return true;
     case CSSPropertyWidows:
       style.SetWidows(value);

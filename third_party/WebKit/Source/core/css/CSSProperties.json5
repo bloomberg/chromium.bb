@@ -2756,6 +2756,7 @@
     {
       name: "text-size-adjust",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: true,
       inherited: true,
       field_group: "*",
       field_template: "external",
