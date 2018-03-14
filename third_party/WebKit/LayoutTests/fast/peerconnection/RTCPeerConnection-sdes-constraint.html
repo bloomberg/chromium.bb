@@ -61,7 +61,7 @@ promise_test(async t => {
     await pc2.setRemoteDescription(offer);
     assert_unreached('pc2.setRemote should have thrown');
   } catch(e) {
-    assert_equals(e.name, 'OperationError');
+    assert_equals(e.name, 'InvalidAccessError');
   }
 
 }, 'SDES can\'t connect to default configuration');
@@ -77,7 +77,7 @@ promise_test(async t => {
     await pc2.setRemoteDescription(offer);
     assert_unreached('pc2.setRemote should have thrown');
   } catch(e) {
-    assert_equals(e.name, 'OperationError');
+    assert_equals(e.name, 'InvalidAccessError');
   }
 }, 'Default configuration can\'t connect to SDES');
 
@@ -134,4 +134,3 @@ test(t => {
 </script>
 </body>
 </html>
-
