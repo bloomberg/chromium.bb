@@ -19,6 +19,8 @@
 
 namespace policy {
 
+class CloudExternalDataManager;
+
 // ConfigurationPolicyProvider for device or user policy from Active Directory.
 // The choice of constructor determines whether device or user policy is
 // provided.
@@ -40,7 +42,8 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
       const AccountId& account_id,
       base::TimeDelta initial_policy_fetch_timeout,
       base::OnceClosure exit_session,
-      std::unique_ptr<CloudPolicyStore> store);
+      std::unique_ptr<CloudPolicyStore> store,
+      std::unique_ptr<CloudExternalDataManager> external_data_manager);
 
   // ConfigurationPolicyProvider:
   void Init(SchemaRegistry* registry) override;
@@ -71,10 +74,12 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   // enforce successful policy fetch. In case the conditions for signaling
   // initialization complete are not met, the user session is aborted by calling
   // |exit_session|.
-  ActiveDirectoryPolicyManager(const AccountId& account_id,
-                               base::TimeDelta initial_policy_fetch_timeout,
-                               base::OnceClosure exit_session,
-                               std::unique_ptr<CloudPolicyStore> store);
+  ActiveDirectoryPolicyManager(
+      const AccountId& account_id,
+      base::TimeDelta initial_policy_fetch_timeout,
+      base::OnceClosure exit_session,
+      std::unique_ptr<CloudPolicyStore> store,
+      std::unique_ptr<CloudExternalDataManager> external_data_manager);
 
   // Publish the policy that's currently cached in the store.
   void PublishPolicy();
@@ -123,7 +128,12 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   // Callback to exit the session.
   base::OnceClosure exit_session_;
 
+  // Store used to serialize policy, usually sends data to Session Manager.
   std::unique_ptr<CloudPolicyStore> store_;
+
+  // Manages external data referenced by policies.
+  std::unique_ptr<CloudExternalDataManager> external_data_manager_;
+
   std::unique_ptr<PolicyScheduler> scheduler_;
 
   // Must be last member.

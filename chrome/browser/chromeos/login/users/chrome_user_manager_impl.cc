@@ -268,10 +268,6 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
     GetMinimumVersionPolicyHandler()->AddObserver(this);
   }
 
-  if (!device_local_account_policy_service) {
-    return;
-  }
-
   avatar_policy_observer_ =
       std::make_unique<policy::CloudExternalDataPolicyObserver>(
           cros_settings_, device_local_account_policy_service,

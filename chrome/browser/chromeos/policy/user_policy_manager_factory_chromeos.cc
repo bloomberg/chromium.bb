@@ -355,7 +355,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     std::unique_ptr<ActiveDirectoryPolicyManager> manager =
         ActiveDirectoryPolicyManager::CreateForUserPolicy(
             account_id, policy_refresh_timeout,
-            base::BindOnce(&chrome::AttemptUserExit), std::move(store));
+            base::BindOnce(&chrome::AttemptUserExit), std::move(store),
+            std::move(external_data_manager));
     manager->Init(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
 
