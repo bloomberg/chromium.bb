@@ -30,6 +30,8 @@ component("public") {
     "download_interrupt_reasons.h",
     "download_interrupt_reasons_utils.h",
     "download_item.h",
+    "download_job.h",
+    "download_job_impl.h",
     "download_request_handle_interface.h",
     "download_response_handler.h",
     "download_save_info.cc",

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_job_impl.h"
+#include "components/download/public/common/download_job_impl.h"
 
-namespace content {
+namespace download {
 
 DownloadJobImpl::DownloadJobImpl(
-    DownloadItemImpl* download_item,
-    std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
+    DownloadItem* download_item,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     bool is_parallizable)
     : DownloadJob(download_item, std::move(request_handle)),
       is_parallizable_(is_parallizable) {}
@@ -19,4 +19,4 @@ bool DownloadJobImpl::IsParallelizable() const {
   return is_parallizable_;
 }
 
-}  // namespace content
+}  // namespace download

@@ -43,6 +43,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_job_impl.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_ukm_helper.h"
@@ -50,7 +51,6 @@
 #include "components/download/public/common/parallel_download_utils.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_job_factory.h"
-#include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
@@ -860,6 +860,10 @@ void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
       base::Bind(&DeleteDownloadedFile, GetFullPath()),
       base::Bind(&DeleteDownloadedFileDone, weak_ptr_factory_.GetWeakPtr(),
                  callback));
+}
+
+download::DownloadFile* DownloadItemImpl::GetDownloadFile() {
+  return download_file_.get();
 }
 
 bool DownloadItemImpl::IsDangerous() const {

@@ -7,9 +7,9 @@
 namespace content {
 
 SavePackageDownloadJob::SavePackageDownloadJob(
-    DownloadItemImpl* download_item,
+    download::DownloadItem* download_item,
     std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
-    : DownloadJob(download_item, std::move(request_handle)) {}
+    : download::DownloadJob(download_item, std::move(request_handle)) {}
 
 SavePackageDownloadJob::~SavePackageDownloadJob() = default;
 

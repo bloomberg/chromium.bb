@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "content/browser/download/download_job_impl.h"
+#include "components/download/public/common/download_job_impl.h"
 #include "content/browser/download/download_worker.h"
 #include "content/common/content_export.h"
 
@@ -20,11 +20,11 @@ namespace content {
 // DownloadJob that can create concurrent range requests to fetch different
 // parts of the file.
 // The original request is hold in base class.
-class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
+class CONTENT_EXPORT ParallelDownloadJob : public download::DownloadJobImpl,
                                            public DownloadWorker::Delegate {
  public:
   ParallelDownloadJob(
-      DownloadItemImpl* download_item,
+      download::DownloadItem* download_item,
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
       const download::DownloadCreateInfo& create_info);
   ~ParallelDownloadJob() override;

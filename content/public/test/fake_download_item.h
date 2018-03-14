@@ -132,6 +132,7 @@ class FakeDownloadItem : public download::DownloadItem {
   TargetDisposition GetTargetDisposition() const override;
   const std::string& GetHash() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
+  download::DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
   download::DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;

@@ -28,12 +28,12 @@
 
 namespace download {
 class DownloadFile;
+class DownloadJob;
 }  // namespace download
 
 namespace content {
 class BrowserContext;
 class DownloadItemImplDelegate;
-class DownloadJob;
 class WebContents;
 
 // See download_item.h for usage.
@@ -252,6 +252,7 @@ class CONTENT_EXPORT DownloadItemImpl
   const std::string& GetHash() const override;
   bool GetFileExternallyRemoved() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
+  download::DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
   download::DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
@@ -341,8 +342,6 @@ class CONTENT_EXPORT DownloadItemImpl
       std::unique_ptr<crypto::SecureHash> hash_state) override;
 
  private:
-  friend class DownloadJob;
-
   // Fine grained states of a download.
   //
   // New downloads can be created in the following states:
@@ -755,7 +754,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // The data slices that have been received so far.
   std::vector<download::DownloadItem::ReceivedSlice> received_slices_;
 
-  std::unique_ptr<DownloadJob> job_;
+  std::unique_ptr<download::DownloadJob> job_;
 
   // Value of |received_bytes_| at the time the download was interrupted with
   // CONTENT_LENGTH_MISMATCH.

@@ -29,10 +29,10 @@ const int kDownloadJobVerboseLevel = 1;
 }  // namespace
 
 ParallelDownloadJob::ParallelDownloadJob(
-    DownloadItemImpl* download_item,
+    download::DownloadItem* download_item,
     std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
     const download::DownloadCreateInfo& create_info)
-    : DownloadJobImpl(download_item, std::move(request_handle), true),
+    : download::DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
       content_length_(create_info.total_bytes),
@@ -45,15 +45,15 @@ void ParallelDownloadJob::OnDownloadFileInitialized(
     download::DownloadFile::InitializeCallback callback,
     download::DownloadInterruptReason result,
     int64_t bytes_wasted) {
-  DownloadJobImpl::OnDownloadFileInitialized(std::move(callback), result,
-                                             bytes_wasted);
+  download::DownloadJobImpl::OnDownloadFileInitialized(std::move(callback),
+                                                       result, bytes_wasted);
   if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     BuildParallelRequestAfterDelay();
 }
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {
   is_canceled_ = true;
-  DownloadJobImpl::Cancel(user_cancel);
+  download::DownloadJobImpl::Cancel(user_cancel);
 
   if (!requests_sent_) {
     timer_.Stop();
@@ -65,7 +65,7 @@ void ParallelDownloadJob::Cancel(bool user_cancel) {
 }
 
 void ParallelDownloadJob::Pause() {
-  DownloadJobImpl::Pause();
+  download::DownloadJobImpl::Pause();
 
   if (!requests_sent_) {
     timer_.Stop();
@@ -77,7 +77,7 @@ void ParallelDownloadJob::Pause() {
 }
 
 void ParallelDownloadJob::Resume(bool resume_request) {
-  DownloadJobImpl::Resume(resume_request);
+  download::DownloadJobImpl::Resume(resume_request);
   if (!resume_request)
     return;
 
@@ -106,7 +106,7 @@ int ParallelDownloadJob::GetMinRemainingTimeInSeconds() const {
 
 void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {
   if (initial_request_offset_ == offset) {
-    DownloadJobImpl::Cancel(false);
+    download::DownloadJobImpl::Cancel(false);
     return;
   }
 
