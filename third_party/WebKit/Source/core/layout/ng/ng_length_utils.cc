@@ -139,12 +139,21 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return LayoutUnit();
 
-  // Make sure that indefinite percentages resolve to NGSizeIndefinite, not to
-  // a random negative number.
   if (length.IsPercentOrCalc() &&
       constraint_space.PercentageResolutionSize().block_size ==
-          NGSizeIndefinite)
-    return content_size;
+          NGSizeIndefinite) {
+    // We're unable to resolve this percentage, since there's nothing to resolve
+    // it against. Height/width becomes 'auto', so we can just return the
+    // content size. Min-height/min-width becomes 0. Max-height/max-width
+    // becomes 'none', which means that we shouldn't impose any max limit, so
+    // return "infinity".
+    if (type == LengthResolveType::kContentSize)
+      return content_size;
+    if (type == LengthResolveType::kMaxSize)
+      return LayoutUnit::Max();
+    DCHECK_EQ(type, LengthResolveType::kMinSize);
+    return LayoutUnit();
+  }
 
   // We don't need this when we're resolving margin/border/padding; skip
   // computing it as an optimization and to simplify the code below.
