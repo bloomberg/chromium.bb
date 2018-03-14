@@ -514,8 +514,6 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(
   prefix_hits.erase(std::unique(prefix_hits.begin(), prefix_hits.end()),
                     prefix_hits.end());
 
-  UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
-
   if (prefix_hits.empty() && cache_hits.empty())
     return true;  // URL is okay.
 
