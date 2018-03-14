@@ -502,6 +502,7 @@ AC_ARG_ENABLE(dbus,
               AS_HELP_STRING([--disable-dbus],
                              [do not build with dbus support]),,
               enable_dbus=auto)
+have_dbus=no
 if test "x$enable_dbus" != "xno"; then
         PKG_CHECK_MODULES(DBUS,
                           dbus-1 >= 1.6,
