@@ -26334,6 +26334,7 @@ from previous Chrome versions.
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
+  <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
@@ -27114,6 +27115,7 @@ from previous Chrome versions.
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
   <int value="1495341532" label="disable-mtp-write-support"/>
+  <int value="1495748045" label="SignedHTTPExchange:enabled"/>
   <int value="1496135626" label="UploadCrashReportsUsingJobScheduler:enabled"/>
   <int value="1496571153" label="enable-webapk"/>
   <int value="1497924954" label="js-flags"/>

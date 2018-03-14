@@ -1382,6 +1382,11 @@ const char kSilentDebuggerExtensionApiDescription[] =
     "chrome.debugger API. This is required to debug extension background "
     "pages.";
 
+const char kSignedHTTPExchangeName[] = "Signed HTTP Exchange";
+const char kSignedHTTPExchangeDescription[] =
+    "Enables Origin-Signed HTTP Exchanges support which is still in "
+    "development. Warning: Enabling this may pose a security risk.";
+
 const char kSimpleCacheBackendName[] = "Simple Cache for HTTP";
 const char kSimpleCacheBackendDescription[] =
     "The Simple Cache for HTTP is a new cache. It relies on the filesystem for "

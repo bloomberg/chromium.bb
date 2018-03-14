@@ -3718,6 +3718,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kOmniboxVoiceSearchAlwaysVisible)},
 #endif  // OS_ANDROID
 
+    {"enable-signed-http-exchange", flag_descriptions::kSignedHTTPExchangeName,
+     flag_descriptions::kSignedHTTPExchangeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSignedHTTPExchange)},
+
 #if defined(OS_CHROMEOS)
     {"enable-new-wallpaper-picker",
      flag_descriptions::kEnableNewWallpaperPickerName,
