@@ -716,6 +716,9 @@ int HeadlessShellMain(int argc, const char** argv) {
     command_line.AppendSwitch(::switches::kRunAllCompositorStagesBeforeDraw);
     command_line.AppendSwitch(::switches::kDisableNewContentRenderingTimeout);
     command_line.AppendSwitch(::switches::kEnableSurfaceSynchronization);
+    // Ensure that image animations don't resync their animation timestamps when
+    // looping back around.
+    command_line.AppendSwitch(::switches::kDisableImageAnimationResync);
 
     // Renderer flags
     command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
