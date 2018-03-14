@@ -324,10 +324,6 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);
 };
-
-template class DeviceSensorEventPump<blink::WebDeviceMotionListener>;
-template class DeviceSensorEventPump<blink::WebDeviceOrientationListener>;
-
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_

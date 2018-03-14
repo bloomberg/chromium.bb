@@ -41,6 +41,8 @@ bool IsSignificantlyDifferent(const device::OrientationData& data1,
 
 namespace content {
 
+template class DeviceSensorEventPump<blink::WebDeviceOrientationListener>;
+
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
 DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread,
