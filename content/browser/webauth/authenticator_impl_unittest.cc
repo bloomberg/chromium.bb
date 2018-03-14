@@ -364,8 +364,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-              cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
   }
 
   // These instances pass the origin and relying party checks and return at
@@ -384,8 +383,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
-              cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
   }
 }
 
@@ -402,8 +400,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if user verification is
@@ -419,8 +416,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   TestGetAssertionCallback cb;
   authenticator->GetAssertion(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if user verification is
@@ -437,8 +433,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if resident key is
@@ -454,8 +449,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are
@@ -552,8 +546,7 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
 }
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -574,8 +567,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     TestGetAssertionCallback cb;
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-              cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
   }
 }
 
@@ -626,8 +618,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     TestGetAssertionCallback cb;
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-              cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
   }
 
   // TODO(agl): test positive cases once a mock U2F device exists.
@@ -665,7 +656,6 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
-            cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
 }
 }  // namespace content
