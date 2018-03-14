@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -32,6 +33,9 @@ class HostedAppBrowserController : public SiteEngagementObserver {
 
   // Returns whether |browser| uses the experimental hosted app experience.
   static bool IsForExperimentalHostedAppBrowser(const Browser* browser);
+
+  // Renders |url|'s origin as Unicode.
+  static base::string16 FormatUrlOrigin(const GURL& url);
 
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
@@ -63,8 +67,9 @@ class HostedAppBrowserController : public SiteEngagementObserver {
   // Gets the short name of the app.
   std::string GetAppShortName() const;
 
-  // Gets the origin of the app start url (e.g www.example.com.au).
-  url::Origin GetUrlOrigin() const;
+  // Gets the origin of the app start url suitable for display (e.g
+  // example.com.au).
+  base::string16 GetFormattedUrlOrigin() const;
 
   // Gets the extension for this controller.
   const Extension* GetExtension() const;

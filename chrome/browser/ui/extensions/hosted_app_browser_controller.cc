@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "components/security_state/core/security_state.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -77,6 +78,18 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
   return base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
          IsForHostedApp(browser);
+}
+
+// static
+base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
+  return url_formatter::FormatUrl(
+      url.GetOrigin(),
+      url_formatter::kFormatUrlOmitUsernamePassword |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlOmitHTTP |
+          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname |
+          url_formatter::kFormatUrlOmitTrivialSubdomains,
+      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
@@ -199,8 +212,8 @@ std::string HostedAppBrowserController::GetAppShortName() const {
   return GetExtension()->short_name();
 }
 
-url::Origin HostedAppBrowserController::GetUrlOrigin() const {
-  return url::Origin::Create(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
+base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
+  return FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
 }
 
 void HostedAppBrowserController::OnEngagementEvent(
