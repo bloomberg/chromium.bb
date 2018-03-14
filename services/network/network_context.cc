@@ -36,7 +36,6 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/http_server_properties_pref_delegate.h"
@@ -50,6 +49,7 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
+#include "services/network/udp_socket_factory.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
@@ -92,8 +92,7 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
       params_(std::move(params)),
-      binding_(this, std::move(request)),
-      socket_factory_(network_service_->net_log()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
@@ -116,8 +115,7 @@ NetworkContext::NetworkContext(
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
       params_(std::move(params)),
-      binding_(this, std::move(request)),
-      socket_factory_(network_service_->net_log()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log());
@@ -138,9 +136,8 @@ NetworkContext::NetworkContext(
       url_request_context_getter_(std::move(url_request_context_getter)),
       binding_(this, std::move(request)),
       cookie_manager_(std::make_unique<CookieManager>(
-          url_request_context_getter_->GetURLRequestContext()->cookie_store())),
-      socket_factory_(network_service_ ? network_service_->net_log()
-                                       : nullptr) {
+          url_request_context_getter_->GetURLRequestContext()
+              ->cookie_store())) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -225,10 +222,7 @@ void NetworkContext::Cleanup() {
 }
 
 NetworkContext::NetworkContext(mojom::NetworkContextParamsPtr params)
-    : network_service_(nullptr),
-      params_(std::move(params)),
-      binding_(this),
-      socket_factory_(network_service_->net_log()) {
+    : network_service_(nullptr), params_(std::move(params)), binding_(this) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
@@ -492,32 +486,9 @@ void NetworkContext::SetNetworkConditions(
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
                                      mojom::UDPSocketReceiverPtr receiver) {
-  socket_factory_.CreateUDPSocket(std::move(request), std::move(receiver));
-}
-
-void NetworkContext::CreateTCPServerSocket(
-    const net::IPEndPoint& local_addr,
-    uint32_t backlog,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPServerSocketRequest request,
-    CreateTCPServerSocketCallback callback) {
-  socket_factory_.CreateTCPServerSocket(
-      local_addr, backlog,
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(callback));
-}
-
-void NetworkContext::CreateTCPConnectedSocket(
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const net::AddressList& remote_addr_list,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPConnectedSocketRequest request,
-    mojom::TCPConnectedSocketObserverPtr observer,
-    CreateTCPConnectedSocketCallback callback) {
-  socket_factory_.CreateTCPConnectedSocket(
-      local_addr, remote_addr_list,
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(observer), std::move(callback));
+  if (!udp_socket_factory_)
+    udp_socket_factory_ = std::make_unique<UDPSocketFactory>();
+  udp_socket_factory_->CreateUDPSocket(std::move(request), std::move(receiver));
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,

@@ -9,11 +9,9 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "net/interfaces/address_list.mojom";
 import "net/interfaces/ip_endpoint.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
-import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
-import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
@@ -190,46 +188,8 @@ interface NetworkContext {
   // is not interested in incoming data.
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateUDPSocket(UDPSocket& request, UDPSocketReceiver? receiver);
-
-  // Creates a TCP server socket that listens on |local_addr|. The socket
-  // created can only be used for the purpose specified in |traffic_annotation|,
-  // and cannot be re-used for other purposes. Caller must specify an address
-  // family in |local_addr| to be either IPv4 or IPv6. If port in |local_addr|
-  // is 0, the OS will pick an available port. If address bytes are 0, the OS
-  // will pick a local address of the specified address family. |backlog| will
-  // be passed to the OS to set the size of accept queue.
-  // On success, the resulting local address will be written to |local_addr_out|
-  // and |result| is net::OK. On failure, |result| is a network error code.
-  //
-  // Any sockets that are created but are yet to be destroyed will be destroyed
-  // when NetworkContext goes away.
-  CreateTCPServerSocket(net.interfaces.IPEndPoint local_addr,
-                        uint32 backlog,
-                        MutableNetworkTrafficAnnotationTag traffic_annotation,
-                        TCPServerSocket& socket)
-      => (int32 result, net.interfaces.IPEndPoint? local_addr_out);
-
-  // Creates a TCP socket connected to |remote_addr|. |observer| will be used
-  // to listen for any network connection error on the newly established
-  // connection. The socket created can only be used for the purpose specified
-  // in |traffic_annotation|, and cannot be re-used for other purposes.
-  // |local_addr| should be set to null unless the caller wants to bind the
-  // socket to a specific address and port. On success, |result| is net::OK.
-  // Caller is to use |send_stream| to send data and |receive_stream| to receive
-  // data over the connection. On failure, |result| is a network error code.
-  //
-  // Any sockets that are created but are yet to be destroyed will be destroyed
-  // when NetworkContext goes away.
-  CreateTCPConnectedSocket(
-      net.interfaces.IPEndPoint? local_addr,
-      net.interfaces.AddressList remote_addr_list,
-      MutableNetworkTrafficAnnotationTag traffic_annotation,
-      TCPConnectedSocket& socket,
-      TCPConnectedSocketObserver observer)
-     => (int32 result,
-         handle<data_pipe_consumer>? receive_stream,
-         handle<data_pipe_producer>? send_stream);
+  CreateUDPSocket(network.mojom.UDPSocket& request,
+                  network.mojom.UDPSocketReceiver? receiver);
 
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
