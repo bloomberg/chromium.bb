@@ -161,3 +161,5 @@ crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
 crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]
+
+crbug.com/821878 external/wpt/html/semantics/forms/form-submission-0/submit-file.sub.html [ Crash ]
