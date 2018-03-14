@@ -58,6 +58,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
@@ -109,6 +110,8 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -198,6 +201,8 @@ public class CustomTabActivityTest {
 
     @Rule
     public final ScreenShooter mScreenShooter = new ScreenShooter();
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
     public void setUp() throws Exception {
@@ -2044,6 +2049,39 @@ public class CustomTabActivityTest {
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB)
     public void testHiddenTabAndChangingFragmentDontWaitDrop() throws Exception {
         startHiddenTabAndChangeFragment(false, false);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_PARALLEL_REQUEST)
+    public void testParallelRequest() throws Exception {
+        String url = mTestServer.getURL("/echoheader?Cookie");
+        Uri requestUri = Uri.parse(mTestServer.getURL("/set-cookie?acookie"));
+
+        final Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+
+        // warmup(), create session, allow parallel requests, allow origin.
+        CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
+        final Origin origin = new Origin(requestUri);
+        Assert.assertTrue(connection.newSession(token));
+        connection.mClientManager.setAllowParallelRequestForSession(token, true);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            OriginVerifier.addVerifiedOriginForPackage(
+                    context.getPackageName(), origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
+        });
+
+        intent.putExtra(CustomTabsConnection.PARALLEL_REQUEST_URL_KEY, requestUri);
+        intent.putExtra(
+                CustomTabsConnection.PARALLEL_REQUEST_REFERRER_KEY, Uri.parse(origin.toString()));
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        String content = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                tab.getWebContents(), "document.body.textContent");
+        Assert.assertEquals("\"acookie\"", content);
     }
 
     /**

@@ -147,6 +147,7 @@ class ClientManager {
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
         private int mSpeculationMode;
+        private boolean mAllowParallelRequest;
 
         public SessionParams(Context context, int uid, DisconnectCallback callback,
                 PostMessageHandler postMessageHandler) {
@@ -614,6 +615,17 @@ class ClientManager {
         SessionParams params = mSessionParams.get(session);
         return params == null ? CustomTabsConnection.SpeculationParams.PRERENDER
                               : params.mSpeculationMode;
+    }
+
+    public synchronized void setAllowParallelRequestForSession(
+            CustomTabsSessionToken session, boolean allowed) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mAllowParallelRequest = allowed;
+    }
+
+    public synchronized boolean getAllowParallelRequestForSession(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mAllowParallelRequest : false;
     }
 
     /**
