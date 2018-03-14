@@ -445,21 +445,18 @@ void NGBlockNode::CopyChildFragmentPosition(
 
   DCHECK(layout_box->Parent()) << "Should be called on children only.";
 
-  // We should only be positioning children which are relative to ourselves.
-  // The flow thread, however, is invisible to LayoutNG, so we need to make
-  // an exception there.
-  DCHECK(
-      box_ == layout_box->ContainingBlock() ||
-      (layout_box->ContainingBlock()->IsLayoutFlowThread() &&
-       box_ == layout_box->ContainingBlock()->ContainingBlock()) ||
-      (layout_box->ContainingBlock()->IsInline() &&  // anonymous wrapper case
-       box_->Parent() == layout_box->ContainingBlock()) ||
-      (box_->IsLayoutNGListItem() && layout_box->IsLayoutNGListMarker()));
+  // The containing block of |layout_box| on the legacy layout side is normally
+  // |box_|, but this is not an invariant. Among other things, it does not apply
+  // to list item markers and multicol container children. Multicol containiner
+  // children typically have their flow thread (not the multicol container
+  // itself) as their containing block, and we need to use the right containing
+  // block for inserting floats, flipping for writing modes, etc.
+  LayoutBlock* containing_block = layout_box->ContainingBlock();
 
   // LegacyLayout flips vertical-rl horizontal coordinates before paint.
   // NGLayout flips X location for LegacyLayout compatibility.
-  if (box_->StyleRef().IsFlippedBlocksWritingMode()) {
-    LayoutUnit container_width = box_->Size().Width();
+  if (containing_block->StyleRef().IsFlippedBlocksWritingMode()) {
+    LayoutUnit container_width = containing_block->Size().Width();
     layout_box->SetX(container_width - fragment.Offset().left -
                      additional_offset.left - fragment.Size().width);
   } else {
@@ -468,9 +465,9 @@ void NGBlockNode::CopyChildFragmentPosition(
   layout_box->SetY(fragment.Offset().top + additional_offset.top);
 
   // Floats need an associated FloatingObject for painting.
-  if (IsFloatFragment(fragment) && box_->IsLayoutBlockFlow()) {
+  if (IsFloatFragment(fragment) && containing_block->IsLayoutBlockFlow()) {
     FloatingObject* floating_object =
-        ToLayoutBlockFlow(box_)->InsertFloatingObject(*layout_box);
+        ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
     floating_object->SetX(fragment.Offset().left + additional_offset.left -
                           layout_box->MarginLeft());
