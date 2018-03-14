@@ -48,6 +48,7 @@ class PluginServiceImpl;
 struct Referrer;
 class RenderWidgetHelper;
 class ResourceContext;
+class StoragePartition;
 struct WebPluginInfo;
 
 // RenderFrameMessageFilter intercepts FrameHost messages on the IO thread
@@ -64,7 +65,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   RenderFrameMessageFilter(int render_process_id,
                            PluginServiceImpl* plugin_service,
                            BrowserContext* browser_context,
-                           net::URLRequestContextGetter* request_context,
+                           StoragePartition* storage_partition,
                            RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:
