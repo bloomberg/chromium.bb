@@ -149,45 +149,6 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse('cbuildbot failed' in build_msg.message_summary)
     self.assertEqual(build_msg.builder, slave)
 
-  def testGetBuilderStatusFromCIDBOnFailedStatus(self):
-    """Test GetBuilderStatusFromCIDB On Failed Status."""
-    build_config = 'master-release'
-    build_id = self.db.InsertBuild(
-        build_config, waterfall.WATERFALL_INTERNAL, 1, build_config, 'host1',
-        status=constants.BUILDER_STATUS_FAILED, milestone_version='60',
-        platform_version='9462.0.0')
-    stage_id = self.db.InsertBuildStage(
-        build_id, 'BuildPackages', status='fail')
-    self.db.InsertFailure(
-        stage_id, 'PackageBuildFailure',
-        'Packages failed in ./build_packages: sys-apps/flashrom',
-        exception_category='build')
-
-    builder_status = (
-        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
-            self.db, build_config, '9462.0.0'))
-    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_FAILED)
-
-  def testGetBuilderStatusFromCIDBOnMissingStatus(self):
-    """Test GetBuilderStatusFromCIDB On Missing Status."""
-    build_config = 'master-release'
-    builder_status = (
-        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
-            self.db, build_config, '9462.0.0'))
-    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_MISSING)
-
-  def testGetBuilderStatusFromCIDBOnPassedStatus(self):
-    """Test GetBuilderStatusFromCIDB On Passed Status."""
-    build_config = 'master-release'
-    self.db.InsertBuild(
-        build_config, waterfall.WATERFALL_INTERNAL, 1, build_config, 'host1',
-        status=constants.BUILDER_STATUS_PASSED, milestone_version='60',
-        platform_version='9462.0.0')
-    builder_status = (
-        builder_status_lib.BuilderStatusManager.GetBuilderStatusFromCIDB(
-            self.db, build_config, '9462.0.0'))
-    self.assertEqual(builder_status.status, constants.BUILDER_STATUS_PASSED)
-
 
 class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   """Tests for SlaveBuilderStatus."""

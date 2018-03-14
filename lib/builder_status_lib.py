@@ -260,48 +260,6 @@ class BuilderStatusManager(object):
         constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION) for
                message in build_messages)
 
-  @classmethod
-  def GetBuilderStatusFromCIDB(cls, db, build_config, version):
-    """Get BuilderStatus from CIDB tables.
-
-    Args:
-      db: An instance of cidb.CIDBConnection.
-      build_config: The build config (string) of the build to get builder status
-      version: The platform_version (string) of the build to get builder status.
-
-    Retuns:
-      An instance of BuilderStatus.
-    """
-    builds = db.GetBuildHistory(build_config, 1, platform_version=version)
-
-    if builds:
-      build = builds[0]
-      status = build['status']
-      build_id = build['id']
-      dashboard_url = tree_status.ConstructDashboardURL(
-          build['waterfall'],
-          build['builder_name'],
-          build['build_number'])
-
-      failure_message = None
-      if status == constants.BUILDER_STATUS_FAILED:
-        stage_failures = db.GetBuildsFailures([build_id])
-        failure_message_mgr = failure_message_lib.FailureMessageManager
-        stage_failure_messages = (
-            failure_message_mgr.ConstructStageFailureMessages(stage_failures))
-        overlays = site_config[build_config].overlays
-        aborted = BuilderStatusManager.AbortedBySelfDestruction(
-            db, build_id, build['master_build_id'])
-        failure_message = BuilderStatusManager.CreateBuildFailureMessage(
-            build_config, overlays, dashboard_url, stage_failure_messages,
-            aborted_by_self_destruction=aborted
-        )
-
-      return BuilderStatus(status, failure_message,
-                           dashboard_url=dashboard_url)
-    else:
-      return BuilderStatus(constants.BUILDER_STATUS_MISSING, None)
-
 
 class SlaveBuilderStatus(object):
   """Operations to manage slave BuilderStatus.
