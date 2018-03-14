@@ -20,10 +20,9 @@ class WindowSelectorItem;
 
 // The drag controller for an overview window item in overview mode. It updates
 // the position of the corresponding window item using transform while dragging.
-// It also updates the split view overview overlay, which handles showing
-// indicators where to drag, and phantom windows showing the bounds of the
+// It also updates the split view drag indicators, which handles showing
+// indicators where to drag, and preview areas showing the bounds of the
 // window about to be snapped.
-// TODO(sammiequon): Find better names for phantom window and overlay.
 class ASH_EXPORT OverviewWindowDragController {
  public:
   // The minimum offset that will be considered as a drag event.
@@ -52,12 +51,12 @@ class ASH_EXPORT OverviewWindowDragController {
 
  private:
   // Updates visuals for the user while dragging items around.
-  void UpdateOverlayAndWindowGrid(const gfx::Point& location_in_screen);
+  void UpdateDragIndicatorsAndWindowGrid(const gfx::Point& location_in_screen);
 
-  // Dragged items should not attempt to update the overlay or snap if
+  // Dragged items should not attempt to update the indicators or snap if
   // the drag started in a snap region and has not been dragged pass the
   // threshold.
-  bool ShouldUpdateOverlayOrSnap(const gfx::Point& event_location);
+  bool ShouldUpdateDragIndicatorsOrSnap(const gfx::Point& event_location);
 
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;

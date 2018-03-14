@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/splitview/split_view_overview_overlay.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -62,29 +62,29 @@ gfx::Transform ComputeRotateAroundCenterTransform(const gfx::Rect& bounds,
   return transform;
 }
 
-bool IsPhantomState(IndicatorState indicator_state) {
-  return indicator_state == IndicatorState::kPhantomLeft ||
-         indicator_state == IndicatorState::kPhantomRight;
+bool IsPreviewAreaState(IndicatorState indicator_state) {
+  return indicator_state == IndicatorState::kPreviewAreaLeft ||
+         indicator_state == IndicatorState::kPreviewAreaRight;
 }
 
-// Calculate whether the phantom window should physically be on the left or top
-// of the screen. kPhantomLeft and kPhantomRight correspond with LEFT_SNAPPED
-// and RIGHT_SNAPPED which do not always correspond to the physical left and
-// right of the screen. See split_view_controller.h for more details.
-bool IsPhantomOnLeftTopOfScreen(IndicatorState indicator_state) {
+// Calculate whether the  preview area should physically be on the left or top
+// of the screen. kPreviewAreaLeft and kPreviewAreaRight correspond with
+// LEFT_SNAPPED and RIGHT_SNAPPED which do not always correspond to the physical
+// left and right of the screen. See split_view_controller.h for more details.
+bool IsPreviewAreaOnLeftTopOfScreen(IndicatorState indicator_state) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  return (indicator_state == IndicatorState::kPhantomLeft &&
+  return (indicator_state == IndicatorState::kPreviewAreaLeft &&
           split_view_controller->IsCurrentScreenOrientationPrimary()) ||
-         (indicator_state == IndicatorState::kPhantomRight &&
+         (indicator_state == IndicatorState::kPreviewAreaRight &&
           !split_view_controller->IsCurrentScreenOrientationPrimary());
 }
 
 }  // namespace
 
 // View which contains a label and can be rotated. Used by and rotated by
-// SplitViewOverviewOverlayView.
-class SplitViewOverviewOverlay::RotatedImageLabelView : public RoundedRectView {
+// SplitViewDragIndicatorsView.
+class SplitViewDragIndicators::RotatedImageLabelView : public RoundedRectView {
  public:
   RotatedImageLabelView()
       : RoundedRectView(kSplitviewLabelRoundRectRadiusDp,
@@ -128,11 +128,11 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public RoundedRectView {
 // the display in landscape mode. The highlights can expand and shrink if a
 // window has entered a snap region to display the bounds of the window, if it
 // were to get snapped.
-class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
+class SplitViewDragIndicators::SplitViewDragIndicatorsView
     : public views::View,
       public ui::ImplicitAnimationObserver {
  public:
-  SplitViewOverviewOverlayView() {
+  SplitViewDragIndicatorsView() {
     left_hightlight_view_ =
         new RoundedRectView(kHighlightScreenRoundRectRadiusDp, SK_ColorWHITE);
     right_hightlight_view_ =
@@ -159,7 +159,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     right_rotated_view_->layer()->SetOpacity(0.f);
   }
 
-  ~SplitViewOverviewOverlayView() override {}
+  ~SplitViewDragIndicatorsView() override {}
 
   // Called by parent widget when the state machine changes. Handles setting the
   // opacity of the highlights and labels based on the state.
@@ -207,14 +207,14 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
         Layout();
         return;
       }
-      case IndicatorState::kPhantomLeft:
-      case IndicatorState::kPhantomRight: {
+      case IndicatorState::kPreviewAreaLeft:
+      case IndicatorState::kPreviewAreaRight: {
         left_rotated_view_->layer()->SetOpacity(0.f);
         right_rotated_view_->layer()->SetOpacity(0.f);
 
-        if (IsPhantomOnLeftTopOfScreen(indicator_state_)) {
+        if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
           DoSplitviewOpacityAnimation(left_hightlight_view_->layer(),
-                                      SPLITVIEW_ANIMATION_PHANTOM_FADE_IN);
+                                      SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN);
           DoSplitviewOpacityAnimation(
               right_hightlight_view_->layer(),
               SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
@@ -223,7 +223,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
               left_hightlight_view_->layer(),
               SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
           DoSplitviewOpacityAnimation(right_hightlight_view_->layer(),
-                                      SPLITVIEW_ANIMATION_PHANTOM_FADE_IN);
+                                      SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN);
         }
         Layout();
         return;
@@ -273,42 +273,43 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
             : height() - highlight_height - kHighlightScreenEdgePaddingDp);
 
     // Apply a transform to the left and right highlights if one is to expand to
-    // show a phantom window. The expanding window will be transformed by
-    // |main_transform|. The other window, which will shrink and fade out, will
-    // be transformed by |other_transform|.
+    // show a preview area. The expanding window will be transformed by
+    // |main_transform|. The other highlight, which will shrink and fade out,
+    // will be transformed by |other_transform|.
     gfx::Transform main_transform, other_transform;
-    const bool phantom_left =
-        IsPhantomOnLeftTopOfScreen(indicator_state_) ||
-        IsPhantomOnLeftTopOfScreen(previous_indicator_state_);
-    if (IsPhantomState(indicator_state_) ||
+    const bool preview_left =
+        IsPreviewAreaOnLeftTopOfScreen(indicator_state_) ||
+        IsPreviewAreaOnLeftTopOfScreen(previous_indicator_state_);
+    if (IsPreviewAreaState(indicator_state_) ||
         (indicator_state_ == IndicatorState::kDragArea &&
-         IsPhantomState(previous_indicator_state_))) {
-      // Get the phantom window bounds from the split view controller.
-      gfx::Rect phantom_bounds =
+         IsPreviewAreaState(previous_indicator_state_))) {
+      // Get the preview area bounds from the split view controller.
+      gfx::Rect preview_area_bounds =
           Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
-              GetWidget()->GetNativeWindow(), phantom_left
+              GetWidget()->GetNativeWindow(), preview_left
                                                   ? SplitViewController::LEFT
                                                   : SplitViewController::RIGHT);
-      phantom_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                           kHighlightScreenEdgePaddingDp);
+      preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
+                                kHighlightScreenEdgePaddingDp);
 
       // Compute both |main_transform| and |other_transform|. In landscape mode
       // use x and width values. In portrait mode use y and height values.
       if (landscape) {
-        if (!phantom_left) {
+        if (!preview_left) {
           // |main_transform| corresponds to the right window, which changes x
           // position as well as scale, so apply a translation.
           main_transform.Translate(gfx::Vector2dF(
               -(right_bottom_origin.x() - width() +
-                kHighlightScreenEdgePaddingDp + phantom_bounds.width()),
+                kHighlightScreenEdgePaddingDp + preview_area_bounds.width()),
               0.f));
         }
-        // Apply a scale to scale the width to the width of |phantom_bounds|.
-        main_transform.Scale(static_cast<double>(phantom_bounds.width()) /
+        // Apply a scale to scale the width to the width of
+        // |preview_area_bounds|.
+        main_transform.Scale(static_cast<double>(preview_area_bounds.width()) /
                                  static_cast<double>(highlight_width),
                              1.0);
 
-        if (phantom_left) {
+        if (preview_left) {
           // |other_transform| corresponds to the right window, which changes x
           // position as well as scale, so apply a translation.
           other_transform.Translate(gfx::Vector2dF(highlight_width, 0.f));
@@ -316,18 +317,21 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
         // Scale the other window so that it becomes hidden.
         other_transform.Scale(1.0 / static_cast<double>(highlight_width), 1.0);
       } else {
-        if (!phantom_left) {
+        if (!preview_left) {
           // |main_transform| corresponds to the bottom window, which changes y
           // position as well as scale, so apply a translation.
           main_transform.Translate(gfx::Vector2dF(
-              0.f, -(right_bottom_origin.y() - height() +
-                     kHighlightScreenEdgePaddingDp + phantom_bounds.height())));
+              0.f,
+              -(right_bottom_origin.y() - height() +
+                kHighlightScreenEdgePaddingDp + preview_area_bounds.height())));
         }
-        // Apply a scale to scale the height to the height of |phantom_bounds|.
-        main_transform.Scale(1.0, static_cast<double>(phantom_bounds.height()) /
-                                      static_cast<double>(highlight_height));
+        // Apply a scale to scale the height to the height of
+        // |preview_area_bounds|.
+        main_transform.Scale(1.0,
+                             static_cast<double>(preview_area_bounds.height()) /
+                                 static_cast<double>(highlight_height));
 
-        if (phantom_left) {
+        if (preview_left) {
           // |other_transform| corresponds to the bottom window, which changes y
           // position as well as scale, so apply a translation.
           other_transform.Translate(gfx::Vector2dF(0.f, highlight_height));
@@ -336,15 +340,15 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
         other_transform.Scale(1.0, 1.0 / static_cast<double>(highlight_height));
       }
 
-      if (IsPhantomState(previous_indicator_state_)) {
-        // If the previous state was a phantom state, first apply a transform,
+      if (IsPreviewAreaState(previous_indicator_state_)) {
+        // If the previous state was a preview state, first apply a transform,
         // otherwise no animation will happen if we try to transform from
         // identity to identity. (OnImplicitAnimationsCompleted sets the bounds
         // and all transforms to identity to preserve rounded edges).
         left_hightlight_view_->layer()->SetTransform(
-            phantom_left ? main_transform : other_transform);
+            preview_left ? main_transform : other_transform);
         right_hightlight_view_->layer()->SetTransform(
-            phantom_left ? other_transform : main_transform);
+            preview_left ? other_transform : main_transform);
         main_transform.MakeIdentity();
         other_transform.MakeIdentity();
       }
@@ -352,8 +356,8 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
 
     DoSplitviewTransformAnimation(
         left_hightlight_view_->layer(),
-        SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
-        phantom_left ? main_transform : other_transform, this);
+        SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+        preview_left ? main_transform : other_transform, this);
     left_hightlight_bounds_ =
         gfx::Rect(kHighlightScreenEdgePaddingDp, kHighlightScreenEdgePaddingDp,
                   highlight_width, highlight_height);
@@ -361,8 +365,8 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
 
     DoSplitviewTransformAnimation(
         right_hightlight_view_->layer(),
-        SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
-        phantom_left ? other_transform : main_transform, nullptr);
+        SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+        preview_left ? other_transform : main_transform, nullptr);
     right_hightlight_bounds_ =
         gfx::Rect(right_bottom_origin.x(), right_bottom_origin.y(),
                   highlight_width, highlight_height);
@@ -399,24 +403,24 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   void OnImplicitAnimationsCompleted() override {
     // Set the final bounds and the layer transforms to identity, so that the
     // proper rounding on the rounded rect corners show up.
-    gfx::Rect phantom_bounds =
+    gfx::Rect preview_area_bounds =
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
             GetWidget()->GetNativeWindow(),
-            indicator_state_ == IndicatorState::kPhantomLeft
+            indicator_state_ == IndicatorState::kPreviewAreaLeft
                 ? SplitViewController::LEFT
                 : SplitViewController::RIGHT);
-    phantom_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                         kHighlightScreenEdgePaddingDp);
+    preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
+                              kHighlightScreenEdgePaddingDp);
 
     constexpr gfx::Rect kEmptyRect;
     left_hightlight_view_->layer()->SetTransform(gfx::Transform());
     right_hightlight_view_->layer()->SetTransform(gfx::Transform());
-    if (IsPhantomOnLeftTopOfScreen(indicator_state_)) {
-      left_hightlight_view_->SetBoundsRect(phantom_bounds);
+    if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
+      left_hightlight_view_->SetBoundsRect(preview_area_bounds);
       right_hightlight_view_->SetBoundsRect(kEmptyRect);
-    } else if (IsPhantomState(indicator_state_)) {
+    } else if (IsPreviewAreaState(indicator_state_)) {
       left_hightlight_view_->SetBoundsRect(kEmptyRect);
-      right_hightlight_view_->SetBoundsRect(phantom_bounds);
+      right_hightlight_view_->SetBoundsRect(preview_area_bounds);
     } else {
       left_hightlight_view_->SetBoundsRect(left_hightlight_bounds_);
       right_hightlight_view_->SetBoundsRect(right_hightlight_bounds_);
@@ -444,19 +448,19 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   IndicatorState indicator_state_ = IndicatorState::kNone;
   IndicatorState previous_indicator_state_ = IndicatorState::kNone;
 
-  DISALLOW_COPY_AND_ASSIGN(SplitViewOverviewOverlayView);
+  DISALLOW_COPY_AND_ASSIGN(SplitViewDragIndicatorsView);
 };
 
-SplitViewOverviewOverlay::SplitViewOverviewOverlay() {
-  overlay_view_ = new SplitViewOverviewOverlayView();
+SplitViewDragIndicators::SplitViewDragIndicators() {
+  indicators_view_ = new SplitViewDragIndicatorsView();
   widget_ = CreateWidget();
-  widget_->SetContentsView(overlay_view_);
+  widget_->SetContentsView(indicators_view_);
   widget_->Show();
 }
 
-SplitViewOverviewOverlay::~SplitViewOverviewOverlay() = default;
+SplitViewDragIndicators::~SplitViewDragIndicators() = default;
 
-void SplitViewOverviewOverlay::SetIndicatorState(
+void SplitViewDragIndicators::SetIndicatorState(
     IndicatorState indicator_state,
     const gfx::Point& event_location) {
   if (indicator_state == current_indicator_state_)
@@ -469,7 +473,7 @@ void SplitViewOverviewOverlay::SetIndicatorState(
     views::Widget::ReparentNativeView(
         widget_->GetNativeView(),
         Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
-    widget_->SetContentsView(overlay_view_);
+    widget_->SetContentsView(indicators_view_);
   }
   gfx::Rect bounds = screen_util::GetDisplayWorkAreaBoundsInParent(
       root_window->GetChildById(kShellWindowId_OverlayContainer));
@@ -477,16 +481,17 @@ void SplitViewOverviewOverlay::SetIndicatorState(
   widget_->SetBounds(bounds);
 
   current_indicator_state_ = indicator_state;
-  overlay_view_->OnIndicatorTypeChanged(current_indicator_state_);
+  indicators_view_->OnIndicatorTypeChanged(current_indicator_state_);
 }
 
-void SplitViewOverviewOverlay::OnDisplayBoundsChanged() {
-  overlay_view_->Layout();
+void SplitViewDragIndicators::OnDisplayBoundsChanged() {
+  indicators_view_->Layout();
 }
 
-bool SplitViewOverviewOverlay::GetIndicatorTypeVisibilityForTesting(
+bool SplitViewDragIndicators::GetIndicatorTypeVisibilityForTesting(
     IndicatorType type) const {
-  return overlay_view_->GetViewForIndicatorType(type)->layer()->opacity() > 0.f;
+  return indicators_view_->GetViewForIndicatorType(type)->layer()->opacity() >
+         0.f;
 }
 
 }  // namespace ash

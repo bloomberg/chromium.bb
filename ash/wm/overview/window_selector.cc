@@ -28,7 +28,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
-#include "ash/wm/splitview/split_view_overview_overlay.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
@@ -258,7 +258,7 @@ void WindowSelector::Init(const WindowList& windows,
     restore_focus_window_->AddObserver(this);
 
   if (SplitViewController::ShouldAllowSplitView())
-    split_view_overview_overlay_ = std::make_unique<SplitViewOverviewOverlay>();
+    split_view_drag_indicators_ = std::make_unique<SplitViewDragIndicators>();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
@@ -502,12 +502,12 @@ void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
     grid->SetBoundsAndUpdatePositionsIgnoringWindow(bounds, ignored_item);
 }
 
-void WindowSelector::SetSplitViewOverviewOverlayIndicatorState(
+void WindowSelector::SetSplitViewDragIndicatorsIndicatorState(
     IndicatorState indicator_state,
     const gfx::Point& event_location) {
-  DCHECK(split_view_overview_overlay_);
-  split_view_overview_overlay_->SetIndicatorState(indicator_state,
-                                                  event_location);
+  DCHECK(split_view_drag_indicators_);
+  split_view_drag_indicators_->SetIndicatorState(indicator_state,
+                                                 event_location);
 }
 
 WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
@@ -903,8 +903,8 @@ void WindowSelector::OnDisplayBoundsChanged() {
   }
   PositionWindows(/*animate=*/false);
   RepositionTextFilterOnDisplayMetricsChange();
-  if (split_view_overview_overlay_)
-    split_view_overview_overlay_->OnDisplayBoundsChanged();
+  if (split_view_drag_indicators_)
+    split_view_drag_indicators_->OnDisplayBoundsChanged();
 }
 
 }  // namespace ash
