@@ -162,7 +162,6 @@ class ConvolveRoundTest : public ::testing::TestWithParam<ConvolveRoundParam> {
 TEST_P(ConvolveRoundTest, BitExactCheck) { ConvolveRoundingRun(); }
 
 using std::tr1::make_tuple;
-
 #if HAVE_AVX2
 const ConvolveRoundParam kConvRndParamArray[] = {
   make_tuple(&av1_convolve_rounding_c, &av1_convolve_rounding_avx2,

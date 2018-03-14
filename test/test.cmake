@@ -230,9 +230,11 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/sum_squares_test.cc"
         "${AOM_ROOT}/test/variance_test.cc")
 
-    set(AOM_UNIT_TEST_ENCODER_SOURCES
-        ${AOM_UNIT_TEST_ENCODER_SOURCES}
-        "${AOM_ROOT}/test/convolve_round_test.cc")
+    if (CONFIG_LOWPRECISION_BLEND)
+      set(AOM_UNIT_TEST_ENCODER_SOURCES
+          ${AOM_UNIT_TEST_ENCODER_SOURCES}
+          "${AOM_ROOT}/test/convolve_round_test.cc")
+    endif ()
     if (HAVE_SSE2)
       set(AOM_UNIT_TEST_ENCODER_SOURCES
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
@@ -242,9 +244,11 @@ if (CONFIG_AV1_ENCODER)
     endif ()
 
     if (HAVE_SSE4_1)
-      set(AOM_UNIT_TEST_ENCODER_SOURCES
-          ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/av1_convolve_scale_test.cc")
+      if (CONFIG_LOWPRECISION_BLEND)
+        set(AOM_UNIT_TEST_ENCODER_SOURCES
+            ${AOM_UNIT_TEST_ENCODER_SOURCES}
+            "${AOM_ROOT}/test/av1_convolve_scale_test.cc")
+      endif ()
     endif ()
 
     if (HAVE_SSE4_1)
