@@ -6,13 +6,10 @@
 
 #include <algorithm>
 
-#include "base/callback.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/conflicts/msi_util_win.h"
 
@@ -87,15 +84,73 @@ bool GetInstalledFilesUsingMsiGuid(
   return true;
 }
 
-// Checks if the registry key references an installed program in the Apps &
-// Features settings page.
-void CheckRegistryKeyForInstalledProgram(
+// Helper function to sort |container| using CompareLessIgnoreCase.
+void SortByFilePaths(
+    std::vector<std::pair<base::FilePath, size_t>>* container) {
+  std::sort(container->begin(), container->end(),
+            [](const auto& lhs, const auto& rhs) {
+              return base::FilePath::CompareLessIgnoreCase(lhs.first.value(),
+                                                           rhs.first.value());
+            });
+}
+
+}  // namespace
+
+InstalledPrograms::InstalledPrograms()
+    : InstalledPrograms(std::make_unique<MsiUtil>()) {}
+
+InstalledPrograms::~InstalledPrograms() = default;
+
+bool InstalledPrograms::GetInstalledPrograms(
+    const base::FilePath& file,
+    std::vector<ProgramInfo>* programs) const {
+  // First, check if an exact file match exists in the installed files list.
+  if (GetProgramsFromInstalledFiles(file, programs))
+    return true;
+
+  // Then try to find a parent directory in the install directories list.
+  return GetProgramsFromInstallDirectories(file, programs);
+}
+
+InstalledPrograms::InstalledPrograms(std::unique_ptr<MsiUtil> msi_util) {
+  base::AssertBlockingAllowed();
+
+  SCOPED_UMA_HISTOGRAM_TIMER("ThirdPartyModules.InstalledPrograms.GetDataTime");
+
+  // Iterate over all the variants of the uninstall registry key.
+  static constexpr wchar_t kUninstallKeyPath[] =
+      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+
+  // The "HKCU\SOFTWARE\" registry subtree is shared between both 32-bits and
+  // 64-bits views. Accessing both would create duplicate entries.
+  // https://msdn.microsoft.com/library/windows/desktop/aa384253.aspx
+  static const std::pair<HKEY, REGSAM> kCombinations[] = {
+      {HKEY_CURRENT_USER, 0},
+      {HKEY_LOCAL_MACHINE, KEY_WOW64_32KEY},
+      {HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY},
+  };
+  for (const auto& combination : kCombinations) {
+    for (base::win::RegistryKeyIterator i(combination.first, kUninstallKeyPath,
+                                          combination.second);
+         i.Valid(); ++i) {
+      CheckRegistryKeyForInstalledProgram(combination.first, kUninstallKeyPath,
+                                          combination.second, i.Name(),
+                                          *msi_util);
+    }
+  }
+
+  // The vectors are sorted so that binary searching can be used. No additional
+  // entries will be added anyways.
+  SortByFilePaths(&installed_files_);
+  SortByFilePaths(&install_directories_);
+}
+
+void InstalledPrograms::CheckRegistryKeyForInstalledProgram(
     HKEY hkey,
     const base::string16& key_path,
     REGSAM wow64access,
     const base::string16& key_name,
-    const MsiUtil& msi_util,
-    InstalledPrograms::ProgramsData* programs_data) {
+    const MsiUtil& msi_util) {
   base::string16 candidate_key_path =
       base::StringPrintf(L"%ls\\%ls", key_path.c_str(), key_name.c_str());
   base::win::RegKey candidate(hkey, candidate_key_path.c_str(),
@@ -129,119 +184,24 @@ void CheckRegistryKeyForInstalledProgram(
 
   base::FilePath install_path;
   if (GetInstallPathUsingInstallLocation(candidate, &install_path)) {
-    programs_data->programs.push_back({std::move(display_name), hkey,
-                                       std::move(candidate_key_path),
-                                       wow64access});
+    programs_.push_back({std::move(display_name), hkey,
+                         std::move(candidate_key_path), wow64access});
 
-    const size_t program_index = programs_data->programs.size() - 1;
-    programs_data->install_directories.emplace_back(std::move(install_path),
-                                                    program_index);
+    const size_t program_index = programs_.size() - 1;
+    install_directories_.emplace_back(std::move(install_path), program_index);
     return;
   }
 
   std::vector<base::FilePath> installed_files;
   if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, &installed_files)) {
-    programs_data->programs.push_back({std::move(display_name), hkey,
-                                       std::move(candidate_key_path),
-                                       wow64access});
+    programs_.push_back({std::move(display_name), hkey,
+                         std::move(candidate_key_path), wow64access});
 
-    const size_t program_index = programs_data->programs.size() - 1;
+    const size_t program_index = programs_.size() - 1;
     for (auto& installed_file : installed_files) {
-      programs_data->installed_files.emplace_back(std::move(installed_file),
-                                                  program_index);
+      installed_files_.emplace_back(std::move(installed_file), program_index);
     }
   }
-}
-
-// Helper function to sort |container| using CompareLessIgnoreCase.
-void SortByFilePaths(
-    std::vector<std::pair<base::FilePath, size_t>>* container) {
-  std::sort(container->begin(), container->end(),
-            [](const auto& lhs, const auto& rhs) {
-              return base::FilePath::CompareLessIgnoreCase(lhs.first.value(),
-                                                           rhs.first.value());
-            });
-}
-
-// Populates and returns a ProgramsData instance.
-std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
-    std::unique_ptr<MsiUtil> msi_util) {
-  SCOPED_UMA_HISTOGRAM_TIMER("ThirdPartyModules.InstalledPrograms.GetDataTime");
-
-  auto programs_data = std::make_unique<InstalledPrograms::ProgramsData>();
-
-  // Iterate over all the variants of the uninstall registry key.
-  const wchar_t kUninstallKeyPath[] =
-      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
-
-  // The "HKCU\SOFTWARE\" registry subtree is shared between both 32-bits and
-  // 64-bits views. Accessing both would create duplicate entries.
-  // https://msdn.microsoft.com/library/windows/desktop/aa384253.aspx
-  static const std::pair<HKEY, REGSAM> kCombinations[] = {
-      {HKEY_CURRENT_USER, 0},
-      {HKEY_LOCAL_MACHINE, KEY_WOW64_32KEY},
-      {HKEY_LOCAL_MACHINE, KEY_WOW64_64KEY},
-  };
-  for (const auto& combination : kCombinations) {
-    for (base::win::RegistryKeyIterator i(combination.first, kUninstallKeyPath,
-                                          combination.second);
-         i.Valid(); ++i) {
-      CheckRegistryKeyForInstalledProgram(combination.first, kUninstallKeyPath,
-                                          combination.second, i.Name(),
-                                          *msi_util, programs_data.get());
-    }
-  }
-
-  // The vectors are sorted so that binary searching can be used. No additional
-  // entries will be added anyways.
-  SortByFilePaths(&programs_data->installed_files);
-  SortByFilePaths(&programs_data->install_directories);
-
-  return programs_data;
-}
-
-}  // namespace
-
-InstalledPrograms::ProgramsData::ProgramsData() = default;
-
-InstalledPrograms::ProgramsData::~ProgramsData() = default;
-
-InstalledPrograms::InstalledPrograms()
-    : initialized_(false), weak_ptr_factory_(this) {}
-
-InstalledPrograms::~InstalledPrograms() = default;
-
-void InstalledPrograms::Initialize(base::OnceClosure on_initialized_callback) {
-  Initialize(std::move(on_initialized_callback), std::make_unique<MsiUtil>());
-}
-
-bool InstalledPrograms::GetInstalledPrograms(
-    const base::FilePath& file,
-    std::vector<ProgramInfo>* programs) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(initialized_);
-
-  // First, check if an exact file match exists in the installed files list.
-  if (GetProgramsFromInstalledFiles(file, programs))
-    return true;
-
-  // Then try to find a parent directory in the install directories list.
-  return GetProgramsFromInstallDirectories(file, programs);
-}
-
-void InstalledPrograms::Initialize(base::OnceClosure on_initialized_callback,
-                                   std::unique_ptr<MsiUtil> msi_util) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!initialized_);
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&GetProgramsData, std::move(msi_util)),
-      base::BindOnce(&InstalledPrograms::OnInitializationDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(on_initialized_callback)));
 }
 
 bool InstalledPrograms::GetProgramsFromInstalledFiles(
@@ -262,9 +222,8 @@ bool InstalledPrograms::GetProgramsFromInstalledFiles(
     }
   };
 
-  auto equal_range = std::equal_range(programs_data_->installed_files.begin(),
-                                      programs_data_->installed_files.end(),
-                                      file, FilePathLess());
+  auto equal_range = std::equal_range(
+      installed_files_.begin(), installed_files_.end(), file, FilePathLess());
 
   auto nb_matches = std::distance(equal_range.first, equal_range.second);
   if (nb_matches == 0)
@@ -272,7 +231,7 @@ bool InstalledPrograms::GetProgramsFromInstalledFiles(
 
   programs->reserve(programs->size() + nb_matches);
   for (auto iter = equal_range.first; iter != equal_range.second; ++iter)
-    programs->push_back(programs_data_->programs[iter->second]);
+    programs->push_back(programs_[iter->second]);
 
   return true;
 }
@@ -300,30 +259,17 @@ bool InstalledPrograms::GetProgramsFromInstallDirectories(
     }
   };
 
-  auto equal_range = std::equal_range(
-      programs_data_->install_directories.begin(),
-      programs_data_->install_directories.end(), file, FilePathParentLess());
+  auto equal_range =
+      std::equal_range(install_directories_.begin(), install_directories_.end(),
+                       file, FilePathParentLess());
 
   // Skip cases where there are multiple matches because there is no way to know
   // which program is the real owner of the |file| with the data owned by us.
   if (std::distance(equal_range.first, equal_range.second) != 1)
     return false;
 
-  programs->push_back(programs_data_->programs[equal_range.first->second]);
+  programs->push_back(programs_[equal_range.first->second]);
   return true;
-}
-
-void InstalledPrograms::OnInitializationDone(
-    base::OnceClosure on_initialized_callback,
-    std::unique_ptr<ProgramsData> programs_data) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!initialized_);
-
-  programs_data_ = std::move(programs_data);
-
-  initialized_ = true;
-  if (on_initialized_callback)
-    std::move(on_initialized_callback).Run();
 }
 
 bool operator<(const InstalledPrograms::ProgramInfo& lhs,

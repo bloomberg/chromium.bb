@@ -139,7 +139,7 @@ constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
 }  // namespace
 
 class ModuleListFilterTest : public ::testing::Test {
- public:
+ protected:
   ModuleListFilterTest() : dll1_(kDllPath1), dll2_(kDllPath2) {}
 
   ~ModuleListFilterTest() override = default;

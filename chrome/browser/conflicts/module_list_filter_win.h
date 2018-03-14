@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_CONFLICTS_MODULE_LIST_FILTER_WIN_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
-#include "url/gurl.h"
 
 struct ModuleInfoKey;
 struct ModuleInfoData;
@@ -26,9 +24,6 @@ class ModuleListFilter {
   ModuleListFilter();
   virtual ~ModuleListFilter();
 
-  // Initializes the filter with the serialized proto at |module_list_path|.
-  // This must be invoked before any calls to IsWhitelisted() and
-  // IsBlacklisted().
   bool Initialize(const base::FilePath& module_list_path);
 
   // Returns true if the module is whitelisted.

@@ -7,9 +7,7 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/browser/conflicts/msi_util_win.h"
@@ -62,7 +60,8 @@ class MockMsiUtil : public MsiUtil {
 
 class TestInstalledPrograms : public InstalledPrograms {
  public:
-  using InstalledPrograms::Initialize;
+  explicit TestInstalledPrograms(std::unique_ptr<MsiUtil> msi_util)
+      : InstalledPrograms(std::move(msi_util)) {}
 };
 
 class InstalledProgramsTest : public testing::Test {
@@ -114,22 +113,18 @@ class InstalledProgramsTest : public testing::Test {
                             program_info.install_location.c_str());
   }
 
-  TestInstalledPrograms& installed_programs() { return installed_programs_; }
+  TestInstalledPrograms& installed_programs() { return *installed_programs_; }
 
-  void InitializeInstalledProgramsSynchronously() {
-    installed_programs_.Initialize(
-        base::Closure(), std::make_unique<MockMsiUtil>(component_paths_map_));
-    scoped_task_environment_.RunUntilIdle();
+  void InitializeInstalledPrograms() {
+    installed_programs_ = std::make_unique<TestInstalledPrograms>(
+        std::make_unique<MockMsiUtil>(component_paths_map_));
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 
-  TestInstalledPrograms installed_programs_;
+  std::unique_ptr<TestInstalledPrograms> installed_programs_;
 
-  // This should not get modified after InitializeInstalledPrograms() is called
-  // because it will end up being accessed on a different thread by MockMsiUtil.
   std::map<base::string16, std::vector<base::string16>> component_paths_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledProgramsTest);
@@ -175,7 +170,7 @@ TEST_F(InstalledProgramsTest, InvalidEntries) {
   for (const auto& test_case : kTestCases)
     AddFakeProgram(test_case);
 
-  InitializeInstalledProgramsSynchronously();
+  InitializeInstalledPrograms();
 
   // None of the invalid entries were picked up.
   const base::FilePath valid_child_file =
@@ -201,7 +196,7 @@ TEST_F(InstalledProgramsTest, InstallLocation) {
 
   AddFakeProgram(kTestCase);
 
-  InitializeInstalledProgramsSynchronously();
+  InitializeInstalledPrograms();
 
   // Child file path.
   const base::FilePath valid_child_file =
@@ -242,7 +237,7 @@ TEST_F(InstalledProgramsTest, Msi) {
 
   AddFakeProgram(kTestCase);
 
-  InitializeInstalledProgramsSynchronously();
+  InitializeInstalledPrograms();
 
   // Checks that all the files match the program.
   for (const auto& component : kTestCase.components) {
@@ -293,7 +288,7 @@ TEST_F(InstalledProgramsTest, PrioritizeMsi) {
   AddFakeProgram(kInstallLocationFakeProgram);
   AddFakeProgram(kMsiFakeProgram);
 
-  InitializeInstalledProgramsSynchronously();
+  InitializeInstalledPrograms();
 
   std::vector<InstalledPrograms::ProgramInfo> programs;
   EXPECT_TRUE(installed_programs().GetInstalledPrograms(
@@ -330,7 +325,7 @@ TEST_F(InstalledProgramsTest, ConflictingInstallLocations) {
   AddFakeProgram(kFakeProgram1);
   AddFakeProgram(kFakeProgram2);
 
-  InitializeInstalledProgramsSynchronously();
+  InitializeInstalledPrograms();
 
   std::vector<InstalledPrograms::ProgramInfo> programs;
   EXPECT_FALSE(installed_programs().GetInstalledPrograms(base::FilePath(kFile),
