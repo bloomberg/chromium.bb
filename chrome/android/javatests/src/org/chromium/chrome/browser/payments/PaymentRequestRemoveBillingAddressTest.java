@@ -76,7 +76,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
 
         // Tapping "save" in the editor should trigger a validation error.
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
 
         // Fix the validation error by selecting a billing address.
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
@@ -86,7 +86,7 @@ public class PaymentRequestRemoveBillingAddressTest implements MainActivityStart
         // Tapping "save" in the editor now should close the editor dialog and enable the "pay"
         // button.
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Pay with this card.
         mPaymentRequestTestRule.clickAndWait(

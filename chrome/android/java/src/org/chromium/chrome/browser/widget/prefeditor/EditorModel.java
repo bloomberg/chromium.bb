@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,10 @@ import javax.annotation.Nullable;
 public class EditorModel {
     private final String mTitle;
     private final List<EditorFieldModel> mFields;
-    @Nullable private Runnable mDoneCallback;
-    @Nullable private Runnable mCancelCallback;
+    @Nullable
+    private Runnable mDoneCallback;
+    @Nullable
+    private Runnable mCancelCallback;
 
     /**
      * Constructs an editor model.

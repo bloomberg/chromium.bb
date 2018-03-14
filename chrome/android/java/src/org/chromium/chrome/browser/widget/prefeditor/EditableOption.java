@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -13,9 +13,9 @@ import javax.annotation.Nullable;
  * An option that the user can select, e.g., a shipping option, a shipping address, or a payment
  * method.
  */
-public class PaymentOption implements Completable {
-    // By default a payment option is complete. It is up to the subclass to update this value if the
-    // payment option is not complete.
+public class EditableOption implements Completable {
+    // By default an editable option is complete. It is up to the subclass to update this value if
+    // the payment option is not complete.
     protected boolean mIsComplete = true;
     protected boolean mIsEditable;
     protected String mEditMessage;
@@ -26,14 +26,14 @@ public class PaymentOption implements Completable {
     private String[] mLabels = {null, null, null};
     private boolean mIsValid = true;
 
-    /** See {@link #PaymentOption(String, String, String, String, int)}. */
-    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel,
-             @Nullable Drawable icon) {
+    /** See {@link #EditableOption(String, String, String, String, int)}. */
+    public EditableOption(
+            String id, @Nullable String label, @Nullable String sublabel, @Nullable Drawable icon) {
         this(id, label, sublabel, null, icon);
     }
 
     /**
-     * Constructs a payment option.
+     * Constructs an editable option.
      *
      * @param id            The identifier.
      * @param label         The label.
@@ -41,7 +41,7 @@ public class PaymentOption implements Completable {
      * @param tertiarylabel The optional tertiary label.
      * @param icon          The drawable icon or null.
      */
-    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel,
+    public EditableOption(String id, @Nullable String label, @Nullable String sublabel,
             @Nullable String tertiarylabel, @Nullable Drawable icon) {
         updateIdentifierLabelsAndIcon(id, label, sublabel, tertiarylabel, icon);
     }
@@ -80,21 +80,24 @@ public class PaymentOption implements Completable {
     /**
      * The primary label of this option. For example, “Visa***1234” or "2-day shipping".
      */
-    @Nullable public String getLabel() {
+    @Nullable
+    public String getLabel() {
         return mLabels[0];
     }
 
     /**
      * The optional sublabel of this option. For example, “Expiration date: 12/2025”.
      */
-    @Nullable public String getSublabel() {
+    @Nullable
+    public String getSublabel() {
         return mLabels[1];
     }
 
     /**
      * The optional tertiary label of this option.  For example, "(555) 867-5309".
      */
-    @Nullable public String getTertiaryLabel() {
+    @Nullable
+    public String getTertiaryLabel() {
         return mLabels[2];
     }
 
@@ -131,9 +134,8 @@ public class PaymentOption implements Completable {
      * @param tertiarylabel The new tertiary label to use. Can be null.
      * @param icon          The drawable icon or null.
      */
-    protected void updateIdentifierLabelsAndIcon(
-            String id, String label, @Nullable String sublabel, @Nullable String tertiarylabel,
-            @Nullable Drawable icon) {
+    protected void updateIdentifierLabelsAndIcon(String id, String label, @Nullable String sublabel,
+            @Nullable String tertiarylabel, @Nullable Drawable icon) {
         updateIdentifierAndLabels(id, label, sublabel, tertiarylabel);
         mIcon = icon;
     }

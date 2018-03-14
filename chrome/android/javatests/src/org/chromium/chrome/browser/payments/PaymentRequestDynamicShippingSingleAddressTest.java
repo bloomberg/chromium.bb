@@ -109,7 +109,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"Jane Doe"}, mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.expectShippingAddressRowIsSelected(0);
 
         mPaymentRequestTestRule.clickAndWait(
@@ -173,7 +173,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyForInput());
 
@@ -202,7 +202,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest implements MainActiv
                         "94043", "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(

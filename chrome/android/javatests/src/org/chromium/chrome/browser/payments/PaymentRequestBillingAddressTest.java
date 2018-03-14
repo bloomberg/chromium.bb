@@ -329,7 +329,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToEdit());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
         // There should be 10 suggestions, the 7 initial addresses, the newly added address, the
         // select hint and the option to add a new address.
@@ -387,7 +387,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Navigate to the card editor UI.
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
@@ -450,7 +450,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToEdit());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
         // The newly completed address must be selected and put at the top of the dropdown list,
         // right after the select hint.

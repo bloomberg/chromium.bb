@@ -141,7 +141,7 @@
     }
   } else if (field.isRequired) {
     return l10n_util::GetNSString(
-        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+        IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
   return nil;
 }

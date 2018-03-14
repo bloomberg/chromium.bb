@@ -10,7 +10,7 @@
     android:background="@android:color/white" >
 
     <!-- Toolbar -->
-    <org.chromium.chrome.browser.payments.ui.EditorDialogToolbar
+    <org.chromium.chrome.browser.widget.prefeditor.EditorDialogToolbar
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -18,7 +18,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:background="@color/dark_action_bar_color" />
-    
+
     <!-- All the page content in scrollable form. -->
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView
         android:id="@+id/scroll_view"

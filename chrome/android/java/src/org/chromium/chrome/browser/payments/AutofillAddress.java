@@ -13,9 +13,9 @@ import android.util.Pair;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
+import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.payments.mojom.PaymentAddress;
 
 import java.lang.annotation.Retention;
@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 /**
  * The locally stored autofill address.
  */
-public class AutofillAddress extends PaymentOption {
+public class AutofillAddress extends EditableOption {
     /** The pattern for a valid region code. */
     private static final String REGION_CODE_PATTERN = "^[A-Z]{2}$";
 
@@ -113,7 +113,7 @@ public class AutofillAddress extends PaymentOption {
 
     /**
      * Gets the shipping address label which includes the country for the profile associated with
-     * this address and sets it as sublabel for this PaymentOption.
+     * this address and sets it as sublabel for this EditableOption.
      */
     public void setShippingAddressLabelWithCountry() {
         assert mProfile != null;
@@ -130,7 +130,7 @@ public class AutofillAddress extends PaymentOption {
 
     /**
      * Gets the shipping address label which does not include the country for the profile associated
-     * with this address and sets it as sublabel for this PaymentOption.
+     * with this address and sets it as sublabel for this EditableOption.
      */
     public void setShippingAddressLabelWithoutCountry() {
         assert mProfile != null;
@@ -147,7 +147,7 @@ public class AutofillAddress extends PaymentOption {
 
     /*
      * Gets the billing address label for the profile associated with this address and sets it as
-     * sublabel for this PaymentOption.
+     * sublabel for this EditableOption.
      */
     public void setBillingAddressLabel() {
         assert mProfile != null;

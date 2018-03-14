@@ -16,8 +16,8 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.payments.ui.EditorObserverForTest;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 /**
  * Autofill profiles fragment, which allows the user to edit autofill profiles.

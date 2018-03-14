@@ -259,7 +259,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
     return !errorMessage.empty() ? base::SysUTF16ToNSString(errorMessage) : nil;
   } else if (field.isRequired) {
     return l10n_util::GetNSString(
-        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+        IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
   return nil;
 }

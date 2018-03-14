@@ -42,7 +42,7 @@ public class PaymentRequestUiErrorView extends BoundedLinearLayout {
         ((ViewGroup) toRemove.getParent()).removeView(toRemove);
 
         int titleEndMargin = getContext().getResources().getDimensionPixelSize(
-                R.dimen.payments_section_large_spacing);
+                R.dimen.editor_dialog_section_large_spacing);
         View pageInfoGroup = findViewById(R.id.page_info);
         ApiCompatibilityUtils.setMarginEnd(
                 (MarginLayoutParams) pageInfoGroup.getLayoutParams(), titleEndMargin);

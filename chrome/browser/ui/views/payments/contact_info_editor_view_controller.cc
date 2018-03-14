@@ -198,7 +198,7 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
     is_valid = false;
     if (error_message) {
       *error_message = l10n_util::GetStringUTF16(
-          IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+          IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE);
     }
   } else {
     switch (field_.type) {

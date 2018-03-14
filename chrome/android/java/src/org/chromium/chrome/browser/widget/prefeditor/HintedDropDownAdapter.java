@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.view.View;
@@ -75,7 +75,7 @@ public class HintedDropDownAdapter<T> extends DropdownFieldAdapter<T> {
             ApiCompatibilityUtils.setPaddingRelative(convertView,
                     ApiCompatibilityUtils.getPaddingStart(convertView),
                     getContext().getResources().getDimensionPixelSize(
-                            R.dimen.payments_section_small_spacing),
+                            R.dimen.editor_dialog_section_small_spacing),
                     ApiCompatibilityUtils.getPaddingEnd(convertView),
                     convertView.getPaddingBottom());
         }

@@ -559,7 +559,7 @@
     <style name="PaymentsUiSectionPendingTextEndAligned" parent="PaymentsUiSectionDescriptiveTextEndAligned">
         <item name="android:textColor">@color/explanation_text_color</item>
     </style>
-    <style name="PaymentsUiSectionAddButtonLabel">
+    <style name="EditorDialogSectionAddButtonLabel">
         <item name="android:textColor">@color/light_active_color</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>

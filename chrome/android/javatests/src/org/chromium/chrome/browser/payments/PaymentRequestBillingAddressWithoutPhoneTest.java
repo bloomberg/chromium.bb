@@ -155,6 +155,6 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
 
         // Trying to add the address without a phone number should fail.
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
     }
 }

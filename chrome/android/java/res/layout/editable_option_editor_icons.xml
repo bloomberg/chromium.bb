@@ -7,8 +7,8 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/payments_section_large_spacing"
-        android:layout_marginBottom="@dimen/payments_section_large_spacing"
+        android:layout_marginTop="@dimen/editor_dialog_section_large_spacing"
+        android:layout_marginBottom="@dimen/editor_dialog_section_large_spacing"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
         android:orientation="vertical">
@@ -19,14 +19,14 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/PreferenceFloatLabelTextAppearance" />
 
-    <org.chromium.chrome.browser.payments.ui.ExpandableGridView
+    <org.chromium.chrome.browser.widget.prefeditor.ExpandableGridView
             android:id="@+id/icons_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnWidth="@dimen/payments_section_logo_width"
-            android:layout_marginTop="@dimen/payments_section_small_spacing"
-            android:verticalSpacing="@dimen/payments_section_small_spacing"
-            android:horizontalSpacing="@dimen/payments_section_small_spacing"
+            android:columnWidth="@dimen/editable_option_section_logo_width"
+            android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
+            android:verticalSpacing="@dimen/editor_dialog_section_small_spacing"
+            android:horizontalSpacing="@dimen/editor_dialog_section_small_spacing"
             android:stretchMode="none"
             android:numColumns="auto_fit" />
 

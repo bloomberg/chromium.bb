@@ -17,10 +17,10 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
-import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ClearAppDataTestRule;
+import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +62,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Most complete item is going to be at the top.
@@ -94,7 +94,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Since all are complete, the first profile in the list comes up first in the section.
@@ -123,7 +123,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 false /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Since the phone number was not request, there is no error message.
@@ -146,7 +146,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Only item shows up as expected.
@@ -191,7 +191,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Only item shows up as expected.
@@ -232,7 +232,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(null, items);
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -270,7 +270,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -307,7 +307,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<PaymentOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
         Assert.assertEquals(null, items);
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());

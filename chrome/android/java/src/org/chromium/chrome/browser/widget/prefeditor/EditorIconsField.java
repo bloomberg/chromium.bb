@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.support.v7.content.res.AppCompatResources;
@@ -34,7 +34,7 @@ class EditorIconsField {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_ICONS;
 
         mLayout = LayoutInflater.from(context).inflate(
-                R.layout.payment_request_editor_icons, root, false);
+                R.layout.editable_option_editor_icons, root, false);
 
         ((TextView) mLayout.findViewById(R.id.label)).setText(fieldModel.getLabel());
 
@@ -64,7 +64,7 @@ class EditorIconsField {
             mIconResourceIds = iconResourceIds;
             mIconDescriptionIds = iconDescriptionIds;
             mIconSize = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.payments_section_logo_width);
+                    R.dimen.editable_option_section_logo_width);
             assert mIconResourceIds.size() == mIconDescriptionIds.size();
         }
 

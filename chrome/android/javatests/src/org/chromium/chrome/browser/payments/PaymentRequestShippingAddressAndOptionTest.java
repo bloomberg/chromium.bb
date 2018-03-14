@@ -152,7 +152,7 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Make sure that the shipping label does not include the country.
         Assert.assertTrue(mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)

@@ -237,8 +237,9 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, ValidateEmptyRequiredField) {
       [mediator paymentRequestEditViewController:nil
                                    validateField:(EditorField*)field];
   EXPECT_TRUE([validationError
-      isEqualToString:l10n_util::GetNSString(
-                          IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE)]);
+      isEqualToString:
+          l10n_util::GetNSString(
+              IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE)]);
 }
 
 // Tests that the appropriate validation error should be expected if validating

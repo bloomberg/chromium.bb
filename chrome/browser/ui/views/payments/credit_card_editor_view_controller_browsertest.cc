@@ -363,9 +363,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   // "Required field".
   SetEditorTextfieldValue(base::ASCIIToUTF16(""), autofill::CREDIT_CARD_NUMBER);
   EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::CREDIT_CARD_NUMBER));
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE),
-      GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE),
+            GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
 
   // Set the value to something which is not a valid card number. The "invalid
   // card number" string takes precedence over "required field"
@@ -689,9 +689,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                                 DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW);
 
   // Proper error shown.
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE),
-      GetErrorLabelForType(autofill::CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE),
+            GetErrorLabelForType(autofill::CREDIT_CARD_NAME_FULL));
 
   // Fixing the name.
   SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Newname"),

@@ -110,7 +110,7 @@ public class PaymentRequestEmailAndFreeShippingTest implements MainActivityStart
                         "94043", "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyForInput());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});

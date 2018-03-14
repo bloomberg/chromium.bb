@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -71,11 +71,11 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
                             resources, R.drawable.plus, R.color.light_active_color),
                     null, null, null);
             mTextView.setCompoundDrawablePadding(
-                    resources.getDimensionPixelSize(R.dimen.payments_section_large_spacing));
+                    resources.getDimensionPixelSize(R.dimen.editor_dialog_section_large_spacing));
 
             // Set the correct appearance, face and style for the text.
             ApiCompatibilityUtils.setTextAppearance(
-                    mTextView, R.style.PaymentsUiSectionAddButtonLabel);
+                    mTextView, R.style.EditorDialogSectionAddButtonLabel);
             mTextView.setTypeface(UiUtils.createRobotoMediumTypeface());
 
             // Padding at the bottom of the dropdown.
@@ -83,7 +83,7 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
                     ApiCompatibilityUtils.getPaddingStart(convertView), convertView.getPaddingTop(),
                     ApiCompatibilityUtils.getPaddingEnd(convertView),
                     getContext().getResources().getDimensionPixelSize(
-                            R.dimen.payments_section_small_spacing));
+                            R.dimen.editor_dialog_section_small_spacing));
         }
 
         return convertView;

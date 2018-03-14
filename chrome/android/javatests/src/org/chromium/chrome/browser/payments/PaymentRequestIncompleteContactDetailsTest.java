@@ -70,7 +70,7 @@ public class PaymentRequestIncompleteContactDetailsTest implements MainActivityS
         mPaymentRequestTestRule.setTextInEditorAndWait(new String[] {"", "---", "jane.jones"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         // The section collapses and the [CHOOSE] button is active.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyForInput());
@@ -102,7 +102,7 @@ public class PaymentRequestIncompleteContactDetailsTest implements MainActivityS
         mPaymentRequestTestRule.setTextInEditorAndWait(new String[] {"", "---", "jane.jones"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         // The section collapses and the [CHOOSE] button is active.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyForInput());
@@ -129,7 +129,7 @@ public class PaymentRequestIncompleteContactDetailsTest implements MainActivityS
                 new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(

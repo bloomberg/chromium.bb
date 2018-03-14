@@ -9,9 +9,9 @@ import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.payments.ui.EditorDialog;
-import org.chromium.chrome.browser.payments.ui.EditorObserverForTest;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;

@@ -143,7 +143,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
         // still being ready to pay with the previously selected credit card.
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -160,7 +160,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
@@ -176,7 +176,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -200,7 +200,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
                 R.id.payments_edit_checkbox, false, mPaymentRequestTestRule.getReadyToEdit());
 
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -252,10 +252,10 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
                         "94043", "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToEdit());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(

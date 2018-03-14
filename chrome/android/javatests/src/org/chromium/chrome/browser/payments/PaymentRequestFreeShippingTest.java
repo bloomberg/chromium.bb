@@ -89,7 +89,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -113,7 +113,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
                         "94043", "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -142,7 +142,7 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
                         "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "020-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(

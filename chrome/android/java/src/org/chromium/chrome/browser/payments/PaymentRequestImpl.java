@@ -24,11 +24,9 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
-import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
-import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection
         .FocusChangedObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
@@ -46,6 +44,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.widget.prefeditor.Completable;
+import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentValidator;
@@ -1002,7 +1002,7 @@ public class PaymentRequestImpl
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
         }
 
-        List<PaymentOption> result = new ArrayList<>();
+        List<EditableOption> result = new ArrayList<>();
         int selectedItemIndex = SectionInformation.NO_SELECTION;
         for (int i = 0; i < options.length; i++) {
             PaymentShippingOption option = options[i];
@@ -1010,7 +1010,7 @@ public class PaymentRequestImpl
             String currencyPrefix = isMixedOrChangedCurrency()
                     ? formatter.getFormattedCurrencyCode() + "\u0020"
                     : "";
-            result.add(new PaymentOption(option.id, option.label,
+            result.add(new EditableOption(option.id, option.label,
                     currencyPrefix + formatter.format(option.amount.value), null));
             if (option.selected) selectedItemIndex = i;
         }
@@ -1127,7 +1127,7 @@ public class PaymentRequestImpl
     @Override
     @PaymentRequestUI.SelectionResult
     public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
-            PaymentOption option, Callback<PaymentInformation> callback) {
+            EditableOption option, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             // Log the change of shipping address.
             mJourneyLogger.incrementSelectionChanges(Section.SHIPPING_ADDRESS);
@@ -1178,7 +1178,7 @@ public class PaymentRequestImpl
 
     @Override
     @PaymentRequestUI.SelectionResult
-    public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, PaymentOption option,
+    public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, EditableOption option,
             Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             editAddress((AutofillAddress) option);
@@ -1351,12 +1351,12 @@ public class PaymentRequestImpl
     }
 
     @Override
-    public boolean onPayClicked(PaymentOption selectedShippingAddress,
-            PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
+    public boolean onPayClicked(EditableOption selectedShippingAddress,
+            EditableOption selectedShippingOption, EditableOption selectedPaymentMethod) {
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
 
-        PaymentOption selectedContact =
+        EditableOption selectedContact =
                 mContactSection != null ? mContactSection.getSelectedItem() : null;
         mPaymentResponseHelper = new PaymentResponseHelper(
                 selectedShippingAddress, selectedShippingOption, selectedContact, this);
@@ -1458,7 +1458,7 @@ public class PaymentRequestImpl
          * Update records of the used payment instrument for sorting payment apps and instruments
          * next time.
          */
-        PaymentOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
+        EditableOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
         PaymentPreferencesUtil.increasePaymentInstrumentUseCount(
                 selectedPaymentMethod.getIdentifier());
         PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(
@@ -1788,7 +1788,7 @@ public class PaymentRequestImpl
         if (mClient == null || mPaymentResponseHelper == null) return;
 
         // If the payment method was an Autofill credit card with an identifier, record its use.
-        PaymentOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
+        EditableOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
         if (selectedPaymentMethod instanceof AutofillPaymentInstrument
                 && !selectedPaymentMethod.getIdentifier().isEmpty()) {
             PersonalDataManager.getInstance().recordAndLogCreditCardUse(
@@ -1904,7 +1904,7 @@ public class PaymentRequestImpl
 
         if (mPaymentMethodsSection != null) {
             for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
-                PaymentOption option = mPaymentMethodsSection.getItem(i);
+                EditableOption option = mPaymentMethodsSection.getItem(i);
                 ((PaymentInstrument) option).dismissInstrument();
             }
             mPaymentMethodsSection = null;
