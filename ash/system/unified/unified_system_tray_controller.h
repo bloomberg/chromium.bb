@@ -44,6 +44,8 @@ class ASH_EXPORT UnifiedSystemTrayController {
   void ShowNetworkDetailedView();
   // Show the detailed view of bluetooth. Called from the view.
   void ShowBluetoothDetailedView();
+  // Show the detailed view of accessibility. Called from the view.
+  void ShowAccessibilityDetailedView();
 
  private:
   // Initialize feature pod controllers and their views.

@@ -124,6 +124,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   TrayNetwork* GetTrayNetwork() const;
   // Returns TrayBluetooth object if present or null otherwise.
   TrayBluetooth* GetTrayBluetooth() const;
+  // Returns TrayAccessibility object if present or null otherwise.
+  TrayAccessibility* GetTrayAccessibility() const;
 
   // Determines if it's ok to switch away from the currently active user. Screen
   // casting may block this (or at least throw up a confirmation dialog). Calls
