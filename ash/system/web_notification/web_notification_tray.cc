@@ -444,9 +444,12 @@ bool WebNotificationTray::IsMessageCenterVisible() const {
 
 void WebNotificationTray::UpdateAfterShelfAlignmentChange() {
   TrayBackgroundView::UpdateAfterShelfAlignmentChange();
-  // Destroy any existing bubble so that it will be rebuilt correctly.
+  // Destroy existing message center bubble so that it won't be reused.
   message_center_ui_controller_->HideMessageCenterBubble();
+
+  // Destroy any existing popup bubbles and rebuilt if necessary.
   message_center_ui_controller_->HidePopupBubble();
+  message_center_ui_controller_->ShowPopupBubble();
 }
 
 void WebNotificationTray::AnchorUpdated() {
