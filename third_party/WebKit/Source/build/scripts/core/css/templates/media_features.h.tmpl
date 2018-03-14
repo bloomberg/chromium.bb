@@ -3,8 +3,8 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef MediaFeatures_h
-#define MediaFeatures_h
+#ifndef BLINK_CORE_CSS_MEDIA_FEATURES_H_
+#define BLINK_CORE_CSS_MEDIA_FEATURES_H_
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
     {% for entry in entries %}
@@ -14,4 +14,4 @@
     {% endif %}
     {% endfor %}
 
-#endif
+#endif  // BLINK_CORE_CSS_MEDIA_FEATURES_H_

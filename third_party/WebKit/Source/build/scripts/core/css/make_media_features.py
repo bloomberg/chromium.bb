@@ -29,14 +29,14 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
         super(MakeMediaFeaturesWriter, self).__init__(json5_file_path)
 
         self._outputs = {
-            ('MediaFeatures.h'): self.generate_header,
+            ('media_features.h'): self.generate_header,
         }
         self._template_context = {
             'entries': self.json5_file.name_dictionaries,
             'input_files': self._input_files,
         }
 
-    @template_expander.use_jinja('core/css/templates/MediaFeatures.h.tmpl', filters=filters)
+    @template_expander.use_jinja('core/css/templates/media_features.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
