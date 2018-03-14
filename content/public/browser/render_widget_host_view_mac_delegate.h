@@ -27,22 +27,6 @@ struct DidOverscrollParams;
 
 @class NSEvent;
 @protocol RenderWidgetHostViewMacDelegate
-@optional
-// Notification that the view is gone.
-- (void)viewGone:(NSView*)view;
-
-// Handle an event. All incoming key and mouse events flow through this delegate
-// method if implemented. Return YES if the event is fully handled, or NO if
-// normal processing should take place.
-- (BOOL)handleEvent:(NSEvent*)event;
-
-// Provides validation of user interface items. If the return value is NO, then
-// the delegate is unaware of that item and |valid| is undefined.  Otherwise,
-// |valid| contains the validity of the specified item.
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
-                      isValidItem:(BOOL*)valid;
-
-@required
 // Notification of when a gesture begins/ends.
 - (void)beginGestureWithEvent:(NSEvent*)event;
 - (void)endGestureWithEvent:(NSEvent*)event;
@@ -62,6 +46,26 @@ struct DidOverscrollParams;
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed;
 - (void)rendererHandledOverscrollEvent:(const ui::DidOverscrollParams&)params;
+
+@optional
+// Notification that the view is gone.
+- (void)viewGone:(NSView*)view;
+
+// Handle an event. All incoming key and mouse events flow through this delegate
+// method if implemented. Return YES if the event is fully handled, or NO if
+// normal processing should take place.
+- (BOOL)handleEvent:(NSEvent*)event;
+
+// Provides validation of user interface items. If the return value is NO, then
+// the delegate is unaware of that item and |valid| is undefined.  Otherwise,
+// |valid| contains the validity of the specified item.
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
+                      isValidItem:(BOOL*)valid;
+
+- (void)becomeFirstResponder;
+- (void)resignFirstResponder;
+
+- (void)windowDidBecomeKey;
 @end
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

@@ -166,7 +166,7 @@ void SingleWebContentsDialogManagerViewsMac::Close() {
 }
 
 void SingleWebContentsDialogManagerViewsMac::Focus() {
-  // Handled by ConstrainedWindowSheetController.
+  [sheet_ makeSheetKeyAndOrderFront];
 }
 void SingleWebContentsDialogManagerViewsMac::Pulse() {
   // Handled by ConstrainedWindowSheetController.

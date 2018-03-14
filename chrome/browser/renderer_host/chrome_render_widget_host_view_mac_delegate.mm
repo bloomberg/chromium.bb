@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/auto_reset.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -32,7 +34,9 @@ using content::RenderViewHost;
 @interface ChromeRenderWidgetHostViewMacDelegate () <HistorySwiperDelegate>
 @end
 
-@implementation ChromeRenderWidgetHostViewMacDelegate
+@implementation ChromeRenderWidgetHostViewMacDelegate {
+  BOOL resigningFirstResponder_;
+}
 
 - (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost {
   self = [super init];
@@ -234,5 +238,67 @@ using content::RenderViewHost;
 }
 
 // END Spellchecking methods
+
+// If a dialog is visible, make its window key. See becomeFirstResponder.
+- (void)makeAnyDialogKey {
+  if (const auto* contents = content::WebContents::FromRenderViewHost(
+          RenderViewHost::From(renderWidgetHost_))) {
+    if (const auto* manager =
+            web_modal::WebContentsModalDialogManager::FromWebContents(
+                contents)) {
+      // IsDialogActive() returns true if a dialog exists.
+      if (manager->IsDialogActive()) {
+        manager->FocusTopmostDialog();
+      }
+    }
+  }
+}
+
+// If the RenderWidgetHostView becomes first responder while it has a dialog
+// (say, if the user was interacting with the omnibox and then tabs back into
+// the web contents), then make the dialog window key.
+- (void)becomeFirstResponder {
+  [self makeAnyDialogKey];
+}
+
+// If the RenderWidgetHostView is asked to resign first responder while a child
+// window is key, then the user performed some action which targets the browser
+// window, like clicking the omnibox or typing cmd+L. In that case, the browser
+// window should become key.
+- (void)resignFirstResponder {
+  NSWindow* browserWindow =
+      renderWidgetHost_->GetView()->GetNativeView().window;
+  DCHECK(browserWindow);
+
+  // If the browser window is already key, there's nothing to do.
+  if (browserWindow.isKeyWindow)
+    return;
+
+  // Otherwise, look for it in the key window's chain of parents.
+  NSWindow* keyWindowOrParent = NSApp.keyWindow;
+  while (keyWindowOrParent && keyWindowOrParent != browserWindow)
+    keyWindowOrParent = keyWindowOrParent.parentWindow;
+
+  // If the browser window isn't among the parents, there's nothing to do.
+  if (keyWindowOrParent != browserWindow)
+    return;
+
+  // Otherwise, temporarily set an ivar so that -windowDidBecomeKey, below,
+  // doesn't immediately make the dialog key.
+  base::AutoReset<BOOL> scoped(&resigningFirstResponder_, YES);
+
+  // …then make the browser window key.
+  [browserWindow makeKeyWindow];
+}
+
+// If the browser window becomes key while the RenderWidgetHostView is first
+// responder, make the dialog key (if there is one).
+- (void)windowDidBecomeKey {
+  if (resigningFirstResponder_)
+    return;
+  NSView* view = renderWidgetHost_->GetView()->GetNativeView();
+  if (view.window.firstResponder == view)
+    [self makeAnyDialogKey];
+}
 
 @end
