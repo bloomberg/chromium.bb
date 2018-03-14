@@ -29,6 +29,8 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -76,6 +78,7 @@ void HungPagesTableModel::InitForWebContents(
     WebContents* contents,
     content::RenderWidgetHost* render_widget_host) {
   process_observer_.RemoveAll();
+  notification_registrar_.RemoveAll();
   render_widget_host_ = render_widget_host;
   tab_observers_.clear();
 
@@ -87,8 +90,12 @@ void HungPagesTableModel::InitForWebContents(
     }
   }
 
-  if (render_widget_host_)
+  if (render_widget_host_) {
     process_observer_.Add(render_widget_host_->GetProcess());
+    notification_registrar_.Add(
+        this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+        content::Source<content::RenderWidgetHost>(render_widget_host_));
+  }
 
   // The world is different.
   if (observer_)
@@ -126,6 +133,18 @@ void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 void HungPagesTableModel::RenderProcessExited(content::RenderProcessHost* host,
                                               base::TerminationStatus status,
                                               int exit_code) {
+  // Notify the delegate.
+  delegate_->TabDestroyed();
+  // WARNING: we've likely been deleted.
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// HungPagesTableModel, NotificationObserver implementation:
+
+void HungPagesTableModel::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, type);
   // Notify the delegate.
   delegate_->TabDestroyed();
   // WARNING: we've likely been deleted.

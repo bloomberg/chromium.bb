@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/models/table_model.h"
@@ -25,7 +27,8 @@ class Label;
 
 // Provides functionality to display information about a hung renderer.
 class HungPagesTableModel : public ui::TableModel,
-                            public content::RenderProcessHostObserver {
+                            public content::RenderProcessHostObserver,
+                            public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -59,6 +62,11 @@ class HungPagesTableModel : public ui::TableModel,
   void RenderProcessExited(content::RenderProcessHost* host,
                            base::TerminationStatus status,
                            int exit_code) override;
+
+  // Overridden from NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   friend class HungRendererDialogViewBrowserTest;
@@ -102,6 +110,8 @@ class HungPagesTableModel : public ui::TableModel,
 
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
       process_observer_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HungPagesTableModel);
 };
