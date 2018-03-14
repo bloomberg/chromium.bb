@@ -316,7 +316,7 @@ public class NewTabPageTest {
      * Tests opening a most visited item in a new tab.
      */
     @Test
-    @DisabledTest(message = "Flaked on the try bot. http://crbug.com/543138")
+    @DisabledTest // Flaked on the try bot. http://crbug.com/543138
     @SmallTest
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInNewTab() throws InterruptedException {
@@ -328,8 +328,6 @@ public class NewTabPageTest {
      * Tests opening a most visited item in a new incognito tab.
      */
     @Test
-    @DisabledTest(
-            message = "Suspected to be causing #testRender to flake. https://crbug.com/813589.")
     @SmallTest
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInIncognitoTab() throws InterruptedException {
