@@ -11,16 +11,43 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
+using testing::ElementsAreArray;
+using testing::InSequence;
+using testing::MatcherCast;
+using testing::Pointee;
+using testing::SetArrayArgument;
 using testing::SetArgPointee;
 using testing::Test;
 using testing::_;
+
+namespace {
+
+class MockGLES2InterfaceWithSyncTokenSupport : public FakeGLES2Interface {
+ public:
+  MOCK_METHOD1(GenUnverifiedSyncTokenCHROMIUM, void(GLbyte*));
+  MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte*));
+};
+
+gpu::SyncToken GenTestSyncToken(GLbyte id) {
+  gpu::SyncToken token;
+  // Store id in the first byte
+  reinterpret_cast<GLbyte*>(&token)[0] = id;
+  return token;
+}
+
+GLbyte SyncTokenMatcher(const gpu::SyncToken& token) {
+  return reinterpret_cast<const GLbyte*>(&token)[0];
+}
+
+}  // unnamed namespace
 
 namespace blink {
 
 class AcceleratedStaticBitmapImageTest : public Test {
  public:
   void SetUp() override {
-    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
+    auto factory = [](MockGLES2InterfaceWithSyncTokenSupport* gl,
+                      bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
       return std::make_unique<FakeWebGraphicsContext3DProvider>(gl, nullptr);
@@ -31,7 +58,7 @@ class AcceleratedStaticBitmapImageTest : public Test {
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 
  protected:
-  FakeGLES2Interface gl_;
+  MockGLES2InterfaceWithSyncTokenSupport gl_;
 };
 
 TEST_F(AcceleratedStaticBitmapImageTest, NoTextureHolderThrashing) {
@@ -42,6 +69,9 @@ TEST_F(AcceleratedStaticBitmapImageTest, NoTextureHolderThrashing) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, imageInfo);
+
+  SkPaint paint;
+  surface->getCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
 
   sk_sp<SkImage> image = surface->makeImageSnapshot();
   scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
@@ -62,6 +92,66 @@ TEST_F(AcceleratedStaticBitmapImageTest, NoTextureHolderThrashing) {
 
   EXPECT_EQ(stored_image.get(), image.get());
   EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsMailboxTextureHolder());
+}
+
+TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  GrContext* gr = context_provider_wrapper->ContextProvider()->GetGrContext();
+  SkImageInfo imageInfo = SkImageInfo::MakeN32Premul(100, 100);
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, imageInfo);
+
+  sk_sp<SkImage> image = surface->makeImageSnapshot();
+  scoped_refptr<AcceleratedStaticBitmapImage> bitmap =
+      AcceleratedStaticBitmapImage::CreateFromSkImage(image,
+                                                      context_provider_wrapper);
+  EXPECT_TRUE(bitmap->TextureHolderForTesting()->IsSkiaTextureHolder());
+
+  MockGLES2InterfaceWithSyncTokenSupport destination_gl;
+
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  ::testing::Mock::VerifyAndClearExpectations(&destination_gl);
+
+  InSequence s;  // Indicate to gmock that order of EXPECT_CALLs is important
+
+  // Anterior synchronization
+  const gpu::SyncToken sync_token1 = GenTestSyncToken(1);
+  EXPECT_CALL(gl_, GenUnverifiedSyncTokenCHROMIUM(_))
+      .WillOnce(SetArrayArgument<0>(
+          sync_token1.GetConstData(),
+          sync_token1.GetConstData() + sizeof(gpu::SyncToken)));
+  EXPECT_CALL(destination_gl,
+              WaitSyncTokenCHROMIUM(Pointee(SyncTokenMatcher(sync_token1))));
+
+  // Posterior synchronization
+  const gpu::SyncToken sync_token2 = GenTestSyncToken(2);
+  EXPECT_CALL(destination_gl, GenUnverifiedSyncTokenCHROMIUM(_))
+      .WillOnce(SetArrayArgument<0>(
+          sync_token2.GetConstData(),
+          sync_token2.GetConstData() + sizeof(gpu::SyncToken)));
+
+  IntPoint dest_point(0, 0);
+  IntRect source_sub_rectangle(0, 0, 10, 10);
+  bitmap->CopyToTexture(&destination_gl, GL_TEXTURE_2D, 1 /*dest_texture_id*/,
+                        false /*unpack_premultiply_alpha*/,
+                        false /*unpack_flip_y*/, dest_point,
+                        source_sub_rectangle);
+
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+  ::testing::Mock::VerifyAndClearExpectations(&destination_gl);
+
+  // Note the following expectation is commented-out because the
+  // MailboxTextureHolder destructor skips it when the texture ID is 0.
+  // The ID is zero because skia detected that it is being used with a fake
+  // context, so this problem can't be solved by just mocking GenTextures to
+  // make it produce non-zero IDs.
+  // TODO(junov): fix this!
+
+  // Final wait is postponed until destruction.
+  // EXPECT_CALL(gl_,
+  // WaitSyncTokenCHROMIUM(Pointee(SyncTokenMatcher(sync_token2)))); bitmap =
+  // nullptr;
 }
 
 }  // namespace blink

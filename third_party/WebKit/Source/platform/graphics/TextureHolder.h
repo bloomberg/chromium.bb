@@ -41,6 +41,7 @@ class PLATFORM_EXPORT TextureHolder {
   }
   virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
   virtual void Sync(MailboxSyncMode) { NOTREACHED(); }
+  virtual bool IsCrossThread() const { return false; }
 
   // Methods overridden by SkiaTextureHolder
   virtual sk_sp<SkImage> GetSkImage() {

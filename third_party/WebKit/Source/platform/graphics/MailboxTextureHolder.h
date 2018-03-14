@@ -24,6 +24,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   IntSize Size() const final { return size_; }
   bool CurrentFrameKnownToBeOpaque() final { return false; }
   bool IsValid() const final;
+  bool IsCrossThread() const final;
 
   const gpu::Mailbox& GetMailbox() const final { return mailbox_; }
   const gpu::SyncToken& GetSyncToken() const final { return sync_token_; }
