@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -93,12 +95,14 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
     scoped_refptr<media::AudioRendererSink> sink = create_sink_cb_.Run(
         source_render_frame_id, session_id, device_id, security_origin);
 
-    CacheUnusedSinkIfHealthy(source_render_frame_id,
-                             sink->GetOutputDeviceInfo().device_id(),
-                             security_origin, sink);
+    CacheOrStopUnusedSink(source_render_frame_id,
+                          sink->GetOutputDeviceInfo().device_id(),
+                          security_origin, sink);
+
     UMA_HISTOGRAM_ENUMERATION(
         "Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization",
         SINK_CACHE_MISS_CANNOT_LOOKUP_BY_SESSION_ID, SINK_CACHE_LAST_ENTRY);
+
     return sink->GetOutputDeviceInfo();
   }
   // Ignore session id.
@@ -119,13 +123,15 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
   // No matching sink found, create a new one.
   scoped_refptr<media::AudioRendererSink> sink = create_sink_cb_.Run(
       source_render_frame_id, 0 /* session_id */, device_id, security_origin);
-  CacheUnusedSinkIfHealthy(source_render_frame_id, device_id, security_origin,
-                           sink);
+
+  CacheOrStopUnusedSink(source_render_frame_id, device_id, security_origin,
+                        sink);
+
   UMA_HISTOGRAM_ENUMERATION(
       "Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization",
       SINK_CACHE_MISS_NO_SINK, SINK_CACHE_LAST_ENTRY);
 
-  //|sink| is ref-counted, so it's ok if it is removed from cache before we get
+  // |sink| is ref-counted, so it's ok if it is removed from cache before we get
   // here.
   return sink->GetOutputDeviceInfo();
 }
@@ -249,18 +255,21 @@ AudioRendererSinkCacheImpl::FindCacheEntry_Locked(
         return val.device_id == device_id &&
                val.security_origin == security_origin;
       });
-};
+}
 
-void AudioRendererSinkCacheImpl::CacheUnusedSinkIfHealthy(
+void AudioRendererSinkCacheImpl::CacheOrStopUnusedSink(
     int source_render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin,
     scoped_refptr<media::AudioRendererSink> sink) {
-  if (!SinkIsHealthy(sink.get()))
+  if (!SinkIsHealthy(sink.get())) {
+    // Since |sink| is not cached, we must make sure to Stop it now.
+    sink->Stop();
     return;
+  }
 
   CacheEntry cache_entry = {source_render_frame_id, device_id, security_origin,
-                            sink, false /* not used */};
+                            std::move(sink), false /* not used */};
 
   {
     base::AutoLock auto_lock(cache_lock_);

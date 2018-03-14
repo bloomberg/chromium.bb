@@ -7,6 +7,7 @@
 
 #include "content/renderer/media/audio_renderer_sink_cache.h"
 
+#include <string>
 #include <vector>
 
 #include "base/single_thread_task_runner.h"
@@ -22,7 +23,7 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
  public:
   // Callback to be used for AudioRendererSink creation
   using CreateSinkCallback =
-      base::Callback<scoped_refptr<media::AudioRendererSink>(
+      base::RepeatingCallback<scoped_refptr<media::AudioRendererSink>(
           int render_frame_id,
           int session_id,
           const std::string& device_id,
@@ -70,10 +71,10 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
       const url::Origin& security_origin,
       bool unused_only);
 
-  void CacheUnusedSinkIfHealthy(int source_render_frame_id,
-                                const std::string& device_id,
-                                const url::Origin& security_origin,
-                                scoped_refptr<media::AudioRendererSink> sink);
+  void CacheOrStopUnusedSink(int source_render_frame_id,
+                             const std::string& device_id,
+                             const url::Origin& security_origin,
+                             scoped_refptr<media::AudioRendererSink> sink);
 
   // To avoid publishing CacheEntry structure in the header.
   int GetCacheSizeForTesting();
