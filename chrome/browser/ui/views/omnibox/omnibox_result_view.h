@@ -149,7 +149,7 @@ class OmniboxResultView : public views::View,
   views::ImageView* icon_view_;          // Small icon. e.g. favicon.
   views::ImageView* image_view_;         // Larger image for rich suggestions.
   views::ImageView* keyword_icon_view_;  // An icon resembling a '>'.
-  OmniboxTabSwitchButton* tab_switch_button_;
+  std::unique_ptr<OmniboxTabSwitchButton> tab_switch_button_;
   OmniboxTextView* content_view_;
   OmniboxTextView* description_view_;
   OmniboxTextView* keyword_content_view_;
