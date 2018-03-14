@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 
 struct ModuleInfoKey;
@@ -49,6 +50,9 @@ class ModuleListFilter {
       const ModuleInfoData& module_data) const;
 
  private:
+  // The certificate info of the current executable.
+  CertificateInfo exe_certificate_info_;
+
   chrome::conflicts::ModuleList module_list_;
 
   // Indicates if Initalize() has been succesfully called.
