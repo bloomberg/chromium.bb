@@ -150,83 +150,8 @@ void ScaleForFrameNumber(unsigned int frame, unsigned int initial_w,
     *h = initial_h;
     return;
   }
+  // Go down very low
   if (frame < 120) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 130) {
-    *w = initial_w / 2;
-    *h = initial_h / 2;
-    return;
-  }
-  if (frame < 140) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 150) {
-    *w = initial_w;
-    *h = initial_h;
-    return;
-  }
-  if (frame < 160) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 170) {
-    *w = initial_w / 2;
-    *h = initial_h / 2;
-    return;
-  }
-  if (frame < 180) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 190) {
-    *w = initial_w;
-    *h = initial_h;
-    return;
-  }
-  if (frame < 200) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 210) {
-    *w = initial_w / 2;
-    *h = initial_h / 2;
-    return;
-  }
-  if (frame < 220) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 230) {
-    *w = initial_w;
-    *h = initial_h;
-    return;
-  }
-  if (frame < 240) {
-    *w = initial_w * 3 / 4;
-    *h = initial_h * 3 / 4;
-    return;
-  }
-  if (frame < 250) {
-    *w = initial_w / 2;
-    *h = initial_h / 2;
-    return;
-  }
-  if (frame < 260) {
-    *w = initial_w;
-    *h = initial_h;
-    return;
-  }
-  // Go down very low.
-  if (frame < 270) {
     *w = initial_w / 4;
     *h = initial_h / 4;
     return;
@@ -234,7 +159,7 @@ void ScaleForFrameNumber(unsigned int frame, unsigned int initial_w,
   if (flag_codec == 1) {
     // Cases that only works for AV1.
     // For AV1: Swap width and height of original.
-    if (frame < 320) {
+    if (frame < 140) {
       *w = initial_h;
       *h = initial_w;
       return;
@@ -248,7 +173,7 @@ class ResizingVideoSource : public ::libaom_test::DummyVideoSource {
  public:
   ResizingVideoSource() {
     SetSize(kInitialWidth, kInitialHeight);
-    limit_ = 350;
+    limit_ = 150;
   }
   int flag_codec_;
   virtual ~ResizingVideoSource() {}
