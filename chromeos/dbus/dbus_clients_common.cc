@@ -25,6 +25,7 @@
 #include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/fake_upstart_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/hammerd_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
@@ -41,6 +42,7 @@
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/upstart_client.h"
 
 namespace chromeos {
 
@@ -120,6 +122,11 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
     system_clock_client_.reset(new FakeSystemClockClient);
 
   update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
+
+  if (use_real_clients)
+    upstart_client_.reset(UpstartClient::Create());
+  else
+    upstart_client_.reset(new FakeUpstartClient);
 }
 
 DBusClientsCommon::~DBusClientsCommon() = default;
@@ -145,6 +152,7 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   sms_client_->Init(system_bus);
   system_clock_client_->Init(system_bus);
   update_engine_client_->Init(system_bus);
+  upstart_client_->Init(system_bus);
 
   ShillManagerClient::TestInterface* manager =
       shill_manager_client_->GetTestInterface();
