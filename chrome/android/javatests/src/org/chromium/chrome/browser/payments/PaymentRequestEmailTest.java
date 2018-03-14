@@ -94,7 +94,7 @@ public class PaymentRequestEmailTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"jane.jones"}, mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getEditorValidationError());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
@@ -116,7 +116,7 @@ public class PaymentRequestEmailTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.setTextInEditorAndWait(new String[] {"jane.jones@google.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());

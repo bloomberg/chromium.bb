@@ -162,7 +162,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 new String[] {"In Complete", "Google", "344 Main St", "CA", "Los Angeles"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -211,7 +211,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                         "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "020-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Complete the transaction.
         mPaymentRequestTestRule.clickAndWait(
@@ -367,7 +367,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 new String[] {"4111111111111111", "Jon Doe"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Complete the transaction.
         mPaymentRequestTestRule.clickAndWait(
@@ -487,7 +487,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 new String[] {"In Complete", "514-123-1234", "test@email.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -534,7 +534,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 new String[] {"Alice", "020-253-0000", "test@email.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Complete the transaction.
         mPaymentRequestTestRule.clickAndWait(

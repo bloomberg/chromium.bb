@@ -448,7 +448,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Close the payment Request.
         mPaymentRequestTestRule.clickAndWait(

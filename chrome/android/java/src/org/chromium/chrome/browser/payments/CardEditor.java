@@ -22,11 +22,12 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
-import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
-import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
-import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorValueIconGenerator;
-import org.chromium.chrome.browser.payments.ui.EditorModel;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
+import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
+import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
+import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
+import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorValueIconGenerator;
+import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -481,7 +482,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                     mContext.getString(R.string.autofill_credit_card_editor_number),
                     null /* suggestions */, null /* formatter */, mCardNumberValidator,
                     mCardIconGenerator,
-                    mContext.getString(R.string.payments_field_required_validation_message),
+                    mContext.getString(R.string.pref_edit_dialog_field_required_validation_message),
                     mContext.getString(R.string.payments_card_number_invalid_validation_message),
                     null /* value */);
             if (mCanScan) {
@@ -498,13 +499,13 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // Name on card is required.
         if (mNameField == null) {
-            mNameField =
-                    EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
-                            mContext.getString(R.string.autofill_credit_card_editor_name),
-                            null /* suggestions */, null /* formatter */, null /* validator */,
-                            null /* valueIconGenerator */,
-                            mContext.getString(R.string.payments_field_required_validation_message),
-                            null /* invalidErrorMessage */, null /* value */);
+            mNameField = EditorFieldModel.createTextInput(
+                    EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
+                    mContext.getString(R.string.autofill_credit_card_editor_name),
+                    null /* suggestions */, null /* formatter */, null /* validator */,
+                    null /* valueIconGenerator */,
+                    mContext.getString(R.string.pref_edit_dialog_field_required_validation_message),
+                    null /* invalidErrorMessage */, null /* value */);
         }
         mNameField.setValue(card.getName());
         editor.addField(mNameField);
@@ -682,7 +683,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // The billing address is required.
         mBillingAddressField.setRequiredErrorMessage(
-                mContext.getString(R.string.payments_field_required_validation_message));
+                mContext.getString(R.string.pref_edit_dialog_field_required_validation_message));
 
         mBillingAddressField.setDropdownCallback(new Callback<Pair<String, Runnable>>() {
             @Override

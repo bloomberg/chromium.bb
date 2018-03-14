@@ -58,13 +58,15 @@
     <item type="id" name="show_menu" />
     <item type="id" name="open_recently_closed_tab" />
 
+    <!-- Editor dialog -->
+    <item type="id" name="editor_dialog_done_button" />
+
     <!-- PaymentRequest -->
     <item type="id" name="payments_section" />
     <item type="id" name="payments_left_summary_label" />
     <item type="id" name="payments_first_radio_button" />
     <item type="id" name="payments_add_option_button" />
     <item type="id" name="payments_edit_cancel_button" />
-    <item type="id" name="payments_edit_done_button" />
     <item type="id" name="payments_edit_checkbox" />
 
     <!-- Password update prompt -->

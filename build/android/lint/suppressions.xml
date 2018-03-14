@@ -379,7 +379,7 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkItemsAdapter.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/instantapps/InstantAppsHandler.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java"/>
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/payments/ui/EditorDialog.java"/>
+    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/widget/prefeditor/EditorDialog.java"/>
     <ignore regexp="third_party/android_data_chart/java/src/org/chromium/third_party/android/datausagechart/ChartDataUsageView.java"/>
   </issue>
 </lint>

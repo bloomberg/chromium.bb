@@ -75,7 +75,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
                 mPaymentRequestTestRule.getEditorTextUpdate());
         // The contact is now complete, but not selected.
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyForInput());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyForInput());
         // We select it.
         mPaymentRequestTestRule.clickInContactInfoAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
@@ -112,7 +112,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
                         "650-253-0000"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyForInput());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals("Jon Doe\njon.doe@google.com\nPhone number required",
                 mPaymentRequestTestRule.getContactDetailsSuggestionLabel(0));
         Assert.assertEquals("Jane Doe\n+1 650-253-0000\nEmail required",
@@ -127,7 +127,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
                 new String[] {"Jon Doe", "650-253-0000", "jon.doe@google.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());

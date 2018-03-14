@@ -344,7 +344,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
   }
   if (error_message && field_.required) {
     *error_message = l10n_util::GetStringUTF16(
-        IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
+        IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
   return !field_.required;
 }

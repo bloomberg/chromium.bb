@@ -7,8 +7,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/payments_section_small_spacing"
-    android:layout_marginBottom="@dimen/payments_section_small_spacing">
+    android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
+    android:layout_marginBottom="@dimen/editor_dialog_section_small_spacing">
 
     <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/text_input_layout"

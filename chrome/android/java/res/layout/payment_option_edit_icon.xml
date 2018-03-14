@@ -14,8 +14,8 @@
             android:layout_width="1dp"
             android:layout_height="48dp"
             android:layout_gravity="center_vertical"
-            android:layout_marginStart="@dimen/payments_section_large_spacing"
-            android:layout_marginEnd="@dimen/payments_section_large_spacing"
+            android:layout_marginStart="@dimen/editor_dialog_section_large_spacing"
+            android:layout_marginEnd="@dimen/editor_dialog_section_large_spacing"
             android:background="@color/payments_section_separator"
             android:importantForAccessibility="no"/>
 

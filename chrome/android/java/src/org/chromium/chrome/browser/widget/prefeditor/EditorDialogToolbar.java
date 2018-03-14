@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.support.v7.widget.Toolbar;
@@ -14,13 +14,12 @@ import org.chromium.chrome.R;
 
 /** Simple class for displaying a toolbar in the editor dialog. */
 public class EditorDialogToolbar extends Toolbar {
-
     private boolean mShowDeleteMenuItem = true;
 
     /** Constructor for when the toolbar is inflated from XML. */
     public EditorDialogToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        inflateMenu(R.menu.payments_editor_menu);
+        inflateMenu(R.menu.prefeditor_editor_menu);
         updateMenu();
     }
 

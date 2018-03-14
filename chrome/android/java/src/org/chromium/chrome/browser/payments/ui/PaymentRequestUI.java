@@ -52,6 +52,9 @@ import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
+import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
+import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -142,7 +145,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * @return The result of the selection.
          */
         @SelectionResult
-        int onSectionOptionSelected(@DataType int optionType, PaymentOption option,
+        int onSectionOptionSelected(@DataType int optionType, EditableOption option,
                 Callback<PaymentInformation> checkedCallback);
 
         /**
@@ -164,7 +167,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * @return The result of the edit request.
          */
         @SelectionResult
-        int onSectionEditOption(@DataType int optionType, PaymentOption option,
+        int onSectionEditOption(@DataType int optionType, EditableOption option,
                 Callback<PaymentInformation> checkedCallback);
 
         /**
@@ -191,8 +194,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * Called when the user clicks on the “Pay” button. If this method returns true, the UI is
          * disabled and is showing a spinner. Otherwise, the UI is hidden.
          */
-        boolean onPayClicked(PaymentOption selectedShippingAddress,
-                PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod);
+        boolean onPayClicked(EditableOption selectedShippingAddress,
+                EditableOption selectedShippingOption, EditableOption selectedPaymentMethod);
 
         /**
          * Called when the user dismisses the UI via the “back” button on their phone
@@ -699,7 +702,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @Override
-    public void onPaymentOptionChanged(final PaymentRequestSection section, PaymentOption option) {
+    public void onEditableOptionChanged(
+            final PaymentRequestSection section, EditableOption option) {
         @SelectionResult int result = SELECTION_RESULT_NONE;
         if (section == mShippingAddressSection
                 && mShippingAddressSectionInformation.getSelectedItem() != option) {
@@ -723,7 +727,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @Override
-    public void onEditPaymentOption(final PaymentRequestSection section, PaymentOption option) {
+    public void onEditEditableOption(final PaymentRequestSection section, EditableOption option) {
         @SelectionResult int result = SELECTION_RESULT_NONE;
 
         assert section != mOrderSummarySection;
@@ -748,7 +752,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @Override
-    public void onAddPaymentOption(PaymentRequestSection section) {
+    public void onAddEditableOption(PaymentRequestSection section) {
         assert section != mShippingOptionSection;
 
         @SelectionResult int result = SELECTION_RESULT_NONE;
@@ -1059,7 +1063,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Add paddings instead of margin to let getMeasuredHeight return correct value for section
         // resize animation.
         int paddingSize = mContext.getResources().getDimensionPixelSize(
-                R.dimen.payments_section_large_spacing);
+                R.dimen.editor_dialog_section_large_spacing);
         ApiCompatibilityUtils.setPaddingRelative(
                 view, paddingSize, paddingSize, paddingSize, paddingSize);
         parent.addView(view);

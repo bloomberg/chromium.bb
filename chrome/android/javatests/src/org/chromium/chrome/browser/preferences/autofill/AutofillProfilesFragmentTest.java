@@ -80,7 +80,7 @@ public class AutofillProfilesFragmentTest {
                 try {
                     rule.setTextInEditorAndWait(new String[] {"Alice Doe", "Google", "111 Added St",
                             "Los Angeles", "CA", "90291", "650-253-0000", "add@profile.com"});
-                    rule.clickInEditorAndWait(R.id.payments_edit_done_button);
+                    rule.clickInEditorAndWait(R.id.editor_dialog_done_button);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -125,7 +125,7 @@ public class AutofillProfilesFragmentTest {
                         ((AutofillProfileEditorPreference) addProfile).getEditorDialog());
                 try {
                     rule.setTextInEditorAndWait(new String[] {"Mike Doe"});
-                    rule.clickInEditorAndWaitForValidationError(R.id.payments_edit_done_button);
+                    rule.clickInEditorAndWaitForValidationError(R.id.editor_dialog_done_button);
                 } catch (TimeoutException ex) {
                     // There should be no timeout, which means that there should be a validation
                     // error.
@@ -215,7 +215,7 @@ public class AutofillProfilesFragmentTest {
                     rule.setTextInEditorAndWait(
                             new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles",
                                     "CA", "90291", "650-253-0000", "edit@profile.com"});
-                    rule.clickInEditorAndWait(R.id.payments_edit_done_button);
+                    rule.clickInEditorAndWait(R.id.editor_dialog_done_button);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

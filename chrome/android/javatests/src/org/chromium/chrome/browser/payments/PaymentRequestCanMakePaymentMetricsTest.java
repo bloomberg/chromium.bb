@@ -104,7 +104,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 new String[] {"4111111111111111", "Jon Doe"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
         // Complete the transaction.
         mPaymentRequestTestRule.clickAndWait(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -55,8 +55,10 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 /**
- * The PaymentRequest editor dialog. Can be used for editing contact information, shipping address,
+ * The editor dialog. Can be used for editing contact information, shipping address,
  * billing address, and credit cards.
+ *
+ * TODO(https://crbug.com/799905): Move payment specific functionality to separate class.
  */
 public class EditorDialog
         extends AlwaysDismissedDialog implements OnClickListener, DialogInterface.OnShowListener,
@@ -132,7 +134,7 @@ public class EditorDialog
         };
 
         mHalfRowMargin = activity.getResources().getDimensionPixelSize(
-                R.dimen.payments_section_large_spacing);
+                R.dimen.editor_dialog_section_large_spacing);
         mDropdownTopPadding = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_dropdown_top_padding);
         mFieldViews = new ArrayList<>();
@@ -274,7 +276,7 @@ public class EditorDialog
         // Disable interaction during animation.
         if (mDialogInOutAnimator != null) return;
 
-        if (view.getId() == R.id.payments_edit_done_button) {
+        if (view.getId() == R.id.editor_dialog_done_button) {
             if (validateForm()) {
                 if (mEditorModel != null) mEditorModel.done();
                 mEditorModel = null;
@@ -328,7 +330,7 @@ public class EditorDialog
 
     private void prepareButtons() {
         mDoneButton = (Button) mLayout.findViewById(R.id.button_primary);
-        mDoneButton.setId(R.id.payments_edit_done_button);
+        mDoneButton.setId(R.id.editor_dialog_done_button);
         mDoneButton.setOnClickListener(this);
 
         Button cancelButton = (Button) mLayout.findViewById(R.id.button_secondary);
@@ -506,7 +508,7 @@ public class EditorDialog
         setContentView(mLayout);
 
         mFooter = LayoutInflater.from(mContext).inflate(
-                R.layout.payment_request_editor_footer, null, false);
+                R.layout.editable_option_editor_footer, null, false);
 
         prepareToolbar();
         prepareEditor();

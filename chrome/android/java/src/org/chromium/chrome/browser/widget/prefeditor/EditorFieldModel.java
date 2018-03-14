@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -88,13 +88,13 @@ public class EditorFieldModel {
     private static final int INPUT_TYPE_HINT_MAX_TEXT_INPUT_EXCLUSIVE = 8;
 
     /** Indicates a dropdown. */
-    public static final int INPUT_TYPE_HINT_DROPDOWN = 8;
+    public static final int INPUT_TYPE_HINT_DROPDOWN = 9;
 
     /** Indicates a list of icons. */
-    public static final int INPUT_TYPE_HINT_ICONS = 9;
+    public static final int INPUT_TYPE_HINT_ICONS = 10;
 
     /** Indicates a checkbox. */
-    public static final int INPUT_TYPE_HINT_CHECKBOX = 10;
+    public static final int INPUT_TYPE_HINT_CHECKBOX = 11;
 
     /**
      * Indicates a label, e.g., for a server credit card.
@@ -109,35 +109,52 @@ public class EditorFieldModel {
      *  First Last    [VISA]
      *  Exp: 03/2021
      */
-    public static final int INPUT_TYPE_HINT_LABEL = 11;
+    public static final int INPUT_TYPE_HINT_LABEL = 12;
 
-    private static final int INPUT_TYPE_HINT_MAX_EXCLUSIVE = 12;
+    private static final int INPUT_TYPE_HINT_MAX_EXCLUSIVE = 13;
 
     private final int mInputTypeHint;
 
-    @Nullable private List<Integer> mIconResourceIds;
-    @Nullable private List<Integer> mIconDescriptionsForAccessibility;
-    @Nullable private List<DropdownKeyValue> mDropdownKeyValues;
+    @Nullable
+    private List<Integer> mIconResourceIds;
+    @Nullable
+    private List<Integer> mIconDescriptionsForAccessibility;
+    @Nullable
+    private List<DropdownKeyValue> mDropdownKeyValues;
     @Nullable
     private HashMap<String, CharSequence> mDropdownKeyToValueMap;
     @Nullable
     private HashMap<CharSequence, String> mDropdownValueToKeyMap;
-    @Nullable private Set<String> mDropdownKeys;
-    @Nullable private List<CharSequence> mSuggestions;
+    @Nullable
+    private Set<String> mDropdownKeys;
+    @Nullable
+    private List<CharSequence> mSuggestions;
     @Nullable
     private TextWatcher mFormatter;
-    @Nullable private EditorFieldValidator mValidator;
-    @Nullable private EditorValueIconGenerator mValueIconGenerator;
-    @Nullable private CharSequence mRequiredErrorMessage;
-    @Nullable private CharSequence mInvalidErrorMessage;
-    @Nullable private CharSequence mErrorMessage;
-    @Nullable private CharSequence mLabel;
-    @Nullable private CharSequence mMidLabel;
-    @Nullable private CharSequence mBottomLabel;
-    @Nullable private CharSequence mValue;
-    @Nullable private CharSequence mHint;
-    @Nullable private Callback<Pair<String, Runnable>> mDropdownCallback;
-    @Nullable private Runnable mActionIconAction;
+    @Nullable
+    private EditorFieldValidator mValidator;
+    @Nullable
+    private EditorValueIconGenerator mValueIconGenerator;
+    @Nullable
+    private CharSequence mRequiredErrorMessage;
+    @Nullable
+    private CharSequence mInvalidErrorMessage;
+    @Nullable
+    private CharSequence mErrorMessage;
+    @Nullable
+    private CharSequence mLabel;
+    @Nullable
+    private CharSequence mMidLabel;
+    @Nullable
+    private CharSequence mBottomLabel;
+    @Nullable
+    private CharSequence mValue;
+    @Nullable
+    private CharSequence mHint;
+    @Nullable
+    private Callback<Pair<String, Runnable>> mDropdownCallback;
+    @Nullable
+    private Runnable mActionIconAction;
     private int mLabelIconResourceId;
     private int mActionIconResourceId;
     private int mActionIconDescriptionForAccessibility;
@@ -195,8 +212,8 @@ public class EditorFieldModel {
      * @param descIds The list of string identifiers for descriptions of the icons. This is for
      *                accessibility.
      */
-    public static EditorFieldModel createIconList(CharSequence label, List<Integer> iconIds,
-            List<Integer> descIds) {
+    public static EditorFieldModel createIconList(
+            CharSequence label, List<Integer> iconIds, List<Integer> descIds) {
         assert label != null;
         assert iconIds != null;
         assert descIds != null;
@@ -215,9 +232,8 @@ public class EditorFieldModel {
      * @param dropdownKeyValues The keyed values to display in the dropdown.
      * @param hint              The optional hint to be displayed when no value is selected.
      */
-    public static EditorFieldModel createDropdown(
-            @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues,
-            @Nullable CharSequence hint) {
+    public static EditorFieldModel createDropdown(@Nullable CharSequence label,
+            List<DropdownKeyValue> dropdownKeyValues, @Nullable CharSequence hint) {
         assert dropdownKeyValues != null;
         EditorFieldModel result = new EditorFieldModel(INPUT_TYPE_HINT_DROPDOWN);
         result.mLabel = label;
@@ -236,9 +252,9 @@ public class EditorFieldModel {
      * @param requiredErrorMessage The error message that indicates to the user that they
      *                             cannot leave this field empty.
      */
-    public static EditorFieldModel createDropdown(
-            @Nullable CharSequence label, List<DropdownKeyValue> dropdownKeyValues,
-            EditorFieldValidator validator, CharSequence invalidErrorMessage) {
+    public static EditorFieldModel createDropdown(@Nullable CharSequence label,
+            List<DropdownKeyValue> dropdownKeyValues, EditorFieldValidator validator,
+            CharSequence invalidErrorMessage) {
         assert dropdownKeyValues != null;
         assert validator != null;
         assert invalidErrorMessage != null;
@@ -510,18 +526,21 @@ public class EditorFieldModel {
     }
 
     /** @return Suggested values for this field. Can be null. */
-    @Nullable public List<CharSequence> getSuggestions() {
+    @Nullable
+    public List<CharSequence> getSuggestions() {
         return mSuggestions;
     }
 
     /** @return The error message for the last validation. Can be null if no error was reported. */
-    @Nullable public CharSequence getErrorMessage() {
+    @Nullable
+    public CharSequence getErrorMessage() {
         return mErrorMessage;
     }
 
     /** @return The value that the user has typed into the field or the key of the value that the
      *          user has selected in the dropdown. Can be null. */
-    @Nullable public CharSequence getValue() {
+    @Nullable
+    public CharSequence getValue() {
         return mValue;
     }
 

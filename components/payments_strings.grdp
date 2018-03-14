@@ -511,13 +511,13 @@
 
   <!-- Validation, sentence-cased -->
   <if expr="not use_titlecase">
-    <message name="IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an input field is required. 'Required' is an adjective. Sentence-cased." formatter_data="android_java">
+    <message name="IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an input field is required. 'Required' is an adjective. Sentence-cased." formatter_data="android_java">
       Required field
     </message>
   </if>  <!-- not use_titlecase -->
   <!-- Validation, Title-Cased -->
   <if expr="use_titlecase">
-    <message name="IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an input field is required. 'Required' is an adjective. Title-Cased.">
+    <message name="IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an input field is required. 'Required' is an adjective. Title-Cased.">
       Required Field
     </message>
   </if>  <!-- use_titlecase -->

@@ -10,7 +10,7 @@
     android:id="@+id/bottom_bar"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:padding="@dimen/payments_section_large_spacing"
+    android:padding="@dimen/editor_dialog_section_large_spacing"
     android:background="@android:color/white"
     android:visibility="gone" >
 

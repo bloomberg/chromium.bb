@@ -182,7 +182,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
                 mPaymentRequestTestRule.getBillingAddressChangeProcessed());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -215,7 +215,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
                 new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
                 mPaymentRequestTestRule.getBillingAddressChangeProcessed());
         mPaymentRequestTestRule.clickInCardEditorAndWait(
-                R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToPay());
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(

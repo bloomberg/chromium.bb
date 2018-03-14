@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.support.v7.content.res.AppCompatResources;
@@ -151,8 +151,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         // Display any autofill suggestions.
         if (fieldModel.getSuggestions() != null && !fieldModel.getSuggestions().isEmpty()) {
             mInput.setAdapter(new ArrayAdapter<CharSequence>(getContext(),
-                    android.R.layout.simple_spinner_dropdown_item,
-                    fieldModel.getSuggestions()));
+                    android.R.layout.simple_spinner_dropdown_item, fieldModel.getSuggestions()));
             mInput.setThreshold(0);
         }
 
@@ -164,48 +163,45 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
 
         switch (fieldModel.getInputTypeHint()) {
             case EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD:
-                // Intentionally fall through.
-                //
-                // There's no keyboard that allows numbers, spaces, and "-" only, so use the phone
-                // keyboard instead. The phone keyboard has more symbols than necessary. A filter
-                // should be used to prevent input of phone number symbols that are not relevant for
-                // credit card numbers, e.g., "+", "*", and "#".
-                //
-                // The number keyboard is not suitable, because it filters out everything except
-                // digits.
+            // Intentionally fall through.
+            //
+            // There's no keyboard that allows numbers, spaces, and "-" only, so use the phone
+            // keyboard instead. The phone keyboard has more symbols than necessary. A filter
+            // should be used to prevent input of phone number symbols that are not relevant for
+            // credit card numbers, e.g., "+", "*", and "#".
+            //
+            // The number keyboard is not suitable, because it filters out everything except
+            // digits.
             case EditorFieldModel.INPUT_TYPE_HINT_PHONE:
                 // Show the keyboard with numbers and phone-related symbols.
                 mInput.setInputType(InputType.TYPE_CLASS_PHONE);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_EMAIL:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                mInput.setInputType(
+                        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES:
                 // TODO(rouslan): Provide a hint to the keyboard that the street lines are
                 // likely to have numbers.
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_FLAG_MULTI_LINE
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC:
-                // Intentionally fall through.
-                // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
-                // code are likely to have numbers.
+            // Intentionally fall through.
+            // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
+            // code are likely to have numbers.
             case EditorFieldModel.INPUT_TYPE_HINT_REGION:
                 mInput.setInputType(InputType.TYPE_CLASS_TEXT
                         | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                 break;
             default:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                 break;
         }

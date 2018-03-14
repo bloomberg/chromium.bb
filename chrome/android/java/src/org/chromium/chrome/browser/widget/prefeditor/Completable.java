@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.payments.ui;
+package org.chromium.chrome.browser.widget.prefeditor;
 
 /**
  * The interface for types that may be complete, i.e., can be sent to the merchant as-is, without
