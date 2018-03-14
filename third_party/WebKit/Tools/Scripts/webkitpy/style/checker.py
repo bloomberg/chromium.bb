@@ -137,6 +137,12 @@ _PATH_RULES_SPECIFIER = [
         # than style of the machine-generated code itself.
         'Source/bindings/tests/results'],
      ['-']),
+
+    ([  # Due to historical reasons scheduler uses Chromium style instead of
+        # Blink style.
+        'Source/platform/scheduler',
+        'public/platform/scheduler'],
+     ['-readability/parameter_name'])
 ]
 
 
