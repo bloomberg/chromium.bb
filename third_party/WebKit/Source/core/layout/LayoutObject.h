@@ -1229,6 +1229,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // See LayoutBlock.h for some extra explanations on containing blocks.
   LayoutBlock* ContainingBlock(AncestorSkipInfo* = nullptr) const;
 
+  const LayoutBlock* InclusiveContainingBlock() const;
+
   bool CanContainAbsolutePositionObjects() const {
     return style_->CanContainAbsolutePositionObjects() ||
            CanContainFixedPositionObjects();

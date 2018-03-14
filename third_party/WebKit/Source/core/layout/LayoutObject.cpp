@@ -1020,6 +1020,12 @@ LayoutBlock* LayoutObject::ContainingBlockForFixedPosition(
   return FindContainingBlock(container, skip_info);
 }
 
+const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
+  if (IsLayoutBlock())
+    return ToLayoutBlock(this);
+  return ContainingBlock();
+}
+
 LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   LayoutObject* object = Parent();
   if (!object && IsLayoutScrollbarPart())
@@ -1622,7 +1628,7 @@ void LayoutObject::ShowLayoutTreeForThis() const {
 }
 
 void LayoutObject::ShowLineTreeForThis() const {
-  if (LayoutBlock* cb = ContainingBlock()) {
+  if (const LayoutBlock* cb = InclusiveContainingBlock()) {
     if (cb->IsLayoutBlockFlow())
       ToLayoutBlockFlow(cb)->ShowLineTreeAndMark(nullptr, nullptr, nullptr,
                                                  nullptr, this);
