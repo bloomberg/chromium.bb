@@ -20,6 +20,7 @@ namespace {
 // little processor and memory overhead.
 const char* const kDumpProviderWhitelist[] = {
     "android::ResourceManagerImpl",
+    "AutocompleteController",
     "BlinkGC",
     "BlinkObjectCounters",
     "ClientDiscardableSharedMemoryManager",
@@ -202,7 +203,8 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "net/url_request_context/unknown/0x?/http_cache/memory_backend",
     "net/url_request_context/unknown/0x?/http_cache/simple_backend",
     "net/url_request_context/unknown/0x?/http_network_session",
-    "omnibox/in_memory_url_index_0x?",
+    "omnibox/autocomplete_controller/0x?",
+    "omnibox/in_memory_url_index/0x?",
     "web_cache/Image_resources",
     "web_cache/CSS stylesheet_resources",
     "web_cache/Script_resources",

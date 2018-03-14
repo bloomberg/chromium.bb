@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/autocomplete_controller.h"
 
+#include <inttypes.h>
+
 #include <cstddef>
 #include <memory>
 #include <numeric>
@@ -760,8 +762,9 @@ bool AutocompleteController::OnMemoryDump(
   res += input_.EstimateMemoryUsage();
   res += result_.EstimateMemoryUsage();
 
-  auto* dump = process_memory_dump->GetOrCreateAllocatorDump(
-      "omnibox/autocomplete_controller");
+  auto* dump = process_memory_dump->CreateAllocatorDump(
+      base::StringPrintf("omnibox/autocomplete_controller/0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(this)));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, res);
   return true;
