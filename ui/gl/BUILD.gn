@@ -25,6 +25,7 @@ if (is_android) {
 
 buildflag_header("gl_features") {
   header = "gl_features.h"
+  use_egl_on_mac = use_egl && is_mac
   flags = [
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
     "USE_EGL_ON_MAC=$use_egl_on_mac",

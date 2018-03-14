@@ -7,11 +7,7 @@ declare_args() {
   # False by default, enabling currently supported only on Android
   use_static_angle = false
 
-  # Whether experimental support for ANGLE on Mac should be enabled.
-  # False by default since it is experimental
-  use_egl_on_mac = false
+  # Should EGL support be compiled. Can be overriden to test during bring up
+  # of EGL support on other platforms
+  use_egl = is_win || is_android || is_linux || is_fuchsia
 }
-
-# Should EGL support be compiled
-use_egl =
-    is_win || is_android || is_linux || is_fuchsia || (is_mac && use_egl_on_mac)

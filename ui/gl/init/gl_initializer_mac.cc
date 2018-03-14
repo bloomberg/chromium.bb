@@ -134,8 +134,8 @@ bool InitializeStaticCGLInternal(GLImplementation implementation) {
 }
 
 #if BUILDFLAG(USE_EGL_ON_MAC)
-const char kGLESv2ANGLELibraryName[] = "libGLESv2.dylib";
-const char kEGLANGLELibraryName[] = "libEGL.dylib";
+const char kGLESv2ANGLELibraryName[] = "Libraries/libGLESv2.dylib";
+const char kEGLANGLELibraryName[] = "Libraries/libEGL.dylib";
 
 bool InitializeStaticEGLInternal(GLImplementation implementation) {
   if (implementation == kGLImplementationSwiftShaderGL) {
