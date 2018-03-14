@@ -40052,7 +40052,8 @@ Called by update_net_trust_anchors.py.-->
 <enum name="ShutdownReason">
   <summary>
     The reason that the Chrome OS power manager shut down or rebooted the
-    system.
+    system. This corresponds to the ShutdownReason enum from
+    power_manager/common/power_constants.h in the platform2 repository.
   </summary>
   <int value="0" label="User request"/>
   <int value="1" label="State transition"/>
@@ -40060,7 +40061,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Suspend failures"/>
   <int value="4" label="Dark resume"/>
   <int value="5" label="System update"/>
-  <int value="6" label="Dark resume failed"/>
+  <int value="6" label="Exiting from dark resume failed"/>
+  <int value="7" label="Other request to powerd"/>
 </enum>
 
 <enum name="ShutdownType">
